@@ -1,0 +1,15 @@
+{
+  "name": "blankejs",
+  "description": "program graphics",
+  "main": "src/index.html",
+  "window": {
+    "frame": false,
+    "transparent": true,
+    "width": 800,
+    "height": 600
+  },
+  "scripts": {
+    "less": "lessc src/less/main.less src/main.css",
+    "nw": "nw ."
+  }
+}

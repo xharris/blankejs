@@ -1,0 +1,72 @@
+@import "../blanke-kit/blanke-ui";
+@import "variables";
+@import "elements";
+
+.ui-button-sphere:hover {
+	background-color: rgba(224,224,224,0.3);
+}
+
+html, body {
+	margin: 0;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+html {
+	position: absolute;
+	left: 0px; right: 0px; top: 0px; bottom: 0px;
+}
+
+body {
+	.win-drag();
+
+	width: 100%;
+	height: 100%;
+	background-color: @window-background;
+	padding: @window-padding;
+	padding-top: @title-bar-height;
+}
+
+#window-buttons {
+	.win-nodrag();
+
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	padding: 3px;
+
+	#btn-close {
+		color: #f44336;
+	}
+}
+
+#workspace {
+	.win-nodrag();
+
+	width: 100%;
+	height: 100%;
+	background-color: #212121;
+	overflow: hidden;
+}
+
+.drag-container {
+	background-color: @window-background;
+	position: relative;
+
+	.drag-handle {
+		position: absolute;
+		top: 0px; left: 0px; right: 0px;
+		height: 17px;
+	    margin: 3px;
+	    background-color: rgba(158,158,158 ,0.25);
+	}
+
+	.content {
+		position: absolute;
+	    top: 20px;
+	    bottom: 0px;
+	    left: 0px;
+	    right: 0px;
+	    margin: 3px;
+	    overflow: auto;
+	}
+}
