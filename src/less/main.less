@@ -63,6 +63,15 @@ body {
 	    background-color: rgba(158,158,158 ,0.25);
 	}
 
+	.resize-handle {
+		position: absolute;
+		right: 0px;
+		bottom: 0px;
+		width: 20px;
+		height: 20px;
+		z-index: 1000;
+	}
+
 	.content {
 		position: absolute;
 	    top: 20px;
@@ -71,5 +80,6 @@ body {
 	    right: 0px;
 	    margin: 3px;
 	    overflow: auto;
+	    resize: both;
 	}
 }

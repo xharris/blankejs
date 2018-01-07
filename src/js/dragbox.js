@@ -11,6 +11,11 @@ class DragBox {
 		this.drag_handle.id = "drag-handle-"+this.guid;
 		this.drag_container.appendChild(this.drag_handle);
 
+		this.resize_handle = document.createElement("div");
+		this.resize_handle.classList.add("resize-handle");
+		this.resize_handle.id = "resize-"+this.guid;
+		this.drag_container.appendChild(this.resize_handle);
+
 		this.drag_content = document.createElement("div");
 		this.drag_content.classList.add("content");
 		this.drag_content.id = "content-"+this.guid;
@@ -46,7 +51,7 @@ class DragBox {
 				}
 			})
 			.resizable({
-				allowFrom: '#content-'+this.guid,
+				allowFrom: '#resize-'+this.guid,
 				edges: {left:false, right:true, bottom:true, top:false},
 				restictEdges: {
 					outer: 'parent',
@@ -91,7 +96,7 @@ class DragBox {
 		this.drag_content.appendChild(element);
 	}
 
-	appendContent (element) {
+	appendChild (element) {
 		this.drag_content.appendChild(element);
 	}
 }

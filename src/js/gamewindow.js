@@ -18,7 +18,7 @@ class GameWindow {
 		this.game_iframe.frameborder = "0";
 		this.game_iframe.scrolling = "no";
 		this.game_iframe.src="projects/test/index.html";
-		this.game_dragbox.appendContent(this.game_iframe);
+		this.game_dragbox.appendChild(this.game_iframe);
 
 		// refresh button
 		this.btn_refresh = document.createElement("button");
@@ -27,7 +27,7 @@ class GameWindow {
 		this.btn_refresh.innerHTML = "<i class=\"mdi mdi-refresh\"></i>";
 		this.btn_refresh.obj_ref = this;
 		this.btn_refresh.onclick = function(){ this.obj_ref.refresh(); };
-		this.game_dragbox.appendContent(this.btn_refresh);
+		this.game_dragbox.appendChild(this.btn_refresh);
 	}
 
 	refresh () {

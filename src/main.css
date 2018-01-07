@@ -480,6 +480,16 @@
   bottom: 0px;
   color: white;
 }
+.content[data-type="Code"] .code {
+  width: 100%;
+  height: 100%;
+  padding-bottom: 10px;
+}
+.content[data-type="Code"] .CodeMirror-scroll {
+  width: 100% !important;
+  overflow: auto !important;
+  box-sizing: border-box;
+}
 .ui-button-sphere:hover {
   background-color: rgba(224, 224, 224, 0.3);
 }
@@ -537,6 +547,14 @@ body {
   margin: 3px;
   background-color: rgba(158, 158, 158, 0.25);
 }
+.drag-container .resize-handle {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 20px;
+  height: 20px;
+  z-index: 1000;
+}
 .drag-container .content {
   position: absolute;
   top: 20px;
@@ -545,4 +563,5 @@ body {
   right: 0px;
   margin: 3px;
   overflow: auto;
+  resize: both;
 }

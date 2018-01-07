@@ -33,5 +33,5 @@ nwWIN.on('loaded', function() {
 
 	new GameWindow(app);
 	var main_code = new Code(app);
-	main_code.edit("projects/test/game.js");
+	main_code.edit("src/projects/test/game.js");
 });
