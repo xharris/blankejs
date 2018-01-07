@@ -18,6 +18,19 @@ class GameWindow {
 		this.game_iframe.frameborder = "0";
 		this.game_iframe.scrolling = "no";
 		this.game_iframe.src="projects/test/index.html";
-		this.game_dragbox.setContent(this.game_iframe);
+		this.game_dragbox.appendContent(this.game_iframe);
+
+		// refresh button
+		this.btn_refresh = document.createElement("button");
+		this.btn_refresh.classList.add("ui-button-sphere");
+		this.btn_refresh.classList.add("btn-refresh");
+		this.btn_refresh.innerHTML = "<i class=\"mdi mdi-refresh\"></i>";
+		this.btn_refresh.obj_ref = this;
+		this.btn_refresh.onclick = function(){ this.obj_ref.refresh(); };
+		this.game_dragbox.appendContent(this.btn_refresh);
+	}
+
+	refresh () {
+		this.game_iframe.src = this.game_iframe.src;
 	}
 }

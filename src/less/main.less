@@ -46,11 +46,14 @@ body {
 	height: 100%;
 	background-color: #212121;
 	overflow: hidden;
+	position: relative;
 }
 
 .drag-container {
 	background-color: @window-background;
-	position: relative;
+	position: absolute;
+	top: 0px;
+	left: 0px;
 
 	.drag-handle {
 		position: absolute;

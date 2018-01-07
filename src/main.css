@@ -474,6 +474,12 @@
   display: inline-block;
   border: none;
 }
+.content[data-type="Game"] .btn-refresh {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  color: white;
+}
 .ui-button-sphere:hover {
   background-color: rgba(224, 224, 224, 0.3);
 }
@@ -514,10 +520,13 @@ body {
   height: 100%;
   background-color: #212121;
   overflow: hidden;
+  position: relative;
 }
 .drag-container {
   background-color: #424242;
-  position: relative;
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 .drag-container .drag-handle {
   position: absolute;

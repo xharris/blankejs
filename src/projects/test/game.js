@@ -10,7 +10,7 @@ function init() {
 	PIXI.loader.add(["assets/boss.png"]);
 
 	PIXI.loader.load(function(){
-		var cat = new PIXI.Sprite(PIXI.loader.resources["assets/boss.png"].texture);
-		app.stage.addChild(cat);
+		var boss = new PIXI.Sprite(PIXI.loader.resources["assets/boss.png"].texture);
+		app.stage.addChild(boss);
 	});
 }

@@ -8,16 +8,21 @@ class DragBox {
 
 		this.drag_handle = document.createElement("div");
 		this.drag_handle.classList.add("drag-handle");
+		this.drag_handle.id = "drag-handle-"+this.guid;
 		this.drag_container.appendChild(this.drag_handle);
 
 		this.drag_content = document.createElement("div");
 		this.drag_content.classList.add("content");
+		this.drag_content.id = "content-"+this.guid;
 		this.drag_content.dataset.type = content_type;
+
 		this.drag_container.appendChild(this.drag_content);
+
+		var x = 0, y = 0;
 
 		interact('#'+this.drag_container.id)
 			.draggable({
-				allowFrom: '.drag-handle',
+				allowFrom: '#drag-handle-'+this.guid,
 				inertia: false,
 				restrict: {
 					restriction: "parent",
@@ -41,7 +46,7 @@ class DragBox {
 				}
 			})
 			.resizable({
-				allowFrom: '.content',
+				allowFrom: '#content-'+this.guid,
 				edges: {left:false, right:true, bottom:true, top:false},
 				restictEdges: {
 					outer: 'parent',
@@ -83,6 +88,10 @@ class DragBox {
 
 	setContent (element) {
 		this.drag_content.innerHTML = "";
+		this.drag_content.appendChild(element);
+	}
+
+	appendContent (element) {
 		this.drag_content.appendChild(element);
 	}
 }

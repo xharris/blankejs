@@ -25,15 +25,13 @@ var app = {
 
 			});
 		});
-	},
-
-	runGame: function() {
-		new GameWindow(app);
 	}
 }
 
 nwWIN.on('loaded', function() {
 	nwWIN.showDevTools();
 
-	app.runGame();
+	new GameWindow(app);
+	var main_code = new Code(app);
+	main_code.edit("projects/test/game.js");
 });
