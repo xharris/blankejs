@@ -49,16 +49,21 @@ var BlankE = {
 }
 
 class Entity {
-	constructor () {
+	constructor (...args) {
 		this.x = 0;
 		this.y = 0;
 		this.sprites = {};
 		this._sprite_index = '';
 
 		BlankE.addGameObject(this);
+
+		if (this.init) this.init(...args);
 	}
 
-	addSprite (name='',path='') {
+	addSprite (arg) {
+		var name=ifndef(arg.name, '')
+		var path=ifndef(arg.path, '')
+		
 		this.sprites[name] = new PIXI.Sprite(PIXI.loader.resources[path].texture);
 		BlankE.app.stage.addChild(this.sprites[name]);
 	}

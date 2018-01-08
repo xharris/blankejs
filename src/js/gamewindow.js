@@ -1,6 +1,7 @@
 class GameWindow {
 	constructor (app) {
 		var workspace = app.getElement('#workspace');
+		this.app = app;
 
 		var width = 512;
 		var height = 384;
@@ -58,6 +59,8 @@ class GameWindow {
 
 		this.game_window.appendChild(this.btn_container);
 		workspace.appendChild(this.game_window);
+
+		this.refresh();
 	}
 
 	togglePause () {
@@ -66,6 +69,22 @@ class GameWindow {
 
 	refresh () {
 		var this_ref = this;
+
+		// rewrite index.html
+		var script_list = nwFS.readdirSync(this.app.project_path+'/scripts');
+		var s_scripts = '';
+		script_list.forEach(function(s){
+			if (s != "game.js")
+				s_scripts += '\t\t<script src="scripts/'+s+'"></script>\n';
+		});
+
+		var s_index = nwFS.readFileSync(this.app.project_path+"/index.html", 'utf-8');
+		s_index = s_index.replace(/(<!-- start SCRIPTS -->)(.*\s)+(\s*<!-- end SCRIPTS -->)/g,
+			"<!-- start SCRIPTS -->\n"+s_scripts+"\t\t<!-- end SCRIPTS -->"
+		);
+		nwFS.writeFileSync(this.app.project_path+"/index.html", s_index);
+
+		// refresh game window
 		this.game_iframe.onload = function() {
 			if (this_ref.btn_pause.classList.contains("paused")) {
 				this_ref.togglePause();

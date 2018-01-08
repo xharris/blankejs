@@ -64,6 +64,7 @@ class Editor {
 			var el_asset = this.app.createElement("button", "asset");
 			el_asset.innerHTML = list[l];
 			el_asset.onclick = function() {
+				this_ref.toggleMenu(); 
 				if (this_ref.onAssetSelect) this_ref.onAssetSelect(this.innerHTML);
 			}
 			el_asset.addEventListener('contextmenu', function(ev) { 
