@@ -65,6 +65,12 @@ class GameWindow {
 	}
 
 	refresh () {
+		var this_ref = this;
+		this.game_iframe.onload = function() {
+			if (this_ref.btn_pause.classList.contains("paused")) {
+				this_ref.togglePause();
+			}
+		}
 		this.game_iframe.src = this.game_iframe.src;
 	}
 }

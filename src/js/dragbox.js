@@ -6,6 +6,14 @@ class DragBox {
 		this.drag_container = document.createElement("div");
 		this.drag_container.classList.add("drag-container");
 		this.drag_container.id = "drag-container-"+this.guid;
+		this.drag_container.addEventListener("click", function() {
+			// reset z index of others
+			app.getElements('.drag-container').forEach(function(e){
+				e.style.zIndex = 10;
+			});
+			// bring this one to top
+			this.style.zIndex = 15;
+		});
 
 		this.drag_handle = document.createElement("div");
 		this.drag_handle.classList.add("drag-handle");
@@ -30,6 +38,11 @@ class DragBox {
 		this.btn_close.innerHTML = "<i class=\"mdi mdi-close\"></i>"
 		this.btn_close.onclick = function() { this_ref.close(); }
 		this.drag_container.appendChild(this.btn_close);
+
+		this.btn_menu = document.createElement("button");
+		this.btn_menu.classList.add("btn-menu");
+		this.btn_menu.innerHTML = "<i class=\"mdi mdi-menu\"></i>"
+		this.drag_container.appendChild(this.btn_menu);
 
 		this.drag_container.appendChild(this.drag_content);
 
@@ -94,7 +107,7 @@ class DragBox {
 	}
 
 	toggleVisible () {
-		this.drag_content.style.display = this.drag_content.style.display == "none" ? "block" : "none";
+		this.drag_container.classList.toggle("collapsed");
 	}
 
 	appendTo (element) {

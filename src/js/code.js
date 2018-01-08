@@ -1,27 +1,14 @@
-class Code {
-	constructor (app) {
-		var workspace = app.getElement('#workspace');
-
-		// create drag box
-		this.game_dragbox = new DragBox('Code');
-		this.game_dragbox.appendTo(workspace);
-		this.game_dragbox.width = 300;
-		this.game_dragbox.height = 250;
+class Code extends Editor {
+	constructor (...args) {
+		super(...args);
+		this.file = '';
 
 		// create codemirror editor
 		this.edit_box = document.createElement("textarea");
 		this.edit_box.classList.add("code")
-		this.game_dragbox.appendChild(this.edit_box)
+		this.appendChild(this.edit_box)
 
-		// rename script button
-		this.btn_rename = document.createElement("button");
-		this.btn_rename.innerHTML = "<i class=\"mdi mdi-pencil\"></i>";
-		this.btn_rename.classList.add("btn-rename");
-		var this_ref = this;
-		this.btn_rename.onclick = function() {
-			this_ref.renameModal();
-		}
-		this.game_dragbox.appendChild(this.btn_rename);
+		this.refreshScriptList();
 	}
 
 	edit (file_path) {
@@ -45,31 +32,69 @@ class Code {
 		});
 		this.codemirror.setSize("100%", "100%");
 		this.codemirror.setValue(text);
+		this.codemirror.clearHistory();
 		this.codemirror.on('change', function(){
 			this_ref.codemirror.refresh();
 		});
+		this_ref.codemirror.refresh();
 
-		this.game_dragbox.setTitle(nwPATH.basename(file_path));
+		this.setTitle(nwPATH.basename(file_path));
 	}
 
 	save () {
 		nwFS.writeFileSync(this.file, this.codemirror.getValue());
 	}
 
-	rename (new_name) {
-		nwFS.rename(this.file, nwPATH.dirname(this.file)+"/"+new_name);
+	rename (old_name, new_name) {
+		nwFS.rename(nwPATH.dirname(this.file)+"/"+old_name, nwPATH.dirname(this.file)+"/"+new_name);
 		this.file = nwPATH.dirname(this.file)+"/"+new_name;
-		this.game_dragbox.setTitle(nwPATH.basename(this.file));
+		this.setTitle(nwPATH.basename(this.file));
 	}
 
-	renameModal () {
+	renameModal (filename) {
 		var this_ref = this;
 		blanke.showModal(
 			"<label>new name: </label>"+
-			"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(this_ref.file, nwPATH.extname(this_ref.file))+"'/>",
+			"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
 		{
-			"yes": function() { this_ref.rename(app.getElement('#new-file-name').value+".js"); },
+			"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".js"); },
 			"no": function() {}
 		});
+	}
+
+	onFileChange (evt_type, file) {
+		this.refreshScriptList();
+	}
+
+	onAssetSelect (value) {	
+		this.save();
+		this.edit(app.project_path+"/scripts/"+value);
+	}
+
+	refreshScriptList () {
+		var this_ref = this;
+		var files = nwFS.readdirSync(app.project_path+"/scripts");
+		this.setAssetList(files, [
+			{label: 'rename'},
+			{label: 'delete'},
+			{type: 'separator'},
+			{label: 'add a script'}
+		], function(label, asset) {
+			if (label == 'rename') 
+				this_ref.renameModal(asset);
+		});
+		if (this.file == '') {
+			this.edit(app.project_path+"/scripts/"+files[0]);
+		}
+	}
+
+	addScript () {
+		// create the file
+		var script_count = nwFS.readdirSync(this.project_path+"/scripts").length;
+		var script_path = this.project_path+"/scripts/script"+script_count.toString()+".js";
+		nwFS.writeFileSync(script_path, "// code");
+		app.refreshScriptList();
+		// edit it
+		this.edit(script_path);
 	}
 }

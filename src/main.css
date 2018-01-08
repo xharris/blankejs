@@ -506,53 +506,6 @@
 #workspace .game-window .game-controls .btn-resize:not(.align-center) .mdi-arrow-top-left {
   display: none;
 }
-.content[data-type="Code"] .btn-rename {
-  -webkit-touch-callout: none;
-  /* iOS Safari */
-  -webkit-user-select: none;
-  /* Chrome/Safari/Opera */
-  -khtml-user-select: none;
-  /* Konqueror */
-  -moz-user-select: none;
-  /* Firefox */
-  -ms-user-select: none;
-  /* Internet Explorer/Edge */
-  user-select: none;
-  /* Non-prefixed version, currently
-    not supported by any browser */
-  margin: 3px;
-  border: none !important;
-  outline: none;
-  background-color: transparent;
-  font-size: 14px;
-  cursor: pointer;
-  vertical-align: top;
-  transition: all ease-in-out 0.4s;
-  height: 26px;
-  width: 26px;
-  padding: 0px;
-  position: absolute;
-  right: 15px;
-  top: 4px;
-  color: rgba(255, 255, 255, 0.75);
-}
-.content[data-type="Code"] .btn-rename:hover {
-  background-color: rgba(224, 224, 224, 0.3);
-}
-.content[data-type="Code"] .btn-rename:hover:disabled {
-  background-color: transparent;
-  cursor: default;
-}
-.content[data-type="Code"] .btn-rename .mdi-svg {
-  vertical-align: top;
-  text-align: center;
-}
-.content[data-type="Code"] .btn-rename:hover {
-  border-radius: 100%;
-}
-.content[data-type="Code"] .btn-rename .mdi {
-  font-size: 14px;
-}
 .content[data-type="Code"] .code {
   width: 100%;
   height: 100%;
@@ -602,23 +555,30 @@ body {
   position: absolute;
   top: 0px;
   right: 0px;
-  padding: 3px;
+  padding: 4px;
 }
 #window-buttons button {
   width: 20px;
   height: 20px;
   margin: 2px;
+  color: #9E9E9E;
+}
+#window-buttons button:hover {
+  background-color: transparent;
+}
+#window-buttons button .mdi {
+  padding: 3px;
 }
 #window-buttons #btn-close {
   color: #f44336;
 }
-.script-list-container {
+.tool-container {
   position: absolute;
   bottom: 10px;
   right: 10px;
   z-index: 1000;
 }
-.script-list-container #btn-add-script {
+.tool-container button {
   -webkit-touch-callout: none;
   /* iOS Safari */
   -webkit-user-select: none;
@@ -648,32 +608,22 @@ body {
   height: 23px;
   color: white;
 }
-.script-list-container #btn-add-script:hover {
+.tool-container button:hover {
   background-color: rgba(224, 224, 224, 0.3);
 }
-.script-list-container #btn-add-script:hover:disabled {
+.tool-container button:hover:disabled {
   background-color: transparent;
   cursor: default;
 }
-.script-list-container #btn-add-script .mdi-svg {
+.tool-container button .mdi-svg {
   vertical-align: top;
   text-align: center;
 }
-.script-list-container #btn-add-script:hover {
+.tool-container button:hover {
   border-radius: 100%;
 }
-.script-list-container #btn-add-script:hover {
+.tool-container button:hover {
   background-color: rgba(224, 224, 224, 0.3);
-}
-.script-list-container #script-list {
-  background-color: rgba(255, 255, 255, 0.25);
-  color: white;
-  border: none;
-  padding: 5px;
-  outline: none;
-}
-.script-list-container #script-list option {
-  background-color: #212121;
 }
 #workspace {
   -webkit-app-region: no-drag;
@@ -689,6 +639,12 @@ body {
   top: 0px;
   left: 0px;
 }
+.drag-container.collapsed .asset-list {
+  display: none;
+}
+.drag-container.collapsed .content {
+  display: none;
+}
 .drag-container .btn-close {
   position: absolute;
   top: 0px;
@@ -703,6 +659,21 @@ body {
   padding: 0px 4px;
   font-size: 16px;
   cursor: pointer;
+}
+.drag-container .btn-menu {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  outline: none;
+  border: none;
+  margin: 3px;
+  padding: 0px 4px;
+  font-size: 16px;
+  cursor: pointer;
+  color: white;
 }
 .drag-container .drag-handle {
   -webkit-touch-callout: none;
@@ -727,7 +698,7 @@ body {
   margin-right: 20px;
   background-color: rgba(80, 80, 80, 0.8);
   color: #c8c8c8;
-  padding-left: 10px;
+  padding-left: 26px;
   line-height: 18px;
 }
 .drag-container .resize-handle {
@@ -746,4 +717,37 @@ body {
   right: 0px;
   margin: 3px;
   overflow: auto;
+  outline: 1px solid rgba(255, 255, 255, 0.1);
+}
+.drag-container .editor-content {
+  width: 100%;
+  height: 100%;
+}
+.drag-container .asset-list {
+  position: absolute;
+  top: 23px;
+  left: 3px;
+  bottom: 3px;
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow: auto;
+  z-index: 100;
+  transition: all 0.2s ease-in-out;
+}
+.drag-container .asset-list:not(.open) {
+  width: 0px;
+}
+.drag-container .asset-list.open {
+  width: 100px;
+}
+.drag-container .asset-list .asset {
+  background-color: transparent;
+  color: white;
+  outline: none;
+  border: none;
+  height: 16px;
+  width: 100%;
+  text-align: left;
+}
+.drag-container .asset-list .asset:hover {
+  background-color: rgba(0, 0, 0, 0.7);
 }

@@ -18,7 +18,8 @@
 		<script src="includes/codemirror/mode/javascript/javascript.js"></script>
 
 		<script src="js/dragbox.js"></script>
-		
+		<script src="js/editor.js"></script>
+
 		<script src="js/code.js"></script>
 		<script src="js/gamewindow.js"></script>
 		<script src="main.js"></script>
@@ -27,14 +28,15 @@
 	<body>
 
 		<div id="window-buttons">
-			<button id="btn-close" class="ui-button-sphere" onclick="app.close()"><i class="mdi mdi-window-close"></i></button>			
+			<button id="btn-minimize" class="ui-button-sphere" onclick="app.minimize()"><i class="mdi mdi-window-minimize"></i></button>
+			<button id="btn-maximze" class="ui-button-sphere" onclick="app.maximize()"><i class="mdi mdi-window-maximize"></i></button>	
+			<button id="btn-close" class="ui-button-sphere" onclick="app.close()"><i class="mdi mdi-window-close"></i></button>
 		</div>
 
 		<div id="menu"></div>
 
-		<div class="script-list-container">
-			<button id="btn-add-script" onclick="app.addScript()"><i class="mdi mdi-plus"></i></button>
-			<select id="script-list"></select>
+		<div class="tool-container">
+			<button id="btn-code" onclick="new Code(app)"><i class="mdi mdi-code-braces"></i></button>
 		</div>
 
 		<div id="workspace"></div>
