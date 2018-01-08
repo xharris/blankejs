@@ -5,6 +5,7 @@ function ifndef (in_var, value) {
 
 var BlankE = {
 	app: null,
+	pause: false,
 	objects: {},
 	run: function (width, height) {
 		BlankE.app = new PIXI.Application({
@@ -16,7 +17,6 @@ var BlankE = {
 		PIXI.loader.add(["assets/boss.png"]);
 
 		PIXI.loader.load(BlankE._init);
-
 	},
 
 	_init: function() {
@@ -34,13 +34,15 @@ var BlankE = {
 	},
 
 	_update: function(dt) {
-		if (BlankE.update) BlankE.update(dt);
+		if (!BlankE.pause) {
+			if (BlankE.update) BlankE.update(dt);
 
-		// iterate game objects
-		for (var obj_type in BlankE.objects) {
-			for (var o = 0; o < BlankE.objects[obj_type].length; o++) {
-				var obj = BlankE.objects[obj_type][o];
-				if (obj._update) obj._update(dt);
+			// iterate game objects
+			for (var obj_type in BlankE.objects) {
+				for (var o = 0; o < BlankE.objects[obj_type].length; o++) {
+					var obj = BlankE.objects[obj_type][o];
+					if (obj._update) obj._update(dt);
+				}
 			}
 		}
 	}

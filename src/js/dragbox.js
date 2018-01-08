@@ -1,6 +1,7 @@
 class DragBox {
 	constructor (content_type) {
 		this.guid = guid();
+		var this_ref = this;
 
 		this.drag_container = document.createElement("div");
 		this.drag_container.classList.add("drag-container");
@@ -9,6 +10,9 @@ class DragBox {
 		this.drag_handle = document.createElement("div");
 		this.drag_handle.classList.add("drag-handle");
 		this.drag_handle.id = "drag-handle-"+this.guid;
+		this.drag_handle.ondblclick = function() {
+			this_ref.toggleVisible();
+		}
 		this.drag_container.appendChild(this.drag_handle);
 
 		this.resize_handle = document.createElement("div");
@@ -20,6 +24,12 @@ class DragBox {
 		this.drag_content.classList.add("content");
 		this.drag_content.id = "content-"+this.guid;
 		this.drag_content.dataset.type = content_type;
+
+		this.btn_close = document.createElement("button");
+		this.btn_close.classList.add("btn-close");
+		this.btn_close.innerHTML = "<i class=\"mdi mdi-close\"></i>"
+		this.btn_close.onclick = function() { this_ref.close(); }
+		this.drag_container.appendChild(this.btn_close);
 
 		this.drag_container.appendChild(this.drag_content);
 
@@ -79,6 +89,14 @@ class DragBox {
 			});
 	}
 
+	setTitle (value) {
+		this.drag_handle.innerHTML = value;
+	}
+
+	toggleVisible () {
+		this.drag_content.style.display = this.drag_content.style.display == "none" ? "block" : "none";
+	}
+
 	appendTo (element) {
 		element.appendChild(this.drag_container);
 	}
@@ -98,5 +116,9 @@ class DragBox {
 
 	appendChild (element) {
 		this.drag_content.appendChild(element);
+	}
+
+	close () {
+		this.drag_container.remove();
 	}
 }

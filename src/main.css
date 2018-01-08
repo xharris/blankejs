@@ -96,7 +96,7 @@
   transition: all ease-in-out 0.4s;
 }
 .ui-button:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(224, 224, 224, 0.3);
 }
 .ui-button:hover:disabled {
   background-color: transparent;
@@ -133,7 +133,7 @@
   padding: 0px;
 }
 .ui-button-sphere:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(224, 224, 224, 0.3);
 }
 .ui-button-sphere:hover:disabled {
   background-color: transparent;
@@ -174,7 +174,7 @@
   transition: all ease-in-out 0.4s;
 }
 .ui-button-rect:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(224, 224, 224, 0.3);
 }
 .ui-button-rect:hover:disabled {
   background-color: transparent;
@@ -422,7 +422,7 @@
 .blanke-window > .title-bar {
   cursor: default;
   background-color: black;
-  height: 38px;
+  height: 30px;
   overflow: hidden;
 }
 .blanke-window > .title-bar > * {
@@ -444,7 +444,7 @@
 .blanke-window > .title-bar > .title {
   pointer-events: none;
   color: white;
-  line-height: 38px;
+  line-height: 30px;
   padding-left: 2px;
 }
 .blanke-window > .title-bar > .btn-close {
@@ -461,37 +461,120 @@
   margin-bottom: 0px;
   overflow: hidden;
   position: absolute;
-  top: 38px;
+  top: 30px;
   bottom: 0px;
   right: 0px;
   left: 0px;
 }
-.content[data-type="Game"] {
-  text-align: center;
+#workspace .game-window {
+  width: 100%;
+  height: 100%;
 }
-.content[data-type="Game"] iframe {
-  position: relative;
-  display: inline-block;
+#workspace .game-window .game-iframe {
   border: none;
 }
-.content[data-type="Game"] .btn-refresh {
+#workspace .game-window .game-iframe.align-center {
+  left: 50%;
+  transform: translateX(-50%);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
+}
+#workspace .game-window .game-iframe:not(.align-center) {
+  position: absolute;
+  margin: 5px;
+}
+#workspace .game-window .game-controls {
   position: absolute;
   left: 0px;
   bottom: 0px;
+  z-index: 1000;
+}
+#workspace .game-window .game-controls button {
   color: white;
+}
+#workspace .game-window .game-controls .btn-pause.paused .mdi-pause {
+  display: none;
+}
+#workspace .game-window .game-controls .btn-pause:not(.paused) .mdi-play {
+  display: none;
+}
+#workspace .game-window .game-controls .btn-resize.align-center .mdi-arrow-bottom-right {
+  display: none;
+}
+#workspace .game-window .game-controls .btn-resize:not(.align-center) .mdi-arrow-top-left {
+  display: none;
+}
+.content[data-type="Code"] .btn-rename {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  margin: 3px;
+  border: none !important;
+  outline: none;
+  background-color: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  vertical-align: top;
+  transition: all ease-in-out 0.4s;
+  height: 26px;
+  width: 26px;
+  padding: 0px;
+  position: absolute;
+  right: 15px;
+  top: 4px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.content[data-type="Code"] .btn-rename:hover {
+  background-color: rgba(224, 224, 224, 0.3);
+}
+.content[data-type="Code"] .btn-rename:hover:disabled {
+  background-color: transparent;
+  cursor: default;
+}
+.content[data-type="Code"] .btn-rename .mdi-svg {
+  vertical-align: top;
+  text-align: center;
+}
+.content[data-type="Code"] .btn-rename:hover {
+  border-radius: 100%;
+}
+.content[data-type="Code"] .btn-rename .mdi {
+  font-size: 14px;
 }
 .content[data-type="Code"] .code {
   width: 100%;
   height: 100%;
   padding-bottom: 10px;
 }
+.content[data-type="Code"] .CodeMirror {
+  font-size: 12px;
+}
 .content[data-type="Code"] .CodeMirror-scroll {
   width: 100% !important;
   overflow: auto !important;
   box-sizing: border-box;
+  line-height: 14px;
 }
-.ui-button-sphere:hover {
-  background-color: rgba(224, 224, 224, 0.3);
+@font-face {
+  font-family: ProggySquare;
+  src: url('includes/ProggySquare.ttf') format('truetype');
+}
+* {
+  font-family: ProggySquare;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
 }
 html,
 body {
@@ -512,7 +595,7 @@ body {
   height: 100%;
   background-color: #424242;
   padding: 5px;
-  padding-top: 38px;
+  padding-top: 30px;
 }
 #window-buttons {
   -webkit-app-region: no-drag;
@@ -521,8 +604,76 @@ body {
   right: 0px;
   padding: 3px;
 }
+#window-buttons button {
+  width: 20px;
+  height: 20px;
+  margin: 2px;
+}
 #window-buttons #btn-close {
   color: #f44336;
+}
+.script-list-container {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+.script-list-container #btn-add-script {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  margin: 3px;
+  border: none !important;
+  outline: none;
+  background-color: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  vertical-align: top;
+  transition: all ease-in-out 0.4s;
+  height: 26px;
+  width: 26px;
+  padding: 0px;
+  margin: 0px;
+  width: 23px;
+  height: 23px;
+  color: white;
+}
+.script-list-container #btn-add-script:hover {
+  background-color: rgba(224, 224, 224, 0.3);
+}
+.script-list-container #btn-add-script:hover:disabled {
+  background-color: transparent;
+  cursor: default;
+}
+.script-list-container #btn-add-script .mdi-svg {
+  vertical-align: top;
+  text-align: center;
+}
+.script-list-container #btn-add-script:hover {
+  border-radius: 100%;
+}
+.script-list-container #btn-add-script:hover {
+  background-color: rgba(224, 224, 224, 0.3);
+}
+.script-list-container #script-list {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: white;
+  border: none;
+  padding: 5px;
+  outline: none;
+}
+.script-list-container #script-list option {
+  background-color: #212121;
 }
 #workspace {
   -webkit-app-region: no-drag;
@@ -533,19 +684,51 @@ body {
   position: relative;
 }
 .drag-container {
-  background-color: #424242;
+  background-color: transparent;
   position: absolute;
   top: 0px;
   left: 0px;
 }
+.drag-container .btn-close {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  color: #64DD17;
+  outline: none;
+  border: none;
+  margin: 3px;
+  padding: 0px 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
 .drag-container .drag-handle {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
   position: absolute;
   top: 0px;
   left: 0px;
   right: 0px;
   height: 17px;
   margin: 3px;
-  background-color: rgba(158, 158, 158, 0.25);
+  margin-right: 20px;
+  background-color: rgba(80, 80, 80, 0.8);
+  color: #c8c8c8;
+  padding-left: 10px;
+  line-height: 18px;
 }
 .drag-container .resize-handle {
   position: absolute;
@@ -563,5 +746,4 @@ body {
   right: 0px;
   margin: 3px;
   overflow: auto;
-  resize: both;
 }
