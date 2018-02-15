@@ -1,0 +1,29 @@
+-- wtf even is this one
+-- noisetex: img
+-- tex_ratio: {love.graphics.getWidth() / img:getWidth(), love.graphics.getHeight() / img:getHeight()}
+EffectManager.new{
+	name = 'filmgrain',
+	params = {
+		opacity = .3,
+		grainsize = 1,
+		noise = 0,
+		--noisetex = nil,
+		tex_ratio = 0
+	},
+	shader = [[
+		extern number opacity;
+		extern number grainsize;
+		extern number noise;
+		// extern Image noisetex;
+		extern vec2 tex_ratio;
+
+		float rand(vec2 co, Image tex)
+		{
+			return Texel(tex, mod(co * tex_ratio / vec2(grainsize), vec2(1.0))).r;
+		}
+		vec4 effect(vec4 color, Image texture, vec2 tc, vec2 _)
+		{
+			return color * Texel(texture, tc) * mix(1.0, rand(tc+vec2(noise), texture), opacity);
+		}
+	]]	
+}

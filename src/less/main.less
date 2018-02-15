@@ -9,7 +9,7 @@
 
 * {
 	font-family: ProggySquare;
-	font-size: 16px;
+	font-size: 14px;
 	-webkit-font-smoothing: antialiased;
 }
 
@@ -85,18 +85,35 @@ body {
 
 	width: 100%;
 	height: 100%;
-	background-color: #212121;
+	background-color: transparent;
 	overflow: hidden;
 	position: relative;
 }
 
 .drag-container {
+
 	background-color: transparent;
 	position: absolute;
 	top: 0px;
 	left: 0px;
+	border-radius: 4px;
+	transition: background-color ease-in-out 0.2s;
+
+	* {
+	    transition: opacity ease-in-out 0.2s;
+	}
+
+	&.focused {
+		background-color: rgba(97,97,97 ,.7);
+	}
+
+	&:hover {
+		background-color: rgba(97,97,97 ,.7);
+	}
 
 	&.collapsed {
+		max-height: 24px;
+
 		.asset-list {
 			display: none;
 		}
@@ -112,13 +129,22 @@ body {
 		width: 18px;
 		height: 18px;
 		background: transparent;
-		color: @ide-green;
+		color: rgba(255,255,255,0.5);
 		outline: none;
 		border: none;
 		margin: 3px;
-	    padding: 0px 4px;
+	    padding: 0px;
 	    font-size: 16px;
 	    cursor: pointer;
+	    opacity: 0;
+
+	    &:hover {
+	    	color: @ide-green;;
+	    }
+	}
+
+	&:hover > .btn-close {
+	    opacity: 1;
 	}
 
 	.btn-menu {
@@ -128,13 +154,22 @@ body {
 	    width: 18px;
 	    height: 18px;
 	    background: transparent;
+		color: rgba(255,255,255,0.5);
 	    outline: none;
 	    border: none;
 	    margin: 3px;
 	    padding: 0px 4px;
 	    font-size: 16px;
 	    cursor: pointer;
-	    color: white;
+	    opacity: 0;
+	}
+
+	&:hover > .btn-menu {
+	    opacity: 1;
+	}
+
+	&.focused > .btn-menu {
+		opacity: 1;
 	}
 
 	.drag-handle {
@@ -145,10 +180,11 @@ body {
 		height: 17px;
 	    margin: 3px;
 	    margin-right: 20px;
-	    background-color: rgba(80,80,80,0.8);
+	    background-color: transparent;
 	    color: rgba(200, 200, 200, 1);
 	    padding-left: 26px;
 	    line-height: 18px;
+	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 	}
 
 	.resize-handle {
@@ -158,6 +194,10 @@ body {
 		width: 20px;
 		height: 20px;
 		z-index: 1000;
+	}
+
+	&.collapsed > .resize-handle {
+		display: none;
 	}
 
 	.content {
@@ -208,4 +248,44 @@ body {
 		    }
 		}
 	}
+}
+
+#search-container {
+	position: absolute;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    height: 34px;
+    z-index: 100;
+
+    #search-input {
+	    height: 100%;
+	    padding: 0px 15px;
+	    margin: 0px;
+	    border: none;
+	    outline: none;
+	    transition: all ease-in-out 0.2s;
+	    background: rgba(0,0,0,0);
+	    color: @search-text-focus;
+
+	    &:focus, &:hover {
+	    	background: rgba(0, 0, 0, 0.2);
+	    }
+    }
+
+    #search-results {
+    	position: absolute;
+    	bottom: 100%;
+
+    	.result {
+    		background-color: fade(@window-background, 80%);
+    		color: @search-text-focus;
+    		padding: 2px 15px;
+    		transition: all ease-in-out 0.2s;
+
+    		&.focused, &:hover {
+    			background-color: darken(@window-background, 50%);
+    		}
+    	}
+    }
 }

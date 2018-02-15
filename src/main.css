@@ -520,13 +520,16 @@
   box-sizing: border-box;
   line-height: 14px;
 }
+.content[data-type="MapEditor"] {
+  overflow: hidden !important;
+}
 @font-face {
   font-family: ProggySquare;
   src: url('includes/ProggySquare.ttf') format('truetype');
 }
 * {
   font-family: ProggySquare;
-  font-size: 16px;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
 html,
@@ -629,7 +632,7 @@ body {
   -webkit-app-region: no-drag;
   width: 100%;
   height: 100%;
-  background-color: #212121;
+  background-color: transparent;
   overflow: hidden;
   position: relative;
 }
@@ -638,6 +641,20 @@ body {
   position: absolute;
   top: 0px;
   left: 0px;
+  border-radius: 4px;
+  transition: background-color ease-in-out 0.2s;
+}
+.drag-container * {
+  transition: opacity ease-in-out 0.2s;
+}
+.drag-container.focused {
+  background-color: rgba(97, 97, 97, 0.7);
+}
+.drag-container:hover {
+  background-color: rgba(97, 97, 97, 0.7);
+}
+.drag-container.collapsed {
+  max-height: 24px;
 }
 .drag-container.collapsed .asset-list {
   display: none;
@@ -652,13 +669,20 @@ body {
   width: 18px;
   height: 18px;
   background: transparent;
-  color: #64DD17;
+  color: rgba(255, 255, 255, 0.5);
   outline: none;
   border: none;
   margin: 3px;
-  padding: 0px 4px;
+  padding: 0px;
   font-size: 16px;
   cursor: pointer;
+  opacity: 0;
+}
+.drag-container .btn-close:hover {
+  color: #64DD17;
+}
+.drag-container:hover > .btn-close {
+  opacity: 1;
 }
 .drag-container .btn-menu {
   position: absolute;
@@ -667,13 +691,20 @@ body {
   width: 18px;
   height: 18px;
   background: transparent;
+  color: rgba(255, 255, 255, 0.5);
   outline: none;
   border: none;
   margin: 3px;
   padding: 0px 4px;
   font-size: 16px;
   cursor: pointer;
-  color: white;
+  opacity: 0;
+}
+.drag-container:hover > .btn-menu {
+  opacity: 1;
+}
+.drag-container.focused > .btn-menu {
+  opacity: 1;
 }
 .drag-container .drag-handle {
   -webkit-touch-callout: none;
@@ -696,10 +727,11 @@ body {
   height: 17px;
   margin: 3px;
   margin-right: 20px;
-  background-color: rgba(80, 80, 80, 0.8);
+  background-color: transparent;
   color: #c8c8c8;
   padding-left: 26px;
   line-height: 18px;
+  text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 }
 .drag-container .resize-handle {
   position: absolute;
@@ -708,6 +740,9 @@ body {
   width: 20px;
   height: 20px;
   z-index: 1000;
+}
+.drag-container.collapsed > .resize-handle {
+  display: none;
 }
 .drag-container .content {
   position: absolute;
@@ -750,4 +785,40 @@ body {
 }
 .drag-container .asset-list .asset:hover {
   background-color: rgba(0, 0, 0, 0.7);
+}
+#search-container {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  right: 5px;
+  height: 34px;
+  z-index: 100;
+}
+#search-container #search-input {
+  height: 100%;
+  padding: 0px 15px;
+  margin: 0px;
+  border: none;
+  outline: none;
+  transition: all ease-in-out 0.2s;
+  background: rgba(0, 0, 0, 0);
+  color: #f0f0f0;
+}
+#search-container #search-input:focus,
+#search-container #search-input:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+#search-container #search-results {
+  position: absolute;
+  bottom: 100%;
+}
+#search-container #search-results .result {
+  background-color: rgba(66, 66, 66, 0.8);
+  color: #f0f0f0;
+  padding: 2px 15px;
+  transition: all ease-in-out 0.2s;
+}
+#search-container #search-results .result.focused,
+#search-container #search-results .result:hover {
+  background-color: #000000;
 }

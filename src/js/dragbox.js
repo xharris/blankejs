@@ -1,3 +1,5 @@
+var last_box = null;
+
 class DragBox {
 	constructor (content_type) {
 		this.guid = guid();
@@ -10,10 +12,13 @@ class DragBox {
 			// reset z index of others
 			app.getElements('.drag-container').forEach(function(e){
 				e.style.zIndex = 10;
+				e.classList.remove('focused');
 			});
 			// bring this one to top
 			this.style.zIndex = 15;
+			this.classList.add('focused');
 		});
+		this.drag_container.click();
 
 		this.drag_handle = document.createElement("div");
 		this.drag_handle.classList.add("drag-handle");
@@ -46,59 +51,97 @@ class DragBox {
 
 		this.drag_container.appendChild(this.drag_content);
 
-		var x = 0, y = 0;
+		this.x = 0;
+		this.y = 0;
+		if (last_box) {
+			this.x = last_box.x + 20;
+			this.y = last_box.y + 20;
+		}
+		
+		last_box = this;
 
+		this.setupDrag();
+		this.setupResize();
+
+	    // translate the element
+	    this.move(this.x, this.y);
+	}
+
+	setupResize () {
+		var this_ref = this;
 		interact('#'+this.drag_container.id)
-			.draggable({
-				allowFrom: '#drag-handle-'+this.guid,
-				inertia: false,
-				restrict: {
-					restriction: "parent",
-					endOnly: true,
-					elementRect: {top:0, left:0, bottom:1, right:1}
-				},
-				onmove: function(event) {
-				    var target = event.target,
-			        // keep the dragged position in the data-x/data-y attributes
-			        x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
-			        y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-				    // translate the element
-				    target.style.webkitTransform =
-				    target.style.transform =
-				      'translate(' + x + 'px, ' + y + 'px)';
-
-				    // update the posiion attributes
-				    target.setAttribute('data-x', x);
-				    target.setAttribute('data-y', y);
-				}
-			})
 			.resizable({
 				allowFrom: '#resize-'+this.guid,
-				edges: {left:false, right:true, bottom:true, top:false},
+				edges: {right:true, bottom:true, left:false, top:false},
 				restictEdges: {
 					outer: 'parent',
 					endOnly: true
 				}
 			})
 			.on('resizemove', function (event) {
-			    var target = event.target,
-			        x = (parseFloat(target.getAttribute('data-x')) || 0),
-			        y = (parseFloat(target.getAttribute('data-y')) || 0);
+			    var target = event.target;
+		        this_ref.x = (parseFloat(target.getAttribute('data-x')) || 0);
+		        this_ref.y = (parseFloat(target.getAttribute('data-y')) || 0);
 
 			    // update the element's style
 			    target.style.width  = event.rect.width + 'px';
 			    target.style.height = event.rect.height + 'px';
 
 			    // translate when resizing from top or left edges
-			    x += event.deltaRect.left;
-			    y += event.deltaRect.top;
+			    this_ref.x += event.deltaRect.left;
+			    this_ref.y += event.deltaRect.top;
 
 			    target.style.webkitTransform = target.style.transform =
-			        'translate(' + x + 'px,' + y + 'px)';
+			        'translate(' + this_ref.x + 'px,' + this_ref.y + 'px)';
 
-			    target.setAttribute('data-x', x);
-			    target.setAttribute('data-y', y);
+			    target.setAttribute('data-x', this_ref.x);
+			    target.setAttribute('data-y', this_ref.y);
+
+				this_ref.onResize(this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight);
+			});
+	}
+
+	move (x, y) {
+        // keep the dragged position in the data-x/data-y attributes
+        this.x = x;
+        this.y = y;
+
+		// translate the element
+	    this.drag_container.style.webkitTransform =
+	    this.drag_container.style.transform =
+	      'translate(' + this.x + 'px, ' + this.y + 'px)';
+
+	    // update the posiion attributes
+	    this.drag_container.setAttribute('data-x', this.x);
+	    this.drag_container.setAttribute('data-y', this.y);
+	}
+
+	setupDrag () {
+		var this_ref = this;
+		interact('#'+this.drag_container.id)
+			.draggable({
+				ignoreFrom: '#content-'+this.guid,
+				inertia: true,
+				restrict: {
+					restriction: "parent",
+					endOnly: true,
+					elementRect: {top:0, left:0, bottom:1, right:1}
+				},
+				onmove: function(event) {
+				    var target = event.target;
+			        // keep the dragged position in the data-x/data-y attributes
+			        this_ref.x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+			        this_ref.y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+				    // translate the element
+				    target.style.webkitTransform =
+				    target.style.transform =
+				      'translate(' + this_ref.x + 'px, ' + this_ref.y + 'px)';
+
+				    // update the posiion attributes
+				    target.setAttribute('data-x', this_ref.x);
+				    target.setAttribute('data-y', this_ref.y);
+				}
 			});
 	}
 
@@ -108,10 +151,20 @@ class DragBox {
 
 	toggleVisible () {
 		this.drag_container.classList.toggle("collapsed");
+		if (this.drag_container.classList.contains('collapsed')) {
+			interact('#'+this.drag_container.id).unset();
+			this.setupDrag();
+		} else {
+			this.setupResize();
+		}
 	}
 
 	appendTo (element) {
 		element.appendChild(this.drag_container);
+	}
+
+	onResize (w, h) {
+
 	}
 
 	set width(w) {

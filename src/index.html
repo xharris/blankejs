@@ -17,11 +17,14 @@
 		<link rel="stylesheet" href="includes/codemirror/theme/material.css">
 		<script src="includes/codemirror/mode/javascript/javascript.js"></script>
 
+		<!-- PixiJS -->
+		<script src="includes/pixi.min.js"></script>
+
 		<script src="js/dragbox.js"></script>
 		<script src="js/editor.js"></script>
 
 		<script src="js/code.js"></script>
-		<script src="js/gamewindow.js"></script>
+		<script src="js/mapeditor.js"></script>
 		<script src="main.js"></script>
 
 	</head>
@@ -36,10 +39,16 @@
 		<div id="menu"></div>
 
 		<div class="tool-container">
+			<button id="btn-play" onclick="app.play()"><i class="mdi mdi-play"></i></button>
 			<button id="btn-code" onclick="new Code(app)"><i class="mdi mdi-code-braces"></i></button>
 		</div>
 
 		<div id="workspace"></div>
+
+		<div id="search-container">
+			<input id="search-input" type="text" placeholder="Search" tabindex="-1"/>
+			<div id="search-results"></div>
+		</div>
 
 	</body>
 </html>

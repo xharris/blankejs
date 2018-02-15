@@ -4,7 +4,7 @@ class Editor {
 		this.app = app;
 
 		// create drag box
-		this.dragbox = new DragBox('Code');
+		this.dragbox = new DragBox(this.constructor.name);
 		this.dragbox.appendTo(workspace);
 		this.dragbox.width = 300;
 		this.dragbox.height = 250;
@@ -22,8 +22,8 @@ class Editor {
 
 		// menu button click
 		var this_ref = this;
-		this.dragbox.btn_menu.onclick = function() {
-			this_ref.toggleMenu();
+		this.dragbox.btn_menu.onclick = function(e) {
+			this_ref.onMenuClick(e);
 		}
 
 		// watch for file changes
@@ -31,6 +31,27 @@ class Editor {
 		document.addEventListener('fileChange', function(e){
 			if (this_ref.onFileChange) this_ref.onFileChange(e.detail.type, e.detail.file);
 		});
+
+	}
+
+	close() {
+		this.dragbox.close();
+	}
+
+	addCallback(cb_name, new_func) {
+		this.dragbox[cb_name] = new_func;
+	}
+
+	get width() {
+		return this.dragbox.drag_content.offsetWidth;
+	}
+
+	get height() {
+		return this.dragbox.drag_content.offsetHeight;
+	}
+
+	hideMenuButton () {
+		this.dragbox.btn_menu.style.display = 'none';
 	}
 
 	appendChild (el) {
@@ -39,6 +60,10 @@ class Editor {
 
 	setTitle (val) {
 		this.dragbox.setTitle(val);
+	}
+
+	onMenuClick (e) {
+		this.toggleMenu();
 	}
 
 	toggleMenu () {

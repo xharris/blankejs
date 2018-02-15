@@ -78,11 +78,21 @@ class GameWindow {
 				s_scripts += '\t\t<script src="scripts/'+s+'"></script>\n';
 		});
 
+		// get included scripts
 		var s_index = nwFS.readFileSync(this.app.project_path+"/index.html", 'utf-8');
 		s_index = s_index.replace(/(<!-- start SCRIPTS -->)(.*\s)+(\s*<!-- end SCRIPTS -->)/g,
 			"<!-- start SCRIPTS -->\n"+s_scripts+"\t\t<!-- end SCRIPTS -->"
 		);
 		nwFS.writeFileSync(this.app.project_path+"/index.html", s_index);
+
+		// write asset loading function
+		var s_assets = 'function _load_assets() {\n\tPIXI.loader.add([\n';
+		var asset_list = nwFS.readdirSync(this.app.project_path+'/assets');
+		asset_list.forEach(function(a){
+			s_assets += '\t\t"assets/'+a+'",\n';
+		});
+		s_assets += '\t]);\n}';
+		nwFS.writeFileSync(this.app.project_path+"/assets.js", s_assets);
 
 		// refresh game window
 		this.game_iframe.onload = function() {

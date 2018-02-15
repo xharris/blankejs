@@ -1,7 +1,9 @@
 class Code extends Editor {
 	constructor (...args) {
 		super(...args);
+		
 		this.file = '';
+		this.script_folder = "/scripts";
 
 		// create codemirror editor
 		this.edit_box = document.createElement("textarea");
@@ -26,11 +28,18 @@ class Code extends Editor {
 		this.codemirror.on('change', function(){
 			this_ref.codemirror.refresh();
 		});
+	}
 
-		this.refreshScriptList();
+	onMenuClick (e) {
+		var this_ref = this;
+		app.contextMenu(e.x, e.y, [
+			{label:'rename', click:function(){this_ref.renameModal()}},
+			{label:'delete', click:function(){this_ref.deleteModal()}}
+		]);
 	}
 
 	edit (file_path) {
+		console.log(file_path)
 		var this_ref = this;
 
 		this.file = file_path;
@@ -47,21 +56,21 @@ class Code extends Editor {
 		nwFS.writeFileSync(this.file, this.codemirror.getValue());
 	}
 
-	delete (name) {
-		nwFS.unlink(nwPATH.dirname(this.file)+"/"+name);
+	delete (path) {
+		nwFS.unlink(path);
 
-		if (nwPATH.basename(this.file) == name) {
-			this.file == '';
-			this.refreshScriptList();
+		if (this.file == path) {
+			this.close();
 		}
 	}
 
-	deleteModal (name) {
-		if (name == 'game.js') {
+	deleteModal () {
+		var name = this.file;
+		if (name.includes('main.lua')) {
 			blanke.showModal(
 				"You cannot delete \'"+name+"\'",
 			{
-				"yes": function() {}
+				"oops": function() {}
 			});
 		} else {
 			var this_ref = this;
@@ -74,18 +83,25 @@ class Code extends Editor {
 		}
 	}
 
-	rename (old_name, new_name) {
-		nwFS.rename(nwPATH.dirname(this.file)+"/"+old_name, nwPATH.dirname(this.file)+"/"+new_name);
-		this.file = nwPATH.dirname(this.file)+"/"+new_name;
-		this.setTitle(nwPATH.basename(this.file));
+	rename (old_path, new_name) {
+		var this_ref = this;
+		nwFS.readFile(nwPATH.dirname(this.file)+"/"+new_name, function(err, data){
+			if (err) {
+				nwFS.rename(old_path, nwPATH.dirname(this_ref.file)+"/"+new_name);
+				this_ref.file = nwPATH.dirname(this_ref.file)+"/"+new_name;
+				this_ref.setTitle(nwPATH.basename(this_ref.file));
+			}
+		});
 	}
 
-	renameModal (filename) {
-		if (nwPATH.basename(filename) == 'game.js') {
+	renameModal () {
+		var filename = this.file;
+
+		if (nwPATH.basename(filename) == 'main.lua') {
 			blanke.showModal(
 				"You cannot rename \'"+nwPATH.basename(filename)+"\'",
 			{
-				"yes": function() {}
+				"oh yea I forgot": function() {}
 			});
 		} else {
 			var this_ref = this;
@@ -93,7 +109,7 @@ class Code extends Editor {
 				"<label>new name: </label>"+
 				"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
 			{
-				"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".js"); },
+				"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".lua"); },
 				"no": function() {}
 			});
 		}
@@ -103,39 +119,60 @@ class Code extends Editor {
 		this.refreshScriptList();
 	}
 
-	onAssetSelect (value) {	
-		this.save();
-		this.edit(app.project_path+"/scripts/"+value);
-	}
-
 	refreshScriptList () {
-		var this_ref = this;
-		var files = nwFS.readdirSync(app.project_path+"/scripts");
-		this.setAssetList(files, [
-			{label: 'rename'},
-			{label: 'delete'},
-			{type: 'separator'},
-			{label: 'add a script'}
-		], function(label, asset) {
-			if (label == 'rename') 
-				this_ref.renameModal(asset);
-			if (label == 'delete') 
-				this_ref.deleteModal(asset);
-			if (label == 'add a script')
-				this_ref.addScript();
-		});
-		if (this.file == '') {
-			this.edit(app.project_path+"/scripts/"+files[0]);
-		}
-	}
-
-	addScript () {
-		// create the file
-		var script_count = nwFS.readdirSync(this.app.project_path+"/scripts").length;
-		var script_path = this.app.project_path+"/scripts/script"+script_count.toString()+".js";
-		nwFS.writeFileSync(script_path, "// code");
-		app.refreshScriptList();
-		// edit it
-		this.edit(script_path);
+		this.app.removeSearchGroup("Code");
+		addScripts(this.app.project_path);
 	}
 }
+
+document.addEventListener("ideReady", function(e){
+	app.addSearchKey({
+		key: 'Create script',
+		onSelect: function() {
+			var script_dir = nwPATH.join(app.project_path,'scripts');
+			nwFS.stat(script_dir, function(err, stat) {
+				if (!stat.isDirectory()) nwFS.mkdirSync(script_dir);
+				// overwrite the file if it exists. fuk it!!
+				nwFS.readdir(script_dir, function(err, files){
+					nwFS.writeFile(nwPATH.join(script_dir, 'script'+files.length+'.lua'),"\
+-- create an Entity: BlankE.addClassType(\"Player\", \"Entity\");\n\n\
+-- create a State: BlankE.addClassType(\"houseState\", \"State\");\
+					");
+				});
+				// edit the new script
+				(new Code(app)).edit(nwPATH.join(script_dir, 'script'+files.length+'.lua'));
+			});
+		},
+		tags: ['new']
+	});
+});
+
+function addScripts(folder_path) {
+	nwFS.readdir(folder_path, function(err, files) {
+		if (err) return;
+		files.forEach(function(file){
+			var full_path = nwPATH.join(folder_path, file);
+			nwFS.stat(full_path, function(err, file_stat){		
+				// iterate through directory			
+				if (file_stat.isDirectory())
+					addScripts(full_path);
+
+				// add file to search pool
+				else if (file.endsWith('.lua')) {
+					app.addSearchKey({
+						key: file,
+						onSelect: function(file_path){(new Code(app)).edit(file_path);},
+						tags: ['script'],
+						args: [full_path],
+						group: 'Code'
+					});
+				}
+			});
+		});
+	});
+}
+
+document.addEventListener("openProject", function(e){
+	var proj_path = e.detail.path;
+	addScripts(proj_path);
+});

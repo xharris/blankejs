@@ -1,0 +1,22 @@
+-- beatiful inner shadows around border
+EffectManager.new{
+	name = 'vignette',
+	params = {
+		radius = 1,
+		softness = .45,
+		opacity = .5,
+		aspect = love.graphics.getWidth() / love.graphics.getHeight(),
+	},
+	shader = [[
+		extern number radius;
+		extern number softness;
+		extern number opacity;
+		extern number aspect;
+		vec4 effect(vec4 color, Image texture, vec2 tc, vec2 _)
+		{
+			color = Texel(texture, tc);
+			number v = smoothstep(radius, radius-softness, length((tc - vec2(0.5f)) * aspect));
+			return mix(color, color * v, opacity);
+		}	
+	]]
+}
