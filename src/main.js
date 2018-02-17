@@ -205,4 +205,6 @@ nwWIN.on('loaded', function() {
 	dispatchEvent("ideReady");
 
 	app.openProject("src/projects/penguin");
+
+	//(new MapEditor()).load('');
 });

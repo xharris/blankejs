@@ -71,16 +71,33 @@
 	overflow: hidden !important;
 
 	.sidebar {
-		width: 76px;
 	    position: absolute;
 	    right: 0px;
 	    top: 0px;
 	    bottom: 0px;
 	    pointer-events: none;
 	    background-color: rgba(207,216,220 ,0.25);
+	    transition: all ease-in-out 0.2s;
+
+	    &:hover {
+	    	width: 100px;  	
+	    }
+
+	    &:not(:hover) {
+			width: 50px;
+
+			.btn-add-object, .btn-add-layer {
+	    		opacity: 0;
+	    	}
+
+	    	.input-letter, .input-layer {
+	    		width: 100%;
+	    	}
+	    }
 
 	    * {
 	    	pointer-events: all;
+	   	 	transition: all ease-in-out 0.2s;
 	    }
 
 	    .object-container, .layer-container {
@@ -100,10 +117,10 @@
 	    .input-letter {
 	    	background-color: rgba(207,216,220 ,1);
 		    position: absolute;
-		    right: 16px;
-		    width: 50px;
+		    width: calc(~'100% - 18px');
 		    font-size: 32px;
 		    padding: 4px 5px;
+		    box-sizing: border-box;
 		}
 
 		.select-letter {
@@ -168,12 +185,12 @@
 	    .input-layer {
 	    	background-color: #cfd8dc;
 		    position: absolute;
-		    right: 16px;
-		    width: 50px;
+		    width: calc(~'100% - 18px');
 		    font-size: 13px;
 		    height: 30px;
 		    padding-top: 0px;
     		padding-bottom: 0px;
+    		box-sizing: border-box;
 		}
 
 		.select-layer {

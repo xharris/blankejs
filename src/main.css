@@ -524,18 +524,33 @@
   overflow: hidden !important;
 }
 .content[data-type="MapEditor"] .sidebar {
-  width: 76px;
   position: absolute;
   right: 0px;
   top: 0px;
   bottom: 0px;
   pointer-events: none;
   background-color: rgba(207, 216, 220, 0.25);
+  transition: all ease-in-out 0.2s;
   /* OBJECT */
   /* LAYER */
 }
+.content[data-type="MapEditor"] .sidebar:hover {
+  width: 100px;
+}
+.content[data-type="MapEditor"] .sidebar:not(:hover) {
+  width: 50px;
+}
+.content[data-type="MapEditor"] .sidebar:not(:hover) .btn-add-object,
+.content[data-type="MapEditor"] .sidebar:not(:hover) .btn-add-layer {
+  opacity: 0;
+}
+.content[data-type="MapEditor"] .sidebar:not(:hover) .input-letter,
+.content[data-type="MapEditor"] .sidebar:not(:hover) .input-layer {
+  width: 100%;
+}
 .content[data-type="MapEditor"] .sidebar * {
   pointer-events: all;
+  transition: all ease-in-out 0.2s;
 }
 .content[data-type="MapEditor"] .sidebar .object-container,
 .content[data-type="MapEditor"] .sidebar .layer-container {
@@ -553,10 +568,10 @@
 .content[data-type="MapEditor"] .sidebar .input-letter {
   background-color: #cfd8dc;
   position: absolute;
-  right: 16px;
-  width: 50px;
+  width: calc(100% - 18px);
   font-size: 32px;
   padding: 4px 5px;
+  box-sizing: border-box;
 }
 .content[data-type="MapEditor"] .sidebar .select-letter {
   background-color: #b0bec5;
@@ -613,12 +628,12 @@
 .content[data-type="MapEditor"] .sidebar .input-layer {
   background-color: #cfd8dc;
   position: absolute;
-  right: 16px;
-  width: 50px;
+  width: calc(100% - 18px);
   font-size: 13px;
   height: 30px;
   padding-top: 0px;
   padding-bottom: 0px;
+  box-sizing: border-box;
 }
 .content[data-type="MapEditor"] .sidebar .select-layer {
   background-color: #b0bec5;

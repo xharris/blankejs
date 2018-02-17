@@ -3,6 +3,9 @@ class MapEditor extends Editor {
 		super(...args);
 
 		var this_ref = this;
+
+		this.file = '';
+		this.map_folder = '/maps';
 		
 		this.grid_opacity = 0.1;
 		this.snap_on = true;
@@ -95,6 +98,7 @@ class MapEditor extends Editor {
 				else {
 					this_ref.curr_object.name = e.target.value;
 					this_ref.refreshObjectList();
+					this_ref.export();
 				}
 			}
 		});
@@ -107,6 +111,7 @@ class MapEditor extends Editor {
 				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
 					obj.style.fill = this_ref.curr_object.color;
 				});
+				this_ref.export();
 			}
 		});
 
@@ -115,6 +120,7 @@ class MapEditor extends Editor {
 		this.el_btn_add_object.innerHTML = "+";
 		this.el_btn_add_object.addEventListener('click', function(e){
 			this_ref.addObject();
+			this_ref.export();
 		});
 
 		// layer name
@@ -128,6 +134,7 @@ class MapEditor extends Editor {
 				else {
 					this_ref.curr_layer.name = e.target.value;
 					this_ref.refreshLayerList();
+					this_ref.export();
 				}
 			}
 		});
@@ -140,6 +147,7 @@ class MapEditor extends Editor {
 		this.el_btn_add_layer.innerHTML = "+";
 		this.el_btn_add_layer.addEventListener('click', function(e){
 			this_ref.addLayer();
+			this_ref.export();
 		});
 
 		// layer snap
@@ -162,7 +170,9 @@ class MapEditor extends Editor {
 					obj.x = obj.x + (this_ref.curr_layer.snap[0]/2) - (obj.width/2);
 				}
 			});
+			
 			this_ref.drawGrid();
+			this_ref.export();
 		});
 		this.el_snap_y.addEventListener('input', function(e){
 			var new_val = parseInt(e.target.value);
@@ -185,6 +195,7 @@ class MapEditor extends Editor {
 			});
 			
 			this_ref.drawGrid();
+			this_ref.export();
 		});
 
 		this.el_snap_container.appendChild(this.el_snap_label);
@@ -206,9 +217,6 @@ class MapEditor extends Editor {
 		this.el_sidebar.appendChild(this.el_object_container);
 		this.el_sidebar.appendChild(this.el_layer_container);
 		this.appendChild(this.el_sidebar);
-
-		this.addLayer();
-		this.addObject();
 
 		function dragStart() {
 			if (!this_ref.dragging && this_ref.can_drag) {
@@ -271,6 +279,10 @@ class MapEditor extends Editor {
 			if (e.button == 1) {
 				dragStop();
 			}
+
+			if (e.button == 0) {
+				this_ref.export();
+			}
 		});
 		this.pixi.stage.pointermove = function(e) {
 			if (this_ref.dragging) {
@@ -307,53 +319,57 @@ class MapEditor extends Editor {
 	}
 
 	drawGrid () {	
-		var snapx = this.curr_layer.snap[0];
-		var snapy = this.curr_layer.snap[1];
-		var stage_width =  this.width;
-		var stage_height = this.height;
+		if (this.curr_layer) {
+			var snapx = this.curr_layer.snap[0];
+			var snapy = this.curr_layer.snap[1];
+			var stage_width =  this.width;
+			var stage_height = this.height;
 
-		if (!this.grid_graphics) {
-			this.grid_graphics = new PIXI.Graphics();
-			this.grid_container.addChild(this.grid_graphics);
-		}
+			if (!this.grid_graphics) {
+				this.grid_graphics = new PIXI.Graphics();
+				this.grid_container.addChild(this.grid_graphics);
+			}
 
-		this.grid_graphics.clear();
-		this.grid_graphics.lineStyle(1, 0x000000, this.grid_opacity);
-		// vertical lines
-		for (var x = -snapx; x < stage_width + snapx; x += snapx) {
-			this.grid_graphics.moveTo(x, -snapy);
-			this.grid_graphics.lineTo(x, stage_height + snapy);
-		}
-		// horizontal lines
-		for (var y = -snapy; y < stage_height + snapy; y += snapy) {
-			this.grid_graphics.moveTo(-snapx, y);
-			this.grid_graphics.lineTo(stage_width + snapx, y);
-		}
+			this.grid_graphics.clear();
+			this.grid_graphics.lineStyle(1, 0x000000, this.grid_opacity);
+			// vertical lines
+			for (var x = -snapx; x < stage_width + snapx; x += snapx) {
+				this.grid_graphics.moveTo(x, -snapy);
+				this.grid_graphics.lineTo(x, stage_height + snapy);
+			}
+			// horizontal lines
+			for (var y = -snapy; y < stage_height + snapy; y += snapy) {
+				this.grid_graphics.moveTo(-snapx, y);
+				this.grid_graphics.lineTo(stage_width + snapx, y);
+			}
 
-		this.drawOrigin();
+			this.drawOrigin();
+		}
 	}
 
 	drawOrigin () {
-		var snapx = this.curr_layer.snap[0];
-		var snapy = this.curr_layer.snap[1];
-		var stage_width =  this.width;
-		var stage_height = this.height;
+		if (this.curr_layer) {
+			var snapx = this.curr_layer.snap[0];
+			var snapy = this.curr_layer.snap[1];
+			var stage_width =  this.width;
+			var stage_height = this.height;
 
-		if (!this.origin_graphics) {
-			this.origin_graphics = new PIXI.Graphics();
-			this.overlay_container.addChild(this.origin_graphics);
+			if (!this.origin_graphics) {
+				this.origin_graphics = new PIXI.Graphics();
+				this.overlay_container.addChild(this.origin_graphics);
+			}
+
+			// origin line
+			this.origin_graphics.clear()
+			this.origin_graphics.lineStyle(3, 0x000000, this.grid_opacity);
+
+			// horizontal
+			this.origin_graphics.moveTo(0, this.camera[1])
+			this.origin_graphics.lineTo(stage_width, this.camera[1]);
+			// vertical
+			this.origin_graphics.moveTo(this.camera[0], 0);
+			this.origin_graphics.lineTo(this.camera[0], stage_height);
 		}
-
-		// origin line
-		this.origin_graphics.clear()
-		this.origin_graphics.lineStyle(3, 0x000000, this.grid_opacity);
-
-		// horizontal
-		this.origin_graphics.moveTo(0, this.camera[1])
-		this.origin_graphics.lineTo(stage_width, this.camera[1]);
-		// vertical
-		this.origin_graphics.moveTo(this.camera[0], 0);
-		this.origin_graphics.lineTo(this.camera[0], stage_height);
 	}
 
 	// refreshes combo box
@@ -388,33 +404,39 @@ class MapEditor extends Editor {
 		}
 	}
 
-	placeObject (x, y) {
+	placeObject (x, y, from_load_snapped) {
 		var this_ref = this;
+		var curr_object = this.curr_object;
 
-		if (this.curr_object) {
-			var new_text = new PIXI.Text(this.curr_object.char,{
+		if (curr_object && this.curr_layer) {
+			var new_text = new PIXI.Text(curr_object.char,{
 				fontFamily: 'ProggySquare', 
-				fill: this.curr_object.color,
+				fill: curr_object.color,
 				align: 'center',
 				fontSize: this.curr_layer.snap[1]
 			});
 
-			if (this.snap_on) {
+			new_text.snapped = false;
+			if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
 				x -= x % this.curr_layer.snap[0];
 				y -= y % this.curr_layer.snap[1];
 				new_text.snapped = true;
 			}
 
-			var text_key = Math.floor(x / this.curr_layer.snap[0]).toString()+','+Math.floor(y / this.curr_layer.snap[1]).toString()+'.'+this.curr_layer.uuid;
-			if (this.curr_object.pixi_texts[text_key]) this.curr_object.pixi_texts[text_key].destroy();
+			var text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+this.curr_layer.uuid;
+			if (curr_object.pixi_texts[text_key]) curr_object.pixi_texts[text_key].destroy();
 			
+			new_text.place_x = x;
+			new_text.place_y = y;
+
 			new_text.grid_x = Math.floor(x / this.curr_layer.snap[0]);
 			new_text.grid_y = Math.floor(y / this.curr_layer.snap[1]);
 
 			new_text.x += x + (this.curr_layer.snap[0]/2) - (new_text.width/2);
 			new_text.y += y + (this.curr_layer.snap[1]/2) - (new_text.height/2);
-			new_text.uuid = this.curr_object.uuid;
+			new_text.uuid = curr_object.uuid;
 			new_text.text_key = text_key;
+			new_text.layer_name = this.curr_layer.name;
 			new_text.layer_uuid = this.curr_layer.uuid;
 
 			new_text.interactive = true;
@@ -422,6 +444,8 @@ class MapEditor extends Editor {
 				if (e.target.layer_uuid === this_ref.curr_layer.uuid) {
 					this_ref.curr_object.pixi_texts[e.target.text_key].destroy();
 					this_ref.curr_object.pixi_texts[e.target.text_key] = null;
+
+					this_ref.export();
 				}
 			});
 			
@@ -430,7 +454,7 @@ class MapEditor extends Editor {
 			new_graph.drawRect(-((this.curr_layer.snap[0]/2) - (new_text.width/2)), -((this.curr_layer.snap[1]/2) - (new_text.height/2)), this.curr_layer.snap[0], this.curr_layer.snap[1]);
 			new_text.addChild(new_graph);
 			
-			this.curr_object.pixi_texts[text_key] = new_text;
+			curr_object.pixi_texts[text_key] = new_text;
 			this.curr_layer.container.addChild(new_text);
 		}
 	}
@@ -473,11 +497,11 @@ class MapEditor extends Editor {
 			name: obj_name,
 			char: possible.charAt(Math.floor(Math.random() * possible.length)),
 			color: "#000000",
-			uuid: guid(),
-			pixi_texts: {}
+			uuid: guid()
 		}
+		info.pixi_texts = {};
 		this.objects.push(info);
-		this.setObject(obj_name);
+		this.setObject(info.name);
 
 		this.refreshObjectList();
 	}
@@ -488,6 +512,7 @@ class MapEditor extends Editor {
 				this.curr_object = this.objects[l];
 				this.el_input_letter.value = this.curr_object.char;
 				this.el_input_name.value = this.curr_object.name;
+				this.el_color_object.value = this.curr_object.color;
 				return;
 			}
 		}	
@@ -505,7 +530,7 @@ class MapEditor extends Editor {
 		info.container = new PIXI.Container();
 		this.map_container.addChild(info.container);
 		this.layers.push(info);
-		this.setLayer(layer_name);
+		this.setLayer(info.name);
 
 		this.refreshLayerList();
 	}
@@ -528,22 +553,131 @@ class MapEditor extends Editor {
 		this.drawGrid();
 	}
 
-	load (filename) {
+	load (file_path) {
+		this.file = file_path;
+		var data = nwFS.readFileSync(file_path, 'utf-8');
 
+		if (data.length > 5) {
+			data = JSON.parse(data);
+
+			// layers
+			for (var l = 0; l < data.layers.length; l++) {
+				this.addLayer(data.layers[l]);
+			}
+
+			// objects
+			for (var o = 0; o < data.objects.length; o++) {
+				var obj = data.objects[o];
+				this.addObject(obj);
+
+				for (var layer_name in obj.coords) {
+					this.setLayer(layer_name);
+					for (var c = 0; c < obj.coords[layer_name].length; c++) {
+						this.placeObject(obj.coords[layer_name][c][0], obj.coords[layer_name][c][1], obj.coords[layer_name][c][2]);
+					}
+				}
+			}
+		}
+
+		this.setTitle(nwPATH.basename(file_path));
 	}
 
 	export () {
+		var export_data = {'objects':[], 'layers':[]};
 
+		// objects
+		for (var o = 0; o < this.objects.length; o++) {
+			var obj = this.objects[o];
+			var exp_obj = {
+				name: obj.name,
+				char: obj.char,
+				color: obj.color,
+				uuid: obj.uuid,
+				coords: {}
+			}
+			for (var t in obj.pixi_texts) { 
+				if (obj.pixi_texts[t]) {
+					if (!exp_obj.coords[obj.pixi_texts[t].layer_name])
+						exp_obj.coords[obj.pixi_texts[t].layer_name] = [];
+					exp_obj.coords[obj.pixi_texts[t].layer_name].push([
+						obj.pixi_texts[t].place_x,
+						obj.pixi_texts[t].place_y,
+						obj.pixi_texts[t].snapped
+					]);
+				}
+			}
+			export_data.objects.push(exp_obj);
+		}
+
+		// layers
+		for (var l = 0; l < this.layers.length; l++) {
+			var layer = this.layers[l];
+			export_data.layers.push({
+				name: layer.name,
+				depth: layer.depth,
+				offset: layer.offset,
+				snap: layer.snap,
+				uuid: layer.uuid
+			})
+		}
+
+		nwFS.writeFileSync(this.file, JSON.stringify(export_data));
 	}
 
 	update (dt) {
 
 	}
+
+	onFileChange (evt_type, file) {
+		this.app.removeSearchGroup("Map");
+		addMaps(this.app.project_path);
+	}
 }
 
 document.addEventListener("ideReady", function(e){
-	/*app.addSearchKey({
+	app.addSearchKey({
 		key: 'Create map',
-		onSelect: func
-	});*/
+		onSelect: function() {
+			var map_dir = nwPATH.join(app.project_path,'maps');
+			// overwrite the file if it exists. fuk it (again)!!
+			nwFS.mkdir(map_dir, function(err){
+				nwFS.readdir(map_dir, function(err, files){
+					nwFS.writeFile(nwPATH.join(map_dir, 'map'+files.length+'.map'),"");
+				
+					// edit the new script
+					(new MapEditor(app)).load(nwPATH.join(map_dir, 'map'+files.length+'.map'));
+				});
+			});	
+		}
+	});
+});
+
+function addMaps(folder_path) {
+	nwFS.readdir(folder_path, function(err, files) {
+		if (err) return;
+		files.forEach(function(file){
+			var full_path = nwPATH.join(folder_path, file);
+			nwFS.stat(full_path, function(err, file_stat){		
+				// iterate through directory			
+				if (file_stat.isDirectory())
+					addMaps(full_path);
+
+				// add file to search pool
+				else if (file.endsWith('.map')) {
+					app.addSearchKey({
+						key: file,
+						onSelect: function(file_path){(new MapEditor(app)).load(file_path);},
+						tags: ['map'],
+						args: [full_path],
+						group: 'Map'
+					});
+				}
+			});
+		});
+	});
+}
+
+document.addEventListener("openProject", function(e){
+	var proj_path = e.detail.path;
+	addMaps(proj_path);
 });

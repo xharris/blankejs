@@ -39,7 +39,6 @@ class Code extends Editor {
 	}
 
 	edit (file_path) {
-		console.log(file_path)
 		var this_ref = this;
 
 		this.file = file_path;
@@ -116,10 +115,6 @@ class Code extends Editor {
 	}
 
 	onFileChange (evt_type, file) {
-		this.refreshScriptList();
-	}
-
-	refreshScriptList () {
 		this.app.removeSearchGroup("Code");
 		addScripts(this.app.project_path);
 	}
@@ -138,9 +133,10 @@ document.addEventListener("ideReady", function(e){
 -- create an Entity: BlankE.addClassType(\"Player\", \"Entity\");\n\n\
 -- create a State: BlankE.addClassType(\"houseState\", \"State\");\
 					");
+
+					// edit the new script
+					(new Code(app)).edit(nwPATH.join(script_dir, 'script'+files.length+'.lua'));
 				});
-				// edit the new script
-				(new Code(app)).edit(nwPATH.join(script_dir, 'script'+files.length+'.lua'));
 			});
 		},
 		tags: ['new']
