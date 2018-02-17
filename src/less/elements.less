@@ -70,4 +70,182 @@
 .content[data-type="MapEditor"] {
 	overflow: hidden !important;
 
+	.sidebar {
+		width: 76px;
+	    position: absolute;
+	    right: 0px;
+	    top: 0px;
+	    bottom: 0px;
+	    pointer-events: none;
+	    background-color: rgba(207,216,220 ,0.25);
+
+	    * {
+	    	pointer-events: all;
+	    }
+
+	    .object-container, .layer-container {
+	    	position: relative;
+	    	width: 100%;
+	    	padding-bottom: 15px;
+	    }
+
+	    /* OBJECT */
+	    .input-letter, .select-letter {
+		    border: none;
+		    outline: none;
+		    padding: 5px;
+		    text-align: center;
+	    }
+
+	    .input-letter {
+	    	background-color: rgba(207,216,220 ,1);
+		    position: absolute;
+		    right: 16px;
+		    width: 50px;
+		    font-size: 32px;
+		    padding: 4px 5px;
+		}
+
+		.select-letter {
+    	    background-color: rgba(176,190,197 ,1);
+		    width: 100%;
+		    height: 30px;
+		    float: right;
+
+		    option:first-child {
+		    	display: none;
+		    }
+		}
+
+		.btn-add-object {
+		    position: absolute;
+		    padding: 0px;
+		    margin: 0px;
+		    border: none;
+		    outline: none;
+		    width: 15px;
+		    height: 15px;
+		    top: 7.5px;
+		    left: -7.5px;
+		    border-radius: 100%;
+		    font-size: 21px;
+		    font-weight: 500;
+		    background-color: rgba(176,190,197 ,1);
+		    transition: all ease-in-out 0.2s;
+
+		    &:hover {	
+			    background-color: rgba(139,195,74,1);
+			    color: white;
+		    }
+		}
+
+		.input-name {
+		    width: 100%;
+		    padding: 6px;
+		    border: 0px;
+		    box-sizing: border-box;
+		    outline: none;
+		    background-color: rgba(255,255,255,0.5);
+		}
+
+		.color-object {
+		    width: 100%;
+		    padding: 0px;
+		    margin: 0px;
+		    border: none;
+		    outline: none;
+		    background-color: transparent;
+		}
+
+		/* LAYER */
+		.input-layer, .select-layer {
+		    border: none;
+		    outline: none;
+		    padding: 5px;
+		    text-align: center;
+	    }
+
+	    .input-layer {
+	    	background-color: #cfd8dc;
+		    position: absolute;
+		    right: 16px;
+		    width: 50px;
+		    font-size: 13px;
+		    height: 30px;
+		    padding-top: 0px;
+    		padding-bottom: 0px;
+		}
+
+		.select-layer {
+    	    background-color: rgba(176,190,197 ,1);
+		    width: 100%;
+		    height: 30px;
+		    float: right;
+
+		    option:first-child {
+		    	display: none;
+		    }
+		}
+
+		.btn-add-layer {
+		    position: absolute;
+		    padding: 0px;
+		    margin: 0px;
+		    border: none;
+		    outline: none;
+		    width: 15px;
+		    height: 15px;
+		    top: 7.5px;
+		    left: -7.5px;
+		    border-radius: 100%;
+		    font-size: 21px;
+		    font-weight: 500;
+		    background-color: rgba(176,190,197 ,1);
+		    padding: 0px;
+		    transition: all ease-in-out 0.2s;
+
+		    &:hover {	
+			    background-color: rgba(139,195,74,1);
+			    color: white;
+		    }
+		}
+
+		.snap-container {
+			display: inline-block;
+   		 	width: 100%;
+
+   		 	.snap-label {
+   		 		margin: 0px;
+			    margin-top: 5px;
+			    text-transform: uppercase;
+   		 	}
+			.snap-sep {
+				margin: 0px;
+				width: 20%;
+				display: inline-block;
+				text-align: center
+   		 	}
+   		 	.snap-x, .snap-y {
+   		 		width: 40%;
+   		 		border: none;
+   		 		outline: none;
+		    	background-color: rgba(255,255,255,0.5);
+		    	padding: 4px;
+		    	box-sizing: border-box;
+
+		    	&::-webkit-outer-spin-button,
+				&::-webkit-inner-spin-button {
+				    /* display: none; <- Crashes Chrome on hover */
+				    -webkit-appearance: none;
+				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+				}
+   		 	}
+   		 	.snap-x {
+   		 		text-align: right;
+   		 	}
+   		 	.snap-y {
+   		 		text-align: left;
+   		 	}
+		}
+	}
 }

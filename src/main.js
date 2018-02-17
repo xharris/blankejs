@@ -21,7 +21,7 @@ var app = {
 
 	createElement: function(el_type, el_class) {
 		var ret_el = document.createElement(el_type);
-		ret_el.classList.add(el_class);
+		if (el_class) ret_el.classList.add(el_class);
 		return ret_el;
 	},
 
@@ -205,5 +205,4 @@ nwWIN.on('loaded', function() {
 	dispatchEvent("ideReady");
 
 	app.openProject("src/projects/penguin");
-	new MapEditor(app);
 });

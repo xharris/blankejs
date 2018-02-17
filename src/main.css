@@ -523,6 +523,171 @@
 .content[data-type="MapEditor"] {
   overflow: hidden !important;
 }
+.content[data-type="MapEditor"] .sidebar {
+  width: 76px;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  pointer-events: none;
+  background-color: rgba(207, 216, 220, 0.25);
+  /* OBJECT */
+  /* LAYER */
+}
+.content[data-type="MapEditor"] .sidebar * {
+  pointer-events: all;
+}
+.content[data-type="MapEditor"] .sidebar .object-container,
+.content[data-type="MapEditor"] .sidebar .layer-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 15px;
+}
+.content[data-type="MapEditor"] .sidebar .input-letter,
+.content[data-type="MapEditor"] .sidebar .select-letter {
+  border: none;
+  outline: none;
+  padding: 5px;
+  text-align: center;
+}
+.content[data-type="MapEditor"] .sidebar .input-letter {
+  background-color: #cfd8dc;
+  position: absolute;
+  right: 16px;
+  width: 50px;
+  font-size: 32px;
+  padding: 4px 5px;
+}
+.content[data-type="MapEditor"] .sidebar .select-letter {
+  background-color: #b0bec5;
+  width: 100%;
+  height: 30px;
+  float: right;
+}
+.content[data-type="MapEditor"] .sidebar .select-letter option:first-child {
+  display: none;
+}
+.content[data-type="MapEditor"] .sidebar .btn-add-object {
+  position: absolute;
+  padding: 0px;
+  margin: 0px;
+  border: none;
+  outline: none;
+  width: 15px;
+  height: 15px;
+  top: 7.5px;
+  left: -7.5px;
+  border-radius: 100%;
+  font-size: 21px;
+  font-weight: 500;
+  background-color: #b0bec5;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="MapEditor"] .sidebar .btn-add-object:hover {
+  background-color: #8bc34a;
+  color: white;
+}
+.content[data-type="MapEditor"] .sidebar .input-name {
+  width: 100%;
+  padding: 6px;
+  border: 0px;
+  box-sizing: border-box;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.content[data-type="MapEditor"] .sidebar .color-object {
+  width: 100%;
+  padding: 0px;
+  margin: 0px;
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+.content[data-type="MapEditor"] .sidebar .input-layer,
+.content[data-type="MapEditor"] .sidebar .select-layer {
+  border: none;
+  outline: none;
+  padding: 5px;
+  text-align: center;
+}
+.content[data-type="MapEditor"] .sidebar .input-layer {
+  background-color: #cfd8dc;
+  position: absolute;
+  right: 16px;
+  width: 50px;
+  font-size: 13px;
+  height: 30px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+.content[data-type="MapEditor"] .sidebar .select-layer {
+  background-color: #b0bec5;
+  width: 100%;
+  height: 30px;
+  float: right;
+}
+.content[data-type="MapEditor"] .sidebar .select-layer option:first-child {
+  display: none;
+}
+.content[data-type="MapEditor"] .sidebar .btn-add-layer {
+  position: absolute;
+  margin: 0px;
+  border: none;
+  outline: none;
+  width: 15px;
+  height: 15px;
+  top: 7.5px;
+  left: -7.5px;
+  border-radius: 100%;
+  font-size: 21px;
+  font-weight: 500;
+  background-color: #b0bec5;
+  padding: 0px;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="MapEditor"] .sidebar .btn-add-layer:hover {
+  background-color: #8bc34a;
+  color: white;
+}
+.content[data-type="MapEditor"] .sidebar .snap-container {
+  display: inline-block;
+  width: 100%;
+}
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-label {
+  margin: 0px;
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-sep {
+  margin: 0px;
+  width: 20%;
+  display: inline-block;
+  text-align: center;
+}
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-x,
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-y {
+  width: 40%;
+  border: none;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 4px;
+  box-sizing: border-box;
+}
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-x::-webkit-outer-spin-button,
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-y::-webkit-outer-spin-button,
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-x::-webkit-inner-spin-button,
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-y::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0;
+  /* <-- Apparently some margin are still there even though it's hidden */
+}
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-x {
+  text-align: right;
+}
+.content[data-type="MapEditor"] .sidebar .snap-container .snap-y {
+  text-align: left;
+}
 @font-face {
   font-family: ProggySquare;
   src: url('includes/ProggySquare.ttf') format('truetype');
