@@ -5,6 +5,7 @@ function love.load()
 	Asset.add('assets/image/')
 	Asset.add('assets/hats/','hat')
 	Asset.add('assets/levels/')
+	Asset.add('maps/')
 	Asset.add('scripts/')
 
 	UI.color('window_bg', Draw.baby_blue)

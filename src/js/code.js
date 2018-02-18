@@ -121,6 +121,41 @@ class Code extends Editor {
 }
 
 document.addEventListener("ideReady", function(e){
+
+});
+
+function addScripts(folder_path) {
+	nwFS.readdir(folder_path, function(err, files) {
+		if (err) return;
+		files.forEach(function(file){
+			var full_path = nwPATH.join(folder_path, file);
+			nwFS.stat(full_path, function(err, file_stat){		
+				// iterate through directory			
+				if (file_stat.isDirectory())
+					addScripts(full_path);
+
+				// add file to search pool
+				else if (file.endsWith('.lua')) {
+					app.addSearchKey({
+						key: file,
+						onSelect: function(file_path){
+							if (!DragBox.focusDragBox(nwPATH.basename(file_path)))
+								(new Code(app)).edit(file_path);
+						},
+						tags: ['script'],
+						args: [full_path],
+						group: 'Code'
+					});
+				}
+			});
+		});
+	});
+}
+
+document.addEventListener("openProject", function(e){
+	var proj_path = e.detail.path;
+	addScripts(proj_path);
+
 	app.addSearchKey({
 		key: 'Create script',
 		onSelect: function() {
@@ -141,34 +176,4 @@ document.addEventListener("ideReady", function(e){
 		},
 		tags: ['new']
 	});
-});
-
-function addScripts(folder_path) {
-	nwFS.readdir(folder_path, function(err, files) {
-		if (err) return;
-		files.forEach(function(file){
-			var full_path = nwPATH.join(folder_path, file);
-			nwFS.stat(full_path, function(err, file_stat){		
-				// iterate through directory			
-				if (file_stat.isDirectory())
-					addScripts(full_path);
-
-				// add file to search pool
-				else if (file.endsWith('.lua')) {
-					app.addSearchKey({
-						key: file,
-						onSelect: function(file_path){(new Code(app)).edit(file_path);},
-						tags: ['script'],
-						args: [full_path],
-						group: 'Code'
-					});
-				}
-			});
-		});
-	});
-}
-
-document.addEventListener("openProject", function(e){
-	var proj_path = e.detail.path;
-	addScripts(proj_path);
 });

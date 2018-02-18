@@ -106,7 +106,7 @@ var app = {
 		for (var v = 0; v < group_len; v++) {
 			app.removeSearchHash(app.search_group[group][v]);
 		}
-		app.search_group[group] = null;
+		app.search_group[group] = [];
 	},
 
 	removeSearchKey: function(key, tags) {
@@ -204,7 +204,12 @@ nwWIN.on('loaded', function() {
 
 	dispatchEvent("ideReady");
 
-	app.openProject("src/projects/penguin");
+	app.addSearchKey({key: 'Open project', onSelect: function() {
+		blanke.chooseFile('nwdirectory', function(file_path){
+			app.openProject(file_path);
+		}, true);
+	}});
+	app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 
-	//(new MapEditor()).load('');
+	app.openProject('src/projects/penguin');
 });

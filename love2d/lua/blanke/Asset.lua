@@ -88,6 +88,17 @@ Asset = Class{
 			}
 			return Asset.get(asset_name)
 		end
+		-- MAP
+		if path:ends('.map') then
+			Asset.info['map'] = ifndef(Asset.info['map'], {})
+
+			Asset.info['map'][asset_name] = {
+				path = path,
+				category = 'map',
+				object = 
+			}
+			return Asset.get(asset_name)
+		end
 	end,
 
 	has = function(category, name)
@@ -112,7 +123,8 @@ Asset = Class{
 
 	image = function(name) return Asset.get('image', name) end,
 	script = function(name) return Asset.get('script', name) end,
-	file = function(name) return Asset.get('file', name) end
+	file = function(name) return Asset.get('file', name) end,
+	map = function(name) return Asset.get('map', name) end
 }
 
 return Asset

@@ -67,6 +67,18 @@ class DragBox {
 	    this.move(this.x, this.y);
 	}
 
+	// focus a dragbox with a certain title if it exists
+	static focusDragBox (title) {
+		var handles = app.getElements('.drag-handle');
+		for (var h = 0; h < handles.length; h++) {
+			if (handles[h].innerHTML == title) {
+				handles[h].click();
+				return true;
+			}
+		}
+		return false;
+	}
+
 	setupResize () {
 		var this_ref = this;
 		interact('#'+this.drag_container.id)

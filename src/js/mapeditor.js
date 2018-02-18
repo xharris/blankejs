@@ -1,3 +1,5 @@
+var global_objects = [];
+
 class MapEditor extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -9,6 +11,7 @@ class MapEditor extends Editor {
 		
 		this.grid_opacity = 0.1;
 		this.snap_on = true;
+		this.deleted = false;
 
 		this.curr_layer = null;
 		this.curr_object = null;
@@ -27,9 +30,6 @@ class MapEditor extends Editor {
 			autoResize: true,
 		});
 		this.appendChild(this.pixi.view);
-
-		// start game loop
-		this.pixi.ticker.add(delta => this.update(delta)); 
 
 		this.pixi.stage.interactive = true;
 		this.pixi.stage.hitArea = this.pixi.screen;
@@ -74,6 +74,8 @@ class MapEditor extends Editor {
 		});
 		this.el_input_letter.maxLength = 1;
 		this.el_input_letter.placeholder = '-';
+
+		// object char
 		this.el_input_letter.addEventListener('input', function(e){
 			if (this_ref.curr_object) {
 				if (e.target.value == '')
@@ -83,6 +85,7 @@ class MapEditor extends Editor {
 					this_ref.iterObject(this_ref.curr_object.name, function(obj) {
 						obj.text = this_ref.curr_object.char;
 					});
+					this_ref.updateGlobalObjList();
 				}
 			}
 		});
@@ -99,6 +102,7 @@ class MapEditor extends Editor {
 					this_ref.curr_object.name = e.target.value;
 					this_ref.refreshObjectList();
 					this_ref.export();
+					this_ref.updateGlobalObjList();
 				}
 			}
 		});
@@ -112,6 +116,7 @@ class MapEditor extends Editor {
 					obj.style.fill = this_ref.curr_object.color;
 				});
 				this_ref.export();
+				this_ref.updateGlobalObjList();
 			}
 		});
 
@@ -300,7 +305,6 @@ class MapEditor extends Editor {
 			}
 		}
 
-
 		this.pixi.stage.addChild(this.overlay_container);
 		this.pixi.stage.addChild(this.map_container);
 		this.pixi.stage.addChild(this.grid_container);
@@ -313,9 +317,48 @@ class MapEditor extends Editor {
 	onMenuClick (e) {
 		var this_ref = this;
 		app.contextMenu(e.x, e.y, [
-			{label:'rename', click:function(){}},//this_ref.renameModal()}},
-			{label:'delete', click:function(){}}//this_ref.deleteModal()}}
+			{label:'rename', click:function(){this_ref.renameModal()}},
+			{label:'delete', click:function(){this_ref.deleteModal()}}
 		]);
+	}
+
+	rename (old_path, new_name) {
+		var this_ref = this;
+		nwFS.readFile(nwPATH.dirname(this.file)+"/"+new_name, function(err, data){
+			if (err) {
+				nwFS.rename(old_path, nwPATH.dirname(this_ref.file)+"/"+new_name);
+				this_ref.file = nwPATH.dirname(this_ref.file)+"/"+new_name;
+				this_ref.setTitle(nwPATH.basename(this_ref.file));
+			}
+		});
+	}
+
+	renameModal () {
+		var this_ref = this;
+		var filename = this.file;
+		blanke.showModal(
+			"<label>new name: </label>"+
+			"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
+		{
+			"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".map"); },
+			"no": function() {}
+		});
+	}
+
+	delete () {
+		nwFS.unlink(this.file);
+		this.deleted = true;
+		this.close();
+	}
+
+	deleteModal () {
+		var this_ref = this;
+		blanke.showModal(
+			"delete \'"+nwPATH.basename(this.file)+"\'",
+		{
+			"yes": function() { this_ref.delete(); },
+			"no": function() {}
+		});
 	}
 
 	drawGrid () {	
@@ -499,11 +542,21 @@ class MapEditor extends Editor {
 			color: "#000000",
 			uuid: guid()
 		}
+
 		info.pixi_texts = {};
 		this.objects.push(info);
 		this.setObject(info.name);
+	}
 
-		this.refreshObjectList();
+	updateGlobalObjList() {
+		global_objects = [];
+		for (var o = 0; o < this.objects.length; o++) {
+			global_objects.push({
+				name: this.objects[o].name,
+				char: this.objects[o].char,
+				color: this.objects[o].color
+			});
+		}
 	}
 
 	setObject (name) {
@@ -577,12 +630,19 @@ class MapEditor extends Editor {
 					}
 				}
 			}
+
+			if (data.objects.length > 0) 
+				this.updateGlobalObjList();
+
+			this.refreshObjectList();
 		}
 
 		this.setTitle(nwPATH.basename(file_path));
 	}
 
 	export () {
+		if (this.deleted) return;
+
 		var export_data = {'objects':[], 'layers':[]};
 
 		// objects
@@ -624,10 +684,6 @@ class MapEditor extends Editor {
 		nwFS.writeFileSync(this.file, JSON.stringify(export_data));
 	}
 
-	update (dt) {
-
-	}
-
 	onFileChange (evt_type, file) {
 		this.app.removeSearchGroup("Map");
 		addMaps(this.app.project_path);
@@ -635,21 +691,7 @@ class MapEditor extends Editor {
 }
 
 document.addEventListener("ideReady", function(e){
-	app.addSearchKey({
-		key: 'Create map',
-		onSelect: function() {
-			var map_dir = nwPATH.join(app.project_path,'maps');
-			// overwrite the file if it exists. fuk it (again)!!
-			nwFS.mkdir(map_dir, function(err){
-				nwFS.readdir(map_dir, function(err, files){
-					nwFS.writeFile(nwPATH.join(map_dir, 'map'+files.length+'.map'),"");
-				
-					// edit the new script
-					(new MapEditor(app)).load(nwPATH.join(map_dir, 'map'+files.length+'.map'));
-				});
-			});	
-		}
-	});
+
 });
 
 function addMaps(folder_path) {
@@ -666,7 +708,10 @@ function addMaps(folder_path) {
 				else if (file.endsWith('.map')) {
 					app.addSearchKey({
 						key: file,
-						onSelect: function(file_path){(new MapEditor(app)).load(file_path);},
+						onSelect: function(file_path){
+							if (!DragBox.focusDragBox(nwPATH.basename(file_path)))
+								(new MapEditor(app)).load(file_path);
+						},
 						tags: ['map'],
 						args: [full_path],
 						group: 'Map'
@@ -680,4 +725,28 @@ function addMaps(folder_path) {
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
 	addMaps(proj_path);
+
+	app.addSearchKey({
+		key: 'Create map',
+		onSelect: function() {
+			var map_dir = nwPATH.join(app.project_path,'maps');
+			// overwrite the file if it exists. fuk it (again)!!
+			nwFS.mkdir(map_dir, function(err){
+				nwFS.readdir(map_dir, function(err, files){
+					nwFS.writeFile(nwPATH.join(map_dir, 'map'+files.length+'.map'),"");
+				
+					// edit the new script
+					var new_map_editor = new MapEditor(app)
+					// add some premade objects from previous map
+					new_map_editor.load(nwPATH.join(map_dir, 'map'+files.length+'.map'));
+					for (var o = 0; o < global_objects.length; o++) {
+						new_map_editor.addObject(global_objects[o]);
+					}
+					new_map_editor.addLayer();
+					new_map_editor.refreshObjectList();
+				});
+			});	
+		},
+		tags: ['new']
+	});
 });

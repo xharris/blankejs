@@ -91,7 +91,7 @@ Scene = Class{
 
 		local load_scene = Asset.file(name)
 		if load_scene then
-			self:load(load_scene)
+			self:load(load_scene, Asset.getInfo('file', name))
 		end
 
 		if #self.layer_order == 0 then
@@ -174,8 +174,9 @@ Scene = Class{
 		return json.encode(output)
 	end,
 
-	load = function(self, scene_string, compressed)
+	load = function(self, scene_string, format)
 		scene_data = json.decode(scene_string)
+
 
 		self.layer_data = {}
 		self.layer_order = scene_data.order

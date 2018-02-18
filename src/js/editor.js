@@ -2,9 +2,11 @@ class Editor {
 	constructor (app) {
 		var workspace = app.getElement('#workspace');
 		this.app = app;
+		this.closed = false;
 
 		// create drag box
-		this.dragbox = new DragBox(this.constructor.name);
+		this.dragbox = new DragBox(this.constructor.name)
+
 		this.dragbox.appendTo(workspace);
 		this.dragbox.width = 300;
 		this.dragbox.height = 250;
@@ -36,6 +38,7 @@ class Editor {
 
 	close() {
 		this.dragbox.close();
+		this.closed = true;
 	}
 
 	addCallback(cb_name, new_func) {
