@@ -66,7 +66,7 @@ anim8 	= blanke_require('extra.anim8')
 HC 		= blanke_require('extra.HC')
 grease 	= blanke_require('extra.grease')
 
-local modules = {'Asset','Camera','Canvas','Dialog','Draw','Effect','Entity','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','Signal','State','Steam','Timer','Tween','UI','View'}
+local modules = {'Map','Asset','Camera','Canvas','Dialog','Draw','Effect','Entity','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','Signal','State','Steam','Timer','Tween','UI','View'}
 local not_require = {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
 	if not table.hasValue(not_require, mod) then
@@ -238,10 +238,6 @@ BlankE = {
 		for key, objects in pairs(game) do
 			for o, obj in ipairs(objects) do
 				if not obj.persistent or include_persistent then
-					if obj.type == "input" then
-						print('destroy')
-						print_r(obj.in_key)
-					end
 					obj:destroy()
 					game[key][o] = nil
 				end

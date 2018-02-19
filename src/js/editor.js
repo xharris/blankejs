@@ -30,10 +30,6 @@ class Editor {
 
 		// watch for file changes
 		var this_ref;
-		document.addEventListener('fileChange', function(e){
-			if (this_ref.onFileChange) this_ref.onFileChange(e.detail.type, e.detail.file);
-		});
-
 	}
 
 	close() {

@@ -62,9 +62,9 @@ Asset = Class{
 				object = chunk
 			}
 			return Asset.get(asset_name)
-		end
+		
 		-- IMAGE
-		if table.hasValue(Asset.image_ext, asset_ext) then
+		elseif table.hasValue(Asset.image_ext, asset_ext) then
 			Asset.info['image'] = ifndef(Asset.info['image'], {})
 			
 			local image = love.graphics.newImage(path)
@@ -76,26 +76,15 @@ Asset = Class{
 				}
 				return Asset.get(asset_name)
 			end
-		end
-		-- JSON (scene)
-		if path:ends('.json') then
+		
+		-- FILE (etc)
+		else
 			Asset.info['file'] = ifndef(Asset.info['file'], {})
 			
 			Asset.info['file'][asset_name] = {
 				path = path,
-				category = 'file',
+				category = extname(path),
 				object = love.filesystem.read(path)
-			}
-			return Asset.get(asset_name)
-		end
-		-- MAP
-		if path:ends('.map') then
-			Asset.info['map'] = ifndef(Asset.info['map'], {})
-
-			Asset.info['map'][asset_name] = {
-				path = path,
-				category = 'map',
-				object = 
 			}
 			return Asset.get(asset_name)
 		end
@@ -123,8 +112,7 @@ Asset = Class{
 
 	image = function(name) return Asset.get('image', name) end,
 	script = function(name) return Asset.get('script', name) end,
-	file = function(name) return Asset.get('file', name) end,
-	map = function(name) return Asset.get('map', name) end
+	file = function(name) return Asset.get('file', name) end
 }
 
 return Asset

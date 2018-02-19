@@ -619,7 +619,7 @@ num bitmask8(map_table, tile_value(s), x, y)	-- untested
 
 str basename(str)
 str dirname(str)
-str extname(str)
+str extname(str)								-- return extension (without period)
 
 -- STRING
 replaceAt(pos, new_str)

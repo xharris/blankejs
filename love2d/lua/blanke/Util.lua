@@ -100,7 +100,7 @@ function bitmask4(tile_map, tile_val, x, y)
 
 	function checkTile(x2, y2)
 		return table.forEach(tile_vals, function(t, tile)
-			if x2 > 0 and y2 > 0 and y2 <= #tile_map and x2 <= #tile_map[y2] and tile_map[y2][x2] == tile then
+			if tile_map[x2] and tile_map[x2][y2] == tile then
 				return 1
 			end
 		end) or 0

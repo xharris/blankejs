@@ -132,83 +132,49 @@ function playState:draw()
 end	
 
 function loadLevel(name)
-	local lvl_string = Asset.file(name)
-	local lvl_length = lvl_string:len()
-	local lvl_array = {{}}
-
-	local lvl_start = {lvl_string:match("start (%d+),(%d+)")}
-	local lvl_end = {lvl_string:match("end (%d+),(%d+)")}
+	local lvl_map = Map(name)
+		    
+    local lvl_start = lvl_map:getObjects("lvl_start")[1]
+    local lvl_end = lvl_map:getObjects("lvl_end")[1]
+    
 	local offset_x = (last_lvl_end[1])*tile_snap
 	local offset_y = (last_lvl_end[2])*tile_snap
 	if name ~= 'spawn' then
-		offset_x = (last_lvl_end[1] - lvl_start[1])*tile_snap
-		offset_y = (last_lvl_end[2] - lvl_start[2])*tile_snap
+		offset_x = (last_lvl_end[1] - lvl_start.x)*tile_snap
+		offset_y = (last_lvl_end[2] - lvl_start.y)*tile_snap
 	end
 
-	Debug.log(name,offset_x, offset_y)
-
-	last_lvl_end[1] = last_lvl_end[1] + (lvl_end[1] - lvl_start[1])
-	last_lvl_end[2] = last_lvl_end[2] + (lvl_end[2] - lvl_start[2])
-
-	local x, y = 1, 1
-	local max_x, max_y = 1, 1
-	local reading_map = false
-	for c = 0, lvl_length do
-		char = lvl_string:at(c)
-
-		if c < lvl_length and reading_map then
-			if char == '\n' then
-				x = 1
-				y = y + 1
-				lvl_array[y] = {}
-			elseif char:trim() ~= '' then
-				lvl_array[y][x] = char
-				x = x + 1
-			end
-			if x > max_x then max_x = x end
-			if y > max_y then max_y = y end
+	last_lvl_end[1] = last_lvl_end[1] + (lvl_end.x - lvl_start.x)
+	last_lvl_end[2] = last_lvl_end[2] + (lvl_end.y - lvl_start.y)
+    
+	-- regular ground
+	local snapx, snapy = lvl_map.layer_info['layer0'].snap[1], lvl_map.layer_info['layer0'].snap[2]
+    for o, obj in ipairs(lvl_map:getObjects("ground","cracked_ground")) do
+		local ground_type = ''
+		if obj.char == 'C' then 
+			destruct_ready_x = obj.x
+			ground_type = "cracked"
 		end
 
-		if char == "-" then
-			reading_map = true
-		end
+        lvl_objects:add(Ground(
+				obj.x+offset_x,
+				obj.y+offset_y,
+				bitmask4(lvl_map.array['layer0'], {'G','C'}, obj.x / snapx, obj.y / snapy), ground_type))
+    end
+
+	-- igloo
+	if #lvl_map:getObjects("igloo") > 0 then
+		local igloo_pos = lvl_map:getObjects("igloo")[1]
+		lvl_objects:add(Ground(igloo_pos.x, igloo_pos.y, -1))
+		img_igloo_front.x, img_igloo_front.y = igloo_pos.x, igloo_pos.y + tile_snap - img_igloo_front.height
+		img_igloo_back.x, img_igloo_back.y = igloo_pos.x, igloo_pos.y + tile_snap - img_igloo_front.height
+
+		penguin_spawn = {igloo_enter_x + 5, igloo_pos.y}
 	end
-
-	local pos_x, pos_y = 0, 0
-	for y = 1, max_y do
-		for x = 1, max_x do
-			char = lvl_array[y][x]
-			pos_x, pos_y = x*tile_snap-tile_snap+offset_x, y*tile_snap-tile_snap+offset_y
-
-			-- ice ground			
-			if char == 'g' or char == 'c' then
-				local ground_type = ''
-				if char == 'c' then 
-					destruct_ready_x = pos_x
-					ground_type = "cracked"
-				end
-				lvl_objects:add(Ground(pos_x,pos_y,bitmask4(lvl_array, {'g','c'}, x, y),ground_type))
-			end
-
-			-- invisible block
-			if char == 'q' then
-				lvl_objects:add(Ground(pos_x,pos_y,-1))
-			end
-
-			-- igloo/player spawn
-			if char == 'i' then
-				lvl_objects:add(Ground(pos_x,pos_y,-1))
-				img_igloo_front.x, img_igloo_front.y = pos_x, pos_y + tile_snap - img_igloo_front.height
-				img_igloo_back.x, img_igloo_back.y = pos_x, pos_y + tile_snap - img_igloo_front.height
-
-				penguin_spawn = {igloo_enter_x + 5, pos_y}
-			end
-
-			-- past this point to be ready
-			if char == 'd' then
-				destruct_ready_x = pos_x
-			end
-		end
+	
+	-- invisibile block
+	for o, obj in ipairs(lvl_map:getObjects("invis_ground")) do
+		lvl_objects:add(Ground(obj.x, obj.y, -1))
 	end
 end
 

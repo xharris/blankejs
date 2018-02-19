@@ -4,6 +4,8 @@ class Code extends Editor {
 		
 		this.file = '';
 		this.script_folder = "/scripts";
+		this.font_size = 16;
+		this.can_save = true;
 
 		// create codemirror editor
 		this.edit_box = document.createElement("textarea");
@@ -12,22 +14,51 @@ class Code extends Editor {
 
 		var this_ref = this;
 		this.codemirror = CodeMirror.fromTextArea(this.edit_box, {
-			mode: "javascript",
+			mode: "lua",
 			theme: "material",
             smartIndent : true,
             lineNumbers : true,
             lineWrapping : false,
             indentUnit : 4,
+            tabSize : 4,
+            indentWithTabs : true,
+            highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
             extraKeys: {
             	"Ctrl-S": function(cm) {
             		this_ref.save();
-            	}
+            		this_ref.can_save = false;
+            	},
+            	"Ctrl-=": function(cm) {
+            		this_ref.font_size += 1;
+            		this_ref.setFontSize(this_ref.font_size);
+            	},
+            	"Ctrl--": function(cm) {
+            		this_ref.font_size -= 1;
+            		this_ref.setFontSize(this_ref.font_size);
+            	},
+            	"Ctrl-F": "findPersistent"
             }
 		});
+		this.setFontSize(this.font_size);
 		this.codemirror.setSize("100%", "100%");
 		this.codemirror.on('change', function(){
 			this_ref.codemirror.refresh();
 		});
+		this.addCallback('onResize', function(w, h) {
+			this_ref.codemirror.refresh();
+		});
+		// prevents user from saving a million times by holding the button down
+		document.addEventListener('keyup', function(e){
+			if (e.key == "s" && e.ctrlKey) {
+				this_ref.can_save = true;
+			}
+		});
+	}
+
+	setFontSize (num) {
+		this.font_size = num;
+		this.codemirror.display.wrapper.style.fontSize = this.font_size.toString()+"px";
+		this.codemirror.refresh();
 	}
 
 	onMenuClick (e) {
@@ -52,7 +83,10 @@ class Code extends Editor {
 	}
 
 	save () {
-		nwFS.writeFileSync(this.file, this.codemirror.getValue());
+		if (this.can_save) {
+			nwFS.writeFileSync(this.file, this.codemirror.getValue());
+			this.can_save = false;
+		}
 	}
 
 	delete (path) {
@@ -113,15 +147,13 @@ class Code extends Editor {
 			});
 		}
 	}
-
-	onFileChange (evt_type, file) {
-		this.app.removeSearchGroup("Code");
-		addScripts(this.app.project_path);
-	}
 }
 
-document.addEventListener("ideReady", function(e){
-
+document.addEventListener('fileChange', function(e){
+	if (e.detail.type == 'change') {
+		app.removeSearchGroup("Code");
+		addScripts(app.project_path);
+	}
 });
 
 function addScripts(folder_path) {

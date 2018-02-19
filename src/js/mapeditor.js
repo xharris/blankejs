@@ -484,7 +484,7 @@ class MapEditor extends Editor {
 
 			new_text.interactive = true;
 			new_text.on('rightdown', function(e){
-				if (e.target.layer_uuid === this_ref.curr_layer.uuid) {
+				if (e.target.layer_uuid === this_ref.curr_layer.uuid && this_ref.curr_object.pixi_texts[e.target.text_key]) {
 					this_ref.curr_object.pixi_texts[e.target.text_key].destroy();
 					this_ref.curr_object.pixi_texts[e.target.text_key] = null;
 
@@ -493,7 +493,7 @@ class MapEditor extends Editor {
 			});
 			
 			var new_graph = new PIXI.Graphics();
-			new_graph.beginFill(0x0000FF, 0);
+			new_graph.beginFill(this.curr_object.color, 0);
 			new_graph.drawRect(-((this.curr_layer.snap[0]/2) - (new_text.width/2)), -((this.curr_layer.snap[1]/2) - (new_text.height/2)), this.curr_layer.snap[0], this.curr_layer.snap[1]);
 			new_text.addChild(new_graph);
 			
@@ -683,15 +683,13 @@ class MapEditor extends Editor {
 
 		nwFS.writeFileSync(this.file, JSON.stringify(export_data));
 	}
-
-	onFileChange (evt_type, file) {
-		this.app.removeSearchGroup("Map");
-		addMaps(this.app.project_path);
-	}
 }
 
-document.addEventListener("ideReady", function(e){
-
+document.addEventListener('fileChange', function(e){
+	if (e.detail.type == 'change') {
+		app.removeSearchGroup("Map");
+		addMaps(app.project_path);
+	}
 });
 
 function addMaps(folder_path) {

@@ -94,7 +94,8 @@ var app = {
 		app.search_funcs[hash_val] = options.onSelect;
 		app.search_args[hash_val] = options.args;
 
-		app.search_hashvals.push(hash_val);
+		if (!app.search_hashvals.includes(hash_val))
+			app.search_hashvals.push(hash_val);
 		if (options.group) {
 			if (!app.search_group[options.group]) app.search_group[options.group] = [];
 			app.search_group[options.group].push(hash_val);
@@ -201,6 +202,21 @@ nwWIN.on('loaded', function() {
 			}
 		}
 	});
+
+	// shortcut: focus search box
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Ctrl+R",
+		active: function() {
+			app.getElement("#search-input").focus();
+		}
+	}));
+	// shortcut: run game
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Ctrl+B",
+		active: function() {
+			app.play();
+		}
+	}));
 
 	dispatchEvent("ideReady");
 

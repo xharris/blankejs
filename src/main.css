@@ -512,13 +512,21 @@
   padding-bottom: 10px;
 }
 .content[data-type="Code"] .CodeMirror {
-  font-size: 12px;
+  font-size: 16px;
 }
 .content[data-type="Code"] .CodeMirror-scroll {
   width: 100% !important;
   overflow: auto !important;
   box-sizing: border-box;
   line-height: 14px;
+}
+.content[data-type="Code"] .cm-matchhighlight {
+  background-color: rgba(178, 255, 89, 0.5);
+  color: black;
+  outline: 1px solid rgba(178, 255, 89, 0.5);
+}
+.content[data-type="Code"] .CodeMirror-selection-highlight-scrollbar {
+  background-color: #b2ff59;
 }
 .content[data-type="MapEditor"] {
   overflow: hidden !important;
@@ -709,7 +717,6 @@
 }
 * {
   font-family: ProggySquare;
-  font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
 html,
@@ -760,6 +767,10 @@ body {
   bottom: 10px;
   right: 10px;
   z-index: 1000;
+  pointer-events: none;
+}
+.tool-container * {
+  pointer-events: all;
 }
 .tool-container button {
   -webkit-touch-callout: none;

@@ -91,7 +91,7 @@ Scene = Class{
 
 		local load_scene = Asset.file(name)
 		if load_scene then
-			self:load(load_scene, Asset.getInfo('file', name))
+			self:load(load_scene, Asset.getInfo('file', name).category)
 		end
 
 		if #self.layer_order == 0 then
@@ -174,9 +174,8 @@ Scene = Class{
 		return json.encode(output)
 	end,
 
-	load = function(self, scene_string, format)
+	load = function(self, scene_string)
 		scene_data = json.decode(scene_string)
-
 
 		self.layer_data = {}
 		self.layer_order = scene_data.order
@@ -604,6 +603,8 @@ Scene = Class{
 	end,
 
 	update = function(self, dt)
+		if self._is_active <= 0 then return end
+
 		if not BlankE.pause then 
 			-- update entities
 			for layer, data in pairs(self.layer_data) do
@@ -727,6 +728,8 @@ Scene = Class{
 		    else
 		    	Scene._fake_view.disabled = false
 		    end
+
+		    self._is_active = self._is_active - 1
 		end
 	end,
 

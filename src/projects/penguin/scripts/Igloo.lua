@@ -38,9 +38,6 @@ function Igloo:init(from_outside)
 end
 
 function Igloo:update(dt)
-	if Input.global('confirm') then
-		Debug.log('yay')
-	end
 	self.onCollision["closet"] = function(other, sep_vector)
 		if other.tag:contains("Penguin") and Input.global('confirm') then
 			if not self.ent_closet or self.ent_closet._destroyed then
