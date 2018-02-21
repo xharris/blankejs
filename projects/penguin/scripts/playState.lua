@@ -136,17 +136,17 @@ function loadLevel(name)
 		    
     local lvl_start = lvl_map:getObjects("lvl_start")[1]
     local lvl_end = lvl_map:getObjects("lvl_end")[1]
-    
-	local offset_x = (last_lvl_end[1])*tile_snap
-	local offset_y = (last_lvl_end[2])*tile_snap
+	    
+	local offset_x = (last_lvl_end[1])
+	local offset_y = (last_lvl_end[2])
 	if name ~= 'spawn' then
-		offset_x = (last_lvl_end[1] - lvl_start.x)*tile_snap
-		offset_y = (last_lvl_end[2] - lvl_start.y)*tile_snap
+		offset_x = (last_lvl_end[1] - lvl_start.x)
+		offset_y = (last_lvl_end[2] - lvl_start.y)
 	end
 
 	last_lvl_end[1] = last_lvl_end[1] + (lvl_end.x - lvl_start.x)
 	last_lvl_end[2] = last_lvl_end[2] + (lvl_end.y - lvl_start.y)
-    
+    	
 	-- regular ground
 	local snapx, snapy = lvl_map.layer_info['layer0'].snap[1], lvl_map.layer_info['layer0'].snap[2]
     for o, obj in ipairs(lvl_map:getObjects("ground","cracked_ground")) do

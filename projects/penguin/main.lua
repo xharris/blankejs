@@ -11,7 +11,7 @@ function love.load()
 	UI.color('window_outline', Draw.blue)
 	UI.color('element_bg', Draw.dark_blue)
 
-    BlankE.init('menuState')
+    BlankE.init('playState')
 
 	Input.setGlobal('confirm', 'e')
 	Input.global_keys['confirm'].can_repeat = false

@@ -12,6 +12,7 @@
   },
   "scripts": {
     "less": "lessc src/less/main.less src/main.css",
-    "nw": "nw ."
+    "nw": "nw .",
+    "dist": "build.js"
   }
 }

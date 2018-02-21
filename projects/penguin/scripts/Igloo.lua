@@ -65,6 +65,4 @@ function Igloo:draw()
 	self.img_igloo_outline:draw()
 
 	if self.ent_closet then self.ent_closet:draw() end
-
-	self:debugCollision()
 end

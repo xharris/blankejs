@@ -75,6 +75,11 @@ var app = {
 		child.stderr.on('data', function(data){console.log(data.toString());});
 	},
 
+	runServer: function() {
+		var child = execFile(nwPATH.join('love2d','love.exe'), [nwPATH.join("src", "netserver")], {detached: true, stdio: ['ignore', 1, 2]});
+		child.unref();
+	},
+
 	search_funcs: {},
 	search_args: {},
 	search_hashvals: [],
@@ -155,6 +160,7 @@ nwWIN.on('loaded', function() {
 		// move found value up in list
 		app.search_hashvals = app.search_hashvals.filter(e => e != hash_val);
 		app.search_hashvals.unshift(hash_val);
+		selected_index = -1;
 	}
 
 	app.getElement("#search-results").addEventListener('click', function(e){
@@ -217,6 +223,24 @@ nwWIN.on('loaded', function() {
 			app.play();
 		}
 	}));
+	// shortcut: shift window focus
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Ctrl+T",
+		active: function() {
+			var windows = app.getElements(".drag-container");
+			if (windows.length > 1) {
+				var index = 0;
+				for (index = 0; index < windows.length; index++) {
+					if (windows[index].classList.contains('focused')) {
+						break;
+					}
+				}
+				index += 1;
+				if (index >= windows.length) index = 0;
+				windows[index].click();
+			}
+		}
+	}));
 
 	dispatchEvent("ideReady");
 
@@ -226,6 +250,5 @@ nwWIN.on('loaded', function() {
 		}, true);
 	}});
 	app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
-
-	app.openProject('src/projects/penguin');
+	app.addSearchKey({key: 'Run Server', onSelect: app.runServer});
 });
