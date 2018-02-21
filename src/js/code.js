@@ -27,6 +27,7 @@ class Code extends Editor {
             	"Ctrl-S": function(cm) {
             		this_ref.save();
             		this_ref.can_save = false;
+            		this_ref.removeAsterisk();
             	},
             	"Ctrl-=": function(cm) {
             		this_ref.font_size += 1;
@@ -42,7 +43,7 @@ class Code extends Editor {
 		this.setFontSize(this.font_size);
 		this.codemirror.setSize("100%", "100%");
 		this.codemirror.on('change', function(){
-			this_ref.codemirror.refresh();
+			this_ref.addAsterisk();
 		});
 		this.addCallback('onResize', function(w, h) {
 			this_ref.codemirror.refresh();
@@ -53,6 +54,14 @@ class Code extends Editor {
 				this_ref.can_save = true;
 			}
 		});
+	}
+
+	addAsterisk () {
+		this.setTitle(nwPATH.basename(this.file)+"*");
+	}
+
+	removeAsterisk() {
+		this.setTitle(nwPATH.basename(this.file));
 	}
 
 	setFontSize (num) {
@@ -77,7 +86,7 @@ class Code extends Editor {
 
 		this.codemirror.setValue(text);
 		this.codemirror.clearHistory();
-		this_ref.codemirror.refresh();
+		this.codemirror.refresh();
 
 		this.setTitle(nwPATH.basename(file_path));
 	}

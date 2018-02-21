@@ -15,6 +15,7 @@ function _addGameObject(type, obj)
     obj.pause = ifndef(obj.pause, false)
     obj.persistent = false
     obj._destroyed = ifndef(obj._destroyed, false)
+    obj.net_object = ifndef(obj.net_object, false)
 
     if obj._update or obj.update then obj.auto_update = true end
 

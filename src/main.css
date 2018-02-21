@@ -944,6 +944,11 @@ body {
   margin: 3px;
   overflow: auto;
   outline: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0.25;
+}
+.drag-container.focused > .content,
+.drag-container:hover > .content {
+  opacity: 1;
 }
 .drag-container .editor-content {
   width: 100%;

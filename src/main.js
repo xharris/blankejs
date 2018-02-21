@@ -128,7 +128,7 @@ var app = {
 }
 
 nwWIN.on('loaded', function() {
-	nwWIN.showDevTools();
+	//nwWIN.showDevTools();
 
 	// prepare search box
 	app.getElement("#search-input").addEventListener('input', function(e){

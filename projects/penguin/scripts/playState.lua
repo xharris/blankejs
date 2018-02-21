@@ -4,6 +4,7 @@ play_mode = 'online'
 game_start_population = 3
 
 local k_join, k_leave, k_destruct
+local main_penguin
 
 -- Called every time when entering the state.
 function playState:enter(previous)

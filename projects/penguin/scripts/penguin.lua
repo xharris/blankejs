@@ -1,7 +1,5 @@
 BlankE.addClassType("Penguin", "Entity")
 
-local k_right, k_left, k_up, k_happy
-
 Penguin.main_penguin_info = nil
 Penguin.hats = Asset.list('image','hat')
 table.insert(Penguin.hats, 'none')
@@ -38,11 +36,11 @@ function Penguin:init(is_main_player)
 	}
 
 	-- INPUT
-	k_left = Input('left','a')
-	k_right = Input('right','d')
-	k_up = Input('up','w')
-	k_happy = Input('2')
-	k_happy.can_repeat = false
+	self.k_left = Input('left','a')
+	self.k_right = Input('right','d')
+	self.k_up = Input('up','w')
+	self.k_happy = Input('2')
+	self.k_happy.can_repeat = false
 
 	self.gravity = 30
 	self.can_jump = true
@@ -70,8 +68,10 @@ function Penguin:init(is_main_player)
 	self.eyes = 1
 	self.sprite['eyes'].speed = 0
 
-	self:setColor(Penguin.main_penguin_info.color)
-	self:setHat(Penguin.main_penguin_info.hat)
+	if is_main_player then
+		self:setColor(Penguin.main_penguin_info.color)
+		self:setHat(Penguin.main_penguin_info.hat)
+	end
 end
 
 function Penguin:setColor(value)
@@ -165,20 +165,21 @@ function Penguin:update(dt)
 	-- left/right movement
 	if not self.net_object then
 		self.hspeed = 0
-		if k_right() then
+		
+		if self.k_right() then
 			self.hspeed = self.walk_speed
 			self.sprite_speed = 2
 		end
-		if k_left() then
+		if self.k_left() then
 			self.hspeed = -self.walk_speed
 			self.sprite_speed = 2
 		end
 
-		if k_up() then
+		if self.k_up() then
 			self:jump()
 		end
 
-		if k_happy() then
+		if self.k_happy() then
 			self:setEyes(2)
 		end
 	end

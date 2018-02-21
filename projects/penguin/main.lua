@@ -15,6 +15,6 @@ function love.load()
 
 	Input.setGlobal('confirm', 'e')
 	Input.global_keys['confirm'].can_repeat = false
-
+	
 	BlankE.draw_debug = true
 end
