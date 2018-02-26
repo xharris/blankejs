@@ -301,27 +301,37 @@ body {
 
 #welcome {
 	width: 100%;
-	margin-top: 70px;
-    margin-left: 70px;
+	height: 100%;
+	margin: 0px;
 	box-sizing: border-box;
 	white-space: nowrap;
 	overflow: hidden;
 	transition: all 0.2s ease-in-out;
 	.win-nodrag();
 
+	* {
+		color: white;
+		transition: color 0.2s ease-in-out;
+	}
+
 	&.hidden {
-		margin: 0px;
 		width: 0%;
+		height: 0%;
 		pointer-events: none;
+
+		* {
+			color: rgba(255,255,255,0);
+		}
 	}
 
 	.left-container {
 		display: inline-block;
 		border-left: 1px solid rgba(255,255,255,0.25);
+		margin-top: 70px;
+	    margin-left: 70px;
 	}
 
 	.new, .file {
-	    color: white;
 	    cursor: pointer;
 	    background-color: transparent;
 	    outline: none;
