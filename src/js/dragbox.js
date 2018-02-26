@@ -103,6 +103,9 @@ class DragBox {
 			    this_ref.x += event.deltaRect.left;
 			    this_ref.y += event.deltaRect.top;
 
+			    this_ref.x = parseInt(this_ref.x);
+			    this_ref.y = parseInt(this_ref.y);
+
 			    target.style.webkitTransform = target.style.transform =
 			        'translate(' + this_ref.x + 'px,' + this_ref.y + 'px)';
 
@@ -145,6 +148,9 @@ class DragBox {
 			        this_ref.x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
 			        this_ref.y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
+				    this_ref.x = parseInt(this_ref.x);
+				    this_ref.y = parseInt(this_ref.y);
+			    
 				    // translate the element
 				    target.style.webkitTransform =
 				    target.style.transform =

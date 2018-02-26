@@ -50,7 +50,7 @@ Debug = {
             
             table.insert(Debug.lines, 1, new_line)
         end
-        print(...)
+        print(new_line)
         return Debug
     end,
 
@@ -60,5 +60,5 @@ Debug = {
         return Debug
     end
 }
-
+io.output():setvbuf("no")
 return Debug

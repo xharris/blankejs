@@ -275,3 +275,32 @@
 		}
 	}
 }
+
+.content[data-type="Console"] {
+	overflow: hidden;
+
+	.log {
+		overflow: auto;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(33,33,33 ,1);
+		white-space: nowrap;
+
+		.line, .error {
+			margin: 0px;
+		    font-size: 14px;
+		    border-bottom: 1px solid rgba(255,255,255,0.1);
+		    padding: 2px;
+		}
+
+		.line {
+			color: white;
+			white-space: nowrap;
+		}
+
+		.error {
+			color: rgba(239,154,154 ,1);
+			white-space: normal;
+		}
+	}
+}

@@ -2,8 +2,8 @@ var nwGUI = require('nw.gui');
 var nwFS = require('fs');
 var nwPATH = require('path');
 var nwWIN = nwGUI.Window.get();
-const { execFile } = require('child_process')
-const { cwd } = require('process')
+const { spawn, execFile } = require('child_process')
+const { cwd, env, platform } = require('process')
 
 var app = {
 	project_path: "",
@@ -65,18 +65,23 @@ var app = {
 			if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
 		});
 
+		// add to recent files
+		app.settings.recent_files = app.settings.recent_files.filter(e => e != path);
+		app.settings.recent_files.unshift(path);
+		app.saveAppData();
+
 		dispatchEvent("openProject", {path: path}); 
 	},
 
 	play: function() {
-		var child = execFile(nwPATH.join('love2d','love.exe'), [app.project_path], {detached: true, stdio: ['ignore', 1, 2]});
-		child.unref();
-		child.stdout.on('data', function(data){console.log(data.toString());});
-		child.stderr.on('data', function(data){console.log(data.toString());});
+		var child = spawn(nwPATH.join('love2d','love.exe'), [app.project_path]);
+		//child.unref();
+
+		var console_window = new Console(app, child);
 	},
 
 	runServer: function() {
-		var child = execFile(nwPATH.join('love2d','love.exe'), [nwPATH.join("src", "netserver")], {detached: true, stdio: ['ignore', 1, 2]});
+		var child = execFile(nwPATH.join('love2d','love.exe'), [nwPATH.join("src", "netserver")], {detached: true, stdio: 'ignore'});
 		child.unref();
 	},
 
@@ -124,11 +129,71 @@ var app = {
 		app.search_hashvals = app.search_hashvals.filter(e => e != hash);
 		app.search_funcs[hash] = null;
 		app.search_args[hash] = null;
+	},
+
+	settings: {
+		'recent_files':[]		
+	},
+	loadAppData: function(callback) {
+		var app_data_folder = env.APPDATA || (platform == 'darwin' ? env.HOME + 'Library/Preferences' : '/var/local');
+		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
+		console.log('loading settings: '+app_data_path);
+		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
+			if (!err) {
+				app.settings = JSON.parse(data);
+				if (callback) callback();
+			}
+		});
+	},
+
+	saveAppData: function() {
+		var app_data_folder = env.APPDATA || (platform == 'darwin' ? env.HOME + 'Library/Preferences' : '/var/local');
+		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
+		nwFS.stat(app_data_folder, function(err, stat) {
+			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
+			nwFS.writeFile(app_data_path, JSON.stringify(app.settings));
+		});
+	},
+
+	hideWelcomeScreen: function() {
+		app.getElement("#welcome").classList.add("hidden");
 	}
 }
 
 nwWIN.on('loaded', function() {
 	//nwWIN.showDevTools();
+
+	app.loadAppData(function(){
+		// setup welcome screen
+		var el_recent = app.getElement("#welcome .recent-files");
+		for (var p = 0; p < app.settings.recent_files.length; p++) {
+			var el_file = app.createElement("button", "file");
+			var file = app.settings.recent_files[p];
+			el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
+			el_file.title = file;
+			el_file.onclick = function(){
+				app.hideWelcomeScreen();
+				app.openProject(file);
+			};
+
+			var el_br = app.createElement("br");
+
+			el_recent.appendChild(el_file);
+			el_recent.appendChild(el_br);
+		}
+	});
+
+	// setup welcome screen
+	var el_recent = app.getElement("#welcome > .recent-files");
+	for (var p = 0; p < app.settings.recent_files.length; p++) {
+		var el_file = app.createElement("a", "file");
+		var file = app.settings.recent_files[p];
+		
+		el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
+		el_file.title = file;
+		el_file.href = "#";
+		el_recent.appendChild(el_file);
+	}
 
 	// prepare search box
 	app.getElement("#search-input").addEventListener('input', function(e){

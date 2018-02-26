@@ -298,3 +298,61 @@ body {
     	}
     }
 }
+
+#welcome {
+	width: 100%;
+	margin-top: 70px;
+    margin-left: 70px;
+	box-sizing: border-box;
+	white-space: nowrap;
+	overflow: hidden;
+	transition: all 0.2s ease-in-out;
+	.win-nodrag();
+
+	&.hidden {
+		margin: 0px;
+		width: 0%;
+		pointer-events: none;
+	}
+
+	.left-container {
+		display: inline-block;
+		border-left: 1px solid rgba(255,255,255,0.25);
+	}
+
+	.new, .file {
+	    color: white;
+	    cursor: pointer;
+	    background-color: transparent;
+	    outline: none;
+	    border: none;
+
+		border-left: 1px solid rgba(255,255,255,0.25);
+		transition: all 0.1s ease-in-out;
+
+	}
+
+	.new {
+	    font-size: 24px;
+
+		&:hover {
+			border-left-width: 4px;
+			border-left-color: white;
+		}
+	}
+
+	.recent-files {
+		margin-top: 20px;
+
+		.file {
+			font-size: 16px;
+			width: 100%;
+		 	text-align: left;
+
+			&:hover {
+				border-left-width: 2px;
+				border-left-color: white;
+			}
+		}
+	}
+}

@@ -570,34 +570,18 @@ BlankE = {
 	end,
 
 	errhand = function(msg)
-		print(msg)
 		if BlankE._ide_mode then IDE.errd = true; end
 		local trace = debug.traceback()
-	 
-	    local err = {} 
-	 
-	    table.insert(err, "Error\n")
-	    table.insert(err, msg.."\n\n")
-	 
-	    for l in string.gmatch(trace, "(.-)\n") do
-	        if not string.match(l, "boot.lua") then
-	            l = string.gsub(l, "stack traceback:", "Traceback\n")
-	            table.insert(err, l)
-	        end
-	    end
-	 
-	    local p = table.concat(err, "\n")
-	 
-	    p = string.gsub(p, "\t", "")
-	    msg = string.gsub(p, "%[string \"(.-)\"%]", "%1")
-
-	    Net.disconnect()
-		BlankE.clearObjects(true)
-	    HC.resetHash()
-		_err_state.error_msg = msg
-		State.switch(_err_state)
+		print(msg)
+	 	
+	 	--[[
+	 		old_errhand(msg)
+		]]
 	end,
 }
+
+local old_errhand = love.errhand
+love.errhand = BlankE.errhand
 
 BlankE.addClassType('_err_state', 'State')
 _err_state.error_msg = 'NO GAME'

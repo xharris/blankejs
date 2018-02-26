@@ -167,10 +167,12 @@ function Penguin:update(dt)
 		self.hspeed = 0
 		
 		if self.k_right() then
+			Debug.log("right!!")
 			self.hspeed = self.walk_speed
 			self.sprite_speed = 2
 		end
 		if self.k_left() then
+			Debug.log("left!!")
 			self.hspeed = -self.walk_speed
 			self.sprite_speed = 2
 		end

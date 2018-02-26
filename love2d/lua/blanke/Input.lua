@@ -137,7 +137,7 @@ Input = Class{
         if not self.can_repeat and self.pressed then return false end
 
         for input, val in pairs(self.in_key) do
-            if val == true then Debug.log(input); self.pressed = true; return true end
+            if val == true then self.pressed = true; return true end
         end
         
         for input, val in pairs(self.in_mouse) do
