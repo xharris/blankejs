@@ -11,10 +11,23 @@ function love.load()
 	UI.color('window_outline', Draw.blue)
 	UI.color('element_bg', Draw.dark_blue)
 
-    BlankE.init('playState')
+    BlankE.init('menuState')
 
-	Input.setGlobal('confirm', 'e')
-	Input.global_keys['confirm'].can_repeat = false
+	Input.set('confirm', 'e')
+	
+	Input.set('player_left', 'a', 'left')
+	Input.set('player_right', 'd', 'right')
+	Input.set('player_up', 'w', 'up')
+	Input.set('emote1', '1')
+	Input.keys['emote1'].can_repeat = false
+
+	Input.set("net_join", "j")
+	Input.set("net_leave", "d")
+	Input.set("destruct", "k")
+	Input.set("restart", "r")
+	Input.keys['restart'].can_repeat = false
+
+	Input.keys['confirm'].can_repeat = false
 	
 	BlankE.draw_debug = true
 end

@@ -28,7 +28,7 @@ class Console extends Editor {
 	log (str) {
 		str = str.trim();
 		var duplicate = re_duplicate.exec(str);
-		console.log(duplicate !== null, str);
+		
 		if (str !== ')' && str !== '') {
 			if (duplicate !== null) {
 				this.el_log.lastElementChild.innerHTML = duplicate[0];

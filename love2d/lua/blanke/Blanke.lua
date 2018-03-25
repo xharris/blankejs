@@ -24,7 +24,6 @@ function _addGameObject(type, obj)
     if not obj.destroy then
     	obj.destroy = function(self)
     		if self.onDestroy then self:onDestroy() end
-	    	self._destroyed = true
 	    	_destroyGameObject(type,self)
 	    end
     end
@@ -49,6 +48,8 @@ function _iterateGameGroup(group, func)
 end
 
 function _destroyGameObject(type, del_obj)
+	del_obj._destroyed = true
+	--if del_obj.type ~= 'state' then del_obj.draw = function() end end
 	_iterateGameGroup(type, function(obj, i) 
 		if obj.uuid == del_obj.uuid then
 			table.remove(game[type],i)
@@ -62,18 +63,21 @@ uuid 	= blanke_require("extra.uuid")
 
 
 Class 	= blanke_require('Class')	-- hump.class
+Signal = blanke_require('Signal')
 
 anim8 	= blanke_require('extra.anim8')
 HC 		= blanke_require('extra.HC')
 grease 	= blanke_require('extra.grease')
 
-local modules = {'Map','Asset','Camera','Canvas','Dialog','Draw','Effect','Entity','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','Signal','State','Steam','Timer','Tween','UI','View'}
+local modules = {'Map','Asset','Camera','Canvas','Dialog','Draw','Effect','Entity','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 local not_require = {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
 	if not table.hasValue(not_require, mod) then
 		_G[mod] = blanke_require(mod)
 	end
 end
+
+Signal.emit('modules_loaded')
 
 -- prevents updating while window is being moved (would mess up collisions)
 local max_fps = 120
@@ -524,35 +528,24 @@ BlankE = {
 	end,
 
 	keypressed = function(key)
-	    _iterateGameGroup("input", function(input)
-	        input:keypressed(key)
-	    end)
+        Input.keypressed(key)
 	end,
 
 	keyreleased = function(key)
-	    _iterateGameGroup("input", function(input)
-	        input:keyreleased(key)
-	    end)
+	    Input.keyreleased(key)
 	end,
 
 	mousepressed = function(x, y, button) 
-	    _iterateGameGroup("input", function(input)
-	    	x, y = BlankE.scaledMouse(x, y)
-	        input:mousepressed(x, y, button)
-	    end)
+	    x, y = BlankE.scaledMouse(x, y)
+	    Input.mousepressed(x, y, button)
 	end,
 
 	mousereleased = function(x, y, button) 
-	    _iterateGameGroup("input", function(input)
-	    	x, y = BlankE.scaledMouse(x, y)
-	        input:mousereleased(x, y, button)
-	    end)
+	    Input.mousereleased(x, y, button)
 	end,
 
 	wheelmoved = function(x, y)
-	    _iterateGameGroup("input", function(input)
-	        input:wheelmoved(x, y)
-	    end)		
+	    Input.wheelmoved(x, y)		
 	end,
 
 	quit = function()
@@ -581,7 +574,7 @@ BlankE = {
 }
 
 local old_errhand = love.errhand
-love.errhand = BlankE.errhand
+--love.errhand = BlankE.errhand
 
 BlankE.addClassType('_err_state', 'State')
 _err_state.error_msg = 'NO GAME'

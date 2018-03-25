@@ -57,6 +57,10 @@ var app = {
 		return (app.project_path != "");
 	},
 
+	newProject: function(path) {
+
+	},
+
 	openProject: function(path) {
 		app.project_path = path
 
@@ -70,10 +74,12 @@ var app = {
 		app.settings.recent_files.unshift(path);
 		app.saveAppData();
 
+
+
 		dispatchEvent("openProject", {path: path}); 
 	},
 
-	play: function() {
+	play: function() { 
 		var child = spawn(nwPATH.join('love2d','love.exe'), [app.project_path]);
 		//child.unref();
 
@@ -161,25 +167,35 @@ var app = {
 }
 
 nwWIN.on('loaded', function() {
-	//nwWIN.showDevTools();
+	nwWIN.showDevTools();
 
 	app.loadAppData(function(){
-		// setup welcome screen
+		// Welcome screen
+
+		// new project
+		var el_new_proj = app.getElement("#welcome .new");
+		el_new_proj.onclick = function(){ app.newProject(); }
+
+		// add recent projects
 		var el_recent = app.getElement("#welcome .recent-files");
 		for (var p = 0; p < app.settings.recent_files.length; p++) {
-			var el_file = app.createElement("button", "file");
-			var file = app.settings.recent_files[p];
-			el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
-			el_file.title = file;
-			el_file.onclick = function(){
-				app.hideWelcomeScreen();
-				app.openProject(file);
-			};
+			// dont show recent project if it doesn't exist
+			var stat = nwFS.statSync(app.settings.recent_files[p]);
+			if (stat.isDirectory()) {
+				var file = app.settings.recent_files[p];
+				var el_file = app.createElement("button", "file");
+				el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
+				el_file.title = file;
+				el_file.onclick = function(){
+					app.hideWelcomeScreen();
+					app.openProject(file);
+				};
 
-			var el_br = app.createElement("br");
+				var el_br = app.createElement("br");
 
-			el_recent.appendChild(el_file);
-			el_recent.appendChild(el_br);
+				el_recent.appendChild(el_file);
+				el_recent.appendChild(el_br);
+			} 
 		}
 	});
 
@@ -219,7 +235,9 @@ nwWIN.on('loaded', function() {
 	})
 	function selectSearchResult(hash_val) {
 		app.search_funcs[hash_val].apply(this, app.search_args[hash_val]);
-		app.getElement("#search-input").value = "";
+		var el_search = app.getElement("#search-input")
+		el_search.value = "";
+		el_search.blur();
 		app.clearElement(app.getElement("#search-results"));
 
 		// move found value up in list
@@ -308,7 +326,6 @@ nwWIN.on('loaded', function() {
 	}));
 
 	dispatchEvent("ideReady");
-
 	app.addSearchKey({key: 'Open project', onSelect: function() {
 		blanke.chooseFile('nwdirectory', function(file_path){
 			app.openProject(file_path);

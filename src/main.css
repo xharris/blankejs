@@ -1034,6 +1034,7 @@ body {
   bottom: 100%;
 }
 #search-container #search-results .result {
+  cursor: default;
   background-color: rgba(66, 66, 66, 0.8);
   color: #f0f0f0;
   padding: 2px 15px;

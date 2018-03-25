@@ -8,7 +8,7 @@ function love.conf(t)
  
     t.window.title = "Untitled"         -- The window title (string)
     t.window.icon = nil                 -- Filepath to an image to use as the window's icon (string)
-    t.window.width = 400--572                -- The window width (number)
-    t.window.height = 300--289               -- The window height (number)
+    t.window.width = 800--572                -- The window width (number)
+    t.window.height = 600--289               -- The window height (number)
     t.window.resizable = true
 end

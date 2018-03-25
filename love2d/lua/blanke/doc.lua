@@ -238,7 +238,9 @@ str zoom_type				-- none, damped
 
 num port_x, port_y			-- uses love2d Scissor to crop view
 num port_width, port_height -- uses love2d Scissor to crop view
-bool noclip					-- HUMP attach option. no idea what it does
+bool noclip					-- HUMP attach option. maybe it determines whether things outside view are visible
+num top 					-- [readonly] y coordinate of top edge
+num bottom					-- [readonly] y coordinate of bottom edge
 
 num shake_x, shake_y		-- = 0
 num shake_intensity			-- = 7
@@ -311,7 +313,7 @@ Image crop(x, y, w, h)			-- obvious
 Input
 ]]
 
-Input(...)					--[[ constructor containing tracked inputs
+Input.set(...)					--[[ constructor containing tracked inputs
 Keyboard
 	a, b, c, 1, 2, 3...
 	!, ", #, &...
@@ -351,17 +353,17 @@ Region			mouse click in a region
 ]]
 
 -- usage
-k_left = Input('left', 'a')
-if k_left() then
+Input.set('move_left', 'a', 'left')		-- call this once
+if Input('move_left') then
 	hspeed = -125
 end
 
--- instance properties
-bool can_repeat				-- only true once until the button is released
+-- class properties
+bool key[name].can_repeat	-- only true once until the button is released
 
 -- class methods
-setGlobal(name, ...)		-- global input
-global(name)				-- access global input. returns output similar to 'k_left()' in example
+set(name, ...)				-- set an input
+Input(name, ...)			-- checks an input. Can check multiple at a time
 
 --[[
  ###    ##### ###### #   #  ###### 

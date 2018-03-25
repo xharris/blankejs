@@ -72,7 +72,6 @@ Entity = Class{
     		shape:destroy()
     	end
 
-    	self._destroyed = true
     	_destroyGameObject('entity', self)
     end,
 

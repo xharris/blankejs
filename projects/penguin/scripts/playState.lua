@@ -1,9 +1,8 @@
 BlankE.addClassType("playState", "State")
 
-play_mode = 'online'
+play_mode = 'local'
 game_start_population = 3
 
-local k_join, k_leave, k_destruct
 local main_penguin
 
 -- Called every time when entering the state.
@@ -38,10 +37,6 @@ function playState:enter(previous)
 	main_view.zoom_speed = .05
 	lvl_objects = Group()
 
-	k_join = Input('j')
-	k_leave = Input('d')
-	k_destruct = Input('k')
-
 	loadLevel("spawn")
 	-- add player's penguin
 	spawnPlayer()
@@ -54,8 +49,12 @@ function playState:update(dt)
 	bg_sky.color = hsv2rgb({195,37,100})-- hsv2rgb({186,39,88})
 	water_color = hsv2rgb({212,70,100})
 	
-	if k_join() then
+	if Input("net_join") then
 		Steam.init()
+	end
+	
+	if Input('restart') then
+		State.switch(playState)
 	end
 
 	-- enough players to start game
@@ -68,8 +67,8 @@ function playState:update(dt)
 			})
 		end
 
-		if play_mode == 'single' then
-			--startDestruction()
+		if play_mode == 'local' then
+			startDestruction()
 		end
 	end
 

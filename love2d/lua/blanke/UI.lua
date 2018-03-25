@@ -1,5 +1,7 @@
-local btn_click = Input('mouse.1')
-btn_click.can_repeat = false
+Signal.on('modules_loaded', function()
+	Input.set("_UI_mouse1", "mouse.1")
+	Input["_UI_mouse1"].can_repeat = false
+end)
 
 UI = Class{
 	margin = 4,
@@ -46,7 +48,7 @@ UI = Class{
 				mouse_y < btn_dimensions[2] + btn_dimensions[4]
 		end
 
-		if btn_click() then
+		if Input("_UI_mouse1") then
 			for e, el in ipairs(UI._element_stack) do
 				if el.type == 'button' then
 					if mouseInElement(el.button) then

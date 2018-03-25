@@ -66,6 +66,7 @@ StateManager = {
 				local curr_state = StateManager.current()
 				curr_state._transitioning = false
 				transitioning = false
+				-- StateManager.pop(curr_state.classname)
 
 				if #transition_queue > 0 then
 					local next_transition = table.remove(transition_queue)
@@ -96,6 +97,7 @@ StateManager = {
 		if new_state.enter then new_state:enter() end
 	end,
 
+	-- remove newest state
 	pop = function(state_name)
 		local state = nil
 		local index = 1

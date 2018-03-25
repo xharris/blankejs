@@ -460,6 +460,10 @@ class MapEditor extends Editor {
 			});
 
 			new_text.snapped = false;
+			if (from_load_snapped == null) {
+				if (x < 0) x -= this.curr_layer.snap[0];
+				if (y < 0) y -= this.curr_layer.snap[1];
+			}
 			if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
 				x -= x % this.curr_layer.snap[0];
 				y -= y % this.curr_layer.snap[1];

@@ -21,13 +21,23 @@ function FragImage:update(dt)
 	local wall_x = 0
 	if wall then wall_x = wall.x end
 
+	local drawn = 0
 	table.forEach(self.img_frags, function(f, frag)
 		if wall_x > frag.x + (frag.random_g*5) then
 			frag.gravity = frag.gravity + frag.random_g
 			frag.y = frag.y + frag.gravity * dt
 			frag.x = frag.x - 15 * dt
 		end
+			
+		if frag.y < main_view.bottom then
+			drawn = drawn + 1		
+		end
 	end)
+	
+	-- are all the frags destroyed?
+	if drawn == 0 then
+		self:destroy()
+	end
 end
 
 function FragImage:draw()

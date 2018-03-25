@@ -35,13 +35,6 @@ function Penguin:init(is_main_player)
 		speed = .1
 	}
 
-	-- INPUT
-	self.k_left = Input('left','a')
-	self.k_right = Input('right','d')
-	self.k_up = Input('up','w')
-	self.k_happy = Input('2')
-	self.k_happy.can_repeat = false
-
 	self.gravity = 30
 	self.can_jump = true
 	self.walk_speed = 180
@@ -166,22 +159,20 @@ function Penguin:update(dt)
 	if not self.net_object then
 		self.hspeed = 0
 		
-		if self.k_right() then
-			Debug.log("right!!")
+		if Input("player_right") then
 			self.hspeed = self.walk_speed
 			self.sprite_speed = 2
 		end
-		if self.k_left() then
-			Debug.log("left!!")
+		if Input("player_left") then
 			self.hspeed = -self.walk_speed
 			self.sprite_speed = 2
 		end
 
-		if self.k_up() then
+		if Input("player_up") then
 			self:jump()
 		end
 
-		if self.k_happy() then
+		if Input("emote1") then
 			self:setEyes(2)
 		end
 	end

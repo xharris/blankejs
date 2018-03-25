@@ -39,7 +39,7 @@ end
 
 function Igloo:update(dt)
 	self.onCollision["closet"] = function(other, sep_vector)
-		if other.tag:contains("Penguin") and Input.global('confirm') then
+		if other.tag:contains("Penguin") and Input('confirm') then
 			if not self.ent_closet or self.ent_closet._destroyed then
 				self.ent_closet = OutfitMenu(self.main_penguin)
 			end

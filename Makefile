@@ -1,4 +1,7 @@
 do:
+	love2d/love.exe projects/penguin
+
+blanke:
 	lessc --strict-math=on src/less/main.less src/main.css
 	nw .
 	
