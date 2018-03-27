@@ -53,6 +53,10 @@ Draw = Class{
 		return Draw
 	end,
 
+	setAlpha = function(a)
+		Draw.color[4] = clamp(a, 0, 255)
+	end,
+
 	translate = function(x, y)
 		love.graphics.translate(x, y)
 	end,

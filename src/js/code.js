@@ -195,6 +195,7 @@ function addScripts(folder_path) {
 
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
+	app.removeSearchGroup("Code");
 	addScripts(proj_path);
 
 	app.addSearchKey({
@@ -202,7 +203,7 @@ document.addEventListener("openProject", function(e){
 		onSelect: function() {
 			var script_dir = nwPATH.join(app.project_path,'scripts');
 			nwFS.stat(script_dir, function(err, stat) {
-				if (!stat.isDirectory()) nwFS.mkdirSync(script_dir);
+				if (err) nwFS.mkdirSync(script_dir);
 				// overwrite the file if it exists. fuk it!!
 				nwFS.readdir(script_dir, function(err, files){
 					nwFS.writeFile(nwPATH.join(script_dir, 'script'+files.length+'.lua'),"\

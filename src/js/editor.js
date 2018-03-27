@@ -37,6 +37,13 @@ class Editor {
 		this.closed = true;
 	}
 
+	static closeAll () {
+		var windows = app.getElements(".drag-container");
+		for (var i = 0; i < windows.length; i++) {
+			windows[i].remove();
+		}
+	}
+
 	addCallback(cb_name, new_func) {
 		this.dragbox[cb_name] = new_func;
 	}
@@ -102,3 +109,7 @@ class Editor {
 		}
 	}
 }
+
+document.addEventListener("openProject", function(e){
+	Editor.closeAll();
+});

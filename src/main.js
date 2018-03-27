@@ -1,5 +1,6 @@
 var nwGUI = require('nw.gui');
 var nwFS = require('fs');
+var nwFS2 = require('fs-extra');
 var nwPATH = require('path');
 var nwWIN = nwGUI.Window.get();
 const { spawn, execFile } = require('child_process')
@@ -58,11 +59,31 @@ var app = {
 	},
 
 	newProject: function(path) {
+		nwFS.mkdir(path, function(err) {
+			if (!err) {
+				// copy template files
+				nwFS2.copySync(nwPATH.join(cwd(),'src','template'), path);
+				app.hideWelcomeScreen();
+				app.openProject(path);
+			}
+		});
+	},
 
+	newProjectDialog: function() {
+		blanke.chooseFile('nwdirectory', function(file_path){
+			blanke.showModal(
+				"<label style='line-height:35px'>new project name:</label></br>"+
+				"<label>"+file_path+"\\</label>"+
+				"<input class='ui-input' id='new-proj-name' style='width:100px;' value='my_project'/>",
+			{
+				"yes": function() { app.newProject(nwPATH.join(file_path, app.getElement('#new-proj-name').value)); },
+				"no": function() {}
+			});
+		}, true);
 	},
 
 	openProject: function(path) {
-		app.project_path = path
+		app.project_path = path;
 
 		// watch for file changes
 		app.watch = nwFS.watch(app.project_path, function(evt_type, file) {
@@ -73,8 +94,6 @@ var app = {
 		app.settings.recent_files = app.settings.recent_files.filter(e => e != path);
 		app.settings.recent_files.unshift(path);
 		app.saveAppData();
-
-
 
 		dispatchEvent("openProject", {path: path}); 
 	},
@@ -119,11 +138,13 @@ var app = {
 	},
 
 	removeSearchGroup: function(group) {
-		var group_len = app.search_group[group].length;
-		for (var v = 0; v < group_len; v++) {
-			app.removeSearchHash(app.search_group[group][v]);
+		if (app.search_group[group]) {
+			var group_len = app.search_group[group].length;
+			for (var v = 0; v < group_len; v++) {
+				app.removeSearchHash(app.search_group[group][v]);
+			}
+			app.search_group[group] = [];
 		}
-		app.search_group[group] = [];
 	},
 
 	removeSearchKey: function(key, tags) {
@@ -174,15 +195,16 @@ nwWIN.on('loaded', function() {
 
 		// new project
 		var el_new_proj = app.getElement("#welcome .new");
-		el_new_proj.onclick = function(){ app.newProject(); }
+		el_new_proj.onclick = function(){ 
+			app.newProjectDialog();
+		}
 
 		// add recent projects
 		var el_recent = app.getElement("#welcome .recent-files");
-		for (var p = 0; p < app.settings.recent_files.length; p++) {
+		app.settings.recent_files.forEach(function(file){
 			// dont show recent project if it doesn't exist
-			var stat = nwFS.statSync(app.settings.recent_files[p]);
+			var stat = nwFS.statSync(file);
 			if (stat.isDirectory()) {
-				var file = app.settings.recent_files[p];
 				var el_file = app.createElement("button", "file");
 				el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
 				el_file.title = file;
@@ -196,7 +218,7 @@ nwWIN.on('loaded', function() {
 				el_recent.appendChild(el_file);
 				el_recent.appendChild(el_br);
 			} 
-		}
+		});
 	});
 
 	// setup welcome screen

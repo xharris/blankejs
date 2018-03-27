@@ -252,11 +252,6 @@ class MapEditor extends Editor {
 		window.addEventListener('keyup', function(e){
 			var keyCode = e.keyCode || e.which;
 
-			// SPACE
-			if (keyCode == 32) {
-				dragStop();
-			}
-
 			// CTRL
 			if (keyCode == 17) {
 				this_ref.snap_on = true;
@@ -268,20 +263,27 @@ class MapEditor extends Editor {
 		this.dragbox.drag_content.addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
-		this.pixi.stage.pointerdown = function(e){
+		// this.pixi.stage.pointerdown = function(e){
+		document.addEventListener('mousedown', function(e){
+			var x = this_ref.pixi.renderer.plugins.interaction.mouse.global.x; //e.data.global.x;
+			var y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y; //e.data.global.y;
+			var btn = e.button;
+			var alt = e.altKey; // e.originalEvent.altKey;
+
 			// dragging canvas
-			if (e.data.button == 1 && !this_ref.dragging) {
+			if (((btn == 1) || (btn == 0 && alt)) && !this_ref.dragging) {
 				this_ref.can_drag = true;
 				dragStart();
 			}
 
 			// placing object
-			if (e.data.button == 0) {
-				this_ref.placeObject(e.data.global.x - this_ref.camera[0], e.data.global.y - this_ref.camera[1]);
+			if (btn == 0 && !alt) {
+				this_ref.placeObject(x - this_ref.camera[0], y - this_ref.camera[1]);
 			}
-		}
+		});
+
 		document.addEventListener('mouseup', function(e) {
-			if (e.button == 1) {
+			if (e.button == 1 || (e.button == 0 && this_ref.dragging)) {
 				dragStop();
 			}
 
@@ -726,6 +728,7 @@ function addMaps(folder_path) {
 
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
+	app.removeSearchGroup("Map");
 	addMaps(proj_path);
 
 	app.addSearchKey({

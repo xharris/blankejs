@@ -4,12 +4,14 @@ Asset = Class{
 	info = {},
 
 	loadScripts = function()
-		for a, asset in pairs(Asset.info['script']) do
-			if asset.category == 'script' then
-				result, chunk = pcall(asset.object)
-				if not result then
-					print(chunk)
-					error(chunk)
+		if Asset.info['script'] then
+			for a, asset in pairs(Asset.info['script']) do
+				if asset.category == 'script' then
+					result, chunk = pcall(asset.object)
+					if not result then
+						print(chunk)
+						error(chunk)
+					end
 				end
 			end
 		end

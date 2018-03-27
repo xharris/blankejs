@@ -22,7 +22,9 @@ When to click 'Reload' button
 require('blanke.Blanke')
 
 function love.load()
-	BlankE.init()
+	Asset.add('scripts/')
+
+	BlankE.init(mainState)
 end
 
 --- THINGS TO KNOW
@@ -47,6 +49,7 @@ my_entity = nil 		-- GOOD: no longer referencing it
 
 -- properties
 scale_mode = 'scale'		-- can be: stretch, scale, center
+draw_debug = false			-- automatically draw Debug.log()
 
 -- methods
 init(first_state) -- first_state: can be string or object
@@ -611,10 +614,13 @@ num[3] hex2rgb(hex)
 num[3] hsv2rgb({h,s,v})			-- h: degrees, s: 0-100, v: 0-100
 
 num decimal_places(num)			-- number of dec places in float
-num clamp(x, min, max)
+num clamp(x, min, max)			-- inclusive
 num lerp(a, b, amt)
 num randRange(min, max)
 num sinusoidal(min, max, speed, start_offset)
+num round(num, places)
+num direction_x(degrees, distance)
+num direction_y(degrees, distance)
 
 num bitmask4(map_table, tile_value(s), x, y)	-- https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
 num bitmask8(map_table, tile_value(s), x, y)	-- untested
@@ -641,8 +647,6 @@ len(t)
 forEach(t, func)								-- will return a value and end early if 'func' returns a value
 random(t)
 
--- MATH
-round(num, places)
 
 --[[
 #   #  ###### #######
@@ -673,7 +677,7 @@ addObject(obj)						-- add an object to be synced with other clients
 
 -- vvv objects added with 'addObject' are given the follow properties and methods vvv
 -- optional obj properties
-	net_sync_vars = {}				-- table containing the names of properties to sync ('x','hspeed','walk_speed','sprite_xcsale')
+	ObjClass.net_sync_vars = {}		-- table containing the names of properties to sync ('x','hspeed','walk_speed','sprite_xcsale')
 
 -- this method adds the netSync method to the object
 	obj:netSync("x","y","sprite_color") 	-- used to manually sync an object (use wisely)

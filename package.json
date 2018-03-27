@@ -14,5 +14,8 @@
     "less": "lessc src/less/main.less src/main.css",
     "nw": "nw .",
     "dist": "build.js"
+  },
+  "dependencies": {
+    "fs-extra": "^5.0.0"
   }
 }

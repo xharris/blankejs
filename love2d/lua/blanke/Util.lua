@@ -69,6 +69,14 @@ function sinusoidal(min, max, speed, start_offset)
 	return (100*math.sin(game_time * speed * math.pi + start)/100) * dist + offset;
 end
 
+function direction_x(angle, dist)
+	return math.cos(math.rad(angle)) * dist
+end
+
+function direction_y(angle, dist)
+	return -math.sin(math.rad(angle)) * dist
+end
+
 love.graphics.resetColor = function()
 	love.graphics.setColor(255, 255, 255, 255)
 end

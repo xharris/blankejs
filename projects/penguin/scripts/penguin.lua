@@ -35,9 +35,9 @@ function Penguin:init(is_main_player)
 		speed = .1
 	}
 
-	self.gravity = 30
+	self.gravity = 25
 	self.can_jump = true
-	self.walk_speed = 180
+	self.walk_speed = 200
 	-- random shade of blue
 	self.sprite_yoffset = -16
 	self.sprite_xoffset = -16
@@ -199,7 +199,7 @@ end
 
 function Penguin:jump()
 	if self.can_jump then
-		self.vspeed = -700
+		self.vspeed = -725
 		self:netSync("vspeed","x","y")
 		self.can_jump = false
 	end

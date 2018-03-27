@@ -4,10 +4,10 @@ class DragBox {
 	constructor (content_type) {
 		this.guid = guid();
 		var this_ref = this;
-
 		this.drag_container = document.createElement("div");
 		this.drag_container.classList.add("drag-container");
 		this.drag_container.id = "drag-container-"+this.guid;
+		this.drag_container.dataset.type = content_type;
 		this.drag_container.addEventListener("click", function() {
 			// reset z index of others
 			app.getElements('.drag-container').forEach(function(e){
