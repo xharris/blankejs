@@ -94,11 +94,7 @@ Asset = Class{
 	end,
 
 	has = function(category, name)
-		if Asset.info[category] then
-			return (Asset.info[category][name] ~= nil)
-		else
-			return false
-		end
+		return (Asset.info[category] and Asset.info[category][name])
 	end,
 
 	getInfo = function(category, name)

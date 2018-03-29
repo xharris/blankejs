@@ -40,6 +40,8 @@ Entity = Class{
 		self.sprite_alpha = 255
 		self.sprite_speed = 1
 		self.sprite_frame = 0
+		self.sprite_width = 0
+		self.sprite_height = 0
 
 		-- movement variables
 		self.direction = 0

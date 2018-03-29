@@ -13,7 +13,12 @@ function love.load()
 
     BlankE.init('menuState')
 
+	Input.set('menu_up', 'w', 'up')
+	Input.set('menu_down', 's', 'down')
 	Input.set('confirm', 'e')
+	Input.keys['menu_up'].can_repeat = false
+	Input.keys['menu_down'].can_repeat = false
+	Input.keys['confirm'].can_repeat = false
 	
 	Input.set('player_left', 'a', 'left')
 	Input.set('player_right', 'd', 'right')
@@ -27,7 +32,6 @@ function love.load()
 	Input.set("restart", "r")
 	Input.keys['restart'].can_repeat = false
 
-	Input.keys['confirm'].can_repeat = false
 	
 	BlankE.draw_debug = true
 end

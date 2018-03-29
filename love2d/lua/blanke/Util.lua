@@ -267,6 +267,12 @@ function table.random(t)
 	end
 end
 
+function table.keys(t)
+	local ret = {}
+	for k, v in pairs(t) do table.insert(ret, k) end
+	return ret
+end
+
 --[[
 
 	MATH

@@ -280,6 +280,7 @@ Image
 ]]
 
 -- instance properties
+str name 					-- path used to create image
 num x, y 					-- position for draw()
 num angle 					-- degrees
 num xscale, yscale 			-- = 1
@@ -646,7 +647,7 @@ toNumber(t)
 len(t)
 forEach(t, func)								-- will return a value and end early if 'func' returns a value
 random(t)
-
+keys(t)
 
 --[[
 #   #  ###### #######

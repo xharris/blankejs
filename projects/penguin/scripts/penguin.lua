@@ -1,6 +1,14 @@
 BlankE.addClassType("Penguin", "Entity")
 
-Penguin.main_penguin_info = nil
+local JUMP_AMOUNT = .8
+local JUMP_INCR = .1
+
+Penguin.main_penguin_info = {
+	str_color = 'blue',
+	color_index = randRange(1,3),
+	hat = "none"
+}
+
 Penguin.hats = Asset.list('image','hat')
 table.insert(Penguin.hats, 'none')
 
@@ -35,8 +43,8 @@ function Penguin:init(is_main_player)
 		speed = .1
 	}
 
-	self.gravity = 25
-	self.can_jump = true
+	self.gravity = 35
+	self.can_jump = JUMP_AMOUNT
 	self.walk_speed = 200
 	-- random shade of blue
 	self.sprite_yoffset = -16
@@ -47,27 +55,21 @@ function Penguin:init(is_main_player)
 	self:addShape("jump_box", "rectangle", {left, 30, 32-(left+right), 2})	-- rectangle at players feet
 	self:setMainShape("main")
 
-	-- initalize player's penguin attributes
-	if is_main_player and not Penguin.main_penguin_info then
-		local random_hat_name = table.random(Asset.list('image','hat'))
-
-		Penguin.main_penguin_info = {
-			str_color = 'blue',
-			color = UI.colors['blue'][randRange(1,3)],
-			hat = "None"
-		}
-	end
-
 	self.eyes = 1
 	self.sprite['eyes'].speed = 0
 
 	if is_main_player then
-		self:setColor(Penguin.main_penguin_info.color)
+		self:setColor(self:getColor())
 		self:setHat(Penguin.main_penguin_info.hat)
 	end
 end
 
+function Penguin:getColor()
+	return ifndef(UI.colors[Penguin.main_penguin_info.str_color][Penguin.main_penguin_info.color_index], UI.colors['blue'][randRange(1,3)])
+end
+
 function Penguin:setColor(value)
+	value = ifndef(value, self:getColor())
 	self.color = value
 	local dark_colors = {{33,33,33,255}}
 
@@ -86,8 +88,9 @@ function Penguin:setEyes(value)
 end
 
 function Penguin:setHat(name)
+	name = ifndef(name, Penguin.main_penguin_info.hat)
 	self.hat = name
-
+	
 	if name == "none" and self.sprite['hat'] then
 		self.sprite['hat'].alpha = 0
 	end
@@ -150,7 +153,7 @@ function Penguin:update(dt)
             if not self.can_jump then
 				self:netSync("vspeed","x","y")
             end
-            self.can_jump = true 
+            self.can_jump = JUMP_AMOUNT 
         	self:collisionStopY()
         end 
     end
@@ -198,14 +201,15 @@ function Penguin:update(dt)
 end
 
 function Penguin:jump()
-	if self.can_jump then
+	if self.can_jump > 0 then
 		self.vspeed = -725
 		self:netSync("vspeed","x","y")
-		self.can_jump = false
+		self.can_jump = self.can_jump - JUMP_INCR
 	end
 end
 
 function Penguin:draw()
+	Draw.setColor('white')
 	self.sprite['walk'].color = Draw.white
 	self.sprite['walk_fill'].color = self.color
 

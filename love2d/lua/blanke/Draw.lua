@@ -26,6 +26,10 @@ Draw = Class{
 			color = hex2rgb(color)
 		elseif (type(color) == "string") then
 			color = Draw[color]
+			if color then
+				if g then color[4] = clamp(g, 0, 255)
+				else color[4] = 255 end
+			end
 		end
 		if (type(color) == "number") then
 			color = {r,g,b,a}
@@ -49,12 +53,18 @@ Draw = Class{
 			r, g, b, a = unpack(r)
 		end
 		Draw.color = Draw._parseColorArgs(r,g,b,a)
-		love.graphics.setColor(Draw.color)
+		if Draw.color then
+			love.graphics.setColor(Draw._parseColorArgs(r,g,b,a))
+		end
 		return Draw
 	end,
 
 	setAlpha = function(a)
 		Draw.color[4] = clamp(a, 0, 255)
+		if Draw.color then
+			love.graphics.setColor(Draw.color)
+		end
+		return Draw
 	end,
 
 	translate = function(x, y)
@@ -66,6 +76,8 @@ Draw = Class{
 	end,
 
 	reset = function(dont_scale)
+		Draw.color = Draw.reset_color
+		Draw.setColor(Draw.color)
 		love.graphics.origin()
 		if not dont_scale then BlankE.reapplyScaling() end
 	end,

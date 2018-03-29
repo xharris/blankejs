@@ -719,7 +719,6 @@
   width: 100%;
   height: 100%;
   background-color: #212121;
-  white-space: nowrap;
 }
 .content[data-type="Console"] .log .line,
 .content[data-type="Console"] .log .error {
@@ -730,7 +729,6 @@
 }
 .content[data-type="Console"] .log .line {
   color: white;
-  white-space: nowrap;
 }
 .content[data-type="Console"] .log .error {
   color: #ef9a9a;

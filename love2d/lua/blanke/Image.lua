@@ -1,11 +1,11 @@
 local _images = {}
  
 Image = Class{
-	init = function(self, name)
+	init = function(self, name, img_data)
 		self.name = name 
 
-		if tostring(self.name):contains("ImageData") then
-			self.image = love.graphics.newImage(name)
+		if img_data and tostring(img_data):contains("ImageData") then
+			self.image = love.graphics.newImage(img_data)
 		else
 
 			local asset = Asset.image(name)
@@ -33,8 +33,8 @@ Image = Class{
 
 		self.orig_width = self.image:getWidth()
 		self.orig_height = self.image:getHeight()
-		self.width = self.orig_width
-		self.height = self.orig_height
+		self.width = self.orig_width * self.xscale
+		self.height = self.orig_height * self.yscale
 	end,
 
 	-- static: check if an image exists
@@ -44,17 +44,27 @@ Image = Class{
 
 	setWidth = function(self, width)
 		self.xscale = width / self.orig_width
+		self.width = self.orig_width * self.xscale
 		return self
 	end,
 
 	setHeight = function(self, height)
 		self.yscale = height / self.orig_height
+		self.height = self.orig_height * self.yscale
 		return self
 	end,
 
 	setSize = function(self, width, height)
 		self.setWidth(width)
 		self.setHeight(height)
+	end,
+
+	setScale = function(self, x, y)
+		if not y then y = x end
+		self.xscale = x
+		self.width = self.orig_width * self.xscale
+		self.yscale = y
+		self.height = self.orig_height * self.yscale
 	end,
 
 	draw = function(self, x, y)
@@ -134,7 +144,7 @@ Image = Class{
 		local dest_image_data = love.image.newImageData(w,h)
 		dest_image_data:paste(src_image_data, 0, 0, x, y, w, h)
 
-		return Image(dest_image_data)
+		return Image(self.name, dest_image_data)
 	end,
 
 	combine = function(self, other_image)

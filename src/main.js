@@ -101,7 +101,7 @@ var app = {
 	play: function() { 
 		var child = spawn(nwPATH.join('love2d','love.exe'), [app.project_path]);
 		//child.unref();
-
+		Editor.closeAll('Console');
 		var console_window = new Console(app, child);
 	},
 
