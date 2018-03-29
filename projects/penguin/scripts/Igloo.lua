@@ -5,6 +5,12 @@ local menu_width = 500 - menu_left
 local menu_top = 130
 local section_w = menu_width / 3
 
+local igloo_font = Font{
+	size=20,
+	color="black",
+	align="center"
+}
+
 function Igloo:init(from_outside)	
 	-- setup igloo 
 	self.img_igloo_back = Image("in_igloo_back")
@@ -162,8 +168,7 @@ function Igloo:draw()
 		self.main_penguin:setHat()
 		self:refreshMenuHat()
 	end
-	
-	
+
 	-- draw penguin color
 	Draw.setColor(self.main_penguin:getColor())
 	local rect_margin = 10
@@ -178,6 +183,11 @@ function Igloo:draw()
 	self.img_earth.y = menu_top
 	self.img_earth:draw()
 	
+	-- draw multiplayer status
+	igloo_font:set('limit', section_w)
+	Draw.setFont(igloo_font)
+	Draw.text(play_mode, menu_left + (section_w*2) + (section_w/2) - (section_w/2), menu_top - igloo_font:get('size'))
+		
 	Draw.translate(-self.main_penguin.x, -self.main_penguin.y)
 	Draw.scale(2)
 	self.main_penguin:draw()

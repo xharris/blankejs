@@ -2,6 +2,7 @@ BlankE.addClassType("playState", "State")
 
 play_mode = 'local'
 game_start_population = 3
+largest_penguin_x = 0
 
 local main_penguin
 
@@ -40,8 +41,6 @@ function playState:enter(previous)
 	loadLevel("spawn")
 	-- add player's penguin
 	spawnPlayer()
-	loadLevel("level1")
-	loadLevel("level1")
 end
 
 local send_ready = false
@@ -94,6 +93,11 @@ function playState:update(dt)
 		main_view:zoom(1)
 		main_view:follow(main_penguin)
 	end
+	
+	-- load more levels!
+	if largest_penguin_x > last_lvl_end[1] - (game_width/2) then
+		loadLevel("level1")
+	end
 end
 
 local spawn_wall_count = 0
@@ -124,11 +128,6 @@ function playState:draw()
 	local ready = ''
 	if main_penguin.x > destruct_ready_x then ready = '\nREADY!' end
 	Draw.text(tostring(Net.getPopulation())..' / '..tostring(game_start_population)..ready, game_width/2, 50)
-
-	-- draw igloo menu
-	if in_igloo_menu then
-
-	end
 end	
 
 function loadLevel(name)

@@ -263,10 +263,10 @@ class MapEditor extends Editor {
 		this.dragbox.drag_content.addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
-		// this.pixi.stage.pointerdown = function(e){
+		// 
 		document.addEventListener('mousedown', function(e){
-			var x = this_ref.pixi.renderer.plugins.interaction.mouse.global.x; //e.data.global.x;
-			var y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y; //e.data.global.y;
+			var x = this_ref.pixi.renderer.plugins.interaction.mouse.global.x;
+			var y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y;
 			var btn = e.button;
 			var alt = e.altKey; // e.originalEvent.altKey;
 
@@ -275,12 +275,19 @@ class MapEditor extends Editor {
 				this_ref.can_drag = true;
 				dragStart();
 			}
+		});
+
+		this.pixi.stage.pointerdown = function(e){
+			var x = e.data.global.x;
+			var y = e.data.global.y;
+			var btn = e.button;
+			var alt = e.altKey; 
 
 			// placing object
 			if (btn == 0 && !alt) {
 				this_ref.placeObject(x - this_ref.camera[0], y - this_ref.camera[1]);
 			}
-		});
+		};
 
 		document.addEventListener('mouseup', function(e) {
 			if (e.button == 1 || (e.button == 0 && this_ref.dragging)) {

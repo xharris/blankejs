@@ -1,3 +1,9 @@
+/*
+BUGS:
+-	deleting a script prevents new ones from being opened for editing
+- 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
+*/
+
 var nwGUI = require('nw.gui');
 var nwFS = require('fs');
 var nwFS2 = require('fs-extra');

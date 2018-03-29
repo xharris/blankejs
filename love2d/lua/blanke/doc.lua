@@ -459,7 +459,7 @@ rect(mode, x, y, width, height)		-- mode = "line"/"fill"
 circle(mode, x, y, radius)
 polygon(mode, x1, y2, x2, y2, ...)
 text(text, x, y, rotation, scale_x, scale_y, offset_x, offset_y)
-textf(text, x, y, limit, align)
+textf(text, x, y, limit, align)		-- align = "left/right/center"
 									-- rotation in radians
 
 --[[

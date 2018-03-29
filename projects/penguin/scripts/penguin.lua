@@ -134,6 +134,9 @@ function Penguin:update(dt)
 	if not wall or self.x > wall.x then
 		behind_wall = false
 	end
+	if self.x > largest_penguin_x then
+		largest_penguin_x = self.x
+	end
 	self.onCollision["main"] = function(other, sep_vector)	-- other: other hitbox in collision
 		if other.tag == "ground" then
 			-- ceiling collision

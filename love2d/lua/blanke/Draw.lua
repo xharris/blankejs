@@ -1,4 +1,5 @@
 Draw = Class{
+	font = nil,
 	color = {0,0,0,255},
 	reset_color = {255,255,255,255},
 
@@ -109,6 +110,14 @@ Draw = Class{
     	love.graphics.pop()
     end,
 
+    setFont = function(new_font)
+    	if type(new_font) == "string" and Asset.has('font', new_font) then
+    		Draw.font = Asset.get('font', new_font)
+    	elseif type(new_font) == 'table' then
+    		Draw.font = new_font
+    	end 
+    end,
+
     setLineWidth = love.graphics.setLineWidth,
     
     point   = function(...) return Draw.callDrawFunc('points', {...}) end,
@@ -117,8 +126,20 @@ Draw = Class{
     rect 	= function(...) return Draw.callDrawFunc('rectangle', {...}) end,
     circle 	= function(...) return Draw.callDrawFunc('circle', {...}) end,
     polygon = function(...) return Draw.callDrawFunc('polygon', {...}) end,
-    text 	= function(...) return Draw.callDrawFunc('print', {...}) end,
-    textf 	= function(...) return Draw.callDrawFunc('printf', {...}) end,
+    text 	= function(text, x, y, ...) 
+    	if Draw.font then
+			return Draw.font:draw(text, x, y, ...)
+		else
+			return Draw.callDrawFunc('print', {text, x, y, ...})
+		end
+    end,
+    textf 	= function(text, x, y, ...)
+    	if Draw.font then
+			return Draw.font:draw(text, x, y, ...)
+		else
+			return Draw.callDrawFunc('printf', {text, x, y, ...})
+		end
+    end,
 }
 
 return Draw
