@@ -3,6 +3,7 @@ var global_objects = [];
 class MapEditor extends Editor {
 	constructor (...args) {
 		super(...args);
+		this.setupTab();
 
 		var this_ref = this;
 
@@ -257,10 +258,10 @@ class MapEditor extends Editor {
 				this_ref.snap_on = true;
 			}
 		});
-		this.dragbox.drag_content.addEventListener('mouseenter', function(e){
+		this.container.getContent().addEventListener('mouseenter', function(e){
 			this_ref.can_drag = true;
 		});
-		this.dragbox.drag_content.addEventListener('mouseout', function(e){
+		this.container.getContent().addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
 		// 
@@ -318,10 +319,12 @@ class MapEditor extends Editor {
 		this.pixi.stage.addChild(this.map_container);
 		this.pixi.stage.addChild(this.grid_container);
 
-		this.addCallback('onResize', function(w, h) {
-			this_ref.drawGrid();
-		});
-	}
+		this.drawGrid();
+		
+		// tab click
+		this.setOnClick(function(self){
+			(new MapEditor(app)).load(self.file);
+		}, this);	}
 
 	onMenuClick (e) {
 		var this_ref = this;
@@ -374,8 +377,8 @@ class MapEditor extends Editor {
 		if (this.curr_layer) {
 			var snapx = this.curr_layer.snap[0];
 			var snapy = this.curr_layer.snap[1];
-			var stage_width =  this.width;
-			var stage_height = this.height;
+			var stage_width =  800; //this.width;
+			var stage_height = 600; //this.height;
 
 			if (!this.grid_graphics) {
 				this.grid_graphics = new PIXI.Graphics();
@@ -403,8 +406,8 @@ class MapEditor extends Editor {
 		if (this.curr_layer) {
 			var snapx = this.curr_layer.snap[0];
 			var snapy = this.curr_layer.snap[1];
-			var stage_width =  this.width;
-			var stage_height = this.height;
+			var stage_width =  800; //this.width;
+			var stage_height = 600; //this.height;
 
 			if (!this.origin_graphics) {
 				this.origin_graphics = new PIXI.Graphics();
@@ -720,7 +723,7 @@ function addMaps(folder_path) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
-							if (!DragBox.focusDragBox(nwPATH.basename(file_path)))
+							if (!Tab.focusTab(nwPATH.basename(file_path)))
 								(new MapEditor(app)).load(file_path);
 						},
 						tags: ['map'],

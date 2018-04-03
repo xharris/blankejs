@@ -4,12 +4,7 @@ class Editor {
 		this.app = app;
 		this.closed = false;
 
-		// create drag box
-		this.dragbox = new DragBox(this.constructor.name)
-
-		this.dragbox.appendTo(workspace);
-		this.dragbox.width = 300;
-		this.dragbox.height = 250;
+		var this_ref = this;
 
 		// asset list
 		this.asset_list = document.createElement("div");
@@ -18,22 +13,35 @@ class Editor {
 		// real content area
 		this.content_area = document.createElement("div");
 		this.content_area.classList.add('editor-content');
+	}
 
+	setupDragbox() {
+		// create drag box
+		this.dragbox = new DragBox(this.constructor.name)
+		this.dragbox.appendTo(workspace);
+		this.dragbox.width = 400;
+		this.dragbox.height = 300;
 		this.dragbox.drag_container.appendChild(this.asset_list);
 		this.dragbox.appendChild(this.content_area);
-
 		// menu button click
-		var this_ref = this;
 		this.dragbox.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
+	}
 
-		// watch for file changes
-		var this_ref;
+	setupTab() {
+		// create tab
+		this.container = new Tab(this.constructor.name);
+		this.container.appendChild(this.content_area);
+	}
+
+	// Tab ONLY
+	setOnClick() {
+		this.container.setOnClick.apply(this.container, arguments);
 	}
 
 	close() {
-		this.dragbox.close();
+		this.container.close();
 		this.closed = true;
 	}
 
@@ -46,19 +54,21 @@ class Editor {
 	}
 
 	addCallback(cb_name, new_func) {
-		this.dragbox[cb_name] = new_func;
+		this.container[cb_name] = new_func;
 	}
 
+	// Dragbox ONLY
 	get width() {
-		return this.dragbox.drag_content.offsetWidth;
+		return this.container.width;
 	}
 
+	// Dragbox ONLY
 	get height() {
-		return this.dragbox.drag_content.offsetHeight;
+		return this.container.height;
 	}
 
 	hideMenuButton () {
-		this.dragbox.btn_menu.style.display = 'none';
+		this.container.btn_menu.style.display = 'none';
 	}
 
 	appendChild (el) {
@@ -66,7 +76,7 @@ class Editor {
 	}
 
 	setTitle (val) {
-		this.dragbox.setTitle(val);
+		this.container.setTitle(val);
 	}
 
 	onMenuClick (e) {
@@ -93,7 +103,7 @@ class Editor {
 
 		// add asset buttons
 		for (var l = 0; l < list.length; l++) {
-			var el_asset = this.app.createElement("button", "asset");
+			let el_asset = this.app.createElement("button", "asset");
 			el_asset.innerHTML = list[l];
 			el_asset.onclick = function() {
 				this_ref.toggleMenu(); 

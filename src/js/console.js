@@ -3,6 +3,7 @@ var re_duplicate = /(.*)(\(\d+\)?)/;
 class Console extends Editor {
 	constructor (...args) {
 		super(...args);
+		this.setupDragbox();
 
 		var this_ref = this;
 

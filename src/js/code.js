@@ -1,6 +1,9 @@
 class Code extends Editor {
 	constructor (...args) {
 		super(...args);
+		this.setupTab();
+
+		var this_ref = this;
 		
 		this.file = '';
 		this.script_folder = "/scripts";
@@ -41,10 +44,11 @@ class Code extends Editor {
             }
 		});
 		this.setFontSize(this.font_size);
-		this.codemirror.setSize("100%", "100%");
+		//this.codemirror.setSize("100%", "100%");
 		this.codemirror.on('change', function(){
 			this_ref.addAsterisk();
 		});
+		this_ref.codemirror.refresh();
 		this.addCallback('onResize', function(w, h) {
 			this_ref.codemirror.refresh();
 		});
@@ -54,6 +58,11 @@ class Code extends Editor {
 				this_ref.can_save = true;
 			}
 		});
+
+		// tab click
+		this.setOnClick(function(self){
+			(new Code(app)).edit(self.file);
+		}, this);
 	}
 
 	addAsterisk () {
@@ -66,6 +75,7 @@ class Code extends Editor {
 
 	setFontSize (num) {
 		this.font_size = num;
+		this.codemirror.display.wrapper.style['line-height'] = (this.font_size-2).toString()+"px";
 		this.codemirror.display.wrapper.style.fontSize = this.font_size.toString()+"px";
 		this.codemirror.refresh();
 	}
@@ -180,7 +190,7 @@ function addScripts(folder_path) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
-							if (!DragBox.focusDragBox(nwPATH.basename(file_path)))
+							if (!Tab.focusTab(nwPATH.basename(file_path)))
 								(new Code(app)).edit(file_path);
 						},
 						tags: ['script'],

@@ -659,6 +659,9 @@ keys(t)
 Net 
 ]]
 
+-- class properties
+num id 								-- unique clientid 
+
 -- class methods
 join([address], [port])				-- address = "localhost", port = 12345
 disconnect()
@@ -690,4 +693,8 @@ addObject(obj)						-- add an object to be synced with other clients
 
 -- callback methods
 onReady()
-onEvent(data)
+onEvent(data)						
+--[[ data will always have the properties:
+		clientid: the id of the client that sent the data
+		room
+]]

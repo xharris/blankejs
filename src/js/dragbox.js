@@ -67,6 +67,18 @@ class DragBox {
 	    this.move(this.x, this.y);
 	}
 
+	get width () {
+		return this.drag_container.offsetWidth;
+	}
+
+	get height () {
+		return this.drag_container.offsetHeight;
+	}
+
+	getContent () {
+		return this.drag_container;
+	}
+
 	// focus a dragbox with a certain title if it exists
 	static focusDragBox (title) {
 		var handles = app.getElements('.drag-handle');
@@ -169,6 +181,7 @@ class DragBox {
 
 	toggleVisible () {
 		this.drag_container.classList.toggle("collapsed");
+
 		if (this.drag_container.classList.contains('collapsed')) {
 			interact('#'+this.drag_container.id).unset();
 			this.setupDrag();

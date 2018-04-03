@@ -30,6 +30,7 @@ body {
 	background-color: @window-background;
 	padding: @window-padding;
 	padding-top: @title-bar-height;
+	padding-bottom: 24px;
 }
 
 #window-buttons {
@@ -38,11 +39,11 @@ body {
 	position: absolute;
 	top: 0px;
 	right: 0px;
-	padding: 4px;
+	padding: 5px;
 
 	button {
-		width: 20px;
-		height: 20px;
+		width: 30px;
+		height: 30px;
 		margin: 2px;
 		color: #9E9E9E;
 
@@ -61,10 +62,10 @@ body {
 }
 
 .tool-container {
-	position: absolute;
-	bottom: 10px; right: 10px;
 	z-index: 1000;
-	pointer-events: none;
+    pointer-events: none;
+    display: inline-block;
+    vertical-align: middle;
 
 	* {
 		pointer-events: all;
@@ -92,6 +93,11 @@ body {
 	background-color: transparent;
 	overflow: hidden;
 	position: relative;
+	z-index: 20;
+
+	> .content {
+		/* outline: 1px solid #212121; */
+	}
 }
 
 .drag-container {
@@ -259,11 +265,24 @@ body {
 	}
 }
 
-#search-container {
+#workspace > .content {
 	position: absolute;
-    bottom: 5px;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    overflow: auto;
+
+    &.hidden {
+    	display: none;
+    }
+}
+
+#search-container {
+	.win-nodrag();
+	position: absolute;
+    top: 5px;
     left: 5px;
-    right: 5px;
     height: 34px;
     z-index: 100;
 
@@ -284,17 +303,21 @@ body {
 
     #search-results {
     	position: absolute;
-    	bottom: 100%;
+    	top: 100%;
+    	padding-top: 5px;
 
     	.result {
     		cursor: default;
-    		background-color: fade(@window-background, 80%);
-    		color: @search-text-focus;
     		padding: 2px 15px;
     		transition: all ease-in-out 0.2s;
 
+    		outline: darken(@window-background, 50%);;
+			background-color: darken(@window-background, 50%);
+    		color: @search-text-focus;
+
     		&.focused, &:hover {
-    			background-color: darken(@window-background, 50%);
+				background-color: rgba(250,250,250, 1);
+				color: rgba(33,33,33 ,1);
     		}
     	}
     }
@@ -364,6 +387,74 @@ body {
 			&:hover {
 				border-left-width: 2px;
 				border-left-color: white;
+			}
+		}
+	}
+}
+
+#tabs {
+	.win-nodrag();
+
+	.tab {
+		line-height: 22px;
+		display: inline-block;
+		cursor: pointer;
+		position: relative;
+
+		> * {
+			display: inline-block;
+			vertical-align: middle;
+			transition: all 0.2s ease-in-out;
+		}
+
+		.tab-title {
+			padding-left: 18px;
+			padding-right: 5px;
+			color: @search-text-focus;
+		}
+
+		i {
+			cursor: default;
+			margin: 0px 5px;
+		}
+
+		.triangle-left, .triangle-right {
+			position: absolute;
+		    width: 0;
+		    height: 0;
+		    border-top: 11px solid transparent;
+		    border-bottom: 11px solid transparent;
+		    border-left: 13px solid @window-background;
+		}
+
+		.triangle-left {
+			left: 0px;
+			display: none;
+		}
+
+		.triangle-right {
+			display: none;
+		}
+
+		&:first-child {
+			i {
+				display: none;
+			}
+		}
+
+		&:not(.hidden) {
+			.tab-title {
+				background-color: @beveled-bg;
+			}
+
+			.triangle-right {
+				display: inline-block;
+				border-left-color: @beveled-bg;
+			}
+
+			.triangle-left {
+				display: inline-block;
+				border-left-color: @window-background;
 			}
 		}
 	}

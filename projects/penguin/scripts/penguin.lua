@@ -1,7 +1,7 @@
 BlankE.addClassType("Penguin", "Entity")
 
 local JUMP_AMOUNT = .8
-local JUMP_INCR = .1
+local JUMP_INCR = .05
 
 Penguin.main_penguin_info = {
 	str_color = 'blue',
@@ -45,7 +45,7 @@ function Penguin:init(is_main_player)
 
 	self.gravity = 35
 	self.can_jump = JUMP_AMOUNT
-	self.walk_speed = 200
+	self.walk_speed = 240
 	-- random shade of blue
 	self.sprite_yoffset = -16
 	self.sprite_xoffset = -16
@@ -134,8 +134,8 @@ function Penguin:update(dt)
 	if not wall or self.x > wall.x then
 		behind_wall = false
 	end
-	if self.x > largest_penguin_x then
-		largest_penguin_x = self.x
+	if not best_penguin.x or self.x > best_penguin.x then
+		best_penguin = self
 	end
 	self.onCollision["main"] = function(other, sep_vector)	-- other: other hitbox in collision
 		if other.tag == "ground" then

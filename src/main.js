@@ -28,7 +28,8 @@ var app = {
 
 	createElement: function(el_type, el_class) {
 		var ret_el = document.createElement(el_type);
-		if (el_class) ret_el.classList.add(el_class);
+		if (Array.isArray(el_class)) ret_el.classList.add(...el_class);
+		else ret_el.classList.add(el_class);
 		return ret_el;
 	},
 
@@ -254,7 +255,7 @@ nwWIN.on('loaded', function() {
 				el_result.innerHTML = result.key;
 				el_result.dataset.hashval = results[r];
 				el_result.dataset.func = app.search_funcs[results[r]];
-				el_result_container.prepend(el_result);
+				el_result_container.append(el_result);
 			}
 		} else {
 			var el_result_container = app.getElement("#search-results");
@@ -302,9 +303,9 @@ nwWIN.on('loaded', function() {
 
 			if (num_results > 0) {
 				if (e.shiftKey)
-					selected_index += 1;
-				else
 					selected_index -= 1;
+				else
+					selected_index += 1;
 
 				if (selected_index < 0) 			selected_index = num_results - 1;
 				if (selected_index >= num_results) 	selected_index = 0;
@@ -361,4 +362,8 @@ nwWIN.on('loaded', function() {
 	}});
 	app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 	app.addSearchKey({key: 'Run Server', onSelect: app.runServer});
+
+	
+	app.hideWelcomeScreen();
+	app.openProject("projects/penguin");
 });

@@ -30,9 +30,10 @@
 		<!-- PixiJS -->
 		<script src="includes/pixi.min.js"></script>
 
+		<script src="js/tab.js"></script>
 		<script src="js/dragbox.js"></script>
+		
 		<script src="js/editor.js"></script>
-
 		<script src="js/console.js"></script>
 		<script src="js/code.js"></script>
 		<script src="js/mapeditor.js"></script>
@@ -40,6 +41,15 @@
 
 	</head>
 	<body>
+
+		<div id="search-container">
+			<input id="search-input" type="text" placeholder="Search" tabindex="-1"/>
+			<div id="search-results"></div>
+
+			<div class="tool-container">
+				<button id="btn-play" onclick="app.play()"><i class="mdi mdi-play"></i></button>
+			</div>
+		</div>
 
 		<div id="window-buttons">
 			<button id="btn-minimize" class="ui-button-sphere" onclick="app.minimize()"><i class="mdi mdi-window-minimize"></i></button>
@@ -55,17 +65,8 @@
 		</div>
 
 		<div id="menu"></div>
-
-		<div class="tool-container">
-			<button id="btn-play" onclick="app.play()"><i class="mdi mdi-play"></i></button>
-		</div>
-
 		<div id="workspace"></div>
-
-		<div id="search-container">
-			<input id="search-input" type="text" placeholder="Search" tabindex="-1"/>
-			<div id="search-results"></div>
-		</div>
+		<div id="tabs"></div>
 
 	</body>
 </html>

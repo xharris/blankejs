@@ -422,7 +422,7 @@
 .blanke-window > .title-bar {
   cursor: default;
   background-color: black;
-  height: 30px;
+  height: 44px;
   overflow: hidden;
 }
 .blanke-window > .title-bar > * {
@@ -444,7 +444,7 @@
 .blanke-window > .title-bar > .title {
   pointer-events: none;
   color: white;
-  line-height: 30px;
+  line-height: 44px;
   padding-left: 2px;
 }
 .blanke-window > .title-bar > .btn-close {
@@ -461,64 +461,18 @@
   margin-bottom: 0px;
   overflow: hidden;
   position: absolute;
-  top: 30px;
+  top: 44px;
   bottom: 0px;
   right: 0px;
   left: 0px;
 }
-#workspace .game-window {
-  width: 100%;
-  height: 100%;
-}
-#workspace .game-window .game-iframe {
-  border: none;
-}
-#workspace .game-window .game-iframe.align-center {
-  left: 50%;
-  transform: translateX(-50%);
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  transform: translate(-50%, -50%);
-}
-#workspace .game-window .game-iframe:not(.align-center) {
-  position: absolute;
-  margin: 5px;
-}
-#workspace .game-window .game-controls {
-  position: absolute;
-  left: 0px;
-  bottom: 0px;
-  z-index: 1000;
-}
-#workspace .game-window .game-controls button {
-  color: white;
-}
-#workspace .game-window .game-controls .btn-pause.paused .mdi-pause {
-  display: none;
-}
-#workspace .game-window .game-controls .btn-pause:not(.paused) .mdi-play {
-  display: none;
-}
-#workspace .game-window .game-controls .btn-resize.align-center .mdi-arrow-bottom-right {
-  display: none;
-}
-#workspace .game-window .game-controls .btn-resize:not(.align-center) .mdi-arrow-top-left {
-  display: none;
-}
-.content[data-type="Code"] .code {
-  width: 100%;
-  height: 100%;
-  padding-bottom: 10px;
-}
 .content[data-type="Code"] .CodeMirror {
   font-size: 16px;
+  height: 100%;
 }
-.content[data-type="Code"] .CodeMirror-scroll {
-  width: 100% !important;
-  overflow: auto !important;
-  box-sizing: border-box;
-  line-height: 14px;
+.content[data-type="Code"] .editor-content {
+  width: 100%;
+  height: 100%;
 }
 .content[data-type="Code"] .cm-matchhighlight {
   background-color: rgba(178, 255, 89, 0.5);
@@ -530,6 +484,14 @@
 }
 .content[data-type="MapEditor"] {
   overflow: hidden !important;
+}
+.content[data-type="MapEditor"] canvas {
+  left: 50%;
+  transform: translateX(-50%);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
 }
 .content[data-type="MapEditor"] .sidebar {
   position: absolute;
@@ -761,18 +723,19 @@ body {
   height: 100%;
   background-color: #424242;
   padding: 5px;
-  padding-top: 30px;
+  padding-top: 44px;
+  padding-bottom: 24px;
 }
 #window-buttons {
   -webkit-app-region: no-drag;
   position: absolute;
   top: 0px;
   right: 0px;
-  padding: 4px;
+  padding: 5px;
 }
 #window-buttons button {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   margin: 2px;
   color: #9E9E9E;
 }
@@ -786,11 +749,10 @@ body {
   color: #f44336;
 }
 .tool-container {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
   z-index: 1000;
   pointer-events: none;
+  display: inline-block;
+  vertical-align: middle;
 }
 .tool-container * {
   pointer-events: all;
@@ -849,6 +811,10 @@ body {
   background-color: transparent;
   overflow: hidden;
   position: relative;
+  z-index: 20;
+}
+#workspace > .content {
+  outline: 1px solid #212121;
 }
 .drag-container {
   background-color: transparent;
@@ -1005,11 +971,22 @@ body {
 .drag-container .asset-list .asset:hover {
   background-color: rgba(0, 0, 0, 0.7);
 }
-#search-container {
+#workspace > .content {
   position: absolute;
-  bottom: 5px;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  overflow: auto;
+}
+#workspace > .content.hidden {
+  display: none;
+}
+#search-container {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  top: 5px;
   left: 5px;
-  right: 5px;
   height: 34px;
   z-index: 100;
 }
@@ -1029,18 +1006,21 @@ body {
 }
 #search-container #search-results {
   position: absolute;
-  bottom: 100%;
+  top: 100%;
+  padding-top: 5px;
 }
 #search-container #search-results .result {
   cursor: default;
-  background-color: rgba(66, 66, 66, 0.8);
-  color: #f0f0f0;
   padding: 2px 15px;
   transition: all ease-in-out 0.2s;
+  outline: #000000;
+  background-color: #000000;
+  color: #f0f0f0;
 }
 #search-container #search-results .result.focused,
 #search-container #search-results .result:hover {
-  background-color: #000000;
+  background-color: #fafafa;
+  color: #212121;
 }
 #welcome {
   width: 100%;
@@ -1098,4 +1078,57 @@ body {
 #welcome .recent-files .file:hover {
   border-left-width: 2px;
   border-left-color: white;
+}
+#tabs {
+  -webkit-app-region: no-drag;
+}
+#tabs .tab {
+  line-height: 22px;
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+}
+#tabs .tab > * {
+  display: inline-block;
+  vertical-align: middle;
+  transition: all 0.2s ease-in-out;
+}
+#tabs .tab .tab-title {
+  padding-left: 18px;
+  padding-right: 5px;
+  color: #f0f0f0;
+}
+#tabs .tab i {
+  cursor: default;
+  margin: 0px 5px;
+}
+#tabs .tab .triangle-left,
+#tabs .tab .triangle-right {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  border-left: 13px solid #424242;
+}
+#tabs .tab .triangle-left {
+  left: 0px;
+  display: none;
+}
+#tabs .tab .triangle-right {
+  display: none;
+}
+#tabs .tab:first-child i {
+  display: none;
+}
+#tabs .tab:not(.hidden) .tab-title {
+  background-color: #212121;
+}
+#tabs .tab:not(.hidden) .triangle-right {
+  display: inline-block;
+  border-left-color: #212121;
+}
+#tabs .tab:not(.hidden) .triangle-left {
+  display: inline-block;
+  border-left-color: #424242;
 }

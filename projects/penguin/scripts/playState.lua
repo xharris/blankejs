@@ -2,7 +2,7 @@ BlankE.addClassType("playState", "State")
 
 play_mode = 'local'
 game_start_population = 3
-largest_penguin_x = 0
+best_penguin = nil
 
 local main_penguin
 
@@ -95,7 +95,7 @@ function playState:update(dt)
 	end
 	
 	-- load more levels!
-	if largest_penguin_x > last_lvl_end[1] - (game_width/2) then
+	if best_penguin.x > last_lvl_end[1] - (game_width/2) then
 		loadLevel("level1")
 	end
 end
@@ -204,5 +204,8 @@ Net.onEvent = function(data)
 		if spawn_wall_count >= Net.getPopulation() then
 			startDestruction()
 		end
+		
+	elseif data.event == "load_level" then
+		
 	end
 end
