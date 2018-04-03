@@ -1,3 +1,5 @@
+var font_size = 16;
+
 class Code extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -7,7 +9,6 @@ class Code extends Editor {
 		
 		this.file = '';
 		this.script_folder = "/scripts";
-		this.font_size = 16;
 		this.can_save = true;
 
 		// create codemirror editor
@@ -33,17 +34,17 @@ class Code extends Editor {
             		this_ref.removeAsterisk();
             	},
             	"Ctrl-=": function(cm) {
-            		this_ref.font_size += 1;
-            		this_ref.setFontSize(this_ref.font_size);
+            		font_size += 1;
+            		this_ref.setFontSize(font_size);
             	},
             	"Ctrl--": function(cm) {
-            		this_ref.font_size -= 1;
-            		this_ref.setFontSize(this_ref.font_size);
+            		font_size -= 1;
+            		this_ref.setFontSize(font_size);
             	},
             	"Ctrl-F": "findPersistent"
             }
 		});
-		this.setFontSize(this.font_size);
+		this.setFontSize(font_size);
 		//this.codemirror.setSize("100%", "100%");
 		this.codemirror.on('change', function(){
 			this_ref.addAsterisk();
@@ -74,9 +75,9 @@ class Code extends Editor {
 	}
 
 	setFontSize (num) {
-		this.font_size = num;
-		this.codemirror.display.wrapper.style['line-height'] = (this.font_size-2).toString()+"px";
-		this.codemirror.display.wrapper.style.fontSize = this.font_size.toString()+"px";
+		font_size = num;
+		this.codemirror.display.wrapper.style['line-height'] = (font_size-2).toString()+"px";
+		this.codemirror.display.wrapper.style.fontSize = font_size.toString()+"px";
 		this.codemirror.refresh();
 	}
 

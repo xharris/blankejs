@@ -134,7 +134,7 @@ function Penguin:update(dt)
 	if not wall or self.x > wall.x then
 		behind_wall = false
 	end
-	if best_penguin and not best_penguin.x or self.x > best_penguin.x then
+	if not best_penguin or self.x > best_penguin.x then
 		best_penguin = self
 	end
 	self.onCollision["main"] = function(other, sep_vector)	-- other: other hitbox in collision

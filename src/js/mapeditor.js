@@ -130,22 +130,30 @@ class MapEditor extends Editor {
 		});
 
 		// layer name
-		this.el_sel_layer.addEventListener('change', function(e){
-			this_ref.setLayer(e.target.value);
-		});
-		this.el_layer_name.addEventListener('input', function(e){
+		function ev_nameChange(e) {
 			if (this_ref.curr_layer) {
 				if (e.target.value == '')
 					e.target.value = this_ref.curr_layer.name;
 				else {
+					var old_name = this_ref.curr_layer.name;
+					var new_name = e.target.value;
+
 					this_ref.curr_layer.name = e.target.value;
-					this_ref.refreshLayerList();
+					this_ref.refreshLayerList(old_name, new_name);
 					this_ref.export();
 				}
 			}
-		});
+		}
+		this.el_layer_name.addEventListener('keypress', ev_nameChange);
+		this.el_layer_name.addEventListener('paste', ev_nameChange);
+		this.el_layer_name.addEventListener('input', ev_nameChange);
+
 		this.el_layer_name.addEventListener('click', function(e){
 			this.select();
+		});
+		// layer selection
+		this.el_sel_layer.addEventListener('change', function(e){
+			this_ref.setLayer(e.target.value);
 		});
 
 		// add layer button
@@ -266,10 +274,10 @@ class MapEditor extends Editor {
 		});
 		// 
 		document.addEventListener('mousedown', function(e){
-			var x = this_ref.pixi.renderer.plugins.interaction.mouse.global.x;
-			var y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y;
-			var btn = e.button;
-			var alt = e.altKey; // e.originalEvent.altKey;
+			let x = this_ref.pixi.renderer.plugins.interaction.mouse.global.x;
+			let y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y;
+			let btn = e.button;
+			let alt = e.altKey; // e.originalEvent.altKey;
 
 			// dragging canvas
 			if (((btn == 1) || (btn == 0 && alt)) && !this_ref.dragging) {
@@ -279,10 +287,10 @@ class MapEditor extends Editor {
 		});
 
 		this.pixi.stage.pointerdown = function(e){
-			var x = e.data.global.x;
-			var y = e.data.global.y;
-			var btn = e.button;
-			var alt = e.altKey; 
+			let x = e.data.global.x;
+			let y = e.data.global.y;
+			let btn = e.data.originalEvent.button;
+			let alt = e.data.originalEvent.altKey; 
 
 			// placing object
 			if (btn == 0 && !alt) {
@@ -428,7 +436,7 @@ class MapEditor extends Editor {
 	}
 
 	// refreshes combo box
-	refreshLayerList () {
+	refreshLayerList (old_name, new_name) {
 		app.clearElement(this.el_sel_layer);
 		var placeholder = app.createElement("option");
 		placeholder.selected = true;
@@ -441,6 +449,17 @@ class MapEditor extends Editor {
 			new_option.innerHTML = this.layers[o].name;
 			this.el_sel_layer.appendChild(new_option);
 		}	
+
+		// rename layer in objects
+		if (old_name && new_name) {		
+			for (var o = 0; o < this.objects.length; o++) {
+				for (let t in this.objects[o].pixi_texts) {
+					var text = this.objects[o].pixi_texts[t];
+					if (text && text.layer_name == old_name) 
+						text.layer_name = new_name
+				}
+			}
+		}
 	}
 
 	// refreshes combo box 
@@ -625,6 +644,7 @@ class MapEditor extends Editor {
 	load (file_path) {
 		this.file = file_path;
 		var data = nwFS.readFileSync(file_path, 'utf-8');
+		var first_layer = null;
 
 		if (data.length > 5) {
 			data = JSON.parse(data);
@@ -640,7 +660,7 @@ class MapEditor extends Editor {
 				this.addObject(obj);
 
 				for (var layer_name in obj.coords) {
-					this.setLayer(layer_name);
+					this.setLayer(layer_name)
 					for (var c = 0; c < obj.coords[layer_name].length; c++) {
 						this.placeObject(obj.coords[layer_name][c][0], obj.coords[layer_name][c][1], obj.coords[layer_name][c][2]);
 					}
@@ -659,20 +679,34 @@ class MapEditor extends Editor {
 	export () {
 		if (this.deleted) return;
 
-		var export_data = {'objects':[], 'layers':[]};
+		let export_data = {'objects':[], 'layers':[]};
+		let layer_names = {};
+
+		// layers
+		for (let l = 0; l < this.layers.length; l++) {
+			let layer = this.layers[l];
+			export_data.layers.push({
+				name: layer.name,
+				depth: layer.depth,
+				offset: layer.offset,
+				snap: layer.snap,
+				uuid: layer.uuid
+			})
+			layer_names[layer.name] = true;
+		}
 
 		// objects
-		for (var o = 0; o < this.objects.length; o++) {
-			var obj = this.objects[o];
-			var exp_obj = {
+		for (let o = 0; o < this.objects.length; o++) {
+			let obj = this.objects[o];
+			let exp_obj = {
 				name: obj.name,
 				char: obj.char,
 				color: obj.color,
 				uuid: obj.uuid,
 				coords: {}
 			}
-			for (var t in obj.pixi_texts) { 
-				if (obj.pixi_texts[t]) {
+			for (let t in obj.pixi_texts) { 
+				if (obj.pixi_texts[t] && layer_names[obj.pixi_texts[t].layer_name]) {
 					if (!exp_obj.coords[obj.pixi_texts[t].layer_name])
 						exp_obj.coords[obj.pixi_texts[t].layer_name] = [];
 					exp_obj.coords[obj.pixi_texts[t].layer_name].push([
@@ -685,17 +719,6 @@ class MapEditor extends Editor {
 			export_data.objects.push(exp_obj);
 		}
 
-		// layers
-		for (var l = 0; l < this.layers.length; l++) {
-			var layer = this.layers[l];
-			export_data.layers.push({
-				name: layer.name,
-				depth: layer.depth,
-				offset: layer.offset,
-				snap: layer.snap,
-				uuid: layer.uuid
-			})
-		}
 
 		nwFS.writeFileSync(this.file, JSON.stringify(export_data));
 	}

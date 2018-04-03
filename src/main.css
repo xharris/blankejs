@@ -554,7 +554,7 @@
 }
 .content[data-type="MapEditor"] .sidebar .btn-add-object {
   position: absolute;
-  padding: 0px;
+  padding: 0px 2.8px;
   margin: 0px;
   border: none;
   outline: none;
@@ -567,6 +567,8 @@
   font-weight: 500;
   background-color: #b0bec5;
   transition: all ease-in-out 0.2s;
+  text-align: left;
+  line-height: 14px;
 }
 .content[data-type="MapEditor"] .sidebar .btn-add-object:hover {
   background-color: #8bc34a;
@@ -1098,6 +1100,9 @@ body {
   padding-left: 18px;
   padding-right: 5px;
   color: #f0f0f0;
+}
+#tabs .tab .tab-title:hover {
+  text-decoration: underline;
 }
 #tabs .tab i {
   cursor: default;
