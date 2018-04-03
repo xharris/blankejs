@@ -218,4 +218,12 @@ class DragBox {
 	close () {
 		this.drag_container.remove();
 	}
+
+	static closeAll (type) {
+		var windows = app.getElements(".drag-container");
+		for (var i = 0; i < windows.length; i++) {
+			if (!type || (type && windows[i].dataset.type == type))
+				windows[i].remove();
+		}
+	}
 }

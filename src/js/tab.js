@@ -12,6 +12,7 @@ class Tab {
 		this.tab = app.createElement("div","tab");
 		this.tab.this_ref = this;
 		this.tab.dataset.guid = this.guid;
+		this.tab.dataset.type = content_type;
 		this.tab_title = app.createElement("div","tab-title");
 		this.tab_tri_left = app.createElement("div", "triangle-left");
 		this.tab_tri_right = app.createElement("div", "triangle-right");
@@ -120,6 +121,16 @@ class Tab {
 	close () {
 		this.tab.remove();
 		this.tab_container.remove();
+	}
+
+	static closeAll (type) {
+		var contents = app.getElements("#tabs > .tab");		
+		for (var t = 0; t < contents.length; t++) {
+			if (!type || (type && contents[t].dataset.type == type)) {
+				contents[t].el_tab_container.remove();
+				contents[t].remove();
+			}
+		}
 	}
 
 	static moveBack () {

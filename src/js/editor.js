@@ -16,23 +16,28 @@ class Editor {
 	}
 
 	setupDragbox() {
+		var this_ref = this;
 		// create drag box
-		this.dragbox = new DragBox(this.constructor.name)
-		this.dragbox.appendTo(workspace);
-		this.dragbox.width = 400;
-		this.dragbox.height = 300;
-		this.dragbox.drag_container.appendChild(this.asset_list);
-		this.dragbox.appendChild(this.content_area);
+		this.container = new DragBox(this.constructor.name)
+		this.container.appendTo(workspace);
+		this.container.width = 400;
+		this.container.height = 300;
+		this.container.drag_container.appendChild(this.asset_list);
+		this.container.appendChild(this.content_area);
 		// menu button click
-		this.dragbox.btn_menu.onclick = function(e) {
+		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
 	}
 
 	setupTab() {
+		var this_ref = this;
 		// create tab
 		this.container = new Tab(this.constructor.name);
 		this.container.appendChild(this.content_area);
+		this.container.tab.oncontextmenu = function(e) {
+			this_ref.onMenuClick(e);
+		}
 	}
 
 	// Tab ONLY
@@ -46,11 +51,8 @@ class Editor {
 	}
 
 	static closeAll (type) {
-		var windows = app.getElements(".drag-container");
-		for (var i = 0; i < windows.length; i++) {
-			if (!type || (type && windows[i].dataset.type == type))
-				windows[i].remove();
-		}
+		DragBox.closeAll(type);
+		Tab.closeAll(type);
 	}
 
 	addCallback(cb_name, new_func) {
@@ -68,7 +70,8 @@ class Editor {
 	}
 
 	hideMenuButton () {
-		this.container.btn_menu.style.display = 'none';
+		if (this.container.btn_menu)
+			this.container.btn_menu.style.display = 'none';
 	}
 
 	appendChild (el) {

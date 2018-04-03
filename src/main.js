@@ -105,6 +105,13 @@ var app = {
 		dispatchEvent("openProject", {path: path}); 
 	},
 
+	openProjectDialog: function() {
+		blanke.chooseFile('nwdirectory', function(file_path){
+			app.hideWelcomeScreen();
+			app.openProject(file_path);
+		}, true);
+	},
+
 	play: function() { 
 		var child = spawn(nwPATH.join('love2d','love.exe'), [app.project_path]);
 		//child.unref();
@@ -356,14 +363,11 @@ nwWIN.on('loaded', function() {
 
 	dispatchEvent("ideReady");
 	app.addSearchKey({key: 'Open project', onSelect: function() {
-		blanke.chooseFile('nwdirectory', function(file_path){
-			app.openProject(file_path);
-		}, true);
+		app.openProjectDialog();
+	}});
+	app.addSearchKey({key: 'New project', onSelect: function() {
+		app.newProjectDialog();
 	}});
 	app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 	app.addSearchKey({key: 'Run Server', onSelect: app.runServer});
-
-	
-	app.hideWelcomeScreen();
-	app.openProject("projects/penguin");
 });

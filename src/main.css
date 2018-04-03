@@ -724,7 +724,7 @@ body {
   background-color: #424242;
   padding: 5px;
   padding-top: 44px;
-  padding-bottom: 24px;
+  padding-bottom: 22px;
 }
 #window-buttons {
   -webkit-app-region: no-drag;
@@ -785,7 +785,7 @@ body {
   margin: 0px;
   width: 23px;
   height: 23px;
-  color: white;
+  color: #9E9E9E;
 }
 .tool-container button:hover {
   background-color: rgba(224, 224, 224, 0.3);
@@ -802,7 +802,8 @@ body {
   border-radius: 100%;
 }
 .tool-container button:hover {
-  background-color: rgba(224, 224, 224, 0.3);
+  color: #f0f0f0;
+  background-color: #212121;
 }
 #workspace {
   -webkit-app-region: no-drag;

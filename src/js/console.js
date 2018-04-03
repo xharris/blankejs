@@ -4,6 +4,8 @@ class Console extends Editor {
 	constructor (...args) {
 		super(...args);
 		this.setupDragbox();
+		this.container.width = 460;
+		this.container.height = 130;
 
 		var this_ref = this;
 
