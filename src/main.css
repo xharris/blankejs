@@ -814,7 +814,7 @@ body {
   z-index: 20;
 }
 #workspace > .content {
-  outline: 1px solid #212121;
+  /* outline: 1px solid #212121; */
 }
 .drag-container {
   background-color: transparent;
