@@ -119,8 +119,19 @@ class Tab {
 	}
 
 	close () {
+		var choose_another = false;
+		if (!this.tab.classList.contains("hidden")) {
+			choose_another = true;
+		}
 		this.tab.remove();
 		this.tab_container.remove();
+
+		if (choose_another) {
+			var contents = app.getElements("#tabs > .tab");
+			if (contents.length > 0) {
+				Tab.focusTab(contents[contents.length-1].title);
+			}
+		}
 	}
 
 	static closeAll (type) {

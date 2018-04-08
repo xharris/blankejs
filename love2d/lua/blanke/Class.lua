@@ -83,7 +83,8 @@ local function new(class)
 			o:_init(...)
 		end
 		if o.init then
-			o:init(...)
+			local ret_val =	o:init(...)
+			if ret_val then return ret_val end
 		end
 	    
 	    return o

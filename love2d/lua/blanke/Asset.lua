@@ -79,6 +79,17 @@ Asset = Class{
 				}
 				return Asset.get(asset_name)
 			end
+
+		-- MAP
+		elseif path:ends('.map') then
+			Asset.info['map'] = ifndef(Asset.info['map'], {})
+			
+			Asset.info['map'][asset_name] = {
+				path = path,
+				category = extname(path),
+				object = Map():load(love.filesystem.read(path))
+			}
+			return Asset.get(asset_name)
 		
 		-- FILE (etc)
 		else
@@ -98,7 +109,7 @@ Asset = Class{
 	end,
 
 	getInfo = function(category, name)
-		if Asset.has(name) then
+		if Asset.has(category, name) then
 			return Asset.info[category][name]
 		end
 	end,
@@ -111,6 +122,7 @@ Asset = Class{
 
 	image = function(name) return Asset.get('image', name) end,
 	script = function(name) return Asset.get('script', name) end,
+	map = function(name) return Asset.get('map', name) end,
 	file = function(name) return Asset.get('file', name) end
 }
 

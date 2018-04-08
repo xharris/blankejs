@@ -35,6 +35,11 @@ Draw = Class{
 		if (type(color) == "number") then
 			color = {r,g,b,a}
 		end
+
+		for v, val in ipairs(color) do
+			if val > 1 then color[v] = val / 255 end
+		end
+
 		return color
 	end,
 
@@ -61,7 +66,9 @@ Draw = Class{
 	end,
 
 	setAlpha = function(a)
-		Draw.color[4] = clamp(a, 0, 255)
+		a = clamp(a,0,255)
+		if a > 1 then a = a / 255 end
+		Draw.color[4] = a
 		if Draw.color then
 			love.graphics.setColor(Draw.color)
 		end

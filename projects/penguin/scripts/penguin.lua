@@ -1,7 +1,6 @@
 BlankE.addClassType("Penguin", "Entity")
 
-local JUMP_AMOUNT = .8
-local JUMP_INCR = .05
+local MAX_JUMPS = 3
 
 Penguin.main_penguin_info = {
 	str_color = 'blue',
@@ -44,7 +43,7 @@ function Penguin:init(is_main_player)
 	}
 
 	self.gravity = 35
-	self.can_jump = JUMP_AMOUNT
+	self.can_jump = MAX_JUMPS
 	self.walk_speed = 240
 	-- random shade of blue
 	self.sprite_yoffset = -16
@@ -156,7 +155,7 @@ function Penguin:update(dt)
             if not self.can_jump then
 				self:netSync("vspeed","x","y")
             end
-            self.can_jump = JUMP_AMOUNT 
+            self.can_jump = MAX_JUMPS 
         	self:collisionStopY()
         end 
     end
@@ -205,14 +204,15 @@ end
 
 function Penguin:jump()
 	if self.can_jump > 0 then
-		self.vspeed = -725
+		self.vspeed = -900 + (100 * (self.can_jump / MAX_JUMPS))
+		self.can_jump = self.can_jump - 1
 		self:netSync("vspeed","x","y")
-		self.can_jump = self.can_jump - JUMP_INCR
+		Debug.log('syncing')
 	end
 end
 
 function Penguin:draw()
-	Draw.setColor('white')
+	--Draw.setColor('white')
 	self.sprite['walk'].color = Draw.white
 	self.sprite['walk_fill'].color = self.color
 

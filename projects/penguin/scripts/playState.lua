@@ -1,6 +1,6 @@
 BlankE.addClassType("playState", "State")
 
-play_mode = 'local'
+play_mode = 'local'			-- local / online
 game_start_population = 3
 best_penguin = nil
 
@@ -39,6 +39,7 @@ function playState:enter(previous)
 	lvl_objects = Group()
 
 	loadLevel("spawn")
+	
 	-- add player's penguin
 	spawnPlayer()
 end
@@ -95,8 +96,18 @@ function playState:update(dt)
 	end
 	
 	-- load more levels!
-	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) then
-		loadLevel("level1")
+	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) and not best_penguin.net_object then
+		local levels = table.remove(Asset.list('map'), 'spawn')
+		
+		if play_mode == 'local' then
+			loadLevel(table.random(levels))
+		elseif play_mode == 'online' then
+			Net.send({
+				type="netevent",
+				event="load_level",
+				info=table.random(levels)
+			})
+		end
 	end
 end
 
@@ -125,6 +136,7 @@ function playState:draw()
 		end)
 		if not wall then img_igloo_front:draw() end
 	end)
+	
 	local ready = ''
 	if main_penguin.x > destruct_ready_x then ready = '\nREADY!' end
 	Draw.text(tostring(Net.getPopulation())..' / '..tostring(game_start_population)..ready, game_width/2, 50)
@@ -175,6 +187,8 @@ function loadLevel(name)
 	for o, obj in ipairs(lvl_map:getObjects("invis_ground")) do
 		lvl_objects:add(Ground(obj.x, obj.y, -1))
 	end
+	
+	Debug.log(#lvl_objects,"frags")
 end
 
 function spawnPlayer()
@@ -206,6 +220,6 @@ Net.onEvent = function(data)
 		end
 		
 	elseif data.event == "load_level" then
-		
+		loadLevel(data.info)
 	end
 end

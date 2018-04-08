@@ -19,7 +19,7 @@ function Ground:init(x, y, frame, g_type)
 
 	if g_type == "cracked" then
 		self.img_ground_crack = Image("ground_crack")
-		self.img_tile:combine(self.img_ground_crack)
+		self.img_tile:combine(self.img_tile, self.img_ground_crack)
 	end
 	
 	self.fragged = false

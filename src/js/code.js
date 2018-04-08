@@ -27,6 +27,7 @@ class Code extends Editor {
             tabSize : 4,
             indentWithTabs : true,
             highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
+            matchBrackets: true,
             extraKeys: {
             	"Ctrl-S": function(cm) {
             		this_ref.save();

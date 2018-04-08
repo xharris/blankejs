@@ -36,6 +36,11 @@ Group = Class{
 	closest = function(self, ent)
 		return self:closest_point(ent.x, ent.y)
 	end,
+
+	__len = function(self)
+		Debug.log('hey there')
+		return #self.children
+	end,
 }
 
 return Group

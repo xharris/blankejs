@@ -173,9 +173,9 @@ function Igloo:draw()
 	Draw.setColor(self.main_penguin:getColor())
 	local rect_margin = 10
 	local rect_margin2 = 5
-	Draw.setAlpha(255/2)
+	Draw.setAlpha(.5)
 	Draw.rect("fill", menu_left + section_w + rect_margin2 + (section_w/2) - (section_w/2), menu_top + rect_margin2, section_w - (rect_margin2*2), section_w - (rect_margin2*2))
-	Draw.setAlpha(255)
+	Draw.setAlpha(1)
 	Draw.rect("fill", menu_left + section_w + rect_margin + (section_w/2) - (section_w/2), menu_top + rect_margin, section_w - (rect_margin*2), section_w - (rect_margin*2))
 	
 	-- draw earth icon
@@ -190,6 +190,7 @@ function Igloo:draw()
 		
 	Draw.translate(-self.main_penguin.x, -self.main_penguin.y)
 	Draw.scale(2)
+	Draw.setColor('white')
 	self.main_penguin:draw()
 	Draw.reset()
 	

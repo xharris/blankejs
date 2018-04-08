@@ -319,7 +319,8 @@ Entity = Class{
 
 			if self.show_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
 
-			love.graphics.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
+			Draw.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
+			--love.graphics.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
 			
 			-- is it an Animation or an Image
 			if img then

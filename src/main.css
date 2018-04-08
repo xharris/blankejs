@@ -480,7 +480,7 @@
   outline: 1px solid rgba(178, 255, 89, 0.5);
 }
 .content[data-type="Code"] .CodeMirror-selection-highlight-scrollbar {
-  background-color: #b2ff59;
+  background-color: #4caf50;
 }
 .content[data-type="MapEditor"] {
   overflow: hidden !important;

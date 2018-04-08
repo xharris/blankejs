@@ -24,6 +24,7 @@ function love.load()
 	Input.set('player_right', 'd', 'right')
 	Input.set('player_up', 'w', 'up')
 	Input.set('emote1', '1')
+	Input.keys['player_up'].can_repeat = false
 	Input.keys['emote1'].can_repeat = false
 
 	Input.set("net_join", "j")

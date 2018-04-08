@@ -6,10 +6,10 @@ Map = Class{
 		self.layer_info = {}
 		self.obj_info = {}
 
-		local load_map = Asset.file(name)
+		local load_map = Asset.map(name)
 
 		if load_map then
-			self:load(load_map)
+			return load_map
 		end
 	end,
 
@@ -37,6 +37,8 @@ Map = Class{
 				end
 			end
 		end
+
+		return self
 	end,
 
 	-- returns list of [x,y] for object

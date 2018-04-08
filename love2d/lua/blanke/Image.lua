@@ -75,7 +75,7 @@ Image = Class{
 		y = ifndef(y, self.y)
 
 		love.graphics.push()
-		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)	
+		love.graphics.setColor(Draw._parseColorArgs(self.color[1], self.color[2], self.color[3], self.alpha))	
 		if self.quad then
 			love.graphics.draw(self.image, self.quad, x, y, math.rad(self.angle), self.xscale, self.yscale, self.xoffset, self.yoffset, self.xshear, self.yshear)
 		else
@@ -140,7 +140,7 @@ Image = Class{
 	end,
 
 	crop = function(self, x, y, w, h)
-		local src_image_data = self.image:getData()
+		local src_image_data = love.image.newImageData(Asset.getInfo('image', self.name).path)
 		local dest_image_data = love.image.newImageData(w,h)
 		dest_image_data:paste(src_image_data, 0, 0, x, y, w, h)
 
@@ -148,22 +148,26 @@ Image = Class{
 	end,
 
 	combine = function(self, other_image)
-		local src_image_data = other_image.image:getData()
-		local dest_image_data = self.image:getData()
+		local src_image_data = love.image.newImageData(Asset.getInfo('image', other_image.name).path)
+		local dest_image_data = love.image.newImageData(Asset.getInfo('image', self.name).path)
+
+		local src_w = math.min(self.width, other_image.width)
+		local src_h = math.min(self.height, other_image.height)
 
 		dest_image_data:mapPixel(function(x,y,r,g,b,a)
+			if x >= src_w or y >= src_h then return 0,0,0,0 end
+
 			local sr, sg, sb, sa = src_image_data:getPixel(x,y)
 			if sa > 0 then
 				return
-					(r * a / 255) + (sr * sa * (255 - a) / (255*255)),
-					(g * a / 255) + (sg * sa * (255 - a) / (255*255)),
-					(b * a / 255) + (sb * sa * (255 - a) / (255*255)),
-					a + (sa * (255 - a) / 255)
+					(r * a / 1) + (sr * sa * (1 - a) / (1*1)),
+					(g * a / 1) + (sg * sa * (1 - a) / (1*1)),
+					(b * a / 1) + (sb * sa * (1 - a) / (1*1)),
+					a + (sa * (1 - a) / 1)
 			else
 				return r, g, b, a
 			end
 		end)
-
 		self.image = love.graphics.newImage(dest_image_data)
 	end,
 

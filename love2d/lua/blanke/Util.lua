@@ -273,6 +273,13 @@ function table.keys(t)
 	return ret
 end
 
+function table.remove(t, value)
+	for k, v in pairs(t) do
+		if v == value then t[k] = nil end
+	end
+	return t
+end
+
 --[[
 
 	MATH
