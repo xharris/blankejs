@@ -24,6 +24,7 @@ class Console extends Editor {
 
 		this.el_log = app.createElement("div", "log");
 		this.appendChild(this.el_log);
+		this.el_log.focus();
 		
 		this.hideMenuButton();
 	}

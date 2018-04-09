@@ -5,17 +5,45 @@ Group = Class{
 	end,
 
 	add = function(self, obj)
+		obj._group = self
 		table.insert(self.children, obj)
 	end,
 
 	remove = function(self, i)
-		self.children[i] = nil
+		table.remove(self.children, i)
 	end,
 
-	call = function(self, func)
+	removeUUID = function(self, uuid)
+		local i = 1
+		while i <= #self.children do
+			if self.children[i].uuid and self.children[i].uuid == uuid then
+				table.remove(self.children, i)
+				i = #self.children + 1
+			else
+				i = i + 1
+			end
+		end
+	end,
+
+	forEach = function(self, func)
 		for i_c, c in ipairs(self.children) do
 			func(i_c, c)
 		end
+	end,
+
+	call = function(self, func_name, ...)
+		for i_c, c in ipairs(self.children) do
+			if c[func_name] then c[func_name](c, ...) end
+		end
+	end,
+
+	destroy = function(self)
+		-- do a forEach to prevent infinite loop with _group var
+		self:forEach(function(o, obj)
+			obj._group = nil
+			if obj.destroy then obj:destroy() end
+		end)
+		self.children = {}
 	end,
 
 	-- for Entity only
@@ -37,8 +65,7 @@ Group = Class{
 		return self:closest_point(ent.x, ent.y)
 	end,
 
-	__len = function(self)
-		Debug.log('hey there')
+	size = function(self)
 		return #self.children
 	end,
 }

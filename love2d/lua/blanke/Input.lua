@@ -149,6 +149,9 @@ Input = {
     end,
 
     wheelmoved = function(self, x, y)
+        if not x then x = 0 end
+        if not y then y = 0 end
+        
         local dir_strings = {
             ['wheel.up']    = y>0 and y or 0,
             ['wheel.down']  = y<0 and y or 0,

@@ -1,19 +1,20 @@
-BlankE.addClassType("FragImage", "Entity")
+BlankE.addEntity("FragImage")
 
-frag_images = {}
+frag_images = Group()
 
-function FragImage:init(image)
+function FragImage:init(image, parent)
 	if image.alpha == 0 then self:destroy() else
-
+		self.parent = parent
+		
 		self.img_frags = image:chop(image.width/randRange(3,5),image.width/randRange(3,5))
 
 		-- add gravity to images
-		table.forEach(self.img_frags, function(f, frag)
+		self.img_frags:forEach(function(f, frag)
 			frag.random_g = randRange(7,10)
 			frag.gravity = 0
 		end)
 
-		table.insert(frag_images, self)
+		frag_images:add(self)
 	end
 end
 
@@ -22,7 +23,7 @@ function FragImage:update(dt)
 	if wall then wall_x = wall.x end
 
 	local drawn = 0
-	table.forEach(self.img_frags, function(f, frag)
+	self.img_frags:forEach(function(f, frag)
 		if wall_x > frag.x + (frag.random_g*5) then
 			frag.gravity = frag.gravity + frag.random_g
 			frag.y = frag.y + frag.gravity * dt
@@ -36,18 +37,22 @@ function FragImage:update(dt)
 	
 	-- are all the frags destroyed?
 	if drawn == 0 then
+		self.img_frags:destroy()
 		self:destroy()
+		if self.parent then self.parent:destroy() end
 	end
 end
 
 function FragImage:draw()
-	for f, frag in ipairs(self.img_frags) do
-		frag:draw()
+	if self.img_frags then
+		self.img_frags:forEach(function(f, frag)
+			frag:draw()
+		end)
 	end
 end
 
 FragImage.drawAll = function()
-	for f, frag_image in ipairs(frag_images) do
-		frag_image:draw()
-	end
+	frag_images:forEach(function(f, obj)
+		obj:draw()
+	end)
 end

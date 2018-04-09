@@ -35,6 +35,11 @@ Image = Class{
 		self.orig_height = self.image:getHeight()
 		self.width = self.orig_width * self.xscale
 		self.height = self.orig_height * self.yscale
+		self.crop_rect = {0,0,self.orig_width,self.orig_height}
+	end,
+
+	destroy = function(self)
+		self.image:release()
 	end,
 
 	-- static: check if an image exists
@@ -124,15 +129,14 @@ Image = Class{
 		piece_w = math.ceil(piece_w)
 		piece_h = math.ceil(piece_h)
 
-		local img_list = {}
-		local new_quad = love.graphics.newQuad(0,0,piece_w,piece_h, self.image:getDimensions())
-		for x=0, self.orig_width, piece_w do
-			for y=0, self.orig_height, piece_h do
-				if x < self.orig_width or y < self.orig_height then
+		local img_list = Group()
+		for x=0, self.crop_rect[3], piece_w do
+			for y=0, self.crop_rect[4], piece_h do
+				if x < self.crop_rect[3] or y < self.crop_rect[4] then
 					local new_image = self:crop(x,y,piece_w,piece_h)
 					new_image.x = self.x + x
 					new_image.y = self.y + y
-					table.insert(img_list, new_image)
+					img_list:add(new_image)
 				end
 			end
 		end
@@ -142,27 +146,40 @@ Image = Class{
 	crop = function(self, x, y, w, h)
 		local src_image_data = love.image.newImageData(Asset.getInfo('image', self.name).path)
 		local dest_image_data = love.image.newImageData(w,h)
-		dest_image_data:paste(src_image_data, 0, 0, x, y, w, h)
 
-		return Image(self.name, dest_image_data)
+		local src_image_w, src_image_h = src_image_data:getWidth(), src_image_data:getHeight()
+
+		if x+w > self.crop_rect[3] then w = self.crop_rect[3] - x end
+		if y+h > self.crop_rect[4] then h = self.crop_rect[4] - y end
+
+		x, y = x + self.crop_rect[1], y + self.crop_rect[2]
+
+		dest_image_data:paste(src_image_data, 0, 0, x, y, w, h)
+		local new_img = Image(self.name, dest_image_data)
+		new_img.crop_rect = {x,y,w,h}
+		return new_img
 	end,
 
 	combine = function(self, other_image)
 		local src_image_data = love.image.newImageData(Asset.getInfo('image', other_image.name).path)
 		local dest_image_data = love.image.newImageData(Asset.getInfo('image', self.name).path)
+		
+		local uncropped_dest_image_data = love.image.newImageData(Asset.getInfo('image', self.name).path)
+		local dest_image_data = love.image.newImageData(self.crop_rect[3], self.crop_rect[4])
+		dest_image_data:paste(uncropped_dest_image_data, 0, 0, self.crop_rect[1], self.crop_rect[2], self.crop_rect[3], self.crop_rect[4])
 
 		local src_w = math.min(self.width, other_image.width)
 		local src_h = math.min(self.height, other_image.height)
 
 		dest_image_data:mapPixel(function(x,y,r,g,b,a)
-			if x >= src_w or y >= src_h then return 0,0,0,0 end
+			--if x >= src_w or y >= src_h then return 0,0,0,0 end
 
 			local sr, sg, sb, sa = src_image_data:getPixel(x,y)
 			if sa > 0 then
 				return
-					(r * a / 1) + (sr * sa * (1 - a) / (1*1)),
-					(g * a / 1) + (sg * sa * (1 - a) / (1*1)),
-					(b * a / 1) + (sb * sa * (1 - a) / (1*1)),
+					(r * a / 1) + (sr * sa * (1 - a) / 1),
+					(g * a / 1) + (sg * sa * (1 - a) / 1),
+					(b * a / 1) + (sb * sa * (1 - a) / 1),
 					a + (sa * (1 - a) / 1)
 			else
 				return r, g, b, a

@@ -83,7 +83,6 @@ Tween = Class{
 	end,
 
 	_onFinish = function(self) 
-		Debug.log("tween finished") 
 		self._go = false
 		if self.onFinish then self:onFinish() end
 	end

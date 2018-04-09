@@ -28,6 +28,7 @@ class Code extends Editor {
             indentWithTabs : true,
             highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
             matchBrackets: true,
+            extraKeys: {"Ctrl-Space": "autocomplete"},
             extraKeys: {
             	"Ctrl-S": function(cm) {
             		this_ref.save();

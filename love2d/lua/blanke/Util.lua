@@ -280,6 +280,29 @@ function table.remove(t, value)
 	return t
 end
 
+-- from https://stackoverflow.com/a/33296534
+-- still unsure if this works
+function table.merge(...)
+	local concat_2tables = function(table1, table2)
+	    len = #table1
+	    for key, val in pairs(table2)do
+	        table1[key+len] = val
+	    end
+	    return table1
+	end
+
+	local tableList = arg
+    if tableList==nil then
+        return  nil
+    elseif #tableList == 1 then
+        return  tableList[1]
+    else
+        table1 = tableList[1]
+        restTableList = {unpack(tableList, 2)}
+        return concat_2tables(table1, concatenateTables(restTableList))
+    end
+end
+
 --[[
 
 	MATH

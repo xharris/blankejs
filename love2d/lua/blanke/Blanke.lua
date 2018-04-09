@@ -23,8 +23,8 @@ function _addGameObject(type, obj)
     obj._destroyed = false
     if not obj.destroy then
     	obj.destroy = function(self)
-    		if self.onDestroy then self:onDestroy() end
 	    	_destroyGameObject(type,self)
+    		if self.onDestroy then self:onDestroy() end
 	    end
     end
     if not obj.netSync then
@@ -49,7 +49,9 @@ end
 
 function _destroyGameObject(type, del_obj)
 	del_obj._destroyed = true
-	--if del_obj.type ~= 'state' then del_obj.draw = function() end end
+	if del_obj._group and del_obj.uuid ~= nil then
+		del_obj._group:removeUUID(del_obj.uuid)
+	end
 	_iterateGameGroup(type, function(obj, i) 
 		if obj.uuid == del_obj.uuid then
 			table.remove(game[type],i)
@@ -219,6 +221,9 @@ BlankE = {
 			end
 		end
 	end,
+
+	addEntity = function(in_name) BlankE.addClassType(in_name, 'Entity') end,
+	addState  = function(in_name) BlankE.addClassType(in_name, 'State') end,
 
 	restart = function()
 		-- restart game I guess?

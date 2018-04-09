@@ -130,10 +130,11 @@ function playState:draw()
 
 		if not wall then img_igloo_back:draw() end
 		Net.draw('Penguin')
-		lvl_objects:call(function(o, obj)
+		lvl_objects:forEach(function(o, obj)
 			obj:draw()
-			if main_penguin then main_penguin:draw() end 
 		end)
+		
+		if main_penguin then main_penguin:draw() end 
 		if not wall then img_igloo_front:draw() end
 	end)
 	
@@ -187,8 +188,7 @@ function loadLevel(name)
 	for o, obj in ipairs(lvl_map:getObjects("invis_ground")) do
 		lvl_objects:add(Ground(obj.x, obj.y, -1))
 	end
-	
-	Debug.log(#lvl_objects,"frags")
+	Debug.log(lvl_objects:size(),"frags")
 end
 
 function spawnPlayer()

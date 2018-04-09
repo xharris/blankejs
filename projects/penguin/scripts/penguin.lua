@@ -207,7 +207,6 @@ function Penguin:jump()
 		self.vspeed = -900 + (100 * (self.can_jump / MAX_JUMPS))
 		self.can_jump = self.can_jump - 1
 		self:netSync("vspeed","x","y")
-		Debug.log('syncing')
 	end
 end
 

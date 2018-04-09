@@ -19,7 +19,7 @@ function Ground:init(x, y, frame, g_type)
 
 	if g_type == "cracked" then
 		self.img_ground_crack = Image("ground_crack")
-		self.img_tile:combine(self.img_tile, self.img_ground_crack)
+		self.img_tile:combine(self.img_ground_crack)
 	end
 	
 	self.fragged = false
@@ -32,7 +32,7 @@ function Ground:update(dt)
 	if wall_x > self.x + self.img_tile.width then self:removeShape("ground") end
 	if wall_x > self.x and not self.fragged then
 		self.fragged = true
-		FragImage(self.img_tile)
+		local frag_block = FragImage(self.img_tile, self)
 	end
 end
 

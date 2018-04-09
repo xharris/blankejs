@@ -5,6 +5,7 @@ Map = Class{
 		self.array = {}
 		self.layer_info = {}
 		self.obj_info = {}
+		self.obj_list = {}
 
 		local load_map = Asset.map(name)
 
@@ -34,7 +35,15 @@ Map = Class{
 					self.array[layer_name][x] = ifndef(self.array[layer_name][x], {})
 					-- y
 					self.array[layer_name][x][y] = obj_info.char
+
+					-- save object to list
+					self.obj_list[obj_info.name] = ifndef(self.obj_list[obj_info.name], {})
+					table.insert(self.obj_list[obj_info.name], {
+						x=coord[1], y=coord[2],
+						name=obj_info.name, char=obj_info.char
+					})
 				end
+
 			end
 		end
 
@@ -46,22 +55,13 @@ Map = Class{
 		local ret_table = {}
 		local names = {...}
 
-		-- iterate give names
 		for n, name in ipairs(names) do
-			if self.obj_info[name] then
-				-- iterate layers
-				for layer_name, coord_list in pairs(self.obj_info[name].coords) do
-					-- iterate object coordinate list
-					for c, coord in ipairs(coord_list) do
-						table.insert(ret_table, {
-							x=coord[1], y=coord[2],
-							name=name, char=self.obj_info[name].char
-						})
-					end
+			if self.obj_list[name] then 
+				for o, obj in ipairs(self.obj_list[name]) do
+					table.insert(ret_table, obj)
 				end
 			end
 		end
-
 		return ret_table
 	end
 }
