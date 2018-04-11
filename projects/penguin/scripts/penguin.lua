@@ -235,4 +235,9 @@ function Penguin:draw()
 	end
 
 	self:drawSprite('hat')
+	
+	if self.net_uuid then
+		Draw.setColor("red")
+		Draw.text(tostring(self.net_uuid), self.x, self.y)
+	end
 end

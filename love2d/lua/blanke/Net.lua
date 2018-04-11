@@ -65,7 +65,7 @@ Net = {
     end,
 
     disconnect = function()
-        if not Net.client then return end
+        if not Net.client or not Net.is_connected then return end
 
         Net.send({
             type='netevent',
@@ -75,8 +75,9 @@ Net = {
         Net.client:unsubscribe()
         Net.is_init = false
         Net.is_connected = false
-        --Net.client = nil
+        Net.client = nil
 
+        Net.removeLocalObjects()
         Net.removeClientObjects()
         Debug.log("disconnected")
 
@@ -85,6 +86,7 @@ Net = {
 
     _onReady = function()
         if Net.onReady then Net.onReady() end
+        -- request an object sync from other clients
         Net.send({
             type="netevent",
             event="object.sync",
@@ -94,7 +96,7 @@ Net = {
         })
     end,
     
-    _onConnect = function(clientid) 
+    _onConnect = function(clientid)
         Debug.log('+ '..clientid)
     end,
     
@@ -109,12 +111,12 @@ Net = {
             -- get assigned client id
             if data.event == 'getID' then
                 Net.id = data.info
-                Debug.log('connected!')
+                Debug.log('connected as '..Net.id..'!')
                 Net._onReady()
             end
 
-            if data.event == 'client.connect' then
-                Net._onConnect(data.info)
+            if data.event == 'client.connect' and not data.clientid ~= Net.id then
+                Net._onConnect(data.clientid)
             end
 
             if data.event == 'client.disconnect' then
@@ -151,6 +153,8 @@ Net = {
             if not Net._objects[clientid][obj.net_uuid] then
                 Net._objects[clientid][obj.net_uuid] = _G[obj.classname]()
                 local obj_ref = Net._objects[clientid][obj.net_uuid]
+
+                obj_ref.net_uuid = obj.net_uuid
                 obj_ref.net_object = true
                 
                 if obj.values then
@@ -215,6 +219,13 @@ Net = {
             end
             Net._objects[id] = nil
         end
+    end,
+
+    removeLocalObjects = function()
+        for o, obj in ipairs(Net._local_objects) do
+            obj:destroy()
+        end
+        Net._local_objects = {}
     end,
 
     addObject = function(obj)
