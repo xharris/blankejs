@@ -8,8 +8,8 @@ Net = {
     onConnect = nil,    
     onDisconnect = nil, 
     
-    address = "localhost",
-    port = 12345,
+    address = "127.0.0.1",
+    port = 1337,
     room = 1,
 
     _objects = {},          -- objects sync from other clients _objects = {'client12' = {object1, object2, ...}}
@@ -28,7 +28,7 @@ Net = {
         local ip, _ = s:getsockname()
         Net.ip = ip
 
-        Net.address = ifndef(address, "localhost") 
+        Net.address = ifndef(address, "127.0.0.1") 
         Net.port = ifndef(port, Net.port)     
         Net.is_init = true
 
@@ -38,38 +38,20 @@ Net = {
         return Net
     end,
     
-    update = function(dt,override)
-        override = ifndef(override, true)
-
-        if Net.is_init then
-            if Net.server then Net.server:update(dt) end
-            if Net.client then 
-                Net.client:update(dt)
-                local data = Net.client:receive()
-                if data then
-                    Net._onReceive(data)
-                end
-            end
-        end
-        return Net
-    end,
-    
     -- returns "Client" object
     join = function(address, port) 
         if Net.client or Net.is_connected then return end
         if not Net.is_init then
             Net.init(address, port)
         end
-        Net.client = grease.udpClient()
-        
-        Net.client.callbacks.recv = Net._onReceive
-        Net.client.handshake = "blanke_net"
 
-        Net.client:setPing()
-        local success, err = Net.client:connect(Net.address, Net.port)
-        
-        if success then
+        Net.client = noobhub.new({ server=Net.address; port=Net.port; })
+        if Net.client then
             Net.is_connected = true
+            Net.client:subscribe({
+                channel = "room"..tostring(Net.room),
+                callback = Net._onReceive
+            })
             Debug.log("joining "..Net.address..':'..Net.port)
         else
             Debug.log("could not connect to "..Net.address..":"..Net.port)
@@ -78,13 +60,22 @@ Net = {
         return Net
     end,
 
+    update = function() 
+        if Net.client then Net.client:enterFrame() end
+    end,
+
     disconnect = function()
         if not Net.client then return end
 
-        Net.client:disconnect()
+        Net.send({
+            type='netevent',
+            event='client.disconnect',
+            info=clientid
+        })
+        Net.client:unsubscribe()
         Net.is_init = false
         Net.is_connected = false
-        Net.client = nil
+        --Net.client = nil
 
         Net.removeClientObjects()
         Debug.log("disconnected")
@@ -113,31 +104,8 @@ Net = {
         Net.removeClientObjects(clientid) 
     end,
     
-    _onReceive = function(data, id)
-        local raw_data = data
-        if data:starts('{') then
-            data = json.decode(data)
-
-        elseif data:starts('"') then
-            data = data:sub(2,-2)
-        end
-        if type(data) == "string" and data:ends('\n') then
-            data = data:gsub('\n','')
-        end
-
-        if type(data) == "string" and data:ends('-') then
-            Net._onDisconnect(data:sub(1,-2))
-            return
-        end
-
-        if type(data) == "string" and data:ends('+') then
-            Net._onConnect(data:sub(1,-2))
-            return
-        end
-
+    _onReceive = function(data)
         if data.type and data.type == 'netevent' then
-            --Debug.log(data.event)
-
             -- get assigned client id
             if data.event == 'getID' then
                 Net.id = data.info
@@ -150,7 +118,7 @@ Net = {
             end
 
             if data.event == 'client.disconnect' then
-                Net._onDisconnect(data.info)
+                Net._onDisconnect(data.clientid)
             end
 
             if data.room == Net.room then
@@ -179,7 +147,6 @@ Net = {
             local obj = data.info.object
             local clientid = data.clientid
 
-            Debug.log("added "..obj.classname)
             Net._objects[clientid] = ifndef(Net._objects[clientid], {})
             if not Net._objects[clientid][obj.net_uuid] then
                 Net._objects[clientid][obj.net_uuid] = _G[obj.classname]()
@@ -219,9 +186,7 @@ Net = {
             in_data.clientid = Net.id
             in_data.room = Net.room
         end
-
-        data = json.encode(in_data)
-        if Net.client then Net.client:send(data) end
+        if Net.client then Net.client:publish({message=in_data}) end
         return Net
     end,
 
@@ -245,7 +210,6 @@ Net = {
         for id, objects in pairs(removable) do
             for uuid, obj in pairs(objects) do
                 if not obj.keep_on_disconnect then
-                    Debug.log('remove '..obj.classname)
                     obj:destroy()
                 end
             end

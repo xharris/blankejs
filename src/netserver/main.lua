@@ -34,9 +34,7 @@ Net = {
         Debug.log("networking initialized")
     end,
     
-    update = function(dt,override)
-        override = ifndef(override, true)
-
+    update = function(dt)
         if Net.is_init then
             if Net.server then Net.server:update(dt) end
         end
@@ -91,6 +89,8 @@ Net = {
     end,
 
     _onReceive = function(data, id)
+        if not data then return end
+
         -- calculate # of bytes used
         Net.bytes = Net.bytes + bytes(data)
 

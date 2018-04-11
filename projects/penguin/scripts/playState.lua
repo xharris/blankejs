@@ -1,6 +1,6 @@
 BlankE.addClassType("playState", "State")
 
-play_mode = 'local'			-- local / online
+play_mode = 'online'			-- local / online
 game_start_population = 3
 best_penguin = nil
 
@@ -129,13 +129,13 @@ function playState:draw()
 		Net.draw('DestructionWall')
 
 		if not wall then img_igloo_back:draw() end
-		Net.draw('Penguin')
 		lvl_objects:forEach(function(o, obj)
 			obj:draw()
 		end)
 		
 		if main_penguin then main_penguin:draw() end 
 		if not wall then img_igloo_front:draw() end
+		Net.draw('Penguin')
 	end)
 	
 	local ready = ''
@@ -199,11 +199,11 @@ end
 
 function startDestruction()
 	if not wall then
-		wall = DestructionWall()
-		wall.x = -32
+		--wall = DestructionWall()
+		--wall.x = -32
 
-		FragImage(img_igloo_front)
-		FragImage(img_igloo_back)
+		--FragImage(img_igloo_front)
+		--FragImage(img_igloo_back)
 	end
 end
 

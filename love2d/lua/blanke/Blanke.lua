@@ -69,7 +69,8 @@ Signal = blanke_require('Signal')
 
 anim8 	= blanke_require('extra.anim8')
 HC 		= blanke_require('extra.HC')
-grease 	= blanke_require('extra.grease')
+blanke_require('extra.noobhub')
+--grease 	= blanke_require('extra.grease')
 
 local modules = {'Map','Asset','Camera','Canvas','Dialog','Draw','Effect','Entity','Font','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 local not_require = {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
@@ -415,7 +416,7 @@ BlankE = {
 	    BlankE._mouse_updated = false
 	    
 	    if not BlankE._is_init then return end
-	    Net.update(dt, false)
+	    Net.update(dt)
 				
     	if not BlankE.pause then
 			StateManager.iterateStateStack('update', dt)
