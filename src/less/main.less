@@ -395,6 +395,7 @@ body {
 
 #tabs {
 	.win-nodrag();
+	display: inline-block;
 
 	.tab {
 		line-height: 22px;
@@ -461,6 +462,33 @@ body {
 				display: inline-block;
 				border-left-color: @window-background;
 			}
+		}
+	}
+}
+
+#status-icons {
+	display: inline-block;
+    float: right;
+    margin-top: 1px;
+
+	.server-status {
+		position: relative;
+		transition: all ease-in-out 0.2s;
+
+		&.active {
+			color: rgba(100,221,23 ,1);
+		}
+
+		.mdi {
+			margin-right: 4px;
+		}
+
+		.server-pop {
+		    position: absolute;
+		    bottom: -3px;
+		    left: 12px;
+		    margin: 0px;
+		    text-align: left;
 		}
 	}
 }

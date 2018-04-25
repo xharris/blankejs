@@ -2,6 +2,8 @@ Net = {
     obj_update_rate = 0, -- m/s
     
     is_init = false,
+    is_leader = false,
+    wants_leader = false,
     client = nil,
     
     onReceive = nil,    
@@ -34,7 +36,6 @@ Net = {
 
         Net._timer = Timer():every(Net.updateObjects, 1):start()
 
-        Debug.log("networking initialized")
         return Net
     end,
     
@@ -52,7 +53,6 @@ Net = {
                 channel = "room"..tostring(Net.room),
                 callback = Net._onReceive
             })
-            Debug.log("joining "..Net.address..':'..Net.port)
         else
             Debug.log("could not connect to "..Net.address..":"..Net.port)
         end
@@ -61,6 +61,9 @@ Net = {
     end,
 
     update = function() 
+        if Net.wants_leader then
+            Net.setLeader()
+        end
         if Net.client then Net.client:enterFrame() end
     end,
 
@@ -97,11 +100,12 @@ Net = {
     end,
     
     _onConnect = function(clientid)
-        Debug.log('+ '..clientid)
+        --Debug.log('+ '..clientid)
+        if Net.onConnect then Net.onConnect(clientid) end
     end,
     
     _onDisconnect = function(clientid) 
-        Debug.log('- '..clientid)
+        --Debug.log('- '..clientid)
         if Net.onDisconnect then Net.onDisconnect(clientid) end
         Net.removeClientObjects(clientid) 
     end,
@@ -111,7 +115,7 @@ Net = {
             -- get assigned client id
             if data.event == 'getID' then
                 Net.id = data.info
-                Debug.log('connected as '..Net.id..'!')
+                Debug.log('connected to '..Net.address..':'..Net.port..' as '..Net.id..'!')
                 Net._onReady()
             end
 
@@ -183,6 +187,11 @@ Net = {
         if data.event == 'object.sync' and data.info.new_client ~= Net.id then
             Net.sendSyncObjects()
         end
+
+        -- a new leader has been selected
+        if data.event == 'set.leader' and data.clientid ~= Net.id then
+            Net.is_leader = false
+        end
     end,
 
     send = function(in_data) 
@@ -192,6 +201,19 @@ Net = {
         end
         if Net.client then Net.client:publish({message=in_data}) end
         return Net
+    end,
+
+    setLeader = function() 
+        if not Net.id then
+            Net.wants_leader = true
+        elseif not Net.is_leader then
+            Net.is_leader = true
+            Net.wants_leader = false
+            Net.send({
+                type='netevent',
+                event='set.leader'
+            })
+        end
     end,
 
     setRoom = function(num)

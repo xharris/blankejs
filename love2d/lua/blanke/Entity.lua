@@ -68,6 +68,10 @@ Entity = Class{
     	_addGameObject('entity', self)
     end,
 
+    __eq = function(self, other)
+    	return (self.uuid == other.uuid)
+    end,
+
     destroy = function(self)
     	-- destroy hitboxes
     	for s, shape in pairs(self.shapes) do
@@ -83,6 +87,14 @@ Entity = Class{
 
     _update = function(self, dt)
     	if self._destroyed then return end
+
+    	-- subtract friction
+    	if self.hspeed ~= 0 then 
+    		self.hspeed = self.hspeed + -(self.hspeed * self.friction)
+    		if math.abs(self.hspeed) <= 50 then
+    			self.hspeed = 0
+    		end
+    	end
 
 		if self.update then
 			self:update(dt)
@@ -123,13 +135,13 @@ Entity = Class{
 			-- calculate gravity/gravity_direction
 			local gravx, gravy = 0,0
 			if self.gravity ~= 0 then
-				gravx = self.gravity * cos(rad(self.gravity_direction))
-				gravy = self.gravity * sin(rad(self.gravity_direction))
+				gravx = math.floor(self.gravity * cos(rad(self.gravity_direction)))
+				gravy = math.floor(self.gravity * sin(rad(self.gravity_direction)))
 			end
-	
+
 			-- add gravity to hspeed/vspeed
-			if math.floor(gravx) ~= 0 then self.hspeed = self.hspeed + gravx end
-			if math.floor(gravy) ~= 0 then self.vspeed = self.vspeed + gravy end
+			if gravx ~= 0 then self.hspeed = self.hspeed + gravx end
+			if gravy ~= 0 then self.vspeed = self.vspeed + gravy end
 
 			-- move shapes if the x/y is different
 			if self.xprevious ~= self.x or self.yprevious ~= self.y then

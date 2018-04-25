@@ -198,6 +198,13 @@ BlankE = {
 		return ifndef(BlankE._class_type[in_type], {})
 	end,
 
+	loadPlugin = function(...)
+		local plugins = {...}
+		for p, plugin in ipairs(plugins) do
+			blanke_require('plugins.'..plugin)
+		end
+	end,
+
 	addClassType = function(in_name, in_type)
 		if not _G[in_name] then
 			BlankE._class_type[in_type] = ifndef(BlankE._class_type[in_type], {})
@@ -401,7 +408,7 @@ BlankE = {
 	end,
 
 	update = function(dt)
-	    dt = math.min(dt, min_dt)
+	    dt = math.min(dt, min_dt) * dt_mod
 	    next_time = next_time + min_dt
 
 	    BlankE.updateGridColor()

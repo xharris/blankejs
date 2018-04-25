@@ -77,7 +77,7 @@ class Tab {
 		var remove_elements = [];
 		for (var t = 0; t < contents.length; t++) {
 			if (contents[t].title == title) {
-				contents[t].age = 0;
+				contents[t].setAttribute('age',0);
 
 				contents[t].classList.remove("hidden");
 				contents[t].el_tab_container.classList.remove("hidden");
@@ -87,15 +87,21 @@ class Tab {
 				ret_val = true;
 			} else {
 
-				contents[t].age += 1;
+				contents[t].setAttribute('age', parseInt(contents[t].getAttribute('age'))+1);
 
-				if (contents[t].age > MAX_AGE) {
+				if (parseInt(contents[t].getAttribute('age')) > MAX_AGE) {
 					remove_elements.push(contents[t].this_ref);
 				}
 
 				contents[t].classList.add("hidden");
 				contents[t].el_tab_container.classList.add("hidden");
 			}
+		}
+
+		// remove old tabs
+		for (var e in remove_elements) {
+			let obj_tab = remove_elements[e];
+			obj_tab.close();
 		}
 
 		return ret_val;

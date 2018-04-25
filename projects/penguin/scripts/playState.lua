@@ -1,4 +1,4 @@
-BlankE.addClassType("playState", "State")
+BlankE.addState("playState")
 
 play_mode = 'online'			-- local / online
 game_start_population = 3
@@ -96,7 +96,7 @@ function playState:update(dt)
 	end
 	
 	-- load more levels!
-	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) and not best_penguin.net_object then
+	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) and best_penguin == main_penguin then
 		local levels = table.remove(Asset.list('map'), 'spawn')
 		
 		if play_mode == 'local' then
@@ -132,15 +132,21 @@ function playState:draw()
 		lvl_objects:forEach(function(o, obj)
 			obj:draw()
 		end)
+			
+		Net.draw('Penguin')
 		
 		if main_penguin then main_penguin:draw() end 
 		if not wall then img_igloo_front:draw() end
-		Net.draw('Penguin')
 	end)
 	
 	local ready = ''
 	if main_penguin.x > destruct_ready_x then ready = '\nREADY!' end
 	Draw.text(tostring(Net.getPopulation())..' / '..tostring(game_start_population)..ready, game_width/2, 50)
+	
+	if Net.is_leader then
+		Draw.setColor('yellow')
+		Draw.circle('fill',20,20,50)
+	end
 end	
 
 function loadLevel(name)
@@ -160,7 +166,8 @@ function loadLevel(name)
 	last_lvl_end[2] = last_lvl_end[2] + (lvl_end.y - lvl_start.y)
     	
 	-- regular ground
-	local snapx, snapy = lvl_map.layer_info['markers'].snap[1], lvl_map.layer_info['markers'].snap[2]
+	local snapx, snapy = 32, 32
+	Debug.log('loading',name)
     for o, obj in ipairs(lvl_map:getObjects("ground","cracked_ground")) do
 		local ground_type = ''
 		if obj.char == 'C' then 
@@ -171,7 +178,7 @@ function loadLevel(name)
         lvl_objects:add(Ground(
 				obj.x+offset_x,
 				obj.y+offset_y,
-				bitmask4(lvl_map.array['ground'], {'G','C'}, obj.x / snapx, obj.y / snapy), ground_type))
+				bitmask4(lvl_map.array['layer0'], {'G','C'}, obj.x / snapx, obj.y / snapy), ground_type))
     end
 
 	-- igloo
@@ -188,7 +195,6 @@ function loadLevel(name)
 	for o, obj in ipairs(lvl_map:getObjects("invis_ground")) do
 		lvl_objects:add(Ground(obj.x, obj.y, -1))
 	end
-	Debug.log(lvl_objects:size(),"frags")
 end
 
 function spawnPlayer()

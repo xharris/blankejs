@@ -5,6 +5,7 @@ game_height = 0
 window_width = 0
 window_height = 0
 game_time = 0
+dt_mod = 1
 
 CONF = {
     window = {

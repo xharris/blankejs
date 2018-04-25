@@ -2,6 +2,8 @@
 BlankE = require('blanke.Blanke')
 
 function love.load()
+	BlankE.loadPlugin('Platformer')
+	
 	Asset.add('assets/image/')
 	Asset.add('assets/hats/','hat')
 	Asset.add('maps/')
@@ -32,7 +34,6 @@ function love.load()
 	Input.set("destruct", "k")
 	Input.set("restart", "r")
 	Input.keys['restart'].can_repeat = false
-
 	
 	BlankE.draw_debug = true
 end

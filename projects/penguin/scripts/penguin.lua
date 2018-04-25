@@ -1,4 +1,4 @@
-BlankE.addClassType("Penguin", "Entity")
+BlankE.addEntity("Penguin")
 
 local MAX_JUMPS = 3
 
@@ -11,7 +11,7 @@ Penguin.main_penguin_info = {
 Penguin.hats = Asset.list('image','hat')
 table.insert(Penguin.hats, 'none')
 
-Penguin.net_sync_vars = {'color','hspeed','sprite_speed','sprite_xscale','color','hat', 'eyes'}
+Penguin.net_sync_vars = {'x','y','color','hspeed','sprite_speed','sprite_xscale','color','hat', 'eyes'}
 
 function Penguin:init(is_main_player)
 	self:addAnimation{
@@ -42,17 +42,16 @@ function Penguin:init(is_main_player)
 		speed = .1
 	}
 
+	self.friction = 0.05
 	self.gravity = 35
 	self.can_jump = MAX_JUMPS
-	self.walk_speed = 240
+	self.walk_speed = 260
+	self.walk_accel = 20
 	-- random shade of blue
 	self.sprite_yoffset = -16
 	self.sprite_xoffset = -16
 
-	local top, left, right = 7, 0, 14
-	self:addShape("main", "rectangle", {left, top, 32-(left+right), 32-(top*2)})		-- rectangle of whole players body
-	self:addShape("jump_box", "rectangle", {left, 30, 32-(left+right), 2})	-- rectangle at players feet
-	self:setMainShape("main")
+	self:addPlatforming(5, 5, 20, 32)
 
 	self.eyes = 1
 	self.sprite['eyes'].speed = 0
@@ -135,34 +134,21 @@ function Penguin:update(dt)
 	end
 	if not best_penguin or self.x > best_penguin.x then
 		best_penguin = self
+		Net.setLeader()
 	end
-	self.onCollision["main"] = function(other, sep_vector)	-- other: other hitbox in collision
-		if other.tag == "ground" then
-			-- ceiling collision
-            if sep_vector.y > 0 and self.vspeed < 0 then
-                self:collisionStopY()
-            end
-            -- horizontal collision
-            if math.abs(sep_vector.x) > 0 then
-                self:collisionStopX() 
-            end
-		end
-	end
-
-	self.onCollision["jump_box"] = function(other, sep_vector)
-        if other.tag == "ground" and sep_vector.y < 0 then
-            -- floor collision
-            if not self.can_jump then
+	
+	self:platformerCollide("ground",nil,nil,
+		-- floor collision
+		function()
+            if self.can_jump == 0 then
 				self:netSync("vspeed","x","y")
             end
             self.can_jump = MAX_JUMPS 
-        	self:collisionStopY()
-        end 
-    end
+		end	
+	)
 
 	-- left/right movement
 	if not self.net_object then
-		self.hspeed = 0
 		
 		if Input("player_right") then
 			self.hspeed = self.walk_speed
@@ -172,7 +158,15 @@ function Penguin:update(dt)
 			self.hspeed = -self.walk_speed
 			self.sprite_speed = 2
 		end
-
+		
+		--[[ accelerate
+		local dir
+		if (dir > 0 and self.hspeed < self.walk_speed) or (dir < 0 and self.hspeed > -self.walk_speed) then
+			self.hspeed = self.hspeed + (dir * self.walk_accel)
+		end
+		Debug.log(self.walk_speed,self.hspeed)
+		]]
+		
 		if Input("player_up") then
 			self:jump()
 		end
@@ -206,7 +200,7 @@ function Penguin:jump()
 	if self.can_jump > 0 then
 		self.vspeed = -900 + (100 * (self.can_jump / MAX_JUMPS))
 		self.can_jump = self.can_jump - 1
-		self:netSync("vspeed","x","y")
+		self:netSync("x","y","vspeed")
 	end
 end
 
@@ -236,8 +230,5 @@ function Penguin:draw()
 
 	self:drawSprite('hat')
 	
-	if self.net_uuid then
-		Draw.setColor("red")
-		Draw.text(tostring(self.net_uuid), self.x, self.y)
-	end
+	self:debugCollision()
 end

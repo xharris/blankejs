@@ -1084,6 +1084,7 @@ body {
 }
 #tabs {
   -webkit-app-region: no-drag;
+  display: inline-block;
 }
 #tabs .tab {
   line-height: 22px;
@@ -1137,4 +1138,26 @@ body {
 #tabs .tab:not(.hidden) .triangle-left {
   display: inline-block;
   border-left-color: #424242;
+}
+#status-icons {
+  display: inline-block;
+  float: right;
+  margin-top: 1px;
+}
+#status-icons .server-status {
+  position: relative;
+  transition: all ease-in-out 0.2s;
+}
+#status-icons .server-status.active {
+  color: #64dd17;
+}
+#status-icons .server-status .mdi {
+  margin-right: 4px;
+}
+#status-icons .server-status .server-pop {
+  position: absolute;
+  bottom: -3px;
+  left: 12px;
+  margin: 0px;
+  text-align: left;
 }
