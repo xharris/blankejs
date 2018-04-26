@@ -112,6 +112,7 @@ Net = {
     
     _onReceive = function(data)
         if data.type and data.type == 'netevent' then
+            Debug.log(data.event)
             -- get assigned client id
             if data.event == 'getID' then
                 Net.id = data.info
@@ -127,6 +128,7 @@ Net = {
                 Net._onDisconnect(data.clientid)
             end
 
+            if not data.room then data.room = Net.room end
             if data.room == Net.room then
                 Net._onEvent(data)
             end
@@ -189,9 +191,21 @@ Net = {
         end
 
         -- a new leader has been selected
-        if data.event == 'set.leader' and data.clientid ~= Net.id then
-            Net.is_leader = false
+        if data.event == 'set.leader' then
+            if data.info == Net.id then
+                Net.is_leader = true
+            else
+                Net.is_leader = false
+            end
         end
+    end,
+
+    sendPersistent = function(in_data) 
+        if Net.is_leader then
+            in_data.save = true
+            Net.send(in_data)
+        end 
+        return Net
     end,
 
     send = function(in_data) 
@@ -201,19 +215,6 @@ Net = {
         end
         if Net.client then Net.client:publish({message=in_data}) end
         return Net
-    end,
-
-    setLeader = function() 
-        if not Net.id then
-            Net.wants_leader = true
-        elseif not Net.is_leader then
-            Net.is_leader = true
-            Net.wants_leader = false
-            Net.send({
-                type='netevent',
-                event='set.leader'
-            })
-        end
     end,
 
     setRoom = function(num)

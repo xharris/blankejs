@@ -102,7 +102,7 @@ function playState:update(dt)
 		if play_mode == 'local' then
 			loadLevel(table.random(levels))
 		elseif play_mode == 'online' then
-			Net.send({
+			Net.sendPersistent({
 				type="netevent",
 				event="load_level",
 				info=table.random(levels)

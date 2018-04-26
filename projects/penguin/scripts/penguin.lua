@@ -134,7 +134,6 @@ function Penguin:update(dt)
 	end
 	if not best_penguin or self.x > best_penguin.x then
 		best_penguin = self
-		Net.setLeader()
 	end
 	
 	self:platformerCollide("ground",nil,nil,
@@ -229,6 +228,4 @@ function Penguin:draw()
 	end
 
 	self:drawSprite('hat')
-	
-	self:debugCollision()
 end
