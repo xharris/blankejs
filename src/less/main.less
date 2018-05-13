@@ -28,7 +28,6 @@ body {
 	width: 100%;
 	height: 100%;
 	background-color: @window-background;
-	padding-bottom: 22px;
 	border: 1px solid black;
 }
 
@@ -307,6 +306,7 @@ body {
     right: 0px;
     height: 34px;
     z-index: 100;
+    background-color: rgba(0,0,0,0.1);
 
     #search-input {
 		.win-nodrag();
@@ -437,10 +437,14 @@ body {
 			transition: all 0.2s ease-in-out;
 		}
 
-		.tab-title {
-			padding-left: 18px;
-			padding-right: 5px;
-			color: @search-text-focus;
+		.tab-title-container {
+			padding-left: 12px;
+			padding-right: 0px;
+
+			.tab-title {
+				color: @window-background;
+    			padding: 0px 5px;
+			}
 
 			&:hover {
 				text-decoration: underline;
@@ -456,17 +460,20 @@ body {
 			position: absolute;
 		    width: 0;
 		    height: 0;
-		    border-top: 11px solid transparent;
-		    border-bottom: 11px solid transparent;
-		    border-left: 13px solid @window-background;
 		}
 
 		.triangle-left {
+		    border-top: 11px solid @window-background;
+		    border-bottom: 11px solid @window-background;
+		    border-left: 13px solid transparent;
 			left: 0px;
 			display: none;
 		}
 
 		.triangle-right {
+		    border-top: 11px solid transparent;
+		    border-bottom: 11px solid transparent;
+		    border-left: 13px solid @window-background;
 			display: none;
 		}
 
@@ -478,20 +485,25 @@ body {
 
 		&:not(.hidden) {
 			.tab-title {
-				background-color: @beveled-bg;
+				color: @search-text-focus;
+				background-color: @window-background;
 			}
 
-			.triangle-right {
+			.triangle-right, .triangle-left {
 				display: inline-block;
-				border-left-color: @beveled-bg;
-			}
-
-			.triangle-left {
-				display: inline-block;
-				border-left-color: @window-background;
 			}
 		}
 	}
+}
+
+#status-bar {
+	position: absolute;
+    bottom: 0px;
+    height: 22px;
+    left: 0px;
+    right: 0px;
+    z-index: 100;
+    background-color: rgba(0,0,0,0.1);
 }
 
 #status-icons {

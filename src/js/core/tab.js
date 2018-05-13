@@ -13,10 +13,12 @@ class Tab {
 		this.tab.this_ref = this;
 		this.tab.dataset.guid = this.guid;
 		this.tab.dataset.type = content_type;
+		this.tab_title_container = app.createElement("div","tab-title-container");
 		this.tab_title = app.createElement("div","tab-title");
+		this.tab_title_container.appendChild(this.tab_title)
 		this.tab_tri_left = app.createElement("div", "triangle-left");
 		this.tab_tri_right = app.createElement("div", "triangle-right");
-		this.tab.appendChild(this.tab_title);
+		this.tab.appendChild(this.tab_title_container);
 		this.tab.appendChild(this.tab_tri_left);
 		this.tab.appendChild(this.tab_tri_right);
 		el_tab_bar.appendChild(this.tab);

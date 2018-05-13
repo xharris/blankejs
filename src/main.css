@@ -724,7 +724,6 @@ body {
   width: 100%;
   height: 100%;
   background-color: #424242;
-  padding-bottom: 22px;
   border: 1px solid black;
 }
 #window-buttons {
@@ -1012,6 +1011,7 @@ body {
   right: 0px;
   height: 34px;
   z-index: 100;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 #search-container #search-input {
   -webkit-app-region: no-drag;
@@ -1120,12 +1120,14 @@ body {
   vertical-align: middle;
   transition: all 0.2s ease-in-out;
 }
-#tabs .tab .tab-title {
-  padding-left: 18px;
-  padding-right: 5px;
-  color: #f0f0f0;
+#tabs .tab .tab-title-container {
+  padding-left: 12px;
+  padding-right: 0px;
 }
-#tabs .tab .tab-title:hover {
+#tabs .tab .tab-title-container .tab-title {
+  color: #424242;
+}
+#tabs .tab .tab-title-container:hover {
   text-decoration: underline;
 }
 #tabs .tab i {
@@ -1137,30 +1139,39 @@ body {
   position: absolute;
   width: 0;
   height: 0;
-  border-top: 11px solid transparent;
-  border-bottom: 11px solid transparent;
-  border-left: 13px solid #424242;
 }
 #tabs .tab .triangle-left {
+  border-top: 11px solid #424242;
+  border-bottom: 11px solid #424242;
+  border-left: 13px solid transparent;
   left: 0px;
   display: none;
 }
 #tabs .tab .triangle-right {
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  border-left: 13px solid #424242;
   display: none;
 }
 #tabs .tab:first-child i {
   display: none;
 }
 #tabs .tab:not(.hidden) .tab-title {
-  background-color: #212121;
+  color: #f0f0f0;
+  background-color: #424242;
 }
-#tabs .tab:not(.hidden) .triangle-right {
-  display: inline-block;
-  border-left-color: #212121;
-}
+#tabs .tab:not(.hidden) .triangle-right,
 #tabs .tab:not(.hidden) .triangle-left {
   display: inline-block;
-  border-left-color: #424242;
+}
+#status-bar {
+  position: absolute;
+  bottom: 0px;
+  height: 22px;
+  left: 0px;
+  right: 0px;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.1);
 }
 #status-icons {
   display: inline-block;
