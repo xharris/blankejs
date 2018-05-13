@@ -184,9 +184,8 @@ var app = {
 		app.search_funcs[hash] = null;
 		app.search_args[hash] = null;
 	},
-
 	settings: {
-		'recent_files':[]		
+		'recent_files':[]
 	},
 	loadAppData: function(callback) {
 		var app_data_folder = env.APPDATA || (platform == 'darwin' ? env.HOME + 'Library/Preferences' : '/var/local');
@@ -209,8 +208,26 @@ var app = {
 		});
 	},
 
+	project_settings:{},
+	loadSettings: function(callback){
+		if (app.isProjectOpen()) {	
+			nwFS.readFile(nwPATH.join(app.project_path,"ide_data"), 'utf-8', function(err, data){
+				if (!err) {
+					app.project_settings = JSON.parse(data);
+					if (callback) callback();
+				}
+			});
+		}
+	},
+	saveSettings: function(){
+		if (app.isProjectOpen()) {
+			nwFS.writeFile(nwPATH.join(app.project_path,"ide_data"), JSON.stringify(app.project_settings));
+		}
+	},
+
 	hideWelcomeScreen: function() {
 		app.getElement("#welcome").classList.add("hidden");
+		app.getElement("#workspace-window").classList.add("active");
 	}
 }
 
@@ -224,6 +241,12 @@ nwWIN.on('loaded', function() {
 		var el_new_proj = app.getElement("#welcome .new");
 		el_new_proj.onclick = function(){ 
 			app.newProjectDialog();
+		}
+
+		// open project
+		var el_open_proj = app.getElement("#welcome .open");
+		el_open_proj.onclick = function(){ 
+			app.openProjectDialog();
 		}
 
 		// add recent projects
@@ -384,5 +407,9 @@ nwWIN.on('loaded', function() {
 	app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 	app.addSearchKey({key: 'Run Server', onSelect: app.runServer});
 
-	app.runServer();
+	document.addEventListener("openProject",function(){
+		app.loadSettings();
+	});
+
+	//app.runServer();
 });

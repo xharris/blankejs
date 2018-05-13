@@ -1,6 +1,6 @@
 BlankE.addState("playState")
 
-play_mode = 'online'			-- local / online
+play_mode = 'local'			-- local / online
 game_start_population = 3
 best_penguin = nil
 
@@ -88,15 +88,17 @@ function playState:update(dt)
 			end)
 		end
 
-	elseif not Net.is_connected then
-		Net.join()
+	else
+		if not Net.is_connected and play_mode == 'online' then
+			Net.join()
+		end
 		in_igloo_menu = false
 		main_view:zoom(1)
 		main_view:follow(main_penguin)
 	end
 	
 	-- load more levels!
-	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) and best_penguin == main_penguin then
+	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) then
 		local levels = table.remove(Asset.list('map'), 'spawn')
 		
 		if play_mode == 'local' then

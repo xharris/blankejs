@@ -12,8 +12,9 @@ Entity.platformerCollide = function(self, ground_tag, fn_wall, fn_ceil, fn_floor
 		if other.tag == ground_tag then
             -- horizontal collision
             if math.abs(sep_vector.x) > 0 then
-                self:collisionStopX() 
-                if fn_wall then fn_wall() end
+                if (fn_wall and fn_wall() ~= false) or fn_wall == nil then
+	                self:collisionStopX() 
+	            end
             end
 		end
 	end
@@ -22,8 +23,9 @@ Entity.platformerCollide = function(self, ground_tag, fn_wall, fn_ceil, fn_floor
 		if other.tag == ground_tag then
 			-- ceiling collision
             if sep_vector.y > 0 and self.vspeed < 0 then
-                self:collisionStopY()
-                if fn_ceil then fn_ceil() end
+                if (fn_ceil and fn_ceil() ~= false) or fn_ceil == nil then
+               		self:collisionStopY()
+                end
             end
 		end
 	end
@@ -31,8 +33,9 @@ Entity.platformerCollide = function(self, ground_tag, fn_wall, fn_ceil, fn_floor
 	self.onCollision["jump_box"] = function(other, sep_vector)
         if other.tag == ground_tag and sep_vector.y < 0 then
             -- floor collision
-        	self:collisionStopY()
-        	if fn_floor then fn_floor() end
+        	if (fn_floor and fn_floor() ~= false) or fn_floor == nil then
+        		self:collisionStopY()
+        	end
         end 
     end
 end

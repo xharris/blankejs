@@ -177,8 +177,9 @@ var _destroySocket = function (socket) {
 }
 
 module.exports.start = function(){
-	noobserver.on('listening', function () { _log('NoobHub on ' + noobserver.address().address + ':' + noobserver.address().port) })
-	noobserver.listen(cfg.port, '::')
+	noobserver.listen(cfg.port,  function () {
+		_log('NoobHub on ', noobserver.address().address + noobserver.address().port);
+	});
 }
 
 module.exports.setLogFunction = function(fn) {

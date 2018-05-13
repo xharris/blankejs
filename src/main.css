@@ -422,7 +422,7 @@
 .blanke-window > .title-bar {
   cursor: default;
   background-color: black;
-  height: 44px;
+  height: 34px;
   overflow: hidden;
 }
 .blanke-window > .title-bar > * {
@@ -444,7 +444,7 @@
 .blanke-window > .title-bar > .title {
   pointer-events: none;
   color: white;
-  line-height: 44px;
+  line-height: 34px;
   padding-left: 2px;
 }
 .blanke-window > .title-bar > .btn-close {
@@ -461,7 +461,7 @@
   margin-bottom: 0px;
   overflow: hidden;
   position: absolute;
-  top: 44px;
+  top: 34px;
   bottom: 0px;
   right: 0px;
   left: 0px;
@@ -495,12 +495,12 @@
 }
 .content[data-type="MapEditor"] .sidebar {
   position: absolute;
-  right: 0px;
+  right: 5px;
   top: 0px;
-  bottom: 0px;
   pointer-events: none;
   background-color: rgba(207, 216, 220, 0.25);
   transition: all ease-in-out 0.2s;
+  margin-top: 34px;
   /* OBJECT */
   /* LAYER */
 }
@@ -724,18 +724,17 @@ body {
   width: 100%;
   height: 100%;
   background-color: #424242;
-  padding: 5px;
-  padding-top: 44px;
   padding-bottom: 22px;
+  border: 1px solid black;
 }
 #window-buttons {
-  -webkit-app-region: no-drag;
   position: absolute;
   top: 0px;
   right: 0px;
-  padding: 5px;
+  z-index: 100;
 }
 #window-buttons button {
+  -webkit-app-region: no-drag;
   width: 30px;
   height: 30px;
   margin: 2px;
@@ -751,6 +750,7 @@ body {
   color: #f44336;
 }
 .tool-container {
+  -webkit-app-region: no-drag;
   z-index: 1000;
   pointer-events: none;
   display: inline-block;
@@ -807,9 +807,13 @@ body {
   color: #f0f0f0;
   background-color: #212121;
 }
+#sidebar {
+  /* width: 155px; */
+  height: 100%;
+  display: inline-block;
+  float: left;
+}
 #workspace {
-  -webkit-app-region: no-drag;
-  width: 100%;
   height: 100%;
   background-color: transparent;
   overflow: hidden;
@@ -818,6 +822,22 @@ body {
 }
 #workspace > .content {
   /* outline: 1px solid #212121; */
+}
+#workspace canvas {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+}
+#workspace-window.active {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  top: 34px;
+  left: 0px;
+  right: 0px;
+  bottom: 21px;
 }
 .drag-container {
   background-color: transparent;
@@ -986,14 +1006,15 @@ body {
   display: none;
 }
 #search-container {
-  -webkit-app-region: no-drag;
   position: absolute;
-  top: 5px;
-  left: 5px;
+  top: 0px;
+  left: 0px;
+  right: 0px;
   height: 34px;
   z-index: 100;
 }
 #search-container #search-input {
+  -webkit-app-region: no-drag;
   height: 100%;
   padding: 0px 15px;
   margin: 0px;
@@ -1001,7 +1022,9 @@ body {
   outline: none;
   transition: all ease-in-out 0.2s;
   background: rgba(0, 0, 0, 0);
-  color: #f0f0f0;
+  color: black;
+  /* @search-text-focus; */
+  width: 125px;
 }
 #search-container #search-input:focus,
 #search-container #search-input:hover {
@@ -1010,7 +1033,6 @@ body {
 #search-container #search-results {
   position: absolute;
   top: 100%;
-  padding-top: 5px;
 }
 #search-container #search-results .result {
   cursor: default;
@@ -1033,7 +1055,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   transition: all 0.2s ease-in-out;
-  -webkit-app-region: no-drag;
+  z-index: 200;
 }
 #welcome * {
   color: white;
@@ -1053,21 +1075,22 @@ body {
   margin-top: 70px;
   margin-left: 70px;
 }
-#welcome .new,
+#welcome .header-buttons button {
+  font-size: 24px;
+}
+#welcome .header-buttons button:hover {
+  border-left-width: 4px;
+  border-left-color: white;
+}
+#welcome .header-buttons > button,
 #welcome .file {
+  -webkit-app-region: no-drag;
   cursor: pointer;
   background-color: transparent;
   outline: none;
   border: none;
   border-left: 1px solid rgba(255, 255, 255, 0.25);
   transition: all 0.1s ease-in-out;
-}
-#welcome .new {
-  font-size: 24px;
-}
-#welcome .new:hover {
-  border-left-width: 4px;
-  border-left-color: white;
 }
 #welcome .recent-files {
   margin-top: 20px;

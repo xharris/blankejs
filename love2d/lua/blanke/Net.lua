@@ -112,7 +112,7 @@ Net = {
     
     _onReceive = function(data)
         if data.type and data.type == 'netevent' then
-            Debug.log(data.event)
+            --Debug.log(data.event)
             -- get assigned client id
             if data.event == 'getID' then
                 Net.id = data.info
@@ -284,7 +284,7 @@ Net = {
 
                 -- update specific vars
                 for v, var in ipairs(vars) do
-                    if var and self[var] then
+                    if var and self[var] ~= nil then
                         if Net.is_connected then
                             if hasVarChanged(var) then
                                 update_values[var] = self[var]
@@ -338,6 +338,9 @@ Net = {
     updateObjects = function()
         for o, obj in ipairs(Net._local_objects) do
             obj:netSync()
+            if obj.onNetSyncTimer then
+                obj:onNetSyncTimer()
+            end
         end
     end,
 

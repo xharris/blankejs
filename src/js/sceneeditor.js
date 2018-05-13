@@ -1,6 +1,6 @@
 var global_objects = [];
 
-class MapEditor extends Editor {
+class SceneEditor extends Editor {
 	constructor (...args) {
 		super(...args);
 		this.setupTab();
@@ -273,7 +273,7 @@ class MapEditor extends Editor {
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
 		// 
-		this.container.getContent().addEventListener('mousedown', function(e){
+		document.addEventListener('mousedown', function(e){
 			let x = this_ref.pixi.renderer.plugins.interaction.mouse.global.x;
 			let y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y;
 			let btn = e.button;
@@ -761,22 +761,22 @@ function addMaps(folder_path) {
 
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
-	app.removeSearchGroup("Map");
+	app.removeSearchGroup("Scene");
 	addMaps(proj_path);
 
 	app.addSearchKey({
-		key: 'Create map',
+		key: 'Create scene',
 		onSelect: function() {
-			var map_dir = nwPATH.join(app.project_path,'maps');
+			var map_dir = nwPATH.join(app.project_path,'scenes');
 			// overwrite the file if it exists. fuk it (again)!!
 			nwFS.mkdir(map_dir, function(err){
 				nwFS.readdir(map_dir, function(err, files){
-					nwFS.writeFile(nwPATH.join(map_dir, 'map'+files.length+'.map'),"");
+					nwFS.writeFile(nwPATH.join(map_dir, 'scene'+files.length+'.scene'),"");
 				
 					// edit the new script
 					var new_map_editor = new MapEditor(app)
 					// add some premade objects from previous map
-					new_map_editor.load(nwPATH.join(map_dir, 'map'+files.length+'.map'));
+					new_map_editor.load(nwPATH.join(map_dir, 'scene'+files.length+'.scene'));
 					for (var o = 0; o < global_objects.length; o++) {
 						new_map_editor.addObject(global_objects[o]);
 					}

@@ -11,7 +11,7 @@ Penguin.main_penguin_info = {
 Penguin.hats = Asset.list('image','hat')
 table.insert(Penguin.hats, 'none')
 
-Penguin.net_sync_vars = {'x','y','color','hspeed','sprite_speed','sprite_xscale','color','hat', 'eyes'}
+Penguin.net_sync_vars = {'color','sprite_speed','sprite_xscale','color','hat','eyes'}
 
 function Penguin:init(is_main_player)
 	self:addAnimation{
@@ -42,7 +42,7 @@ function Penguin:init(is_main_player)
 		speed = .1
 	}
 
-	self.friction = 0.05
+	--self.friction = 0.05
 	self.gravity = 35
 	self.can_jump = MAX_JUMPS
 	self.walk_speed = 260
@@ -139,36 +139,27 @@ function Penguin:update(dt)
 	self:platformerCollide("ground",nil,nil,
 		-- floor collision
 		function()
-            if self.can_jump == 0 then
-				self:netSync("vspeed","x","y")
-            end
             self.can_jump = MAX_JUMPS 
 		end	
 	)
 
 	-- left/right movement
 	if not self.net_object then
-		
+		self.hspeed = 0
 		if Input("player_right") then
 			self.hspeed = self.walk_speed
-			self.sprite_speed = 2
+			self:netSync('x','y')
 		end
 		if Input("player_left") then
 			self.hspeed = -self.walk_speed
-			self.sprite_speed = 2
+			self:netSync('x','y')
 		end
-		
-		--[[ accelerate
-		local dir
-		if (dir > 0 and self.hspeed < self.walk_speed) or (dir < 0 and self.hspeed > -self.walk_speed) then
-			self.hspeed = self.hspeed + (dir * self.walk_accel)
-		end
-		Debug.log(self.walk_speed,self.hspeed)
-		]]
 		
 		if Input("player_up") then
 			self:jump()
+			self:netSync('x','y')
 		end
+		self:netSync('hspeed','vspeed')
 
 		if Input("emote1") then
 			self:setEyes(2)
@@ -185,6 +176,8 @@ function Penguin:update(dt)
 	if self.hspeed == 0 then
 		self.sprite_speed = 0
 		self.sprite_frame = 1
+	else
+		self.sprite_speed = 2
 	end
 
 	if self.vspeed ~= 0 then
@@ -199,7 +192,6 @@ function Penguin:jump()
 	if self.can_jump > 0 then
 		self.vspeed = -900 + (100 * (self.can_jump / MAX_JUMPS))
 		self.can_jump = self.can_jump - 1
-		self:netSync("x","y","vspeed")
 	end
 end
 

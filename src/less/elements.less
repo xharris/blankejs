@@ -27,12 +27,12 @@
 
 	.sidebar {
 	    position: absolute;
-	    right: 0px;
+	    right: @window-padding;
 	    top: 0px;
-	    bottom: 0px;
 	    pointer-events: none;
 	    background-color: rgba(207,216,220 ,0.25);
 	    transition: all ease-in-out 0.2s;
+	    margin-top: @title-bar-height;
 
 	    &:hover {
 	    	width: 100px;  	
@@ -249,4 +249,8 @@
 			white-space: normal;
 		}
 	}
+}
+
+.content[data-type="ImageBrowser"] {
+
 }
