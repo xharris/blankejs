@@ -7,6 +7,7 @@ BUGS:
 var nwGUI = require('nw.gui');
 var nwFS = require('fs');
 var nwFS2 = require('fs-extra');
+var nwKLAW = require('klaw');
 var nwPATH = require('path');
 var nwWIN = nwGUI.Window.get();
 const { spawn, execFile } = require('child_process')
@@ -412,4 +413,6 @@ nwWIN.on('loaded', function() {
 	});
 
 	//app.runServer();
+	app.openProject('projects/penguin_test');
+	app.hideWelcomeScreen();
 });

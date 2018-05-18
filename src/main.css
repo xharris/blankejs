@@ -482,6 +482,308 @@
 .content[data-type="Code"] .CodeMirror-selection-highlight-scrollbar {
   background-color: #4caf50;
 }
+.content[data-type="SceneEditor"] {
+  overflow: hidden !important;
+}
+.content[data-type="SceneEditor"] canvas {
+  left: 50%;
+  transform: translateX(-50%);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
+}
+.content[data-type="SceneEditor"] .sidebar {
+  position: absolute;
+  right: 5px;
+  top: 0px;
+  pointer-events: none;
+  background-color: rgba(207, 216, 220, 0.25);
+  transition: all ease-in-out 0.2s;
+  margin-top: 38px;
+  /* OBJECT */
+  /* LAYER */
+  /* IMAGE */
+}
+.content[data-type="SceneEditor"] .sidebar:hover {
+  width: 150px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
+.content[data-type="SceneEditor"] .sidebar:hover input {
+  border: 1px solid #CFD8DC;
+}
+.content[data-type="SceneEditor"] .sidebar:not(:hover) {
+  width: 50px;
+}
+.content[data-type="SceneEditor"] .sidebar:not(:hover) select {
+  -webkit-appearance: none;
+}
+.content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-object,
+.content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-layer {
+  opacity: 0;
+}
+.content[data-type="SceneEditor"] .sidebar:not(:hover) .input-letter,
+.content[data-type="SceneEditor"] .sidebar:not(:hover) .input-layer {
+  width: 100%;
+}
+.content[data-type="SceneEditor"] .sidebar * {
+  pointer-events: all;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="SceneEditor"] .sidebar > div {
+  position: relative;
+  width: 100%;
+  padding-bottom: 15px;
+}
+.content[data-type="SceneEditor"] .sidebar > div.hidden {
+  display: none;
+}
+.content[data-type="SceneEditor"] .sidebar .select-placetype {
+  border: none;
+  outline: none;
+  padding: 5px;
+  text-align: center;
+  background-color: #b0bec5;
+  width: 100%;
+  height: 30px;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .input-letter,
+.content[data-type="SceneEditor"] .sidebar .object-container .select-letter {
+  border: none;
+  outline: none;
+  padding: 5px;
+  text-align: center;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .input-letter {
+  background-color: #cfd8dc;
+  position: absolute;
+  width: 100%;
+  font-size: 32px;
+  padding: 4px 5px;
+  box-sizing: border-box;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container:hover > .input-letter {
+  width: calc(100% - 18px);
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .select-letter {
+  background-color: #b0bec5;
+  width: 100%;
+  height: 30px;
+  float: right;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .select-letter option:first-child {
+  display: none;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .btn-add-object {
+  position: absolute;
+  padding: 0px 2.8px;
+  margin: 0px;
+  border: none;
+  outline: none;
+  width: 15px;
+  height: 15px;
+  top: 7.5px;
+  left: -7.5px;
+  border-radius: 100%;
+  font-size: 21px;
+  font-weight: 500;
+  background-color: #b0bec5;
+  transition: all ease-in-out 0.2s;
+  text-align: left;
+  line-height: 14px;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .btn-add-object:hover {
+  background-color: #8bc34a;
+  color: white;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .input-name {
+  width: 100%;
+  padding: 6px;
+  border: 0px;
+  box-sizing: border-box;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .color-object {
+  width: 100%;
+  padding: 0px;
+  margin: 0px;
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+.content[data-type="SceneEditor"] .sidebar .input-layer,
+.content[data-type="SceneEditor"] .sidebar .select-layer {
+  border: none;
+  outline: none;
+  padding: 5px;
+  text-align: center;
+}
+.content[data-type="SceneEditor"] .sidebar .input-layer {
+  background-color: #cfd8dc;
+  position: absolute;
+  width: calc(100% - 18px);
+  font-size: 13px;
+  height: 30px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  box-sizing: border-box;
+}
+.content[data-type="SceneEditor"] .sidebar .select-layer {
+  background-color: #b0bec5;
+  width: 100%;
+  height: 30px;
+  float: right;
+}
+.content[data-type="SceneEditor"] .sidebar .select-layer option:first-child {
+  display: none;
+}
+.content[data-type="SceneEditor"] .sidebar .btn-add-layer {
+  position: absolute;
+  margin: 0px;
+  border: none;
+  outline: none;
+  width: 15px;
+  height: 15px;
+  top: 7.5px;
+  left: -7.5px;
+  border-radius: 100%;
+  font-size: 21px;
+  font-weight: 500;
+  background-color: #b0bec5;
+  padding: 0px;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="SceneEditor"] .sidebar .btn-add-layer:hover {
+  background-color: #8bc34a;
+  color: white;
+}
+.content[data-type="SceneEditor"] .sidebar .snap-container {
+  display: inline-block;
+  width: 100%;
+}
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-label {
+  margin: 0px;
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-sep {
+  margin: 0px;
+  width: 20%;
+  display: inline-block;
+  text-align: center;
+}
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-x,
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-y {
+  width: 40%;
+  border: none;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 4px;
+  box-sizing: border-box;
+}
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-x::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-y::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-x::-webkit-inner-spin-button,
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-y::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0;
+  /* <-- Apparently some margin are still there even though it's hidden */
+}
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-x {
+  text-align: right;
+}
+.content[data-type="SceneEditor"] .sidebar .snap-container .snap-y {
+  text-align: left;
+}
+.content[data-type="SceneEditor"] .sidebar .image-snap-container {
+  display: inline-block;
+  width: 100%;
+}
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-label {
+  margin: 0px;
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-sep {
+  margin: 0px;
+  width: 20%;
+  display: inline-block;
+  text-align: center;
+}
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-x,
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-y {
+  width: 40%;
+  border: none;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 4px;
+  box-sizing: border-box;
+}
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-x::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-y::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-x::-webkit-inner-spin-button,
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-y::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0;
+  /* <-- Apparently some margin are still there even though it's hidden */
+}
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-x {
+  text-align: right;
+}
+.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-y {
+  text-align: left;
+}
+.content[data-type="SceneEditor"] .sidebar .image-offset-container {
+  display: inline-block;
+  width: 100%;
+}
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-label {
+  margin: 0px;
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-sep {
+  margin: 0px;
+  width: 20%;
+  display: inline-block;
+  text-align: center;
+}
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-x,
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-y {
+  width: 40%;
+  border: none;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 4px;
+  box-sizing: border-box;
+}
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-x::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-y::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-x::-webkit-inner-spin-button,
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-y::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0;
+  /* <-- Apparently some margin are still there even though it's hidden */
+}
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-x {
+  text-align: right;
+}
+.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-y {
+  text-align: left;
+}
+.content[data-type="SceneEditor"] .sidebar .image-tiles-container {
+  display: inline-block;
+  width: 100%;
+  max-height: 150px;
+  overflow: hidden;
+}
+.content[data-type="SceneEditor"] .sidebar:hover .image-tiles-container {
+  overflow: auto;
+}
 .content[data-type="MapEditor"] {
   overflow: hidden !important;
 }
@@ -500,7 +802,7 @@
   pointer-events: none;
   background-color: rgba(207, 216, 220, 0.25);
   transition: all ease-in-out 0.2s;
-  margin-top: 34px;
+  margin-top: 38px;
   /* OBJECT */
   /* LAYER */
 }
@@ -786,7 +1088,7 @@ body {
   margin: 0px;
   width: 23px;
   height: 23px;
-  color: #9E9E9E;
+  color: #424242;
 }
 .tool-container button:hover {
   background-color: rgba(224, 224, 224, 0.3);
@@ -804,7 +1106,7 @@ body {
 }
 .tool-container button:hover {
   color: #f0f0f0;
-  background-color: #212121;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 #sidebar {
   /* width: 155px; */
@@ -1028,7 +1330,12 @@ body {
 }
 #search-container #search-input:focus,
 #search-container #search-input:hover {
-  background: rgba(0, 0, 0, 0.2);
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+}
+#search-container #search-input:focus::placeholder,
+#search-container #search-input:hover::placeholder {
+  color: white;
 }
 #search-container #search-results {
   position: absolute;
@@ -1126,8 +1433,9 @@ body {
 }
 #tabs .tab .tab-title-container .tab-title {
   color: #424242;
+  padding: 0px 5px;
 }
-#tabs .tab .tab-title-container:hover {
+#tabs .tab .tab-title-container .tab-title:hover {
   text-decoration: underline;
 }
 #tabs .tab i {

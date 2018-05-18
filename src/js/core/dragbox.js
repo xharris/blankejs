@@ -53,9 +53,14 @@ class DragBox {
 
 		this.x = 0;
 		this.y = 0;
+		// place at an offset of the last box
 		if (last_box) {
 			this.x = last_box.x + 20;
 			this.y = last_box.y + 20;
+		}
+		// prevent from spawning box inside title bar
+		if (this.y < 34) {
+			this.y = 34;
 		}
 		
 		last_box = this;
@@ -99,7 +104,8 @@ class DragBox {
 				edges: {right:true, bottom:true, left:false, top:false},
 				restictEdges: {
 					outer: 'parent',
-					endOnly: true
+					endOnly: true,
+					elementRect: { top: 34, left: 0, bottom: 23, right: 1 }
 				}
 			})
 			.on('resizemove', function (event) {
@@ -162,7 +168,12 @@ class DragBox {
 
 				    this_ref.x = parseInt(this_ref.x);
 				    this_ref.y = parseInt(this_ref.y);
-			    
+	
+					// prevent from spawning box inside title bar
+					if (this_ref.y < 34) {
+						this_ref.y = 34;
+					}	
+						    
 				    // translate the element
 				    target.style.webkitTransform =
 				    target.style.transform =

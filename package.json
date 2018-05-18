@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "fs-extra": "^5.0.0",
+    "klaw": "^2.1.1",
     "recursive-readdir": "^2.2.2"
   }
 }

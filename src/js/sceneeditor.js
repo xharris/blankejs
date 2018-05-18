@@ -1,5 +1,11 @@
 var global_objects = [];
 
+class SceneObj {
+	constructor () {
+
+	}
+}
+
 class SceneEditor extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -15,9 +21,11 @@ class SceneEditor extends Editor {
 		this.deleted = false;
 
 		this.curr_layer = null;
-		this.curr_object = null;
+		this.curr_object = null;	// reference from this.objects[]
+		this.curr_image	= null;		// reference from this.images[]
 		this.layers = [];
-		this.objects = [];
+		this.objects = [];			// all objects placed on the canvas
+		this.images = [];			// placeable images in project folders {path, snap{x,y}, pixi_images{}}
 
 		this.can_drag = false;
 		this.dragging = false;
@@ -52,6 +60,23 @@ class SceneEditor extends Editor {
 		// create sidebar
 		this.el_sidebar 		= app.createElement("div","sidebar");
 
+		// IMAGE elements
+		this.el_image_container	= app.createElement("div","image-container");
+		this.el_image_snap_container = app.createElement("div","image-snap-container");
+		this.el_image_snap_label= app.createElement("p","image-snap-label");
+		this.el_image_snap_sep	= app.createElement("p","image-snap-sep");
+		this.el_image_snap_x	= app.createElement("input","image-snap-x");
+		this.el_image_snap_y	= app.createElement("input","image-snap-y");
+		this.el_image_offset_container = app.createElement("div","image-offset-container")
+		this.el_image_offset_label= app.createElement("p","image-offset-label");
+		this.el_image_offset_sep= app.createElement("p","image-offset-sep");
+		this.el_image_offset_x	= app.createElement("input","image-offset-x");
+		this.el_image_offset_y	= app.createElement("input","image-offset-y");
+		this.el_image_tiles_container = app.createElement("div","image-tiles-container")
+		this.el_image_preview	= app.createElement("img","image-preview");
+		this.el_image_grid		= app.createElement("table","image-grid");
+
+		// OBJECT elements
 		this.el_object_container= app.createElement("div","object-container");
 		this.el_input_letter 	= app.createElement("input","input-letter");
 		this.el_sel_letter 		= app.createElement("select","select-letter");
@@ -69,7 +94,48 @@ class SceneEditor extends Editor {
 		this.el_snap_y			= app.createElement("input","snap-y");
 		this.el_snap_sep		= app.createElement("p","snap-sep");
 
-		// object selector
+		this.el_sel_placetype 	= app.createElement("select","select-placetype");
+		this.el_sel_object		= app.createElement("select","select-object");
+		this.el_input_object	= app.createElement("input","input-object");
+		// add object types
+		let obj_types = ['image','object']
+		for (var o = 0; o < obj_types.length; o++) {
+			var new_option = app.createElement("option");
+			new_option.value = obj_types[o];
+			new_option.innerHTML = obj_types[o];
+			this.el_sel_placetype.appendChild(new_option);
+		}
+		this.el_sel_placetype.addEventListener('change', function(e){
+			// populate object selection list
+			this_ref.refreshObjectType();
+		});
+
+		// IMAGE elements
+		this.refreshImageList();
+		this.el_image_preview.ondragstart = function() { return false; };
+		this.el_image_snap_label.innerHTML = "snap";
+		this.el_image_snap_sep.innerHTML = "x";
+		this.el_image_snap_x.value = 32;
+		this.el_image_snap_y.value = 32;
+		this.el_image_snap_x.addEventListener('input', function(e){
+
+		});
+		this.el_image_snap_y.addEventListener('input', function(e){
+
+		});
+
+		this.el_image_offset_label.innerHTML = "offset";
+		this.el_image_offset_sep.innerHTML = "x";
+		this.el_image_offset_x.value = 0;
+		this.el_image_offset_y.value = 0;
+		this.el_image_offset_x.addEventListener('input', function(e){
+
+		});
+		this.el_image_offset_y.addEventListener('input', function(e){
+
+		});
+
+		// OBJECT elements
 		this.el_sel_letter.addEventListener('change', function(e){
 			this_ref.setObject(e.target.value);
 		});
@@ -212,6 +278,7 @@ class SceneEditor extends Editor {
 			this_ref.export();
 		});
 
+		// LAYER
 		this.el_snap_container.appendChild(this.el_snap_label);
 		this.el_snap_container.appendChild(this.el_snap_x);
 		this.el_snap_container.appendChild(this.el_snap_sep);
@@ -222,14 +289,33 @@ class SceneEditor extends Editor {
 		this.el_layer_container.appendChild(this.el_btn_add_layer);
 		this.el_layer_container.appendChild(this.el_snap_container);
 
+		// OBJECT
 		this.el_object_container.appendChild(this.el_input_letter);
 		this.el_object_container.appendChild(this.el_sel_letter);
 		this.el_object_container.appendChild(this.el_btn_add_object);
 		this.el_object_container.appendChild(this.el_input_name);
 		this.el_object_container.appendChild(this.el_color_object);
 
-		this.el_sidebar.appendChild(this.el_object_container);
+		// IMAGE
+		this.el_image_snap_container.appendChild(this.el_image_snap_label);
+		this.el_image_snap_container.appendChild(this.el_image_snap_x);
+		this.el_image_snap_container.appendChild(this.el_image_snap_sep);
+		this.el_image_snap_container.appendChild(this.el_image_snap_y);
+		this.el_image_offset_container.appendChild(this.el_image_offset_label);
+		this.el_image_offset_container.appendChild(this.el_image_offset_x);
+		this.el_image_offset_container.appendChild(this.el_image_offset_sep);
+		this.el_image_offset_container.appendChild(this.el_image_offset_y);
+		this.el_image_tiles_container.appendChild(this.el_image_preview);
+		this.el_image_tiles_container.appendChild(this.el_image_grid);
+		this.el_image_container.appendChild(this.el_image_snap_container);
+		this.el_image_container.appendChild(this.el_image_offset_container);
+		this.el_image_container.appendChild(this.el_image_tiles_container);
+
 		this.el_sidebar.appendChild(this.el_layer_container);
+		this.el_sidebar.appendChild(this.el_sel_placetype);
+		this.el_sidebar.appendChild(this.el_object_container);
+		this.el_sidebar.appendChild(this.el_image_container);
+
 		this.appendChild(this.el_sidebar);
 
 		function dragStart() {
@@ -328,11 +414,13 @@ class SceneEditor extends Editor {
 		this.pixi.stage.addChild(this.grid_container);
 
 		this.drawGrid();
+		this.refreshObjectType();
 		
 		// tab click
 		this.setOnClick(function(self){
 			(new MapEditor(app)).load(self.file);
-		}, this);	}
+		}, this);	
+	}
 
 	onMenuClick (e) {
 		var this_ref = this;
@@ -435,6 +523,20 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	// when object place type selector is changed
+	refreshObjectType () {
+		var obj_type = this.el_sel_placetype.value;
+		this.el_image_container.classList.add('hidden');
+		this.el_object_container.classList.add('hidden');		
+		
+		if (obj_type == 'image') {
+			this.el_image_container.classList.remove('hidden');
+		}
+		if (obj_type == 'object') {
+			this.el_object_container.classList.remove('hidden');
+		}
+	}
+
 	// refreshes combo box
 	refreshLayerList (old_name, new_name) {
 		app.clearElement(this.el_sel_layer);
@@ -462,19 +564,38 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	// refreshes combo box 
-	refreshObjectList () {
-		app.clearElement(this.el_sel_letter);
+	// refreshes object combo box 
+	refreshObjectList (obj_type='image') {
+		app.clearElement(this.el_sel_object);
 		var placeholder = app.createElement("option");
 		placeholder.selected = true;
 		placeholder.disabled = true;
-		this.el_sel_letter.appendChild(placeholder);
+		this.el_sel_object.appendChild(placeholder);
 
 		for (var o = 0; o < this.objects.length; o++) {
 			var new_option = app.createElement("option");
 			new_option.value = this.objects[o].name;
 			new_option.innerHTML = this.objects[o].name;
 			this.el_sel_letter.appendChild(new_option);
+		}
+	}
+
+	// add all images in project to the search bar
+	refreshImageList() {
+		var this_ref = this;
+		app.removeSearchGroup('scene_image');
+		nwKLAW(nwPATH.join(app.project_path,'assets'))
+			.on('data', function(item){
+				var img_path = nwPATH.relative(app.project_path,item.path).replace(/assets[/\\]/,'');
+				app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
+					this_ref.setImage(item.path);
+				}});
+			});
+	}
+
+	refreshImageGrid() {
+		if (this.curr_image) {
+			
 		}
 	}
 
@@ -535,6 +656,10 @@ class SceneEditor extends Editor {
 			curr_object.pixi_texts[text_key] = new_text;
 			this.curr_layer.container.addChild(new_text);
 		}
+	}
+
+	placeImage (x, y, load_info) {
+
 	}
 
 	iterObject (name, func) {
@@ -604,6 +729,30 @@ class SceneEditor extends Editor {
 				return;
 			}
 		}	
+	}
+
+	setImage (path) {
+		// set current image variable
+		var img_found = false;
+		for (var img of this.images) {
+			if (img.path == path) {
+				img_found = true;
+				this.curr_image = img;
+
+				// set image tile selection image
+				this.el_image_preview.src = path;
+				this.refreshImageGrid();
+			}
+		}
+		// add image to scene library
+		if (!img_found) {
+			this.images.push({
+				path: path,
+				snap: this.curr_layer.snap,
+				pixi_images: {}
+			});
+			this.setImage(path);
+		}
 	}
 
 	addLayer (info) {
@@ -727,11 +876,11 @@ class SceneEditor extends Editor {
 document.addEventListener('fileChange', function(e){
 	if (e.detail.type == 'change') {
 		app.removeSearchGroup("Map");
-		addMaps(app.project_path);
+		addScenes(app.project_path);
 	}
 });
 
-function addMaps(folder_path) {
+function addScenes(folder_path) {
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
 		files.forEach(function(file){
@@ -739,19 +888,19 @@ function addMaps(folder_path) {
 			nwFS.stat(full_path, function(err, file_stat){		
 				// iterate through directory			
 				if (file_stat.isDirectory())
-					addMaps(full_path);
+					addScenes(full_path);
 
 				// add file to search pool
-				else if (file.endsWith('.map')) {
+				else if (file.endsWith('.scene')) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
 							if (!Tab.focusTab(nwPATH.basename(file_path)))
-								(new MapEditor(app)).load(file_path);
+								(new SceneEditor(app)).load(file_path);
 						},
-						tags: ['map'],
+						tags: ['scene'],
 						args: [full_path],
-						group: 'Map'
+						group: 'Scene'
 					});
 				}
 			});
@@ -762,7 +911,7 @@ function addMaps(folder_path) {
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
 	app.removeSearchGroup("Scene");
-	addMaps(proj_path);
+	addScenes(proj_path);
 
 	app.addSearchKey({
 		key: 'Create scene',

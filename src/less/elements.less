@@ -18,6 +18,331 @@
 	}
 }
 
+.content[data-type="SceneEditor"] {
+	overflow: hidden !important;
+
+	canvas { 
+		.centered();
+	}
+
+	.sidebar {
+	    position: absolute;
+	    right: @window-padding;
+	    top: 0px;
+	    pointer-events: none;
+	    background-color: rgba(207,216,220 ,0.25);
+	    transition: all ease-in-out 0.2s;
+	    margin-top: 38px;
+
+	    &:hover {
+	    	width: 150px;  	
+	    	box-shadow: @card-shadow;
+	    }
+
+	    &:not(:hover) {
+			width: 50px;
+
+			select {
+			    -webkit-appearance: none;
+			}
+
+			.btn-add-object, .btn-add-layer {
+	    		opacity: 0;
+	    	}
+
+	    	.input-letter, .input-layer {
+	    		width: 100%;
+	    	}
+	    }
+
+	    * {
+	    	pointer-events: all;
+	   	 	transition: all ease-in-out 0.2s;
+	    }
+
+	    > div {
+	    	position: relative;
+	    	width: 100%;
+	    	padding-bottom: 15px;
+
+	    	&.hidden {
+	    		display: none;
+	    	}
+	    }
+
+	    .select-placetype {
+		    border: none;
+		    outline: none;
+		    padding: 5px;
+		    text-align: center;
+    	    background-color: rgba(176,190,197 ,1);
+		    width: 100%;
+		    height: 30px;
+		}
+
+	    /* OBJECT */
+	    .object-container {
+		    .input-letter, .select-letter {
+			    border: none;
+			    outline: none;
+			    padding: 5px;
+			    text-align: center;
+		    }
+
+		    .input-letter {
+		    	background-color: rgba(207,216,220 ,1);
+			    position: absolute;
+			    width: 100%;
+			    font-size: 32px;
+			    padding: 4px 5px;
+			    box-sizing: border-box;
+			}
+
+			&:hover > .input-letter {
+				width: calc(~'100% - 18px');
+			}
+
+			.select-letter {
+	    	    background-color: rgba(176,190,197 ,1);
+			    width: 100%;
+			    height: 30px;
+			    float: right;
+
+			    option:first-child {
+			    	display: none;
+			    }
+			}
+
+			.btn-add-object {
+			    position: absolute;
+			    padding: 0px 2.8px;
+			    margin: 0px;
+			    border: none;
+			    outline: none;
+			    width: 15px;
+			    height: 15px;
+			    top: 7.5px;
+			    left: -7.5px;
+			    border-radius: 100%;
+			    font-size: 21px;
+			    font-weight: 500;
+			    background-color: rgba(176,190,197 ,1);
+			    transition: all ease-in-out 0.2s;
+			    text-align: left;
+			    line-height: 14px;
+
+			    &:hover {	
+				    background-color: rgba(139,195,74,1);
+				    color: white;
+			    }
+			}
+
+			.input-name {
+			    width: 100%;
+			    padding: 6px;
+			    border: 0px;
+			    box-sizing: border-box;
+			    outline: none;
+			    background-color: rgba(255,255,255,0.5);
+			}
+
+			.color-object {
+			    width: 100%;
+			    padding: 0px;
+			    margin: 0px;
+			    border: none;
+			    outline: none;
+			    background-color: transparent;
+			}
+		}
+
+		/* LAYER */
+		.input-layer, .select-layer {
+		    border: none;
+		    outline: none;
+		    padding: 5px;
+		    text-align: center;
+	    }
+
+	    .input-layer {
+	    	background-color: #cfd8dc;
+		    position: absolute;
+		    width: calc(~'100% - 18px');
+		    font-size: 13px;
+		    height: 30px;
+		    padding-top: 0px;
+    		padding-bottom: 0px;
+    		box-sizing: border-box;
+		}
+
+		.select-layer {
+    	    background-color: rgba(176,190,197 ,1);
+		    width: 100%;
+		    height: 30px;
+		    float: right;
+
+		    option:first-child {
+		    	display: none;
+		    }
+		}
+
+		.btn-add-layer {
+		    position: absolute;
+		    padding: 0px;
+		    margin: 0px;
+		    border: none;
+		    outline: none;
+		    width: 15px;
+		    height: 15px;
+		    top: 7.5px;
+		    left: -7.5px;
+		    border-radius: 100%;
+		    font-size: 21px;
+		    font-weight: 500;
+		    background-color: rgba(176,190,197 ,1);
+		    padding: 0px;
+		    transition: all ease-in-out 0.2s;
+
+		    &:hover {	
+			    background-color: rgba(139,195,74,1);
+			    color: white;
+		    }
+		}
+
+		.snap-container {
+			display: inline-block;
+   		 	width: 100%;
+
+   		 	.snap-label {
+   		 		margin: 0px;
+			    margin-top: 5px;
+			    text-transform: uppercase;
+   		 	}
+			.snap-sep {
+				margin: 0px;
+				width: 20%;
+				display: inline-block;
+				text-align: center
+   		 	}
+   		 	.snap-x, .snap-y {
+   		 		width: 40%;
+   		 		border: none;
+   		 		outline: none;
+		    	background-color: rgba(255,255,255,0.5);
+		    	padding: 4px;
+		    	box-sizing: border-box;
+
+		    	&::-webkit-outer-spin-button,
+				&::-webkit-inner-spin-button {
+				    /* display: none; <- Crashes Chrome on hover */
+				    -webkit-appearance: none;
+				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+				}
+   		 	}
+   		 	.snap-x {
+   		 		text-align: right;
+   		 	}
+   		 	.snap-y {
+   		 		text-align: left;
+   		 	}
+		}
+
+		/* IMAGE */
+		.image-snap-container {
+			display: inline-block;
+   		 	width: 100%;
+
+   		 	.image-snap-label {
+   		 		margin: 0px;
+			    margin-top: 5px;
+			    text-transform: uppercase;
+   		 	}
+			.image-snap-sep {
+				margin: 0px;
+				width: 20%;
+				display: inline-block;
+				text-align: center
+   		 	}
+   		 	.image-snap-x, .image-snap-y {
+   		 		width: 40%;
+   		 		border: none;
+   		 		outline: none;
+		    	background-color: rgba(255,255,255,0.5);
+		    	padding: 4px;
+		    	box-sizing: border-box;
+
+		    	&::-webkit-outer-spin-button,
+				&::-webkit-inner-spin-button {
+				    /* display: none; <- Crashes Chrome on hover */
+				    -webkit-appearance: none;
+				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+				}
+   		 	}
+   		 	.image-snap-x {
+   		 		text-align: right;
+   		 	}
+   		 	.image-snap-y {
+   		 		text-align: left;
+   		 	}
+		}
+
+		.image-offset-container {
+			display: inline-block;
+   		 	width: 100%;
+
+   		 	.image-offset-label {
+   		 		margin: 0px;
+			    margin-top: 5px;
+			    text-transform: uppercase;
+   		 	}
+			.image-offset-sep {
+				margin: 0px;
+				width: 20%;
+				display: inline-block;
+				text-align: center
+   		 	}
+   		 	.image-offset-x, .image-offset-y {
+   		 		width: 40%;
+   		 		border: none;
+   		 		outline: none;
+		    	background-color: rgba(255,255,255,0.5);
+		    	padding: 4px;
+		    	box-sizing: border-box;
+
+		    	&::-webkit-outer-spin-button,
+				&::-webkit-inner-spin-button {
+				    /* display: none; <- Crashes Chrome on hover */
+				    -webkit-appearance: none;
+				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+				}
+   		 	}
+   		 	.image-offset-x {
+   		 		text-align: right;
+   		 	}
+   		 	.image-offset-y {
+   		 		text-align: left;
+   		 	}
+		}
+
+		.image-tiles-container {
+			display: inline-block;
+			width: 100%;
+			max-height: 150px;
+			overflow: hidden;
+
+			.image-preview {
+
+			}
+		}
+
+		&:hover {
+			.image-tiles-container {
+				overflow: auto;
+			}
+		}
+	}
+}
+
 .content[data-type="MapEditor"] {
 	overflow: hidden !important;
 
@@ -32,7 +357,7 @@
 	    pointer-events: none;
 	    background-color: rgba(207,216,220 ,0.25);
 	    transition: all ease-in-out 0.2s;
-	    margin-top: @title-bar-height;
+	    margin-top: 38px;
 
 	    &:hover {
 	    	width: 100px;  	

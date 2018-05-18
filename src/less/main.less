@@ -74,13 +74,13 @@ body {
 
 		&:hover {
 			color: @search-text-focus;
-			background-color: @beveled-bg;
+			background-color: rgba(0, 0, 0, 0.5);
 		}
 
 		margin: 0px;
 		width: 23px;
 		height: 23px;
-		color: #9E9E9E;
+		color: #424242;
 	}
 }
 
@@ -321,7 +321,12 @@ body {
 	    width: 125px;
 
 	    &:focus, &:hover {
-	    	background: rgba(0, 0, 0, 0.2);
+	    	color: white;
+	    	background: rgba(0, 0, 0, 0.5);
+
+	    	&::placeholder {
+	    		color: white;
+	    	}
 	    }
     }
 
@@ -444,10 +449,10 @@ body {
 			.tab-title {
 				color: @window-background;
     			padding: 0px 5px;
-			}
 
-			&:hover {
-				text-decoration: underline;
+				&:hover {
+					text-decoration: underline;
+				}
 			}
 		}
 
@@ -501,7 +506,7 @@ body {
     bottom: 0px;
     height: 22px;
     left: 0px;
-    right: 0px;
+    right: 0px; 
     z-index: 100;
     background-color: rgba(0,0,0,0.1);
 }
