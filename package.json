@@ -6,8 +6,8 @@
   "window": {
     "frame": false,
     "transparent": true,
-    "width": 800,
-    "height": 600,
+    "width": 550,
+    "height": 400,
     "icon": "src/logo.png"
   },
   "scripts": {

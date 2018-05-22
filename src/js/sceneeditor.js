@@ -25,7 +25,7 @@ class SceneEditor extends Editor {
 		this.curr_image	= null;		// reference from this.images[]
 		this.layers = [];
 		this.objects = [];			// all objects placed on the canvas
-		this.images = [];			// placeable images in project folders {path, snap{x,y}, pixi_images{}}
+		this.images = [];			// placeable images in project folders {path, snap[x,y], pixi_images{}}
 
 		this.can_drag = false;
 		this.dragging = false;
@@ -75,6 +75,7 @@ class SceneEditor extends Editor {
 		this.el_image_tiles_container = app.createElement("div","image-tiles-container")
 		this.el_image_preview	= app.createElement("img","image-preview");
 		this.el_image_grid		= app.createElement("table","image-grid");
+		this.el_image_selection	= app.createElement("div","image-selection");
 
 		// OBJECT elements
 		this.el_object_container= app.createElement("div","object-container");
@@ -118,10 +119,18 @@ class SceneEditor extends Editor {
 		this.el_image_snap_x.value = 32;
 		this.el_image_snap_y.value = 32;
 		this.el_image_snap_x.addEventListener('input', function(e){
-
+			let value = parseInt(this.value);
+			if (this_ref.curr_image && value > 0) {
+				this_ref.curr_image.snap[0]=value;
+				this_ref.refreshImageGrid();
+			}
 		});
 		this.el_image_snap_y.addEventListener('input', function(e){
-
+			let value = parseInt(this.value);
+			if (this_ref.curr_image  && value > 0) {
+				this_ref.curr_image.snap[1]=value;
+				this_ref.refreshImageGrid();
+			}
 		});
 
 		this.el_image_offset_label.innerHTML = "offset";
@@ -129,11 +138,82 @@ class SceneEditor extends Editor {
 		this.el_image_offset_x.value = 0;
 		this.el_image_offset_y.value = 0;
 		this.el_image_offset_x.addEventListener('input', function(e){
-
+			let value = parseInt(this.value);
+			if (this_ref.curr_image && value > 0) {
+				this_ref.curr_image.offset[0]=value;
+				this_ref.refreshImageGrid();
+			}
 		});
 		this.el_image_offset_y.addEventListener('input', function(e){
-
+			let value = parseInt(this.value);
+			if (this_ref.curr_image && value > 0) {
+				this_ref.curr_image.offset[1]=value;
+				this_ref.refreshImageGrid();
+			}
 		});
+
+		// tile selection events
+		let img_dragging = false;
+		let img_left, img_top;
+		let selection_rect = {'x':0,'y':0,'w':0,'h':0};
+		let el_select_rect = {'left':0,'right':0,'top':0,'bottom':0};
+		function updateSelectionElement() {
+			this_ref.el_image_selection.style.top = selection_rect.y 	+"px";
+			this_ref.el_image_selection.style.left = selection_rect.x 	+"px";
+			this_ref.el_image_selection.style.width = selection_rect.w 	+"px";
+			this_ref.el_image_selection.style.height = selection_rect.h +"px";
+
+			let rect = this_ref.el_image_selection.getBoundingClientRect();
+			el_select_rect = {'left':rect.left - img_left, 'right':rect.right - img_left, 'top':rect.top - img_top, 'bottom':rect.bottom - img_top};
+		}
+		this.el_image_preview.onmousedown = function(e) {
+			img_dragging = true;
+			let img_rect = this_ref.el_image_preview.getBoundingClientRect();
+			img_left = img_rect.left;
+			img_top = img_rect.top;
+			let x = e.clientX - img_left;
+			let y = e.clientY - img_top;
+			x -= x % this_ref.curr_image.snap[0];
+			y -= y % this_ref.curr_image.snap[1];
+			selection_rect = {
+				'x':x + this_ref.curr_image.offset[0],
+				'y':y + this_ref.curr_image.offset[1],
+				'w':this_ref.curr_image.snap[0] + this_ref.curr_image.offset[0],
+				'h':this_ref.curr_image.snap[1] + this_ref.curr_image.offset[1]
+			};
+			updateSelectionElement();
+		}	
+		this.el_image_preview.onmouseup = function() {
+			img_dragging = false;
+			console.log(selection_rect);
+		}
+		this.el_image_preview.onmouseout = this.el_image_preview.onmouseup;
+		this.el_image_preview.onmousemove = function(e) {
+			if (img_dragging) {
+				let x = e.clientX - img_left;
+				let y = e.clientY - img_top;
+				x -= x % this_ref.curr_image.snap[0];
+				y -= y % this_ref.curr_image.snap[1];
+
+				x += (x / this_ref.curr_image.snap[0]);
+				y += (y / this_ref.curr_image.snap[1]);
+
+				// update selection bounds
+				if (x < selection_rect.x) {
+					selection_rect.w = el_select_rect.right - x;
+					selection_rect.x = x + this_ref.curr_image.offset[0];
+				}
+				if (y < selection_rect.y) {
+					selection_rect.h = el_select_rect.bottom - y;
+					selection_rect.y = y + this_ref.curr_image.offset[1];
+				}
+
+				if (x >= el_select_rect.right) selection_rect.w = x - el_select_rect.left + this_ref.curr_image.snap[0] + this_ref.curr_image.offset[0];
+				if (y >= el_select_rect.bottom) selection_rect.h = y - el_select_rect.top + this_ref.curr_image.snap[1] + this_ref.curr_image.offset[1];
+
+				updateSelectionElement();
+			}
+		}
 
 		// OBJECT elements
 		this.el_sel_letter.addEventListener('change', function(e){
@@ -307,6 +387,7 @@ class SceneEditor extends Editor {
 		this.el_image_offset_container.appendChild(this.el_image_offset_y);
 		this.el_image_tiles_container.appendChild(this.el_image_preview);
 		this.el_image_tiles_container.appendChild(this.el_image_grid);
+		this.el_image_tiles_container.appendChild(this.el_image_selection);
 		this.el_image_container.appendChild(this.el_image_snap_container);
 		this.el_image_container.appendChild(this.el_image_offset_container);
 		this.el_image_container.appendChild(this.el_image_tiles_container);
@@ -595,7 +676,26 @@ class SceneEditor extends Editor {
 
 	refreshImageGrid() {
 		if (this.curr_image) {
+			var img_width = parseInt(this.el_image_preview.width);
+			var img_height = parseInt(this.el_image_preview.height);
+			var grid_w = this.curr_image.snap[0];
+			var grid_h = this.curr_image.snap[1];
 			
+			var str_table = "";
+			if (grid_w > 2 && grid_h > 2) {
+				for (var gy = 0; gy < img_height; gy += grid_h) {
+					str_table += "<tr>";	
+					for (var gx = 0; gx < img_width; gx += grid_w) {
+						str_table += "<td style='width:"+grid_w+"px;height:"+grid_h+"px'></td>";
+					}
+					str_table += "</tr>";
+				}
+			}
+			this.el_image_grid.innerHTML = str_table;
+			this.el_image_grid.style.top = this.curr_image.offset[1] + "px";
+			this.el_image_grid.style.left = this.curr_image.offset[0] + "px";
+			this.el_image_grid.style.width = (Math.ceil(img_width / grid_w) * grid_w) + "px";
+			this.el_image_grid.style.height = (Math.ceil(img_height / grid_h) * grid_h) + "px";
 		}
 	}
 
@@ -740,15 +840,25 @@ class SceneEditor extends Editor {
 				this.curr_image = img;
 
 				// set image tile selection image
+				var this_ref = this;
+				this.el_image_preview.onload = function(){
+					this_ref.refreshImageGrid();				
+				}
 				this.el_image_preview.src = path;
-				this.refreshImageGrid();
+
+				// set image inputs
+				this.el_image_snap_x.value = this.curr_image.snap[0];
+				this.el_image_snap_y.value = this.curr_image.snap[1];
+				this.el_image_offset_x.value = this.curr_image.offset[0];
+				this.el_image_offset_y.value = this.curr_image.offset[1];
 			}
 		}
 		// add image to scene library
 		if (!img_found) {
 			this.images.push({
 				path: path,
-				snap: this.curr_layer.snap,
+				snap: this.curr_layer.snap.slice(0),
+				offset: [0,0],
 				pixi_images: {}
 			});
 			this.setImage(path);
@@ -764,6 +874,9 @@ class SceneEditor extends Editor {
 			snap: [32, 32],
 			uuid: guid()
 		}
+
+		info.snap = info.snap.map(Number);
+
 		info.container = new PIXI.Container();
 		this.map_container.addChild(info.container);
 		this.layers.push(info);
@@ -923,14 +1036,14 @@ document.addEventListener("openProject", function(e){
 					nwFS.writeFile(nwPATH.join(map_dir, 'scene'+files.length+'.scene'),"");
 				
 					// edit the new script
-					var new_map_editor = new MapEditor(app)
+					var new_scene_editor = new SceneEditor(app)
 					// add some premade objects from previous map
-					new_map_editor.load(nwPATH.join(map_dir, 'scene'+files.length+'.scene'));
+					new_scene_editor.load(nwPATH.join(map_dir, 'scene'+files.length+'.scene'));
 					for (var o = 0; o < global_objects.length; o++) {
-						new_map_editor.addObject(global_objects[o]);
+						new_scene_editor.addObject(global_objects[o]);
 					}
-					new_map_editor.addLayer();
-					new_map_editor.refreshObjectList();
+					new_scene_editor.addLayer();
+					new_scene_editor.refreshObjectList();
 				});
 			});	
 		},

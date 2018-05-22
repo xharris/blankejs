@@ -1,1 +1,1 @@
-{"objects":[{"name":"object0","char":"3","color":"#000000","uuid":"07166cfa","coords":{}},{"name":"object1","char":"R","color":"#000000","uuid":"49006002","coords":{}}],"layers":[{"name":"layer0","depth":0,"offset":[0,0],"snap":[32,32],"uuid":"3242b5f0"}]}
+{"objects":[{"name":"object0","char":"3","color":"#000000","uuid":"07166cfa","coords":{}},{"name":"object1","char":"R","color":"#000000","uuid":"49006002","coords":{}}],"layers":[{"name":"layer0","depth":0,"offset":[0,0],"snap":[31,31],"uuid":"3242b5f0"}]}
