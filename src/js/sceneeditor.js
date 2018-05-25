@@ -1,11 +1,5 @@
 var global_objects = [];
 
-class SceneObj {
-	constructor () {
-
-	}
-}
-
 class SceneEditor extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -20,6 +14,7 @@ class SceneEditor extends Editor {
 		this.snap_on = true;
 		this.deleted = false;
 
+		this.obj_type = '';
 		this.curr_layer = null;
 		this.curr_object = null;	// reference from this.objects[]
 		this.curr_image	= null;		// reference from this.images[]
@@ -61,21 +56,31 @@ class SceneEditor extends Editor {
 		this.el_sidebar 		= app.createElement("div","sidebar");
 
 		// IMAGE elements
+		this.el_image_form = new BlankeForm([
+			['snap', 'text', {'inputs':2, 'separator':'X'}],
+			['offset', 'text', {'inputs':2, 'separator':'X'}],
+			['spacing', 'text', {'inputs':2, 'separator':'X'}]
+		]);
+
 		this.el_image_container	= app.createElement("div","image-container");
 		this.el_image_snap_container = app.createElement("div","image-snap-container");
 		this.el_image_snap_label= app.createElement("p","image-snap-label");
 		this.el_image_snap_sep	= app.createElement("p","image-snap-sep");
 		this.el_image_snap_x	= app.createElement("input","image-snap-x");
 		this.el_image_snap_y	= app.createElement("input","image-snap-y");
-		this.el_image_offset_container = app.createElement("div","image-offset-container")
+		this.el_image_offset_container = app.createElement("div","image-offset-container");
 		this.el_image_offset_label= app.createElement("p","image-offset-label");
 		this.el_image_offset_sep= app.createElement("p","image-offset-sep");
 		this.el_image_offset_x	= app.createElement("input","image-offset-x");
 		this.el_image_offset_y	= app.createElement("input","image-offset-y");
+		this.el_image_spacing_container = app.createElement("div","image-spacing-container");
+		this.el_image_spacing_label= app.createElement("p","image-spacing-label");
+		this.el_image_spacing_x	= app.createElement("input","image-spacing-x");
+		this.el_image_spacing_y	= app.createElement("input","image-spacing-y");
+		this.el_image_spacing_sep=app.createElement("p","image-spacing-sep");
 		this.el_image_tiles_container = app.createElement("div","image-tiles-container")
 		this.el_image_preview	= app.createElement("img","image-preview");
-		this.el_image_grid		= app.createElement("table","image-grid");
-		this.el_image_selection	= app.createElement("div","image-selection");
+		this.el_image_grid		= app.createElement("div","image-grid");
 
 		// OBJECT elements
 		this.el_object_container= app.createElement("div","object-container");
@@ -114,106 +119,71 @@ class SceneEditor extends Editor {
 		// IMAGE elements
 		this.refreshImageList();
 		this.el_image_preview.ondragstart = function() { return false; };
-		this.el_image_snap_label.innerHTML = "snap";
-		this.el_image_snap_sep.innerHTML = "x";
-		this.el_image_snap_x.value = 32;
-		this.el_image_snap_y.value = 32;
-		this.el_image_snap_x.addEventListener('input', function(e){
-			let value = parseInt(this.value);
-			if (this_ref.curr_image && value > 0) {
-				this_ref.curr_image.snap[0]=value;
-				this_ref.refreshImageGrid();
-			}
-		});
-		this.el_image_snap_y.addEventListener('input', function(e){
-			let value = parseInt(this.value);
-			if (this_ref.curr_image  && value > 0) {
-				this_ref.curr_image.snap[1]=value;
-				this_ref.refreshImageGrid();
-			}
-		});
 
-		this.el_image_offset_label.innerHTML = "offset";
-		this.el_image_offset_sep.innerHTML = "x";
-		this.el_image_offset_x.value = 0;
-		this.el_image_offset_y.value = 0;
-		this.el_image_offset_x.addEventListener('input', function(e){
-			let value = parseInt(this.value);
-			if (this_ref.curr_image && value > 0) {
-				this_ref.curr_image.offset[0]=value;
+		this.el_image_form.setValue('snap', 32, 0);
+		this.el_image_form.setValue('snap', 32, 1);
+		this.el_image_form.onChange('snap', function(value){
+			let snapx = parseInt(value[0]);
+			let snapy = parseInt(value[1]);
+
+			if (this_ref.curr_image) {
+				if (snapx > 0) this_ref.curr_image.snap[0] = snapx;
+				if (snapy > 0) this_ref.curr_image.snap[1] = snapy;
+
 				this_ref.refreshImageGrid();
-			}
-		});
-		this.el_image_offset_y.addEventListener('input', function(e){
-			let value = parseInt(this.value);
-			if (this_ref.curr_image && value > 0) {
-				this_ref.curr_image.offset[1]=value;
-				this_ref.refreshImageGrid();
+
+				if (snapx <= 0 || snapy <= 0)
+					return this_ref.curr_image.snap.slice();
 			}
 		});
 
-		// tile selection events
-		let img_dragging = false;
-		let img_left, img_top;
-		let selection_rect = {'x':0,'y':0,'w':0,'h':0};
-		let el_select_rect = {'left':0,'right':0,'top':0,'bottom':0};
-		function updateSelectionElement() {
-			this_ref.el_image_selection.style.top = selection_rect.y 	+"px";
-			this_ref.el_image_selection.style.left = selection_rect.x 	+"px";
-			this_ref.el_image_selection.style.width = selection_rect.w 	+"px";
-			this_ref.el_image_selection.style.height = selection_rect.h +"px";
+		this.el_image_form.setValue('offset', 0, 0);
+		this.el_image_form.setValue('offset', 0, 1);
+		this.el_image_form.onChange('offset', function(value){
+			let offsetx = parseInt(value[0]);
+			let offsety = parseInt(value[1]);
 
-			let rect = this_ref.el_image_selection.getBoundingClientRect();
-			el_select_rect = {'left':rect.left - img_left, 'right':rect.right - img_left, 'top':rect.top - img_top, 'bottom':rect.bottom - img_top};
-		}
-		this.el_image_preview.onmousedown = function(e) {
-			img_dragging = true;
-			let img_rect = this_ref.el_image_preview.getBoundingClientRect();
-			img_left = img_rect.left;
-			img_top = img_rect.top;
-			let x = e.clientX - img_left;
-			let y = e.clientY - img_top;
-			x -= x % this_ref.curr_image.snap[0];
-			y -= y % this_ref.curr_image.snap[1];
-			selection_rect = {
-				'x':x + this_ref.curr_image.offset[0],
-				'y':y + this_ref.curr_image.offset[1],
-				'w':this_ref.curr_image.snap[0] + this_ref.curr_image.offset[0],
-				'h':this_ref.curr_image.snap[1] + this_ref.curr_image.offset[1]
-			};
-			updateSelectionElement();
-		}	
-		this.el_image_preview.onmouseup = function() {
-			img_dragging = false;
-			console.log(selection_rect);
-		}
-		this.el_image_preview.onmouseout = this.el_image_preview.onmouseup;
-		this.el_image_preview.onmousemove = function(e) {
-			if (img_dragging) {
-				let x = e.clientX - img_left;
-				let y = e.clientY - img_top;
-				x -= x % this_ref.curr_image.snap[0];
-				y -= y % this_ref.curr_image.snap[1];
+			if (this_ref.curr_image) {
+				if (offsetx > 0) this_ref.curr_image.offset[0] = offsetx;
+				if (offsety > 0) this_ref.curr_image.offset[1] = offsety;
 
-				x += (x / this_ref.curr_image.snap[0]);
-				y += (y / this_ref.curr_image.snap[1]);
+				this_ref.refreshImageGrid();
 
-				// update selection bounds
-				if (x < selection_rect.x) {
-					selection_rect.w = el_select_rect.right - x;
-					selection_rect.x = x + this_ref.curr_image.offset[0];
-				}
-				if (y < selection_rect.y) {
-					selection_rect.h = el_select_rect.bottom - y;
-					selection_rect.y = y + this_ref.curr_image.offset[1];
-				}
+				if (offsetx <= 0 || offsety <= 0)
+					return this_ref.curr_image.offset.slice();
+			}
+		});
 
-				if (x >= el_select_rect.right) selection_rect.w = x - el_select_rect.left + this_ref.curr_image.snap[0] + this_ref.curr_image.offset[0];
-				if (y >= el_select_rect.bottom) selection_rect.h = y - el_select_rect.top + this_ref.curr_image.snap[1] + this_ref.curr_image.offset[1];
+		this.el_image_form.setValue('spacing', 0, 0);
+		this.el_image_form.setValue('spacing', 0, 1);
+		this.el_image_form.onChange('spacing', function(value){
+			let spacingx = parseInt(value[0]);
+			let spacingy = parseInt(value[1]);
 
-				updateSelectionElement();
+			if (this_ref.curr_image) {
+				if (spacingx > 0) this_ref.curr_image.spacing[0] = spacingx;
+				if (spacingy > 0) this_ref.curr_image.spacing[1] = spacingy;
+
+				this_ref.refreshImageGrid();
+
+				if (spacingx <= 0 || spacingy <= 0)
+					return this_ref.curr_image.spacing.slice();
+			}
+		});
+
+		this.el_image_grid.ondragstart = function() { return false; };
+		this.selected_image_frames = [];
+		this.selected_xmin = -1;
+		this.selected_ymin = -1;
+		function selectImageTiles(e) {
+			if (e.target && e.target.matches('div.cell') && e.buttons != 0) {
+				if (e.buttons == 1) e.target.classList.add('selected');
+				if (e.buttons == 2) e.target.classList.remove('selected');
+				this_ref.refreshImageSelectionList();
 			}
 		}
+		this.el_image_grid.addEventListener('mousemove',selectImageTiles);
+		this.el_image_grid.addEventListener('mousedown',selectImageTiles);
 
 		// OBJECT elements
 		this.el_sel_letter.addEventListener('change', function(e){
@@ -377,6 +347,7 @@ class SceneEditor extends Editor {
 		this.el_object_container.appendChild(this.el_color_object);
 
 		// IMAGE
+		/*
 		this.el_image_snap_container.appendChild(this.el_image_snap_label);
 		this.el_image_snap_container.appendChild(this.el_image_snap_x);
 		this.el_image_snap_container.appendChild(this.el_image_snap_sep);
@@ -385,11 +356,17 @@ class SceneEditor extends Editor {
 		this.el_image_offset_container.appendChild(this.el_image_offset_x);
 		this.el_image_offset_container.appendChild(this.el_image_offset_sep);
 		this.el_image_offset_container.appendChild(this.el_image_offset_y);
-		this.el_image_tiles_container.appendChild(this.el_image_preview);
-		this.el_image_tiles_container.appendChild(this.el_image_grid);
-		this.el_image_tiles_container.appendChild(this.el_image_selection);
+		this.el_image_spacing_container.appendChild(this.el_image_spacing_label);
+		this.el_image_spacing_container.appendChild(this.el_image_spacing_x);
+		this.el_image_spacing_container.appendChild(this.el_image_spacing_sep);
+		this.el_image_spacing_container.appendChild(this.el_image_spacing_y);
 		this.el_image_container.appendChild(this.el_image_snap_container);
 		this.el_image_container.appendChild(this.el_image_offset_container);
+		this.el_image_container.appendChild(this.el_image_spacing_container);
+		*/
+		this.el_image_container.appendChild(this.el_image_form.container);
+		this.el_image_tiles_container.appendChild(this.el_image_preview);
+		this.el_image_tiles_container.appendChild(this.el_image_grid);
 		this.el_image_container.appendChild(this.el_image_tiles_container);
 
 		this.el_sidebar.appendChild(this.el_layer_container);
@@ -461,7 +438,8 @@ class SceneEditor extends Editor {
 
 			// placing object
 			if (btn == 0 && !alt) {
-				this_ref.placeObject(x - this_ref.camera[0], y - this_ref.camera[1]);
+				if(this_ref.obj_type == 'object') this_ref.placeObject(x - this_ref.camera[0], y - this_ref.camera[1]);
+				if(this_ref.obj_type == 'image') this_ref.placeImage(x - this_ref.camera[0], y - this_ref.camera[1]);
 			}
 		};
 
@@ -606,14 +584,14 @@ class SceneEditor extends Editor {
 
 	// when object place type selector is changed
 	refreshObjectType () {
-		var obj_type = this.el_sel_placetype.value;
+		this.obj_type = this.el_sel_placetype.value;
 		this.el_image_container.classList.add('hidden');
 		this.el_object_container.classList.add('hidden');		
 		
-		if (obj_type == 'image') {
+		if (this.obj_type == 'image') {
 			this.el_image_container.classList.remove('hidden');
 		}
-		if (obj_type == 'object') {
+		if (this.obj_type == 'object') {
 			this.el_object_container.classList.remove('hidden');
 		}
 	}
@@ -674,6 +652,30 @@ class SceneEditor extends Editor {
 			});
 	}
 
+	refreshImageSelectionList() {
+		this.selected_xmin = -1;
+		this.selected_ymin = -1;
+		this.selected_image_frames = [];
+
+		var el_image_frames = document.querySelectorAll('.image-grid > .cell.selected');
+		if (el_image_frames) {
+			for (var frame of el_image_frames) {
+				let x = parseInt(frame.style.left);
+				let y = parseInt(frame.style.top);
+
+				this.selected_image_frames.push({
+					'x':x,
+					'y':y,
+					'width':parseInt(frame.style.width),
+					'height':parseInt(frame.style.height)
+				})
+
+				if (this.selected_xmin == -1 || x < this.selected_xmin) this.selected_xmin = x;
+				if (this.selected_ymin == -1 || y < this.selected_ymin) this.selected_ymin = y;
+			}
+		}
+	}
+
 	refreshImageGrid() {
 		if (this.curr_image) {
 			var img_width = parseInt(this.el_image_preview.width);
@@ -683,19 +685,22 @@ class SceneEditor extends Editor {
 			
 			var str_table = "";
 			if (grid_w > 2 && grid_h > 2) {
-				for (var gy = 0; gy < img_height; gy += grid_h) {
-					str_table += "<tr>";	
-					for (var gx = 0; gx < img_width; gx += grid_w) {
-						str_table += "<td style='width:"+grid_w+"px;height:"+grid_h+"px'></td>";
+				let rows = Math.ceil(img_height / grid_h) * (this.curr_image.spacing[1] > 0 ? this.curr_image.spacing[1] : 1);
+				let columns = Math.ceil(img_width / grid_w) * (this.curr_image.spacing[0] > 0 ? this.curr_image.spacing[0] : 1);
+
+				for (var gy = 0; gy < rows; gy += 1) {
+					let y = (gy * this.curr_image.spacing[1]) + (gy * grid_h) + this.curr_image.offset[1];
+					for (var gx = 0; gx < columns; gx += 1) {
+						let x = (gx * this.curr_image.spacing[0]) + (gx * grid_w) + this.curr_image.offset[0];
+						str_table += "<div class='cell' style='top:"+x+"px;left:"+y+"px;width:"+grid_w+"px;height:"+grid_h+"px'></div>";
 					}
-					str_table += "</tr>";
 				}
 			}
 			this.el_image_grid.innerHTML = str_table;
-			this.el_image_grid.style.top = this.curr_image.offset[1] + "px";
-			this.el_image_grid.style.left = this.curr_image.offset[0] + "px";
 			this.el_image_grid.style.width = (Math.ceil(img_width / grid_w) * grid_w) + "px";
 			this.el_image_grid.style.height = (Math.ceil(img_height / grid_h) * grid_h) + "px";
+
+			this.export();
 		}
 	}
 
@@ -710,6 +715,8 @@ class SceneEditor extends Editor {
 				align: 'center',
 				fontSize: this.curr_layer.snap[1]
 			});
+			new_text.updateTexture();
+			//new_text = new PIXI.extras.TilingSprite(new_text._texture, 32, 32);
 
 			new_text.snapped = false;
 			if (from_load_snapped == null) {
@@ -740,7 +747,7 @@ class SceneEditor extends Editor {
 
 			new_text.interactive = true;
 			new_text.on('rightdown', function(e){
-				if (e.target.layer_uuid === this_ref.curr_layer.uuid && this_ref.curr_object.pixi_texts[e.target.text_key]) {
+				if (this_ref.obj_type == 'object' && e.target.layer_uuid === this_ref.curr_layer.uuid && this_ref.curr_object.pixi_texts[e.target.text_key]) {
 					this_ref.curr_object.pixi_texts[e.target.text_key].destroy();
 					this_ref.curr_object.pixi_texts[e.target.text_key] = null;
 
@@ -758,8 +765,58 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	placeImage (x, y, load_info) {
+	placeImage (x, y, from_load_snapped) {
+		let orig_x = x;
+		let orig_y = y;
+		if (this.curr_image && this.curr_layer) {
+			for (var frame of this.selected_image_frames) {
+				x = orig_x;
+				y = orig_y;
 
+				let new_tile_texture = new PIXI.Texture(
+	                this.curr_image.pixi_resource.texture,
+	                new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
+		        );
+		        new_tile_texture.interactive = true;
+		        new_tile_texture.on('rightdown', function(e){
+		        	console.log('right clicked')
+					if (e.target.layer_uuid === this_ref.curr_layer.uuid && this_ref.curr_image.pixi_tilemap[e.target.text_key]) {
+						this_ref.curr_image.pixi_tilemap[e.target.text_key].destroy();
+						this_ref.curr_image.pixi_tilemap[e.target.text_key] = null;
+
+						//this_ref.export();
+					}
+				});
+
+		        if (!new_tile_texture) continue;
+
+				let new_tile = {'x':0,'y':0,'w':0,'h':0,'snapped':false};
+
+				x += (frame.x - this.selected_xmin);
+				y += (frame.y - this.selected_ymin);
+
+				if (from_load_snapped == null) {
+					if (x < 0) x -= this.curr_layer.snap[0];
+					if (y < 0) y -= this.curr_layer.snap[1];
+				}
+				if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
+					x -= x % this.curr_layer.snap[0];
+					y -= y % this.curr_layer.snap[1];
+					new_tile.snapped = true;
+				}
+
+				let text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+this.curr_layer.uuid;
+				// add if a tile isn't already there
+				if (!this.curr_image.pixi_images[text_key]) {
+					this.curr_image.pixi_tilemap.addFrame(new_tile_texture,x,y);
+					new_tile.x = x;
+					new_tile.y = y;
+					new_tile.w = frame.width;
+					new_tile.h = frame.height;
+					this.curr_image.pixi_images[text_key] = new_tile;
+				}
+			}
+		}
 	}
 
 	iterObject (name, func) {
@@ -839,18 +896,28 @@ class SceneEditor extends Editor {
 				img_found = true;
 				this.curr_image = img;
 
-				// set image tile selection image
 				var this_ref = this;
-				this.el_image_preview.onload = function(){
-					this_ref.refreshImageGrid();				
-				}
-				this.el_image_preview.src = path;
+				var loader = new PIXI.loaders.Loader();
+				loader.add(path);
+				loader.load(function(loader, resources){
+					if (!img.pixi_tilemap) {
+						img.pixi_tilemap = new PIXI.tilemap.CompositeRectTileLayer(0, resources[this_ref.getImageRelPath(img.path)]);
+						
+						img.pixi_resource = resources[img.path];
+						this_ref.curr_layer.container.addChild(img.pixi_tilemap);
+
+						this_ref.el_image_preview.onload = function(){
+							this_ref.refreshImageGrid();				
+						}
+						this_ref.el_image_preview.src = img.path;
+					}
+	            });
 
 				// set image inputs
-				this.el_image_snap_x.value = this.curr_image.snap[0];
-				this.el_image_snap_y.value = this.curr_image.snap[1];
-				this.el_image_offset_x.value = this.curr_image.offset[0];
-				this.el_image_offset_y.value = this.curr_image.offset[1];
+				for (var property of ['snap', 'offset', 'snap']) {
+					this.el_image_form.setValue(property, this.curr_image[property][0], 0);
+					this.el_image_form.setValue(property, this.curr_image[property][1], 1);
+				}
 			}
 		}
 		// add image to scene library
@@ -859,10 +926,18 @@ class SceneEditor extends Editor {
 				path: path,
 				snap: this.curr_layer.snap.slice(0),
 				offset: [0,0],
-				pixi_images: {}
+				spacing: [0,0],
+				uuid: guid(),
+				pixi_images: {},
+				pixi_tilemap: 0
 			});
+			this.export();
 			this.setImage(path);
 		}
+	}
+
+	getImageRelPath (path) {
+		return nwPATH.relative(app.project_path,path);
 	}
 
 	addLayer (info) {
@@ -929,6 +1004,27 @@ class SceneEditor extends Editor {
 				}
 			}
 
+			// images
+			for (var i = 0; i < data.images.length; i++) {
+				var img = data.images[i];
+				var full_path = nwPATH.resolve(app.project_path,img.path);
+				this.images.push({
+					path: full_path,
+					snap: img.snap,
+					offset: img.offset,
+					spacing: img.spacing,
+					uuid: img.uuid,
+					pixi_images: {},
+					pixi_tilemap: 0
+				})
+				this.setImage(full_path);
+				/* 
+				for (var layer_name in img.coords) {
+	
+				}
+				*/
+			}
+
 			if (data.objects.length > 0) 
 				this.updateGlobalObjList();
 
@@ -941,7 +1037,7 @@ class SceneEditor extends Editor {
 	export () {
 		if (this.deleted) return;
 
-		let export_data = {'objects':[], 'layers':[]};
+		let export_data = {'objects':[], 'layers':[], 'images':[]};
 		let layer_names = {};
 
 		// layers
@@ -979,6 +1075,32 @@ class SceneEditor extends Editor {
 				}
 			}
 			export_data.objects.push(exp_obj);
+		}
+
+		//images
+		for (let o = 0; o < this.images.length; o++) {
+			let img = this.images[o];
+			let exp_img = {
+				path: nwPATH.relative(app.project_path,img.path),
+				snap: img.snap,
+				offset: img.offset,
+				spacing: img.spacing,
+				uuid: img.uuid,
+				coords: {}
+			}
+			/*
+			for (let t in obj.pixi_imgs) { 
+				if (obj.pixi_imgs[t] && layer_names[obj.pixi_imgs[t].layer_name]) {
+					if (!exp_img.coords[obj.pixi_imgs[t].layer_name])
+						exp_img.coords[obj.pixi_imgs[t].layer_name] = [];
+					exp_img.coords[obj.pixi_imgs[t].layer_name].push([
+						obj.pixi_imgs[t].place_x,
+						obj.pixi_imgs[t].place_y,
+						obj.pixi_imgs[t].snapped
+					]);
+				}
+			}*/
+			export_data.images.push(exp_img);
 		}
 
 

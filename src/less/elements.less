@@ -80,6 +80,53 @@
 		    height: 30px;
 		}
 
+		.form-container {
+			width: 100%;
+
+			.form-group[data-type="text"][data-size="2"] {
+				display: inline-block;
+	   		 	width: 100%;
+
+				.form-label {
+	   		 		margin: 0px;
+				    margin-top: 5px;
+				    text-transform: uppercase;
+				}
+
+				.form-inputs {
+					.form-text {
+		   		 		width: 40%;
+		   		 		border: none;
+		   		 		outline: none;
+				    	background-color: rgba(255,255,255,0.5);
+				    	padding: 4px;
+				    	box-sizing: border-box;
+
+				    	&::-webkit-outer-spin-button,
+						&::-webkit-inner-spin-button {
+						    /* display: none; <- Crashes Chrome on hover */
+						    -webkit-appearance: none;
+						    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+						}
+
+						&[data-index="0"] {
+							text-align: right;	
+						}
+						&[data-index="1"] {
+							text-align: left;
+						}
+					}
+
+					.form-separator {
+						margin: 0px;
+						width: 20%;
+						display: inline-block;
+						text-align: center
+					}
+				}
+			}
+		}
+
 	    /* OBJECT */
 	    .object-container {
 		    .input-letter, .select-letter {
@@ -324,6 +371,44 @@
    		 	}
 		}
 
+		.image-spacing-container {
+			display: inline-block;
+   		 	width: 100%;
+
+   		 	.image-spacing-label {
+   		 		margin: 0px;
+			    margin-top: 5px;
+			    text-transform: uppercase;
+   		 	}
+			.image-spacing-sep {
+				margin: 0px;
+				width: 20%;
+				display: inline-block;
+				text-align: center
+   		 	}
+   		 	.image-spacing-x, .image-spacing-y {
+   		 		width: 40%;
+   		 		border: none;
+   		 		outline: none;
+		    	background-color: rgba(255,255,255,0.5);
+		    	padding: 4px;
+		    	box-sizing: border-box;
+
+		    	&::-webkit-outer-spin-button,
+				&::-webkit-inner-spin-button {
+				    /* display: none; <- Crashes Chrome on hover */
+				    -webkit-appearance: none;
+				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+				}
+   		 	}
+   		 	.image-spacing-x {
+   		 		text-align: right;
+   		 	}
+   		 	.image-spacing-y {
+   		 		text-align: left;
+   		 	}
+		}
+
 		.image-tiles-container {
 			display: inline-block;
 			width: 100%;
@@ -344,18 +429,17 @@
 
 			.image-grid {
 			    position: absolute;
-			    top: -1px;
-			    left: -1px;
-			    pointer-events: none;
-			    table-layout: fixed;
+			    top: 0px;
+			    left: 0px;
 
-			    * {
-			    	pointer-events: none;
-			    }
-
-			    td {
+			    .cell {
+			    	position: absolute;
 			    	outline: 1px dashed rgba(100,221,23 ,.5);
 			    	padding: 0px;
+
+			    	&.selected {
+			    		background-color: rgba(100, 221, 23, 0.3);
+			    	}
 			    }
 			}
 		}
