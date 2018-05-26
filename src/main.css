@@ -544,19 +544,26 @@
   width: 100%;
   height: 30px;
 }
+.content[data-type="SceneEditor"] .sidebar:hover .form-container {
+  padding: 5px;
+}
 .content[data-type="SceneEditor"] .sidebar .form-container {
   width: 100%;
+  box-sizing: border-box;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] {
   display: inline-block;
   width: 100%;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-label {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-label,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-label {
   margin: 0px;
   margin-top: 5px;
   text-transform: uppercase;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text {
   width: 40%;
   border: none;
   outline: none;
@@ -565,19 +572,24 @@
   box-sizing: border-box;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text::-webkit-inner-spin-button {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text::-webkit-inner-spin-button,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text::-webkit-inner-spin-button {
   /* display: none; <- Crashes Chrome on hover */
   -webkit-appearance: none;
   margin: 0;
   /* <-- Apparently some margin are still there even though it's hidden */
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="0"] {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="0"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text[data-index="0"] {
   text-align: right;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="1"] {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="1"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text[data-index="1"] {
   text-align: left;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-separator {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-separator,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-separator {
   margin: 0px;
   width: 20%;
   display: inline-block;
@@ -733,122 +745,11 @@
 .content[data-type="SceneEditor"] .sidebar .snap-container .snap-y {
   text-align: left;
 }
-.content[data-type="SceneEditor"] .sidebar .image-snap-container {
-  display: inline-block;
-  width: 100%;
-}
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-label {
-  margin: 0px;
-  margin-top: 5px;
-  text-transform: uppercase;
-}
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-sep {
-  margin: 0px;
-  width: 20%;
-  display: inline-block;
-  text-align: center;
-}
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-x,
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-y {
-  width: 40%;
-  border: none;
-  outline: none;
-  background-color: rgba(255, 255, 255, 0.5);
-  padding: 4px;
-  box-sizing: border-box;
-}
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-x::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-y::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-x::-webkit-inner-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-y::-webkit-inner-spin-button {
-  /* display: none; <- Crashes Chrome on hover */
-  -webkit-appearance: none;
-  margin: 0;
-  /* <-- Apparently some margin are still there even though it's hidden */
-}
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-x {
-  text-align: right;
-}
-.content[data-type="SceneEditor"] .sidebar .image-snap-container .image-snap-y {
-  text-align: left;
-}
-.content[data-type="SceneEditor"] .sidebar .image-offset-container {
-  display: inline-block;
-  width: 100%;
-}
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-label {
-  margin: 0px;
-  margin-top: 5px;
-  text-transform: uppercase;
-}
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-sep {
-  margin: 0px;
-  width: 20%;
-  display: inline-block;
-  text-align: center;
-}
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-x,
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-y {
-  width: 40%;
-  border: none;
-  outline: none;
-  background-color: rgba(255, 255, 255, 0.5);
-  padding: 4px;
-  box-sizing: border-box;
-}
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-x::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-y::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-x::-webkit-inner-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-y::-webkit-inner-spin-button {
-  /* display: none; <- Crashes Chrome on hover */
-  -webkit-appearance: none;
-  margin: 0;
-  /* <-- Apparently some margin are still there even though it's hidden */
-}
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-x {
-  text-align: right;
-}
-.content[data-type="SceneEditor"] .sidebar .image-offset-container .image-offset-y {
-  text-align: left;
-}
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container {
-  display: inline-block;
-  width: 100%;
-}
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-label {
-  margin: 0px;
-  margin-top: 5px;
-  text-transform: uppercase;
-}
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-sep {
-  margin: 0px;
-  width: 20%;
-  display: inline-block;
-  text-align: center;
-}
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-x,
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-y {
-  width: 40%;
-  border: none;
-  outline: none;
-  background-color: rgba(255, 255, 255, 0.5);
-  padding: 4px;
-  box-sizing: border-box;
-}
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-x::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-y::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-x::-webkit-inner-spin-button,
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-y::-webkit-inner-spin-button {
-  /* display: none; <- Crashes Chrome on hover */
-  -webkit-appearance: none;
-  margin: 0;
-  /* <-- Apparently some margin are still there even though it's hidden */
-}
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-x {
-  text-align: right;
-}
-.content[data-type="SceneEditor"] .sidebar .image-spacing-container .image-spacing-y {
-  text-align: left;
+.content[data-type="SceneEditor"] .sidebar .image-info {
+  font-size: 12px;
+  overflow: hidden;
+  margin: 3px;
+  white-space: nowrap;
 }
 .content[data-type="SceneEditor"] .sidebar .image-tiles-container {
   display: inline-block;

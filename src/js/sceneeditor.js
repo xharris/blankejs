@@ -57,27 +57,12 @@ class SceneEditor extends Editor {
 
 		// IMAGE elements
 		this.el_image_form = new BlankeForm([
-			['snap', 'text', {'inputs':2, 'separator':'X'}],
-			['offset', 'text', {'inputs':2, 'separator':'X'}],
-			['spacing', 'text', {'inputs':2, 'separator':'X'}]
+			['snap', 'number', {'inputs':2, 'separator':'X'}],
+			['offset', 'number', {'inputs':2, 'separator':'X'}],
+			['spacing', 'number', {'inputs':2, 'separator':'X'}]
 		]);
-
+		this.el_image_info 		= app.createElement("p","image-info");
 		this.el_image_container	= app.createElement("div","image-container");
-		this.el_image_snap_container = app.createElement("div","image-snap-container");
-		this.el_image_snap_label= app.createElement("p","image-snap-label");
-		this.el_image_snap_sep	= app.createElement("p","image-snap-sep");
-		this.el_image_snap_x	= app.createElement("input","image-snap-x");
-		this.el_image_snap_y	= app.createElement("input","image-snap-y");
-		this.el_image_offset_container = app.createElement("div","image-offset-container");
-		this.el_image_offset_label= app.createElement("p","image-offset-label");
-		this.el_image_offset_sep= app.createElement("p","image-offset-sep");
-		this.el_image_offset_x	= app.createElement("input","image-offset-x");
-		this.el_image_offset_y	= app.createElement("input","image-offset-y");
-		this.el_image_spacing_container = app.createElement("div","image-spacing-container");
-		this.el_image_spacing_label= app.createElement("p","image-spacing-label");
-		this.el_image_spacing_x	= app.createElement("input","image-spacing-x");
-		this.el_image_spacing_y	= app.createElement("input","image-spacing-y");
-		this.el_image_spacing_sep=app.createElement("p","image-spacing-sep");
 		this.el_image_tiles_container = app.createElement("div","image-tiles-container")
 		this.el_image_preview	= app.createElement("img","image-preview");
 		this.el_image_grid		= app.createElement("div","image-grid");
@@ -86,8 +71,13 @@ class SceneEditor extends Editor {
 		this.el_object_container= app.createElement("div","object-container");
 		this.el_input_letter 	= app.createElement("input","input-letter");
 		this.el_sel_letter 		= app.createElement("select","select-letter");
-		this.el_input_name		= app.createElement("input","input-name");
 		this.el_btn_add_object	= app.createElement("button","btn-add-object");
+
+		this.el_object_form = new BlankeForm([
+			['name', 'text', {'label':false}],
+			['color', 'color', {'label':false}]
+		]);
+		this.el_input_name		= app.createElement("input","input-name");
 		this.el_color_object	= app.createElement("input","color-object");
 	
 		this.el_layer_container	= app.createElement("div","layer-container");
@@ -123,8 +113,8 @@ class SceneEditor extends Editor {
 		this.el_image_form.setValue('snap', 32, 0);
 		this.el_image_form.setValue('snap', 32, 1);
 		this.el_image_form.onChange('snap', function(value){
-			let snapx = parseInt(value[0]);
-			let snapy = parseInt(value[1]);
+			let snapx = value[0];
+			let snapy = value[1];
 
 			if (this_ref.curr_image) {
 				if (snapx > 0) this_ref.curr_image.snap[0] = snapx;
@@ -140,8 +130,8 @@ class SceneEditor extends Editor {
 		this.el_image_form.setValue('offset', 0, 0);
 		this.el_image_form.setValue('offset', 0, 1);
 		this.el_image_form.onChange('offset', function(value){
-			let offsetx = parseInt(value[0]);
-			let offsety = parseInt(value[1]);
+			let offsetx = value[0];
+			let offsety = value[1];
 
 			if (this_ref.curr_image) {
 				if (offsetx > 0) this_ref.curr_image.offset[0] = offsetx;
@@ -157,8 +147,8 @@ class SceneEditor extends Editor {
 		this.el_image_form.setValue('spacing', 0, 0);
 		this.el_image_form.setValue('spacing', 0, 1);
 		this.el_image_form.onChange('spacing', function(value){
-			let spacingx = parseInt(value[0]);
-			let spacingy = parseInt(value[1]);
+			let spacingx = value[0];
+			let spacingy = value[1];
 
 			if (this_ref.curr_image) {
 				if (spacingx > 0) this_ref.curr_image.spacing[0] = spacingx;
@@ -177,7 +167,16 @@ class SceneEditor extends Editor {
 		this.selected_ymin = -1;
 		function selectImageTiles(e) {
 			if (e.target && e.target.matches('div.cell') && e.buttons != 0) {
-				if (e.buttons == 1) e.target.classList.add('selected');
+				if (e.buttons == 1) {
+					// if CTRL is not held down, clear all other tiles
+					if (!e.ctrlKey) {
+						let el_tiles = document.querySelectorAll('.image-grid div.cell');
+						for (let tile of el_tiles) {
+							tile.classList.remove('selected');
+						}
+					}
+					e.target.classList.add('selected');
+				}
 				if (e.buttons == 2) e.target.classList.remove('selected');
 				this_ref.refreshImageSelectionList();
 			}
@@ -230,7 +229,12 @@ class SceneEditor extends Editor {
 			if (this_ref.curr_object) {
 				this_ref.curr_object.color = e.target.value;
 				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-					obj.style.fill = this_ref.curr_object.color;
+					let x = obj.x, y = obj.y;
+
+					obj.clear();
+					obj.beginFill(parseInt(this_ref.curr_object.color.replace('#',"0x"),16), .5);
+					obj.drawCircle(obj.place_x, obj.place_y, obj.radius);
+					obj.label.style.fill = this_ref.curr_object.color;
 				});
 				this_ref.export();
 				this_ref.updateGlobalObjList();
@@ -347,23 +351,7 @@ class SceneEditor extends Editor {
 		this.el_object_container.appendChild(this.el_color_object);
 
 		// IMAGE
-		/*
-		this.el_image_snap_container.appendChild(this.el_image_snap_label);
-		this.el_image_snap_container.appendChild(this.el_image_snap_x);
-		this.el_image_snap_container.appendChild(this.el_image_snap_sep);
-		this.el_image_snap_container.appendChild(this.el_image_snap_y);
-		this.el_image_offset_container.appendChild(this.el_image_offset_label);
-		this.el_image_offset_container.appendChild(this.el_image_offset_x);
-		this.el_image_offset_container.appendChild(this.el_image_offset_sep);
-		this.el_image_offset_container.appendChild(this.el_image_offset_y);
-		this.el_image_spacing_container.appendChild(this.el_image_spacing_label);
-		this.el_image_spacing_container.appendChild(this.el_image_spacing_x);
-		this.el_image_spacing_container.appendChild(this.el_image_spacing_sep);
-		this.el_image_spacing_container.appendChild(this.el_image_spacing_y);
-		this.el_image_container.appendChild(this.el_image_snap_container);
-		this.el_image_container.appendChild(this.el_image_offset_container);
-		this.el_image_container.appendChild(this.el_image_spacing_container);
-		*/
+		this.el_image_container.appendChild(this.el_image_info);
 		this.el_image_container.appendChild(this.el_image_form.container);
 		this.el_image_tiles_container.appendChild(this.el_image_preview);
 		this.el_image_tiles_container.appendChild(this.el_image_grid);
@@ -436,11 +424,34 @@ class SceneEditor extends Editor {
 			let btn = e.data.originalEvent.button;
 			let alt = e.data.originalEvent.altKey; 
 
-			// placing object
-			if (btn == 0 && !alt) {
-				if(this_ref.obj_type == 'object') this_ref.placeObject(x - this_ref.camera[0], y - this_ref.camera[1]);
-				if(this_ref.obj_type == 'image') this_ref.placeImage(x - this_ref.camera[0], y - this_ref.camera[1]);
+			if (!alt) {
+				// placing object
+				if (btn == 0) {
+					if(this_ref.obj_type == 'object') this_ref.placeObject(x - this_ref.camera[0], y - this_ref.camera[1]);
+					if(this_ref.obj_type == 'image') this_ref.placeImage(x - this_ref.camera[0], y - this_ref.camera[1]);
+				}
+
+				// removing object
+				if (btn == 2) {
+					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
+			        	let x = e.data.global.x;
+			        	let y = e.data.global.y;
+			        	x -= x % this_ref.curr_layer.snap[0];
+			        	y -= y % this_ref.curr_layer.snap[1];
+
+			        	let text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+this_ref.curr_layer.uuid;
+		
+						if (this_ref.curr_image.pixi_images[text_key]) {
+							delete this_ref.curr_image.pixi_images[text_key];
+							this_ref.redrawTiles();
+
+							this_ref.export();
+						}
+					}
+				}
+
 			}
+
 		};
 
 		document.addEventListener('mouseup', function(e) {
@@ -458,15 +469,33 @@ class SceneEditor extends Editor {
 					this_ref.camera_start[0] + (e.data.global.x - this_ref.mouse_start.x) ,
 					this_ref.camera_start[1] + (e.data.global.y - this_ref.mouse_start.y) 
 				];
-				this_ref.map_container.setTransform(this_ref.camera[0], this_ref.camera[1]);
-
 				// move grid
 				this_ref.grid_container.x = this_ref.camera[0] % this_ref.curr_layer.snap[0];
 				this_ref.grid_container.y = this_ref.camera[1] % this_ref.curr_layer.snap[1];
 
-				this_ref.drawOrigin();
+				this_ref.refreshCamera();
 			}
 		}
+		// moving camera with arrow keys
+		document.addEventListener('keydown', function(e){
+			var keyCode = e.keyCode || e.which;
+
+			let vx = 0;
+			let vy = 0;
+			// left
+			if (keyCode == 37) vx = this_ref.curr_layer.snap[0];
+			// right
+			if (keyCode == 39) vx = -this_ref.curr_layer.snap[0];
+			// up
+			if (keyCode == 38) vy = this_ref.curr_layer.snap[1];
+			// down
+			if (keyCode == 40) vy = -this_ref.curr_layer.snap[1];
+
+			this_ref.camera[0] += vx;
+			this_ref.camera[1] += vy;
+
+			this_ref.refreshCamera();
+		});
 
 		this.pixi.stage.addChild(this.overlay_container);
 		this.pixi.stage.addChild(this.map_container);
@@ -555,6 +584,11 @@ class SceneEditor extends Editor {
 
 			this.drawOrigin();
 		}
+	}
+
+	refreshCamera () {
+		this.map_container.setTransform(this.camera[0], this.camera[1]);
+		this.drawOrigin();
 	}
 
 	drawOrigin () {
@@ -692,7 +726,7 @@ class SceneEditor extends Editor {
 					let y = (gy * this.curr_image.spacing[1]) + (gy * grid_h) + this.curr_image.offset[1];
 					for (var gx = 0; gx < columns; gx += 1) {
 						let x = (gx * this.curr_image.spacing[0]) + (gx * grid_w) + this.curr_image.offset[0];
-						str_table += "<div class='cell' style='top:"+x+"px;left:"+y+"px;width:"+grid_w+"px;height:"+grid_h+"px'></div>";
+						str_table += "<div class='cell' style='top:"+y+"px;left:"+x+"px;width:"+grid_w+"px;height:"+grid_h+"px'></div>";
 					}
 				}
 			}
@@ -709,45 +743,56 @@ class SceneEditor extends Editor {
 		var curr_object = this.curr_object;
 
 		if (curr_object && this.curr_layer) {
-			var new_text = new PIXI.Text(curr_object.char,{
+			var new_graph = new PIXI.Graphics();
+			new_graph.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .5);
+
+			let snapx = this.curr_layer.snap[0] / 2;
+			let snapy = this.curr_layer.snap[1] / 2;
+
+			new_graph.snapped = false;
+			if (from_load_snapped == null) {
+				if (x < 0) x -= snapx;
+				if (y < 0) y -= snapy;
+			}
+			if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
+				x -= x % snapx;
+				y -= y % snapy;
+				new_graph.snapped = true;
+			}
+
+			let radius = 16;
+
+			new_graph.drawCircle(x, y, radius);
+			new_graph.place_x = x;
+			new_graph.place_y = y;
+			new_graph.label = new PIXI.Text(curr_object.char,{
 				fontFamily: 'ProggySquare', 
 				fill: curr_object.color,
 				align: 'center',
-				fontSize: this.curr_layer.snap[1]
+				fontSize: radius*1.5
 			});
-			new_text.updateTexture();
-			//new_text = new PIXI.extras.TilingSprite(new_text._texture, 32, 32);
-
-			new_text.snapped = false;
-			if (from_load_snapped == null) {
-				if (x < 0) x -= this.curr_layer.snap[0];
-				if (y < 0) y -= this.curr_layer.snap[1];
-			}
-			if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
-				x -= x % this.curr_layer.snap[0];
-				y -= y % this.curr_layer.snap[1];
-				new_text.snapped = true;
-			}
+			new_graph.radius = radius;
+			new_graph.label.x = x - (new_graph.label.width/2);
+			new_graph.label.y = y - (new_graph.label.height/2);
 
 			var text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+this.curr_layer.uuid;
 			if (curr_object.pixi_texts[text_key]) curr_object.pixi_texts[text_key].destroy();
 			
-			new_text.place_x = x;
-			new_text.place_y = y;
+			new_graph.place_x = x;
+			new_graph.place_y = y;
 
-			new_text.grid_x = Math.floor(x / this.curr_layer.snap[0]);
-			new_text.grid_y = Math.floor(y / this.curr_layer.snap[1]);
+			new_graph.grid_x = Math.floor(x / snapx);
+			new_graph.grid_y = Math.floor(y / snapy);
 
-			new_text.x += x + (this.curr_layer.snap[0]/2) - (new_text.width/2);
-			new_text.y += y + (this.curr_layer.snap[1]/2) - (new_text.height/2);
-			new_text.uuid = curr_object.uuid;
-			new_text.text_key = text_key;
-			new_text.layer_name = this.curr_layer.name;
-			new_text.layer_uuid = this.curr_layer.uuid;
+			new_graph.uuid = curr_object.uuid;
+			new_graph.text_key = text_key;
+			new_graph.layer_name = this.curr_layer.name;
+			new_graph.layer_uuid = this.curr_layer.uuid;
 
-			new_text.interactive = true;
-			new_text.on('rightdown', function(e){
+			new_graph.interactive = true;
+			new_graph.on('rightdown', function(e){
 				if (this_ref.obj_type == 'object' && e.target.layer_uuid === this_ref.curr_layer.uuid && this_ref.curr_object.pixi_texts[e.target.text_key]) {
+					this_ref.curr_object.pixi_texts[e.target.text_key].label.destroy();
 					this_ref.curr_object.pixi_texts[e.target.text_key].destroy();
 					this_ref.curr_object.pixi_texts[e.target.text_key] = null;
 
@@ -755,66 +800,82 @@ class SceneEditor extends Editor {
 				}
 			});
 			
-			var new_graph = new PIXI.Graphics();
-			new_graph.beginFill(this.curr_object.color, 0);
-			new_graph.drawRect(-((this.curr_layer.snap[0]/2) - (new_text.width/2)), -((this.curr_layer.snap[1]/2) - (new_text.height/2)), this.curr_layer.snap[0], this.curr_layer.snap[1]);
-			new_text.addChild(new_graph);
-			
-			curr_object.pixi_texts[text_key] = new_text;
-			this.curr_layer.container.addChild(new_text);
+			curr_object.pixi_texts[text_key] = new_graph;
+			this.curr_layer.container.addChild(new_graph);
+			this.curr_layer.container.addChild(new_graph.label);
+		}
+	}
+
+	placeImageFrame (x, y, frame, from_load_snapped) {
+		let curr_image = this.curr_image;
+		if (from_load_snapped != null)
+			curr_image = from_load_snapped;
+
+		let new_tile_texture = new PIXI.Texture(
+            curr_image.pixi_resource.texture,
+            new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
+        );
+        new_tile_texture.layer_uuid = this.curr_layer.uuid;
+
+        if (!new_tile_texture) return;
+
+		let new_tile = {'x':0,'y':0,'w':0,'h':0,'snapped':false};
+
+		if (from_load_snapped == null) {
+			x += (frame.x - this.selected_xmin);
+			y += (frame.y - this.selected_ymin);
+		}
+
+		let text_key = Math.floor(x - (x % this.curr_layer.snap[0])).toString()+','+Math.floor(y - (y % this.curr_layer.snap[1])).toString()+'.'+this.curr_layer.uuid;
+
+		if (from_load_snapped == null) {
+			if (x < 0) x -= this.curr_layer.snap[0];
+			if (y < 0) y -= this.curr_layer.snap[1];
+		}
+		if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
+			x -= x % this.curr_layer.snap[0];
+			y -= y % this.curr_layer.snap[1];
+			new_tile.snapped = true;
+		}
+
+		// add if a tile isn't already there
+		if (!curr_image.pixi_images[text_key]) {
+			if (!curr_image.pixi_tilemap[this.curr_layer.uuid]) {
+				curr_image.pixi_tilemap[this.curr_layer.uuid] = new PIXI.tilemap.CompositeRectTileLayer(0, curr_image.pixi_resource.texture);
+				this.curr_layer.container.addChild(curr_image.pixi_tilemap[this.curr_layer.uuid]);
+			}
+			curr_image.pixi_tilemap[this.curr_layer.uuid].addFrame(new_tile_texture,x,y);
+			new_tile.x = x;
+			new_tile.y = y;
+			new_tile.frame = frame;
+			new_tile.texture = new_tile_texture;
+
+			new_tile.uuid = curr_image.uuid;
+			new_tile.text_key = text_key;
+			new_tile.layer_name = this.curr_layer.name;
+			new_tile.layer_uuid = this.curr_layer.uuid;
+			curr_image.pixi_images[text_key] = new_tile;
 		}
 	}
 
 	placeImage (x, y, from_load_snapped) {
-		let orig_x = x;
-		let orig_y = y;
 		if (this.curr_image && this.curr_layer) {
 			for (var frame of this.selected_image_frames) {
-				x = orig_x;
-				y = orig_y;
+				this.placeImageFrame(x, y, frame, from_load_snapped);
+			}
+		}
+	}
 
-				let new_tile_texture = new PIXI.Texture(
-	                this.curr_image.pixi_resource.texture,
-	                new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
-		        );
-		        new_tile_texture.interactive = true;
-		        new_tile_texture.on('rightdown', function(e){
-		        	console.log('right clicked')
-					if (e.target.layer_uuid === this_ref.curr_layer.uuid && this_ref.curr_image.pixi_tilemap[e.target.text_key]) {
-						this_ref.curr_image.pixi_tilemap[e.target.text_key].destroy();
-						this_ref.curr_image.pixi_tilemap[e.target.text_key] = null;
+	// uses curr_image and curr_layer
+	redrawTiles () {
+		if (!this.curr_image) return;
 
-						//this_ref.export();
-					}
-				});
-
-		        if (!new_tile_texture) continue;
-
-				let new_tile = {'x':0,'y':0,'w':0,'h':0,'snapped':false};
-
-				x += (frame.x - this.selected_xmin);
-				y += (frame.y - this.selected_ymin);
-
-				if (from_load_snapped == null) {
-					if (x < 0) x -= this.curr_layer.snap[0];
-					if (y < 0) y -= this.curr_layer.snap[1];
-				}
-				if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
-					x -= x % this.curr_layer.snap[0];
-					y -= y % this.curr_layer.snap[1];
-					new_tile.snapped = true;
-				}
-
-				let text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+this.curr_layer.uuid;
-				// add if a tile isn't already there
-				if (!this.curr_image.pixi_images[text_key]) {
-					this.curr_image.pixi_tilemap.addFrame(new_tile_texture,x,y);
-					new_tile.x = x;
-					new_tile.y = y;
-					new_tile.w = frame.width;
-					new_tile.h = frame.height;
-					this.curr_image.pixi_images[text_key] = new_tile;
-				}
+		// redraw all tiles 
+		for (var layer_name in this.curr_image.pixi_tilemap) {
+			this.curr_image.pixi_tilemap[layer_name].clear();
+			for (var t in this.curr_image.pixi_images) {
+				let tile = this.curr_image.pixi_images[t];
+				this.curr_image.pixi_tilemap[layer_name].addFrame(tile.texture,tile.x,tile.y);
 			}
 		}
 	}
@@ -888,7 +949,7 @@ class SceneEditor extends Editor {
 		}	
 	}
 
-	setImage (path) {
+	setImage (path, onReady) {
 		// set current image variable
 		var img_found = false;
 		for (var img of this.images) {
@@ -900,17 +961,20 @@ class SceneEditor extends Editor {
 				var loader = new PIXI.loaders.Loader();
 				loader.add(path);
 				loader.load(function(loader, resources){
-					if (!img.pixi_tilemap) {
-						img.pixi_tilemap = new PIXI.tilemap.CompositeRectTileLayer(0, resources[this_ref.getImageRelPath(img.path)]);
-						
+					// save texture info
+					if (!img.pixi_resource) {
 						img.pixi_resource = resources[img.path];
-						this_ref.curr_layer.container.addChild(img.pixi_tilemap);
+					} 
 
-						this_ref.el_image_preview.onload = function(){
-							this_ref.refreshImageGrid();				
-						}
-						this_ref.el_image_preview.src = img.path;
+					// update image info text
+					this_ref.el_image_info.innerHTML = this_ref.getImageRelPath(img.path) + "<br/>" + img.pixi_resource.texture.width + " x " +  img.pixi_resource.texture.height;
+					this_ref.el_image_info.title = this_ref.getImageRelPath(img.path);
+
+					this_ref.el_image_preview.onload = function(){
+						this_ref.refreshImageGrid();		
 					}
+					this_ref.el_image_preview.src = img.path;
+					if (onReady) onReady(img);
 	            });
 
 				// set image inputs
@@ -929,7 +993,7 @@ class SceneEditor extends Editor {
 				spacing: [0,0],
 				uuid: guid(),
 				pixi_images: {},
-				pixi_tilemap: 0
+				pixi_tilemap: {}
 			});
 			this.export();
 			this.setImage(path);
@@ -997,7 +1061,7 @@ class SceneEditor extends Editor {
 				this.addObject(obj);
 
 				for (var layer_name in obj.coords) {
-					this.setLayer(layer_name)
+					this.setLayer(layer_name);
 					for (var c = 0; c < obj.coords[layer_name].length; c++) {
 						this.placeObject(obj.coords[layer_name][c][0], obj.coords[layer_name][c][1], obj.coords[layer_name][c][2]);
 					}
@@ -1005,25 +1069,30 @@ class SceneEditor extends Editor {
 			}
 
 			// images
-			for (var i = 0; i < data.images.length; i++) {
-				var img = data.images[i];
+			let this_ref = this;
+			data.images.forEach(function(img, i){
 				var full_path = nwPATH.resolve(app.project_path,img.path);
-				this.images.push({
+				this_ref.images.push({
 					path: full_path,
 					snap: img.snap,
 					offset: img.offset,
 					spacing: img.spacing,
 					uuid: img.uuid,
 					pixi_images: {},
-					pixi_tilemap: 0
-				})
-				this.setImage(full_path);
-				/* 
-				for (var layer_name in img.coords) {
-	
-				}
-				*/
-			}
+					pixi_tilemap: {}
+				});
+				this_ref.setImage(full_path, function(img_ref){
+					for (var layer_name in img.coords) {
+						this_ref.setLayer(layer_name);
+						for (var coord of img.coords[layer_name]) {
+							this_ref.placeImageFrame(coord[0], coord[1], {
+								'x':coord[2], 'y':coord[3], 'width':coord[4], 'height':coord[5]
+							}, img_ref)
+						}
+					}
+
+				});				
+			});
 
 			if (data.objects.length > 0) 
 				this.updateGlobalObjList();
@@ -1067,39 +1136,42 @@ class SceneEditor extends Editor {
 				if (obj.pixi_texts[t] && layer_names[obj.pixi_texts[t].layer_name]) {
 					if (!exp_obj.coords[obj.pixi_texts[t].layer_name])
 						exp_obj.coords[obj.pixi_texts[t].layer_name] = [];
-					exp_obj.coords[obj.pixi_texts[t].layer_name].push([
-						obj.pixi_texts[t].place_x,
-						obj.pixi_texts[t].place_y,
-						obj.pixi_texts[t].snapped
-					]);
+
+					let new_obj = [obj.pixi_texts[t].place_x, obj.pixi_texts[t].place_y];
+					if (obj.pixi_texts[t].shape == 'circle') 
+						new_obj.push({'shape':'circle','radius':obj.pixi_texts[t].radius});
+					
+					exp_obj.coords[obj.pixi_texts[t].layer_name].push(new_obj);
 				}
 			}
 			export_data.objects.push(exp_obj);
 		}
 
 		//images
-		for (let o = 0; o < this.images.length; o++) {
-			let img = this.images[o];
+		for (let obj of this.images) {
 			let exp_img = {
-				path: nwPATH.relative(app.project_path,img.path),
-				snap: img.snap,
-				offset: img.offset,
-				spacing: img.spacing,
-				uuid: img.uuid,
+				path: nwPATH.relative(app.project_path,obj.path),
+				snap: obj.snap,
+				offset: obj.offset,
+				spacing: obj.spacing,
+				uuid: obj.uuid,
 				coords: {}
 			}
-			/*
-			for (let t in obj.pixi_imgs) { 
-				if (obj.pixi_imgs[t] && layer_names[obj.pixi_imgs[t].layer_name]) {
-					if (!exp_img.coords[obj.pixi_imgs[t].layer_name])
-						exp_img.coords[obj.pixi_imgs[t].layer_name] = [];
-					exp_img.coords[obj.pixi_imgs[t].layer_name].push([
-						obj.pixi_imgs[t].place_x,
-						obj.pixi_imgs[t].place_y,
-						obj.pixi_imgs[t].snapped
+
+			for (let i in obj.pixi_images) { 
+				let img = obj.pixi_images[i];
+				if (img && layer_names[img.layer_name]) {
+
+					if (!exp_img.coords[img.layer_name])
+						exp_img.coords[img.layer_name] = [];
+
+					exp_img.coords[img.layer_name].push([
+						img.x, img.y,
+						img.frame.x, img.frame.y, img.frame.width, img.frame.height,
+						img.snapped
 					]);
 				}
-			}*/
+			}
 			export_data.images.push(exp_img);
 		}
 

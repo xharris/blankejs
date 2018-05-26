@@ -80,10 +80,17 @@
 		    height: 30px;
 		}
 
+		&:hover{
+			.form-container {
+				padding: 5px;
+			}
+		}
+
 		.form-container {
 			width: 100%;
+   		 	box-sizing: border-box;
 
-			.form-group[data-type="text"][data-size="2"] {
+			.form-group[data-type="text"][data-size="2"], .form-group[data-type="number"][data-size="2"] {
 				display: inline-block;
 	   		 	width: 100%;
 
@@ -295,118 +302,11 @@
 		}
 
 		/* IMAGE */
-		.image-snap-container {
-			display: inline-block;
-   		 	width: 100%;
-
-   		 	.image-snap-label {
-   		 		margin: 0px;
-			    margin-top: 5px;
-			    text-transform: uppercase;
-   		 	}
-			.image-snap-sep {
-				margin: 0px;
-				width: 20%;
-				display: inline-block;
-				text-align: center
-   		 	}
-   		 	.image-snap-x, .image-snap-y {
-   		 		width: 40%;
-   		 		border: none;
-   		 		outline: none;
-		    	background-color: rgba(255,255,255,0.5);
-		    	padding: 4px;
-		    	box-sizing: border-box;
-
-		    	&::-webkit-outer-spin-button,
-				&::-webkit-inner-spin-button {
-				    /* display: none; <- Crashes Chrome on hover */
-				    -webkit-appearance: none;
-				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
-				}
-   		 	}
-   		 	.image-snap-x {
-   		 		text-align: right;
-   		 	}
-   		 	.image-snap-y {
-   		 		text-align: left;
-   		 	}
-		}
-
-		.image-offset-container {
-			display: inline-block;
-   		 	width: 100%;
-
-   		 	.image-offset-label {
-   		 		margin: 0px;
-			    margin-top: 5px;
-			    text-transform: uppercase;
-   		 	}
-			.image-offset-sep {
-				margin: 0px;
-				width: 20%;
-				display: inline-block;
-				text-align: center
-   		 	}
-   		 	.image-offset-x, .image-offset-y {
-   		 		width: 40%;
-   		 		border: none;
-   		 		outline: none;
-		    	background-color: rgba(255,255,255,0.5);
-		    	padding: 4px;
-		    	box-sizing: border-box;
-
-		    	&::-webkit-outer-spin-button,
-				&::-webkit-inner-spin-button {
-				    /* display: none; <- Crashes Chrome on hover */
-				    -webkit-appearance: none;
-				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
-				}
-   		 	}
-   		 	.image-offset-x {
-   		 		text-align: right;
-   		 	}
-   		 	.image-offset-y {
-   		 		text-align: left;
-   		 	}
-		}
-
-		.image-spacing-container {
-			display: inline-block;
-   		 	width: 100%;
-
-   		 	.image-spacing-label {
-   		 		margin: 0px;
-			    margin-top: 5px;
-			    text-transform: uppercase;
-   		 	}
-			.image-spacing-sep {
-				margin: 0px;
-				width: 20%;
-				display: inline-block;
-				text-align: center
-   		 	}
-   		 	.image-spacing-x, .image-spacing-y {
-   		 		width: 40%;
-   		 		border: none;
-   		 		outline: none;
-		    	background-color: rgba(255,255,255,0.5);
-		    	padding: 4px;
-		    	box-sizing: border-box;
-
-		    	&::-webkit-outer-spin-button,
-				&::-webkit-inner-spin-button {
-				    /* display: none; <- Crashes Chrome on hover */
-				    -webkit-appearance: none;
-				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
-				}
-   		 	}
-   		 	.image-spacing-x {
-   		 		text-align: right;
-   		 	}
-   		 	.image-spacing-y {
-   		 		text-align: left;
-   		 	}
+		.image-info {
+		    font-size: 12px;
+		    overflow: hidden;
+		    margin: 3px;
+		    white-space: nowrap;
 		}
 
 		.image-tiles-container {
