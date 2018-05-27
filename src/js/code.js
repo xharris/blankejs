@@ -37,8 +37,6 @@ function refreshObjectList (filename, content) {
 			object_list['states'][obj_name] = 1;
 	}
 	while (ret_match);
-
-	console.log(object_list)
 }
 
 class Code extends Editor {
