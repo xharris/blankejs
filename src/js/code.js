@@ -1,4 +1,45 @@
 var font_size = 16;
+var object_list = {'states':{},'entity':{}}
+var object_src = {};
+
+// add timeout
+var re_statecreate = /.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g;
+function refreshObjectList (filename, content) {
+	var ret_match;
+	// remove from whole list
+	let obj_string = object_src[filename] || '';
+	for (let category in object_list) {
+		let objects = object_list[category];
+
+		for (let obj_name in objects) {
+			let occurences = obj_string.split(obj_name).length - 1;
+			if (occurences > 0) {
+				object_list[category][obj_name] -= occurences;
+				if (object_list[category][obj_name] == 0)
+					delete object_list[category][obj_name];
+			}
+		}
+	}
+
+	// clear src list
+	object_src[filename] = '';
+	do {
+		ret_match = re_statecreate.exec(content)
+		if (!ret_match) continue;
+
+		let obj_name = ret_match[1];
+		object_src[filename] += obj_name + ' ';
+
+		// increment in whole list
+		if (object_list['states'][obj_name])
+			object_list['states'][obj_name]++;
+		else 
+			object_list['states'][obj_name] = 1;
+	}
+	while (ret_match);
+
+	console.log(object_list)
+}
 
 class Code extends Editor {
 	constructor (...args) {
@@ -17,8 +58,29 @@ class Code extends Editor {
 		this.appendChild(this.edit_box)
 
 		var this_ref = this;
+
+		CodeMirror.defineMode("blanke", function(config, parserConfig) {
+		  var blankeOverlay = {
+		    token: function(stream, state) {
+		      var ch;
+
+		      /* // keeping this code since it's a good example
+		      if (stream.match("{{")) {
+		        while ((ch = stream.next()) != null)
+		          if (ch == "}" && stream.next() == "}") {
+		            stream.eat("}");
+		            return "blanke";
+		          }
+		      }*/
+		      while (stream.next() != null && !stream.match("{{", false)) {}
+		      return null;
+		    }
+		  };
+		  return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "lua"), blankeOverlay);
+		});
+
 		this.codemirror = CodeMirror.fromTextArea(this.edit_box, {
-			mode: "lua",
+			mode: "blanke",
 			theme: "material",
             smartIndent : true,
             lineNumbers : true,
@@ -28,7 +90,6 @@ class Code extends Editor {
             indentWithTabs : true,
             highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
             matchBrackets: true,
-            extraKeys: {"Ctrl-Space": "autocomplete"},
             extraKeys: {
             	"Ctrl-S": function(cm) {
             		this_ref.save();
@@ -43,13 +104,32 @@ class Code extends Editor {
             		font_size -= 1;
             		this_ref.setFontSize(font_size);
             	},
-            	"Ctrl-F": "findPersistent"
+            	"Ctrl-F": "findPersistent",
+            	"Ctrl-Space": "autocomplete"
             }
 		});
+
+		/*
+		this.codemirror.on("cursorActivity", function() {
+			let editor = this_ref.codemirror;
+
+			editor.showHint({
+				hint: function() {
+					return {
+				  	    from: editor.getDoc().getCursor(),
+				  	  	to: editor.getDoc().getCursor(),
+				        list: ["add new State","or this"]
+					}
+				}
+			})
+		});*/
+
+
 		this.setFontSize(font_size);
 		//this.codemirror.setSize("100%", "100%");
 		this.codemirror.on('change', function(){
 			this_ref.addAsterisk();
+			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
 		});
 		this_ref.codemirror.refresh();
 		this.addCallback('onResize', function(w, h) {
@@ -66,6 +146,7 @@ class Code extends Editor {
 		this.setOnClick(function(self){
 			(new Code(app)).edit(self.file);
 		}, this);
+
 	}
 
 	addAsterisk () {
@@ -102,6 +183,7 @@ class Code extends Editor {
 		this.codemirror.refresh();
 
 		this.setTitle(nwPATH.basename(file_path));
+		refreshObjectList(this.file, this.codemirror.getValue());
 	}
 
 	save () {
@@ -185,11 +267,17 @@ function addScripts(folder_path) {
 			var full_path = nwPATH.join(folder_path, file);
 			nwFS.stat(full_path, function(err, file_stat){		
 				// iterate through directory			
-				if (file_stat.isDirectory())
+				if (file_stat.isDirectory()) 
 					addScripts(full_path);
 
 				// add file to search pool
 				else if (file.endsWith('.lua')) {
+					nwFS.readFile(full_path, 'utf-8', function(err, data){
+						if (!err) {
+							refreshObjectList(full_path, data);
+						}
+					});
+
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){

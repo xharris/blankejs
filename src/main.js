@@ -274,14 +274,16 @@ nwWIN.on('loaded', function() {
 
 	// setup welcome screen
 	var el_recent = app.getElement("#welcome > .recent-files");
-	for (var p = 0; p < app.settings.recent_files.length; p++) {
-		var el_file = app.createElement("a", "file");
-		var file = app.settings.recent_files[p];
-		
-		el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
-		el_file.title = file;
-		el_file.href = "#";
-		el_recent.appendChild(el_file);
+	if (el_recent) {
+		for (var p = 0; p < app.settings.recent_files.length; p++) {
+			var el_file = app.createElement("a", "file");
+			var file = app.settings.recent_files[p];
+			
+			el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
+			el_file.title = file;
+			el_file.href = "#";
+			el_recent.appendChild(el_file);
+		}
 	}
 
 	// prepare search box
@@ -413,6 +415,6 @@ nwWIN.on('loaded', function() {
 	});
 
 	//app.runServer();
-	app.openProject('projects/penguin_test');
-	app.hideWelcomeScreen();
+	//app.openProject('projects/penguin_test');
+	//app.hideWelcomeScreen();
 });

@@ -375,6 +375,7 @@
   margin-left: 10px;
 }
 .ui-modal {
+  -webkit-app-region: no-drag;
   position: absolute;
   top: 50%;
   left: 0px;
@@ -465,6 +466,10 @@
   bottom: 0px;
   right: 0px;
   left: 0px;
+}
+.content[data-type="Code"] {
+  padding-top: 33px;
+  padding-bottom: 22px;
 }
 .content[data-type="Code"] .CodeMirror {
   font-size: 16px;
@@ -1142,7 +1147,7 @@ body {
   background-color: transparent;
   overflow: hidden;
   position: relative;
-  z-index: 20;
+  /* z-index: 20; */
 }
 #workspace > .content {
   /* outline: 1px solid #212121; */
