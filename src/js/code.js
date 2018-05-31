@@ -1,15 +1,39 @@
 var font_size = 16;
-var object_list = {'states':{},'entity':{}}
+var object_list = {}
 var object_src = {};
+var object_instances = {};
 
 // add timeout
-var re_statecreate = /.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g;
+var re_objects = {
+	'state': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g,
+	'entity': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g
+}
+
+var hints = {
+	"blanke-state":[
+		{fn:"switch",
+		vars:{
+			name: "name of state to switch to"
+		}},
+		{fn:"transition"},
+		{fn:"current"}
+	],
+	"blanke-entity-instance":[
+		{prop:"sprite_angle"},
+		{prop:"sprite_xscale"},
+		{fn:"destroy"}
+	]
+}
+
 function refreshObjectList (filename, content) {
 	var ret_match;
 	// remove from whole list
 	let obj_string = object_src[filename] || '';
 	for (let category in object_list) {
+		if (!object_list[category]) object_list[category] = {}
+
 		let objects = object_list[category];
+		object_instances[filename][category] = [];
 
 		for (let obj_name in objects) {
 			let occurences = obj_string.split(obj_name).length - 1;
@@ -24,19 +48,41 @@ function refreshObjectList (filename, content) {
 	// clear src list
 	object_src[filename] = '';
 	do {
-		ret_match = re_statecreate.exec(content)
-		if (!ret_match) continue;
+		for (var category in re_objects) {
+			let re = re_objects[category];
+		
+			ret_match = re.exec(content)
+			if (!ret_match) continue;
 
-		let obj_name = ret_match[1];
-		object_src[filename] += obj_name + ' ';
+			let obj_name = ret_match[1];
+			object_src[filename] += obj_name + ' ';
 
-		// increment in whole list
-		if (object_list['states'][obj_name])
-			object_list['states'][obj_name]++;
-		else 
-			object_list['states'][obj_name] = 1;
-	}
-	while (ret_match);
+			// increment in whole list
+			if (!object_list[category]) object_list[category] = {};
+			if (object_list[category][obj_name])
+				object_list[category][obj_name]++;
+			else {
+				object_list[category][obj_name] = 1;
+
+			}
+
+			// get instances made with those classes
+			var re_instance = new RegExp("\\b(\\w+)\\s*=\\s*"+obj_name+"\\(\\).*","g");
+			var ret_instance_match;
+
+			if(!object_instances[filename])
+				object_instances[filename] = {};
+			if(!object_instances[filename][category])
+				object_instances[filename][category] = [];
+			do {
+				ret_instance_match = re_instance.exec(content);
+				if (!ret_instance_match) continue;
+
+				if(!object_instances[filename][category].includes(ret_instance_match[1]))
+					object_instances[filename][category].push(ret_instance_match[1]);
+			} while (ret_instance_match)
+		}
+	} while (ret_match);
 }
 
 class Code extends Editor {
@@ -62,15 +108,46 @@ class Code extends Editor {
 		    token: function(stream, state) {
 		      var ch;
 
-		      /* // keeping this code since it's a good example
+		      var break_bool = 0;
+
+		      // keeping this code since it's a good example
 		      if (stream.match("{{")) {
 		        while ((ch = stream.next()) != null)
 		          if (ch == "}" && stream.next() == "}") {
 		            stream.eat("}");
-		            return "blanke";
+		            return "blanke-test";
 		          }
-		      }*/
-		      while (stream.next() != null && !stream.match("{{", false)) {}
+		      }
+		      break_bool *= !stream.match('{',false);
+
+		      var class_names = ['State','Entity']
+
+		      // check for user-made classes
+		      for (var category in re_objects) {
+			      if (object_list[category]) {
+			      	for (var obj_name in object_list[category]) {
+			      		let is_match = stream.match(obj_name,true);
+			      		if (is_match) {
+			      			return "blanke-"+category;
+			      		}
+			      		break_bool *= !is_match;
+			      	}
+
+			      	if (object_instances[this_ref.file][category]) {
+				      	for (var instance_name of object_instances[this_ref.file][category]) {
+				      		let is_match = stream.match(instance_name,true);
+				      		if (is_match) {
+				      			return "blanke-"+category+"-instance";
+				      		}
+				      		break_bool *= !is_match;
+				      	}
+			      	}	
+			      }
+		      }
+
+
+
+		      while (stream.next() && break_bool) {}
 		      return null;
 		    }
 		  };
@@ -88,6 +165,7 @@ class Code extends Editor {
             indentWithTabs : true,
             highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
             matchBrackets: true,
+            completeSingle: false,
             extraKeys: {
             	"Ctrl-S": function(cm) {
             		this_ref.save();
@@ -103,11 +181,58 @@ class Code extends Editor {
             		this_ref.setFontSize(font_size);
             	},
             	"Ctrl-F": "findPersistent",
-            	"Ctrl-Space": "autocomplete"
+            	"Ctrl-Space": "autocomplete",
+            	"'.'": function(editor) {
+       				let cursor = editor.getCursor();
+       				if (cursor.ch > 2) {
+       					let token_type = editor.getTokenTypeAt({line:cursor.line, ch:cursor.ch-1});
+       					
+       					let hint_list = hints[token_type];
+   						let list = [];
+   						for (var o in hint_list) {
+	   						let hint_opts = hint_list[o];
+   							let arg_info = "";
+
+   							let text, render;
+
+   							if (hint_opts.fn) {
+   								text = hint_opts.fn+"(";
+	   							if (hint_opts.vars) {
+		   							for (var arg in hint_opts.vars) {
+		   								arg_info += arg + " : " + hint_opts.vars[arg] + "<br/>";
+		   							}
+		   						}
+		   						render = hint_opts.fn + "(" + Object.keys(hint_opts.vars || {}) + ")"+
+	   										"<p class='arg-info'>"+arg_info+"</p>";
+	   						}
+	   						if (hint_opts.prop) {
+	   							text = hint_opts.prop;
+	   							render = hint_opts.prop + "<p class='prop-info'>"+(hint_opts.info || '')+"</p>";
+	   						}
+   							list.push({
+   								text:text,
+   								render:function(el, editor, data) { el.innerHTML = render }
+   							});
+   						}
+   						if (Object.keys(hints).includes(token_type)) {
+   							editor.showHint({
+   								hint: function() {
+   									return {
+   										from: editor.getDoc().getCursor(),
+   										to: editor.getDoc().getCursor(),
+   										list: list
+   									}
+   								}
+   							});
+   						}
+       				}
+       				return CodeMirror.Pass;
+            	}
             }
 		});
 
 		/*
+		// functions to remember: cm.getTokenTypeAt(pos)
 		this.codemirror.on("cursorActivity", function() {
 			let editor = this_ref.codemirror;
 

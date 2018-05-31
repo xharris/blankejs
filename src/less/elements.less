@@ -19,6 +19,64 @@
 	.CodeMirror-selection-highlight-scrollbar {
 		background-color: rgba(76,175,80,1);
 	}
+
+	.cm-blanke-state, .cm-blanke-entity {
+		color: #C3E88D; /* lime green, same as cm-string. use something like #4fc3f7 when resolved */
+	}
+}
+.CodeMirror-hints {
+	position: absolute;
+	z-index: 10;
+	overflow: hidden;
+	list-style: none;
+
+	margin: 0;
+	padding: 2px;
+
+	-webkit-box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+	-moz-box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+	box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+	border-radius: 2px;
+	border: 1px solid black;
+
+	background: rgba(0,0,0,0.6);
+	font-size: 90%;
+	font-family: monospace;
+
+	max-height: 20em;
+	overflow-y: auto;
+
+	.CodeMirror-hint {
+		margin: 0;
+		padding: 0 4px;
+		border-radius: 2px;
+		/*white-space: pre;*/
+		color: white;
+		cursor: pointer;
+
+		.arg-info, .prop-info {
+			max-height: 0;
+			overflow: hidden;
+			margin: 0px;
+			text-indent: 20px;
+			color: #C5E1A5;
+				
+				transition: all ease-in-out 0.2s;
+    	}
+	}
+
+	.CodeMirror-hint-active {
+		background: #233e2e; /* #558b2f; */
+		color: white;
+
+		.arg-info, .prop-info {
+			max-height: 300px;
+			overflow: hidden;
+			margin: 0px;
+			text-indent: 20px;
+			color: #e6ee9c;
+		}
+	}
 }
 
 .content[data-type="SceneEditor"] {

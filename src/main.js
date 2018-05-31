@@ -415,6 +415,6 @@ nwWIN.on('loaded', function() {
 	});
 
 	//app.runServer();
-	//app.openProject('projects/penguin_test');
-	//app.hideWelcomeScreen();
+	app.openProject('projects/boredom');
+	app.hideWelcomeScreen();
 });
