@@ -1,3 +1,4 @@
+var earcut = require('./includes/earcut.js');
 var global_objects = [];
 
 class SceneEditor extends Editor {
@@ -21,6 +22,8 @@ class SceneEditor extends Editor {
 		this.layers = [];
 		this.objects = [];			// all objects placed on the canvas
 		this.images = [];			// placeable images in project folders {path, snap[x,y], pixi_images{}}
+
+		this.placing_object = false;
 
 		this.can_drag = false;
 		this.dragging = false;
@@ -199,7 +202,7 @@ class SceneEditor extends Editor {
 				else {
 					this_ref.curr_object.char = e.target.value;
 					this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-						obj.text = this_ref.curr_object.char;
+						obj.label.text = this_ref.curr_object.char;
 					});
 					this_ref.updateGlobalObjList();
 				}
@@ -397,6 +400,14 @@ class SceneEditor extends Editor {
 			if (keyCode == 17) {
 				this_ref.snap_on = true;
 			}
+
+			// ENTER
+			if (keyCode == 13) {
+				if (this_ref.obj_type == "object" && this_ref.placing_object) {
+					this_ref.placeObject(this_ref.placing_object.points.slice());
+					this_ref.clearPlacingObject();
+				}
+			}
 		});
 		this.container.getContent().addEventListener('mouseenter', function(e){
 			this_ref.can_drag = true;
@@ -404,43 +415,49 @@ class SceneEditor extends Editor {
 		this.container.getContent().addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
-		// 
-		document.addEventListener('mousedown', function(e){
-			let x = this_ref.pixi.renderer.plugins.interaction.mouse.global.x;
-			let y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y;
+		
+		//this.app.getElement('#workspace-window').addEventListener('mousedown', function(e){
+		this.pixi.stage.on('pointerdown',function(e){
+			
+			let x = e.data.global.x;
+			let y = e.data.global.y;
+			let btn = e.data.originalEvent.button;
+			let alt = e.data.originalEvent.altKey; 
+			
+			/*
+			let x = this_ref.pixi.renderer.plugin
+			s.interaction.mouse.global.x - this_ref.camera[0];
+			let y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y - this_ref.camera[1];
 			let btn = e.button;
 			let alt = e.altKey; // e.originalEvent.altKey;
+			*/
+
+			if (x < 0) x -= this_ref.curr_layer.snap[0];
+			if (y < 0) y -= this_ref.curr_layer.snap[1];
 
 			// dragging canvas
 			if (((btn == 1) || (btn == 0 && alt)) && !this_ref.dragging) {
 				this_ref.can_drag = true;
 				dragStart();
 			}
-		});
-
-		this.pixi.stage.pointerdown = function(e){
-			let x = e.data.global.x;
-			let y = e.data.global.y;
-			let btn = e.data.originalEvent.button;
-			let alt = e.data.originalEvent.altKey; 
 
 			if (!alt) {
 				// placing object
 				if (btn == 0) {
-					if(this_ref.obj_type == 'object') this_ref.placeObject(x - this_ref.camera[0], y - this_ref.camera[1]);
-					if(this_ref.obj_type == 'image') this_ref.placeImage(x - this_ref.camera[0], y - this_ref.camera[1]);
+					if(this_ref.obj_type == 'object') 
+						this_ref.placeObjectPoint(x - this_ref.camera[0], y - this_ref.camera[1]);
+					
+					if(this_ref.obj_type == 'image')
+						this_ref.placeImage(x, y);
 				}
 
 				// removing object
 				if (btn == 2) {
 					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
-			        	let x = e.data.global.x;
-			        	let y = e.data.global.y;
-			        	x -= x % this_ref.curr_layer.snap[0];
-			        	y -= y % this_ref.curr_layer.snap[1];
+			        	let place_x = x - (x % this_ref.curr_layer.snap[0]);
+			        	let place_y = y - (y % this_ref.curr_layer.snap[1]);
+			        	let text_key = Math.floor(place_x).toString()+','+Math.floor(place_y).toString()+'.'+this_ref.curr_layer.uuid;
 
-			        	let text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+this_ref.curr_layer.uuid;
-		
 						if (this_ref.curr_image.pixi_images[text_key]) {
 							delete this_ref.curr_image.pixi_images[text_key];
 							this_ref.redrawTiles();
@@ -448,11 +465,15 @@ class SceneEditor extends Editor {
 							this_ref.export();
 						}
 					}
+
+					if (this_ref.obj_type == 'object') {
+						this_ref.removeObjectPoint();
+					}
 				}
 
 			}
 
-		};
+		});
 
 		document.addEventListener('mouseup', function(e) {
 			if (e.button == 1 || (e.button == 0 && this_ref.dragging)) {
@@ -463,6 +484,7 @@ class SceneEditor extends Editor {
 				this_ref.export();
 			}
 		});
+
 		this.pixi.stage.pointermove = function(e) {
 			if (this_ref.dragging) {
 				this_ref.camera = [
@@ -508,6 +530,9 @@ class SceneEditor extends Editor {
 		this.setOnClick(function(self){
 			(new MapEditor(app)).load(self.file);
 		}, this);	
+
+		this.obj_type = 'object';
+		this.refreshObjectType();
 	}
 
 	onMenuClick (e) {
@@ -738,31 +763,178 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	placeObject (x, y, from_load_snapped) {
+	// remove current object type placed on canvas
+	removeObject (x, y, obj_ref, layer_ref) {
+		if (obj_ref && layer_ref) {
+	    	let place_x = x - (x % (layer_ref.snap[0] / 2));
+	    	let place_y = y - (y % (layer_ref.snap[1] / 2));
+	    	let text_key = Math.floor(place_x).toString()+','+Math.floor(place_y).toString()+'.'+obj_ref.uuid;
+
+			if (obj_ref.pixi_texts[text_key]) {
+				obj_ref.pixi_texts[text_key].label.destroy();
+				obj_ref.pixi_texts[text_key].destroy();
+				delete obj_ref.pixi_texts[text_key];
+
+				this_ref.export();
+			}
+		}
+	}
+
+	// when user presses enter to finish object
+	// also used when loading a file's objects
+	placeObject (points) {
+		if (points.length > 2) {
+			// make sure points don't form a straight line
+			let slope_changes = 0;
+			let slope = null;
+			for (let p = 2; p < points.length; p+=2) {
+				let x1 = points[p-2], y1 = points[p-1];
+				let x2 = points[p], y2 = points[p+1];
+
+				let new_slope = (y2 - y1) / (x2 - x1);
+
+				if (new_slope != slope) {
+					if (slope !== null)
+						slope_changes++;
+					slope = new_slope;
+				}
+			}
+			if (slope_changes == 0) return; // REJECTED!!
+		}
+
+		let curr_object = this.curr_object;
+		let pixi_poly = new PIXI.Graphics();
+
+		// add polygon points
+		pixi_poly.beginFill(parseInt(curr_object.color.replace('#',"0x"),16), .5);
+		if (points.length == 2) {
+			pixi_poly.drawRect(
+				points[0]-this.curr_layer.snap[0]/2,
+				points[1]-this.curr_layer.snap[1]/2,
+				points[0]+this.curr_layer.snap[0]/2,
+				points[1]+this.curr_layer.snap[1]/2
+			);
+		} else {
+			for (let p = 0; p < points.length; p+=2) {
+				if (p == 0)
+					pixi_poly.moveTo(points[p], points[p+1]);
+				else
+					pixi_poly.lineTo(points[p], points[p+1]);
+			}
+		}
+		pixi_poly.endFill();
+
+		this.curr_layer.container.addChild(pixi_poly);
+
+		if (!curr_object.pixi_texts[this.curr_layer.uuid])
+			curr_object.pixi_texts[this.curr_layer.uuid] = [];
+		curr_object.pixi_texts[this.curr_layer.uuid].push({
+			poly: pixi_poly,
+			points: points
+		});
+	}
+
+	clearPlacingObject () {
+		if (!this.placing_object) return;
+
+		this.placing_object.graphic.destroy();
+		for (let g_dot of this.placing_object.graphic_dots) {
+			g_dot.destroy();
+		}
+		this.placing_object = null;
+	}
+
+	removeObjectPoint () {
+		if (this.placing_object) {
+			// remove a point
+			this.placing_object.points.pop();
+			this.placing_object.points.pop();
+
+			this.redrawPlacingObject();
+
+			if (this.placing_object.points.length < 2) 
+				this.clearPlacingObject();
+			
+		}
+	}
+
+	redrawPlacingObject () {
+		// redraw polygon
+		this.placing_object.graphic.clear();
+		this.placing_object.graphic.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .5);
+		this.placing_object.graphic_dots.map(obj => obj.destroy());
+		this.placing_object.graphic_dots = [];
+
+		let vertices = this.placing_object.points;//earcut(this.placing_object.points, null, 2);
+
+		let avgx = 0;
+		let avgy = 0;
+		for (let p = 0; p < vertices.length; p+=2) {
+			let ptx = vertices[p];
+			let pty = vertices[p+1];
+			avgx += ptx;
+			avgy += pty;
+
+			if (p == 0)
+				this.placing_object.graphic.moveTo(ptx, pty);
+			else
+				this.placing_object.graphic.lineTo(ptx, pty);
+
+			// add dot to show point
+			let new_graphic = new PIXI.Graphics();
+			new_graphic.beginFill(this.curr_object.color, .75);
+			new_graphic.drawRect(ptx-2,pty-2,4,4);
+			new_graphic.endFill();
+			this.curr_layer.container.addChild(new_graphic);
+			this.placing_object.graphic_dots.push(new_graphic);
+		}	
+		if (vertices.length > 2) {
+			avgx /= (vertices.length)/2;
+			avgy /= (vertices.length)/2;	
+		}
+		this.placing_object.graphic.endFill();
+
+		this.curr_layer.container.addChild(this.placing_object.graphic);
+	}
+
+	placeObjectPoint (x, y) {
 		var this_ref = this;
 		var curr_object = this.curr_object;
 
 		if (curr_object && this.curr_layer) {
+			// place a vertex
+			if (!this.placing_object) {
+				// first vertex
+				this.placing_object = {
+					graphic: new PIXI.Graphics(),
+					graphic_dots: [],	// add later
+					points: []
+				}
+			}
+
+			// calculate snap
+			let snapx = this.curr_layer.snap[0] / 2;
+			let snapy = this.curr_layer.snap[1] / 2;
+			if (x < 0) x -= snapx;
+			if (y < 0) y -= snapy;
+			if (this.snap_on) {
+				x -= x % snapx;
+				y -= y % snapy;
+			}
+
+			// add to main shape
+			this.placing_object.points.push(x, y);
+
+			this.redrawPlacingObject();
+
+			/*
 			var new_graph = new PIXI.Graphics();
 			new_graph.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .5);
 
-			let snapx = this.curr_layer.snap[0] / 2;
-			let snapy = this.curr_layer.snap[1] / 2;
-
-			new_graph.snapped = false;
-			if (from_load_snapped == null) {
-				if (x < 0) x -= snapx;
-				if (y < 0) y -= snapy;
-			}
-			if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
-				x -= x % snapx;
-				y -= y % snapy;
-				new_graph.snapped = true;
-			}
 
 			let radius = 16;
-
 			new_graph.drawCircle(x, y, radius);
+
 			new_graph.place_x = x;
 			new_graph.place_y = y;
 			new_graph.label = new PIXI.Text(curr_object.char,{
@@ -790,11 +962,15 @@ class SceneEditor extends Editor {
 			new_graph.layer_uuid = this.curr_layer.uuid;
 
 			new_graph.interactive = true;
+			new_graph.buttonMode = true;
+
 			new_graph.on('rightdown', function(e){
-				if (this_ref.obj_type == 'object' && e.target.layer_uuid === this_ref.curr_layer.uuid && this_ref.curr_object.pixi_texts[e.target.text_key]) {
-					this_ref.curr_object.pixi_texts[e.target.text_key].label.destroy();
-					this_ref.curr_object.pixi_texts[e.target.text_key].destroy();
-					this_ref.curr_object.pixi_texts[e.target.text_key] = null;
+				if (this_ref.curr_layer.uuid == e.target.layer_uuid) {
+					let text_key = e.target.text_key;
+
+					this_ref.curr_object.pixi_texts[text_key].label.destroy();
+					this_ref.curr_object.pixi_texts[text_key].destroy();
+					delete this_ref.curr_object.pixi_texts[text_key];
 
 					this_ref.export();
 				}
@@ -803,6 +979,7 @@ class SceneEditor extends Editor {
 			curr_object.pixi_texts[text_key] = new_graph;
 			this.curr_layer.container.addChild(new_graph);
 			this.curr_layer.container.addChild(new_graph.label);
+			*/
 		}
 	}
 
@@ -923,6 +1100,7 @@ class SceneEditor extends Editor {
 
 		info.pixi_texts = {};
 		this.objects.push(info);
+		this.refreshObjectList();
 		this.setObject(info.name);
 	}
 

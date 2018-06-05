@@ -40,10 +40,10 @@
 	border: 1px solid black;
 
 	background: rgba(0,0,0,0.6);
-	font-size: 90%;
+	/* font-size: 90%; */
 	font-family: monospace;
 
-	max-height: 20em;
+	max-height: 8em;
 	overflow-y: auto;
 
 	.CodeMirror-hint {
@@ -55,13 +55,13 @@
 		cursor: pointer;
 
 		.arg-info, .prop-info {
-			max-height: 0;
+			max-height: 0px;
 			overflow: hidden;
 			margin: 0px;
-			text-indent: 20px;
+			padding-left: 20px;
 			color: #C5E1A5;
 				
-				transition: all ease-in-out 0.2s;
+			transition: all ease-in-out 0.1s;
     	}
 	}
 
@@ -73,7 +73,7 @@
 			max-height: 300px;
 			overflow: hidden;
 			margin: 0px;
-			text-indent: 20px;
+			padding-left: 20px;
 			color: #e6ee9c;
 		}
 	}
@@ -94,6 +94,7 @@
 	    background-color: rgba(207,216,220 ,0.25);
 	    transition: all ease-in-out 0.2s;
 	    margin-top: 38px;
+	    z-index: 10;
 
 	    &:hover {
 	    	width: 150px;  	
