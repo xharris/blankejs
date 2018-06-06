@@ -31,7 +31,7 @@ var app = {
 	createElement: function(el_type, el_class) {
 		var ret_el = document.createElement(el_type);
 		if (Array.isArray(el_class)) ret_el.classList.add(...el_class);
-		else ret_el.classList.add(el_class);
+		else if (el_class != undefined) ret_el.classList.add(el_class);
 		return ret_el;
 	},
 
@@ -61,6 +61,10 @@ var app = {
 
 	minimize: function() {
 		nwWIN.minimize();
+	},
+
+	getRelativePath: function(path) {
+		return nwPATH.relative(app.project_path,path);
 	},
 
 	isProjectOpen: function() {
@@ -191,7 +195,7 @@ var app = {
 	loadAppData: function(callback) {
 		var app_data_folder = env.APPDATA || (platform == 'darwin' ? env.HOME + 'Library/Preferences' : '/var/local');
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
-		console.log('loading settings: '+app_data_path);
+		
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
 			if (!err) {
 				app.settings = JSON.parse(data);
@@ -229,6 +233,10 @@ var app = {
 	hideWelcomeScreen: function() {
 		app.getElement("#welcome").classList.add("hidden");
 		app.getElement("#workspace-window").classList.add("active");
+	},
+
+	addAsset: function(res_type, path) {
+		nwFS2.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
 	}
 }
 

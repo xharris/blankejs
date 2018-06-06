@@ -24,12 +24,14 @@ class SceneEditor extends Editor {
 		this.images = [];			// placeable images in project folders {path, snap[x,y], pixi_images{}}
 
 		this.placing_object = false;
+		this.dot_preview = null;
 
 		this.can_drag = false;
 		this.dragging = false;
 		this.mouse_start = [0,0];
 		this.camera_start = [0,0];
 		this.camera = [0,0];
+		this.mouse = [0,0];
 
 		this.pixi = new PIXI.Application(800, 600, {
 			backgroundColor: 0xFFFFFF,
@@ -232,12 +234,8 @@ class SceneEditor extends Editor {
 			if (this_ref.curr_object) {
 				this_ref.curr_object.color = e.target.value;
 				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-					let x = obj.x, y = obj.y;
-
-					obj.clear();
-					obj.beginFill(parseInt(this_ref.curr_object.color.replace('#',"0x"),16), .5);
-					obj.drawCircle(obj.place_x, obj.place_y, obj.radius);
-					obj.label.style.fill = this_ref.curr_object.color;
+					obj.poly.destroy();
+					this_ref.placeObject(obj.points);
 				});
 				this_ref.export();
 				this_ref.updateGlobalObjList();
@@ -486,6 +484,9 @@ class SceneEditor extends Editor {
 		});
 
 		this.pixi.stage.pointermove = function(e) {
+			this_ref.mouse[0] = e.data.global.x;
+			this_ref.mouse[1] = e.data.global.y;
+
 			if (this_ref.dragging) {
 				this_ref.camera = [
 					this_ref.camera_start[0] + (e.data.global.x - this_ref.mouse_start.x) ,
@@ -497,6 +498,9 @@ class SceneEditor extends Editor {
 
 				this_ref.refreshCamera();
 			}
+
+			this_ref.drawDotPreview();
+
 		}
 		// moving camera with arrow keys
 		document.addEventListener('keydown', function(e){
@@ -533,6 +537,12 @@ class SceneEditor extends Editor {
 
 		this.obj_type = 'object';
 		this.refreshObjectType();
+
+		document.addEventListener('fileChange', function(e){
+			if (e.detail.type == 'change') {
+				this_ref.refreshImageList();
+			}
+		});
 	}
 
 	onMenuClick (e) {
@@ -684,11 +694,11 @@ class SceneEditor extends Editor {
 
 	// refreshes object combo box 
 	refreshObjectList (obj_type='image') {
-		app.clearElement(this.el_sel_object);
+		app.clearElement(this.el_sel_letter);
 		var placeholder = app.createElement("option");
 		placeholder.selected = true;
 		placeholder.disabled = true;
-		this.el_sel_object.appendChild(placeholder);
+		this.el_sel_letter.appendChild(placeholder);
 
 		for (var o = 0; o < this.objects.length; o++) {
 			var new_option = app.createElement("option");
@@ -704,10 +714,12 @@ class SceneEditor extends Editor {
 		app.removeSearchGroup('scene_image');
 		nwKLAW(nwPATH.join(app.project_path,'assets'))
 			.on('data', function(item){
-				var img_path = nwPATH.relative(app.project_path,item.path).replace(/assets[/\\]/,'');
-				app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
-					this_ref.setImage(item.path);
-				}});
+				if (item.stats.isFile()) {
+					var img_path = nwPATH.relative(app.project_path,item.path).replace(/assets[/\\]/,'');
+					app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
+						this_ref.setImage(item.path);
+					}});
+				}
 			});
 	}
 
@@ -783,6 +795,8 @@ class SceneEditor extends Editor {
 	// when user presses enter to finish object
 	// also used when loading a file's objects
 	placeObject (points) {
+		let this_ref = this;
+
 		if (points.length > 2) {
 			// make sure points don't form a straight line
 			let slope_changes = 0;
@@ -806,13 +820,13 @@ class SceneEditor extends Editor {
 		let pixi_poly = new PIXI.Graphics();
 
 		// add polygon points
-		pixi_poly.beginFill(parseInt(curr_object.color.replace('#',"0x"),16), .5);
+		pixi_poly.lineStyle(2, parseInt(curr_object.color.replace('#',"0x"),16), .75);
+		pixi_poly.beginFill(parseInt(curr_object.color.replace('#',"0x"),16), .25);
 		if (points.length == 2) {
 			pixi_poly.drawRect(
 				points[0]-this.curr_layer.snap[0]/2,
 				points[1]-this.curr_layer.snap[1]/2,
-				points[0]+this.curr_layer.snap[0]/2,
-				points[1]+this.curr_layer.snap[1]/2
+				this.curr_layer.snap[0],this.curr_layer.snap[1]
 			);
 		} else {
 			for (let p = 0; p < points.length; p+=2) {
@@ -821,16 +835,34 @@ class SceneEditor extends Editor {
 				else
 					pixi_poly.lineTo(points[p], points[p+1]);
 			}
+			pixi_poly.lineTo(points[0], points[1]);
 		}
 		pixi_poly.endFill();
 
+		// add remove click
+		pixi_poly.interactive = true;
+		pixi_poly.on('rightup', function(e){
+			// remove from array
+			if (this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
+				let del_uuid = e.target.uuid;
+				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj, o){
+					if (del_uuid == obj.poly.uuid) {
+						e.target.destroy();
+						this_ref.export();
+						return true;
+					}
+				});
+			}
+		});
+
+		pixi_poly.uuid = guid();
 		this.curr_layer.container.addChild(pixi_poly);
 
-		if (!curr_object.pixi_texts[this.curr_layer.uuid])
-			curr_object.pixi_texts[this.curr_layer.uuid] = [];
-		curr_object.pixi_texts[this.curr_layer.uuid].push({
+		curr_object.pixi_texts.push({
 			poly: pixi_poly,
-			points: points
+			points: points,
+			layer_uuid: this.curr_layer.uuid,
+			layer_name: this.curr_layer.name
 		});
 	}
 
@@ -882,7 +914,7 @@ class SceneEditor extends Editor {
 
 			// add dot to show point
 			let new_graphic = new PIXI.Graphics();
-			new_graphic.beginFill(this.curr_object.color, .75);
+			new_graphic.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .75);
 			new_graphic.drawRect(ptx-2,pty-2,4,4);
 			new_graphic.endFill();
 			this.curr_layer.container.addChild(new_graphic);
@@ -926,60 +958,6 @@ class SceneEditor extends Editor {
 			this.placing_object.points.push(x, y);
 
 			this.redrawPlacingObject();
-
-			/*
-			var new_graph = new PIXI.Graphics();
-			new_graph.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .5);
-
-
-			let radius = 16;
-			new_graph.drawCircle(x, y, radius);
-
-			new_graph.place_x = x;
-			new_graph.place_y = y;
-			new_graph.label = new PIXI.Text(curr_object.char,{
-				fontFamily: 'ProggySquare', 
-				fill: curr_object.color,
-				align: 'center',
-				fontSize: radius*1.5
-			});
-			new_graph.radius = radius;
-			new_graph.label.x = x - (new_graph.label.width/2);
-			new_graph.label.y = y - (new_graph.label.height/2);
-
-			var text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+this.curr_layer.uuid;
-			if (curr_object.pixi_texts[text_key]) curr_object.pixi_texts[text_key].destroy();
-			
-			new_graph.place_x = x;
-			new_graph.place_y = y;
-
-			new_graph.grid_x = Math.floor(x / snapx);
-			new_graph.grid_y = Math.floor(y / snapy);
-
-			new_graph.uuid = curr_object.uuid;
-			new_graph.text_key = text_key;
-			new_graph.layer_name = this.curr_layer.name;
-			new_graph.layer_uuid = this.curr_layer.uuid;
-
-			new_graph.interactive = true;
-			new_graph.buttonMode = true;
-
-			new_graph.on('rightdown', function(e){
-				if (this_ref.curr_layer.uuid == e.target.layer_uuid) {
-					let text_key = e.target.text_key;
-
-					this_ref.curr_object.pixi_texts[text_key].label.destroy();
-					this_ref.curr_object.pixi_texts[text_key].destroy();
-					delete this_ref.curr_object.pixi_texts[text_key];
-
-					this_ref.export();
-				}
-			});
-			
-			curr_object.pixi_texts[text_key] = new_graph;
-			this.curr_layer.container.addChild(new_graph);
-			this.curr_layer.container.addChild(new_graph.label);
-			*/
 		}
 	}
 
@@ -1020,6 +998,8 @@ class SceneEditor extends Editor {
 			if (!curr_image.pixi_tilemap[this.curr_layer.uuid]) {
 				curr_image.pixi_tilemap[this.curr_layer.uuid] = new PIXI.tilemap.CompositeRectTileLayer(0, curr_image.pixi_resource.texture);
 				this.curr_layer.container.addChild(curr_image.pixi_tilemap[this.curr_layer.uuid]);
+
+				this.curr_layer.container.setChildIndex(curr_image.pixi_tilemap[this.curr_layer.uuid], 0)
 			}
 			curr_image.pixi_tilemap[this.curr_layer.uuid].addFrame(new_tile_texture,x,y);
 			new_tile.x = x;
@@ -1057,14 +1037,15 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	// return true if object should be removed
 	iterObject (name, func) {
 		for (var l = 0; l < this.objects.length; l++) {
 			if (this.objects[l].name === name) {
-				var new_array = {};
+				var new_array = [];
 				for (var t in this.objects[l].pixi_texts) {
 					if (this.objects[l].pixi_texts[t]) {
-						func(this.objects[l].pixi_texts[t], t);
-						new_array[t] = this.objects[l].pixi_texts[t];
+						let remove_obj = func(this.objects[l].pixi_texts[t], t);
+						if (!remove_obj) new_array.push(this.objects[l].pixi_texts[t]);
 					}
 				}
 				this.objects[l].pixi_texts = new_array;
@@ -1073,17 +1054,20 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	iterObjectInLayer (layer_uuid, func) {
+	// return true if object should be removed
+	iterObjectInLayer (layer_uuid, name, func) {
 		for (var l = 0; l < this.objects.length; l++) {
-			var new_array = {};
-			for (var t in this.objects[l].pixi_texts) {
-				if (this.objects[l].pixi_texts[t] && this.objects[l].pixi_texts[t].layer_uuid == layer_uuid) {
-					func(this.objects[l].pixi_texts[t], t);
-					new_array[t] = this.objects[l].pixi_texts[t];
+			var new_array = [];
+			if (this.objects[l].name === name) {
+				for (var t in this.objects[l].pixi_texts) {
+					if (this.objects[l].pixi_texts[t].layer_uuid == layer_uuid) {
+						let remove_obj = func(this.objects[l].pixi_texts[t], t);
+						if (!remove_obj) new_array.push(this.objects[l].pixi_texts[t]);
+					}
 				}
+				this.objects[l].pixi_texts = new_array;
+				return;
 			}
-			this.objects[l].pixi_texts = new_array;
-			return;
 		}		
 	}
 
@@ -1098,10 +1082,39 @@ class SceneEditor extends Editor {
 			uuid: guid()
 		}
 
-		info.pixi_texts = {};
+		info.pixi_texts = [];
 		this.objects.push(info);
 		this.refreshObjectList();
 		this.setObject(info.name);
+
+		this.drawDotPreview();
+	}
+
+	drawDotPreview () {
+		if (!this.dot_preview) {
+			this.dot_preview = new PIXI.Graphics();
+			this.map_container.addChild(this.dot_preview);	
+		}
+
+		if (this.obj_type == "object" && this.curr_object) {
+			let snapx = this.curr_layer.snap[0] / 2;
+			let snapy = this.curr_layer.snap[1] / 2;
+			let x = this.mouse[0]-this.camera[0];
+			let y = this.mouse[1]-this.camera[1];
+			if (x < 0) x -= snapx;
+			if (y < 0) y -= snapy;
+			if (this.snap_on) {
+				x -= x % snapx;
+				y -= y % snapy;
+			}
+
+			this.dot_preview.clear();
+			this.dot_preview.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .75);
+			this.dot_preview.drawRect(x-2,y-2,4,4);
+			this.dot_preview.endFill();
+		} else {
+			this.dot_preview.clear();
+		}
 	}
 
 	updateGlobalObjList() {
@@ -1145,8 +1158,8 @@ class SceneEditor extends Editor {
 					} 
 
 					// update image info text
-					this_ref.el_image_info.innerHTML = this_ref.getImageRelPath(img.path) + "<br/>" + img.pixi_resource.texture.width + " x " +  img.pixi_resource.texture.height;
-					this_ref.el_image_info.title = this_ref.getImageRelPath(img.path);
+					this_ref.el_image_info.innerHTML = app.getRelativePath(img.path) + "<br/>" + img.pixi_resource.texture.width + " x " +  img.pixi_resource.texture.height;
+					this_ref.el_image_info.title = app.getRelativePath(img.path);
 
 					this_ref.el_image_preview.onload = function(){
 						this_ref.refreshImageGrid();		
@@ -1176,10 +1189,6 @@ class SceneEditor extends Editor {
 			this.export();
 			this.setImage(path);
 		}
-	}
-
-	getImageRelPath (path) {
-		return nwPATH.relative(app.project_path,path);
 	}
 
 	addLayer (info) {
@@ -1233,19 +1242,6 @@ class SceneEditor extends Editor {
 				this.addLayer(data.layers[l]);
 			}
 
-			// objects
-			for (var o = 0; o < data.objects.length; o++) {
-				var obj = data.objects[o];
-				this.addObject(obj);
-
-				for (var layer_name in obj.coords) {
-					this.setLayer(layer_name);
-					for (var c = 0; c < obj.coords[layer_name].length; c++) {
-						this.placeObject(obj.coords[layer_name][c][0], obj.coords[layer_name][c][1], obj.coords[layer_name][c][2]);
-					}
-				}
-			}
-
 			// images
 			let this_ref = this;
 			data.images.forEach(function(img, i){
@@ -1271,6 +1267,20 @@ class SceneEditor extends Editor {
 
 				});				
 			});
+
+
+			// objects
+			for (var o = 0; o < data.objects.length; o++) {
+				var obj = data.objects[o];
+				this.addObject(obj);
+
+				for (var layer_name in obj.polygons) {
+					this.setLayer(layer_name);
+					for (var c = 0; c < obj.polygons[layer_name].length; c++) {
+						this.placeObject(obj.polygons[layer_name][c]);
+					}
+				}
+			}
 
 			if (data.objects.length > 0) 
 				this.updateGlobalObjList();
@@ -1308,18 +1318,14 @@ class SceneEditor extends Editor {
 				char: obj.char,
 				color: obj.color,
 				uuid: obj.uuid,
-				coords: {}
+				polygons: {}
 			}
 			for (let t in obj.pixi_texts) { 
 				if (obj.pixi_texts[t] && layer_names[obj.pixi_texts[t].layer_name]) {
-					if (!exp_obj.coords[obj.pixi_texts[t].layer_name])
-						exp_obj.coords[obj.pixi_texts[t].layer_name] = [];
+					if (!exp_obj.polygons[obj.pixi_texts[t].layer_name])
+						exp_obj.polygons[obj.pixi_texts[t].layer_name] = [];
 
-					let new_obj = [obj.pixi_texts[t].place_x, obj.pixi_texts[t].place_y];
-					if (obj.pixi_texts[t].shape == 'circle') 
-						new_obj.push({'shape':'circle','radius':obj.pixi_texts[t].radius});
-					
-					exp_obj.coords[obj.pixi_texts[t].layer_name].push(new_obj);
+					exp_obj.polygons[obj.pixi_texts[t].layer_name].push(obj.pixi_texts[t].points.slice());
 				}
 			}
 			export_data.objects.push(exp_obj);
@@ -1353,14 +1359,13 @@ class SceneEditor extends Editor {
 			export_data.images.push(exp_img);
 		}
 
-
 		nwFS.writeFileSync(this.file, JSON.stringify(export_data));
 	}
 }
 
 document.addEventListener('fileChange', function(e){
 	if (e.detail.type == 'change') {
-		app.removeSearchGroup("Map");
+		app.removeSearchGroup("Scene");
 		addScenes(app.project_path);
 	}
 });

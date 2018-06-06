@@ -42,4 +42,16 @@ document.addEventListener("openProject", function(e){
 		},
 		tags: ['view']
 	});
+	app.addSearchKey({
+		key: 'Add images',
+		onSelect: function() {
+			blanke.chooseFile('file', function(files){
+				files = files.split(';');
+				for (var f of files) {
+					app.addAsset('image',f);
+				}
+			}, true, true);
+		},
+		tags: ['view']
+	});
 });
