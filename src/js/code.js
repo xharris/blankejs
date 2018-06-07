@@ -210,11 +210,12 @@ class Code extends Editor {
             		this_ref.setFontSize(font_size);
             	},
             	"Ctrl-F": "findPersistent",
-            	"Ctrl-Space": "autocomplete",
+            	"Ctrl-Space": "autocomplete"/*,
             	"'.'": function(editor) {
        				let cursor = editor.getCursor();
        				if (cursor.ch > 2) {
        					let token_type = editor.getTokenTypeAt({line:cursor.line, ch:cursor.ch-1});
+       					console.log(cursor)
        					
        					let hint_list = hints[token_type];
    						let list = [];
@@ -228,7 +229,8 @@ class Code extends Editor {
    								text = hint_opts.fn+"(";
 	   							if (hint_opts.vars) {
 		   							for (var arg in hint_opts.vars) {
-		   								arg_info += arg + " : " + hint_opts.vars[arg] + "<br/>";
+		   								if (hint_opts.vars[arg] != "")
+			   								arg_info += arg + " : " + hint_opts.vars[arg] + "<br/>";
 		   							}
 		   						}
 		   						render = hint_opts.fn + "(" + Object.keys(hint_opts.vars || {}) + ")"+
@@ -256,26 +258,98 @@ class Code extends Editor {
    						}
        				}
        				return CodeMirror.Pass;
-            	}
+            	}*/
             }
 		});
 
-		/*
-		// functions to remember: cm.getTokenTypeAt(pos)
-		this.codemirror.on("cursorActivity", function() {
+		this.autocompleting = false;
+		this.last_word = '';
+		this.codemirror.on("keyup", function(){
 			let editor = this_ref.codemirror;
+			let cursor = editor.getCursor();
+			
+			let word_pos = editor.findWordAt(cursor);
+			let word = editor.getRange(word_pos.anchor, word_pos.head);
+			let before_word_pos = {line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
+			let before_word = editor.getRange(before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
 
-			editor.showHint({
-				hint: function() {
-					return {
-				  	    from: editor.getDoc().getCursor(),
-				  	  	to: editor.getDoc().getCursor(),
-				        list: ["add new State","or this"]
+			let token_pos = {line: cursor.line, ch: cursor.ch-1};
+			if (before_word == '.' && word != '.') {
+				token_pos.ch = before_word_pos.ch - 1;
+			}
+       		let token_type = editor.getTokenTypeAt(token_pos);
+
+			if ((word == '.' || before_word == '.') && !this_ref.autocompleting) {
+				this_ref.autocompleting = true;
+			}
+
+			if (this_ref.autocompleting && this_ref.last_word != word) {
+				this_ref.last_word = word;
+				function containsTyped(str) {
+					if (str == word) return false;
+					if (word == '.') return true;
+					else return str.startsWith(word);
+				}
+
+				let hint_list = hints[token_type];
+				let list = [];
+				let hint_types = {};
+				for (var o in hint_list) {
+					let hint_opts = hint_list[o];
+					let arg_info = "";
+
+					let text, render, add = false;
+
+					if (hint_opts.fn && containsTyped(hint_opts.fn)) {
+						text = hint_opts.fn;
+						hint_types[text] = 'function';
+						if (hint_opts.vars) {
+							for (var arg in hint_opts.vars) {
+								if (hint_opts.vars[arg] != "")
+   								arg_info += arg + " : " + hint_opts.vars[arg] + "<br/>";
+							}
+						}
+						render = hint_opts.fn + "(" + Object.keys(hint_opts.vars || {}) + ")"+
+									"<p class='arg-info'>"+arg_info+"</p>";
+						add = true;
+					}
+					if (hint_opts.prop && containsTyped(hint_opts.prop)) {
+						text = hint_opts.prop;
+						hint_types[text] = 'property';
+						render = hint_opts.prop + "<p class='prop-info'>"+(hint_opts.info || '')+"</p>";
+						add = true;
+					}
+					if (add) {
+						list.push({
+							text:text,
+							render:function(el, editor, data) { el.innerHTML = render }
+						});
 					}
 				}
-			})
-		});*/
+				if (Object.keys(hints).includes(token_type)) {
+					editor.showHint({
+						hint: function(cm) {
+							let completions = {
+								from: editor.getDoc().getCursor(),
+								to: editor.getDoc().getCursor(),
+								list: list
+							};
 
+							CodeMirror.on(completions, 'pick', function(completion){
+								let comp_word = editor.findWordAt(editor.getCursor());
+								if (hint_types[completion.text] == 'property')
+									editor.replaceRange(completion.text, comp_word.anchor, comp_word.head);
+								else if (hint_types[completion.text] == 'function')
+									editor.replaceRange(completion.text+'(', comp_word.anchor, comp_word.head);
+							});
+
+							return completions
+						},
+						completeSingle: false
+					});
+				}
+			}
+		});
 
 		this.setFontSize(font_size);
 		//this.codemirror.setSize("100%", "100%");
