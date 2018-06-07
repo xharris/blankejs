@@ -421,8 +421,4 @@ nwWIN.on('loaded', function() {
 	document.addEventListener("openProject",function(){
 		app.loadSettings();
 	});
-
-	//app.runServer();
-	app.openProject('projects/boredom');
-	app.hideWelcomeScreen();
 });

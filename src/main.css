@@ -1567,7 +1567,8 @@ body {
 #status-icons {
   display: inline-block;
   float: right;
-  margin-top: 1px;
+  margin-top: 2px;
+  padding-right: 4px;
 }
 #status-icons .server-status {
   position: relative;

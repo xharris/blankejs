@@ -3,56 +3,11 @@ var object_list = {}
 var object_src = {};
 var object_instances = {};
 
-// add timeout
-var re_objects = {
-	'state': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g,
-	'entity': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g
-}
+var autocomplete = require('./autocomplete.js');
 
-var hints = {
-	"blanke-state":[
-		{fn:"switch",
-		vars:{
-			name: "name of state to switch to"
-		}},
-		{fn:"transition"},
-		{fn:"current"}
-	],
-	"blanke-entity-instance":[
-		{prop:"sprite_angle"},
-		{prop:"sprite_xscale"},
-		{prop:"sprite_yscale"},
-		{prop:"sprite_xoffset"},
-		{prop:"sprite_yoffset"},
-		{prop:"sprite_xshear"},
-		{prop:"sprite_yshear"},
-		{prop:"sprite_color"},
-		{prop:"sprite_alpha"},
-		{prop:"sprite_speed"},
-		{prop:"sprite_frame"},
-		{prop:"sprite_width"},
-		{prop:"sprite_height"},
-
-		{prop:"direction"},
-		{prop:"friction"},
-		{prop:"gravity"},
-		{prop:"gravity_direction"},
-		{prop:"hspeed"},
-		{prop:"vspeed"},
-		{prop:"speed"},
-		{prop:"xprevious"},
-		{prop:"yprevious"},
-		{prop:"xstart"},
-		{prop:"ystart"},
-
-		{fn:"destroy"},
-
-		{fn:"hadCollision",vars:{self_name:'', other_name:''}},
-		{fn:"getCollisions",vars:{shape_name:''}},
-		{fn:"debugSprite",vars:{sprite_index:''}},
-		{fn:"debugCollision"}
-	]
-}
+var re_objects = autocomplete.class_regex;
+var hints = autocomplete.completions;
+var re_instance = autocomplete.instance_regex;
 
 function refreshObjectList (filename, content) {
 	var ret_match;
@@ -96,7 +51,7 @@ function refreshObjectList (filename, content) {
 			}
 
 			// get instances made with those classes
-			var re_instance = new RegExp("\\b(\\w+)\\s*=\\s*"+obj_name+"\\(\\).*","g");
+			var regex_instance = new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags);
 			var ret_instance_match;
 
 			if(!object_instances[filename])
@@ -104,7 +59,7 @@ function refreshObjectList (filename, content) {
 			if(!object_instances[filename][category])
 				object_instances[filename][category] = [];
 			do {
-				ret_instance_match = re_instance.exec(content);
+				ret_instance_match = regex_instance.exec(content);
 				if (!ret_instance_match) continue;
 
 				if(!object_instances[filename][category].includes(ret_instance_match[1]))
@@ -210,55 +165,7 @@ class Code extends Editor {
             		this_ref.setFontSize(font_size);
             	},
             	"Ctrl-F": "findPersistent",
-            	"Ctrl-Space": "autocomplete"/*,
-            	"'.'": function(editor) {
-       				let cursor = editor.getCursor();
-       				if (cursor.ch > 2) {
-       					let token_type = editor.getTokenTypeAt({line:cursor.line, ch:cursor.ch-1});
-       					console.log(cursor)
-       					
-       					let hint_list = hints[token_type];
-   						let list = [];
-   						for (var o in hint_list) {
-	   						let hint_opts = hint_list[o];
-   							let arg_info = "";
-
-   							let text, render;
-
-   							if (hint_opts.fn) {
-   								text = hint_opts.fn+"(";
-	   							if (hint_opts.vars) {
-		   							for (var arg in hint_opts.vars) {
-		   								if (hint_opts.vars[arg] != "")
-			   								arg_info += arg + " : " + hint_opts.vars[arg] + "<br/>";
-		   							}
-		   						}
-		   						render = hint_opts.fn + "(" + Object.keys(hint_opts.vars || {}) + ")"+
-	   										"<p class='arg-info'>"+arg_info+"</p>";
-	   						}
-	   						if (hint_opts.prop) {
-	   							text = hint_opts.prop;
-	   							render = hint_opts.prop + "<p class='prop-info'>"+(hint_opts.info || '')+"</p>";
-	   						}
-   							list.push({
-   								text:text,
-   								render:function(el, editor, data) { el.innerHTML = render }
-   							});
-   						}
-   						if (Object.keys(hints).includes(token_type)) {
-   							editor.showHint({
-   								hint: function() {
-   									return {
-   										from: editor.getDoc().getCursor(),
-   										to: editor.getDoc().getCursor(),
-   										list: list
-   									}
-   								}
-   							});
-   						}
-       				}
-       				return CodeMirror.Pass;
-            	}*/
+            	"Ctrl-Space": "autocomplete"
             }
 		});
 
