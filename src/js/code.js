@@ -3,11 +3,16 @@ var object_list = {}
 var object_src = {};
 var object_instances = {};
 
-var autocomplete = require('./autocomplete.js');
+var autocomplete, re_objects, hints, re_instance;
 
-var re_objects = autocomplete.class_regex;
-var hints = autocomplete.completions;
-var re_instance = autocomplete.instance_regex;
+function reloadCompletions() {
+	delete require.cache[require.resolve('./autocomplete.js')];
+	autocomplete = require('./autocomplete.js');
+
+	re_objects = autocomplete.class_regex;
+	hints = autocomplete.completions;
+	re_instance = autocomplete.instance_regex;
+}
 
 function refreshObjectList (filename, content) {
 	var ret_match;
@@ -17,7 +22,8 @@ function refreshObjectList (filename, content) {
 		if (!object_list[category]) object_list[category] = {}
 
 		let objects = object_list[category];
-		object_instances[filename][category] = [];
+		if (object_instances[filename] && object_instances[filename][category])
+			object_instances[filename][category] = [];
 
 		for (let obj_name in objects) {
 			let occurences = obj_string.split(obj_name).length - 1;
@@ -51,20 +57,22 @@ function refreshObjectList (filename, content) {
 			}
 
 			// get instances made with those classes
-			var regex_instance = new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags);
-			var ret_instance_match;
+			if (re_instance[category]) {
+				var regex_instance = new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags);
+				var ret_instance_match;
 
-			if(!object_instances[filename])
-				object_instances[filename] = {};
-			if(!object_instances[filename][category])
-				object_instances[filename][category] = [];
-			do {
-				ret_instance_match = regex_instance.exec(content);
-				if (!ret_instance_match) continue;
+				if(!object_instances[filename])
+					object_instances[filename] = {};
+				if(!object_instances[filename][category])
+					object_instances[filename][category] = [];
+				do {
+					ret_instance_match = regex_instance.exec(content);
+					if (!ret_instance_match) continue;
 
-				if(!object_instances[filename][category].includes(ret_instance_match[1]))
-					object_instances[filename][category].push(ret_instance_match[1]);
-			} while (ret_instance_match)
+					if(!object_instances[filename][category].includes(ret_instance_match[1]))
+						object_instances[filename][category].push(ret_instance_match[1]);
+				} while (ret_instance_match)
+			}
 		}
 	} while (ret_match);
 }
@@ -117,7 +125,7 @@ class Code extends Editor {
 			      		break_bool *= !is_match;
 			      	}
 
-			      	if (object_instances[this_ref.file][category]) {
+			      	if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
 				      	for (var instance_name of object_instances[this_ref.file][category]) {
 				      		let is_match = stream.match(instance_name,true);
 				      		if (is_match) {
@@ -180,13 +188,15 @@ class Code extends Editor {
 			let before_word_pos = {line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
 			let before_word = editor.getRange(before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
 
+			let comp_activators = [':','.'];
+
 			let token_pos = {line: cursor.line, ch: cursor.ch-1};
-			if (before_word == '.' && word != '.') {
+			if (comp_activators.includes(before_word) && !comp_activators.includes(word)) {
 				token_pos.ch = before_word_pos.ch - 1;
 			}
        		let token_type = editor.getTokenTypeAt(token_pos);
 
-			if ((word == '.' || before_word == '.') && !this_ref.autocompleting) {
+			if ((comp_activators.includes(word) || comp_activators.includes(before_word)) && !this_ref.autocompleting) {
 				this_ref.autocompleting = true;
 			}
 
@@ -207,7 +217,7 @@ class Code extends Editor {
 
 					let text, render, add = false;
 
-					if (hint_opts.fn && containsTyped(hint_opts.fn)) {
+					if (hint_opts.fn && (word == ':') && containsTyped(hint_opts.fn)) {
 						text = hint_opts.fn;
 						hint_types[text] = 'function';
 						if (hint_opts.vars) {
@@ -428,6 +438,13 @@ function addScripts(folder_path) {
 }
 
 document.addEventListener("openProject", function(e){
+	
+	reloadCompletions();
+	// reload completions on file change
+	nwFS.watchFile('src/autocomplete.js', function(e){
+		reloadCompletions();
+	});
+
 	var proj_path = e.detail.path;
 	app.removeSearchGroup("Code");
 	addScripts(proj_path);

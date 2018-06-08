@@ -1,16 +1,23 @@
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
 	'state': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g,
-	'entity': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g
+	'entity': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g,
+	'blanke': 	/.*(BlankE).*/g
 }
 
 // Group 1: name of instance 
 module.exports.instance_regex = {
 	'state': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
-	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g
+	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 }
 
 module.exports.completions = {
+	"blanke-blanke":[
+		{fn:"addClassType",
+		vars:{
+			arg1:'MenuState / Player / ...', arg2:'State / Entity / etc.'
+		}}
+	],
 	"blanke-state":[
 		{fn:"switch",
 		vars:{
