@@ -7,7 +7,7 @@ BUGS:
 var nwGUI = require('nw.gui');
 var nwFS = require('fs');
 var nwFS2 = require('fs-extra');
-var nwKLAW = require('klaw');
+var nwWALK = require('walk');
 var nwPATH = require('path');
 var nwWIN = nwGUI.Window.get();
 const { spawn, execFile } = require('child_process')
@@ -237,6 +237,22 @@ var app = {
 
 	addAsset: function(res_type, path) {
 		nwFS2.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
+	},
+
+	// determine an assets type based on file extension
+	// returns: image, audio, other
+	allowed_extensions: {
+		'image':['png','jpg','jpeg'],
+		'audio':['mp3','ogg','wav'],
+		'scene':['scene']
+	},
+	findAssetType: function(path) {
+		let ext = nwPATH.extname(path).substr(1);
+		for (let a_type in app.allowed_extensions) {
+			if (app.allowed_extensions[a_type].includes(ext))
+				return a_type;
+		}
+		return 'other';
 	}
 }
 
@@ -421,4 +437,7 @@ nwWIN.on('loaded', function() {
 	document.addEventListener("openProject",function(){
 		app.loadSettings();
 	});
+
+	app.openProject('projects/boredom');
+	app.hideWelcomeScreen();
 });

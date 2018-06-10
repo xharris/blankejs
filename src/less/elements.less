@@ -651,3 +651,39 @@
 .content[data-type="ImageBrowser"] {
 
 }
+
+.content[data-type="AssetManager"] {
+	.editor-content {
+		color: rgba(238,238,238 ,1);
+   		background-color: rgba(33,33,33 ,1);
+	}
+
+	.file-list, .file-preview {
+	    width: 50%;
+	    height: 100%;
+	    margin: 0px;
+	    float: left;
+	    box-sizing: border-box;
+		padding: 5px;
+	}
+
+	.file-list {
+    	box-sizing: border-box;
+
+		.file-row {
+			padding: 1px;
+			cursor: pointer;
+			transition: all ease-in-out 0.1s;
+
+			&:hover, &.selected {
+				padding-left: 3px;
+				border-left: 3px solid @ide-green;
+				background-color: darken(@ide-green, 50%);
+			}
+		}
+	}
+
+	.file-preview {
+
+	}
+}

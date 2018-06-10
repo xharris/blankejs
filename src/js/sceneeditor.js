@@ -712,15 +712,17 @@ class SceneEditor extends Editor {
 	refreshImageList() {
 		var this_ref = this;
 		app.removeSearchGroup('scene_image');
-		nwKLAW(nwPATH.join(app.project_path,'assets'))
-			.on('data', function(item){
-				if (item.stats.isFile()) {
-					var img_path = nwPATH.relative(app.project_path,item.path).replace(/assets[/\\]/,'');
-					app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
-						this_ref.setImage(item.path);
-					}});
-				}
-			});
+		let walker = nwWALK.walk(nwPATH.join(app.project_path,'assets'));
+		walker.on('file', function(path, stat, next){
+			if (stat.isFile()) {
+				let full_path = nwPATH.join(path, stat.name);
+				var img_path = nwPATH.relative(app.project_path,full_path).replace(/assets[/\\]/,'');
+				app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
+					this_ref.setImage(nwPATH.resolve(full_path));
+				}});
+				next();
+			}
+		});
 	}
 
 	refreshImageSelectionList() {
@@ -1141,6 +1143,7 @@ class SceneEditor extends Editor {
 	}
 
 	setImage (path, onReady) {
+		console.log('using',path)
 		// set current image variable
 		var img_found = false;
 		for (var img of this.images) {

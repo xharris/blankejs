@@ -509,6 +509,7 @@
   font-family: monospace;
   max-height: 8em;
   overflow-y: auto;
+  line-height: 13px;
 }
 .CodeMirror-hints .CodeMirror-hint {
   margin: 0;
@@ -1081,6 +1082,33 @@
 .content[data-type="Console"] .log .error {
   color: #ef9a9a;
   white-space: normal;
+}
+.content[data-type="AssetManager"] .editor-content {
+  color: #eeeeee;
+  background-color: #212121;
+}
+.content[data-type="AssetManager"] .file-list,
+.content[data-type="AssetManager"] .file-preview {
+  width: 50%;
+  height: 100%;
+  margin: 0px;
+  float: left;
+  box-sizing: border-box;
+}
+.content[data-type="AssetManager"] .file-list {
+  padding: 5px;
+  box-sizing: border-box;
+}
+.content[data-type="AssetManager"] .file-list .file-row {
+  padding: 1px;
+  cursor: pointer;
+  transition: all ease-in-out 0.1s;
+}
+.content[data-type="AssetManager"] .file-list .file-row:hover,
+.content[data-type="AssetManager"] .file-list .file-row.selected {
+  padding-left: 3px;
+  border-left: 3px solid #64DD17;
+  background-color: #000000;
 }
 @font-face {
   font-family: ProggySquare;
