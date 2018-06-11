@@ -63,6 +63,8 @@ class AssetManager extends Editor {
 		let file_type = app.findAssetType(path);
 
 		app.clearElement(this.el_file_preview);
+
+		// add file preview
 		let el_preview_container = app.createElement('div','preview-container');
 		if (file_type == 'image') {
 			let el_image = app.createElement('img');
@@ -70,7 +72,23 @@ class AssetManager extends Editor {
 			el_image.src = path;
 		}
 
+		let file_ext = nwPATH.extname(path);
+
+		// folder modifier
+		let el_file_form = new BlankeForm([
+			['filename', 'text'],
+			['folder', 'text']
+		]);
+
+		//let file_ext
+		el_file_form.setValue('filename', nwPATH.basename(path));
+		el_file_form.setValue('folder', nwPATH.dirname(app.getRelativePath(path)));
+		el_file_form.onChange('folder', function(value){
+			
+		});
+
 		this.el_file_preview.appendChild(el_preview_container);
+		this.el_file_preview.appendChild(el_file_form.container);
 	}
 }
 

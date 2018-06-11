@@ -1086,6 +1086,7 @@
 .content[data-type="AssetManager"] .editor-content {
   color: #eeeeee;
   background-color: #212121;
+  overflow: hidden;
 }
 .content[data-type="AssetManager"] .file-list,
 .content[data-type="AssetManager"] .file-preview {
@@ -1094,9 +1095,10 @@
   margin: 0px;
   float: left;
   box-sizing: border-box;
+  padding: 5px;
+  overflow: auto;
 }
 .content[data-type="AssetManager"] .file-list {
-  padding: 5px;
   box-sizing: border-box;
 }
 .content[data-type="AssetManager"] .file-list .file-row {
@@ -1107,8 +1109,40 @@
 .content[data-type="AssetManager"] .file-list .file-row:hover,
 .content[data-type="AssetManager"] .file-list .file-row.selected {
   padding-left: 3px;
-  border-left: 3px solid #64DD17;
   background-color: #000000;
+}
+.content[data-type="AssetManager"] .file-list .file-row.selected {
+  border-left: 3px solid #64DD17;
+}
+.content[data-type="AssetManager"] .file-preview .preview-container {
+  padding: 5px;
+  background: url("includes/grid.png");
+  border-radius: 2px;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+.content[data-type="AssetManager"] .file-preview .form-container {
+  display: inline-block;
+}
+.content[data-type="AssetManager"] .file-preview .form-container .form-group {
+  margin-bottom: 5px;
+}
+.content[data-type="AssetManager"] .file-preview .form-container .form-label {
+  display: inline-block;
+  margin: 0px;
+  font-size: 14px;
+}
+.content[data-type="AssetManager"] .file-preview .form-container .form-text {
+  border: none;
+  outline: 1px solid #424242;
+  background-color: #212121;
+  color: #e0e0e0;
+  padding: 3px;
+  font-size: 16px;
+  transition: all ease-in-out 0.1s;
+}
+.content[data-type="AssetManager"] .file-preview .form-container .form-text:focus {
+  background-color: #424242;
 }
 @font-face {
   font-family: ProggySquare;

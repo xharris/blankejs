@@ -32,8 +32,10 @@ class SceneEditor extends Editor {
 		this.camera_start = [0,0];
 		this.camera = [0,0];
 		this.mouse = [0,0];
+		this.game_width = window.innerWidth;
+		this.game_height = window.innerHeight;
 
-		this.pixi = new PIXI.Application(800, 600, {
+		this.pixi = new PIXI.Application(this.game_width, this.game_height, {
 			backgroundColor: 0xFFFFFF,
 			antialias: false,
 			autoResize: true,
@@ -414,21 +416,12 @@ class SceneEditor extends Editor {
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
 		
-		//this.app.getElement('#workspace-window').addEventListener('mousedown', function(e){
 		this.pixi.stage.on('pointerdown',function(e){
 			
 			let x = e.data.global.x;
 			let y = e.data.global.y;
 			let btn = e.data.originalEvent.button;
 			let alt = e.data.originalEvent.altKey; 
-			
-			/*
-			let x = this_ref.pixi.renderer.plugin
-			s.interaction.mouse.global.x - this_ref.camera[0];
-			let y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y - this_ref.camera[1];
-			let btn = e.button;
-			let alt = e.altKey; // e.originalEvent.altKey;
-			*/
 
 			if (x < 0) x -= this_ref.curr_layer.snap[0];
 			if (y < 0) y -= this_ref.curr_layer.snap[1];
@@ -446,12 +439,14 @@ class SceneEditor extends Editor {
 						this_ref.placeObjectPoint(x - this_ref.camera[0], y - this_ref.camera[1]);
 					
 					if(this_ref.obj_type == 'image')
-						this_ref.placeImage(x, y);
+						this_ref.placeImage(x - this_ref.camera[0], y - this_ref.camera[1]);
 				}
 
 				// removing object
 				if (btn == 2) {
 					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
+						x -= this_ref.camera[0];
+						y -= this_ref.camera[1];
 			        	let place_x = x - (x % this_ref.curr_layer.snap[0]);
 			        	let place_y = y - (y % this_ref.curr_layer.snap[1]);
 			        	let text_key = Math.floor(place_x).toString()+','+Math.floor(place_y).toString()+'.'+this_ref.curr_layer.uuid;
@@ -543,6 +538,20 @@ class SceneEditor extends Editor {
 				this_ref.refreshImageList();
 			}
 		});
+
+		window.onresize = function (event){
+			var w = window.innerWidth;
+			var h = window.innerHeight;
+			//this part resizes the canvas but keeps ratio the same
+			this_ref.pixi.renderer.view.style.width = w + "px";
+			this_ref.pixi.renderer.view.style.height = h + "px";
+			//this part adjusts the ratio:
+			this_ref.pixi.renderer.resize(w,h);
+			this_ref.game_width = w;
+			this_ref.game_height = h;
+
+			this_ref.drawGrid();
+		}
 	}
 
 	onMenuClick (e) {
@@ -596,8 +605,8 @@ class SceneEditor extends Editor {
 		if (this.curr_layer) {
 			var snapx = this.curr_layer.snap[0];
 			var snapy = this.curr_layer.snap[1];
-			var stage_width =  800; //this.width;
-			var stage_height = 600; //this.height;
+			var stage_width =  this.game_width;
+			var stage_height = this.game_height;
 
 			if (!this.grid_graphics) {
 				this.grid_graphics = new PIXI.Graphics();
@@ -630,8 +639,8 @@ class SceneEditor extends Editor {
 		if (this.curr_layer) {
 			var snapx = this.curr_layer.snap[0];
 			var snapy = this.curr_layer.snap[1];
-			var stage_width =  800; //this.width;
-			var stage_height = 600; //this.height;
+			var stage_width =  this.game_width;
+			var stage_height = this.game_height;
 
 			if (!this.origin_graphics) {
 				this.origin_graphics = new PIXI.Graphics();
@@ -1143,7 +1152,6 @@ class SceneEditor extends Editor {
 	}
 
 	setImage (path, onReady) {
-		console.log('using',path)
 		// set current image variable
 		var img_found = false;
 		for (var img of this.images) {
