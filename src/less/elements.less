@@ -46,14 +46,17 @@
 	max-height: 8em;
 	overflow-y: auto;
 	line-height: 13px;
+	min-width: 250px;
 
 	.CodeMirror-hint {
+		position: relative;
 		margin: 0;
 		padding: 0 4px;
 		border-radius: 2px;
 		/*white-space: pre;*/
 		color: white;
 		cursor: pointer;
+    	padding-right: 20px;
 
 		.arg-info, .prop-info {
 			max-height: 0px;
@@ -63,6 +66,15 @@
 			color: #C5E1A5;
 				
 			transition: all ease-in-out 0.1s;
+    	}
+
+    	.item-type {
+		    position: absolute;
+		    top: 0px;
+		    right: 0px;
+		    margin: 0px;
+		    margin-right: 3px;
+		    color: rgba(255,255,255,0.35);
     	}
 	}
 

@@ -188,7 +188,11 @@ class Code extends Editor {
 			let before_word_pos = {line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
 			let before_word = editor.getRange(before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
 
+			// get the activator used
 			let comp_activators = [':','.'];
+			let activator = before_word;
+			if (comp_activators.includes(word))
+				activator = word;
 
 			let token_pos = {line: cursor.line, ch: cursor.ch-1};
 			if (comp_activators.includes(before_word) && !comp_activators.includes(word)) {
@@ -203,8 +207,9 @@ class Code extends Editor {
 			if (this_ref.autocompleting && this_ref.last_word != word) {
 				this_ref.last_word = word;
 				function containsTyped(str) {
+					console.log('typed',word,str)
 					if (str == word) return false;
-					if (word == '.') return true;
+					if (word == activator) return true;
 					else return str.startsWith(word);
 				}
 
@@ -217,8 +222,19 @@ class Code extends Editor {
 
 					let text, render, add = false;
 
+					// get the item type
+					let item_type = '';
+					if (hint_opts.fn) {
+						if (hint_opts.callback)
+							item_type = 'cb';
+						else
+							item_type = 'fn';
+					} else if (hint_opts.prop) {
+						item_type = 'var';
+					}
+
 					if (hint_opts.fn && 
-						((word == ':' && token_type.includes('instance')) || (word == '.' && !token_type.includes('instance'))) && 
+						((activator == ':' && token_type.includes('instance')) || (activator == '.' && !token_type.includes('instance'))) && 
 						containsTyped(hint_opts.fn)
 					) {
 						text = hint_opts.fn;
@@ -230,13 +246,15 @@ class Code extends Editor {
 							}
 						}
 						render = hint_opts.fn + "(" + Object.keys(hint_opts.vars || {}) + ")"+
-									"<p class='arg-info'>"+arg_info+"</p>";
+									"<p class='arg-info'>"+arg_info+"</p>"+
+									"<p class='item-type'>"+item_type+"</p>";
 						add = true;
 					}
-					if (hint_opts.prop && containsTyped(hint_opts.prop)) {
+					if (hint_opts.prop && activator != ':' && containsTyped(hint_opts.prop)) {
 						text = hint_opts.prop;
 						hint_types[text] = 'property';
-						render = hint_opts.prop + "<p class='prop-info'>"+(hint_opts.info || '')+"</p>";
+						render = hint_opts.prop + "<p class='prop-info'>"+(hint_opts.info || '')+"</p>"+
+									"<p class='item-type'>"+item_type+"</p>";
 						add = true;
 					}
 					if (add) {

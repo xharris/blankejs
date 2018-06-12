@@ -510,14 +510,17 @@
   max-height: 8em;
   overflow-y: auto;
   line-height: 13px;
+  min-width: 250px;
 }
 .CodeMirror-hints .CodeMirror-hint {
+  position: relative;
   margin: 0;
   padding: 0 4px;
   border-radius: 2px;
   /*white-space: pre;*/
   color: white;
   cursor: pointer;
+  padding-right: 20px;
 }
 .CodeMirror-hints .CodeMirror-hint .arg-info,
 .CodeMirror-hints .CodeMirror-hint .prop-info {
@@ -527,6 +530,14 @@
   padding-left: 20px;
   color: #C5E1A5;
   transition: all ease-in-out 0.1s;
+}
+.CodeMirror-hints .CodeMirror-hint .item-type {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  margin: 0px;
+  margin-right: 3px;
+  color: rgba(255, 255, 255, 0.35);
 }
 .CodeMirror-hints .CodeMirror-hint-active {
   background: #233e2e;

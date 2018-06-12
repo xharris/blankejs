@@ -24,7 +24,8 @@ module.exports.completions = {
 			name: "name of state to switch to"
 		}},
 		{fn:"transition"},
-		{fn:"current"}
+		{fn:"current"},
+		{fn:"enter", callback: true}
 	],
 	"blanke-entity-instance":[
 		{prop:"sprite_angle"},
