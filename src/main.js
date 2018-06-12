@@ -5,8 +5,7 @@ BUGS:
 */
 
 var nwGUI = require('nw.gui');
-var nwFS = require('fs');
-var nwFS2 = require('fs-extra');
+var nwFS = require('fs-extra');
 var nwWALK = require('walk');
 var nwPATH = require('path');
 var nwWIN = nwGUI.Window.get();
@@ -75,7 +74,7 @@ var app = {
 		nwFS.mkdir(path, function(err) {
 			if (!err) {
 				// copy template files
-				nwFS2.copySync(nwPATH.join(cwd(),'src','template'), path);
+				nwFS.copySync(nwPATH.join(cwd(),'src','template'), path);
 				app.hideWelcomeScreen();
 				app.openProject(path);
 			}
@@ -236,7 +235,7 @@ var app = {
 	},
 
 	addAsset: function(res_type, path) {
-		nwFS2.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
+		nwFS.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
 	},
 
 	// determine an assets type based on file extension
@@ -244,7 +243,8 @@ var app = {
 	allowed_extensions: {
 		'image':['png','jpg','jpeg'],
 		'audio':['mp3','ogg','wav'],
-		'scene':['scene']
+		'scene':['scene'],
+		'script':['lua']
 	},
 	findAssetType: function(path) {
 		let ext = nwPATH.extname(path).substr(1);
