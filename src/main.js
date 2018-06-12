@@ -253,12 +253,6 @@ var app = {
 				return a_type;
 		}
 		return 'other';
-	},
-	// sets the text colors to use for title and status bar
-	// light: someting dark is behind the UI
-	// dark: something light is behind the UI
-	setColorMode: function(color) {
-
 	}
 }
 

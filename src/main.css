@@ -375,7 +375,6 @@
   margin-left: 10px;
 }
 .ui-modal {
-  -webkit-app-region: no-drag;
   position: absolute;
   top: 50%;
   left: 0px;
@@ -1483,6 +1482,7 @@ body {
   color: black;
   /* @search-text-focus; */
   width: 125px;
+  font-size: 16px;
 }
 #search-container #search-input:focus,
 #search-container #search-input:hover {
@@ -1588,7 +1588,7 @@ body {
   padding-right: 0px;
 }
 #tabs .tab .tab-title-container .tab-title {
-  color: #424242;
+  color: #9E9E9E;
   padding: 0px 5px;
 }
 #tabs .tab .tab-title-container .tab-title:hover {

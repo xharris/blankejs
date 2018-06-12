@@ -5,8 +5,8 @@ love:
 	love2d/love.exe projects/penguin
 
 blanke:
-	lessc --strict-math=on src/less/main.less src/main.css
-	nw .
+	npm run less
+	npm run nw
 	
 distrib:
 	rm -rf nwjs-build64/src

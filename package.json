@@ -11,7 +11,7 @@
     "icon": "src/logo.png"
   },
   "scripts": {
-    "less": "lessc src/less/main.less src/main.css",
+    "less": "lessc --strict-math=on src/less/main.less src/main.css",
     "nw": "nw .",
     "dist": "build.js"
   },
@@ -19,5 +19,8 @@
     "fs-extra": "^5.0.0",
     "recursive-readdir": "^2.2.2",
     "walk": "^2.3.13"
+  },
+  "devDependencies": {
+    "nw": "^0.30.2"
   }
 }
