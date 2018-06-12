@@ -29,7 +29,7 @@ var sockets = {}  // this is where we store all current client socket connection
 var leaders = {}
 var saved_messages = [];
 var cfg = {
-	port: 1337,
+	port: process.env.PORT || 8080,
   buffer_size: 1024 * 16, // buffer allocated per each socket client
   verbose: true // set to true to capture lots of debug info
 }
