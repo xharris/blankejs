@@ -217,7 +217,10 @@ class Code extends Editor {
 
 					let text, render, add = false;
 
-					if (hint_opts.fn && (word == ':') && containsTyped(hint_opts.fn)) {
+					if (hint_opts.fn && 
+						((word == ':' && token_type.includes('instance')) || (word == '.' && !token_type.includes('instance'))) && 
+						containsTyped(hint_opts.fn)
+					) {
 						text = hint_opts.fn;
 						hint_types[text] = 'function';
 						if (hint_opts.vars) {

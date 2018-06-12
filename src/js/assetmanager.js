@@ -86,6 +86,8 @@ class AssetManager extends Editor {
 			let el_image = app.createElement('img');
 			el_image.onload = function() { el_preview_container.appendChild(el_image); }
 			el_image.src = path;
+		} else {
+			el_preview_container.style.display = "none";
 		}
 
 		// folder modifier
