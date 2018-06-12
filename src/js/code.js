@@ -207,7 +207,6 @@ class Code extends Editor {
 			if (this_ref.autocompleting && this_ref.last_word != word) {
 				this_ref.last_word = word;
 				function containsTyped(str) {
-					console.log('typed',word,str)
 					if (str == word) return false;
 					if (word == activator) return true;
 					else return str.startsWith(word);
@@ -234,7 +233,7 @@ class Code extends Editor {
 					}
 
 					if (hint_opts.fn && 
-						((activator == ':' && token_type.includes('instance')) || (activator == '.' && !token_type.includes('instance'))) && 
+						((activator == ':' && (token_type.includes('instance') || hint_opts.callback)) || (activator == '.' && !token_type.includes('instance'))) && 
 						containsTyped(hint_opts.fn)
 					) {
 						text = hint_opts.fn;

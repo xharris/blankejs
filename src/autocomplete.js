@@ -25,7 +25,12 @@ module.exports.completions = {
 		}},
 		{fn:"transition"},
 		{fn:"current"},
-		{fn:"enter", callback: true}
+		{fn:"enter", callback: true,
+		vars:{
+			prev_state: "state that was active before this one"
+		}},
+		{fn:"update", callback: true},
+		{fn:"leave", callback: true}
 	],
 	"blanke-entity-instance":[
 		{prop:"sprite_angle"},
