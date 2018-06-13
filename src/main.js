@@ -138,7 +138,9 @@ var app = {
 			app.getElement('#status-icons > .server-status > .server-pop').innerHTML = population;
 			// app.getElement
 		}
-		nwNOOB.start();
+		nwNOOB.start(function(address){
+			blanke.toast('server started on '+address);
+		});
 	},
 
 	search_funcs: {},

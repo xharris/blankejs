@@ -176,9 +176,10 @@ var _destroySocket = function (socket) {
 	refreshServerPopulation();
 }
 
-module.exports.start = function(){
+module.exports.start = function(cb){
 	noobserver.listen(cfg.port,  function () {
 		_log('NoobHub on ', noobserver.address().address + noobserver.address().port);
+		if (cb) cb(noobserver.address().address + noobserver.address().port);
 	});
 }
 

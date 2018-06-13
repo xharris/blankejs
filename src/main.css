@@ -467,6 +467,20 @@
   right: 0px;
   left: 0px;
 }
+.blankejs-toasts {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  z-index: 1000;
+}
+.blankejs-toasts .toast-container {
+  background-color: white;
+  border: 1px solid black;
+  margin: 2px;
+}
+.blankejs-toasts .toast-container .content {
+  margin: 0px;
+}
 .content[data-type="Code"] {
   padding-top: 33px;
   padding-bottom: 22px;
@@ -1660,4 +1674,19 @@ body {
   left: 12px;
   margin: 0px;
   text-align: left;
+}
+.blankejs-toasts {
+  padding-right: 5px;
+  padding-bottom: 25px;
+}
+.blankejs-toasts .toast-container {
+  background-color: white;
+  border: 1px solid black;
+}
+.blankejs-toasts .toast-container .content {
+  margin: 0px;
+  border: 4px outset #424242;
+  background-color: #424242;
+  padding: 5px;
+  color: #FAFAFA;
 }
