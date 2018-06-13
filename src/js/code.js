@@ -233,7 +233,7 @@ class Code extends Editor {
 					}
 
 					if (hint_opts.fn && 
-						((activator == ':' && (token_type.includes('instance') || hint_opts.callback)) || (activator == '.' && !token_type.includes('instance'))) && 
+						((activator == ':' && (token_type.includes('instance') || hint_opts.callback)) || (activator == '.' && !hint_opts.callback && !token_type.includes('instance'))) && 
 						containsTyped(hint_opts.fn)
 					) {
 						text = hint_opts.fn;
@@ -249,7 +249,7 @@ class Code extends Editor {
 									"<p class='item-type'>"+item_type+"</p>";
 						add = true;
 					}
-					if (hint_opts.prop && activator != ':' && containsTyped(hint_opts.prop)) {
+					if (hint_opts.prop && activator == '.' && !hint_opts.callback && containsTyped(hint_opts.prop)) {
 						text = hint_opts.prop;
 						hint_types[text] = 'property';
 						render = hint_opts.prop + "<p class='prop-info'>"+(hint_opts.info || '')+"</p>"+

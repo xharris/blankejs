@@ -375,6 +375,7 @@
   margin-left: 10px;
 }
 .ui-modal {
+  -webkit-app-region: no-drag;
   position: absolute;
   top: 50%;
   left: 0px;
@@ -1588,7 +1589,7 @@ body {
   padding-right: 0px;
 }
 #tabs .tab .tab-title-container .tab-title {
-  color: #9E9E9E;
+  color: #616161;
   padding: 0px 5px;
 }
 #tabs .tab .tab-title-container .tab-title:hover {
