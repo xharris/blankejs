@@ -1,6 +1,6 @@
 BlankE.addClassType("PlayState", "State");
 
 function PlayState:enter(prev)
-	print('hi');
-	
+	Debug.log('hi')
+	Draw.setBackgroundColor('green')
 end

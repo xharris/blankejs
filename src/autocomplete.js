@@ -10,21 +10,30 @@ module.exports.class_regex = {
 	'state': 	[/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g, /.*(State).*/g],
 	'entity': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g,
 	'blanke': 	/.*(BlankE).*/g,
-	'draw': 	/.*(Draw).*/g
+	'draw': 	/.*(Draw).*/g,
+	'asset': 	/.*(Asset).*/g,
+	'input': 	[/.*(Input).*/g]
 }
 
 // Group 1: name of instance 
 module.exports.instance_regex = {
 	'state': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
+	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g
 }
 
 module.exports.completions = {
 	"blanke-blanke":[
+		{fn:"init", vars:{ first_state:'State the game should start in' }},
 		{fn:"addClassType",
 		vars:{
 			arg1:'MenuState / Player / ...', arg2:'State / Entity / etc.'
-		}}
+		}},
+		{fn:"loadPlugin", vars:{ name:'' }},
+		{prop:"draw_debug"}
+	],
+	"blanke-asset":[
+		{fn:"add", vars:{ path:'file or folder (ending with \'/\')' }}
 	],
 	"blanke-draw":[
 		{fn:"setBackgroundColor", vars:color_vars},
@@ -39,6 +48,13 @@ module.exports.completions = {
 		{fn:"polygon"},
 		{fn:"text"},
 		{fn:"textf"},
+	],
+	"blanke-input":[
+		{fn:"set", vars:{ label:'', input1:'input to catch</br>- letters: w, a, s, d, ...', etc:'' }}
+	],
+	"blanke-input-instance":[
+		{prop: "can_repeat"},
+		{fn: "reset"}
 	],
 	"blanke-state":[
 		{fn:"switch",

@@ -2,5 +2,8 @@
 BlankE = require('blanke.Blanke')
 
 function love.load()
-	State
+	Asset.add('scripts/')
+	Asset.add('assets/')
+	
+	BlankE.init("PlayState")
 end

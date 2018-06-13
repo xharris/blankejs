@@ -129,8 +129,6 @@ class Code extends Editor {
 		      }
 		      break_bool *= !stream.match('{',false);
 
-		      var class_names = ['State','Entity']
-
 		      // check for user-made classes
 		      for (var category in re_objects) {
 			      if (object_list[category]) {
@@ -144,8 +142,10 @@ class Code extends Editor {
 
 			      	if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
 				      	for (var instance_name of object_instances[this_ref.file][category]) {
-				      		let is_match = stream.match(instance_name,true);
+				      		let is_match = stream.string.includes(instance_name);
 				      		if (is_match) {
+				      			for (var e = 0; e < stream.string.length-1; e++) { stream.next(); }
+ 								stream.eat(stream.string.slice(-1));
 				      			return "blanke-"+category+"-instance";
 				      		}
 				      		break_bool *= !is_match;
@@ -204,17 +204,18 @@ class Code extends Editor {
 		this.codemirror.on("keyup", function(){
 			let editor = this_ref.codemirror;
 			let cursor = editor.getCursor();
-			
+
 			let word_pos = editor.findWordAt(cursor);
 			let word = editor.getRange(word_pos.anchor, word_pos.head);
 			let before_word_pos = {line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
 			let before_word = editor.getRange(before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
+			let word_slice = word.slice(-1);
 
 			// get the activator used
 			let comp_activators = [':','.'];
 			let activator = before_word;
-			if (comp_activators.includes(word))
-				activator = word;
+			if (comp_activators.includes(word_slice))
+				activator = word_slice;
 
 			let token_pos = {line: cursor.line, ch: cursor.ch-1};
 			if (comp_activators.includes(before_word) && !comp_activators.includes(word)) {
@@ -222,20 +223,20 @@ class Code extends Editor {
 			}
        		let token_type = editor.getTokenTypeAt(token_pos);
 
-			if ((comp_activators.includes(word) || comp_activators.includes(before_word)) && !this_ref.autocompleting) {
+			if ((comp_activators.includes(word_slice) || comp_activators.includes(before_word.slice(-1))) && !this_ref.autocompleting) {
 				this_ref.autocompleting = true;
 			}
 
 			if (this_ref.autocompleting && this_ref.last_word != word) {
 				this_ref.last_word = word;
 				function containsTyped(str) {
-					console.log(word);
 					if (str == word) return false;
-					if (word == activator) return true;
+					if (word_slice == activator) return true;
 					else return str.startsWith(word);
 				}
 
 				let hint_list = hints[token_type];
+				console.log(token_type, word, activator)
 				let list = [];
 				let hint_types = {};
 				for (var o in hint_list) {
@@ -267,7 +268,12 @@ class Code extends Editor {
    								arg_info += arg + " : " + hint_opts.vars[arg] + "<br/>";
 							}
 						}
-						render = hint_opts.fn + "(" + Object.keys(hint_opts.vars || {}) + ")"+
+
+						function specialReplacements(value, index, array) {
+							if (value == 'etc') return '<span class="grayed-out">...</span>';
+							return value;
+						}
+						render = hint_opts.fn + "(" + Object.keys(hint_opts.vars || {}).map(specialReplacements) + ")"+
 									"<p class='arg-info'>"+arg_info+"</p>"+
 									"<p class='item-type'>"+item_type+"</p>";
 						add = true;

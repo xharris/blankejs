@@ -1,5 +1,5 @@
 do:
-	make blanke
+	make -B blanke
 
 love:
 	love2d/love.exe projects/penguin

@@ -536,6 +536,9 @@
   cursor: pointer;
   padding-right: 20px;
 }
+.CodeMirror-hints .CodeMirror-hint .grayed-out {
+  color: #757575;
+}
 .CodeMirror-hints .CodeMirror-hint .arg-info,
 .CodeMirror-hints .CodeMirror-hint .prop-info {
   max-height: 0px;
