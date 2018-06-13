@@ -978,7 +978,7 @@ class SceneEditor extends Editor {
 			curr_image = from_load_snapped;
 
 		let new_tile_texture = new PIXI.Texture(
-            curr_image.pixi_resource.texture,
+            curr_image.texture,
             new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
         );
         new_tile_texture.layer_uuid = this.curr_layer.uuid;
@@ -1007,7 +1007,7 @@ class SceneEditor extends Editor {
 		// add if a tile isn't already there
 		if (!curr_image.pixi_images[text_key]) {
 			if (!curr_image.pixi_tilemap[this.curr_layer.uuid]) {
-				curr_image.pixi_tilemap[this.curr_layer.uuid] = new PIXI.tilemap.CompositeRectTileLayer(0, curr_image.pixi_resource.texture);
+				curr_image.pixi_tilemap[this.curr_layer.uuid] = new PIXI.tilemap.CompositeRectTileLayer(0, curr_image.texture);
 				this.curr_layer.container.addChild(curr_image.pixi_tilemap[this.curr_layer.uuid]);
 
 				this.curr_layer.container.setChildIndex(curr_image.pixi_tilemap[this.curr_layer.uuid], 0)
@@ -1160,24 +1160,23 @@ class SceneEditor extends Editor {
 				this.curr_image = img;
 
 				var this_ref = this;
-				var loader = new PIXI.loaders.Loader();
-				loader.add(path);
-				loader.load(function(loader, resources){
+				this.el_image_preview.onload = function(){
+					let base = new PIXI.BaseTexture(this_ref.el_image_preview);
+					let texture = new PIXI.Texture(base);
+
 					// save texture info
-					if (!img.pixi_resource) {
-						img.pixi_resource = resources[img.path];
-					} 
+					img.texture = texture;
 
 					// update image info text
-					this_ref.el_image_info.innerHTML = app.getRelativePath(img.path) + "<br/>" + img.pixi_resource.texture.width + " x " +  img.pixi_resource.texture.height;
+					this_ref.el_image_info.innerHTML = app.getRelativePath(img.path) + "<br/>" + img.texture.width + " x " +  img.texture.height;
 					this_ref.el_image_info.title = app.getRelativePath(img.path);
 
-					this_ref.el_image_preview.onload = function(){
-						this_ref.refreshImageGrid();		
-					}
-					this_ref.el_image_preview.src = img.path;
+					this_ref.refreshImageGrid();		
+
 					if (onReady) onReady(img);
-	            });
+				}
+				this_ref.el_image_preview.src = "file://"+img.path;
+
 
 				// set image inputs
 				for (var property of ['snap', 'offset', 'snap']) {
@@ -1256,7 +1255,7 @@ class SceneEditor extends Editor {
 			// images
 			let this_ref = this;
 			data.images.forEach(function(img, i){
-				var full_path = nwPATH.resolve(app.project_path,img.path);
+				var full_path = nwPATH.normalize(nwPATH.resolve(app.project_path,img.path));
 				this_ref.images.push({
 					path: full_path,
 					snap: img.snap,

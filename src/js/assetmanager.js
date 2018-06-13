@@ -85,7 +85,7 @@ class AssetManager extends Editor {
 		if (file_type == 'image') {
 			let el_image = app.createElement('img');
 			el_image.onload = function() { el_preview_container.appendChild(el_image); }
-			el_image.src = path;
+			el_image.src = "file://"+path;
 		} else {
 			el_preview_container.style.display = "none";
 		}
