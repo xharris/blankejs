@@ -1,3 +1,6 @@
 BlankE.addClassType("PlayState", "State");
 
-PlayState
+function PlayState:enter(prev)
+	print('hi');
+	
+end

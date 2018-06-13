@@ -1,3 +1,4 @@
+package.path = package.path .. ";./?/init.lua"
 blanke_path = (...):match("(.-)[^%.]+$")
 function blanke_require(import)
 	return require(blanke_path..import)

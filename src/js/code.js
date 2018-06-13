@@ -15,7 +15,7 @@ function reloadCompletions() {
 }
 
 function refreshObjectList (filename, content) {
-	var ret_match;
+	let ret_matches = [];
 	// remove from whole list
 	let obj_string = object_src[filename] || '';
 	for (let category in object_list) {
@@ -41,40 +41,57 @@ function refreshObjectList (filename, content) {
 		for (var category in re_objects) {
 			let re = re_objects[category];
 		
-			ret_match = re.exec(content)
-			if (!ret_match) continue;
-
-			let obj_name = ret_match[1];
-			object_src[filename] += obj_name + ' ';
-
-			// increment in whole list
-			if (!object_list[category]) object_list[category] = {};
-			if (object_list[category][obj_name])
-				object_list[category][obj_name]++;
-			else {
-				object_list[category][obj_name] = 1;
-
+			ret_matches = [];
+			if (Array.isArray(re)) {
+				for (let subre of re) {
+					let matches = subre.exec(content);
+					if (matches) {
+						ret_matches.push(matches[1]);
+					}
+				}
+			} else {
+				let matches = re.exec(content);
+				if (matches) {
+					ret_matches.push(matches[1]);
+				}
 			}
 
-			// get instances made with those classes
-			if (re_instance[category]) {
-				var regex_instance = new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags);
-				var ret_instance_match;
 
-				if(!object_instances[filename])
-					object_instances[filename] = {};
-				if(!object_instances[filename][category])
-					object_instances[filename][category] = [];
-				do {
-					ret_instance_match = regex_instance.exec(content);
-					if (!ret_instance_match) continue;
+			if (ret_matches.length == 0) continue;
 
-					if(!object_instances[filename][category].includes(ret_instance_match[1]))
-						object_instances[filename][category].push(ret_instance_match[1]);
-				} while (ret_instance_match)
+			for (let obj_name of ret_matches) {
+				object_src[filename] += obj_name + ' ';
+
+				// increment in whole list
+				if (!object_list[category]) object_list[category] = {};
+				if (object_list[category][obj_name])
+					object_list[category][obj_name]++;
+				else {
+					object_list[category][obj_name] = 1;
+
+				}
+
+				// get instances made with those classes
+				if (re_instance[category]) {
+					var regex_instance = new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags);
+					var ret_instance_match;
+
+					if(!object_instances[filename])
+						object_instances[filename] = {};
+					if(!object_instances[filename][category])
+						object_instances[filename][category] = [];
+					do {
+						ret_instance_match = regex_instance.exec(content);
+						if (!ret_instance_match) {
+							// continue; // no longer usable after adding 'for (let obj_name of ret_matches)'
+						}
+						else if(!object_instances[filename][category].includes(ret_instance_match[1]))
+							object_instances[filename][category].push(ret_instance_match[1]);
+					} while (ret_instance_match)
+				}
 			}
 		}
-	} while (ret_match);
+	} while (ret_matches.length);
 }
 
 class Code extends Editor {
@@ -159,6 +176,11 @@ class Code extends Editor {
             matchBrackets: true,
             completeSingle: false,
             extraKeys: {
+            	"Cmd-S": function(cm) {
+            		this_ref.save();
+            		this_ref.can_save = false;
+            		this_ref.removeAsterisk();
+            	},
             	"Ctrl-S": function(cm) {
             		this_ref.save();
             		this_ref.can_save = false;
@@ -207,6 +229,7 @@ class Code extends Editor {
 			if (this_ref.autocompleting && this_ref.last_word != word) {
 				this_ref.last_word = word;
 				function containsTyped(str) {
+					console.log(word);
 					if (str == word) return false;
 					if (word == activator) return true;
 					else return str.startsWith(word);

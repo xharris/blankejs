@@ -8,6 +8,7 @@ var nwGUI = require('nw.gui');
 var nwFS = require('fs-extra');
 var nwWALK = require('walk');
 var nwPATH = require('path');
+var nwOS = require('os');
 var nwWIN = nwGUI.Window.get();
 const { spawn, execFile } = require('child_process')
 const { cwd, env, platform } = require('process')
@@ -18,6 +19,7 @@ var app = {
 	watch: null,
 	game_window: null,
 	maximized: false,
+	os: null,
 
 	getElement: function(sel) {
 		return document.querySelector(sel);
@@ -118,7 +120,11 @@ var app = {
 	},
 
 	play: function() { 
-		var child = spawn(nwPATH.join('love2d','love.exe'), [app.project_path]);
+		let love_path = {
+			'win': nwPATH.join('love2d','love.exe'),
+			'mac': nwPATH.resolve(nwPATH.join('love2d','love.app','Contents','MacOS','love'))
+		};
+		var child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)]);
 		//child.unref();
 		Editor.closeAll('Console');
 		var console_window = new Console(app, child);
@@ -261,6 +267,8 @@ var app = {
 nwWIN.on('loaded', function() {
 	nwWIN.showDevTools();
 
+	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
+	app.os = os_names[nwOS.type()];
 	app.loadAppData(function(){
 		// Welcome screen
 
@@ -403,6 +411,12 @@ nwWIN.on('loaded', function() {
 	// shortcut: run game
 	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
 		key: "Ctrl+B",
+		active: function() {
+			app.play();
+		}
+	}));
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Command+B",
 		active: function() {
 			app.play();
 		}

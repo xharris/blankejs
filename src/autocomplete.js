@@ -1,8 +1,16 @@
+let color_vars = {
+	r:'red component (0-1 or 0-255) / hex (#ffffff) / string (\'blue\')',
+	g:'green component',
+	b:'blue component',
+	a:'optional alpha'
+}
+
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
-	'state': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g,
+	'state': 	[/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g, /.*(State).*/g],
 	'entity': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g,
-	'blanke': 	/.*(BlankE).*/g
+	'blanke': 	/.*(BlankE).*/g,
+	'draw': 	/.*(Draw).*/g
 }
 
 // Group 1: name of instance 
@@ -17,6 +25,20 @@ module.exports.completions = {
 		vars:{
 			arg1:'MenuState / Player / ...', arg2:'State / Entity / etc.'
 		}}
+	],
+	"blanke-draw":[
+		{fn:"setBackgroundColor", vars:color_vars},
+		{fn:"randomColor", vars:{ alpha:'' }},
+		{fn:"setColor", vars:color_vars},
+		{fn:"resetColor"},
+		{fn:"point", vars:{ x:'', y:'' }},
+		{fn:"points"},
+		{fn:"line"},
+		{fn:"rect"},
+		{fn:"circle"},
+		{fn:"polygon"},
+		{fn:"text"},
+		{fn:"textf"},
 	],
 	"blanke-state":[
 		{fn:"switch",
