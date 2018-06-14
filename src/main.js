@@ -97,24 +97,29 @@ var app = {
 	},
 
 	openProject: function(path) {
-		app.project_path = path;
+		// validate: only open if there's a main.lua
+		nwFS.readdir(path, 'utf8', function(err, files){
+			if (!err && files.includes('main.lua')) {		
+				app.project_path = path;
 
-		// watch for file changes
-		app.watch = nwFS.watch(app.project_path, function(evt_type, file) {
-			if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
+				// watch for file changes
+				app.watch = nwFS.watch(app.project_path, function(evt_type, file) {
+					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
+				});
+
+				// add to recent files
+				app.settings.recent_files = app.settings.recent_files.filter(e => e != path);
+				app.settings.recent_files.unshift(path);
+				app.saveAppData();
+
+				dispatchEvent("openProject", {path: path});
+			}
 		});
-
-		// add to recent files
-		app.settings.recent_files = app.settings.recent_files.filter(e => e != path);
-		app.settings.recent_files.unshift(path);
-		app.saveAppData();
-
-		dispatchEvent("openProject", {path: path}); 
+ 
 	},
 
 	openProjectDialog: function() {
 		blanke.chooseFile('nwdirectory', function(file_path){
-			app.hideWelcomeScreen();
 			app.openProject(file_path);
 		}, true);
 	},
@@ -200,19 +205,19 @@ var app = {
 		'recent_files':[]
 	},
 	loadAppData: function(callback) {
-		var app_data_folder = env.APPDATA || (platform == 'darwin' ? env.HOME + 'Library/Preferences' : '/var/local');
+		var app_data_folder = env.APPDATA || (app.os == 'mac' ? env.HOME + 'Library/Preferences' : '/var/local');
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
 		
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
 			if (!err) {
 				app.settings = JSON.parse(data);
-				if (callback) callback();
 			}
+			if (callback) callback();
 		});
 	},
 
 	saveAppData: function() {
-		var app_data_folder = env.APPDATA || (platform == 'darwin' ? env.HOME + 'Library/Preferences' : '/var/local');
+		var app_data_folder = env.APPDATA || (app.os == 'mac' ? env.HOME + 'Library/Preferences' : '/var/local');
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
 		nwFS.stat(app_data_folder, function(err, stat) {
 			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
@@ -451,9 +456,10 @@ nwWIN.on('loaded', function() {
 	app.addSearchKey({key: 'Run Server', onSelect: app.runServer});
 
 	document.addEventListener("openProject",function(){
+		app.hideWelcomeScreen();
 		app.loadSettings();
 	});
 
-	app.openProject('projects/boredom');
-	app.hideWelcomeScreen();
+	// app.openProject('projects/boredom');
+	// app.hideWelcomeScreen();
 });

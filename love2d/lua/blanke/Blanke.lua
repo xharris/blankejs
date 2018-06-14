@@ -156,7 +156,7 @@ BlankE = {
 		State.switch(first_state)  
 		BlankE._is_init = true
 
-		print("BlankE initialized")
+		-- print("BlankE initialized")
 	end,
 
 	injectCallbacks = function()

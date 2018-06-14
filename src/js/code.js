@@ -115,44 +115,47 @@ class Code extends Editor {
 		CodeMirror.defineMode("blanke", function(config, parserConfig) {
 		  var blankeOverlay = {
 		    token: function(stream, state) {
-		      var ch;
+				let baseCur = stream.lineOracle.state.baseCur;
+		    	console.log(stream, baseCur)
+		    	var ch;
 
-		      var break_bool = 0;
+		    	var break_bool = 0;
 
-		      // keeping this code since it's a good example
-		      if (stream.match("{{")) {
-		        while ((ch = stream.next()) != null)
-		          if (ch == "}" && stream.next() == "}") {
-		            stream.eat("}");
-		            return "blanke-test";
-		          }
-		      }
-		      break_bool *= !stream.match('{',false);
-
-		      // check for user-made classes
-		      for (var category in re_objects) {
-			      if (object_list[category]) {
-			      	for (var obj_name in object_list[category]) {
-			      		let is_match = stream.match(obj_name,true);
-			      		if (is_match) {
-			      			return "blanke-"+category;
+				/* keeping this code since it's a good example
+				if (stream.match("{{")) {
+			      	while ((ch = stream.next()) != null)
+			      		if (ch == "}" && stream.next() == "}") {
+			      			stream.eat("}");
+			      			return "blanke-test";
 			      		}
-			      		break_bool *= !is_match;
-			      	}
+		      	}
+		      	break_bool *= !stream.match('{',false);
+		      	*/
 
-			      	if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
-				      	for (var instance_name of object_instances[this_ref.file][category]) {
-				      		let is_match = stream.string.includes(instance_name);
-				      		if (is_match) {
-				      			for (var e = 0; e < stream.string.length-1; e++) { stream.next(); }
- 								stream.eat(stream.string.slice(-1));
-				      			return "blanke-"+category+"-instance";
-				      		}
-				      		break_bool *= !is_match;
-				      	}
-			      	}	
-			      }
-		      }
+				// check for user-made classes
+				for (var category in re_objects) {
+			      	if (object_list[category]) {
+			      		for (var obj_name in object_list[category]) {
+			      			let is_match = stream.match(obj_name,true);
+			      			if (is_match) {
+			      				return baseCur+" blanke-"+category;
+			      			}
+			      			break_bool *= !is_match;
+			      		}
+
+			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
+			      			for (var instance_name of object_instances[this_ref.file][category]) {
+			      				let is_match = stream.string.includes(instance_name);
+			      				if (is_match) {
+			      					for (var e = 0; e < stream.string.length-1; e++) { stream.next(); }
+			      						stream.eat(stream.string.slice(-1));
+			      					return baseCur+" blanke-"+category+"-instance";
+			      				}
+			      				break_bool *= !is_match;
+			      			}
+			      		}	
+			      	}
+				}
 
 
 
@@ -221,11 +224,11 @@ class Code extends Editor {
 			if (comp_activators.includes(before_word) && !comp_activators.includes(word)) {
 				token_pos.ch = before_word_pos.ch - 1;
 			}
-       		let token_type = editor.getTokenTypeAt(token_pos);
+       		let token_type = editor.getTokenTypeAt(token_pos) || '';
 
-			if ((comp_activators.includes(word_slice) || comp_activators.includes(before_word.slice(-1))) && !this_ref.autocompleting) {
+			//if ((comp_activators.includes(word_slice) || comp_activators.includes(before_word.slice(-1))) && !this_ref.autocompleting) {
 				this_ref.autocompleting = true;
-			}
+			//}
 
 			if (this_ref.autocompleting && this_ref.last_word != word) {
 				this_ref.last_word = word;
@@ -235,10 +238,23 @@ class Code extends Editor {
 					else return str.startsWith(word);
 				}
 
+				function globalActivator() {
+					return (word.trim() != '' && !comp_activators.includes(activator));
+				}
+
 				let hint_list = hints[token_type];
-				console.log(token_type, word, activator)
 				let list = [];
 				let hint_types = {};
+
+				// add global hints
+				if (!hint_list && hints.global) {
+					hint_list = [];
+					for (let h = 0; h < hints.global.length; h++) {
+						hints.global[h].global = true;
+						hint_list.push(hints.global[h]);
+					}
+				}
+
 				for (var o in hint_list) {
 					let hint_opts = hint_list[o];
 					let arg_info = "";
@@ -257,7 +273,7 @@ class Code extends Editor {
 					}
 
 					if (hint_opts.fn && 
-						((activator == ':' && (token_type.includes('instance') || hint_opts.callback)) || (activator == '.' && !hint_opts.callback && !token_type.includes('instance'))) && 
+						((hint_opts.global && globalActivator()) || (activator == ':' && (token_type.includes('instance') || hint_opts.callback)) || (activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))) && 
 						containsTyped(hint_opts.fn)
 					) {
 						text = hint_opts.fn;
@@ -278,7 +294,9 @@ class Code extends Editor {
 									"<p class='item-type'>"+item_type+"</p>";
 						add = true;
 					}
-					if (hint_opts.prop && activator == '.' && !hint_opts.callback && containsTyped(hint_opts.prop)) {
+					if (hint_opts.prop && 
+						((activator == '.' && !hint_opts.global) || (hint_opts.global && globalActivator())) && 
+						!hint_opts.callback && containsTyped(hint_opts.prop)) {
 						text = hint_opts.prop;
 						hint_types[text] = 'property';
 						render = hint_opts.prop + "<p class='prop-info'>"+(hint_opts.info || '')+"</p>"+
@@ -292,7 +310,7 @@ class Code extends Editor {
 						});
 					}
 				}
-				if (Object.keys(hints).includes(token_type)) {
+				//if (Object.keys(hints).includes(token_type)) {
 					editor.showHint({
 						hint: function(cm) {
 							let completions = {
@@ -313,7 +331,7 @@ class Code extends Editor {
 						},
 						completeSingle: false
 					});
-				}
+				//}
 			}
 		});
 
@@ -492,6 +510,7 @@ document.addEventListener("openProject", function(e){
 	// reload completions on file change
 	nwFS.watchFile('src/autocomplete.js', function(e){
 		reloadCompletions();
+		blanke.toast("autocomplete reloaded!");
 	});
 
 	var proj_path = e.detail.path;

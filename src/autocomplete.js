@@ -12,17 +12,22 @@ module.exports.class_regex = {
 	'blanke': 	/.*(BlankE).*/g,
 	'draw': 	/.*(Draw).*/g,
 	'asset': 	/.*(Asset).*/g,
-	'input': 	[/.*(Input).*/g]
+	'input': 	/.*(Input).*/g,
+	'image': 	/.*(Image).*/g
 }
 
 // Group 1: name of instance 
 module.exports.instance_regex = {
 	'state': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
-	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g
+	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
+	'image': 	/\b(\w+)\s*=\s*Image\([\'\"]\w+[\'\"]\)\s+?/g
 }
 
 module.exports.completions = {
+	"global":[
+		{fn:"Image", vars:{ name:'images/ground.png -> Image(\"ground\")' }}
+	],
 	"blanke-blanke":[
 		{fn:"init", vars:{ first_state:'State the game should start in' }},
 		{fn:"addClassType",
@@ -33,7 +38,8 @@ module.exports.completions = {
 		{prop:"draw_debug"}
 	],
 	"blanke-asset":[
-		{fn:"add", vars:{ path:'file or folder (ending with \'/\')' }}
+		{fn:"add", vars:{ path:'file or folder (ending with \'/\')' }},
+		{fn:"list", vars:{ file_type:'script / image / map / file' }}
 	],
 	"blanke-draw":[
 		{fn:"setBackgroundColor", vars:color_vars},
@@ -103,5 +109,8 @@ module.exports.completions = {
 		{fn:"getCollisions",vars:{shape_name:''}},
 		{fn:"debugSprite",vars:{sprite_index:''}},
 		{fn:"debugCollision"}
+	],
+	"blanke-image-instance":[
+		{fn:"draw"}
 	]
 }
