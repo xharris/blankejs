@@ -130,6 +130,9 @@ class Code extends Editor {
 		      	}
 		      	break_bool *= !stream.match('{',false);
 		      	*/
+
+		      	// NOTE: break_bool should be 0 if a match is found
+
 		      	if (stream.match(/\s*--/)) {
 		      		while ((ch = stream.next()) != null && !stream.eol());
 		      		return "comment";
@@ -149,13 +152,12 @@ class Code extends Editor {
 
 			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
 			      			for (var instance_name of object_instances[this_ref.file][category]) {
-			      				let is_match = stream.string.includes(instance_name);
-			      				if (is_match) {
-			      					for (var e = 0; e < stream.string.length-1; e++) { stream.next(); }
-			      						stream.eat(stream.string.slice(-1));
+			      				if (stream.skipTo(instance_name)) {
+			      					console.log(instance_name.escapeSlashes())
+			      					stream.match(instance_name.escapeSlashes(),true);
 			      					return baseCur+" blanke-"+category+"-instance";
+			      					break_bool *= 0;
 			      				}
-			      				break_bool *= !is_match;
 			      			}
 			      		}	
 			      	}
@@ -187,12 +189,12 @@ class Code extends Editor {
             		this_ref.save();
             		this_ref.can_save = false;
             		this_ref.removeAsterisk();
-            	},
+            	},/*
             	"Ctrl-S": function(cm) {
             		this_ref.save();
             		this_ref.can_save = false;
             		this_ref.removeAsterisk();
-            	},
+            	},*/
             	"Ctrl-=": function(cm) {
             		font_size += 1;
             		this_ref.setFontSize(font_size);
@@ -358,7 +360,8 @@ class Code extends Editor {
 		// prevents user from saving a million times by holding the button down
 		document.addEventListener('keyup', function(e){
 			if (e.key == "s" && e.ctrlKey) {
-				this_ref.can_save = true;
+				this_ref.save();
+        		this_ref.removeAsterisk();
 			}
 		});
 
@@ -407,10 +410,10 @@ class Code extends Editor {
 	}
 
 	save () {
-		if (this.can_save) {
+		//if (this.can_save) {
 			nwFS.writeFileSync(this.file, this.codemirror.getValue());
 			this.can_save = false;
-		}
+		//}
 	}
 
 	delete (path) {

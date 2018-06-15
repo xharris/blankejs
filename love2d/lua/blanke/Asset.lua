@@ -35,10 +35,11 @@ Asset = Class{
 
 	add = function(path, prefix)
 		-- FOLDER
-		if path:ends('/') then
+		local file_info = love.filesystem.getInfo(path)
+		if path:ends('/') or (file_info and file_info.type == "directory") then
 			local files = love.filesystem.getDirectoryItems(path:sub(0,-1))
 			for f, file in ipairs(files) do
-				Asset.add(path..file, prefix)
+				Asset.add(path..'/'..file, prefix)
 			end
 			return
 		end
@@ -115,6 +116,7 @@ Asset = Class{
 	end,
 
 	get = function(category, name)
+		Debug.log(category, name)
 		if Asset.has(category, name) then
 			return Asset.info[category][name].object
 		end

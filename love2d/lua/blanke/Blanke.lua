@@ -595,7 +595,7 @@ _err_state.error_msg = 'NO GAME'
 
 local _t = 0
 function _err_state:enter(prev)
-	love.graphics.setBackgroundColor(0,0,0,255)
+	love.graphics.setBackgroundColor(0,0,0,0)
 end
 function _err_state:draw()
 	BlankE.updateGridColor()
@@ -613,8 +613,8 @@ function _err_state:draw()
 	for i = -max_size, max_size, 10 do
 		local radius = max_size - _t + i
 		if radius > 20 and radius < max_size then
-			local opacity = (radius / max_size) * (255*0.6)
-			love.graphics.setColor(0,255,0,opacity)
+			local opacity = (radius / max_size) * 0.6
+			love.graphics.setColor(0,1,0,opacity)
 			love.graphics.circle("line", game_width/2, game_height/2, radius)
 		end
 	end
@@ -628,7 +628,7 @@ function _err_state:draw()
 		posx = love.window.toPixels(70)
 		posy = posx
 	end
-	love.graphics.setColor(255,255,255,sinusoidal(150,255,0.5))
+	love.graphics.setColor(1,1,1,sinusoidal(150,255,0.5)/255)
 	love.graphics.printf(_err_state.error_msg,posx,posy,game_width,align)
 
 	love.graphics.pop('all')
@@ -659,10 +659,10 @@ function _empty_state:draw()
 	for _c = 0,_max_size*2,10 do
 		local _new_radius = _c-_offset
 		local opacity = (_new_radius/_max_size)*300
-		love.graphics.setColor(0,(_new_radius)/_max_size*255,0,opacity)
+		love.graphics.setColor(0,(_new_radius)/_max_size,0,opacity)
 		love.graphics.circle("line", game_width/2, game_height/2, _new_radius)
 	end
-	love.graphics.setColor(255,255,255,sinusoidal(150,255,0.5))
+	love.graphics.setColor(1,1,1,sinusoidal(150,255,0.5)/255)
 	love.graphics.printf("NO GAME",0,game_height/2,game_width,"center")
 	love.graphics.pop()
 end	
