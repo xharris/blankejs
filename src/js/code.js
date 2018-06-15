@@ -152,12 +152,12 @@ class Code extends Editor {
 
 			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
 			      			for (var instance_name of object_instances[this_ref.file][category]) {
-			      				if (stream.skipTo(instance_name)) {
-			      					console.log(instance_name.escapeSlashes())
-			      					stream.match(instance_name.escapeSlashes(),true);
+			      				let is_match = stream.skipTo(instance_name);
+			      				if (is_match) {
+			      					stream.match(instance_name,true);
 			      					return baseCur+" blanke-"+category+"-instance";
-			      					break_bool *= 0;
 			      				}
+			      				break_bool *= !is_match;
 			      			}
 			      		}	
 			      	}

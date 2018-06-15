@@ -111,6 +111,8 @@ module.exports.completions = {
 		{fn:"debugCollision"}
 	],
 	"blanke-image-instance":[
+		{prop:"x"},
+		{prop:"y"},
 		{fn:"draw"}
 	]
 }
