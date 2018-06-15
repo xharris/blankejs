@@ -204,9 +204,13 @@ var app = {
 	settings: {
 		'recent_files':[]
 	},
+	getAppDataFolder: function(){
+		return env.APPDATA || (app.os == 'mac' ? nwPATH.join(env.HOME, 'Library/Preferences') : '/var/local');
+	},
 	loadAppData: function(callback) {
-		var app_data_folder = env.APPDATA || (app.os == 'mac' ? env.HOME + 'Library/Preferences' : '/var/local');
+		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
+		console.log(app_data_path);
 		
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
 			if (!err) {
@@ -217,7 +221,7 @@ var app = {
 	},
 
 	saveAppData: function() {
-		var app_data_folder = env.APPDATA || (app.os == 'mac' ? env.HOME + 'Library/Preferences' : '/var/local');
+		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
 		nwFS.stat(app_data_folder, function(err, stat) {
 			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);

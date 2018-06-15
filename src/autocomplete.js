@@ -21,7 +21,7 @@ module.exports.instance_regex = {
 	'state': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
-	'image': 	/\b(\w+)\s*=\s*Image\([\'\"]\w+[\'\"]\)\s+?/g
+	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g
 }
 
 module.exports.completions = {

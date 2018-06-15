@@ -116,7 +116,6 @@ class Code extends Editor {
 		  var blankeOverlay = {
 		    token: function(stream, state) {
 				let baseCur = stream.lineOracle.state.baseCur;
-		    	console.log(stream, baseCur)
 		    	var ch;
 
 		    	var break_bool = 0;
@@ -131,6 +130,11 @@ class Code extends Editor {
 		      	}
 		      	break_bool *= !stream.match('{',false);
 		      	*/
+		      	if (stream.match(/\s*--/)) {
+		      		while ((ch = stream.next()) != null && !stream.eol());
+		      		return "comment";
+		      	}
+		      	break_bool *= !stream.match("--",false);
 
 				// check for user-made classes
 				for (var category in re_objects) {
@@ -242,9 +246,15 @@ class Code extends Editor {
 					return (word.trim() != '' && !comp_activators.includes(activator));
 				}
 
-				let hint_list = hints[token_type];
+				let hint_list = [];
 				let list = [];
 				let hint_types = {};
+
+				// token can have multiple types
+				let types = token_type.split(' ');
+				for (let t of types) {
+					Array.prototype.push.apply(hint_list, hints[t] || []);
+				}
 
 				// add global hints
 				if (!hint_list && hints.global) {
@@ -273,7 +283,7 @@ class Code extends Editor {
 					}
 
 					if (hint_opts.fn && 
-						((hint_opts.global && globalActivator()) || (activator == ':' && (token_type.includes('instance') || hint_opts.callback)) || (activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))) && 
+						((hint_opts.global && globalActivator()) || (activator == ':' && !hint_opts.global && (token_type.includes('instance') || hint_opts.callback)) || (activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))) && 
 						containsTyped(hint_opts.fn)
 					) {
 						text = hint_opts.fn;
