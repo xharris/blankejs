@@ -125,9 +125,6 @@ View = Class{
     		local mx, my = self.camera:mousePosition()
     		if self.follow_entity then
 		        return (game_width/2)-(self.port_width/2)+mx, (game_height/2)-(self.port_height/2)+my
-		    else
-		    	return (game_width/2)-(self.port_width/2)+mx - Scene._fake_view_start[1],
-		    		   (game_height/2)-(self.port_height/2)+my - Scene._fake_view_start[2]
 		    end
 	    end
 	    return 0, 0

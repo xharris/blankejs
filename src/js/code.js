@@ -145,7 +145,7 @@ class Code extends Editor {
 			      		for (var obj_name in object_list[category]) {
 			      			let is_match = stream.match(obj_name,true);
 			      			if (is_match) {
-			      				return baseCur+" blanke-"+category;
+			      				return baseCur+" blanke-class blanke-"+category;
 			      			}
 			      			break_bool *= !is_match;
 			      		}
@@ -155,7 +155,7 @@ class Code extends Editor {
 			      				let is_match = stream.skipTo(instance_name);
 			      				if (is_match) {
 			      					stream.match(instance_name,true);
-			      					return baseCur+" blanke-"+category+"-instance";
+			      					return baseCur+" blanke-instance blanke-"+category+"-instance";
 			      				}
 			      				break_bool *= !is_match;
 			      			}
@@ -163,10 +163,8 @@ class Code extends Editor {
 			      	}
 				}
 
-
-
-		      while (stream.next() && break_bool) {}
-		      return null;
+				while (stream.next() && break_bool) {}
+				return null;
 		    }
 		  };
 		  return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "lua"), blankeOverlay);

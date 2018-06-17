@@ -723,14 +723,14 @@ class SceneEditor extends Editor {
 		app.removeSearchGroup('scene_image');
 		let walker = nwWALK.walk(nwPATH.join(app.project_path,'assets'));
 		walker.on('file', function(path, stat, next){
-			if (stat.isFile()) {
+			if (stat.isFile() && !stat.name.startsWith(".")) {
 				let full_path = nwPATH.join(path, stat.name);
 				var img_path = nwPATH.relative(app.project_path,full_path).replace(/assets[/\\]/,'');
 				app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
 					this_ref.setImage(nwPATH.resolve(full_path));
 				}});
-				next();
 			}
+			next();
 		});
 	}
 
@@ -1343,8 +1343,9 @@ class SceneEditor extends Editor {
 
 		//images
 		for (let obj of this.images) {
+			let img_path = nwPATH.relative(app.project_path,obj.path);
 			let exp_img = {
-				path: nwPATH.relative(app.project_path,obj.path),
+				path: img_path,
 				snap: obj.snap,
 				offset: obj.offset,
 				spacing: obj.spacing,
@@ -1366,7 +1367,10 @@ class SceneEditor extends Editor {
 					]);
 				}
 			}
-			export_data.images.push(exp_img);
+
+			// only save image if it was used
+			if (Object.keys(obj.pixi_images).length > 0)
+				export_data.images.push(exp_img);
 		}
 
 		nwFS.writeFileSync(this.file, JSON.stringify(export_data));

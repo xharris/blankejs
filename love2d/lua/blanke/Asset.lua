@@ -54,54 +54,38 @@ Asset = Class{
 			asset_name = prefix..basename(path)
 		end
 
-		-- SCRIPT
-		if path:ends('.lua') then
-			Asset.info['script'] = ifndef(Asset.info['script'], {})
-
-			local result, chunk = BlankE.try(love.filesystem.load, path)
-
-			Asset.info['script'][asset_name] = {
+		function acceptAsset(type_name, obj)
+			Asset.info[type_name] = ifndef(Asset.info[type_name], {})
+			Asset.info[type_name][asset_name] = {
 				path = path,
-				category = 'script',
-				object = chunk
+				category = type_name,
+				object = obj
 			}
 			return Asset.get(asset_name)
+		end
+
+		-- SCRIPT
+		if path:ends('.lua') then
+			local result, chunk = BlankE.try(love.filesystem.load, path)
+			return acceptAsset("script", chunk)
 		
 		-- IMAGE
 		elseif table.hasValue(Asset.image_ext, asset_ext) then
-			Asset.info['image'] = ifndef(Asset.info['image'], {})
-			
 			local image = love.graphics.newImage(path)
-			if image then
-				Asset.info['image'][asset_name] = {
-					path = path,
-					category = 'image',
-					object = image
-				}
-				return Asset.get(asset_name)
-			end
+			if image then return acceptAsset("image", image) end
 
 		-- MAP
 		elseif path:ends('.map') then
-			Asset.info['map'] = ifndef(Asset.info['map'], {})
-			
-			Asset.info['map'][asset_name] = {
-				path = path,
-				category = extname(path),
-				object = Map():load(love.filesystem.read(path))
-			}
-			return Asset.get(asset_name)
-		
+			return acceptAsset("map", Map():load(love.filesystem.read(path)))
+
+		-- SCENE
+		elseif path:ends('.scene') then
+			local scene_data = json.decode(love.filesystem.read(path))
+			if scene_data then return acceptAsset("scene", Scene():load(scene_data) ) end
+
 		-- FILE (etc)
 		else
-			Asset.info['file'] = ifndef(Asset.info['file'], {})
-			
-			Asset.info['file'][asset_name] = {
-				path = path,
-				category = extname(path),
-				object = love.filesystem.read(path)
-			}
-			return Asset.get(asset_name)
+			return acceptAsset("file", love.filesystem.read(path))
 		end
 	end,
 
@@ -116,7 +100,6 @@ Asset = Class{
 	end,
 
 	get = function(category, name)
-		Debug.log(category, name)
 		if Asset.has(category, name) then
 			return Asset.info[category][name].object
 		end
@@ -125,6 +108,7 @@ Asset = Class{
 	image = function(name) return Asset.get('image', name) end,
 	script = function(name) return Asset.get('script', name) end,
 	map = function(name) return Asset.get('map', name) end,
+	scene = function(name) return Asset.get('scene', name) end,
 	file = function(name) return Asset.get('file', name) end
 }
 

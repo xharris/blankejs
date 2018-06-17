@@ -501,6 +501,12 @@
 .content[data-type="Code"] .CodeMirror-selection-highlight-scrollbar {
   background-color: #4caf50;
 }
+.content[data-type="Code"] .cm-blanke-instance {
+  color: #80CBC4;
+}
+.content[data-type="Code"] .cm-blanke-class {
+  color: #4fc3f7;
+}
 .content[data-type="Code"] .cm-blanke-state,
 .content[data-type="Code"] .cm-blanke-entity {
   color: #C3E88D;

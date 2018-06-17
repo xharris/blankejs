@@ -11,7 +11,7 @@
 --------------------
 
 socket = require("socket")
-json = require("json")
+-- json = require("json")
 
 noobhub = {
 

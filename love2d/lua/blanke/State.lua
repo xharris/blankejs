@@ -14,8 +14,9 @@ StateManager = {
 	iterateStateStack = function(func, ...)
 
 		for s, state in ipairs(StateManager._stack) do
-			if state.background_color then
-				Draw.setColor(state.background_color)
+			local bg_color = ifndef(state.background_color, Draw.background_color)
+			if bg_color then
+				Draw.setColor(bg_color)
 				Draw.rect('fill', 0,0,game_width,game_height)
 				Draw.resetColor()
 			end

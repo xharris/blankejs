@@ -210,7 +210,6 @@ var app = {
 	loadAppData: function(callback) {
 		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
-		console.log(app_data_path);
 		
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
 			if (!err) {

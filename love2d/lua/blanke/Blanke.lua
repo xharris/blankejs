@@ -61,12 +61,11 @@ function _destroyGameObject(type, del_obj)
 end	
 
 blanke_require("extra.printr")
-blanke_require("extra.json")
+json 	= blanke_require("extra.json")
 uuid 	= blanke_require("extra.uuid")
 
-
 Class 	= blanke_require('Class')	-- hump.class
-Signal = blanke_require('Signal')
+Signal 	= blanke_require('Signal')
 
 anim8 	= blanke_require('extra.anim8')
 HC 		= blanke_require('extra.HC')

@@ -13,7 +13,8 @@ module.exports.class_regex = {
 	'draw': 	/.*(Draw).*/g,
 	'asset': 	/.*(Asset).*/g,
 	'input': 	/.*(Input).*/g,
-	'image': 	/.*(Image).*/g
+	'image': 	/.*(Image).*/g,
+	'scene': 	/.*(Scene).*/g
 }
 
 // Group 1: name of instance 
@@ -21,7 +22,8 @@ module.exports.instance_regex = {
 	'state': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
-	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g
+	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
+	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"][\w\.]+[\'\"]\)\s+?/g
 }
 
 module.exports.completions = {
@@ -113,6 +115,9 @@ module.exports.completions = {
 	"blanke-image-instance":[
 		{prop:"x"},
 		{prop:"y"},
+		{fn:"draw"}
+	],
+	"blanke-scene-instance":[
 		{fn:"draw"}
 	]
 }

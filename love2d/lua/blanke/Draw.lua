@@ -1,5 +1,6 @@
 Draw = Class{
 	font = nil,
+	background_color = {0,0,0,1},
 	color = {0,0,0,255},
 	reset_color = {255,255,255,255},
 
@@ -44,7 +45,8 @@ Draw = Class{
 	end,
 
 	setBackgroundColor = function(r,g,b,a)
-		love.graphics.setBackgroundColor(Draw._parseColorArgs(r,g,b,a))
+		Draw.background_color = Draw._parseColorArgs(r,g,b,a)
+		love.graphics.setBackgroundColor(Draw.background_color)
 		return Draw
 	end,
 
