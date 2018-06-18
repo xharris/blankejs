@@ -507,6 +507,9 @@
 .content[data-type="Code"] .cm-blanke-class {
   color: #4fc3f7;
 }
+.content[data-type="Code"] .cm-blanke-self {
+  color: #FFB74D;
+}
 .content[data-type="Code"] .cm-blanke-state,
 .content[data-type="Code"] .cm-blanke-entity {
   color: #C3E88D;

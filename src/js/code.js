@@ -127,6 +127,8 @@ class Code extends Editor {
 		  var blankeOverlay = {
 		    token: function(stream, state) {
 				let baseCur = stream.lineOracle.state.baseCur;
+				if (baseCur == null) baseCur = "";
+				else baseCur += " ";
 		    	var ch;
 
 				/* keeping this code since it's a good example
@@ -139,16 +141,8 @@ class Code extends Editor {
 		      	}
 		      	break_bool *= !stream.match('{',false);
 		      	*/
-
-		      	// NOTE: break_bool should be 0 if a match is found
-
-		      	//let editor = this_ref.codemirror;
-		      	//let tokens = editor.getLineTokens(stream.lineOracle.line)
-
-		      	let break_while = 0;
-
-		      	if (stream.match(/.*self.*/g, true)) {
-		      		return "blanke-self";
+		      	if (stream.match("self", true)) {
+		      		return baseCur+"blanke-self";
 		      	}
 
 		      	if (stream.match(/\s*--/)) {
@@ -163,25 +157,24 @@ class Code extends Editor {
 			      		
 			      			let is_match = stream.match(obj_name,true);
 			      			if (is_match) {
-			      				return baseCur+" blanke-class blanke-"+category;
+			      				return baseCur+"blanke-class blanke-"+category;
 			      			}
-			      			break_while *= !is_match;
 			      		}
 
 			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
 			      			for (var instance_name of object_instances[this_ref.file][category]) {
-			      				let is_match = stream.skipTo(instance_name);
+			      				let is_match = stream.skipTo(instance_name) || stream.skipTo(instance_name+".");
+
 			      				if (is_match) {
 			      					stream.match(instance_name,true);
-			      					return baseCur+" blanke-instance blanke-"+category+"-instance";
+			      					return baseCur+"blanke-instance blanke-"+category+"-instance";
 			      				}
-			      				break_while *= !is_match;
 			      			}
 			      		}	
 			      	}
 				}
 
-				while (stream.next() && break_while) {}
+				while (stream.next() && false) {} // idk why but the '&& false' helps
 				return null;
 		    }
 		  };
@@ -286,10 +279,13 @@ class Code extends Editor {
 									for (let cb of callbacks[class_type]) {
 										if (line.includes(":"+cb)) {
 											let self_ref = autocomplete.self_reference[class_type];
-											if (self_ref == "class")
-												types.push(class_type);
+											if (self_ref == "class") 
+												types = ["blanke-class", class_type];
 											else if (self_ref == "instance")
-												types.push(class_type+"-instance");
+												types = ["blanke-instance", class_type+"-instance"];
+
+											if (self_ref)
+												token_type = types.join(' ');
 
 											loop = 0;
 										}
@@ -332,8 +328,11 @@ class Code extends Editor {
 					}
 
 					if (hint_opts.fn && 
-						((hint_opts.global && globalActivator()) || (activator == ':' && !hint_opts.global && (token_type.includes('instance') || hint_opts.callback)) || (activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))) && 
-						containsTyped(hint_opts.fn)
+						(
+							(hint_opts.global && globalActivator()) || 
+							(activator == ':' && !hint_opts.global && (token_type.includes('instance') || hint_opts.callback)) || 
+							(activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))
+						) && containsTyped(hint_opts.fn)
 					) {
 						text = hint_opts.fn;
 						hint_types[text] = 'function';

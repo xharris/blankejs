@@ -1,5 +1,6 @@
 BlankE.addClassType("Player", "Entity")
 
 function Player:init()
-	self
+	bob = Player()
+	bob
 end
