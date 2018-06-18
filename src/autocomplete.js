@@ -8,7 +8,7 @@ let color_vars = {
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
 	'state': 	[/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g, /.*(State).*/g],
-	'entity': 	/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g,
+	'entity': 	[/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g, /.*(Player).*/g],
 	'blanke': 	/.*(BlankE).*/g,
 	'draw': 	/.*(Draw).*/g,
 	'asset': 	/.*(Asset).*/g,
@@ -19,11 +19,16 @@ module.exports.class_regex = {
 
 // Group 1: name of instance 
 module.exports.instance_regex = {
-	'state': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"][\w\.]+[\'\"]\)\s+?/g
+}
+
+// how to treat use of the 'self' keyword when used inside a callback
+module.exports.self_reference = {
+	'blanke-state': 'class',
+	'blanke-entity': 'instance'
 }
 
 module.exports.completions = {

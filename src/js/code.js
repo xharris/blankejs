@@ -3,15 +3,25 @@ var object_list = {}
 var object_src = {};
 var object_instances = {};
 
-var autocomplete, re_objects, hints, re_instance;
+var autocomplete, re_class, hints, re_instance, callbacks;
 
 function reloadCompletions() {
 	delete require.cache[require.resolve('./autocomplete.js')];
 	autocomplete = require('./autocomplete.js');
 
-	re_objects = autocomplete.class_regex;
+	re_class = autocomplete.class_regex;
 	hints = autocomplete.completions;
 	re_instance = autocomplete.instance_regex;
+
+	callbacks = {};
+	for (let htype in hints) {
+		for (let prop of hints[htype]) {
+			if (prop.callback) {
+				if (!callbacks[htype]) callbacks[htype] = [];
+				callbacks[htype].push(prop.fn);
+			}
+		}
+	}
 }
 
 function refreshObjectList (filename, content) {
@@ -38,8 +48,8 @@ function refreshObjectList (filename, content) {
 	// clear src list
 	object_src[filename] = '';
 	do {
-		for (var category in re_objects) {
-			let re = re_objects[category];
+		for (var category in re_class) {
+			let re = re_class[category];
 		
 			ret_matches = [];
 			if (Array.isArray(re)) {
@@ -56,8 +66,7 @@ function refreshObjectList (filename, content) {
 				}
 			}
 
-
-			if (ret_matches.length == 0) continue;
+			//if (ret_matches.length == 0) continue;
 
 			for (let obj_name of ret_matches) {
 				object_src[filename] += obj_name + ' ';
@@ -68,7 +77,6 @@ function refreshObjectList (filename, content) {
 					object_list[category][obj_name]++;
 				else {
 					object_list[category][obj_name] = 1;
-
 				}
 
 				// get instances made with those classes
@@ -85,8 +93,10 @@ function refreshObjectList (filename, content) {
 						if (!ret_instance_match) {
 							// continue; // no longer usable after adding 'for (let obj_name of ret_matches)'
 						}
-						else if(!object_instances[filename][category].includes(ret_instance_match[1]))
+						else if(!object_instances[filename][category].includes(ret_instance_match[1])) {
 							object_instances[filename][category].push(ret_instance_match[1]);
+						}
+
 					} while (ret_instance_match)
 				}
 			}
@@ -135,6 +145,8 @@ class Code extends Editor {
 		      	//let editor = this_ref.codemirror;
 		      	//let tokens = editor.getLineTokens(stream.lineOracle.line)
 
+		      	let break_while = 0;
+
 		      	if (stream.match(/.*self.*/g, true)) {
 		      		return "blanke-self";
 		      	}
@@ -145,30 +157,31 @@ class Code extends Editor {
 		      	}
 
 				// check for user-made classes
-				for (var category in re_objects) {
+				for (var category in re_class) {
 			      	if (object_list[category]) {
 			      		for (var obj_name in object_list[category]) {
+			      		
 			      			let is_match = stream.match(obj_name,true);
 			      			if (is_match) {
-			      				console.log(category, obj_name, stream.string);
 			      				return baseCur+" blanke-class blanke-"+category;
 			      			}
+			      			break_while *= !is_match;
 			      		}
 
 			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
 			      			for (var instance_name of object_instances[this_ref.file][category]) {
 			      				let is_match = stream.skipTo(instance_name);
 			      				if (is_match) {
-			      				 	console.log('2',category, instance_name, stream.string);
 			      					stream.match(instance_name,true);
 			      					return baseCur+" blanke-instance blanke-"+category+"-instance";
 			      				}
+			      				break_while *= !is_match;
 			      			}
 			      		}	
 			      	}
 				}
 
-				while (stream.next()) {}
+				while (stream.next() && break_while) {}
 				return null;
 		    }
 		  };
@@ -257,6 +270,37 @@ class Code extends Editor {
 
 				// token can have multiple types
 				let types = token_type.split(' ');
+
+				// get most recent callback token type
+				if (types.includes("blanke-self")) {
+					let loop = token_pos.line-1;
+					let last_class;
+					do {
+						let tokens = editor.getLineTokens(loop);
+						for (var t of tokens) {
+							if (t.type && t.type.includes("blanke-class")) {
+								let class_type = t.type.split(" ").slice(-1)[0];
+								let line = editor.getLine(loop);
+
+								if (callbacks[class_type]) {
+									for (let cb of callbacks[class_type]) {
+										if (line.includes(":"+cb)) {
+											let self_ref = autocomplete.self_reference[class_type];
+											if (self_ref == "class")
+												types.push(class_type);
+											else if (self_ref == "instance")
+												types.push(class_type+"-instance");
+
+											loop = 0;
+										}
+									}
+								}
+							}
+						}
+						loop--;
+					} while (loop > 0);
+				}
+
 				for (let t of types) {
 					Array.prototype.push.apply(hint_list, hints[t] || []);
 				}
@@ -352,7 +396,7 @@ class Code extends Editor {
 
 		this.setFontSize(font_size);
 		//this.codemirror.setSize("100%", "100%");
-		this.codemirror.on('change', function(){
+		this.codemirror.on('change', function(cm, obj){
 			this_ref.addAsterisk();
 			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
 		});
@@ -487,6 +531,7 @@ document.addEventListener('fileChange', function(e){
 });
 
 function addScripts(folder_path) {
+	var file_list = [];
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
 		files.forEach(function(file){
