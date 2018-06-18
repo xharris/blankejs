@@ -2,19 +2,23 @@ local _images = {}
  
 Image = Class{
 	init = function(self, name, img_data)
+		name = cleanPath(name)
 		self.name = name 
+
+		local asset = Asset.image(name)
 
 		if img_data and tostring(img_data):contains("ImageData") then
 			self.image = love.graphics.newImage(img_data)
-		else
 
-			local asset = Asset.image(name)
+		elseif asset then
 			self.image = asset
 
-			if asset == nil then
-				error('Image not found: \"'..tostring(name)..'\"')
-				return
-			end
+		elseif love.filesystem.getInfo(name) then
+			self.image = love.graphics.newImage(name)
+
+		else
+			error('Image not found: \"'..tostring(name)..'\"')
+			return
 		end
 		
 		self.image:setWrap("clampzero","clampzero")

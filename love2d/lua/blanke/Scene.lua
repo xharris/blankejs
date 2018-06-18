@@ -47,8 +47,37 @@ local Scenetable = Class{
 
 local SceneLayer = Class{
 	init = function(self)
-		self.elements = {}	-- object, tile
+		self.parent = nil
+		self.images = {}
+		self.hashtable = Scenetable()
+		self.spritebatches = {}
 	end,
+
+	addTile = function(self, img_name, rect)
+		local img_ref = self.parent.tilesets[img_name]
+		if img_ref then
+			self.images[img_name] = Image(img_name)
+
+			local tile_info = {
+				x=rect[1], y=rect[2],
+				crop={x=rect[3], y=rect[4], w=rect[5], h=rect[6]},
+				name=img_name
+			}
+
+			-- add to spritebatch
+			self.spritebatches[img_name] = ifndef(self.spritebatches[img_name], love.graphics.newSpriteBatch(self.images[img_name]()))
+			tile_info.id = self.spritebatches[img_name]:add(love.graphics.newQuad(tile_info.crop.x, tile_info.crop.y, tile_info.crop.w, tile_info.crop.h, self.images[img_name].width, self.images[img_name].height), tile_info.x, tile_info.y)
+
+			-- add to tile hashtable
+			self.hashtable:add(tile_info.x, tile_info.y, tile_info)
+		end
+	end,
+
+	draw = function(self)
+		for b, batch in pairs(self.spritebatches) do
+			love.graphics.draw(batch)
+		end
+	end
 }
 
 local Scene = Class{
@@ -66,29 +95,57 @@ local Scene = Class{
 		self.tilesets = {}
 	end,
 
+	getLayer = function(self, name)
+		for l, layer in ipairs(self.layers) do
+			if layer.name == name then return layer end
+		end
+	end,
+
 	load = function(self, scene_data)
 		-- layers
 		for l, layer in ipairs(scene_data.layers) do
 			local new_layer = SceneLayer()
+			new_layer.parent = self
 
 			local attributes = {'name', 'depth', 'offset', 'snap'}
 			for a, attr in ipairs(attributes) do new_layer[attr] = layer[attr] end
 
 			table.insert(self.layers, new_layer) 
 		end
+		self:sortLayers()
 
 		-- tilesets (images)
 		for i, image in ipairs(scene_data.images) do
-			table.insert(self.tilesets,{
-				-- image = Im
-			})
+			local img_name = Asset.getNameFromPath('image', cleanPath(image.path))
+			self.tilesets[img_name] = {
+				image = Image(img_name),
+				snap = image.snap,
+				offset = image.offset,
+				spacing = image.spacing
+			}
+			
+			-- add placed tile data
+			for layer_name, coords in pairs(image.coords) do
+				for c, coord in ipairs(coords) do
+					local layer = self:getLayer(layer_name)
+					layer:addTile(img_name, coord)
+				end
+			end
 		end
 
 		return self
 	end,
 
-	resortLayers = function(self)
-		self.layers = table.sort(self.layers, function(a, b) return a.depth < b.depth end)
+	sortLayers = function(self)
+		table.sort(self.layers, function(a, b) return a.depth < b.depth end)
+	end,
+
+	draw = function(self, layer_name)
+		for l, layer in ipairs(self.layers) do
+			if layer_name == nil or layer.name == layer_name then 
+				layer:draw()
+			end
+		end
 	end
 }
 

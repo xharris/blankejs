@@ -34,6 +34,8 @@ Asset = Class{
 	end,
 
 	add = function(path, prefix)
+		path = cleanPath(path)
+
 		-- FOLDER
 		local file_info = love.filesystem.getInfo(path)
 		if path:ends('/') or (file_info and file_info.type == "directory") then
@@ -102,6 +104,14 @@ Asset = Class{
 	get = function(category, name)
 		if Asset.has(category, name) then
 			return Asset.info[category][name].object
+		end
+	end,
+
+	getNameFromPath = function(category, path)
+		for name, info in pairs(Asset.info[category]) do
+			if info.path == path then
+				return name
+			end
 		end
 	end,
 

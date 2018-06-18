@@ -112,13 +112,12 @@ class Code extends Editor {
 
 		var this_ref = this;
 
+		let last_class = '';
 		CodeMirror.defineMode("blanke", function(config, parserConfig) {
 		  var blankeOverlay = {
 		    token: function(stream, state) {
 				let baseCur = stream.lineOracle.state.baseCur;
 		    	var ch;
-
-		    	var break_bool = 0;
 
 				/* keeping this code since it's a good example
 				if (stream.match("{{")) {
@@ -133,11 +132,17 @@ class Code extends Editor {
 
 		      	// NOTE: break_bool should be 0 if a match is found
 
+		      	//let editor = this_ref.codemirror;
+		      	//let tokens = editor.getLineTokens(stream.lineOracle.line)
+
+		      	if (stream.match(/.*self.*/g, true)) {
+		      		return "blanke-self";
+		      	}
+
 		      	if (stream.match(/\s*--/)) {
 		      		while ((ch = stream.next()) != null && !stream.eol());
 		      		return "comment";
 		      	}
-		      	break_bool *= !stream.match("--",false);
 
 				// check for user-made classes
 				for (var category in re_objects) {
@@ -145,25 +150,25 @@ class Code extends Editor {
 			      		for (var obj_name in object_list[category]) {
 			      			let is_match = stream.match(obj_name,true);
 			      			if (is_match) {
+			      				console.log(category, obj_name, stream.string);
 			      				return baseCur+" blanke-class blanke-"+category;
 			      			}
-			      			break_bool *= !is_match;
 			      		}
 
 			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
 			      			for (var instance_name of object_instances[this_ref.file][category]) {
 			      				let is_match = stream.skipTo(instance_name);
 			      				if (is_match) {
+			      				 	console.log('2',category, instance_name, stream.string);
 			      					stream.match(instance_name,true);
 			      					return baseCur+" blanke-instance blanke-"+category+"-instance";
 			      				}
-			      				break_bool *= !is_match;
 			      			}
 			      		}	
 			      	}
 				}
 
-				while (stream.next() && break_bool) {}
+				while (stream.next()) {}
 				return null;
 		    }
 		  };

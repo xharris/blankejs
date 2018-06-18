@@ -64,6 +64,9 @@ module.exports.completions = {
 		{prop: "can_repeat"},
 		{fn: "reset"}
 	],
+	"blanke-entity":[
+		{fn:"init", callback: true}
+	],
 	"blanke-state":[
 		{fn:"switch",
 		vars:{
@@ -105,6 +108,14 @@ module.exports.completions = {
 		{prop:"xstart"},
 		{prop:"ystart"},
 
+		{fn:"addAnimation",vars:{
+			name:'', 
+			image:'name of asset (ex. bob_stand, bob_walk)', 
+			frames:'{\'1-2\', 1} means columns 1-2 and row 1', 
+			frame_size:'{32,32} means each frame is 32 by 32', 
+			speed:'0.1 smaller = faster'
+		}},
+
 		{fn:"destroy"},
 
 		{fn:"hadCollision",vars:{self_name:'', other_name:''}},
@@ -115,7 +126,8 @@ module.exports.completions = {
 	"blanke-image-instance":[
 		{prop:"x"},
 		{prop:"y"},
-		{fn:"draw"}
+		{fn:"draw"},
+		{fn:"crop",vars:{x:"",y:"",width:"",height:""}}
 	],
 	"blanke-scene-instance":[
 		{fn:"draw"}

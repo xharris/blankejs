@@ -101,6 +101,10 @@ function extname(str)
 	end
 end
 
+function cleanPath(path)
+	return path:gsub("\\+","/")
+end
+
 function bitmask4(tile_map, tile_val, x, y)
 	local tile_vals = {}
 	if type(tile_val) == "string" then table.insert(tile_vals, tile_val)
