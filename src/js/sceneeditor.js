@@ -406,6 +406,7 @@ class SceneEditor extends Editor {
 				if (this_ref.obj_type == "object" && this_ref.placing_object) {
 					this_ref.placeObject(this_ref.placing_object.points.slice());
 					this_ref.clearPlacingObject();
+					this_ref.export();
 				}
 			}
 		});
