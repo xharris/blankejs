@@ -154,8 +154,9 @@ class Code extends Editor {
 				for (var category in re_class) {
 			      	if (object_list[category]) {
 			      		for (var obj_name in object_list[category]) {
-			      		
-			      			let is_match = stream.match(obj_name,true);
+			      			let re_obj_name = new RegExp("\\b"+obj_name);
+			      			let is_match = stream.match(re_obj_name,true);
+			      			
 			      			if (is_match) {
 			      				return baseCur+"blanke-class blanke-"+category;
 			      			}
@@ -163,10 +164,11 @@ class Code extends Editor {
 
 			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
 			      			for (var instance_name of object_instances[this_ref.file][category]) {
-			      				let is_match = stream.skipTo(instance_name) || stream.skipTo(instance_name+".");
+			      				let re_inst_name = new RegExp("\\b"+instance_name+"\\.?");
+			      				let is_match = stream.match(re_inst_name);
 
 			      				if (is_match) {
-			      					stream.match(instance_name,true);
+			      					stream.match(re_inst_name,true);
 			      					return baseCur+"blanke-instance blanke-"+category+"-instance";
 			      				}
 			      			}
@@ -335,7 +337,7 @@ class Code extends Editor {
 						) && containsTyped(hint_opts.fn)
 					) {
 						text = hint_opts.fn;
-						hint_types[text] = 'function';
+						hint_types[text] = 'function1';
 						if (hint_opts.vars) {
 							for (var arg in hint_opts.vars) {
 								if (hint_opts.vars[arg] != "")
@@ -347,7 +349,12 @@ class Code extends Editor {
 							if (value == 'etc') return '<span class="grayed-out">...</span>';
 							return value;
 						}
-						render = hint_opts.fn + "(" + Object.keys(hint_opts.vars || {}).map(specialReplacements) + ")"+
+						let paren = ["(",")"];
+						if (hint_opts.named_args) {
+							paren = ["{","}"];
+							hint_types[text] = 'function2';
+						}
+						render = hint_opts.fn + paren[0] + Object.keys(hint_opts.vars || {}).map(specialReplacements) + paren[1] +
 									"<p class='arg-info'>"+arg_info+"</p>"+
 									"<p class='item-type'>"+item_type+"</p>";
 						add = true;
@@ -381,8 +388,10 @@ class Code extends Editor {
 								let comp_word = editor.findWordAt(editor.getCursor());
 								if (hint_types[completion.text] == 'property')
 									editor.replaceRange(completion.text, comp_word.anchor, comp_word.head);
-								else if (hint_types[completion.text] == 'function')
+								else if (hint_types[completion.text] == 'function1')
 									editor.replaceRange(completion.text+'(', comp_word.anchor, comp_word.head);
+								else if (hint_types[completion.text] == 'function2')
+									editor.replaceRange(completion.text+'{', comp_word.anchor, comp_word.head);
 							});
 
 							return completions

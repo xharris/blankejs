@@ -433,7 +433,7 @@ BlankE = {
 		            if e.auto_update and not e.pause then
 		                if e._update then
 		                	e:_update(dt)
-		                else
+		                elseif e.update then
 			                e:update(dt)
 			            end
 		            end

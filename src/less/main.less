@@ -22,13 +22,21 @@ html {
 	left: 0px; right: 0px; top: 0px; bottom: 0px;
 }
 
-body {
+body {    width: 16px;
+    margin: auto;
+    vertical-align: middle;
 	.win-drag();
 
 	width: 100%;
 	height: 100%;
 	background-color: @window-background;
 	border: 1px solid black;
+}
+
+.blanke-icon {
+    width: 16px;
+    margin: auto;
+    vertical-align: middle;
 }
 
 #window-buttons {
@@ -51,6 +59,14 @@ body {
 		.mdi {
 			padding: 3px;
 		}
+
+		.blanke-icon {
+			opacity: .75;
+			transition: all ease-in-out 0.2s;
+		}
+		&:hover > .blanke-icon {
+			opacity: 1;
+		}
 	}
 
 	#btn-close {
@@ -71,6 +87,7 @@ body {
 
 	button {
 		.ui-button-sphere();
+		cursor: pointer;
 
 		&:hover {
 			color: @search-text-focus;
@@ -81,6 +98,15 @@ body {
 		width: 23px;
 		height: 23px;
 		color: #9E9E9E;
+
+		.blanke-icon {
+			opacity: .75;
+			pointer-events: none;
+			transition: all ease-in-out 0.2s;
+		}
+		&:hover > .blanke-icon {
+			opacity: 1;
+		}
 	}
 }
 

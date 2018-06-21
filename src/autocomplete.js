@@ -7,14 +7,22 @@ let color_vars = {
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
-	'state': 	[/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g, /.*(State).*/g],
-	'entity': 	[/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g, /.*(Player).*/g],
+	'state': 	[
+		/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g,
+		/.*BlankE\.addState\s*\(\s*"(\w+)"\s*\).*/g,
+		/\b(State).*/g
+	],
+	'entity': 	[
+		/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g,
+		/.*BlankE\.addEntity\s*\(\s*"(\w+)"\s*\).*/g,
+		/\b(Player).*/g
+	],
 	'blanke': 	/.*(BlankE).*/g,
-	'draw': 	/.*(Draw).*/g,
-	'asset': 	/.*(Asset).*/g,
-	'input': 	/.*(Input).*/g,
-	'image': 	/.*(Image).*/g,
-	'scene': 	/.*(Scene).*/g
+	'draw': 	/\b(Draw).*/g,
+	'asset': 	/\b(Asset).*/g,
+	'input': 	/\b(Input).*/g,
+	'image': 	/\b(Image).*/g,
+	'scene': 	/\b(Scene).*/g
 }
 
 // Group 1: name of instance 
@@ -69,9 +77,6 @@ module.exports.completions = {
 		{prop: "can_repeat"},
 		{fn: "reset"}
 	],
-	"blanke-entity":[
-		{fn:"init", callback: true}
-	],
 	"blanke-state":[
 		{fn:"switch",
 		vars:{
@@ -84,9 +89,32 @@ module.exports.completions = {
 			prev_state: "state that was active before this one"
 		}},
 		{fn:"update", callback: true},
+		{fn:"draw", callback: true},
 		{fn:"leave", callback: true}
 	],
+	"blanke-entity":[
+		{fn:"init", callback: true},
+		{fn:"preUpdate", callback: true, vars:{ dt:'' }},
+		{fn:"update", callback: true, vars:{ dt:'' }},
+		{fn:"preDraw", callback: true},
+		{fn:"draw", callback: true},
+		{fn:"postDraw", callback: true},
+	],
 	"blanke-entity-instance":[
+		{prop:"x"},
+		{prop:"y"},
+		{prop:"direction"},
+		{prop:"friction"},
+		{prop:"gravity"},
+		{prop:"gravity_direction", info:"in degrees. 0 = right, 90 = down, default = 90"},
+		{prop:"hspeed"},
+		{prop:"vspeed"},
+		{prop:"speed", info:"best used with 'direction'"},
+		{prop:"xprevious"},
+		{prop:"yprevious"},
+		{prop:"xstart"},
+		{prop:"ystart"},
+
 		{prop:"sprite_angle"},
 		{prop:"sprite_xscale"},
 		{prop:"sprite_yscale"},
@@ -101,25 +129,16 @@ module.exports.completions = {
 		{prop:"sprite_width"},
 		{prop:"sprite_height"},
 
-		{prop:"direction"},
-		{prop:"friction"},
-		{prop:"gravity"},
-		{prop:"gravity_direction"},
-		{prop:"hspeed"},
-		{prop:"vspeed"},
-		{prop:"speed"},
-		{prop:"xprevious"},
-		{prop:"yprevious"},
-		{prop:"xstart"},
-		{prop:"ystart"},
+		{prop:"show_debug", info:"debugSprite() and debugCollision() are automatically called"},
 
-		{fn:"addAnimation",vars:{
+		{fn:"addAnimation",named_args:true,vars:{
 			name:'', 
 			image:'name of asset (ex. bob_stand, bob_walk)', 
 			frames:'{\'1-2\', 1} means columns 1-2 and row 1', 
 			frame_size:'{32,32} means each frame is 32 by 32', 
 			speed:'0.1 smaller = faster'
 		}},
+		{fn:"drawSprite",vars:{ name:'calls default draw function for given animation name' }},
 
 		{fn:"destroy"},
 

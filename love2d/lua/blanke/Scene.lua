@@ -51,6 +51,7 @@ local SceneLayer = Class{
 		self.images = {}
 		self.hashtable = Scenetable()
 		self.spritebatches = {}
+		self.hitboxes = {}
 	end,
 
 	addTile = function(self, img_name, rect)
@@ -73,9 +74,24 @@ local SceneLayer = Class{
 		end
 	end,
 
+	addHitbox = function(self, points, tag)
+		self.hitboxes[tag] = ifndef(self.hitboxes[tag], {})
+		local new_hitbox = Hitbox("polygon", {100,100, 200,100, 200,200, 100,200}, tag)
+		print_r(new_hitbox)
+		new_hitbox.color = Draw.green
+		table.insert(self.hitboxes[tag], new_hitbox)
+	end,
+
 	draw = function(self)
-		for b, batch in pairs(self.spritebatches) do
+		for b, batch in ipairs(self.spritebatches) do
 			love.graphics.draw(batch)
+		end
+
+		for name, hitboxes in pairs(self.hitboxes) do
+			for h, hitbox in ipairs(hitboxes) do
+				print(hitbox:bbox())
+				hitbox:draw('fill')
+			end
 		end
 	end
 }
@@ -93,6 +109,7 @@ local Scene = Class{
 
 		self.layers = {}
 		self.tilesets = {}
+		self.objects = {}
 	end,
 
 	getLayer = function(self, name)
@@ -133,6 +150,13 @@ local Scene = Class{
 			end
 		end
 
+		-- objects (just store their info)
+		for o, object in ipairs(scene_data.objects) do
+			self.objects[object.name] = ifndef(self.objects[object.name], {})
+			local attributes = {'char', 'color', 'polygons'}
+			for a, attr in ipairs(attributes) do self.objects[object.name][attr] = object[attr] end
+		end
+
 		return self
 	end,
 
@@ -146,7 +170,35 @@ local Scene = Class{
 				layer:draw()
 			end
 		end
-	end
+	end,
+
+	getObjects = function(self, name)
+		if self.objects[name] then
+			return self.objects[name].polygons
+		end
+		return {}
+	end,
+
+	getObjectInfo = function(self, name)
+		if self.objects[name] then
+			return self.objects[name]
+		end
+	end,
+
+	addHitbox = function(self, ...)
+		local obj_names = {...}
+
+		for n, name in ipairs(obj_names) do
+			if self.objects[name] then
+				for layer_name, polygons in pairs(self.objects[name].polygons) do
+					local layer = self:getLayer(layer_name)
+					for p, polygon in ipairs(polygons) do
+						layer:addHitbox(polygon, name)
+					end
+				end
+			end
+		end
+	end,
 }
 
 return Scene

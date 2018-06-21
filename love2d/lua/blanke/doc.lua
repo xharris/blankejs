@@ -96,6 +96,7 @@ Entity
 BlankE.addClassType("entity_name", "Entity")
 
 -- instance properties
+num x, y
 str sprite_index
 num	sprite_width, sprite_height
 num sprite_angle					-- in degrees
@@ -137,6 +138,7 @@ addAnimation{...}					--[[
 	frame_size = {width, height}	-- {32,32} means each frame is 32 by 32
 	speed = float					-- 0.1 smaller = faster
 ]]
+drawSprite(sprite_index)			-- calls default draw function for given animation name
 addShape(...)						--[[
 	name - str
 	shape - str rectangle, circle, polygon, point

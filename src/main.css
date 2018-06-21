@@ -1156,7 +1156,7 @@
   background: url("includes/grid.png");
   border-radius: 2px;
   margin-bottom: 5px;
-  display: inline-block;
+  overflow: auto;
 }
 .content[data-type="AssetManager"] .file-preview .form-container {
   display: inline-block;
@@ -1203,11 +1203,19 @@ html {
   bottom: 0px;
 }
 body {
+  width: 16px;
+  margin: auto;
+  vertical-align: middle;
   -webkit-app-region: drag;
   width: 100%;
   height: 100%;
   background-color: #424242;
   border: 1px solid black;
+}
+.blanke-icon {
+  width: 16px;
+  margin: auto;
+  vertical-align: middle;
 }
 #window-buttons {
   position: absolute;
@@ -1227,6 +1235,13 @@ body {
 }
 #window-buttons button .mdi {
   padding: 3px;
+}
+#window-buttons button .blanke-icon {
+  opacity: .75;
+  transition: all ease-in-out 0.2s;
+}
+#window-buttons button:hover > .blanke-icon {
+  opacity: 1;
 }
 #window-buttons #btn-close {
   color: #f44336;
@@ -1260,12 +1275,12 @@ body {
   outline: none;
   background-color: transparent;
   font-size: 14px;
-  cursor: pointer;
   vertical-align: top;
   transition: all ease-in-out 0.4s;
   height: 26px;
   width: 26px;
   padding: 0px;
+  cursor: pointer;
   margin: 0px;
   width: 23px;
   height: 23px;
@@ -1288,6 +1303,14 @@ body {
 .tool-container button:hover {
   color: #f0f0f0;
   background-color: rgba(0, 0, 0, 0.5);
+}
+.tool-container button .blanke-icon {
+  opacity: .75;
+  pointer-events: none;
+  transition: all ease-in-out 0.2s;
+}
+.tool-container button:hover > .blanke-icon {
+  opacity: 1;
 }
 #sidebar {
   /* width: 155px; */

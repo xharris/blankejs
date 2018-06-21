@@ -1,28 +1,40 @@
 Hitbox = Class{
 	_color = {},
+	polygonCheck = true,
 
 	init = function(self, shape, args, tag)
 		self.xoffset = 0
 		self.yoffset = 0
 
 		self.HCShape = nil
+		--[[
+		if Hitbox.polygonCheck and shape == "polygon" then
+			-- check if polygon is just a point
+			if #args == 2 then
+				shape = "point"
+			end
+
+			-- check if a polygon is a rectangle instead
+			if #args == 8 then
+				local x_diffs = {}
+				local y_diffs = {}
+				print('checking')
+				for a = 1, #args, 2 do
+					local x = args[a]
+					local y = args[a+1]
+					print(x,y)
+				end
+			end
+		end]]
+
 		if shape == "rectangle" then
-			args[1] = args[1]
-			args[2] = args[2]
 			self.HCShape = HC.rectangle(unpack(args))
 		elseif shape == "polygon" then
-			for a = 1, #args, 2 do
-				args[a] = args[a]
-				args[a+1] = args[a+1]
-			end
+			--print(unpack(args))
 			self.HCShape = HC.polygon(unpack(args))
 		elseif shape == "circle" then
-			args[1] = args[1]
-			args[2] = args[2]
 			self.HCShape = HC.circle(unpack(args))
 		elseif shape == "point" then
-			args[1] = args[1] 
-			args[2] = args[2] 
 			self.HCShape = HC.point(unpack(args))
 		end
 
@@ -45,7 +57,7 @@ Hitbox = Class{
 
 	draw = function(self, mode)
 		if self._enabled then
-			local color = ifndef(Hitbox._color[self.HCShape.tag], self.color)
+			local color = Draw._parseColorArgs(ifndef(Hitbox._color[self.HCShape.tag], self.color))
 			color[4] = 255/3
 
 			local x, y = self:center()
