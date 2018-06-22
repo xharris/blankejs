@@ -396,6 +396,7 @@ Entity = Class{
 			local anim_w, anim_h = self._sprites[ani_name]:getDimensions()
 
 			self.sprite[ani_name] = {width=anim_w, height=anim_h}
+			self.sprite_width, self.sprite_height = anim_w, anim_h
 
 		end
 		return self

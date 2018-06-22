@@ -52,43 +52,54 @@ local SceneLayer = Class{
 		self.hashtable = Scenetable()
 		self.spritebatches = {}
 		self.hitboxes = {}
+		self.entities = {}
+
+		self.draw_hitboxes = false
 	end,
 
-	addTile = function(self, img_name, rect)
+	addTile = function(self, info)
+		local img_name = info.image
+
 		local img_ref = self.parent.tilesets[img_name]
 		if img_ref then
 			self.images[img_name] = Image(img_name)
 
-			local tile_info = {
-				x=rect[1], y=rect[2],
-				crop={x=rect[3], y=rect[4], w=rect[5], h=rect[6]},
-				name=img_name
-			}
+			local tile_info = info
 
 			-- add to spritebatch
 			self.spritebatches[img_name] = ifndef(self.spritebatches[img_name], love.graphics.newSpriteBatch(self.images[img_name]()))
-			tile_info.id = self.spritebatches[img_name]:add(love.graphics.newQuad(tile_info.crop.x, tile_info.crop.y, tile_info.crop.w, tile_info.crop.h, self.images[img_name].width, self.images[img_name].height), tile_info.x, tile_info.y)
+			info.id = self.spritebatches[img_name]:add(love.graphics.newQuad(info.crop.x, info.crop.y, info.crop.w, info.crop.h, self.images[img_name].width, self.images[img_name].height), info.x, info.y)
 
 			-- add to tile hashtable
-			self.hashtable:add(tile_info.x, tile_info.y, tile_info)
+			self.hashtable:add(info.x, info.y, info)
 		end
 	end,
 
-	addHitbox = function(self, points, tag)
+	addHitbox = function(self, points, tag, color)
 		self.hitboxes[tag] = ifndef(self.hitboxes[tag], {})
 		local new_hitbox = Hitbox("polygon", points, tag)
-		new_hitbox.color = Draw.green
+		new_hitbox.color = color
 		table.insert(self.hitboxes[tag], new_hitbox)
 	end,
 
+	addEntity = function(self, instance)
+		table.insert(self.entities, instance)
+	end,
+
 	draw = function(self)
-		for b, batch in ipairs(self.spritebatches) do
+		for image, batch in pairs(self.spritebatches) do
 			love.graphics.draw(batch)
 		end
 
-		for name, hitboxes in pairs(self.hitboxes) do
-			for h, hitbox in ipairs(hitboxes) do
-				hitbox:draw('fill')
+		for e, entity in ipairs(self.entities) do
+			entity:draw()
+		end
+
+		if self.draw_hitboxes then
+			for name, hitboxes in pairs(self.hitboxes) do
+				for h, hitbox in ipairs(hitboxes) do
+					hitbox:draw('fill')
+				end
 			end
 		end
 	end
@@ -142,8 +153,11 @@ local Scene = Class{
 			-- add placed tile data
 			for layer_name, coords in pairs(image.coords) do
 				for c, coord in ipairs(coords) do
-					local layer = self:getLayer(layer_name)
-					layer:addTile(img_name, coord)
+					self:addTile(layer_name, {
+						x=coord[1], y=coord[2],
+						crop={x=coord[3], y=coord[4], w=coord[5], h=coord[6]},
+						image=img_name
+					})
 				end
 			end
 		end
@@ -160,6 +174,7 @@ local Scene = Class{
 
 	sortLayers = function(self)
 		table.sort(self.layers, function(a, b) return a.depth < b.depth end)
+		return self
 	end,
 
 	draw = function(self, layer_name)
@@ -183,20 +198,68 @@ local Scene = Class{
 		end
 	end,
 
+	-- info = {x, y, rect{}, image}
+	addTile = function(self, layer_name, info)
+		local layer = self:getLayer(layer_name)
+		layer:addTile(info)
+		return self
+	end,
+
 	addHitbox = function(self, ...)
 		local obj_names = {...}
 
 		for n, name in ipairs(obj_names) do
-			if self.objects[name] then
-				for layer_name, polygons in pairs(self.objects[name].polygons) do
+			local object = self:getObjectInfo(name)
+			if object then
+				for layer_name, polygons in pairs(object.polygons) do
 					local layer = self:getLayer(layer_name)
 					for p, polygon in ipairs(polygons) do
-						layer:addHitbox(polygon, name)
+						layer:addHitbox(polygon, name, object.color)
 					end
 				end
 			end
 		end
+		return self
 	end,
+
+	-- returns table of created entities
+	addEntity = function(self, obj_name, ent_class, align) 
+		local instances = {}
+		local object = self:getObjectInfo(obj_name)
+		if object then
+			for layer_name, polygons in pairs(object.polygons) do
+				local layer = self:getLayer(layer_name)
+				for p, polygon in ipairs(polygons) do
+					local new_entity = ent_class()
+					new_entity.x = polygon[1]
+					new_entity.y = polygon[2]
+
+					if align then
+						if align:contains("center") then
+							new_entity.x = polygon[1] - new_entity.sprite_width/2
+							new_entity.y = polygon[2] - new_entity.sprite_height/2
+						end
+						if align:contains("top") then
+							new_entity.y = polygon[2] - layer.snap[2]/2
+						end
+						if align:contains("bottom") then
+							new_entity.y = polygon[2] + layer.snap[2]/2 - new_entity.sprite_height
+						end
+						if align:contains("left") then
+							new_entity.x = polygon[1] - layer.snap[1]/2
+						end
+						if align:contains("right") then
+							new_entity.x = polygon[1] + layer.snap[1]/2 - new_entity.sprite_width
+						end
+					end
+
+					layer:addEntity(new_entity)
+					table.insert(instances, new_entity)
+				end
+			end
+		end
+		return instances
+	end
 }
 
 return Scene

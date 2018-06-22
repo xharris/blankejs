@@ -84,7 +84,13 @@ class AssetManager extends Editor {
 		let el_preview_container = app.createElement('div','preview-container');
 		if (file_type == 'image') {
 			let el_image = app.createElement('img');
-			el_image.onload = function() { el_preview_container.appendChild(el_image); }
+			el_image.onload = function() { 
+				let el_image_size = app.createElement("span");
+				el_image_size.innerHTML = el_image.width + " x " + el_image.height;
+
+				el_preview_container.appendChild(el_image);
+				el_preview_container.appendChild(el_image_size);
+			}
 			el_image.src = "file://"+path;
 		} else {
 			el_preview_container.style.display = "none";
@@ -114,6 +120,7 @@ class AssetManager extends Editor {
 				nwFS.rename(path, new_path);
 				path = new_path;
 
+				blanke.toast("Renamed file to \'"+value[0]+file_ext+"\'");
 			});
 		});
 		el_file_form.onChange('folder', function(value){
@@ -134,6 +141,7 @@ class AssetManager extends Editor {
 
 							}
 						}
+						blanke.toast("File moved to \'"+nwPATH.join(app.project_path, 'assets', value[0], nwPATH.basename(path))+"\'");
 						this.file_refresh_enabled = true;
 					});
 

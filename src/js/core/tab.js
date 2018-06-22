@@ -131,6 +131,8 @@ class Tab {
 		if (!this.tab.classList.contains("hidden")) {
 			choose_another = true;
 		}
+		if (this.onClose) this.onClose();
+		
 		this.tab.remove();
 		this.tab_container.remove();
 

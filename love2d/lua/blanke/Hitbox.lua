@@ -57,7 +57,7 @@ Hitbox = Class{
 	draw = function(self, mode)
 		if self._enabled then
 			local color = Draw._parseColorArgs(ifndef(Hitbox._color[self.HCShape.tag], self.color))
-			color[4] = 255/3
+			color[4] = .3
 
 			local x, y = self:center()
 

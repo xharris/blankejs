@@ -154,6 +154,9 @@ module.exports.completions = {
 		{fn:"crop",vars:{x:"",y:"",width:"",height:""}}
 	],
 	"blanke-scene-instance":[
+		{prop:"draw_hitboxes"},
+		{fn:"addHitbox",vars:{ object_name:"", etc:"" }},
+		{fn:"addEntity",vars:{ object_name:"", entity_class:"", alignment:"center, left, right, top, bottom, top-left, center-bottom, etc." }},
 		{fn:"draw"}
 	]
 }

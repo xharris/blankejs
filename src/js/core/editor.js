@@ -38,6 +38,7 @@ class Editor {
 		this.container.tab.oncontextmenu = function(e) {
 			this_ref.onMenuClick(e);
 		}
+		this.container.onClose = this.onClose;
 	}
 
 	// Tab ONLY

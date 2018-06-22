@@ -7,5 +7,7 @@ function love.load()
 	Asset.add('assets')
 	Asset.add('scenes')
 	
+	BlankE.loadPlugin("Platformer")
+	
 	BlankE.init("PlayState")
 end

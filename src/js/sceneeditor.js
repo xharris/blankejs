@@ -555,6 +555,10 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	onClose () {
+		app.removeSearchGroup("Scene");
+	}
+
 	onMenuClick (e) {
 		var this_ref = this;
 		app.contextMenu(e.x, e.y, [

@@ -1157,6 +1157,17 @@
   border-radius: 2px;
   margin-bottom: 5px;
   overflow: auto;
+  position: relative;
+}
+.content[data-type="AssetManager"] .file-preview .preview-container span {
+  color: black;
+  font-size: 16px;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  margin: 2px 4px;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 1px;
 }
 .content[data-type="AssetManager"] .file-preview .form-container {
   display: inline-block;
