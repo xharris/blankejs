@@ -276,13 +276,13 @@ function table.keys(t)
 	for k, v in pairs(t) do table.insert(ret, k) end
 	return ret
 end
-
+--[[
 function table.remove(t, value)
 	for k, v in pairs(t) do
 		if v == value then t[k] = nil end
 	end
 	return t
-end
+end]]
 
 -- from https://stackoverflow.com/a/33296534
 -- still unsure if this works

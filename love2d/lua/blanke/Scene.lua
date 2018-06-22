@@ -76,8 +76,7 @@ local SceneLayer = Class{
 
 	addHitbox = function(self, points, tag)
 		self.hitboxes[tag] = ifndef(self.hitboxes[tag], {})
-		local new_hitbox = Hitbox("polygon", {100,100, 200,100, 200,200, 100,200}, tag)
-		print_r(new_hitbox)
+		local new_hitbox = Hitbox("polygon", points, tag)
 		new_hitbox.color = Draw.green
 		table.insert(self.hitboxes[tag], new_hitbox)
 	end,
@@ -89,7 +88,6 @@ local SceneLayer = Class{
 
 		for name, hitboxes in pairs(self.hitboxes) do
 			for h, hitbox in ipairs(hitboxes) do
-				print(hitbox:bbox())
 				hitbox:draw('fill')
 			end
 		end

@@ -30,7 +30,6 @@ Hitbox = Class{
 		if shape == "rectangle" then
 			self.HCShape = HC.rectangle(unpack(args))
 		elseif shape == "polygon" then
-			--print(unpack(args))
 			self.HCShape = HC.polygon(unpack(args))
 		elseif shape == "circle" then
 			self.HCShape = HC.circle(unpack(args))

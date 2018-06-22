@@ -1,4 +1,4 @@
-Signal = Class{
+Signal = {
 	registry = {},
 	disabled = {},
 
