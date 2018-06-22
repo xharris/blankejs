@@ -371,7 +371,7 @@ nwWIN.on('loaded', function() {
 
 	// moving through/selecting options
 	var selected_index = -1;
-	app.getElement("#search-input").addEventListener('keydown', function(e){
+	app.getElement("#search-input").addEventListener('keyup', function(e){
 		var keyCode = e.keyCode || e.which;
 
 		// ENTER
@@ -381,6 +381,10 @@ nwWIN.on('loaded', function() {
 				selectSearchResult(hash_val);
 			}
 		}
+	});
+
+	app.getElement("#search-input").addEventListener('keydown', function(e){
+		var keyCode = e.keyCode || e.which;
 
 		// TAB
 		if (keyCode == 9) {
