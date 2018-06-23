@@ -181,7 +181,7 @@
 			width: 100%;
    		 	box-sizing: border-box;
 
-			.form-group[data-type="text"][data-size="2"], .form-group[data-type="number"][data-size="2"] {
+			.form-group[data-type="text"][data-size="2"], .form-group[data-type="number"][data-size="2"], .form-group[data-type="select"] {
 				display: inline-block;
 	   		 	width: 100%;
 
@@ -220,6 +220,16 @@
 						width: 20%;
 						display: inline-block;
 						text-align: center
+					}
+
+					.form-select {
+					    border: none;
+					    outline: none;
+					    padding: 5px;
+					    text-align: center;
+					    background-color: rgba(176,190,197 ,1);
+					    width: 100%;
+					    height: 20px;
 					}
 				}
 			}
@@ -646,6 +656,17 @@
    		 		text-align: left;
    		 	}
 		}
+
+		/*
+		.image-container {
+			transition: all ease-in 0.1s;
+
+			&.hidden {
+			    height: 0px;
+			    overflow: hidden;
+			    padding: 0px;
+			}
+		}*/
 	}
 }
 
@@ -724,6 +745,10 @@
     		margin-bottom: 5px;
     		overflow: auto;
     		position: relative;
+
+    		img {
+    			outline: 2px dashed #9CCC65;
+    		}
 
     		span {
     			color: black;

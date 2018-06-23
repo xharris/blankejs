@@ -25,6 +25,7 @@ class SceneEditor extends Editor {
 
 		this.placing_object = false;
 		this.dot_preview = null;
+		this.image_preview = null;
 
 		this.can_drag = false;
 		this.dragging = false;
@@ -66,13 +67,16 @@ class SceneEditor extends Editor {
 		this.el_image_form = new BlankeForm([
 			['snap', 'number', {'inputs':2, 'separator':'X'}],
 			['offset', 'number', {'inputs':2, 'separator':'X'}],
-			['spacing', 'number', {'inputs':2, 'separator':'X'}]
+			['spacing', 'number', {'inputs':2, 'separator':'X'}],
+			['align', 'select', {'choices':['top-left','top-right','bottom-left','bottom-right']}]
 		]);
 		this.el_image_info 		= app.createElement("p","image-info");
 		this.el_image_container	= app.createElement("div","image-container");
 		this.el_image_tiles_container = app.createElement("div","image-tiles-container")
 		this.el_image_preview	= app.createElement("img","image-preview");
 		this.el_image_grid		= app.createElement("div","image-grid");
+
+		this.el_image_container.classList.add('hidden');
 
 		// OBJECT elements
 		this.el_object_container= app.createElement("div","object-container");
@@ -101,7 +105,7 @@ class SceneEditor extends Editor {
 		this.el_sel_object		= app.createElement("select","select-object");
 		this.el_input_object	= app.createElement("input","input-object");
 		// add object types
-		let obj_types = ['image','object']
+		let obj_types = ['image','object'];
 		for (var o = 0; o < obj_types.length; o++) {
 			var new_option = app.createElement("option");
 			new_option.value = obj_types[o];
@@ -168,10 +172,18 @@ class SceneEditor extends Editor {
 			}
 		});
 
+		this.el_image_form.onChange('align', function(value){
+			if (this_ref.curr_image) {
+				this_ref.curr_image.align = value[0];
+			}
+		});
+
 		this.el_image_grid.ondragstart = function() { return false; };
 		this.selected_image_frames = [];
 		this.selected_xmin = -1;
 		this.selected_ymin = -1;
+		this.selected_width = -1;
+		this.selected_height = -1;
 		function selectImageTiles(e) {
 			if (e.target && e.target.matches('div.cell') && e.buttons != 0) {
 				if (e.buttons == 1) {
@@ -440,7 +452,7 @@ class SceneEditor extends Editor {
 						this_ref.placeObjectPoint(x - this_ref.camera[0], y - this_ref.camera[1]);
 					
 					if(this_ref.obj_type == 'image')
-						this_ref.placeImage(x - this_ref.camera[0], y - this_ref.camera[1]);
+						this_ref.placeImage(x - this_ref.camera[0], y - this_ref.camera[1], this_ref.curr_image);
 				}
 
 				// removing object
@@ -524,7 +536,6 @@ class SceneEditor extends Editor {
 		this.pixi.stage.addChild(this.grid_container);
 
 		this.drawGrid();
-		this.refreshObjectType();
 		
 		// tab click
 		this.setOnClick(function(self){
@@ -585,7 +596,7 @@ class SceneEditor extends Editor {
 			"<label>new name: </label>"+
 			"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
 		{
-			"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".map"); },
+			"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".scene"); },
 			"no": function() {}
 		});
 	}
@@ -728,43 +739,64 @@ class SceneEditor extends Editor {
 		app.removeSearchGroup('scene_image');
 		let walker = nwWALK.walk(nwPATH.join(app.project_path,'assets'));
 		walker.on('file', function(path, stat, next){
-			if (stat.isFile() && !stat.name.startsWith(".")) {
+			if (stat.isFile() && !stat.name.startsWith(".") && app.findAssetType(stat.name) == 'image') {
 				let full_path = nwPATH.join(path, stat.name);
 				var img_path = nwPATH.relative(app.project_path,full_path).replace(/assets[/\\]/,'');
 				app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
-					this_ref.setImage(nwPATH.resolve(full_path));
+					this_ref.setImage(nwPATH.resolve(full_path), function(img){			
+						// set current image variable
+						this_ref.curr_image = img;
+						this_ref.refreshImageGrid();
+					});
 				}});
 			}
 			next();
 		});
 	}
 
+	// list of grid cells selected
 	refreshImageSelectionList() {
 		this.selected_xmin = -1;
 		this.selected_ymin = -1;
+		this.selected_width = -1;
+		this.selected_height = -1;
 		this.selected_image_frames = [];
 
 		var el_image_frames = document.querySelectorAll('.image-grid > .cell.selected');
+		let max_x = -1;
+		let max_y = -1;
 		if (el_image_frames) {
 			for (var frame of el_image_frames) {
 				let x = parseInt(frame.style.left);
 				let y = parseInt(frame.style.top);
+				let width = parseInt(frame.style.width);
+				let height = parseInt(frame.style.height);
 
 				this.selected_image_frames.push({
 					'x':x,
 					'y':y,
-					'width':parseInt(frame.style.width),
-					'height':parseInt(frame.style.height)
-				})
+					'width':width,
+					'height':height
+				});
 
 				if (this.selected_xmin == -1 || x < this.selected_xmin) this.selected_xmin = x;
 				if (this.selected_ymin == -1 || y < this.selected_ymin) this.selected_ymin = y;
+
+				if (x - this.selected_xmin + this.curr_image.snap[0] > this.selected_width)
+					this.selected_width = x - this.selected_xmin + this.curr_image.snap[0];
+				if (y - this.selected_ymin + this.curr_image.snap[1] > this.selected_height)
+					this.selected_height = y - this.selected_ymin + this.curr_image.snap[1];
 			}
 		}
 	}
 
 	refreshImageGrid() {
 		if (this.curr_image) {
+			// update image info text
+			this.el_image_info.innerHTML = app.getRelativePath(this.curr_image.path) + "<br/>" + this.curr_image.texture.width + " x " +  this.curr_image.texture.height;
+			this.el_image_info.title = app.getRelativePath(this.curr_image.path);
+			this.el_image_preview.src = "file://"+this.curr_image.path;	
+
 			var img_width = parseInt(this.el_image_preview.width);
 			var img_height = parseInt(this.el_image_preview.height);
 			var grid_w = this.curr_image.snap[0];
@@ -977,64 +1009,74 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	placeImageFrame (x, y, frame, from_load_snapped) {
-		let curr_image = this.curr_image;
-		if (from_load_snapped != null)
-			curr_image = from_load_snapped;
+	placeImageFrame (x, y, frame, img_ref, layer, from_load) {
+		if (!layer) layer = this.curr_layer;
+		let place_image = img_ref;
 
 		let new_tile_texture = new PIXI.Texture(
-            curr_image.texture,
+            place_image.texture,
             new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
         );
-        new_tile_texture.layer_uuid = this.curr_layer.uuid;
+        new_tile_texture.layer_uuid = layer.uuid;
 
         if (!new_tile_texture) return;
 
 		let new_tile = {'x':0,'y':0,'w':0,'h':0,'snapped':false};
 
-		if (from_load_snapped == null) {
+		if (!from_load) {
 			x += (frame.x - this.selected_xmin);
 			y += (frame.y - this.selected_ymin);
 		}
 
-		let text_key = Math.floor(x - (x % this.curr_layer.snap[0])).toString()+','+Math.floor(y - (y % this.curr_layer.snap[1])).toString()+'.'+this.curr_layer.uuid;
+		let text_key = Math.floor(x - (x % layer.snap[0])).toString()+','+Math.floor(y - (y % layer.snap[1])).toString()+'.'+layer.uuid;
 
-		if (from_load_snapped == null) {
-			if (x < 0) x -= this.curr_layer.snap[0];
-			if (y < 0) y -= this.curr_layer.snap[1];
-		}
-		if (from_load_snapped || (this.snap_on && from_load_snapped == null)) {
-			x -= x % this.curr_layer.snap[0];
-			y -= y % this.curr_layer.snap[1];
-			new_tile.snapped = true;
+		if (!from_load) {
+			if (x < 0) x -= layer.snap[0];
+			if (y < 0) y -= layer.snap[1];
+
+			if (this.snap_on && !from_load) {
+				x -= x % layer.snap[0];
+				y -= y % layer.snap[1];
+				new_tile.snapped = true;
+			}
 		}
 
 		// add if a tile isn't already there
-		if (!curr_image.pixi_images[text_key]) {
-			if (!curr_image.pixi_tilemap[this.curr_layer.uuid]) {
-				curr_image.pixi_tilemap[this.curr_layer.uuid] = new PIXI.tilemap.CompositeRectTileLayer(0, curr_image.texture);
-				this.curr_layer.container.addChild(curr_image.pixi_tilemap[this.curr_layer.uuid]);
+		if (!place_image.pixi_images[text_key]) {
+			if (!place_image.pixi_tilemap[layer.uuid]) {
+				place_image.pixi_tilemap[layer.uuid] = new PIXI.tilemap.CompositeRectTileLayer(0, place_image.texture);
+				layer.container.addChild(place_image.pixi_tilemap[layer.uuid]);
 
-				this.curr_layer.container.setChildIndex(curr_image.pixi_tilemap[this.curr_layer.uuid], 0)
+				layer.container.setChildIndex(place_image.pixi_tilemap[layer.uuid], 0)
 			}
-			curr_image.pixi_tilemap[this.curr_layer.uuid].addFrame(new_tile_texture,x,y);
+
+			if (!from_load) {
+				let align = place_image.align || "top-left";
+
+				if (align.includes("right"))
+					x -= this.selected_width;
+				if (align.includes("bottom"))
+					y -= this.selected_height;
+			}
+
+			place_image.pixi_tilemap[layer.uuid].addFrame(new_tile_texture,x,y);
 			new_tile.x = x;
 			new_tile.y = y;
 			new_tile.frame = frame;
 			new_tile.texture = new_tile_texture;
 
-			new_tile.uuid = curr_image.uuid;
+			new_tile.uuid = place_image.uuid;
 			new_tile.text_key = text_key;
-			new_tile.layer_name = this.curr_layer.name;
-			new_tile.layer_uuid = this.curr_layer.uuid;
-			curr_image.pixi_images[text_key] = new_tile;
+			new_tile.layer_name = layer.name;
+			new_tile.layer_uuid = layer.uuid;
+			place_image.pixi_images[text_key] = new_tile;
 		}
 	}
 
-	placeImage (x, y, from_load_snapped) {
+	placeImage (x, y, img_ref, layer) {
 		if (this.curr_image && this.curr_layer) {
 			for (var frame of this.selected_image_frames) {
-				this.placeImageFrame(x, y, frame, from_load_snapped);
+				this.placeImageFrame(x, y, frame, img_ref, layer);
 			}
 		}
 	}
@@ -1156,53 +1198,50 @@ class SceneEditor extends Editor {
 		}	
 	}
 
+	getImage (path) {
+		for (let img of this.images) {
+			if (img.path == path)
+				return img;
+		}
+	}
+
 	setImage (path, onReady) {
-		// set current image variable
-		var img_found = false;
-		for (var img of this.images) {
-			if (img.path == path) {
-				img_found = true;
-				this.curr_image = img;
+		let img = this.getImage(path);
+		if (img) {
+			var this_ref = this;
+			let image_obj = new Image();
+			image_obj.onload = function(){
+				let base = new PIXI.BaseTexture(image_obj);
+				let texture = new PIXI.Texture(base);
 
-				var this_ref = this;
-				this.el_image_preview.onload = function(){
-					let base = new PIXI.BaseTexture(this_ref.el_image_preview);
-					let texture = new PIXI.Texture(base);
+				// save texture info
+				img.texture = texture;	
 
-					// save texture info
-					img.texture = texture;
-
-					// update image info text
-					this_ref.el_image_info.innerHTML = app.getRelativePath(img.path) + "<br/>" + img.texture.width + " x " +  img.texture.height;
-					this_ref.el_image_info.title = app.getRelativePath(img.path);
-
-					this_ref.refreshImageGrid();		
-
-					if (onReady) onReady(img);
-				}
-				this_ref.el_image_preview.src = "file://"+img.path;
-
-
-				// set image inputs
-				for (var property of ['snap', 'offset', 'snap']) {
-					this.el_image_form.setValue(property, this.curr_image[property][0], 0);
-					this.el_image_form.setValue(property, this.curr_image[property][1], 1);
-				}
+				if (onReady) onReady(img);
 			}
+			image_obj.src = "file://"+img.path;
+
+			// set image inputs
+			for (var property of ['snap', 'offset', 'spacing']) {
+				this.el_image_form.setValue(property, img[property][0], 0);
+				this.el_image_form.setValue(property, img[property][1], 1);
+			}
+			this.el_image_form.setValue('align', img.align || "top-left");
 		}
 		// add image to scene library
-		if (!img_found) {
+		else {
 			this.images.push({
 				path: path,
 				snap: this.curr_layer.snap.slice(0),
 				offset: [0,0],
 				spacing: [0,0],
+				align: 'top-left',
 				uuid: guid(),
 				pixi_images: {},
 				pixi_tilemap: {}
 			});
 			this.export();
-			this.setImage(path);
+			this.setImage(path, onReady);
 		}
 	}
 
@@ -1224,6 +1263,13 @@ class SceneEditor extends Editor {
 		this.setLayer(info.name);
 
 		this.refreshLayerList();
+	}
+
+	getLayer (name) {
+		for (var l = 0; l < this.layers.length; l++) {
+			if (this.layers[l].name === name) 
+				return this.layers[l];
+		}
 	}
 
 	setLayer (name) {
@@ -1266,17 +1312,18 @@ class SceneEditor extends Editor {
 					snap: img.snap,
 					offset: img.offset,
 					spacing: img.spacing,
+					align: img.align,
 					uuid: img.uuid,
 					pixi_images: {},
 					pixi_tilemap: {}
 				});
 				this_ref.setImage(full_path, function(img_ref){
 					for (var layer_name in img.coords) {
-						this_ref.setLayer(layer_name);
+						let layer = this_ref.getLayer(layer_name);
 						for (var coord of img.coords[layer_name]) {
 							this_ref.placeImageFrame(coord[0], coord[1], {
 								'x':coord[2], 'y':coord[3], 'width':coord[4], 'height':coord[5]
-							}, img_ref)
+							}, img_ref, layer, true);
 						}
 					}
 
@@ -1354,6 +1401,7 @@ class SceneEditor extends Editor {
 				snap: obj.snap,
 				offset: obj.offset,
 				spacing: obj.spacing,
+				align: obj.align,
 				uuid: obj.uuid,
 				coords: {}
 			}
