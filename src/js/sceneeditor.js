@@ -1042,6 +1042,7 @@ class SceneEditor extends Editor {
 		}
 
 		// add if a tile isn't already there
+		console.log(place_image.pixi_images[text_key])
 		if (!place_image.pixi_images[text_key]) {
 			if (!place_image.pixi_tilemap[layer.uuid]) {
 				place_image.pixi_tilemap[layer.uuid] = new PIXI.tilemap.CompositeRectTileLayer(0, place_image.texture);
