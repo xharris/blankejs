@@ -281,6 +281,9 @@ var app = {
 				return a_type;
 		}
 		return 'other';
+	},
+	cleanPath: function(path) {
+		return nwPATH.normalize(path).replaceAll('\\\\','/');;
 	}
 }
 

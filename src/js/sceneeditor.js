@@ -465,6 +465,7 @@ class SceneEditor extends Editor {
 			        	let text_key = Math.floor(place_x).toString()+','+Math.floor(place_y).toString()+'.'+this_ref.curr_layer.uuid;
 
 						if (this_ref.curr_image.pixi_images[text_key]) {
+							this_ref.curr_image.pixi_images[text_key].sprite.destroy();
 							delete this_ref.curr_image.pixi_images[text_key];
 							this_ref.redrawTiles();
 
@@ -1018,7 +1019,6 @@ class SceneEditor extends Editor {
             place_image.texture,
             new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
         );
-        new_tile_texture.alpha = 0.5;
         new_tile_texture.layer_uuid = layer.uuid;
 
         if (!new_tile_texture) return;
@@ -1028,6 +1028,13 @@ class SceneEditor extends Editor {
 		if (!from_load) {
 			x += (frame.x - this.selected_xmin);
 			y += (frame.y - this.selected_ymin);
+				
+			let align = place_image.align || "top-left";
+
+			if (align.includes("right"))
+				x -= this.selected_width;
+			if (align.includes("bottom"))
+				y -= this.selected_height;
 		}
 
 		let text_key = Math.floor(x - (x % layer.snap[0])).toString()+','+Math.floor(y - (y % layer.snap[1])).toString()+'.'+layer.uuid;
@@ -1052,14 +1059,6 @@ class SceneEditor extends Editor {
 				layer.container.setChildIndex(place_image.pixi_tilemap[layer.uuid], 0)
 			}
 
-			if (!from_load) {
-				let align = place_image.align || "top-left";
-
-				if (align.includes("right"))
-					x -= this.selected_width;
-				if (align.includes("bottom"))
-					y -= this.selected_height;
-			}
 
 			let new_sprite = new PIXI.Sprite(new_tile_texture);
 			new_sprite.x = x;
@@ -1071,6 +1070,7 @@ class SceneEditor extends Editor {
 			new_tile.y = y;
 			new_tile.frame = frame;
 			new_tile.texture = new_tile_texture;
+			new_tile.sprite = new_sprite;
 
 			new_tile.uuid = place_image.uuid;
 			new_tile.text_key = text_key;
@@ -1090,10 +1090,10 @@ class SceneEditor extends Editor {
 
 	// uses curr_image and curr_layer
 	redrawTiles () {
+		return; // FUNCTION NOT USED ATM. MAY REMOVE SOON
 		if (!this.curr_image) return;
 
 		// redraw all tiles 
-		console.log(this.layers);
 		for (var layer_name in this.curr_image.pixi_tilemap) {
 			this.curr_image.pixi_tilemap[layer_name].removeChildren(); //.clear();
 			for (var t in this.curr_image.pixi_images) {
@@ -1108,9 +1108,9 @@ class SceneEditor extends Editor {
 			}
 			
 			// refresh opacity
-			console.log(layer_name, this.getLayer(layer_name));
-			if (layer_name != this.curr_layer.name)
-				this.getLayer(layer_name, true).container.alpha = 0.25;
+			
+			//if (layer_name != this.curr_layer.uuid)
+			//	this.getLayer(layer_name, true).container.alpha = 0.25;
 		}
 	}
 
@@ -1218,6 +1218,7 @@ class SceneEditor extends Editor {
 	}
 
 	getImage (path) {
+		path = app.cleanPath(path);
 		for (let img of this.images) {
 			if (img.path == path)
 				return img;
@@ -1300,11 +1301,11 @@ class SceneEditor extends Editor {
 				this.el_snap_y.value = this.curr_layer.snap[1];
 				this.layers[l].container.alpha = 1;
 
-				this.map_container.setChildIndex(this.layers[l].container, this.map_container.children.length-1);
 			} else {
 				// make other layers transparent
 				this.layers[l].container.alpha = 0.25;
 			}
+			this.map_container.setChildIndex(this.layers[l].container, this.map_container.children.length-1);
 		}
 		this.drawGrid();
 	}
@@ -1414,7 +1415,7 @@ class SceneEditor extends Editor {
 
 		//images
 		for (let obj of this.images) {
-			let img_path = nwPATH.relative(app.project_path,obj.path);
+			let img_path = app.cleanPath(nwPATH.relative(app.project_path,obj.path));
 			let exp_img = {
 				path: img_path,
 				snap: obj.snap,
