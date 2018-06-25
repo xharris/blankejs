@@ -99,7 +99,10 @@ var app = {
 	openProject: function(path) {
 		// validate: only open if there's a main.lua
 		nwFS.readdir(path, 'utf8', function(err, files){
-			if (!err && files.includes('main.lua')) {		
+			if (!err && files.includes('main.lua')) {
+				if (app.project_path)
+					dispatchEvent("closeProject", {path: app.project_path});
+
 				app.project_path = path;
 
 				// watch for file changes
@@ -151,6 +154,15 @@ var app = {
 		}
 		nwNOOB.start(function(address){
 			blanke.toast('server started on '+address);
+		});
+	},
+
+	stopServer: function() {
+		nwNOOB.stop(function(success){
+			if (success)
+				blanke.toast('server stopped');
+			else
+				blanke.toast('server not running');
 		});
 	},
 
@@ -461,6 +473,7 @@ nwWIN.on('loaded', function() {
 	}});
 	app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 	app.addSearchKey({key: 'Run Server', onSelect: app.runServer});
+	app.addSearchKey({key: 'Stop Server', onSelect: app.stopServer});
 
 	document.addEventListener("openProject",function(){
 		app.hideWelcomeScreen();

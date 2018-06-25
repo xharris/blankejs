@@ -177,10 +177,21 @@ var _destroySocket = function (socket) {
 }
 
 module.exports.start = function(cb){
-	noobserver.listen(cfg.port,  function () {
-		_log('NoobHub on ', noobserver.address().address + noobserver.address().port);
-		if (cb) cb(noobserver.address().address + noobserver.address().port);
-	});
+	if (!noobserver.listening) {
+		noobserver.listen(cfg.port,  function () {
+			_log('NoobHub on ', noobserver.address().address + noobserver.address().port);
+			if (cb) cb(noobserver.address().address + noobserver.address().port);
+		});
+	}
+}
+
+module.exports.stop = function(cb){
+	if (noobserver.listening) {
+		noobserver.close(function(){
+			if (cb) cb(true);
+		});
+	} else
+		if (cb) cb(false);
 }
 
 module.exports.setLogFunction = function(fn) {

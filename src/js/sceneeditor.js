@@ -682,7 +682,7 @@ class SceneEditor extends Editor {
 		this.el_image_container.classList.add('hidden');
 		this.el_object_container.classList.add('hidden');		
 		
-		if (this.obj_type == 'image') {
+		if (this.obj_type == 'image' && this.curr_image) {
 			this.el_image_container.classList.remove('hidden');
 		}
 		if (this.obj_type == 'object') {
@@ -746,6 +746,7 @@ class SceneEditor extends Editor {
 					this_ref.setImage(nwPATH.resolve(full_path), function(img){			
 						// set current image variable
 						this_ref.curr_image = img;
+						this_ref.refreshObjectType();
 						this_ref.refreshImageGrid();
 					});
 				}});
@@ -1017,6 +1018,7 @@ class SceneEditor extends Editor {
             place_image.texture,
             new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
         );
+        new_tile_texture.alpha = 0.5;
         new_tile_texture.layer_uuid = layer.uuid;
 
         if (!new_tile_texture) return;
@@ -1044,7 +1046,7 @@ class SceneEditor extends Editor {
 		// add if a tile isn't already there
 		if (!place_image.pixi_images[text_key]) {
 			if (!place_image.pixi_tilemap[layer.uuid]) {
-				place_image.pixi_tilemap[layer.uuid] = new PIXI.tilemap.CompositeRectTileLayer(0, place_image.texture);
+				place_image.pixi_tilemap[layer.uuid] = new PIXI.Container();
 				layer.container.addChild(place_image.pixi_tilemap[layer.uuid]);
 
 				layer.container.setChildIndex(place_image.pixi_tilemap[layer.uuid], 0)
@@ -1059,7 +1061,12 @@ class SceneEditor extends Editor {
 					y -= this.selected_height;
 			}
 
-			place_image.pixi_tilemap[layer.uuid].addFrame(new_tile_texture,x,y);
+			let new_sprite = new PIXI.Sprite(new_tile_texture);
+			new_sprite.x = x;
+			new_sprite.y = y;
+			place_image.pixi_tilemap[layer.uuid].addChild(new_sprite);
+			
+			//place_image.pixi_tilemap[layer.uuid].addFrame(new_tile_texture,x,y);
 			new_tile.x = x;
 			new_tile.y = y;
 			new_tile.frame = frame;
@@ -1086,12 +1093,24 @@ class SceneEditor extends Editor {
 		if (!this.curr_image) return;
 
 		// redraw all tiles 
+		console.log(this.layers);
 		for (var layer_name in this.curr_image.pixi_tilemap) {
-			this.curr_image.pixi_tilemap[layer_name].clear();
+			this.curr_image.pixi_tilemap[layer_name].removeChildren(); //.clear();
 			for (var t in this.curr_image.pixi_images) {
 				let tile = this.curr_image.pixi_images[t];
-				this.curr_image.pixi_tilemap[layer_name].addFrame(tile.texture,tile.x,tile.y);
+				
+				let new_sprite = new PIXI.Sprite(tile.texture);
+				new_sprite.x = tile.x;
+				new_sprite.y = tile.y;
+				this.curr_image.pixi_tilemap[layer_name].addChild(new_sprite);
+				// this.curr_image.pixi_tilemap[layer_name].addFrame(tile.texture,tile.x,tile.y);
+
 			}
+			
+			// refresh opacity
+			console.log(layer_name, this.getLayer(layer_name));
+			if (layer_name != this.curr_layer.name)
+				this.getLayer(layer_name, true).container.alpha = 0.25;
 		}
 	}
 
@@ -1265,9 +1284,9 @@ class SceneEditor extends Editor {
 		this.refreshLayerList();
 	}
 
-	getLayer (name) {
+	getLayer (name, is_uuid) {
 		for (var l = 0; l < this.layers.length; l++) {
-			if (this.layers[l].name === name) 
+			if ((is_uuid && this.layers[l].uuid == name) || this.layers[l].name === name) 
 				return this.layers[l];
 		}
 	}
@@ -1464,6 +1483,10 @@ function addScenes(folder_path) {
 		});
 	});
 }
+
+document.addEventListener("closeProject", function(e){	
+	app.removeSearchGroup("Scene");
+});
 
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;

@@ -573,6 +573,10 @@ function addScripts(folder_path) {
 	});
 }
 
+document.addEventListener("closeProject", function(e){	
+	app.removeSearchGroup("Code");
+});
+
 document.addEventListener("openProject", function(e){
 	
 	reloadCompletions();

@@ -1760,6 +1760,7 @@ body {
 .blankejs-toasts .toast-container {
   background-color: white;
   border: 1px solid black;
+  box-shadow: 1px 1px 5px 1px black;
 }
 .blankejs-toasts .toast-container .content {
   margin: 0px;

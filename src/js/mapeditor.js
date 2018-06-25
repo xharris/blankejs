@@ -759,6 +759,10 @@ function addMaps(folder_path) {
 	});
 }
 
+document.addEventListener("closeProject", function(e){	
+	app.removeSearchGroup("Map");
+});
+
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
 	app.removeSearchGroup("Map");
