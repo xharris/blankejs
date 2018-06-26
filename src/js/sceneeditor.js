@@ -295,9 +295,11 @@ class SceneEditor extends Editor {
 		});
 
 		this.el_layer_form.onChange('name', function(value){
+			value = value[0];
+
 			if (this_ref.curr_layer) {
 				if (value == '')
-					value = this_ref.curr_layer.name;
+					return [this_ref.curr_layer.name];
 				else {
 					var old_name = this_ref.curr_layer.name;
 					var new_name = value;
@@ -1063,15 +1065,15 @@ class SceneEditor extends Editor {
 		if (!this.curr_image) return;
 
 		// redraw all tiles 
-		for (var layer_name in this.curr_image.pixi_tilemap) {
-			this.curr_image.pixi_tilemap[layer_name].removeChildren(); //.clear();
+		for (var layer_uuid in this.curr_image.pixi_tilemap) {
+			this.curr_image.pixi_tilemap[layer_uuid].removeChildren(); //.clear();
 			for (var t in this.curr_image.pixi_images) {
 				let tile = this.curr_image.pixi_images[t];
 				
 				let new_sprite = new PIXI.Sprite(tile.texture);
 				new_sprite.x = tile.x;
 				new_sprite.y = tile.y;
-				this.curr_image.pixi_tilemap[layer_name].addChild(new_sprite);
+				this.curr_image.pixi_tilemap[layer_uuid].addChild(new_sprite);
 				// this.curr_image.pixi_tilemap[layer_name].addFrame(tile.texture,tile.x,tile.y);
 
 			}
@@ -1269,11 +1271,10 @@ class SceneEditor extends Editor {
 			if (this.layers[l].name === name) {
 				this.curr_layer = this.layers[l];
 				this.el_layer_form.setValue('name', this.curr_layer.name);
-				this.el_snap_x.value = this.curr_layer.snap[0];
-				this.el_snap_y.value = this.curr_layer.snap[1];
+				this.el_layer_form.setValue('snap', this.curr_layer.snap[0], 0);
+				this.el_layer_form.setValue('snap', this.curr_layer.snap[1], 1);
 				this.layers[l].container.alpha = 1;
 				
-				console.log(name);
 				this.el_layer_control.selectItem(name);
 
 			} else {
