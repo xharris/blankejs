@@ -125,19 +125,23 @@
 	    margin-top: 38px;
 	    z-index: 10;
 
-	    &:hover {
+	    /*&:hover {*/
 	    	width: 150px;  	
 	    	box-shadow: @card-shadow;
-	    }
+	    /*}*/
 
+		button {
+			transition: all ease-in-out 0.1s;
+    	}
+	    
 	    &:not(:hover) {
-			width: 50px;
+			/* width: 50px;*/
 
 			select {
 			    -webkit-appearance: none;
 			}
 
-			.btn-add-object, .btn-add-layer {
+			.btn-add-object, .btn-add-layer, .actions-container > .add {
 	    		opacity: 0;
 	    	}
 
@@ -171,9 +175,121 @@
 		    height: 30px;
 		}
 
-		&:hover{
+		/*&:hover{*/
 			.form-container {
 				padding: 5px;
+			}
+		/*}*/
+
+		.list-view-container {
+    		white-space: nowrap;
+    		padding-bottom: 1px;
+    		position: relative;
+
+			.list-title {
+				margin: 0px;
+			    text-transform: uppercase;
+			    height: 20px;
+			    line-height: 20px;
+			    padding-left: 12px;
+			}
+
+			.actions-container {
+			    position: absolute;
+			    top: 0px;
+			    left: 0px;
+			    height: 20px;
+
+				button {
+				    position: absolute;
+				    padding: 0px 2.8px;
+				    margin: 0px;
+				    border: none;
+				    outline: none;
+				    width: 15px;
+				    height: 15px;
+				    top: 2px;
+				    left: -7.5px;
+				    border-radius: 100%;
+				    font-size: 21px;
+				    font-weight: 500;
+				    background-color: rgba(176,190,197 ,1);
+				    transition: all ease-in-out 0.2s;
+				    text-align: left;
+				    line-height: 14px;
+
+				    &:hover {	
+					    background-color: rgba(139,195,74,1);
+					    color: white;
+				    }
+
+				    i {
+				    	font-size: 10px;
+				    }
+				}
+			}
+
+			.items-container {
+				&:hover {
+					.item {
+						background-color: #CFD8DC;
+						outline: 1px solid #CFD8DC;
+
+						&:hover {
+							outline: 1px solid rgb(176, 190, 197);
+						}
+					}
+
+					.item-text {
+						text-align: left;
+					}
+
+					.item > .item-actions {
+						opacity: 1;
+					}
+				}
+
+				.item {
+					position: relative;
+					height: 32px;
+					margin: 0px 1px;
+					background-color: transparent;
+					outline: 0px dotted rgba(176, 190, 197, 0);
+
+					&:hover {
+						outline: 1px dashed rgb(176, 190, 197);
+					}
+
+					&.selected {
+						background-color: #b0bec5;
+						outline: 1px solid #b0bec5;
+						z-index: 10;
+					}
+
+					.item-text {
+						.no-select();
+
+						left:0px;
+					    height: 100%;
+   	 					line-height: 32px;
+   	 					padding: 0px 10px;
+   	 					box-sizing: border-box;
+
+   	 					width: 100%;
+   	 					text-align: center;
+					}
+
+					.item-actions {
+						right: 0px;
+						opacity: 0;
+
+						transition: all ease-in-out 0.1s;
+					}
+				}
+
+				.item > * {
+					position: absolute;
+				}
 			}
 		}
 
@@ -181,9 +297,22 @@
 			width: 100%;
    		 	box-sizing: border-box;
 
-			.form-group[data-type="text"][data-size="2"], .form-group[data-type="number"][data-size="2"], .form-group[data-type="select"] {
+			.form-group[data-type="text"], .form-group[data-type="number"], .form-group[data-type="select"] {
 				display: inline-block;
 	   		 	width: 100%;
+
+	   		 	&[data-size="2"] {
+	   		 		.form-inputs .form-text {
+		   		 		width: 40%;
+
+						&[data-index="0"] {
+							text-align: right;	
+						}
+						&[data-index="1"] {
+							text-align: left;
+						}
+	   		 		}
+	   		 	}
 
 				.form-label {
 	   		 		margin: 0px;
@@ -193,7 +322,6 @@
 
 				.form-inputs {
 					.form-text {
-		   		 		width: 40%;
 		   		 		border: none;
 		   		 		outline: none;
 				    	background-color: rgba(255,255,255,0.5);
@@ -205,13 +333,6 @@
 						    /* display: none; <- Crashes Chrome on hover */
 						    -webkit-appearance: none;
 						    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
-						}
-
-						&[data-index="0"] {
-							text-align: right;	
-						}
-						&[data-index="1"] {
-							text-align: left;
 						}
 					}
 
@@ -445,11 +566,11 @@
 			}
 		}
 
-		&:hover {
+		/*&:hover {*/
 			.image-tiles-container {
 				overflow: auto;
 			}
-		}
+		/*}*/
 	}
 }
 

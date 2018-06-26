@@ -598,22 +598,30 @@
   transition: all ease-in-out 0.2s;
   margin-top: 38px;
   z-index: 10;
+  /*&:hover {*/
+  width: 150px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  /*}*/
+  /*&:hover{*/
+  /*}*/
   /* OBJECT */
   /* LAYER */
   /* IMAGE */
+  /*&:hover {*/
+  /*}*/
 }
-.content[data-type="SceneEditor"] .sidebar:hover {
-  width: 150px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+.content[data-type="SceneEditor"] .sidebar button {
+  transition: all ease-in-out 0.1s;
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) {
-  width: 50px;
+  /* width: 50px;*/
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) select {
   -webkit-appearance: none;
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-object,
-.content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-layer {
+.content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-layer,
+.content[data-type="SceneEditor"] .sidebar:not(:hover) .actions-container > .add {
   opacity: 0;
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) .input-letter,
@@ -641,67 +649,172 @@
   width: 100%;
   height: 30px;
 }
-.content[data-type="SceneEditor"] .sidebar:hover .form-container {
+.content[data-type="SceneEditor"] .sidebar .form-container {
   padding: 5px;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container {
+  white-space: nowrap;
+  padding-bottom: 1px;
+  position: relative;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .list-title {
+  margin: 0px;
+  text-transform: uppercase;
+  height: 20px;
+  line-height: 20px;
+  padding-left: 12px;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 20px;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container button {
+  position: absolute;
+  padding: 0px 2.8px;
+  margin: 0px;
+  border: none;
+  outline: none;
+  width: 15px;
+  height: 15px;
+  top: 2px;
+  left: -7.5px;
+  border-radius: 100%;
+  font-size: 21px;
+  font-weight: 500;
+  background-color: #b0bec5;
+  transition: all ease-in-out 0.2s;
+  text-align: left;
+  line-height: 14px;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container button:hover {
+  background-color: #8bc34a;
+  color: white;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container button i {
+  font-size: 10px;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item {
+  background-color: #CFD8DC;
+  outline: 1px solid #CFD8DC;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item:hover {
+  outline: 1px solid #b0bec5;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item-text {
+  text-align: left;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item > .item-actions {
+  opacity: 1;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item {
+  position: relative;
+  height: 32px;
+  margin: 0px 1px;
+  background-color: transparent;
+  outline: 0px dotted rgba(176, 190, 197, 0);
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item:hover {
+  outline: 1px dashed #b0bec5;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item.selected {
+  background-color: #b0bec5;
+  outline: 1px solid #b0bec5;
+  z-index: 10;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item .item-text {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  left: 0px;
+  height: 100%;
+  line-height: 32px;
+  padding: 0px 10px;
+  box-sizing: border-box;
+  width: 100%;
+  text-align: center;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item .item-actions {
+  right: 0px;
+  opacity: 0;
+  transition: all ease-in-out 0.1s;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item > * {
+  position: absolute;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container {
   width: 100%;
   box-sizing: border-box;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"],
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"],
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] {
   display: inline-block;
   width: 100%;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-label,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-label,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text {
+  width: 40%;
+}
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="0"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text[data-index="0"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text[data-index="0"] {
+  text-align: right;
+}
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="1"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text[data-index="1"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text[data-index="1"] {
+  text-align: left;
+}
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-label,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-label,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-label {
   margin: 0px;
   margin-top: 5px;
   text-transform: uppercase;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-text,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text {
-  width: 40%;
   border: none;
   outline: none;
   background-color: rgba(255, 255, 255, 0.5);
   padding: 4px;
   box-sizing: border-box;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-text::-webkit-outer-spin-button,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text::-webkit-outer-spin-button,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text::-webkit-inner-spin-button,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text::-webkit-inner-spin-button,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text::-webkit-inner-spin-button,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-text::-webkit-inner-spin-button,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text::-webkit-inner-spin-button {
   /* display: none; <- Crashes Chrome on hover */
   -webkit-appearance: none;
   margin: 0;
   /* <-- Apparently some margin are still there even though it's hidden */
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="0"],
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text[data-index="0"],
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text[data-index="0"] {
-  text-align: right;
-}
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="1"],
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text[data-index="1"],
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text[data-index="1"] {
-  text-align: left;
-}
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-separator,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-separator,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-separator,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-separator,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-separator {
   margin: 0px;
   width: 20%;
   display: inline-block;
   text-align: center;
 }
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-select,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-select,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-select,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-select,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-select {
   border: none;
   outline: none;
@@ -920,7 +1033,7 @@
 .content[data-type="SceneEditor"] .sidebar .image-tiles-container .image-grid .cell.selected {
   background-color: rgba(100, 221, 23, 0.3);
 }
-.content[data-type="SceneEditor"] .sidebar:hover .image-tiles-container {
+.content[data-type="SceneEditor"] .sidebar .image-tiles-container {
   overflow: auto;
 }
 .content[data-type="MapEditor"] {

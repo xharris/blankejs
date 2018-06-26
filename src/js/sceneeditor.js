@@ -92,9 +92,6 @@ class SceneEditor extends Editor {
 		this.el_color_object	= app.createElement("input","color-object");
 	
 		this.el_layer_container	= app.createElement("div","layer-container");
-		this.el_layer_name	 	= app.createElement("input","input-layer");
-		this.el_sel_layer 		= app.createElement("select","select-layer");
-		this.el_btn_add_layer	= app.createElement("button","btn-add-layer");
 		this.el_snap_container	= app.createElement("div","snap-container");
 		this.el_snap_label		= app.createElement("p","snap-label");
 		this.el_snap_x			= app.createElement("input","snap-x");
@@ -264,69 +261,20 @@ class SceneEditor extends Editor {
 			this_ref.export();
 		});
 
-		// layer name
-		function ev_nameChange(e) {
-			if (this_ref.curr_layer) {
-				if (e.target.value == '')
-					e.target.value = this_ref.curr_layer.name;
-				else {
-					var old_name = this_ref.curr_layer.name;
-					var new_name = e.target.value;
+		this.el_layer_form = new BlankeForm([
+			['name', 'text'],
+			['snap', 'number', {'inputs':2, 'separator':'X'}]
+		]);
 
-					this_ref.curr_layer.name = e.target.value;
-					this_ref.refreshLayerList(old_name, new_name);
-					this_ref.export();
-				}
-			}
-		}
-		this.el_layer_name.addEventListener('keypress', ev_nameChange);
-		this.el_layer_name.addEventListener('paste', ev_nameChange);
-		this.el_layer_name.addEventListener('input', ev_nameChange);
-
-		this.el_layer_name.addEventListener('click', function(e){
-			this.select();
-		});
-		// layer selection
-		this.el_sel_layer.addEventListener('change', function(e){
-			this_ref.setLayer(e.target.value);
-		});
-
-		// add layer button
-		this.el_btn_add_layer.title = "add layer";
-		this.el_btn_add_layer.innerHTML = "+";
-		this.el_btn_add_layer.addEventListener('click', function(e){
-			this_ref.addLayer();
-			this_ref.export();
-		});
-
-		// layer snap
-		this.el_snap_label.innerHTML = "snap";
-		this.el_snap_sep.innerHTML = "x";
-		this.el_snap_x.value = 32;
-		this.el_snap_y.value = 32;
-		this.el_snap_x.addEventListener('input', function(e){
-			var new_val = parseInt(e.target.value);
-			if (new_val <= 0) new_val = this_ref.curr_layer.snap[0];
-			this_ref.curr_layer.snap[0] = new_val;
-
-			// move grid
-			this_ref.grid_container.x = this_ref.camera[0] % this_ref.curr_layer.snap[0];
-			this_ref.grid_container.y = this_ref.camera[1] % this_ref.curr_layer.snap[1];
-
-			this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, function(obj) {
-				if (obj.snapped) {
-					obj.x = obj.grid_x * this_ref.curr_layer.snap[0];
-					obj.x = obj.x + (this_ref.curr_layer.snap[0]/2) - (obj.width/2);
-				}
-			});
-			
-			this_ref.drawGrid();
-			this_ref.export();
-		});
-		this.el_snap_y.addEventListener('input', function(e){
-			var new_val = parseInt(e.target.value);
-			if (new_val <= 0) new_val = this_ref.curr_layer.snap[1];
-			this_ref.curr_layer.snap[1] = new_val;
+		this.el_layer_form.setValue('snap', 32, 0);
+		this.el_layer_form.setValue('snap', 32, 1);
+		this.el_layer_form.onChange('snap', function(value){
+			var new_x = parseInt(value[0]);
+			var new_y = parseInt(value[1]);
+			if (new_x <= 0) new_x = this_ref.curr_layer.snap[0];
+			this_ref.curr_layer.snap[0] = new_x;
+			if (new_y <= 0) new_y = this_ref.curr_layer.snap[1];
+			this_ref.curr_layer.snap[1] = new_y;
 
 			// move grid
 			this_ref.grid_container.x = this_ref.camera[0] % this_ref.curr_layer.snap[0];
@@ -337,7 +285,6 @@ class SceneEditor extends Editor {
 				if (obj.snapped) {
 					obj.x = obj.grid_x * this_ref.curr_layer.snap[0];
 					obj.x = obj.x + (this_ref.curr_layer.snap[0]/2) - (obj.width/2);
-
 					obj.y = obj.grid_y * this_ref.curr_layer.snap[1];
 					obj.y = obj.y + (this_ref.curr_layer.snap[1]/2) - (obj.height/2);
 				}
@@ -347,16 +294,46 @@ class SceneEditor extends Editor {
 			this_ref.export();
 		});
 
-		// LAYER
-		this.el_snap_container.appendChild(this.el_snap_label);
-		this.el_snap_container.appendChild(this.el_snap_x);
-		this.el_snap_container.appendChild(this.el_snap_sep);
-		this.el_snap_container.appendChild(this.el_snap_y);
+		this.el_layer_form.onChange('name', function(value){
+			if (this_ref.curr_layer) {
+				if (value == '')
+					value = this_ref.curr_layer.name;
+				else {
+					var old_name = this_ref.curr_layer.name;
+					var new_name = value;
 
-		this.el_layer_container.appendChild(this.el_layer_name);
-		this.el_layer_container.appendChild(this.el_sel_layer);
-		this.el_layer_container.appendChild(this.el_btn_add_layer);
-		this.el_layer_container.appendChild(this.el_snap_container);
+					this_ref.curr_layer.name = value;
+					this_ref.refreshLayerList(old_name, new_name);
+					this_ref.export();
+				}
+			}
+		});
+
+		this.el_layer_control = new BlankeListView({
+			title:'layers',
+			buttons:['add'],
+			new_item:'layer',
+			actions:{
+				"delete":"remove layer"
+			}
+		});
+		this.el_layer_control.onItemAction = function(icon, text) {
+			if (icon == "delete") {
+				this_ref.el_layer_control.removeItem(text);
+			}
+		}
+		this.el_layer_control.onItemSelect = function(text) {
+			this_ref.setLayer(text);
+		}
+		this.el_layer_control.onItemAdd = function(text) {
+			let layer_name = this_ref.addLayer();
+			this_ref.export();
+			return layer_name;
+		}
+
+		// LAYER
+		this.el_layer_container.appendChild(this.el_layer_control.container);
+		this.el_layer_container.appendChild(this.el_layer_form.container);
 
 		// OBJECT
 		this.el_object_container.appendChild(this.el_input_letter);
@@ -693,19 +670,6 @@ class SceneEditor extends Editor {
 
 	// refreshes combo box
 	refreshLayerList (old_name, new_name) {
-		app.clearElement(this.el_sel_layer);
-		var placeholder = app.createElement("option");
-		placeholder.selected = true;
-		placeholder.disabled = true;
-		this.el_sel_layer.appendChild(placeholder);
-
-		for (var o = 0; o < this.layers.length; o++) {
-			var new_option = app.createElement("option");
-			new_option.value = this.layers[o].name;
-			new_option.innerHTML = this.layers[o].name;
-			this.el_sel_layer.appendChild(new_option);
-		}	
-
 		// rename layer in objects
 		if (old_name && new_name) {		
 			for (var o = 0; o < this.objects.length; o++) {
@@ -716,6 +680,11 @@ class SceneEditor extends Editor {
 				}
 			}
 		}
+
+		let layer_list = this.layers.map(layer => layer.name);
+		this.el_layer_control.setItems(layer_list);
+		if (this.curr_layer)
+			this.el_layer_control.selectItem(this.curr_layer.name);
 	}
 
 	// refreshes object combo box 
@@ -1056,7 +1025,7 @@ class SceneEditor extends Editor {
 				place_image.pixi_tilemap[layer.uuid] = new PIXI.Container();
 				layer.container.addChild(place_image.pixi_tilemap[layer.uuid]);
 
-				layer.container.setChildIndex(place_image.pixi_tilemap[layer.uuid], 0)
+				layer.container.setChildIndex(place_image.pixi_tilemap[layer.uuid], 0);
 			}
 
 
@@ -1226,6 +1195,7 @@ class SceneEditor extends Editor {
 	}
 
 	setImage (path, onReady) {
+		path = app.cleanPath(path);
 		let img = this.getImage(path);
 		if (img) {
 			var this_ref = this;
@@ -1283,6 +1253,8 @@ class SceneEditor extends Editor {
 		this.setLayer(info.name);
 
 		this.refreshLayerList();
+
+		return info.name;
 	}
 
 	getLayer (name, is_uuid) {
@@ -1296,10 +1268,13 @@ class SceneEditor extends Editor {
 		for (var l = 0; l < this.layers.length; l++) {
 			if (this.layers[l].name === name) {
 				this.curr_layer = this.layers[l];
-				this.el_layer_name.value = this.curr_layer.name;
+				this.el_layer_form.setValue('name', this.curr_layer.name);
 				this.el_snap_x.value = this.curr_layer.snap[0];
 				this.el_snap_y.value = this.curr_layer.snap[1];
 				this.layers[l].container.alpha = 1;
+				
+				console.log(name);
+				this.el_layer_control.selectItem(name);
 
 			} else {
 				// make other layers transparent
@@ -1374,6 +1349,7 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
+		return;
 		if (this.deleted) return;
 
 		let export_data = {'objects':[], 'layers':[], 'images':[]};
