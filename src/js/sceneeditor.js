@@ -357,7 +357,7 @@ class SceneEditor extends Editor {
 		this.el_sidebar.appendChild(this.el_image_container);
 
 		this.appendChild(this.el_sidebar);
-
+		
 		function dragStart() {
 			if (!this_ref.dragging && this_ref.can_drag) {
 				var mouse = this_ref.pixi.renderer.plugins.interaction.mouse.global;
@@ -371,18 +371,11 @@ class SceneEditor extends Editor {
 				this_ref.dragging = false;
 			}
 		}
+
 		window.addEventListener('keydown', function(e){
 			var keyCode = e.keyCode || e.which;
 
-			// SPACE
-			if (keyCode == 32) {
-				dragStart();
-			}
-
-			// CTRL
-			if (keyCode == 17) {
-				this_ref.snap_on = false;
-			}
+			// nothing atm
 		});
 		window.addEventListener('keyup', function(e){
 			var keyCode = e.keyCode || e.which;
@@ -424,7 +417,7 @@ class SceneEditor extends Editor {
 				dragStart();
 			}
 
-			if (!alt) {
+			if (!alt && !this_ref.dragging) {
 				// placing object
 				if (btn == 0) {
 					if(this_ref.obj_type == 'object') 
