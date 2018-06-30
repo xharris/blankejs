@@ -56,7 +56,9 @@ module.exports.completions = {
 		{fn:"forEach", vars:{ func: 'calls func(index, obj) for each object'}},
 		{fn:"call", vars:{ func_name:'calls object[func_name](...) for each object', etc:'' }},
 		{fn:"destroy"},
-		{fn:"closest_point", info:'Entity only. get Entity closest to point', vars:{ x:'', y:'' }}
+		{fn:"closest_point", info:'Entity only. get Entity closest to point', vars:{ x:'', y:'' }},
+		{fn:"closest", info:'Entity only. get Entity closest to entity'},
+		{fn:"size", info:'number of children'}
 	],
 	"blanke-asset":[
 		{fn:"add", vars:{ path:'file or folder (ending with \'/\')' }},

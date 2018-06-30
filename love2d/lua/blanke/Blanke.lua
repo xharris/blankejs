@@ -51,7 +51,7 @@ end
 function _destroyGameObject(type, del_obj)
 	del_obj._destroyed = true
 	if del_obj._group and del_obj.uuid ~= nil then
-		del_obj._group:removeUUID(del_obj.uuid)
+		del_obj._group:remove(del_obj)
 	end
 	_iterateGameGroup(type, function(obj, i) 
 		if obj.uuid == del_obj.uuid then

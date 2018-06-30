@@ -1,11 +1,13 @@
 BlankE.addState("PlayState")
 
-local blocks = Group()
+local board
 
 function PlayState:enter()
 	Draw.setBackgroundColor('white')
-	bob = IceBlock()
+
+	board = Board()
 	
-	blocks:add(bob)
-	
+end
+
+function PlayState:draw()
 end

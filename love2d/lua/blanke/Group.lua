@@ -10,7 +10,7 @@ Group = Class{
 	end,
 
 	remove = function(self, i)
-		if (type(i) == "number")
+		if (type(i) == "number") then
 			self.children[i] = nil
 		elseif i.uuid then
 			local i = 1
