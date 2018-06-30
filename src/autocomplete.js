@@ -5,7 +5,7 @@ let color_vars = {
 	a:'optional alpha'
 }
 
-module.exports.class_list = ['Draw','BlankE','Asset','Input','Image','Scene'];
+module.exports.class_list = ['Group','Draw','BlankE','Asset','Input','Image','Scene'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -25,7 +25,8 @@ module.exports.instance_regex = {
 	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
-	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"][\w\.]+[\'\"]\)\s+?/g
+	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"][\w\.]+[\'\"]\)\s+?/g,
+	'group': 	/\b(\w+)\s*=\s*Group\(\).*/g
 }
 
 // how to treat use of the 'self' keyword when used inside a callback
@@ -49,6 +50,14 @@ module.exports.completions = {
 		{fn:"loadPlugin", vars:{ name:'' }},
 		{prop:"draw_debug"}
 	],
+	"blanke-group-instance":[
+		{fn:"add", vars:{ obj:'' }},
+		{fn:"remove", vars:{ index:'number / reference to object with a uuid' }},
+		{fn:"forEach", vars:{ func: 'calls func(index, obj) for each object'}},
+		{fn:"call", vars:{ func_name:'calls object[func_name](...) for each object', etc:'' }},
+		{fn:"destroy"},
+		{fn:"closest_point", info:'Entity only. get Entity closest to point', vars:{ x:'', y:'' }}
+	],
 	"blanke-asset":[
 		{fn:"add", vars:{ path:'file or folder (ending with \'/\')' }},
 		{fn:"list", vars:{ file_type:'script / image / map / file' }}
@@ -61,7 +70,7 @@ module.exports.completions = {
 		{fn:"point", vars:{ x:'', y:'' }},
 		{fn:"points"},
 		{fn:"line"},
-		{fn:"rect"},
+		{fn:"rect", vars:{ mode:'fill / line', x:'', y:'', width:'', height:''}},
 		{fn:"circle"},
 		{fn:"polygon"},
 		{fn:"text"},

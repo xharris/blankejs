@@ -3,7 +3,7 @@ var object_list = {}
 var object_src = {};
 var object_instances = {};
 
-var autocomplete, re_class, re_class_list, hints, re_instance, callbacks;
+var autocomplete, re_class, re_class_list, re_class_and_instance, hints, re_instance, callbacks;
 
 function reloadCompletions() {
 	delete require.cache[require.resolve('./autocomplete.js')];
@@ -15,6 +15,12 @@ function reloadCompletions() {
 		re_class_list = '^('+autocomplete.class_list.join('|')+')[.:]?';
 	hints = autocomplete.completions;
 	re_instance = autocomplete.instance_regex;
+
+	re_class_and_instance = Object.assign({}, re_class);
+	for (let c in re_instance) {
+		if (!re_class_and_instance[c])
+			re_class_and_instance[c] = re_instance[c];
+	}
 
 	callbacks = {};
 	for (let htype in hints) {
@@ -51,26 +57,28 @@ function refreshObjectList (filename, content) {
 	// clear src list
 	object_src[filename] = '';
 	do {
-		for (var category in re_class) {
-			let re = re_class[category];
+
+		for (var category in re_class_and_instance) {
+			let re = re_class_and_instance[category];
 		
 			ret_matches = [];
-			if (Array.isArray(re)) {
-				for (let subre of re) {
-					let matches = subre.exec(content);
+			if (re) {
+				if (Array.isArray(re)) {
+					for (let subre of re) {
+						let matches = subre.exec(content);
+						if (matches) {
+							ret_matches.push(matches[1]);
+						}
+					}
+				} else {
+					let matches = re.exec(content);
 					if (matches) {
 						ret_matches.push(matches[1]);
 					}
 				}
-			} else {
-				let matches = re.exec(content);
-				if (matches) {
-					ret_matches.push(matches[1]);
-				}
 			}
 
 			//if (ret_matches.length == 0) continue;
-
 			for (let obj_name of ret_matches) {
 				object_src[filename] += obj_name + ' ';
 
@@ -132,7 +140,9 @@ class Code extends Editor {
 				else baseCur += " ";
 		    	var ch;
 		
-		    	blanke.cooldownFn("refreshObjectList", refreshObjectList, 500);				    	
+		    	blanke.cooldownFn("refreshObjectList", function(){
+		    		refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
+		    	}, 500);				    	
 
 		      	// comment
 		      	if (stream.match(/\s*--/)) {
@@ -153,30 +163,37 @@ class Code extends Editor {
 					}
 				}	
 
-		    	for (let category in re_class) {
-			    	if (object_list[category]) {
-						
-						// user made classes (PlayState, Player)
-			    		let re_obj_category = '^\\s(';
-			    		for (let obj_name in object_list[category]) {
-							re_obj_category += obj_name+'|';
-			    		}
-			    		if (Object.keys(object_list[category]).length > 0) {
-				    		if (stream.match(new RegExp(re_obj_category.slice(0,-1)+')[.:]?'))) {
-					      		return baseCur+"blanke-class blanke-"+category;
-				    		}
-				    	}
-
-				    	// class instances
-			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
-			      			for (var instance_name of object_instances[this_ref.file][category]) {
+				// class instances
+				for (let file in object_instances) {
+					for (let category in object_instances[file]) {
+			      		if (object_instances[file] && object_instances[file][category]) {
+			      			for (var instance_name of object_instances[file][category]) {
 			      				if (stream.match(new RegExp("^"+instance_name+"[.:]?"))) {
 			      					return baseCur+"blanke-instance blanke-"+category+"-instance";
 			      				}
 			      			}
 			      		}
+			      	}
+		      	}
+
+				// user made classes (PlayState, Player)
+		    	for (let category in object_list) {
+			    	if (re_class[category]) {
+						
+			    		let re_obj_category = '^\\s(';
+			    		for (let obj_name in object_list[category]) {
+							re_obj_category += obj_name+'|';
+			    		}
+
+			    		if (Object.keys(object_list[category]).length > 0) {
+			    			if (stream.match(new RegExp(re_obj_category.slice(0,-1)+')'))) {
+					      		return baseCur+"blanke-class blanke-"+category;
+				    		}
+				    	}
+
 				    }
 				}
+
 
 			    while (stream.next() && false) {}
 			    return null;
@@ -366,6 +383,7 @@ class Code extends Editor {
 							hint_types[text] = 'function2';
 						}
 						render = hint_opts.fn + paren[0] + Object.keys(hint_opts.vars || {}).map(specialReplacements) + paren[1] +
+									"<p class='prop-info'>"+(hint_opts.info || '')+"</p>"+
 									"<p class='arg-info'>"+arg_info+"</p>"+
 									"<p class='item-type'>"+item_type+"</p>";
 						add = true;

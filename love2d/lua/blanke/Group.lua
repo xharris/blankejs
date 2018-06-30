@@ -10,18 +10,17 @@ Group = Class{
 	end,
 
 	remove = function(self, i)
-		self.children[i] = nil
-		--table.remove(self.children, i)
-	end,
-
-	removeUUID = function(self, uuid)
-		local i = 1
-		while i <= #self.children do
-			if self.children[i] and self.children[i].uuid and self.children[i].uuid == uuid then
-				self:remove(i)
-				--i = #self.children + 1
+		if (type(i) == "number")
+			self.children[i] = nil
+		elseif i.uuid then
+			local i = 1
+			while i <= #self.children do
+				if self.children[i] and self.children[i].uuid and self.children[i].uuid == uuid then
+					self:remove(i)
+					--i = #self.children + 1
+				end
+				i = i + 1
 			end
-			i = i + 1
 		end
 	end,
 
