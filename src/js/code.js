@@ -55,8 +55,6 @@ function refreshObjectList (filename, content) {
 
 	// clear src list
 	object_src[filename] = '';
-	console.log(content)
-	console.log('use list',object_list)
 
 	let ret_matches = [];
 	do {
@@ -113,7 +111,6 @@ function refreshObjectList (filename, content) {
 							if(!object_instances[filename][category])
 								object_instances[filename][category] = [];
 							do {
-								console.log('^check^',regex_instance.source)
 								ret_instance_match = regex_instance.exec(content);
 								if (!ret_instance_match) {
 									// continue; // no longer usable after adding 'for (let obj_name of ret_matches)'
@@ -133,8 +130,6 @@ function refreshObjectList (filename, content) {
 		iterateRegex(re_instance);
 	
 	} while (ret_matches.length);
-
-	console.log('resulting instances',object_instances)
 }
 
 class Code extends Editor {
