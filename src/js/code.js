@@ -3,13 +3,16 @@ var object_list = {}
 var object_src = {};
 var object_instances = {};
 
-var autocomplete, re_class, hints, re_instance, callbacks;
+var autocomplete, re_class, re_class_list, hints, re_instance, callbacks;
 
 function reloadCompletions() {
 	delete require.cache[require.resolve('./autocomplete.js')];
 	autocomplete = require('./autocomplete.js');
 
 	re_class = autocomplete.class_regex;
+	re_class_list = null;
+	if (autocomplete.class_list)
+		re_class_list = '^('+autocomplete.class_list.join('|')+')[.:]?';
 	hints = autocomplete.completions;
 	re_instance = autocomplete.instance_regex;
 
@@ -121,8 +124,6 @@ class Code extends Editor {
 		this.appendChild(this.edit_box)
 
 		var this_ref = this;
-
-		let last_class = '';
 		CodeMirror.defineMode("blanke", function(config, parserConfig) {
 		  var blankeOverlay = {
 		    token: function(stream, state) {
@@ -130,6 +131,55 @@ class Code extends Editor {
 				if (baseCur == null) baseCur = "";
 				else baseCur += " ";
 		    	var ch;
+		
+		    	blanke.cooldownFn("refreshObjectList", refreshObjectList, 500);				    	
+
+		      	// comment
+		      	if (stream.match(/\s*--/)) {
+		      		while ((ch = stream.next()) != null && !stream.eol());
+		      		return "comment";
+		      	}
+
+				// self keyword
+		      	if (stream.match(/^self[.:]?/g)) {
+		      		return baseCur+"blanke-self";
+		      	}
+
+		      	// class list (Draw, Asset, etc)
+				if (re_class_list) {
+					let match = stream.match(new RegExp(re_class_list));
+					if (match) {
+						return baseCur+"blanke-class blanke-"+match[1].toLowerCase();
+					}
+				}	
+
+		    	for (let category in re_class) {
+			    	if (object_list[category]) {
+						
+						// user made classes (PlayState, Player)
+			    		let re_obj_category = '^\\s(';
+			    		for (let obj_name in object_list[category]) {
+							re_obj_category += obj_name+'|';
+			    		}
+			    		if (Object.keys(object_list[category]).length > 0) {
+				    		if (stream.match(new RegExp(re_obj_category.slice(0,-1)+')[.:]?'))) {
+					      		return baseCur+"blanke-class blanke-"+category;
+				    		}
+				    	}
+
+				    	// class instances
+			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
+			      			for (var instance_name of object_instances[this_ref.file][category]) {
+			      				if (stream.match(new RegExp("^"+instance_name+"[.:]?"))) {
+			      					return baseCur+"blanke-instance blanke-"+category+"-instance";
+			      				}
+			      			}
+			      		}
+				    }
+				}
+
+			    while (stream.next() && false) {}
+			    return null;
 
 				/* keeping this code since it's a good example
 				if (stream.match("{{")) {
@@ -139,45 +189,7 @@ class Code extends Editor {
 			      			return "blanke-test";
 			      		}
 		      	}
-		      	break_bool *= !stream.match('{',false);
-		      	*/
-		      	if (stream.match("self", true)) {
-		      		return baseCur+"blanke-self";
-		      	}
-
-		      	if (stream.match(/\s*--/)) {
-		      		while ((ch = stream.next()) != null && !stream.eol());
-		      		return "comment";
-		      	}
-
-				// check for user-made classes
-				for (var category in re_class) {
-			      	if (object_list[category]) {
-			      		for (var obj_name in object_list[category]) {
-			      			let re_obj_name = new RegExp("\\b"+obj_name);
-			      			let is_match = stream.match(re_obj_name,true);
-			      			
-			      			if (is_match) {
-			      				return baseCur+"blanke-class blanke-"+category;
-			      			}
-			      		}
-
-			      		if (object_instances[this_ref.file] && object_instances[this_ref.file][category]) {
-			      			for (var instance_name of object_instances[this_ref.file][category]) {
-			      				let re_inst_name = new RegExp("\\b"+instance_name+"\\.?");
-			      				let is_match = stream.match(re_inst_name);
-
-			      				if (is_match) {
-			      					stream.match(re_inst_name,true);
-			      					return baseCur+"blanke-instance blanke-"+category+"-instance";
-			      				}
-			      			}
-			      		}	
-			      	}
-				}
-
-				while (stream.next() && false) {} // idk why but the '&& false' helps
-				return null;
+				*/	
 		    }
 		  };
 		  return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "lua"), blankeOverlay);
@@ -269,7 +281,6 @@ class Code extends Editor {
 				// get most recent callback token type
 				if (types.includes("blanke-self")) {
 					let loop = token_pos.line-1;
-					let last_class;
 					do {
 						let tokens = editor.getLineTokens(loop);
 						for (var t of tokens) {
@@ -406,7 +417,6 @@ class Code extends Editor {
 		//this.codemirror.setSize("100%", "100%");
 		this.codemirror.on('change', function(cm, obj){
 			this_ref.addAsterisk();
-			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
 		});
 		this_ref.codemirror.refresh();
 		this.addCallback('onResize', function(w, h) {

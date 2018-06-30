@@ -5,6 +5,8 @@ let color_vars = {
 	a:'optional alpha'
 }
 
+module.exports.class_list = ['Draw','BlankE','Asset','Input','Image','Scene'];
+
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
 	'state': 	[
@@ -14,15 +16,8 @@ module.exports.class_regex = {
 	],
 	'entity': 	[
 		/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g,
-		/.*BlankE\.addEntity\s*\(\s*"(\w+)"\s*\).*/g,
-		/\b(Player).*/g
-	],
-	'blanke': 	/.*(BlankE).*/g,
-	'draw': 	/\b(Draw).*/g,
-	'asset': 	/\b(Asset).*/g,
-	'input': 	/\b(Input).*/g,
-	'image': 	/\b(Image).*/g,
-	'scene': 	/\b(Scene).*/g
+		/.*BlankE\.addEntity\s*\(\s*"(\w+)"\s*\).*/g
+	]
 }
 
 // Group 1: name of instance 
@@ -47,8 +42,10 @@ module.exports.completions = {
 		{fn:"init", vars:{ first_state:'State the game should start in' }},
 		{fn:"addClassType",
 		vars:{
-			arg1:'MenuState / Player / ...', arg2:'State / Entity / etc.'
+			object_name:'MenuState / Player / ...', object_type:'State / Entity / etc.'
 		}},
+		{fn:"addState", vars:{ object_name:'MenuState / PlayState / ...' }},
+		{fn:"addEntity", vars:{ object_name:'Player / Powerup / ...' }},
 		{fn:"loadPlugin", vars:{ name:'' }},
 		{prop:"draw_debug"}
 	],
