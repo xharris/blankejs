@@ -503,9 +503,7 @@ class Code extends Editor {
 
 	save () {
 		let this_ref = this;
-		console.log(blanke)
 		blanke.cooldownFn("codeSave", 200, function(){
-			console.log('do eet')
 			nwFS.writeFileSync(this_ref.file, this_ref.codemirror.getValue());
 			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
 			this_ref.removeAsterisk();

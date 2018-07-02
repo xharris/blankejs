@@ -46,7 +46,7 @@ function IceBlock:draw()
 	Draw.rect('line', self.block_x, self.block_y, block_width, block_height)
 	
 	if self.selected then
-		Draw.setColor('red')
+		Draw.setColor('red')s
 		Draw.rect('line', self.block_x - 2, self.block_y - 2, block_width + 4, block_height + 4)
 	end
 end
