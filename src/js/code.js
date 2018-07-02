@@ -12,7 +12,7 @@ function reloadCompletions() {
 	re_class = autocomplete.class_regex;
 	re_class_list = null;
 	if (autocomplete.class_list)
-		re_class_list = '^('+autocomplete.class_list.join('|')+')[.:]?';
+		re_class_list = '^('+autocomplete.class_list.join('|')+')';
 	hints = autocomplete.completions;
 	re_instance = autocomplete.instance_regex;
 
@@ -177,7 +177,7 @@ class Code extends Editor {
 					for (let category in object_instances[file]) {
 			      		if (object_instances[file] && object_instances[file][category]) {
 			      			for (var instance_name of object_instances[file][category]) {
-			      				if (stream.match(new RegExp("^"+instance_name+"[.:]?"))) {
+			      				if (stream.match(new RegExp("^"+instance_name))) {
 			      					return baseCur+"blanke-instance blanke-"+category+"-instance";
 			      				}
 			      			}
@@ -204,7 +204,7 @@ class Code extends Editor {
 				}
 
 				// self keyword
-		      	if (stream.match(/^self[.:]?/g)) {
+		      	if (stream.match(/^self/g)) {
 		      		return baseCur+"blanke-self";
 		      	}
 

@@ -19,6 +19,12 @@ function IceBlock:init(x, y)
 	
 	self.block_x = self.x - (block_width/2)
 	self.block_y = self.y - (block_height/2)
+	
+	Signal.on('block_select', function(block)
+		if block ~= self then
+			self.selected = false
+		end
+	end)
 end
 
 function IceBlock:update(dt)
@@ -26,6 +32,7 @@ function IceBlock:update(dt)
 	
 	if self.can_select and Input("select") and self.mouse_inside then
 		self.selected = true
+		Signal.emit('block_select', self)
 	end
 end
 
@@ -46,7 +53,7 @@ function IceBlock:draw()
 	Draw.rect('line', self.block_x, self.block_y, block_width, block_height)
 	
 	if self.selected then
-		Draw.setColor('red')s
+		Draw.setColor('red')
 		Draw.rect('line', self.block_x - 2, self.block_y - 2, block_width + 4, block_height + 4)
 	end
 end
@@ -80,6 +87,7 @@ function Board:init(size)
 	self.player = nil
 	
 	self.size = size
+	self.selecting_block = false
 	
 	-- set up board
 	local group_width = (block_width*block_spacing_ratio) * self.size - (block_width)
@@ -122,6 +130,7 @@ function Board:checkBlockVis()
 end
 
 function Board:startMoveSelect()
+	self.selecting_block = true
 	self.blocks:forEach(function(b, block)
 		if block.visible and not block.occupied then
 			block.can_select = true

@@ -40,7 +40,7 @@
 }
 *:not(.no-custom-scroll)::-webkit-scrollbar-track {
   /* border: 1px solid #BDBDBD; */
-  background-color: rgba(224, 224, 224, 0.1);
+  background-color: #E0E0E0;
 }
 *:not(.no-custom-scroll)::-webkit-scrollbar {
   height: 10px;
