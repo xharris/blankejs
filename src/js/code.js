@@ -139,7 +139,6 @@ class Code extends Editor {
 		
 		this.file = '';
 		this.script_folder = "/scripts";
-		this.can_save = true;
 
 		// create codemirror editor
 		this.edit_box = document.createElement("textarea");
@@ -155,9 +154,9 @@ class Code extends Editor {
 				else baseCur += " ";
 		    	var ch;
 		
-		    	blanke.cooldownFn("refreshObjectList", function(){
+		    	blanke.cooldownFn("refreshObjectList", 500, function(){
 		    		refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
-		    	}, 500);				    	
+		    	});				    	
 
 		      	// comment
 		      	if (stream.match(/\s*--/)) {
@@ -241,13 +240,9 @@ class Code extends Editor {
             extraKeys: {
             	"Cmd-S": function(cm) {
             		this_ref.save();
-            		this_ref.can_save = false;
-            		this_ref.removeAsterisk();
             	},
             	"Ctrl-S": function(cm) {
             		this_ref.save();
-            		this_ref.can_save = false;
-            		this_ref.removeAsterisk();
             	},
             	"Ctrl-=": function(cm) {
             		font_size += 1;
@@ -507,11 +502,14 @@ class Code extends Editor {
 	}
 
 	save () {
-		blanke.cooldownFn("code_save",function(){
-			nwFS.writeFileSync(this.file, this.codemirror.getValue());
-			this.can_save = false;
-			refreshObjectList(this.file, this.codemirror.getValue());
-		}, 500);
+		let this_ref = this;
+		console.log(blanke)
+		blanke.cooldownFn("codeSave", 200, function(){
+			console.log('do eet')
+			nwFS.writeFileSync(this_ref.file, this_ref.codemirror.getValue());
+			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
+			this_ref.removeAsterisk();
+		});
 	}
 
 	delete (path) {

@@ -7,17 +7,31 @@ BlankE.addEntity("IceBlock")
 
 local block_width = 30
 local block_height = block_width-- block_width * .75
-function IceBlock:init()
+function IceBlock:init(x, y)
 	self.occupied = false		-- a player is standing on this block
 	self.visible = false		-- player can interact with this block
 	self.can_select = false
 	self.selected = false
+	self.mouse_inside = false
+	
+	self.x = x
+	self.y = y
+	
+	self.block_x = self.x - (block_width/2)
+	self.block_y = self.y - (block_height/2)
 end
 
-function IceBlock:draw()
-		
+function IceBlock:update(dt)
+	self.mouse_inside = (self:distancePoint(mouse_x, mouse_y) < block_width)
+	
+	if self.can_select and Input("select") and self.mouse_inside then
+		self.selected = true
+	end
+end
+
+function IceBlock:draw()	
 	-- draw selection circle if mouse is near
-	if self.visible and not self.occupied and self:distancePoint(mouse_x, mouse_y) < block_width then
+	if self.visible and not self.occupied and self.mouse_inside then
 		Draw.setColor('grey')
 		Draw.circle('fill', self.x, self.y, block_width)
 	end
@@ -29,12 +43,11 @@ function IceBlock:draw()
 	else	
 		Draw.setColor("gray")
 	end
-	Draw.rect('line', self.x - (block_width/2), self.y - (block_height/2), block_width, block_height)
-end
-
-function IceBlock:allowSelect()
-	if self.can_select and Input("select") then
-		
+	Draw.rect('line', self.block_x, self.block_y, block_width, block_height)
+	
+	if self.selected then
+		Draw.setColor('red')
+		Draw.rect('line', self.block_x - 2, self.block_y - 2, block_width + 4, block_height + 4)
 	end
 end
 
@@ -75,9 +88,10 @@ function Board:init(size)
 	local group_offsety = (game_height / 2) - (group_height/2) + (block_height/2)
 	for x = 1,size do
 		for y = 1,size do
-			local new_block = IceBlock()
-			new_block.x = (x - 1) * (block_width*block_spacing_ratio) + group_offsetx
-			new_block.y = (y - 1) * (block_height*block_spacing_ratio) + group_offsety
+			local new_block = IceBlock(
+				(x - 1) * (block_width*block_spacing_ratio) + group_offsetx,
+				(y - 1) * (block_height*block_spacing_ratio) + group_offsety
+			)
 			new_block.index = map2Dindex(x,y,size)
 			new_block.grid_x = x
 			new_block.grid_y = y

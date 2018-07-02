@@ -7,6 +7,7 @@ function PlayState:enter()
 
 	board = Board(10)
 	board:addPlayer(5, 5)
+	board:startMoveSelect()
 end
 
 function PlayState:draw()

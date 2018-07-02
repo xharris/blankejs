@@ -96,7 +96,9 @@ Entity = Class{
     		end
     	end
 
-		self:update(dt)
+    	if self.update then
+			self:update(dt)
+		end
 
     	if self._destroyed then return end -- call again in case entity is destroyed during update
 
