@@ -523,8 +523,8 @@ BlankE = {
 	end,
 
 	scaledMouse = function(x, y) 
-		x = x / BlankE.scale_x - BlankE._offset_y  
-		y = y / BlankE.scale_y - BlankE._offset_x 
+		x = (x - BlankE.left) / BlankE.scale_x 
+		y = (y - BlankE.top) / BlankE.scale_y
 
 		if x < 0 then x = 0 end
 		if y < 0 then y = 0 end

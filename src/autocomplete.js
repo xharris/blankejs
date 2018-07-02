@@ -26,7 +26,7 @@ module.exports.instance_regex = {
 	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"][\w\.]+[\'\"]\)\s+?/g,
-	'group': 	/\b(\w+)\s*=\s*Group\(\).*/g
+	'group': 	/\b((?:self.|self:)?\w+)\s*=\s*Group\(\).*/g
 }
 
 // how to treat use of the 'self' keyword when used inside a callback
@@ -52,6 +52,7 @@ module.exports.completions = {
 	],
 	"blanke-group-instance":[
 		{fn:"add", vars:{ obj:'' }},
+		{fn:"get", vars:{ index:'' }},
 		{fn:"remove", vars:{ index:'number / reference to object with a uuid' }},
 		{fn:"forEach", vars:{ func: 'calls func(index, obj) for each object'}},
 		{fn:"call", vars:{ func_name:'calls object[func_name](...) for each object', etc:'' }},
@@ -71,9 +72,9 @@ module.exports.completions = {
 		{fn:"resetColor"},
 		{fn:"point", vars:{ x:'', y:'' }},
 		{fn:"points"},
-		{fn:"line"},
+		{fn:"line", vars:{ x1:'', y1:'', x2:'', y2:'' }},
 		{fn:"rect", vars:{ mode:'fill / line', x:'', y:'', width:'', height:''}},
-		{fn:"circle"},
+		{fn:"circle", vars:{ mode:'fill / line', x:'', y:'', radius:''}},
 		{fn:"polygon"},
 		{fn:"text"},
 		{fn:"textf"},
@@ -147,6 +148,10 @@ module.exports.completions = {
 			speed:'0.1 smaller = faster'
 		}},
 		{fn:"drawSprite",vars:{ name:'calls default draw function for given animation name' }},
+
+		{fn:"distancePoint", vars:{ x:'', y:'' }, info:'entity origin distance from point'},
+		{fn:"moveTowardsPoint", vars:{ x:'', y:'', speed:'' }},
+		{fn:"containsPoint", vars:{ x:'', y:'' }, info:'checks if a point is inside the sprite (not hitboxes)'},
 
 		{fn:"destroy"},
 

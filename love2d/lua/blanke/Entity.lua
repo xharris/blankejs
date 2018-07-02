@@ -96,9 +96,8 @@ Entity = Class{
     		end
     	end
 
-		if self.update then
-			self:update(dt)
-		end	
+		self:update(dt)
+
     	if self._destroyed then return end -- call again in case entity is destroyed during update
 
 		if not self.pause then			
@@ -430,7 +429,7 @@ Entity = Class{
 		return self
 	end,
 
-	distance_point = function(self, x, y)
+	distancePoint = function(self, x, y)
 		return math.sqrt((x - self.x)^2 + (y - self.y)^2)
 	end,
 
@@ -442,14 +441,14 @@ Entity = Class{
 
 	-- self direction and speed will be set towards the given point
 	-- this method will not set the speed back to 0 
-	move_towards_point = function(self, x, y, speed)
+	moveTowardsPoint = function(self, x, y, speed)
 		self.direction = math.deg(math.atan2(y - self.y, x - self.x))
 		self.speed = speed
 		return self
 	end,
     
     -- checks if the point is inside the current sprite
-    contains_point = function(self, x, y)
+    containsPoint = function(self, x, y)
     	for name, sprite in pairs(self.sprite) do
 	        if x >= self.x and y >= self.y and x < self.x + sprite.width and  y < self.y + sprite.height then
     	        return true

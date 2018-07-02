@@ -16,6 +16,7 @@ Draw = Class{
 	orange = {255,193,7,255},
 	brown = {121,85,72,255},
 	gray = {158,158,158,255},
+	grey = {158,158,158,255},
 	black = {0,0,0,255},
 	white = {255,255,255,255},
 	black2 = {33,33,33,255},	-- but not actually black

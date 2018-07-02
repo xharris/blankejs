@@ -9,6 +9,12 @@ Group = Class{
 		table.insert(self.children, obj)
 	end,
 
+	get = function(self, i)
+		if self.children[i] then
+			return self.children[i]
+		end
+	end,
+
 	remove = function(self, i)
 		if (type(i) == "number") then
 			self.children[i] = nil

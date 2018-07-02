@@ -149,9 +149,9 @@ addShape(...)						--[[
 ]]
 setMainShape(name)
 removeShape(name)					-- disables a shape. it is still in the shapes table however and will be replaced using addShape(same_name)
-distance_point(x ,y)				-- entity origin distance from point
-move_towards_point(x, y, speed)		-- sets direction and speed vars
-contains_point(x, y)				-- checks if a point is inside the sprite (not hitboxes)
+distancePoint(x ,y)				-- entity origin distance from point
+moveTowardsPoint(x, y, speed)		-- sets direction and speed vars
+containsPoint(x, y)				-- checks if a point is inside the sprite (not hitboxes)
 
 -- special collision methods
 func onCollision{name}
@@ -365,7 +365,7 @@ if Input('move_left') then
 end
 
 -- class properties
-bool key[name].can_repeat	-- only true once until the button is released
+bool key[name].can_repeat	-- true: only true once until the button is released
 
 -- class methods
 set(name, ...)				-- set an input
@@ -711,6 +711,7 @@ obj[] children
 
 -- instance methods
 add(obj)
+get(index)
 remove(index)				-- index can be number or reference to object with a uuid
 forEach(func)				-- calls func(index, obj) for each object
 call(func_name, [args])		-- calls obj[func_name](args) for each object

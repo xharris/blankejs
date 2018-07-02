@@ -276,6 +276,10 @@ function table.keys(t)
 	for k, v in pairs(t) do table.insert(ret, k) end
 	return ret
 end
+
+function map2Dindex(x, y, columns)
+	return (y-1) * columns + x
+end
 --[[
 function table.remove(t, value)
 	for k, v in pairs(t) do

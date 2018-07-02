@@ -87,6 +87,9 @@ class Tab {
 				contents[t].parentNode.removeChild(contents[t]);
 				app.getElement('#tabs').appendChild(contents[t]);
 				ret_val = true;
+
+				if (contents[t].this_ref.onTabFocus)
+					contents[t].this_ref.onTabFocus();
 			} else {
 
 				contents[t].setAttribute('age', parseInt(contents[t].getAttribute('age'))+1);

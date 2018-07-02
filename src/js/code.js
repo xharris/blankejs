@@ -56,80 +56,78 @@ function refreshObjectList (filename, content) {
 	// clear src list
 	object_src[filename] = '';
 
-	let ret_matches = [];
-	do {
-		function iterateRegex (regex_list) {
-			for (var category in regex_list) {
-				let re = regex_list[category];
-			
-				ret_matches = [];
-				if (re) {
-					if (Array.isArray(re)) {
-						for (let subre of re) {
-							let matches = [];
-							do {
-								matches = subre.exec(content);
-								if (matches) {
-									ret_matches.push(matches[1]);
-								}
-							} while (matches && matches.length);
-						}
-					} else {
+	function iterateRegex (regex_list) {
+		let ret_matches = [];
+
+		for (var category in regex_list) {
+			let re = regex_list[category];
+		
+			ret_matches = [];
+			if (re) {
+				if (Array.isArray(re)) {
+					for (let subre of re) {
 						let matches = [];
 						do {
-							matches = re.exec(content);
+							matches = subre.exec(content);
 							if (matches) {
 								ret_matches.push(matches[1]);
 							}
 						} while (matches && matches.length);
 					}
-				}
-
-				// if (ret_matches.length == 0) continue;
-				for (let o in ret_matches) {
-					let obj_name = ret_matches[o];
-					object_src[filename] += obj_name + ' ';
-
-					// increment in whole list
-					if (!object_list[category]) object_list[category] = {};
-					if (object_list[category][obj_name])
-						object_list[category][obj_name]++;
-					else {
-						object_list[category][obj_name] = 1;
-					}
-				}
-
-				if (object_list[category]) {
-					for (let obj_name in object_list[category]) {
-						// get instances made with those classes
-						if (re_instance[category]) {
-							var regex_instance = new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags);
-							var ret_instance_match;
-
-							if(!object_instances[filename])
-								object_instances[filename] = {};
-							if(!object_instances[filename][category])
-								object_instances[filename][category] = [];
-							do {
-								ret_instance_match = regex_instance.exec(content);
-								if (!ret_instance_match) {
-									// continue; // no longer usable after adding 'for (let obj_name of ret_matches)'
-								}
-								else if(!object_instances[filename][category].includes(ret_instance_match[1])) {
-									object_instances[filename][category].push(ret_instance_match[1]);
-								}
-
-							} while (ret_instance_match)
+				} else {
+					let matches = [];
+					do {
+						matches = re.exec(content);
+						if (matches) {
+							ret_matches.push(matches[1]);
 						}
-					}
+					} while (matches && matches.length);
+				}
+			}
+
+			// if (ret_matches.length == 0) continue;
+			for (let o in ret_matches) {
+				let obj_name = ret_matches[o];
+				object_src[filename] += obj_name + ' ';
+
+				// increment in whole list
+				if (!object_list[category]) object_list[category] = {};
+				if (object_list[category][obj_name])
+					object_list[category][obj_name]++;
+				else {
+					object_list[category][obj_name] = 1;
 				}
 			}
 		}
-
-		iterateRegex(re_class);
-		iterateRegex(re_instance);
+	}
 	
-	} while (ret_matches.length);
+	iterateRegex(re_class);
+	iterateRegex(re_instance);
+
+	for (let category in object_list) {
+		for (let obj_name in object_list[category]) {
+			// get instances made with those classes
+			if (re_instance[category]) {
+				var regex_instance = new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags);
+				var ret_instance_match;
+
+				if(!object_instances[filename])
+					object_instances[filename] = {};
+				if(!object_instances[filename][category])
+					object_instances[filename][category] = [];
+				do {
+					ret_instance_match = regex_instance.exec(content);
+					if (!ret_instance_match) {
+						// continue; // no longer usable after adding 'for (let obj_name of ret_matches)'
+					}
+					else if(!object_instances[filename][category].includes(ret_instance_match[1])) {
+						object_instances[filename][category].push(ret_instance_match[1]);
+					}
+
+				} while (ret_instance_match)
+			}
+		}
+	}
 }
 
 class Code extends Editor {
@@ -165,11 +163,6 @@ class Code extends Editor {
 		      	if (stream.match(/\s*--/)) {
 		      		while ((ch = stream.next()) != null && !stream.eol());
 		      		return "comment";
-		      	}
-
-				// self keyword
-		      	if (stream.match(/^self[.:]?/g)) {
-		      		return baseCur+"blanke-self";
 		      	}
 
 		      	// class list (Draw, Asset, etc)
@@ -211,6 +204,10 @@ class Code extends Editor {
 				    }
 				}
 
+				// self keyword
+		      	if (stream.match(/^self[.:]?/g)) {
+		      		return baseCur+"blanke-self";
+		      	}
 
 			    while (stream.next() && false) {}
 			    return null;
@@ -246,12 +243,12 @@ class Code extends Editor {
             		this_ref.save();
             		this_ref.can_save = false;
             		this_ref.removeAsterisk();
-            	},/*
+            	},
             	"Ctrl-S": function(cm) {
             		this_ref.save();
             		this_ref.can_save = false;
             		this_ref.removeAsterisk();
-            	},*/
+            	},
             	"Ctrl-=": function(cm) {
             		font_size += 1;
             		this_ref.setFontSize(font_size);
@@ -458,18 +455,18 @@ class Code extends Editor {
 			this_ref.codemirror.refresh();
 		});
 		// prevents user from saving a million times by holding the button down
-		document.addEventListener('keyup', function(e){
+		/*document.addEventListener('keyup', function(e){
 			if (e.key == "s" && e.ctrlKey) {
 				this_ref.save();
         		this_ref.removeAsterisk();
 			}
-		});
+		});*/
 
 		// tab click
 		this.setOnClick(function(self){
 			(new Code(app)).edit(self.file);
+			this_ref.setFontSize(font_size);
 		}, this);
-
 	}
 
 	addAsterisk () {
@@ -510,11 +507,11 @@ class Code extends Editor {
 	}
 
 	save () {
-		//if (this.can_save) {
+		blanke.cooldownFn("code_save",function(){
 			nwFS.writeFileSync(this.file, this.codemirror.getValue());
 			this.can_save = false;
 			refreshObjectList(this.file, this.codemirror.getValue());
-		//}
+		}, 500);
 	}
 
 	delete (path) {
