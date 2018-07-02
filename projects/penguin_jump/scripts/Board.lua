@@ -30,7 +30,7 @@ end
 function IceBlock:update(dt)
 	self.mouse_inside = (self:distancePoint(mouse_x, mouse_y) < block_width)
 	
-	if self.can_select and Input("select") and self.mouse_inside then
+	if self.can_select and Input("select") and not self.selected and self.mouse_inside then
 		self.selected = true
 		Signal.emit('block_select', self)
 	end
@@ -82,12 +82,14 @@ end
 BlankE.addEntity("Board")
 
 local block_spacing_ratio = 2
+local MOVE_TIME = 10
 function Board:init(size)
 	self.blocks = Group()
 	self.player = nil
 	
 	self.size = size
 	self.selecting_block = false
+	self.move_timer = Timer(10)
 	
 	-- set up board
 	local group_width = (block_width*block_spacing_ratio) * self.size - (block_width)
@@ -107,6 +109,11 @@ function Board:init(size)
 			self.blocks:add(new_block)
 		end
 	end
+	
+	Signal.on('block_select', function(block)
+		self:movePlayerToBlock(block)
+		self:startMoveSelect()
+	end)
 end
 
 -- only use this for setting main player
@@ -116,6 +123,15 @@ function Board:addPlayer(x, y)
 	self.player.x = block.x
 	self.player.y = block.y
 	self.player.block_ref = block
+	
+	self:checkBlockVis()
+end
+
+function Board:movePlayerToBlock(block)
+	self.player.x = block.x
+	self.player.y = block.y
+	self.player.block_ref = block
+	block.selected = false
 	
 	self:checkBlockVis()
 end
@@ -131,8 +147,14 @@ end
 
 function Board:startMoveSelect()
 	self.selecting_block = true
+	
+	-- start block selection timer
+	self.move_timer:start()
+	
+	-- mark blocks that are selectable
 	self.blocks:forEach(function(b, block)
 		if block.visible and not block.occupied then
+			block.selected = false
 			block.can_select = true
 		end
 	end)
@@ -141,4 +163,7 @@ end
 function Board:draw()
 	self.blocks:call("draw")
 	self.player:draw()
+	
+	Draw.setColor("black")
+	Draw.text(MOVE_TIME - self.move_timer.time, 20, 20)
 end
