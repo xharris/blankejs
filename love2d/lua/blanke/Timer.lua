@@ -106,7 +106,6 @@ Timer = Class{
 	end,
 
 	reset = function(self)
-	Debug.log('resetting')
 		self.time = 0
 		self.running = false
 		self._running = false
