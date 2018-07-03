@@ -92,11 +92,11 @@ function Board:init(size)
 	self.selected_block = nil
 	self.move_timer = Timer(MOVE_TIME)
 	self.move_timer:after(function()
-		Debug.log("lets gooo!!")
 		self.selected_block = ifndef(self.selected_block, self.player.block_ref)
 		self:movePlayerToBlock(self.selected_block)
 		self:startMoveSelect()
 	end)
+
 	Signal.on('block_select', function(block)
 		self.selected_block = block
 	end)
