@@ -66,12 +66,30 @@ end
 BlankE.addEntity("Player")
 
 function Player:init()
+	self.move_curve = Bezier()
+	Signal.on('block_select', function(block)
+		self.move_curve:clear()
+		-- TODO: figure out why this order works
+		self.move_curve:addPoint(self.x, self.y)
+			:addPoint(block.x, block.y)
+			:addPoint((block.x+self.x)/2, block.y - 150)
+	end)
+end
+
+function Player:jumpToBlock(block)
+	self.x = block.x
+	self.y = block.y
+	self.block_ref = block
 	
+	self.move_curve:clear()
 end
 
 function Player:draw()
 	Draw.setColor("blue")
 	Draw.rect("fill", self.x - (block_width/2) + 5, self.y - block_height, block_width - 10, block_height)
+	Draw.setPointSize(3)
+	self.move_curve:draw()
+	self.move_curve:drawPoints()
 end
 
 --[[
@@ -82,7 +100,7 @@ end
 BlankE.addEntity("Board")
 
 local block_spacing_ratio = 2
-local MOVE_TIME = 3
+local MOVE_TIME = 10
 function Board:init(size)
 	self.blocks = Group()
 	self.player = nil
@@ -133,11 +151,9 @@ function Board:addPlayer(x, y)
 end
 
 function Board:movePlayerToBlock(block)
-	self.player.x = block.x
-	self.player.y = block.y
-	self.player.block_ref = block
 	block.selected = false
 	
+	self.player:jumpToBlock(block)
 	self:checkBlockVis()
 end
 

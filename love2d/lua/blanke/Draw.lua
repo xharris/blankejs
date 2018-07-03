@@ -78,6 +78,10 @@ Draw = Class{
 		return Draw
 	end,
 
+	setPointSize = function(size)
+		love.graphics.setPointSize(size)
+	end,
+
 	translate = function(x, y)
 		love.graphics.translate(x, y)
 	end,

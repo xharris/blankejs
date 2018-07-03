@@ -72,7 +72,7 @@ HC 		= blanke_require('extra.HC')
 blanke_require('extra.noobhub')
 --grease 	= blanke_require('extra.grease')
 
-local modules = {'Map','Asset','Camera','Canvas','Dialog','Draw','Effect','Entity','Font','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
+local modules = {'Map','Asset','Bezier','Camera','Canvas','Dialog','Draw','Effect','Entity','Font','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 local not_require = {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
 	if not table.hasValue(not_require, mod) then
