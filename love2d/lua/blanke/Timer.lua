@@ -7,6 +7,7 @@ Timer = Class{
 		self.duration = ifndef(duration,0)	-- seconds
 		self.disable_on_all_called = true	-- disable the timer when all functions are called (before, after)
 
+		self.running = false
 		self._running = false
 		self._start_time = 0
 
@@ -72,7 +73,7 @@ Timer = Class{
 				end
 			end
 
-			if #self._after > 0 and self.duration ~= 0 and self.time >= self.duration and self._running then
+			if #self._after > 0 and self.duration ~= 0  then
 				-- call AFTER
 				local calls_left = #self._after
 				for a, after in ipairs(self._after) do
@@ -86,10 +87,14 @@ Timer = Class{
 					end
 				end
 
-				if calls_left == 0 then
+				if calls_left == 0 and self.time >= self.duration then
 					self._running = false
 				end
-			end	
+			end
+
+			if self.time >= self.duration then
+				self.running = false
+			end
 
 			if all_called and self.disable_on_all_called then
 				self._running = false
@@ -99,9 +104,30 @@ Timer = Class{
 	end,
 
 	start = function(self)
-		if not self._running then
+		--if not self._running then
+			self:reset()
 			self._running = true
+			self.running = true
 			self._start_time = love.timer.getTime()
+		--end
+		return self
+	end,
+
+	reset = function(self)
+	Debug.log('resetting')
+		self.time = 0
+		self.running = false
+		self._running = false
+		self._start_time = 0
+
+		for a,after in ipairs(self._after) do
+			after.called = false
+		end
+		for b,before in ipairs(self._before) do
+			before.called = false
+		end
+		for e,every in ipairs(self._every) do
+			every.last_time_ran = 0
 		end
 		return self
 	end,
