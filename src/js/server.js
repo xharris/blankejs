@@ -85,7 +85,10 @@ noobserver.on('connection', function (socket) {
 		socket.write(jsonFormat({
 			type:'netevent',
 			event:'getID',
-			info:socket.connectionId
+			info:{
+				id:socket.connectionId,
+				is_leader:(leaders[socket.channel]==null)
+			}
 		}));
 
 		// send them saved messages >:)

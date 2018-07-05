@@ -7,5 +7,5 @@ function love.load()
 	Input.set("select", "mouse.1")
 	
 	BlankE.draw_debug = true
-	BlankE.init("PlayState")
+	BlankE.init("LobbyState")
 end

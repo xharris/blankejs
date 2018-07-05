@@ -154,14 +154,16 @@ var app = {
 		}
 		nwNOOB.start(function(address){
 			blanke.toast('server started on '+address);
+			app.getElement('#status-icons > .server-status > .server-pop').innerHTML = '0';
 		});
 	},
 
 	stopServer: function() {
 		nwNOOB.stop(function(success){
-			if (success)
+			if (success) {
 				blanke.toast('server stopped');
-			else
+				app.getElement('#status-icons > .server-status > .server-pop').innerHTML = 'x';
+			} else
 				blanke.toast('server not running');
 		});
 	},

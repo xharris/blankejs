@@ -663,6 +663,7 @@ Net
 
 -- class properties
 num id 								-- unique clientid 
+bool is_leader						-- only true for one person on server and moves to another if that person leaves
 
 -- class methods
 join([address], [port])				-- address = "localhost", port = 12345
@@ -677,6 +678,7 @@ send(data)
 		}
 	})
 ]]
+sendPersistent(data) 				-- send data. saved server side and sent to new players that join later
 getPopulation()						-- get number of clients connected (including self)
 draw([classname])					-- draw objects synced through network, or just a certain class
 addObject(obj)						-- add an object to be synced with other clients
@@ -694,14 +696,31 @@ addObject(obj)						-- add an object to be synced with other clients
 
 
 -- callback methods
-onReady()
-onEvent(data)						
+Net.on('<callback>', function(...))
+ready()
+connect(clientid) 		-- different client connects
+disconnect(clientid)
+receive(data)
+event(data)		 		-- called if data.type=='netevent'					
 --[[ data will always have the properties:
 		clientid: the id of the client that sent the data
 		room
+
+	built-in 'netevent':
+	- client.connect : info=clientid
+	- client.disconnect : info=clientid
+	- object.add : another client calls addObject()
+	- object.update : getting info about updating an object from anoher client
+	- object.sync : sending syncable objects is requested
+	- set.leader : a new leader is set
 ]]
 
 --[[
+ #####  #####   ####  #     # ####  
+#       #   #  #    # #     # #   # 
+# ####  ####   #    # #     # ####  
+#     # #   #  #    # #     # #     
+ #####  #    #  ####   #####  #     
 
 Group
 ]]
@@ -719,6 +738,18 @@ destroy()					-- destroys all objects in group
 closest_point(x, y)			-- Entity only. get Entity closest to point
 closest(entity)				-- Entity only. get Entity closest to entity
 size()						-- number of children
+
+--[[
+####### #      # ###### ###### #   #  
+   #    #      # #      #      ##  #  
+   #    #      # #####  #####  # # #  
+   #    #  ##  # #      #      #  ##  
+   #    ##    ## ###### ###### #   #  
+
+Tween
+]]
+
+
 
 --[[
 

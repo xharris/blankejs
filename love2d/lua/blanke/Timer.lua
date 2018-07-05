@@ -4,13 +4,14 @@ Timer = Class{
 		self._every = {}					-- every x seconds while timer is running
 		self._after = {}					-- when the timer is over 
 		self.time = 0						-- seconds
+		self.countdown = ifndef(duration,0) -- for display purposes
 		self.duration = ifndef(duration,0)	-- seconds
 		self.disable_on_all_called = true	-- disable the timer when all functions are called (before, after)
 
 		self.iterations = 0
 		self.running = false
 		self._running = false
-		self._start_time = 0
+		self._last_time = 0
 
 		_addGameObject('timer', self)
 		return self
@@ -60,7 +61,9 @@ Timer = Class{
 				end
 			end
 
-			self.time = love.timer.getTime() - self._start_time
+			self.time = self.time + (love.timer.getTime() - self._last_time)
+			self.countdown = self.duration - self.time
+			self._last_time = love.timer.getTime()
 
 			-- call EVERY
 			if self.duration == 0 or self.time <= self.duration then
@@ -100,16 +103,17 @@ Timer = Class{
 			self.iterations = self.iterations + 1
 			self._running = true
 			self.running = true
-			self._start_time = love.timer.getTime()
+			self._last_time = love.timer.getTime()
 		--end
 		return self
 	end,
 
 	reset = function(self)
 		self.time = 0
+		self.countdown = self.duration
 		self.running = false
 		self._running = false
-		self._start_time = 0
+		self._last_time = 0
 
 		for e,every in ipairs(self._every) do
 			every.last_time_ran = 0

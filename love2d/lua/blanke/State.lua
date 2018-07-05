@@ -12,7 +12,6 @@ StateManager = {
 	_callbacks = {'update','draw'},
 
 	iterateStateStack = function(func, ...)
-
 		for s, state in ipairs(StateManager._stack) do
 			local bg_color = ifndef(state.background_color, Draw.background_color)
 			if bg_color then
@@ -51,7 +50,7 @@ StateManager = {
 				love.graphics.setStencilTest()
 
 			elseif state[func] ~= nil and (not state._off or not (func == 'update' and state._transitioning)) then
-				state[func](...)
+				state[func](state, ...)
 			end
 		end
 
@@ -126,7 +125,7 @@ StateManager = {
 				error('State \"'..state..'\" does not exist')
 			end
 		end
-		return state
+		return obj_state
 	end,
 
 	switch = function(name)

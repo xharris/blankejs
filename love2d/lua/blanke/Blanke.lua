@@ -411,7 +411,7 @@ BlankE = {
 	    dt = math.min(dt, min_dt) * dt_mod
 	    next_time = next_time + min_dt
 
-	    BlankE.updateGridColor()
+	    -- BlankE.updateGridColor()
 
 		-- calculate grid offset
 		local snap = BlankE._getSnap()

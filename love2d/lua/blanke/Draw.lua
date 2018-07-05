@@ -4,6 +4,9 @@ Draw = Class{
 	color = {0,0,0,255},
 	reset_color = {255,255,255,255},
 
+	colors = {'red','pink','purple','indigo','baby_blue','blue',
+			  'dark_blue','green','yellow','orange','brown',
+			  'gra/ey','black','white','black2','white2'},
 	red = {244,67,54,255},
 	pink = {233,30,99,255},
 	purple = {103,58,183,255},

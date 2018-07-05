@@ -5,13 +5,14 @@ Net = {
     is_leader = false,
     wants_leader = false,
     client = nil,
+    clients = {},           -- list of clients connected
     
     onReceive = nil,    
     onConnect = nil,    
     onDisconnect = nil, 
     
     address = "127.0.0.1",
-    port = 1337,
+    port = 8080,
     room = 1,
 
     _objects = {},          -- objects sync from other clients _objects = {'client12' = {object1, object2, ...}}
@@ -87,26 +88,46 @@ Net = {
         return Net
     end,
 
+    on = function(callback, fn)
+        local signal_names = {
+            ready='_net.ready',
+            connect='_net.connect',
+            disconnect='_net.disconnect',
+            receive='_net.receive',
+            event='_net.event',
+        }
+        if signal_names[callback] then
+            Signal.on(signal_names[callback], fn)
+        end
+    end,
+
     _onReady = function()
-        if Net.onReady then Net.onReady() end
+        Signal.emit('_net.ready')
         -- request an object sync from other clients
+        Net.send({
+            type='netevent',
+            event='client.connect',
+            info=Net.id
+        })
         Net.send({
             type="netevent",
             event="object.sync",
             info={
-                new_client=clientid
+                new_client=Net.id
             }
         })
     end,
     
     _onConnect = function(clientid)
         --Debug.log('+ '..clientid)
-        if Net.onConnect then Net.onConnect(clientid) end
+        Net.clients[clientid] = true
+        Signal.emit('_net.connect', clientid)
     end,
     
     _onDisconnect = function(clientid) 
         --Debug.log('- '..clientid)
-        if Net.onDisconnect then Net.onDisconnect(clientid) end
+        Net.clients[clientid] = nil
+        Signal.emit('_net.disconnect', clientid)
         Net.removeClientObjects(clientid) 
     end,
     
@@ -115,7 +136,8 @@ Net = {
             --Debug.log(data.event)
             -- get assigned client id
             if data.event == 'getID' then
-                Net.id = data.info
+                Net.id = data.info.id
+                Net.is_leader = data.info.is_leader
                 Debug.log('connected to '..Net.address..':'..Net.port..' as '..Net.id..'!')
                 Net._onReady()
             end
@@ -144,11 +166,11 @@ Net = {
             end
         end
 
-        if Net.onReceive then Net.onReceive(data) end
+        Signal.emit('_net.receive')
     end,
 
     _onEvent = function(data)
-        if Net.onEvent then Net.onEvent(data) end
+        Signal.emit('_net.event', data)
 
         -- new object added from diff client
         if data.event == 'object.add' and data.clientid ~= Net.id then
@@ -214,6 +236,15 @@ Net = {
             in_data.room = Net.room
         end
         if Net.client then Net.client:publish({message=in_data}) end
+        return Net
+    end,
+    
+    event = function(name, in_data)
+        Net.send({
+            type='netevent',
+            event=name,
+            info=in_data
+        })
         return Net
     end,
 
@@ -344,6 +375,10 @@ Net = {
         end
     end,
 
+    getClients = function()
+        return table.keys(Net.clients)
+    end,
+    
     getPopulation = function(room)
         if room then
             -- get population from different room

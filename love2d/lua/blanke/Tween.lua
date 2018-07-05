@@ -2,6 +2,7 @@ local _tweens = {}
 
 Tween = Class{
 	-- a: start value, b: change in value, d: duration of tween, dt: current time
+	-- t->dt, d->d, b->a, c->b
 	tween_func = {
 		["linear"] = function(a, b, d, dt) return b*dt/d+a end,
 		["quadratic in"] = function(a, b, d, dt) dt=dt/d; return b*dt*dt+a end,
@@ -11,7 +12,8 @@ Tween = Class{
 			if (dt < 1) then return b/2*dt*dt+a end
 			dt=dt-1	
 			return -b/2*(dt*(dt-2)-1)+a
-		end
+		end,
+		["circular in"] = function(a, b, d, dt) dt=dt/d; return -b*(math.sqrt(1-(dt*dt))-1)+a end
 	},
 
 	init = function(self, var, value, duration, func_type)
@@ -19,15 +21,24 @@ Tween = Class{
 		self.value = value
 		self.duration = duration
 		self.type = ifndef(func_type, 'linear')
+		self.valid = true
 
 		-- get whether an object is changing or single var
 		self._multival = false
+		self._bezier = false
 		if type(value) == "table" then
-			self._multival = true
+			if value.type and value.type == 'bezier' then
+				self._bezier = value
+			else
+				self._multival = true
+			end
 		end
 
 		-- get starting values
 		self._start_val = self.value
+		if self._bezier then
+			self._start_val = 0
+		end
 		if self._multival then
 			self._start_val = {}
 			for key, value in pairs(self.value) do
@@ -54,7 +65,7 @@ Tween = Class{
 	update = function(self, dt)
 		if self._go then
 			self._dt = self._dt + dt
-			print(self._dt)
+
 			if self._multival then
 				for key, value in pairs(self.value) do
 					local start_value = self._start_val[key]
@@ -63,6 +74,17 @@ Tween = Class{
 					if (start_value < value and self.var[key] >= value) or (start_value > value and self.var[key] <= value) then
 						self:_onFinish()
 					end
+				end
+			elseif self._bezier then
+				self._start_val = self._func(self._start_val, 100-self._start_val, self.duration*1000, self._dt*1000)
+				
+				if math.ceil(self._start_val) >= 100 then self._start_val = 100 end
+
+				local x, y = self._bezier:at((100-self._start_val)/100)
+				if self.var.x then self.var.x = x end
+				if self.var.y then self.var.y = y end
+				if self._start_val >= 100 then
+					self:_onFinish()
 				end
 			else
 				self.var = self._func(self._start_val, self.value-self._start_val, self.duration, self._dt)

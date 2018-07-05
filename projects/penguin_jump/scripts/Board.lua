@@ -66,6 +66,7 @@ end
 BlankE.addEntity("Player")
 
 function Player:init()
+	self.color = table.random(Draw.colors)
 	self.move_curve = Bezier()
 	Signal.on('block_select', function(block)
 		self.move_curve:clear()
@@ -77,19 +78,26 @@ function Player:init()
 end
 
 function Player:jumpToBlock(block)
-	self.x = block.x
-	self.y = block.y
-	self.block_ref = block
-	
-	self.move_curve:clear()
+	if self.move_curve:pointCount() >= 2 then
+		local move_tween = Tween(self, self.move_curve, 0.5, 'circular in')
+		move_tween:play()
+
+		move_tween.onFinish = function()
+			self.block_ref = block
+			self.move_curve:clear()
+			Signal.emit('finish_jump')
+		end
+	else
+		self.block_ref = block
+		self.move_curve:clear()
+		Signal.emit('finish_jump')
+	end
 end
 
 function Player:draw()
-	Draw.setColor("blue")
+	Draw.setColor(self.color)
 	Draw.rect("fill", self.x - (block_width/2) + 5, self.y - block_height, block_width - 10, block_height)
 	Draw.setPointSize(3)
-	self.move_curve:draw()
-	self.move_curve:drawPoints()
 end
 
 --[[
@@ -100,10 +108,11 @@ end
 BlankE.addEntity("Board")
 
 local block_spacing_ratio = 2
-local MOVE_TIME = 10
+local MOVE_TIME = 3-- 10
 function Board:init(size)
 	self.blocks = Group()
-	self.player = nil
+	self.player = Player()
+	
 	self.size = size
 	
 	self.selecting_block = false
@@ -112,13 +121,17 @@ function Board:init(size)
 	self.move_timer:after(function()
 		self.selected_block = ifndef(self.selected_block, self.player.block_ref)
 		self:movePlayerToBlock(self.selected_block)
-		self:startMoveSelect()
 	end)
 
 	Signal.on('block_select', function(block)
 		self.selected_block = block
 	end)
 	
+	Signal.on('finish_jump', function()
+		self:checkBlockVis()
+		self:startMoveSelect()	
+	end)
+		
 	-- set up board
 	local group_width = (block_width*block_spacing_ratio) * self.size - (block_width)
 	local group_height = (block_height*block_spacing_ratio) * self.size - (block_height)
@@ -139,10 +152,14 @@ function Board:init(size)
 	end
 end
 
+function Board:replacePlayer(new_player)
+	self.player:destroy()
+	self.player = new_player
+end
+
 -- only use this for setting main player
 function Board:addPlayer(x, y)
 	local block = self.blocks:get(map2Dindex(x, y, self.size))
-	self.player = Player()
 	self.player.x = block.x
 	self.player.y = block.y
 	self.player.block_ref = block
@@ -180,9 +197,12 @@ function Board:startMoveSelect()
 end
 
 function Board:draw()
-	self.blocks:call("draw")
-	self.player:draw()
+	self.blocks:call("draw")	
+	Net.draw('Player')
+	if self.player.block_ref then
+		self.player:draw()
+	end
 	
 	Draw.setColor("black")
-	Draw.text(math.ceil(MOVE_TIME - self.move_timer.time), 20, 20)
+	Draw.text(math.abs(math.ceil(MOVE_TIME - self.move_timer.time)), 20, 20)
 end

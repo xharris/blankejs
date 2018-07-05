@@ -5,7 +5,7 @@ let color_vars = {
 	a:'optional alpha'
 }
 
-module.exports.class_list = ['Group','Draw','BlankE','Asset','Input','Image','Scene'];
+module.exports.class_list = ['Net','Group','Draw','BlankE','Asset','Input','Image','Scene','Bezier'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -26,7 +26,8 @@ module.exports.instance_regex = {
 	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"][\w\.]+[\'\"]\)\s+?/g,
-	'group': 	/\b((?:self.|self:)?\w+)\s*=\s*Group\(\).*/g
+	'group': 	/\b((?:self.|self:)?\w+)\s*=\s*Group\(\).*/g,
+	'bezier': 	/\b((?:self.|self:)?\w+)\s*=\s*Bezier\([\d.,]*\).*/g
 }
 
 // how to treat use of the 'self' keyword when used inside a callback
@@ -50,6 +51,19 @@ module.exports.completions = {
 		{fn:"loadPlugin", vars:{ name:'' }},
 		{prop:"draw_debug"}
 	],
+	"blanke-net":[
+		{prop:"id", info:"clientid assigned on connecting to a network"},
+		{prop:"is_leader", info:"check this value if you only want to run a Net action once on a server"},
+		{fn:"join", vars:{ address:"localhost", port:"8080" }},
+		{fn:"disconnect"},
+		{fn:"send", vars:{ data:"{type (netevent), event, info}" }},
+        {fn:"event", vars:{ name:"", data:"" }},
+        {fn:"sendPersistent", vars:{ data:'' }, info:"same as send, but sends to new clients that join later"},
+		{fn:"getPopulation"},
+		{fn:"draw", vars:{ classname:"optional" }},
+		{fn:"addObject", vars:{ obj:'best used with Entity and other objects' }},
+		{fn:"on", vars:{ callback:'ready / connect(id) / disconnect(id) / receieve(data) / event(data)', fn:'' }}
+	],
 	"blanke-group-instance":[
 		{fn:"add", vars:{ obj:'' }},
 		{fn:"get", vars:{ index:'' }},
@@ -61,11 +75,22 @@ module.exports.completions = {
 		{fn:"closest", info:'Entity only. get Entity closest to entity'},
 		{fn:"size", info:'number of children'}
 	],
+	"blanke-bezier-instance":[
+		{fn:"addPoint", vars:{ x:'', y:'', i:'optional index. -1 = last' }},
+		{fn:"removePoint", vars:{ i:'' }},
+		{fn:"getPoint", vars:{ i:'' }},
+		{fn:"pointCount"},
+		{fn:"clear"},
+		{fn:"at", vars:{ t:'' }},
+		{fn:"draw"},
+		{fn:"drawPoints"}
+	],
 	"blanke-asset":[
 		{fn:"add", vars:{ path:'file or folder (ending with \'/\')' }},
 		{fn:"list", vars:{ file_type:'script / image / map / file' }}
 	],
 	"blanke-draw":[
+		{prop:"colors", info:'list of available colors'},
 		{fn:"setBackgroundColor", vars:color_vars},
 		{fn:"randomColor", vars:{ alpha:'' }},
 		{fn:"setColor", vars:color_vars},
@@ -76,7 +101,7 @@ module.exports.completions = {
 		{fn:"rect", vars:{ mode:'fill / line', x:'', y:'', width:'', height:''}},
 		{fn:"circle", vars:{ mode:'fill / line', x:'', y:'', radius:''}},
 		{fn:"polygon"},
-		{fn:"text"},
+		{fn:"text", vars:{ text:'', x:'', y:'', etc:'' }},
 		{fn:"textf"},
 	],
 	"blanke-input":[
@@ -107,7 +132,7 @@ module.exports.completions = {
 		{fn:"update", callback: true, vars:{ dt:'' }},
 		{fn:"preDraw", callback: true},
 		{fn:"draw", callback: true},
-		{fn:"postDraw", callback: true},
+		{fn:"postDraw", callback: true}
 	],
 	"blanke-entity-instance":[
 		{prop:"x"},
