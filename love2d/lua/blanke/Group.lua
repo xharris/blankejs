@@ -32,7 +32,7 @@ Group = Class{
 
 	forEach = function(self, func)
 		for i_c, c in ipairs(self.children) do
-			func(i_c, c)
+			if func(i_c, c) then break end
 		end
 	end,
 

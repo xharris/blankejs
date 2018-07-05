@@ -14,7 +14,7 @@ function _addGameObject(type, obj)
     obj.uuid = uuid()
     obj.type = type
     obj.pause = ifndef(obj.pause, false)
-    obj.persistent = false
+    obj.persistent = ifndef(obj.persistent, false)
     obj._destroyed = ifndef(obj._destroyed, false)
     obj.net_object = ifndef(obj.net_object, false)
 

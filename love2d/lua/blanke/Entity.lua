@@ -12,8 +12,6 @@ Entity = Class{
     	self._destroyed = false
 	    self._images = {}		
 		self._sprites = {} 			-- is actually the animations
-		self.persistent = false
-		self.pause = false
 		self.show_debug = false
 		self.scene_show_debug = false
 

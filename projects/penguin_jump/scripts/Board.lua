@@ -67,30 +67,38 @@ BlankE.addEntity("Player")
 
 function Player:init()
 	self.color = table.random(Draw.colors)
+	while self.color == 'white' or self.color == 'white2' do self.color = table.random(Draw.colors) end
+	self.moving = false
 	self.move_curve = Bezier()
+	
 	Signal.on('block_select', function(block)
-		self.move_curve:clear()
-		-- TODO: figure out why this order works
-		self.move_curve:addPoint(self.x, self.y)
-			:addPoint(block.x, block.y)
-			:addPoint((block.x+self.x)/2, block.y - 150)
+		if not self.moving then
+			self:setTargetBlock(block)
+		end
 	end)
 end
 
+function Player:setTargetBlock(block)
+	self.move_curve:clear()
+	-- TODO: figure out why this order works
+	self.move_curve:addPoint(self.x, self.y)
+		:addPoint(block.x, block.y)
+		:addPoint((block.x+self.x)/2, block.y - 150)
+end
+
 function Player:jumpToBlock(block)
+	self:setTargetBlock(block)
 	if self.move_curve:pointCount() >= 2 then
 		local move_tween = Tween(self, self.move_curve, 0.5, 'circular in')
 		move_tween:play()
+		self.moving = true
 
 		move_tween.onFinish = function()
+			self.moving = false
 			self.block_ref = block
 			self.move_curve:clear()
 			Signal.emit('finish_jump')
 		end
-	else
-		self.block_ref = block
-		self.move_curve:clear()
-		Signal.emit('finish_jump')
 	end
 end
 
@@ -114,6 +122,7 @@ function Board:init(size)
 	self.player = Player()
 	
 	self.size = size
+	self.round = 1
 	
 	self.selecting_block = false
 	self.selected_block = nil
@@ -167,6 +176,15 @@ function Board:addPlayer(x, y)
 	self:checkBlockVis()
 end
 
+function Board:movePlayer(x, y)
+	self.blocks:forEach(function(b, block)
+		if block.grid_x == x and block.grid_y == y then
+			self.player:jumpToBlock(block)
+			return true
+		end
+	end)
+end
+
 function Board:movePlayerToBlock(block)
 	block.selected = false
 	
@@ -199,7 +217,7 @@ end
 function Board:draw()
 	self.blocks:call("draw")	
 	Net.draw('Player')
-	if self.player.block_ref then
+	if self.player then
 		self.player:draw()
 	end
 	

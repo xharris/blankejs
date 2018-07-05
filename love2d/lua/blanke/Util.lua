@@ -280,6 +280,13 @@ end
 function map2Dindex(x, y, columns)
 	return (y-1) * columns + x
 end
+
+function map2Dcoords(i, columns)
+	local x = i % columns
+	if x > columns then x = x + 1 end
+	return x, math.floor((i-1) / columns) + 1
+end
+
 --[[
 function table.remove(t, value)
 	for k, v in pairs(t) do
