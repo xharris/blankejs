@@ -48,7 +48,7 @@ end)
 
 Net.on('connect', function(clientid)
 	if Net.is_leader and clientid ~= Net.id then
-		join_timer.time = join_timer.time - 5
+		join_timer.time = join_timer.time-- - 5
 		Net.event('timer_sync',join_timer.time)
 	end
 end)

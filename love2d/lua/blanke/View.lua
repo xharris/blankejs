@@ -17,10 +17,10 @@ View = Class{
 		self.top = 0
 		self.bottom = 0
 
-		self.motion_type = 'none' -- linear, smooth
-		self.speed = 1 
+		self.motion_type = 'none' -- linear, damped
+		self.speed = 1
 		self.max_distance = 0
-		self._last_motion_type = self.motion_type
+		self._last_motion_type = "smooth"   -- smooth, rigid
 		self._last_speed = self.speed
 		self._smoother = nil
 
@@ -122,10 +122,11 @@ View = Class{
     
     mousePosition = function(self)
     	if self.camera then
-    		local mx, my = self.camera:mousePosition()
-    		if self.follow_entity then
+    		local mx, my = self.camera:mousePosition(BlankE.left, BlankE.top, game_width, game_height)
+    		--[[if self.follow_entity then
 		        return (game_width/2)-(self.port_width/2)+mx, (game_height/2)-(self.port_height/2)+my
-		    end
+		    end]]
+            return mx, my
 	    end
 	    return 0, 0
     end,

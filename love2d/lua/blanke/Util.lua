@@ -245,15 +245,9 @@ function table.toString(t)
 	return t
 end
 
-function table.len(t)
-	local count = 0
-	for _ in pairs(t) do count = count + 1 end
-	return count
-end
-
 function table.forEach(t, func)
 	local table_len = #t
-	if table_len == 0 then table_len = table.len(t) end
+	if table_len == 0 then table_len = #t end
 	
 	for i=1,table_len do
 		local ret_val = func(i,t[i])
@@ -262,8 +256,7 @@ function table.forEach(t, func)
 end
 
 function table.random(t)
-	local len = table.len(t)
-	local x = randRange(1, len)
+	local x = randRange(1, #t)
 	local i = 1
 	for key,val in pairs(t) do
 		if i == x then return val end

@@ -332,7 +332,7 @@ Net = {
                     end
                 end
                 -- send collected vars
-                if Net.is_connected and table.len(update_values) > 0 then
+                if Net.is_connected and #update_values > 0 then
                     Net.send{
                         type="netevent",
                         event="object.update",
@@ -383,7 +383,7 @@ Net = {
         if room then
             -- get population from different room
         else
-            return table.len(Net._objects) + 1          -- plus one for self
+            return #Net._objects + 1          -- plus one for self
         end
     end,
 

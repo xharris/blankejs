@@ -13,7 +13,7 @@ function PlayState:enter()
 		if size > MAX_SIZE then size = MAX_SIZE end
 		
 		local columns = math.ceil(size / population)
-		local spacing = math.ceil(columns / size)
+		local spacing = math.ceil(size / columns)
 		
 		-- place the clients around the board
 		local c = 1
@@ -24,12 +24,12 @@ function PlayState:enter()
 			-- make sure a player isn't already assigned there
 			repeat
 				--Debug.log('x',x*spacing, x*spacing+spacing,'y',y*spacing, y*spacing+spacing)
-				Debug.log('player set to ',x,y)
+				
 				position = {
 					column*spacing,--randRange(x*spacing, x*spacing+spacing),
 					row--randRange(y*spacing, y*spacing+spacing)
 				}
-				Debug.log('got',unpack(position))
+				
 				for c2, pos in pairs(client_positions) do
 					if c2 ~= client_list[c] and pos[1] == position[1] and pos[2] == position[2] then
 						valid = false	
@@ -52,10 +52,12 @@ function PlayState:enter()
 			board = Board(data.info.board_size)
 			main_player.friction = 0
 			main_player.speed = 0
+			
 			board:replacePlayer(main_player)
 			board:movePlayer(data.info.positions[Net.id][1], data.info.positions[Net.id][2])
 		end
 	end)
+	
 end
 
 function PlayState:draw()

@@ -27,7 +27,10 @@ Draw = Class{
 
 	_parseColorArgs = function(r,g,b,a)
 		color = r
-
+        
+		if (type(color) == "table") then
+			r, g, b, a = unpack(color)
+		end
 		if (type(color) == "string") and color:startsWith("#") then
 			color = hex2rgb(color)
 		elseif (type(color) == "string") then
@@ -40,7 +43,10 @@ Draw = Class{
 		if (type(color) == "number") then
 			color = {r,g,b,a}
 		end
-
+        if color == nil then
+            color = Draw.white
+        end
+        
 		for v, val in ipairs(color) do
 			if val > 1 then color[v] = val / 255 end
 		end
@@ -60,10 +66,7 @@ Draw = Class{
 
 	setColor = function(r,g,b,a)
 		if r == nil then BlankE.errhand("invalid color: {"..tostring(r)..", "..tostring(g)..", "..tostring(b)..", "..tostring(a).."}"); return false end
-
-		if (type(r) == "table") then
-			r, g, b, a = unpack(r)
-		end
+        
 		Draw.color = Draw._parseColorArgs(r,g,b,a)
 		if Draw.color then
 			love.graphics.setColor(Draw._parseColorArgs(r,g,b,a))

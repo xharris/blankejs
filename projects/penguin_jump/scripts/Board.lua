@@ -1,3 +1,5 @@
+local main_view
+
 --[[
 
 	-Ice Block
@@ -28,7 +30,7 @@ function IceBlock:init(x, y)
 end
 
 function IceBlock:update(dt)
-	self.mouse_inside = (self:distancePoint(mouse_x, mouse_y) < block_width)
+	self.mouse_inside = (self:distancePoint(main_view:mousePosition()) < block_width)
 	
 	if Input("select") and self.can_select and self.visible and not self.occupied and not self.selected and self.mouse_inside then
 		self.selected = true
@@ -91,6 +93,7 @@ function Player:jumpToBlock(block)
 	if self.move_curve:pointCount() >= 2 then
 		local move_tween = Tween(self, self.move_curve, 0.5, 'circular in')
 		move_tween:play()
+		main_view:follow(block)
 		self.moving = true
 
 		move_tween.onFinish = function()
@@ -118,11 +121,15 @@ BlankE.addEntity("Board")
 local block_spacing_ratio = 2
 local MOVE_TIME = 3-- 10
 function Board:init(size)
-	self.blocks = Group()
-	self.player = Player()
+	main_view = View()
+	main_view.motion_type = "damped"
+	main_view.speed = 5
 	
+	self.blocks = Group()
 	self.size = size
 	self.round = 1
+	
+	self:replacePlayer(Player())
 	
 	self.selecting_block = false
 	self.selected_block = nil
@@ -162,7 +169,7 @@ function Board:init(size)
 end
 
 function Board:replacePlayer(new_player)
-	self.player:destroy()
+	if self.player then self.player:destroy() end
 	self.player = new_player
 end
 
@@ -215,12 +222,14 @@ function Board:startMoveSelect()
 end
 
 function Board:draw()
-	self.blocks:call("draw")	
-	Net.draw('Player')
-	if self.player then
-		self.player:draw()
-	end
-	
+	main_view:draw(function()
+		self.blocks:call("draw")	
+		Net.draw('Player')
+		if self.player then
+			self.player:draw()
+		end
+	end)
+		
 	Draw.setColor("black")
 	Draw.text(math.abs(math.ceil(MOVE_TIME - self.move_timer.time)), 20, 20)
 end
