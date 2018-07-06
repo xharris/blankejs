@@ -36,6 +36,10 @@ function state0:enter()
 
 end
 
+-- 2) some classes are persistent by default:
+Bezier
+Tween
+
 -- BETTER:
 main_camera = nil
 function state0:enter()

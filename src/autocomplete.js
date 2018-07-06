@@ -60,6 +60,7 @@ module.exports.completions = {
         {fn:"event", vars:{ name:"", data:"" }},
         {fn:"sendPersistent", vars:{ data:'' }, info:"same as send, but sends to new clients that join later"},
 		{fn:"getPopulation"},
+		{fn:"getObjects", vars:{ classname:"optional", clientid:"optional" }},
 		{fn:"draw", vars:{ classname:"optional" }},
 		{fn:"addObject", vars:{ obj:'best used with Entity and other objects' }},
 		{fn:"on", vars:{ callback:'ready / connect(id) / disconnect(id) / receieve(data) / event(data)', fn:'' }}

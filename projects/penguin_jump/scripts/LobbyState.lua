@@ -7,13 +7,6 @@ local join_timer
 function LobbyState:enter()
 	Draw.setBackgroundColor('white')
 	
-	join_timer = Timer(5)
-	join_timer:after(function()
-		if Net.is_leader then
-			Net.event('start_game')
-		end
-	end)
-	
 	Net.join('localhost')
 end
 
@@ -26,16 +19,22 @@ end
 
 function LobbyState:draw()
 	Draw.setColor('black')
-	Draw.text(join_timer.countdown, game_width-20, 20)
+	--Draw.text(join_timer.countdown, game_width-20, 20)
 	Net.draw('Player')
-	if board then board:draw() else	
-		if main_player then
-			main_player:draw()
-		end
+	
+	if main_player then
+		main_player:draw()
 	end
 end
 
 Net.on('ready', function()
+	join_timer = Timer(5)
+	join_timer:after(function()
+		if Net.is_leader then
+			Net.event('start_game')
+		end
+	end)
+		
 	join_timer:start()
 	main_player = Player()
 	main_player.persistent = true
@@ -56,7 +55,7 @@ end)
 Net.on('event', function(data)
 	if data.event == 'timer_sync' then
 		join_timer.time = data.info
-		if not join_timer.running then Debug.log('start it!!'); join_timer:start() end
+		if not join_timer.running then join_timer:start() end
 	end
 	if data.event == 'start_game' then
 		State.switch('PlayState')	

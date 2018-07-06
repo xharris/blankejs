@@ -1,4 +1,5 @@
 var last_box = null;
+var last_box_direction = 1;
 
 class DragBox {
 	constructor (content_type) {
@@ -55,8 +56,9 @@ class DragBox {
 		this.y = 0;
 		// place at an offset of the last box
 		if (last_box) {
-			this.x = last_box.x + 20;
-			this.y = last_box.y + 20;
+			this.x = last_box.x + (20 * last_box_direction);
+			this.y = last_box.y + (20 * last_box_direction);
+			last_box_direction *= -1;
 		}
 		// prevent from spawning box inside title bar
 		if (this.y < 34) {

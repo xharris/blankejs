@@ -18,12 +18,23 @@ Tween = Class{
 
 	init = function(self, var, value, duration, func_type)
 		self.var = var
-		self.value = value
 		self.duration = duration
 		self.type = ifndef(func_type, 'linear')
 		self.valid = true
 
+		self:setValue(value)
+
+		self._go = false
+		self._func = Tween.tween_func[self.type]
+		self._dt = 0
+
+		self.persistent = true
+		_addGameObject('tween', self)
+	end,
+
+	setValue = function(self, value)
 		-- get whether an object is changing or single var
+		self.value = value
 		self._multival = false
 		self._bezier = false
 		if type(value) == "table" then
@@ -33,24 +44,6 @@ Tween = Class{
 				self._multival = true
 			end
 		end
-
-		-- get starting values
-		self._start_val = self.value
-		if self._bezier then
-			self._start_val = 0
-		end
-		if self._multival then
-			self._start_val = {}
-			for key, value in pairs(self.value) do
-				self._start_val[key] = self.var[key]
-			end
-		end
-
-		self._go = false
-		self._func = Tween.tween_func[self.type]
-		self._dt = 0
-
-		_addGameObject('tween', self)
 	end,
 
 	addFunction = function(self, name, func)
@@ -79,10 +72,11 @@ Tween = Class{
 				self._start_val = self._func(self._start_val, 100-self._start_val, self.duration*1000, self._dt*1000)
 				
 				if math.ceil(self._start_val) >= 100 then self._start_val = 100 end
-
-				local x, y = self._bezier:at((100-self._start_val)/100)
-				if self.var.x then self.var.x = x end
-				if self.var.y then self.var.y = y end
+				if self._bezier:size() > 1 then
+					local x, y = self._bezier:at((100-self._start_val)/100)
+					if self.var.x then self.var.x = x end
+					if self.var.y then self.var.y = y end
+				end
 				if self._start_val >= 100 then
 					self:_onFinish()
 				end
@@ -98,6 +92,19 @@ Tween = Class{
 
 	play = function(self)
 		self._go = true
+		self._dt = 0
+
+		-- get starting values
+		self._start_val = self.value
+		if self._bezier then
+			self._start_val = 0
+		end
+		if self._multival then
+			self._start_val = {}
+			for key, value in pairs(self.value) do
+				self._start_val[key] = self.var[key]
+			end
+		end
 	end,
 
 	destroy = function(self)

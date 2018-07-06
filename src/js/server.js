@@ -169,6 +169,7 @@ var _destroySocket = function (socket) {
 		} else {
 			// no one left :'(
 			leaders[socket.channel] = null;
+			_log(socket.channel,"is empty");
 		}
 	}
 

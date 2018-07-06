@@ -1,7 +1,7 @@
 BlankE.addState("PlayState")
 
 local board
-local MAX_SIZE = 20
+local MAX_SIZE = 10
 
 function PlayState:enter()	
 	if Net.is_leader then
@@ -12,7 +12,7 @@ function PlayState:enter()
 		
 		if size > MAX_SIZE then size = MAX_SIZE end
 		
-		local columns = math.ceil(size / population)
+		local columns = math.min(population, MAX_SIZE / 5)
 		local spacing = math.ceil(size / columns)
 		
 		-- place the clients around the board
@@ -22,12 +22,10 @@ function PlayState:enter()
 			local column, row = map2Dcoords(c, columns)
 			local position
 			-- make sure a player isn't already assigned there
-			repeat
-				--Debug.log('x',x*spacing, x*spacing+spacing,'y',y*spacing, y*spacing+spacing)
-				
+			repeat				
 				position = {
-					column*spacing,--randRange(x*spacing, x*spacing+spacing),
-					row--randRange(y*spacing, y*spacing+spacing)
+					column*spacing - math.floor(spacing/2),--randRange(x*spacing, x*spacing+spacing),
+					row*spacing - math.floor(spacing/2)--randRange(y*spacing, y*spacing+spacing)
 				}
 				
 				for c2, pos in pairs(client_positions) do
@@ -36,10 +34,7 @@ function PlayState:enter()
 					end
 				end
 			until(valid)
-
-			client_positions[client_list[c]] = {
-				position[1], 
-				position[2]}
+			client_positions[client_list[c]] = {position[1], position[2]}
 		end
 		
 		Net.event('setup_board',{
@@ -49,6 +44,7 @@ function PlayState:enter()
 	end
 	Net.on('event', function(data)
 		if data.event == 'setup_board' then
+			assert(data.info.positions[Net.id], "player position not received")
 			board = Board(data.info.board_size)
 			main_player.friction = 0
 			main_player.speed = 0

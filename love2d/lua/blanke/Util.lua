@@ -270,14 +270,19 @@ function table.keys(t)
 	return ret
 end
 
+function table.len(t)
+	local count = 0
+	for _ in pairs(t) do count = count + 1 end
+	return count
+end
+
 function map2Dindex(x, y, columns)
 	return (y-1) * columns + x
 end
 
 function map2Dcoords(i, columns)
-	local x = i % columns
-	if x > columns then x = x + 1 end
-	return x, math.floor((i-1) / columns) + 1
+	i = i - 1
+	return i % columns + 1, math.floor(i / columns) + 1
 end
 
 --[[

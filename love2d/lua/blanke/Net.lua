@@ -170,8 +170,6 @@ Net = {
     end,
 
     _onEvent = function(data)
-        Signal.emit('_net.event', data)
-
         -- new object added from diff client
         if data.event == 'object.add' and data.clientid ~= Net.id then
             local obj = data.info.object
@@ -220,6 +218,8 @@ Net = {
                 Net.is_leader = false
             end
         end
+        
+        Signal.emit('_net.event', data)
     end,
 
     sendPersistent = function(in_data) 
@@ -255,6 +255,21 @@ Net = {
             event='room.change'
         })
         Net.removeClientObjects()
+    end,
+
+    getObjects = function(classname, id)
+        local ret_objects = {}
+        for clientid, objects in pairs(Net._objects) do
+            if not id or (id and clientid == id) then
+                ret_objects[clientid] = {}
+                for o, obj in pairs(objects) do
+                    if not classname or (classname and obj.classname == classname) then
+                        table.insert(ret_objects[clientid], obj)
+                    end
+                end
+            end
+        end
+        return ret_objects
     end,
 
     removeClientObjects = function(clientid) 
@@ -332,7 +347,7 @@ Net = {
                     end
                 end
                 -- send collected vars
-                if Net.is_connected and #update_values > 0 then
+                if Net.is_connected and table.len(update_values) > 0 then
                     Net.send{
                         type="netevent",
                         event="object.update",
@@ -383,7 +398,7 @@ Net = {
         if room then
             -- get population from different room
         else
-            return #Net._objects + 1          -- plus one for self
+            return table.len(Net._objects) + 1          -- plus one for self
         end
     end,
 

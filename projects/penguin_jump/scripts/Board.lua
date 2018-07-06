@@ -67,11 +67,20 @@ end
 ]]
 BlankE.addEntity("Player")
 
+Player.net_sync_vars = {"x","y","color","power"}
 function Player:init()
 	self.color = table.random(Draw.colors)
 	while self.color == 'white' or self.color == 'white2' do self.color = table.random(Draw.colors) end
 	self.moving = false
+	self.power = 0
+	
 	self.move_curve = Bezier()
+	self.move_tween = Tween(self, self.move_curve, 0.5, 'circular in')
+	self.move_tween.onFinish = function()
+		self.moving = false
+		self.move_curve:clear()
+		Signal.emit('finish_jump')
+	end
 	
 	Signal.on('block_select', function(block)
 		if not self.moving then
@@ -90,25 +99,26 @@ end
 
 function Player:jumpToBlock(block)
 	self:setTargetBlock(block)
-	if self.move_curve:pointCount() >= 2 then
-		local move_tween = Tween(self, self.move_curve, 0.5, 'circular in')
-		move_tween:play()
+	self.block_ref = block
+	
+	if self.move_curve:size() >= 2 then
+		self.move_tween:setValue(self.move_curve)
+		self.move_tween:play()
 		main_view:follow(block)
 		self.moving = true
-
-		move_tween.onFinish = function()
-			self.moving = false
-			self.block_ref = block
-			self.move_curve:clear()
-			Signal.emit('finish_jump')
-		end
 	end
+end
+
+function Player:refreshPower()
+	self.power = randRange(1,100)
 end
 
 function Player:draw()
 	Draw.setColor(self.color)
 	Draw.rect("fill", self.x - (block_width/2) + 5, self.y - block_height, block_width - 10, block_height)
-	Draw.setPointSize(3)
+	Draw.setColor('black')
+	Draw.rect("line", self.x - (block_width/2) + 4, self.y - block_height - 1, block_width - 9, block_height + 1)
+	Draw.text(self.power, self.x - (block_width / 2) + 4, self.y - (block_height*1.5))
 end
 
 --[[
@@ -134,9 +144,12 @@ function Board:init(size)
 	self.selecting_block = false
 	self.selected_block = nil
 	self.move_timer = Timer(MOVE_TIME)
+	
+	self.moves_waiting = {}
 	self.move_timer:after(function()
-		self.selected_block = ifndef(self.selected_block, self.player.block_ref)
-		self:movePlayerToBlock(self.selected_block)
+		if Net.is_leader then
+			Net.event("start_jump")
+		end
 	end)
 
 	Signal.on('block_select', function(block)
@@ -145,7 +158,56 @@ function Board:init(size)
 	
 	Signal.on('finish_jump', function()
 		self:checkBlockVis()
-		self:startMoveSelect()	
+	end)
+	
+	Net.on('event', function(data)
+		if data.event == "start_jump" then		
+			self.selected_block = ifndef(self.selected_block, self.player.block_ref)
+			self:movePlayerToBlock(self.selected_block)
+		end
+		if data.event == "attempting_jump" then
+			self.moves_waiting[data.clientid] = data.info
+				
+			-- 2 players going to same block
+			if table.len(self.moves_waiting) == Net.getPopulation() then
+				Debug.log("start resolving")
+					
+				for id, val in pairs(self.moves_waiting) do
+					if id ~= Net.id and data.info.x == self.player.block_ref.grid_x and data.info.y == self.player.block_ref.grid_y then
+						local other_player = Net.getObjects("Player",id)[id][1]
+						if other_player.power > self.player.power then
+							-- LOSE, fly away
+							local randx, randy = clamp(randRange(1, self.size), 1, self.size), clamp(randRange(1, self.size), 1, self.size)
+							self:getBlockAt(randx, randy, function(block)
+								self:movePlayerToBlock(block)
+							end)
+						else
+							-- WIN, keep spot
+							Net.send("resolved_jump")
+						end
+					else
+						Net.send("resolved_jump")	
+					end
+				end
+			end
+		end
+		if data.event == "resolved_jump" then
+			if self.moves_waiting[data.clientid] then self.moves_waiting[data.clientid] = nil end
+			if table.len(self.moves_waiting) == 0 and Net.is_leader then
+				Net.event("start_move_select")
+			end
+		end
+		if data.event == "start_move_select" then
+			self:startMoveSelect()	
+		end
+	end)
+	
+	Net.on('disconnect', function(id)
+		-- if a player disconnect after making a move, make sure the game doesnt wait on them to finish
+		if self.moves_waiting[id] then self.moves_waiting[id] = nil end	
+		if table.len(self.moves_waiting) == 0 and Net.is_leader then
+			Net.event("start_move_select")	
+		end
 	end)
 		
 	-- set up board
@@ -166,6 +228,11 @@ function Board:init(size)
 			self.blocks:add(new_block)
 		end
 	end
+	
+	-- start the game
+	if Net.is_leader then
+		Net.event("start_move_select")
+	end
 end
 
 function Board:replacePlayer(new_player)
@@ -184,15 +251,22 @@ function Board:addPlayer(x, y)
 end
 
 function Board:movePlayer(x, y)
+	self:getBlockAt(x,y,function(block)
+		self.player:jumpToBlock(block)
+	end)
+end
+
+function Board:getBlockAt(x, y, fn)
 	self.blocks:forEach(function(b, block)
 		if block.grid_x == x and block.grid_y == y then
-			self.player:jumpToBlock(block)
+			fn(block)
 			return true
 		end
 	end)
 end
 
 function Board:movePlayerToBlock(block)
+	Net.event("attempting_jump", {x=block.grid_x, y=block.grid_y})
 	block.selected = false
 	
 	self.player:jumpToBlock(block)
@@ -210,9 +284,10 @@ end
 
 function Board:startMoveSelect()
 	self.selecting_block = true
+	self.player:refreshPower()
 	
 	-- start block selection timer
-	self.move_timer:start()
+	if Net.is_leader then self.move_timer:start() end
 	
 	-- mark blocks that are selectable
 	self.blocks:forEach(function(b, block)

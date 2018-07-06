@@ -7,6 +7,7 @@ Bezier = Class{
 			self:addPoint(points[p], points[p+1])
 		end
 
+		self.persistent = true
 		_addGameObject('bezier', self)
 	end,
 
@@ -24,12 +25,12 @@ Bezier = Class{
 		return self._bezier:getControlPoint(i)
 	end,
 
-	pointCount = function(self)
+	size = function(self)
 		return self._bezier:getControlPointCount()
 	end,
 
 	clear = function(self)
-		while self:pointCount() > 0 do
+		while self:size() > 0 do
 			self:removePoint(1)
 		end
 	end,
@@ -40,13 +41,13 @@ Bezier = Class{
 	end,
 
 	draw = function(self)
-		if self:pointCount() > 1 then	
+		if self:size() > 1 then	
 			Draw.line(self._bezier:render())
 		end
 	end,
 
 	drawPoints = function(self)
-		for i = 1, self:pointCount() do
+		for i = 1, self:size() do
 			local x, y = self:getPoint(i)
 			Draw.point(x,y)
 		end

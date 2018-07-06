@@ -477,7 +477,7 @@ nwWIN.on('loaded', function() {
 		app.newProjectDialog();
 	}});
 	app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
-	app.addSearchKey({key: 'Run Server', onSelect: app.runServer});
+	app.addSearchKey({key: 'Start Server', onSelect: app.runServer});
 	app.addSearchKey({key: 'Stop Server', onSelect: app.stopServer});
 
 	document.addEventListener("openProject",function(){
