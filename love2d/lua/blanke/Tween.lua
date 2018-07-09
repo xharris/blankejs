@@ -62,7 +62,7 @@ Tween = Class{
 			if self._multival then
 				for key, value in pairs(self.value) do
 					local start_value = self._start_val[key]
-					self.var[key] = self._func(start_value, value-start_value, self.duration, self._dt)
+					self.var[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
 					-- finished?
 					if (start_value < value and self.var[key] >= value) or (start_value > value and self.var[key] <= value) then
 						self:_onFinish()

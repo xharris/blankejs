@@ -180,10 +180,13 @@ var _destroySocket = function (socket) {
 	refreshServerPopulation();
 }
 
+module.exports.address = null;
+
 module.exports.start = function(cb){
 	if (!noobserver.listening) {
 		noobserver.listen(cfg.port,  function () {
 			_log('NoobHub on ', noobserver.address().address + noobserver.address().port);
+			module.exports.address = noobserver.address().address + noobserver.address().port;
 			if (cb) cb(noobserver.address().address + noobserver.address().port);
 		});
 	}
@@ -192,6 +195,7 @@ module.exports.start = function(cb){
 module.exports.stop = function(cb){
 	if (noobserver.listening) {
 		noobserver.close(function(){
+			module.exports.address = null;
 			if (cb) cb(true);
 		});
 	} else

@@ -152,10 +152,14 @@ var app = {
 			app.getElement('#status-icons > .server-status > .server-pop').innerHTML = population;
 			// app.getElement
 		}
-		nwNOOB.start(function(address){
-			blanke.toast('server started on '+address);
-			app.getElement('#status-icons > .server-status > .server-pop').innerHTML = '0';
-		});
+		if (nwNOOB.address) {
+			blanke.toast('server already running on '+nwNOOB.address);
+		} else {
+			nwNOOB.start(function(address){
+				blanke.toast('server started on '+address);
+				app.getElement('#status-icons > .server-status > .server-pop').innerHTML = '0';
+			});
+		}
 	},
 
 	stopServer: function() {
@@ -484,6 +488,8 @@ nwWIN.on('loaded', function() {
 		app.hideWelcomeScreen();
 		app.loadSettings();
 	});
+
+	app.runServer();
 
 	// app.openProject('projects/boredom');
 	// app.hideWelcomeScreen();

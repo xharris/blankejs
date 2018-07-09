@@ -15,6 +15,8 @@ function IceBlock:init(x, y)
 	self.can_select = false
 	self.selected = false
 	self.mouse_inside = false
+	self.shrink_amount = 0
+	self.sunk = false
 	
 	self.x = x
 	self.y = y
@@ -29,10 +31,23 @@ function IceBlock:init(x, y)
 	end)
 end
 
+function IceBlock:sink()
+	if self.shrink_amount == 0 then
+		self.shrink_amount = 0
+		-- TODO: change later to shrink_amount_x, shrink_amount_y
+		shrink_tween = Tween(self, {shrink_amount=block_width}, .5)
+		shrink_tween.onFinish = function()
+			Debug.log('shrunk')
+			self.sunk = true
+		end
+		shrink_tween:play()
+	end
+end
+
 function IceBlock:update(dt)
 	self.mouse_inside = (self:distancePoint(main_view:mousePosition()) < block_width)
 	
-	if Input("select") and self.can_select and self.visible and not self.occupied and not self.selected and self.mouse_inside then
+	if Input("select") and not self.sunk and self.can_select and self.visible and not self.occupied and not self.selected and self.mouse_inside then
 		self.selected = true
 		Signal.emit('block_select', self)
 	end
@@ -52,11 +67,21 @@ function IceBlock:draw()
 	else	
 		Draw.setColor("gray")
 	end
-	Draw.rect('line', self.block_x, self.block_y, block_width, block_height)
+	Draw.rect('line', 
+		self.block_x+self.shrink_amount / 2, 
+		self.block_y+self.shrink_amount / 2, 
+		block_width-self.shrink_amount / 2, 
+		block_height-self.shrink_amount / 2
+	)
 	
 	if self.selected then
 		Draw.setColor('red')
-		Draw.rect('line', self.block_x - 2, self.block_y - 2, block_width + 4, block_height + 4)
+		Draw.rect('line',
+			self.block_x - 2,
+			self.block_y - 2,
+			block_width + 4,
+			block_height + 4
+		)
 	end
 end
 
@@ -140,14 +165,17 @@ end
 BlankE.addEntity("Board")
 
 local block_spacing_ratio = 2
-local MOVE_TIME = 3-- 10
+local move_time = 3-- 10
 local block_visibility = 5
+local shrink_time = 1 			-- shrink board every X rounds
+
 function Board:init(size)
 	main_view = View()
 	main_view.motion_type = "damped"
 	main_view.speed = 5
 	
 	self.blocks = Group()
+	self.orig_size = size
 	self.size = size
 	self.round = 1
 	self.resolving = false
@@ -156,7 +184,7 @@ function Board:init(size)
 	
 	self.selecting_block = false
 	self.selected_block = nil
-	self.move_timer = Timer(MOVE_TIME)
+	self.move_timer = Timer(move_time)
 	
 	self.moves_waiting = {}
 	self.move_timer:after(function()
@@ -221,7 +249,13 @@ function Board:init(size)
 		if data.event == "resolved_jump" then
 			if self.moves_waiting[data.clientid] then self.moves_waiting[data.clientid] = nil end
 			if table.len(self.moves_waiting) == 0 and Net.is_leader then
+					
+				-- shrink map?
+				if self.size > Net.getPopulation() and self.round % shrink_time == 0 then
+					Net.event("shrink_board")
+				end
 				Net.event("start_move_select")
+					
 			end
 		end
 		if data.event == "start_move_select" then
@@ -231,6 +265,17 @@ function Board:init(size)
 			if (table.len(self.moves_waiting) == 0 or not self.move_timer.running) and Net.is_leader then
 				Net.event("start_move_select")	
 			end
+		end
+		if data.event == "shrink_board" then
+			local shrink_offset = self.round / shrink_time
+			Debug.log(shrink_offset)
+			self.blocks:forEach(function(b, block)
+				if block.grid_x == shrink_offset or block.grid_y == shrink_offset or 
+				   block.grid_x == self.orig_size - shrink_offset or block.grid_y == self.orig_size - shrink_offset then
+					block:sink()
+				end
+			end)
+			self.size = self.size - 2	
 		end
 	end)
 	
@@ -335,5 +380,5 @@ function Board:draw()
 	end)
 		
 	Draw.setColor("black")
-	Draw.text(math.abs(math.ceil(MOVE_TIME - self.move_timer.time)), 20, 20)
+	Draw.text(math.abs(math.ceil(move_time - self.move_timer.time)), 20, 20)
 end

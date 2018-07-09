@@ -50,6 +50,8 @@ end
 
 function _destroyGameObject(type, del_obj)
 	del_obj._destroyed = true
+	if del_obj.draw then del_obj.draw = function() end end
+	if del_obj.update then del_obj.update = function(dt) end end
 	if del_obj._group and del_obj.uuid ~= nil then
 		del_obj._group:remove(del_obj)
 	end
