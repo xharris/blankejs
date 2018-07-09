@@ -76,14 +76,15 @@ function Player:init()
 	self.power = 0
 	self.grid_x = 0
 	self.grid_y = 0
+	self.knockback_block = nil
 	
 	self.move_curve = Bezier()
 	self.move_tween = Tween(self, self.move_curve, 0.5, 'circular in')
 	self.move_tween.onFinish = function()
 		self.moving = false
 		self.move_curve:clear()
+		if self.knockback_block then self.knockback_block = nil end
 		Signal.emit('finish_jump')
-		Net.event("player_landed", self:getMoveInfo())
 	end
 	
 	Signal.on('block_select', function(block)
@@ -140,6 +141,7 @@ BlankE.addEntity("Board")
 
 local block_spacing_ratio = 2
 local MOVE_TIME = 3-- 10
+local block_visibility = 5
 function Board:init(size)
 	main_view = View()
 	main_view.motion_type = "damped"
@@ -168,6 +170,7 @@ function Board:init(size)
 	end)
 	
 	Signal.on('finish_jump', function()
+		Net.event("player_landed", self.player:getMoveInfo())
 		self:checkBlockVis()
 	end)
 	
@@ -185,9 +188,8 @@ function Board:init(size)
 				
 				local net_players = Net.getObjects("Player")				
 				for id, val in pairs(self.moves_waiting) do
-					if val.x == self.player.grid_x and val.y == self.player.grid_y then
+					if val and val.x == self.player.grid_x and val.y == self.player.grid_y then
 						local other_player = net_players[id][1]
-						Debug.log("conflict im",self.player.power,"they are",other_player.power)
 						if other_player.power > self.player.power then
 							-- LOSE, fly away
 							can_resolve = false
@@ -197,17 +199,23 @@ function Board:init(size)
 								randx, randy = clamp(randRange(1, self.size), 1, self.size), clamp(randRange(1, self.size), 1, self.size)
 							end
 							self:getBlockAt(randx, randy, function(block)
-								self:movePlayerToBlock(block)
+								Signal.on('finish_jump',function()
+									self.player.knockback_block = block
+									self:movePlayerToBlock(self.player.knockback_block)
+								end, true)
 							end)
 						else
 							-- WIN, keep spot
 						end
+						-- remove it from the conflict list
+						self.moves_waiting[id] = nil
 					end
 				end
 					
 				if can_resolve then
 					Net.event("resolved_jump")
 				end
+				self.selected_block = nil
 			end
 		end
 		if data.event == "resolved_jump" then
@@ -219,14 +227,16 @@ function Board:init(size)
 		if data.event == "start_move_select" then
 			self:startMoveSelect()	
 		end
+		if data.event == "set.leader" then
+			if (table.len(self.moves_waiting) == 0 or not self.move_timer.running) and Net.is_leader then
+				Net.event("start_move_select")	
+			end
+		end
 	end)
 	
 	Net.on('disconnect', function(id)
 		-- if a player disconnect after making a move, make sure the game doesnt wait on them to finish
 		if self.moves_waiting[id] then self.moves_waiting[id] = nil end	
-		if table.len(self.moves_waiting) == 0 and Net.is_leader then
-			Net.event("start_move_select")	
-		end
 	end)
 		
 	-- set up board
@@ -285,7 +295,6 @@ function Board:getBlockAt(x, y, fn)
 end
 
 function Board:movePlayerToBlock(block)
-	Debug.log('send',block.grid_x,block.grid_y)
 	Net.event("attempting_jump", {x=block.grid_x, y=block.grid_y})
 	block.selected = false
 	
@@ -296,8 +305,8 @@ end
 -- Vis -> Visibility
 function Board:checkBlockVis()
 	self.blocks:forEach(function(b, block)
-		block.visible = (math.abs(self.player.block_ref.grid_x - block.grid_x) <= 2 and
-						 math.abs(self.player.block_ref.grid_y - block.grid_y) <= 2)
+		block.visible = (math.abs(self.player.block_ref.grid_x - block.grid_x) <= block_visibility and
+						 math.abs(self.player.block_ref.grid_y - block.grid_y) <= block_visibility)
 		block.occupied = (block == self.player.block_ref)
 	end)
 end
