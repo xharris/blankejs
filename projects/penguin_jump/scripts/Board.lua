@@ -67,12 +67,15 @@ end
 ]]
 BlankE.addEntity("Player")
 
-Player.net_sync_vars = {"x","y","color","power"}
+Player.net_sync_vars = {"x","y","grid_x","grid_y","color","power"}
+local net_player_list = {}
 function Player:init()
 	self.color = table.random(Draw.colors)
 	while self.color == 'white' or self.color == 'white2' do self.color = table.random(Draw.colors) end
 	self.moving = false
 	self.power = 0
+	self.grid_x = 0
+	self.grid_y = 0
 	
 	self.move_curve = Bezier()
 	self.move_tween = Tween(self, self.move_curve, 0.5, 'circular in')
@@ -80,6 +83,7 @@ function Player:init()
 		self.moving = false
 		self.move_curve:clear()
 		Signal.emit('finish_jump')
+		Net.event("player_landed", self:getMoveInfo())
 	end
 	
 	Signal.on('block_select', function(block)
@@ -87,6 +91,10 @@ function Player:init()
 			self:setTargetBlock(block)
 		end
 	end)
+end
+
+function Player:getMoveInfo()
+	return {x=self.grid_x, y=self.grid_y, power=self.power}
 end
 
 function Player:setTargetBlock(block)
@@ -100,6 +108,8 @@ end
 function Player:jumpToBlock(block)
 	self:setTargetBlock(block)
 	self.block_ref = block
+	self.grid_x = block.grid_x
+	self.grid_y = block.grid_y
 	
 	if self.move_curve:size() >= 2 then
 		self.move_tween:setValue(self.move_curve)
@@ -138,6 +148,7 @@ function Board:init(size)
 	self.blocks = Group()
 	self.size = size
 	self.round = 1
+	self.resolving = false
 	
 	self:replacePlayer(Player())
 	
@@ -166,28 +177,36 @@ function Board:init(size)
 			self:movePlayerToBlock(self.selected_block)
 		end
 		if data.event == "attempting_jump" then
-			self.moves_waiting[data.clientid] = data.info
+			if data.clientid ~= Net.id then self.moves_waiting[data.clientid] = data.info end
 				
 			-- 2 players going to same block
-			if table.len(self.moves_waiting) == Net.getPopulation() then
-				Debug.log("start resolving")
-					
+			if table.len(self.moves_waiting) == Net.getPopulation() - 1 then
+				local can_resolve = true
+				
+				local net_players = Net.getObjects("Player")				
 				for id, val in pairs(self.moves_waiting) do
-					if id ~= Net.id and data.info.x == self.player.block_ref.grid_x and data.info.y == self.player.block_ref.grid_y then
-						local other_player = Net.getObjects("Player",id)[id][1]
+					if val.x == self.player.grid_x and val.y == self.player.grid_y then
+						local other_player = net_players[id][1]
+						Debug.log("conflict im",self.player.power,"they are",other_player.power)
 						if other_player.power > self.player.power then
 							-- LOSE, fly away
-							local randx, randy = clamp(randRange(1, self.size), 1, self.size), clamp(randRange(1, self.size), 1, self.size)
+							can_resolve = false
+							
+							local randx, randy = data.info.x, data.info.y
+							while randx == data.info.x and randy == data.info.y do
+								randx, randy = clamp(randRange(1, self.size), 1, self.size), clamp(randRange(1, self.size), 1, self.size)
+							end
 							self:getBlockAt(randx, randy, function(block)
 								self:movePlayerToBlock(block)
 							end)
 						else
 							-- WIN, keep spot
-							Net.send("resolved_jump")
 						end
-					else
-						Net.send("resolved_jump")	
 					end
+				end
+					
+				if can_resolve then
+					Net.event("resolved_jump")
 				end
 			end
 		end
@@ -266,6 +285,7 @@ function Board:getBlockAt(x, y, fn)
 end
 
 function Board:movePlayerToBlock(block)
+	Debug.log('send',block.grid_x,block.grid_y)
 	Net.event("attempting_jump", {x=block.grid_x, y=block.grid_y})
 	block.selected = false
 	

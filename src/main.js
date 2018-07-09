@@ -132,10 +132,10 @@ var app = {
 			'win': nwPATH.join('love2d','love.exe'),
 			'mac': nwPATH.resolve(nwPATH.join('love2d','love.app','Contents','MacOS','love'))
 		};
-		var child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)]);
+		let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)]);
 		//child.unref();
-		Editor.closeAll('Console');
-		var console_window = new Console(app, child);
+		//Editor.closeAll('Console');
+		let console_window = new Console(app, child);
 	},
 
 	runServer: function() {

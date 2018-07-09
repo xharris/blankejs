@@ -33,7 +33,7 @@ Debug = {
     end,
     
     log = function(...)
-        local new_line = table.concat(table.toString({...}),'\t')
+        local new_line = table.concat(table.toString({...}),'\t')        
         if #Debug.lines > 1 and Debug.lines[1] == new_line or Debug._duplicate_line == new_line then
             Debug._duplicate_count = Debug._duplicate_count + 1
             
