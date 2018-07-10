@@ -45,7 +45,7 @@ function IceBlock:sink()
 end
 
 function IceBlock:update(dt)
-	self.mouse_inside = (self:distancePoint(main_view:mousePosition()) < block_width)
+	self.mouse_inside = (self:distancePoint(main_view:mousePosition()) < block_width and not self.sunk)
 	
 	if Input("select") and not self.sunk and self.can_select and self.visible and not self.occupied and not self.selected and self.mouse_inside then
 		self.selected = true
@@ -58,6 +58,11 @@ function IceBlock:draw()
 	if self.visible and not self.occupied and self.mouse_inside then
 		Draw.setColor('grey')
 		Draw.circle('fill', self.x, self.y, block_width)
+	end
+	
+	if self.shrink_amount > 0 then
+		Draw.setColor("green")
+		Draw.circle('line', self.x, self.y, block_width)
 	end
 	
 	if self.visible then
@@ -268,10 +273,10 @@ function Board:init(size)
 		end
 		if data.event == "shrink_board" then
 			local shrink_offset = self.round / shrink_time
-			Debug.log(shrink_offset)
+			Debug.log(self.size)
 			self.blocks:forEach(function(b, block)
 				if block.grid_x == shrink_offset or block.grid_y == shrink_offset or 
-				   block.grid_x == self.orig_size - shrink_offset or block.grid_y == self.orig_size - shrink_offset then
+				   block.grid_x == self.orig_size - shrink_offset + 1 or block.grid_y == self.orig_size - shrink_offset + 1 then
 					block:sink()
 				end
 			end)
