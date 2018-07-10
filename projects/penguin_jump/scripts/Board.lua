@@ -37,7 +37,6 @@ function IceBlock:sink()
 		-- TODO: change later to shrink_amount_x, shrink_amount_y
 		shrink_tween = Tween(self, {shrink_amount=block_width}, .5)
 		shrink_tween.onFinish = function()
-			Debug.log('shrunk')
 			self.sunk = true
 		end
 		shrink_tween:play()
@@ -97,7 +96,7 @@ end
 ]]
 BlankE.addEntity("Player")
 
-Player.net_sync_vars = {"x","y","grid_x","grid_y","color","power"}
+Player.net_sync_vars = {"persistent","x","y","grid_x","grid_y","color","power"}
 local net_player_list = {}
 function Player:init()
 	self.color = table.random(Draw.colors)
@@ -172,7 +171,6 @@ BlankE.addEntity("Board")
 local block_spacing_ratio = 2
 local move_time = 3-- 10
 local block_visibility = 5
-local shrink_time = 1 			-- shrink board every X rounds
 
 function Board:init(size)
 	main_view = View()
@@ -182,7 +180,6 @@ function Board:init(size)
 	self.blocks = Group()
 	self.orig_size = size
 	self.size = size
-	self.round = 1
 	self.resolving = false
 	
 	self:replacePlayer(Player())
@@ -191,7 +188,6 @@ function Board:init(size)
 	self.selected_block = nil
 	self.move_timer = Timer(move_time)
 	
-	self.moves_waiting = {}
 	self.move_timer:after(function()
 		if Net.is_leader then
 			Net.event("start_jump")
@@ -200,93 +196,6 @@ function Board:init(size)
 
 	Signal.on('block_select', function(block)
 		self.selected_block = block
-	end)
-	
-	Signal.on('finish_jump', function()
-		Net.event("player_landed", self.player:getMoveInfo())
-		self:checkBlockVis()
-	end)
-	
-	Net.on('event', function(data)
-		if data.event == "start_jump" then		
-			self.selected_block = ifndef(self.selected_block, self.player.block_ref)
-			self:movePlayerToBlock(self.selected_block)
-		end
-		if data.event == "attempting_jump" then
-			if data.clientid ~= Net.id then self.moves_waiting[data.clientid] = data.info end
-				
-			-- 2 players going to same block
-			if table.len(self.moves_waiting) == Net.getPopulation() - 1 then
-				local can_resolve = true
-				
-				local net_players = Net.getObjects("Player")				
-				for id, val in pairs(self.moves_waiting) do
-					if val and val.x == self.player.grid_x and val.y == self.player.grid_y then
-						local other_player = net_players[id][1]
-						if other_player.power > self.player.power then
-							-- LOSE, fly away
-							can_resolve = false
-							
-							local randx, randy = data.info.x, data.info.y
-							while randx == data.info.x and randy == data.info.y do
-								randx, randy = clamp(randRange(1, self.size), 1, self.size), clamp(randRange(1, self.size), 1, self.size)
-							end
-							self:getBlockAt(randx, randy, function(block)
-								Signal.on('finish_jump',function()
-									self.player.knockback_block = block
-									self:movePlayerToBlock(self.player.knockback_block)
-								end, true)
-							end)
-						else
-							-- WIN, keep spot
-						end
-						-- remove it from the conflict list
-						self.moves_waiting[id] = nil
-					end
-				end
-					
-				if can_resolve then
-					Net.event("resolved_jump")
-				end
-				self.selected_block = nil
-			end
-		end
-		if data.event == "resolved_jump" then
-			if self.moves_waiting[data.clientid] then self.moves_waiting[data.clientid] = nil end
-			if table.len(self.moves_waiting) == 0 and Net.is_leader then
-					
-				-- shrink map?
-				if self.size > Net.getPopulation() and self.round % shrink_time == 0 then
-					Net.event("shrink_board")
-				end
-				Net.event("start_move_select")
-					
-			end
-		end
-		if data.event == "start_move_select" then
-			self:startMoveSelect()	
-		end
-		if data.event == "set.leader" then
-			if (table.len(self.moves_waiting) == 0 or not self.move_timer.running) and Net.is_leader then
-				Net.event("start_move_select")	
-			end
-		end
-		if data.event == "shrink_board" then
-			local shrink_offset = self.round / shrink_time
-			Debug.log(self.size)
-			self.blocks:forEach(function(b, block)
-				if block.grid_x == shrink_offset or block.grid_y == shrink_offset or 
-				   block.grid_x == self.orig_size - shrink_offset + 1 or block.grid_y == self.orig_size - shrink_offset + 1 then
-					block:sink()
-				end
-			end)
-			self.size = self.size - 2	
-		end
-	end)
-	
-	Net.on('disconnect', function(id)
-		-- if a player disconnect after making a move, make sure the game doesnt wait on them to finish
-		if self.moves_waiting[id] then self.moves_waiting[id] = nil end	
 	end)
 		
 	-- set up board
@@ -306,11 +215,6 @@ function Board:init(size)
 			
 			self.blocks:add(new_block)
 		end
-	end
-	
-	-- start the game
-	if Net.is_leader then
-		Net.event("start_move_select")
 	end
 end
 
@@ -344,12 +248,48 @@ function Board:getBlockAt(x, y, fn)
 	end)
 end
 
+function Board:clearSelection()
+	self.selected_block = nil
+end
+
 function Board:movePlayerToBlock(block)
 	Net.event("attempting_jump", {x=block.grid_x, y=block.grid_y})
 	block.selected = false
 	
 	self.player:jumpToBlock(block)
 	self:checkBlockVis()
+end
+
+function Board:performMove()
+	self.selected_block = ifndef(self.selected_block, self.player.block_ref)
+	self:movePlayerToBlock(self.selected_block)
+end
+
+-- 2 players on same block?
+-- other_player: object having {x (gridx), y (gridy), power}
+function Board:checkMoveConflict(other_player)
+	if other_player.x == self.player.grid_x and other_player.y == self.player.grid_y then
+		if other_player.power > self.player.power then
+			-- LOSE, fly away
+			local randx, randy = other_player.x, other_player.y
+			local size_offset = self.orig_size - self.size
+			while randx == other_player.x and randy == other_player.y do
+				local random_set = {shrink_offset, self.orig_size - shrink_offset}
+				randx, randy = randRange(unpack(random_set)), 
+							   randRange(unpack(random_set))
+			end
+			self:getBlockAt(randx, randy, function(block)
+				Signal.on('finish_jump',function()
+					self.player.knockback_block = block
+					self:movePlayerToBlock(self.player.knockback_block)
+				end, true)
+			end)
+			return true
+		else
+			-- WIN, keep spot
+		end
+	end
+	return false
 end
 
 -- Vis -> Visibility
@@ -359,6 +299,19 @@ function Board:checkBlockVis()
 						 math.abs(self.player.block_ref.grid_y - block.grid_y) <= block_visibility)
 		block.occupied = (block == self.player.block_ref)
 	end)
+end
+
+-- for now... do not set size greater than initialization size
+function Board:setSize(new_size)
+	local size_offset = (self.orig_size - new_size)/2
+	self.blocks:forEach(function(b, block)
+		if block.grid_x <= size_offset or block.grid_y <= size_offset or 
+		   block.grid_x >= self.orig_size - size_offset + 1 or block.grid_y >= self.orig_size - size_offset + 1 then
+			block:sink()
+		end
+	end)
+	Debug.log('offset',size_offset)
+	self.size = new_size
 end
 
 function Board:startMoveSelect()

@@ -15,8 +15,6 @@ function playState:enter(previous)
 	penguin_spawn = {}
 	tile_snap = 32
 
-	img_igloo_front = nil
-	img_igloo_back = nil
 	in_igloo_menu = false
 
 	igloo_enter_x = 0
@@ -61,10 +59,7 @@ function playState:update(dt)
 	if main_penguin.x > destruct_ready_x and not in_igloo_menu then
 		if play_mode == 'online' and Net.getPopulation() >= game_start_population and not send_ready then
 			send_ready = true
-			Net.send({
-				type="netevent",
-				event="spawn_wall"
-			})
+			Net.event("spawn_wall")
 		end
 
 		if play_mode == 'local' then
@@ -152,6 +147,10 @@ function playState:draw()
 end	
 
 function loadLevel(name)
+	local lvl_scene = Scene(name)
+	lvl_scene:addHitbox("ground")
+	
+	--[[
 	local lvl_map = Map(name)
 		    
     local lvl_start = lvl_map:getObjects("lvl_start")[1]
@@ -196,7 +195,7 @@ function loadLevel(name)
 	-- invisibile block
 	for o, obj in ipairs(lvl_map:getObjects("invis_ground")) do
 		lvl_objects:add(Ground(obj.x, obj.y, -1))
-	end
+	end]]
 end
 
 function spawnPlayer()
@@ -215,11 +214,11 @@ function startDestruction()
 	end
 end
 
-function Net:onReady()
+Net.on('ready', function()
 	Net.addObject(main_penguin)
-end
+end)
 
-Net.onEvent = function(data)
+Net.on('event', function(data)
 	if data.event == "spawn_wall" then
 		spawn_wall_count = spawn_wall_count + 1
 
@@ -230,4 +229,4 @@ Net.onEvent = function(data)
 	elseif data.event == "load_level" then
 		loadLevel(data.info)
 	end
-end
+end)

@@ -27,6 +27,11 @@ function love.load()
 	BlankE.init(mainState)
 end
 
+--- AVOID SLOPPY CODE
+-- try not to use global vars to communicate between objects
+-- find object-oriented solutions
+-- keep Net callbacks outside of class code
+
 --- THINGS TO KNOW
 
 -- 1) do NOT create objects outside of functions
@@ -46,7 +51,7 @@ function state0:enter()
 	main_camera = View()
 end
 
--- 2) destroying an object does not remove references to it
+-- 3) destroying an object does not remove references to it
 -- 
 my_entity:destroy()
 my_entity = nil 		-- GOOD: no longer referencing it

@@ -23,7 +23,7 @@ module.exports.class_regex = {
 // Group 1: name of instance 
 module.exports.instance_regex = {
 	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
-	'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
+	//'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"][\w\.]+[\'\"]\)\s+?/g,
 	'group': 	/\b((?:self.|self:)?\w+)\s*=\s*Group\(\).*/g,
