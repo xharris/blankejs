@@ -63,7 +63,7 @@ Asset = Class{
 				category = type_name,
 				object = obj
 			}
-			return Asset.get(asset_name)
+			return Asset.get(type_name, asset_name)
 		end
 
 		-- SCRIPT
@@ -108,11 +108,13 @@ Asset = Class{
 	end,
 
 	getNameFromPath = function(category, path)
+		path = cleanPath(path)
 		for name, info in pairs(Asset.info[category]) do
 			if info.path == path then
 				return name
 			end
 		end
+		return path
 	end,
 
 	image = function(name) return Asset.get('image', name) end,

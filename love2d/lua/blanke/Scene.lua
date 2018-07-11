@@ -34,11 +34,13 @@ local Scenetable = Class{
 			end
 		end
 	end,
-	exportList = function(self)
+	exportList = function(self, key, val)
 		local ret_list = {}
 		for key1, tile_group in pairs(self.data) do
 			for key2, tile in pairs(tile_group) do
-				table.insert(ret_list, tile)
+				if not key or (key and tile[key] == val) then
+					table.insert(ret_list, tile)
+				end
 			end
 		end
 		return ret_list
@@ -57,6 +59,7 @@ local SceneLayer = Class{
 		self.draw_hitboxes = false
 	end,
 
+	-- {image (path/name), x, y, crop {x,y,w,h}}
 	addTile = function(self, info)
 		local img_name = info.image
 
@@ -86,6 +89,13 @@ local SceneLayer = Class{
 		table.insert(self.entities, instance)
 	end,
 
+	getTiles = function(self, name)
+		if name then
+			return self.hashtable:exportList('image', name)
+		end
+		return self.hashtable:exportList()
+	end,
+
 	draw = function(self)
 		for image, batch in pairs(self.spritebatches) do
 			love.graphics.draw(batch)
@@ -109,16 +119,15 @@ local Scene = Class{
 	init = function(self, asset_name)
 		if asset_name then
 			local scene = Asset.scene(asset_name)
-			if scene == nil then
-				error('Scene not found: \"'..tostring(asset_name)..'\"')
-			else
-				return scene
-			end
+			assert(scene, 'Scene not found: \"'..tostring(asset_name)..'\"')
+			return scene
 		end
 
 		self.layers = {}
 		self.tilesets = {}
 		self.objects = {}
+
+		self.offset = {0,0}
 	end,
 
 	getLayer = function(self, name)
@@ -142,7 +151,9 @@ local Scene = Class{
 
 		-- tilesets (images)
 		for i, image in ipairs(scene_data.images) do
-			local img_name = Asset.getNameFromPath('image', cleanPath(image.path))
+			local img_obj = Image(image.path)
+			local img_name = Asset.getNameFromPath('image', image.path)
+
 			self.tilesets[img_name] = {
 				image = Image(img_name),
 				snap = image.snap,
@@ -185,6 +196,12 @@ local Scene = Class{
 		end
 	end,
 
+	translate = function(self, x, y)
+		self.offset[1] = self.offset[1] + ifndef(x, 0)
+		self.offset[2] = self.offset[2] + ifndef(y, 0)
+		return self
+	end,
+
 	getObjects = function(self, name)
 		if self.objects[name] then
 			return self.objects[name].polygons
@@ -203,6 +220,12 @@ local Scene = Class{
 		local layer = self:getLayer(layer_name)
 		layer:addTile(info)
 		return self
+	end,
+
+	-- {{x, y, image (img_name), crop{x, y, w, h} }}
+	getTiles = function(self, layer_name, img_name)
+		local layer = self:getLayer(layer_name)
+		return layer:getTiles(img_name)
 	end,
 
 	addHitbox = function(self, ...)
@@ -230,7 +253,12 @@ local Scene = Class{
 			for layer_name, polygons in pairs(object.polygons) do
 				local layer = self:getLayer(layer_name)
 				for p, polygon in ipairs(polygons) do
-					local new_entity = ent_class()
+					local new_entity
+					if ent_class.classname then 	-- arg is an already made entity
+						new_entity = ent_class
+					else							-- arg is a class that needs to be instantiated
+						new_entity = ent_class()
+					end
 					new_entity.x = polygon[1]
 					new_entity.y = polygon[2]
 

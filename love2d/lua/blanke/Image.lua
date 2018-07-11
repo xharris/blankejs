@@ -14,7 +14,7 @@ Image = Class{
 			self.image = asset
 
 		elseif love.filesystem.getInfo(name) then
-			self.image = love.graphics.newImage(name)
+			self.image = Asset.add(name)
 
 		else
 			error('Image not found: \"'..tostring(name)..'\"')

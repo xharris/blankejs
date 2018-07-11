@@ -12,34 +12,29 @@ function playState:enter(previous)
 	main_penguin = nil
 	next_lvl_start = {0,0}
 	last_lvl_end = {0,0}
-	penguin_spawn = {}
+	penguin_spawn = nil
 	tile_snap = 32
+	
+	levels = Group() 
+	loadLevel("spawn")
 
 	in_igloo_menu = false
 
-	igloo_enter_x = 0
+	igloo_enter_x = penguin_spawn.x - 25
 	destruct_ready_x = 0
 
-	img_penguin = Image('penguin')
 	Draw.setBackgroundColor('white2')
 	water_color = hsv2rgb({212,70,100})
 
 	bg_sky = Image('background')
 	bg_sky.color = {0,0,210}
-	img_igloo_front = Image("igloo_front")
-	img_igloo_back = Image("igloo_back")
-
-	igloo_enter_x = img_igloo_front.x + img_igloo_front.width - 25
 
 	main_view = View()
 	main_view.zoom_type = 'damped'
 	main_view.zoom_speed = .05
-	lvl_objects = Group()
 
-	loadLevel("spawn")
-	
 	-- add player's penguin
-	spawnPlayer()
+	--spawnPlayer()
 end
 
 local send_ready = false
@@ -73,7 +68,7 @@ function playState:update(dt)
 
 		-- zoom in on igloo
 		main_view:follow()
-		main_view:moveToPosition(img_igloo_front.x + 90.25, img_igloo_front.y + img_igloo_front.height - (main_penguin.sprite['walk'].height / 2))
+		main_view:moveToPosition(penguin_spawn.x, penguin_spawn.y)
 
 		-- transition to menu when zoomed in all the way
 		if not in_igloo_menu and not wall then
@@ -94,17 +89,20 @@ function playState:update(dt)
 	
 	-- load more levels!
 	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) then
-		local levels = table.remove(Asset.list('map'), 'spawn')
+		--[[
+		local lvl_list = Asset.list('scene')
+		local choice = ''
+		repeat choice = table.random(lvl_list) until (choice ~= "spawn")
 		
 		if play_mode == 'local' then
-			loadLevel(table.random(levels))
+			loadLevel(choice)
 		elseif play_mode == 'online' then
 			Net.sendPersistent({
 				type="netevent",
 				event="load_level",
-				info=table.random(levels)
+				info=choice
 			})
-		end
+		end]]
 	end
 end
 
@@ -125,15 +123,11 @@ function playState:draw()
 
 		Net.draw('DestructionWall')
 
-		if not wall then img_igloo_back:draw() end
-		lvl_objects:forEach(function(o, obj)
-			obj:draw()
-		end)
+		levels:call("draw")
 			
 		Net.draw('Penguin')
 		
 		if main_penguin then main_penguin:draw() end 
-		if not wall then img_igloo_front:draw() end
 	end)
 	
 	local ready = ''
@@ -148,69 +142,48 @@ end
 
 function loadLevel(name)
 	local lvl_scene = Scene(name)
-	lvl_scene:addHitbox("ground")
 	
-	--[[
-	local lvl_map = Map(name)
-		    
-    local lvl_start = lvl_map:getObjects("lvl_start")[1]
-    local lvl_end = lvl_map:getObjects("lvl_end")[1]
-	    
-	local offset_x = (last_lvl_end[1])
-	local offset_y = (last_lvl_end[2])
+	-- get penguin spawn coords
+	if not main_penguin then
+		main_penguin = Penguin(true)
+		lvl_scene:addEntity("spawn", main_penguin, "bottom center")
+		penguin_spawn = {x=main_penguin.x, y=main_penguin.y}
+		main_penguin:netSync()
+	end
+	
+	-- get level start and end
+	local lvl_start = lvl_scene:getObjects("lvl_start")["layer0"][1]
+	local lvl_end = lvl_scene:getObjects("lvl_end")["layer0"][1]
+	
+	-- if not the first level, offset it
+	local offset = {last_lvl_end[1], last_lvl_end[2]}
 	if name ~= 'spawn' then
-		offset_x = (last_lvl_end[1] - lvl_start.x)
-		offset_y = (last_lvl_end[2] - lvl_start.y)
-	end
-
-	last_lvl_end[1] = last_lvl_end[1] + (lvl_end.x - lvl_start.x)
-	last_lvl_end[2] = last_lvl_end[2] + (lvl_end.y - lvl_start.y)
-    	
-	-- regular ground
-	local snapx, snapy = 32, 32
-	Debug.log('loading',name)
-    for o, obj in ipairs(lvl_map:getObjects("ground","cracked_ground")) do
-		local ground_type = ''
-		if obj.char == 'C' then 
-			destruct_ready_x = obj.x
-			ground_type = "cracked"
-		end
-
-        lvl_objects:add(Ground(
-				obj.x+offset_x,
-				obj.y+offset_y,
-				bitmask4(lvl_map.array['layer0'], {'G','C'}, obj.x / snapx, obj.y / snapy), ground_type))
-    end
-
-	-- igloo
-	if #lvl_map:getObjects("igloo") > 0 then
-		local igloo_pos = lvl_map:getObjects("igloo")[1]
-		lvl_objects:add(Ground(igloo_pos.x, igloo_pos.y, -1))
-		img_igloo_front.x, img_igloo_front.y = igloo_pos.x, igloo_pos.y + tile_snap - img_igloo_front.height
-		img_igloo_back.x, img_igloo_back.y = igloo_pos.x, igloo_pos.y + tile_snap - img_igloo_front.height
-
-		penguin_spawn = {igloo_enter_x + 5, igloo_pos.y}
+		offset = {
+			last_lvl_end[1] - lvl_start[1],
+			last_lvl_end[2] - lvl_start[2]
+		}
 	end
 	
-	-- invisibile block
-	for o, obj in ipairs(lvl_map:getObjects("invis_ground")) do
-		lvl_objects:add(Ground(obj.x, obj.y, -1))
-	end]]
-end
-
-function spawnPlayer()
-	main_penguin = Penguin(true)
-	main_penguin.x, main_penguin.y = unpack(penguin_spawn)
-	main_penguin:netSync()
+	last_lvl_end = {
+		last_lvl_end[1] + (lvl_end[1] - lvl_start[1]),
+		last_lvl_end[2] + (lvl_end[2] - lvl_start[2])
+	}
+	
+	-- spawn: get 'ready to play' spot
+	if name == 'spawn' then
+		destruct_ready_x = lvl_scene:getTiles("layer0", "ground_crack")[1].x
+	end
+	
+	lvl_scene:addHitbox("ground")
+	lvl_scene:translate(offset_x, offset_y)
+	
+	levels:add(lvl_scene)
 end
 
 function startDestruction()
 	if not wall then
 		--wall = DestructionWall()
 		--wall.x = -32
-
-		--FragImage(img_igloo_front)
-		--FragImage(img_igloo_back)
 	end
 end
 
