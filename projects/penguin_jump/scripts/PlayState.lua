@@ -49,7 +49,7 @@ function PlayState:enter()
 		board:checkBlockVis()
 	end)
 	
-	local round = 1
+	local last_shrink_round = 0
 	local shrink_time = 1 			-- shrink board every X rounds
 	local moves_waiting = {}
 	Net.on('event', function(data)
@@ -63,6 +63,11 @@ function PlayState:enter()
 			board:replacePlayer(main_player)
 			board:movePlayer(data.info.positions[Net.id][1], data.info.positions[Net.id][2])
 		
+			-- start the game
+			if Net.is_leader then
+				Net.event("start_move_select", board.round)
+			end
+				
 		else
 			-- board events
 			if data.event == "start_jump" then		
@@ -93,19 +98,23 @@ function PlayState:enter()
 				if table.len(moves_waiting) == 0 and Net.is_leader then
 
 					-- shrink map?
-					if board.size > Net.getPopulation() and round % shrink_time == 0 then
+					if board.size > Net.getPopulation() and board.round % shrink_time == 0 and board.round ~= last_shrink_round then
+						last_shrink_round = board.round
+						Debug.log("shrink_board",data.info)
 						Net.event("shrink_board", board.size - 2)
 					end
-					Net.event("start_move_select")
-
+					Net.event("start_move_select", board.round)
+					board.round = board.round + 1
 				end
 			end
 			if data.event == "start_move_select" then
+				board.round = data.info
 				board:startMoveSelect()	
 			end
 			if data.event == "set.leader" then
 				if (table.len(moves_waiting) == 0 or not board.move_timer.running) and Net.is_leader then
-					Net.event("start_move_select")	
+					board.round = board.round + 1
+					Net.event("start_move_select", board.round)	
 				end
 			end
 			if data.event == "shrink_board" then
@@ -117,13 +126,7 @@ function PlayState:enter()
 	Net.on('disconnect', function(id)
 		-- if a player disconnect after making a move, make sure the game doesnt wait on them to finish
 		if moves_waiting[id] then moves_waiting[id] = nil end	
-	end)
-	
-	-- start the game
-	if Net.is_leader then
-		Net.event("start_move_select")
-	end
-	
+	end)	
 end
 
 function PlayState:draw()

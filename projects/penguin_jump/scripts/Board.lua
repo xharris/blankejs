@@ -181,6 +181,7 @@ function Board:init(size)
 	self.orig_size = size
 	self.size = size
 	self.resolving = false
+	self.round = 1
 	
 	self:replacePlayer(Player())
 	
@@ -310,7 +311,6 @@ function Board:setSize(new_size)
 			block:sink()
 		end
 	end)
-	Debug.log('offset',size_offset)
 	self.size = new_size
 end
 
@@ -338,5 +338,5 @@ function Board:draw()
 	end)
 		
 	Draw.setColor("black")
-	Draw.text(math.abs(math.ceil(move_time - self.move_timer.time)), 20, 20)
+	--Draw.text("time:"..toString(math.abs(math.ceil(move_time - self.move_timer.time))).."round "..toString(self.round), 20, 20)
 end
