@@ -50,7 +50,7 @@ function PlayState:enter()
 	end)
 	
 	local last_shrink_round = 0
-	local shrink_time = 1 			-- shrink board every X rounds
+	local shrink_time = 3 			-- shrink board every X rounds
 	local moves_waiting = {}
 	Net.on('event', function(data)
 		-- board being created
@@ -77,18 +77,23 @@ function PlayState:enter()
 				if data.clientid ~= Net.id then moves_waiting[data.clientid] = data.info end
 
 				-- check for conflicts
+				Debug.log("attempting")
 				if table.len(moves_waiting) == Net.getPopulation() - 1 then
 					local can_resolve = true
 
 					local net_players = Net.getObjects("Player")				
 					for id, val in pairs(moves_waiting) do
 						local other_player = net_players[id][1]
-						if not board:checkMoveConflict(other_player) then				
-							-- remove it from the conflict list
-							moves_waiting[id] = nil	
-							Net.event("resolved_jump")
+						if board:checkMoveConflict(other_player) then		
+							can_resolve = false
+						else
+							moves_waiting[id] = nil									
 						end
-
+					end
+							
+					if can_resolve then
+						-- remove it from the conflict list
+						Net.event("resolved_jump")	
 					end
 					board:clearSelection()
 				end
@@ -103,8 +108,8 @@ function PlayState:enter()
 						Debug.log("shrink_board",data.info)
 						Net.event("shrink_board", board.size - 2)
 					end
-					Net.event("start_move_select", board.round)
 					board.round = board.round + 1
+					Net.event("start_move_select", board.round)
 				end
 			end
 			if data.event == "start_move_select" then

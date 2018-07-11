@@ -269,13 +269,13 @@ end
 -- 2 players on same block?
 -- other_player: object having {x (gridx), y (gridy), power}
 function Board:checkMoveConflict(other_player)
-	if other_player.x == self.player.grid_x and other_player.y == self.player.grid_y then
+	if other_player.grid_x == self.player.grid_x and other_player.grid_y == self.player.grid_y then
 		if other_player.power > self.player.power then
 			-- LOSE, fly away
-			local randx, randy = other_player.x, other_player.y
+			local randx, randy = other_player.grid_x, other_player.grid_y
 			local size_offset = self.orig_size - self.size
-			while randx == other_player.x and randy == other_player.y do
-				local random_set = {shrink_offset, self.orig_size - shrink_offset}
+			while randx == other_player.grid_x and randy == other_player.grid_y do
+				local random_set = {size_offset, self.orig_size - size_offset}
 				randx, randy = randRange(unpack(random_set)), 
 							   randRange(unpack(random_set))
 			end
@@ -338,5 +338,5 @@ function Board:draw()
 	end)
 		
 	Draw.setColor("black")
-	--Draw.text("time:"..toString(math.abs(math.ceil(move_time - self.move_timer.time))).."round "..toString(self.round), 20, 20)
+	Draw.text("time:"..math.abs(math.ceil(move_time - self.move_timer.time)).." round "..self.round, 20, 20)
 end

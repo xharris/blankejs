@@ -60,6 +60,7 @@ function Penguin:init(is_main_player)
 		self:setColor(self:getColor())
 		self:setHat(Penguin.main_penguin_info.hat)
 	end
+	self.show_debug = true
 end
 
 function Penguin:getColor()
