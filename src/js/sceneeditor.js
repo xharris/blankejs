@@ -1,6 +1,10 @@
 var earcut = require('./includes/earcut.js');
 var global_objects = [];
 
+// http://www.html5gamedevs.com/topic/7507-how-to-move-the-sprite-to-the-top/?do=findComment&comment=45162
+function bringToFront(sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {         if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.push(sprite);}}
+function sendToBack(sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {          if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.splice(0,0,sprite);    }}
+
 class SceneEditor extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -1176,6 +1180,10 @@ class SceneEditor extends Editor {
 				this.el_input_letter.value = this.curr_object.char;
 				this.el_input_name.value = this.curr_object.name;
 				this.el_color_object.value = this.curr_object.color;
+
+				this.iterObjectInLayer (this.curr_layer.uuid, name, function(obj, o){
+					bringToFront(obj.poly);
+				});
 				return;
 			}
 		}	
@@ -1335,6 +1343,12 @@ class SceneEditor extends Editor {
 
 			if (data.objects.length > 0) 
 				this.updateGlobalObjList();
+
+			else {
+				for (var o = 0; o < global_objects.length; o++) {
+					this.addObject(global_objects[o]);
+				}
+			}
 
 			this.refreshObjectList();
 		}

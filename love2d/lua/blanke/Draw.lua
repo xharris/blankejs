@@ -122,6 +122,12 @@ Draw = Class{
 		return Draw
     end,
 
+    stack = function(fn)
+    	Draw.push()
+    	fn()
+    	Draw.pop()
+    end,
+
     push = function(...)
     	love.graphics.push(...)
     end,

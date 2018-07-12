@@ -55,6 +55,7 @@ local SceneLayer = Class{
 		self.spritebatches = {}
 		self.hitboxes = {}
 		self.entities = {}
+		self.offset = {0, 0}
 
 		self.draw_hitboxes = false
 	end,
@@ -96,14 +97,28 @@ local SceneLayer = Class{
 		return self.hashtable:exportList()
 	end,
 
-	draw = function(self)
-		for image, batch in pairs(self.spritebatches) do
-			love.graphics.draw(batch)
+	translate = function(self, x, y)
+		x, y = ifndef(x,0), ifndef(y,0)
+		self.offset[1] = self.offset[1] + x
+		self.offset[2] = self.offset[2] + y
+		for name, hitboxes in pairs(self.hitboxes) do
+			for h, hitbox in ipairs(hitboxes) do
+				hitbox:move(x, y)
+			end
 		end
+	end,
 
-		for e, entity in ipairs(self.entities) do
-			entity:draw()
-		end
+	draw = function(self)
+		Draw.stack(function()
+			Draw.translate(self.offset[1], self.offset[2])
+			for image, batch in pairs(self.spritebatches) do
+				love.graphics.draw(batch)
+			end
+
+			for e, entity in ipairs(self.entities) do
+				entity:draw()
+			end
+		end)
 
 		if self.draw_hitboxes then
 			for name, hitboxes in pairs(self.hitboxes) do
@@ -126,8 +141,6 @@ local Scene = Class{
 		self.layers = {}
 		self.tilesets = {}
 		self.objects = {}
-
-		self.offset = {0,0}
 	end,
 
 	getLayer = function(self, name)
@@ -197,8 +210,9 @@ local Scene = Class{
 	end,
 
 	translate = function(self, x, y)
-		self.offset[1] = self.offset[1] + ifndef(x, 0)
-		self.offset[2] = self.offset[2] + ifndef(y, 0)
+		for l, layer in pairs(self.layers) do
+			layer:translate(x, y)
+		end
 		return self
 	end,
 

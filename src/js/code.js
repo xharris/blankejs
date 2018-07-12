@@ -34,6 +34,11 @@ function reloadCompletions() {
 }
 
 function refreshObjectList (filename, content) {
+	// should a server be running?
+	if (!app.isServerRunning() && content.includes("Net.")) {								
+		app.runServer();
+	}
+
 	// remove from whole list
 	let obj_string = object_src[filename] || '';
 	for (let category in object_list) {

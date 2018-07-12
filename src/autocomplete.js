@@ -96,6 +96,7 @@ module.exports.completions = {
 		{fn:"randomColor", vars:{ alpha:'' }},
 		{fn:"setColor", vars:color_vars},
 		{fn:"resetColor"},
+		{fn:"stack", vars:{ fn:'' }, info:"resets all draw operations after fn. push -> fn -> pop"},
 		{fn:"point", vars:{ x:'', y:'' }},
 		{fn:"points"},
 		{fn:"line", vars:{ x1:'', y1:'', x2:'', y2:'' }},

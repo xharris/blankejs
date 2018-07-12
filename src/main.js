@@ -138,6 +138,10 @@ var app = {
 		let console_window = new Console(app, child);
 	},
 
+	isServerRunning: function() {
+		return (nwNOOB.address != null);
+	},
+
 	runServer: function() {
 		nwNOOB.setLogFunction(function () {
 			console.log.apply(console, arguments)
@@ -488,8 +492,6 @@ nwWIN.on('loaded', function() {
 		app.hideWelcomeScreen();
 		app.loadSettings();
 	});
-
-	app.runServer();
 
 	// app.openProject('projects/boredom');
 	// app.hideWelcomeScreen();

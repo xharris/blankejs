@@ -388,47 +388,26 @@ Input(name, ...)			-- checks an input. Can check multiple at a time
  ###    ##### ###### #   #  ###### 
 
 Scene
-	To create a Scene in the IDE just type 
-		my_scene = Scene("mylevel")
-	as if it already existed. A blank scene will be created.
 ]]
 
 Scene(scene_name)							-- initialize a scene as scene_name.json
 
 -- instance methods
-addEntity(Entity)
-addTile(image_name, x, y, crop_options)		--[[
-	crop_options - {x, y, width, height}
-]]
-getTile(x, y, layer, img_name)				-- returns list of tile_data?
-getTileImage(x, y, layer, img_name)			-- same as geTTile but returns list of Image()
-removeTile(x, y, layer, img_name)
-removeHitboxAtPoint(x, y, layer)
-getList(object_type)						-- object_type: 'entity', 'tile', 'hitbox'
-getEntity(classname, [layer_name])
-draw()
+addEntity(object_name, class/instance, align)
+	-- returns a list of entities created
+	-- class: class to create instances of
+	-- instance: already created instance that should be added to scene
+	-- align: space-seperated keywords (center, top, bottom, left, right) Ex. "top left", "bottom", "center", "center right"
+addTile(layer_name, info) 					-- info = { x, y, rect{x, y, w, h}, image }
+addHitbox(name, ...)	 					-- create a hitbox for given object name(s)
 
--- json format
-{
-	"data": {
-		"layer0": {
-			"tile": [
-				{x, y, img_name, crop:{x, y, img_name, width, height}},
-				...
-			],
-			"hitbox": [
-				{name, points:[10,20,30,50,...]},
-				...
-			],
-			"entity": [
-				?
-			]
-		}
-	},
-	"order": {
-		"layers": ["layer0","layer1"...],
-	}
-}
+getTiles(layer_name, image_name) 			-- returns [ { x, y, image (image name), crop{x, y, w, h} } ]
+getObjects(name)							-- returns { layer_name:[ {x, y} ] }
+getObjectInfo(name) 						-- returns { char, color, polygons:{ layer_name:[ {x, y} ] } }
+
+translate(x, y)								-- move everything (tiles, hitboxes) by a given amount
+
+draw(layer_name) 							-- layer_name (optional): draw only that layer
 
 --[[
 #####   #####      #     #      #
@@ -461,7 +440,11 @@ num[4] 	red
 -- class methods
 setBackgroundColor(r, g, b, a)
 setColor(r, g, b, a)				
-resetColor()						-- color = reset_color
+resetColor()						-- color = reset_color	
+push()
+pop()
+stack(fn) 							-- call push() --> fn() --> pop()
+
 -- shapes
 point(x, y, ...)					-- also takes in a table							
 points								-- the same as point()

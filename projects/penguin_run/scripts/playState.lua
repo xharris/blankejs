@@ -89,7 +89,7 @@ function playState:update(dt)
 	
 	-- load more levels!
 	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) then
-		--[[
+		--
 		local lvl_list = Asset.list('scene')
 		local choice = ''
 		repeat choice = table.random(lvl_list) until (choice ~= "spawn")
@@ -102,7 +102,7 @@ function playState:update(dt)
 				event="load_level",
 				info=choice
 			})
-		end]]
+		end
 	end
 end
 
