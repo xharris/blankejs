@@ -1,7 +1,7 @@
 BlankE.addState("playState")
 
 play_mode = 'local'			-- local / online
-game_start_population = 3
+game_start_population = 1
 best_penguin = nil
 
 local main_penguin
@@ -175,6 +175,7 @@ function loadLevel(name)
 	end
 	
 	lvl_scene:addHitbox("ground")
+	
 	lvl_scene:translate(offset_x, offset_y)
 	
 	levels:add(lvl_scene)

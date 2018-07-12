@@ -98,6 +98,7 @@ local SceneLayer = Class{
 	end,
 
 	translate = function(self, x, y)
+		--[[
 		x, y = ifndef(x,0), ifndef(y,0)
 		self.offset[1] = self.offset[1] + x
 		self.offset[2] = self.offset[2] + y
@@ -105,7 +106,7 @@ local SceneLayer = Class{
 			for h, hitbox in ipairs(hitboxes) do
 				hitbox:move(x, y)
 			end
-		end
+		end]]
 	end,
 
 	draw = function(self)
