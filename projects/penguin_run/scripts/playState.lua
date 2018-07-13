@@ -1,6 +1,6 @@
 BlankE.addState("playState")
 
-play_mode = 'local'			-- local / online
+play_mode = 'online'			-- local / online
 game_start_population = 1
 best_penguin = nil
 
@@ -32,9 +32,6 @@ function playState:enter(previous)
 	main_view = View()
 	main_view.zoom_type = 'damped'
 	main_view.zoom_speed = .05
-
-	-- add player's penguin
-	--spawnPlayer()
 end
 
 local send_ready = false
@@ -74,6 +71,7 @@ function playState:update(dt)
 		if not in_igloo_menu and not wall then
 			in_igloo_menu = true
 			main_view:zoom(3, 3, function()
+				
 				State.transition(menuState, "circle-out")
 			end)
 		end
@@ -123,15 +121,12 @@ function playState:draw()
 
 		Net.draw('DestructionWall')
 
-		--levels:call("draw")
-		levels:forEach(function(l, level)
-			Debug.log(level.name_ref)
-			level:draw()
-		end)
+		levels:call('draw','layer1')
 			
 		Net.draw('Penguin')
-		
 		if main_penguin then main_penguin:draw() end 
+			
+		levels:call('draw','layer0')
 	end)
 	
 	local ready = ''
@@ -157,7 +152,7 @@ function loadLevel(name)
 		main_penguin:netSync()
 	end
 	
-	-- get level start and endd
+	-- get level start and end
 	local lvl_start = lvl_scene:getObjects("lvl_start")["layer0"][1]
 	local lvl_end = lvl_scene:getObjects("lvl_end")["layer0"][1]
 	

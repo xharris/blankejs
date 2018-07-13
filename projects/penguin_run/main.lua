@@ -14,7 +14,7 @@ function love.load()
 	UI.color('window_outline', Draw.blue)
 	UI.color('element_bg', Draw.dark_blue)
 
-    BlankE.init('playState')
+    BlankE.init('menuState')
 
 	Input.set('menu_up', 'w', 'up')
 	Input.set('menu_down', 's', 'down')

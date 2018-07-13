@@ -11,7 +11,7 @@ Net = {
     onConnect = nil,    
     onDisconnect = nil, 
     
-    address = "127.0.0.1",
+    address = "localhost",
     port = 8080,
     room = 1,
 
@@ -31,7 +31,7 @@ Net = {
         local ip, _ = s:getsockname()
         Net.ip = ip
 
-        Net.address = ifndef(address, "127.0.0.1") 
+        Net.address = ifndef(address, Net.address) 
         Net.port = ifndef(port, Net.port)     
         Net.is_init = true
 

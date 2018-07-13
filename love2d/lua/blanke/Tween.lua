@@ -18,7 +18,7 @@ Tween = Class{
 
 	init = function(self, var, value, duration, func_type)
 		self.var = var
-		self.duration = duration
+		self.duration = ifndef(duration, 1)
 		self.type = ifndef(func_type, 'linear')
 		self.valid = true
 

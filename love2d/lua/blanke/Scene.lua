@@ -55,7 +55,9 @@ local SceneLayer = Class{
 		self.spritebatches = {}
 		self.hitboxes = {}
 		self.entities = {}
-		self.offset = {0, 0}
+		
+		self.offx = 0
+		self.offy = 0
 
 		self.draw_hitboxes = false
 	end,
@@ -99,8 +101,8 @@ local SceneLayer = Class{
 
 	translate = function(self, x, y)
 		x, y = ifndef(x,0), ifndef(y,0)
-		self.offset[1] = self.offset[1] + x
-		self.offset[2] = self.offset[2] + y
+		self.offx = self.offx + x
+		self.offy = self.offy + y
 		for name, hitboxes in pairs(self.hitboxes) do
 			for h, hitbox in ipairs(hitboxes) do
 				hitbox:move(x, y)
@@ -110,7 +112,7 @@ local SceneLayer = Class{
 
 	draw = function(self)
 		Draw.stack(function()
-			Draw.translate(self.offset[1], self.offset[2])
+			Draw.translate(self.offx, self.offy)
 			for image, batch in pairs(self.spritebatches) do
 				love.graphics.draw(batch)
 			end
@@ -210,7 +212,7 @@ local Scene = Class{
 	end,
 
 	translate = function(self, x, y)
-		for l, layer in pairs(self.layers) do
+		for l, layer in ipairs(self.layers) do
 			layer:translate(x, y)
 		end
 		return self

@@ -123,7 +123,6 @@ Hitbox = Class{
 
 	setColor = function(self, new_color)
 		self.color = Draw._parseColorArgs(new_color)
-        Debug.log(unpack(self.color))
 		self.color[4] = 255/2.5
 	end,
 

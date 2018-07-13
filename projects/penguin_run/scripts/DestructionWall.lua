@@ -1,4 +1,4 @@
-BlankE.addClassType("DestructionWall", "Entity")
+BlankE.addEntity("DestructionWall")
 
 DestructionWall.net_sync_vars = {'x'}
 
@@ -11,6 +11,6 @@ function DestructionWall:update(dt)
 end
 
 function DestructionWall:draw()
-	--Draw.setColor('black')
-	--Draw.line(self.x, main_view.top, self.x, main_view.bottom)
+	Draw.setColor('red')
+	Draw.line(self.x, main_view.top, self.x, main_view.bottom)
 end

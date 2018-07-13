@@ -1,87 +1,65 @@
-local anim_tick = 0
-local anim_end = 60
-local anim_speed = 100
-local big_size = 0
-local transitioning = false
-local anim_type = ''
-local prev_state = ''
 local transition_queue = {}
+local transition_obj = {
+	i = 0,
+	exit_state = nil,
+	enter_state = nil,
+	animation = '',
+	stencil_fn = nil,
+	tween = nil
+}
+
+local drawStateNormal = function(state)
+	local bg_color = ifndef(state.background_color, Draw.background_color)
+	if bg_color then
+		Draw.setColor(bg_color)
+		Draw.rect('fill', 0,0,game_width,game_height)
+		Draw.resetColor()
+	end
+	if state.draw then state:draw() end
+end
+
+local drawStateStencil = function(state)
+	love.graphics.stencil(transition_obj.stencil_fn, "replace", 1)
+	love.graphics.setStencilTest(state._stencil_test, 0)
+	drawStateNormal(state)
+	love.graphics.setStencilTest()
+end
 
 StateManager = {
 	_stack = {},
 	_callbacks = {'update','draw'},
 
 	iterateStateStack = function(func, ...)
+		local transition_active = (#transition_queue > 0)
+
 		for s, state in ipairs(StateManager._stack) do
-			local bg_color = ifndef(state.background_color, Draw.background_color)
-			if bg_color then
-				Draw.setColor(bg_color)
-				Draw.rect('fill', 0,0,game_width,game_height)
-				Draw.resetColor()
-			end
+			if func == 'draw' and state.draw then
+				-- is a transition happening?
+				if transition_active then
+					-- is this the 'entering' state?
+					if transition_obj.enter_state.classname == state.classname then
+						drawStateStencil(state)
+					
+					-- is this the 'exiting' state?
+					elseif transition_obj.exit_state.classname == state.classname then
+						drawStateStencil(state)
 
-			local enter = "greater"
-			local exit = "equal"
+					else
+						drawStateNormal(state)
 
-			if func == 'draw' and state._transitioning then	
-				if anim_type == 'circle-out' then
-					love.graphics.stencil(function()
-				   		love.graphics.circle("fill", game_width / 2, game_height /2, lerp(0, big_size, anim_tick / anim_end))
-					end, "replace", 1)
-				end
-
-				if anim_type == 'circle-in' then
-					love.graphics.stencil(function()
-				   		love.graphics.circle("fill", game_width / 2, game_height /2, big_size - lerp(0, big_size, anim_tick / anim_end))
-					end, "replace", 1)
-					enter = "equal"
-					exit = "greater"
-				end
-
-				-- draw state being entered
-				love.graphics.setStencilTest(enter, 0)
-				Draw.stack(function() state:draw() end)
-
-				-- draw state being left
-				local other_state = state._other_state
-				love.graphics.setStencilTest(exit, 0)
-				Draw.stack(function() other_state:draw() end)
-
-				love.graphics.setStencilTest()
-
-			elseif state[func] ~= nil and (not state._off or not (func == 'update' and state._transitioning)) then
-				state[func](state, ...)
-			end
-		end
-
-		-- update
-		if func == 'update' and transitioning then
-			local dt = ...
-
-			if anim_tick > anim_end then
-				anim_type = ''
-				anim_tick = 0
-				big_size = 0
-
-				local curr_state = StateManager.current()
-				curr_state._transitioning = false
-				transitioning = false
-				-- StateManager.pop(curr_state.classname)
-
-				if #transition_queue > 0 then
-					local next_transition = table.remove(transition_queue)
-					State.transition(next_transition[1], next_transition[2])
+					end
+				else
+					drawStateNormal(state)
 				end
 			else
-				anim_tick = anim_tick + anim_speed * dt
+				if state[func] then state[func](...) end
 			end
 		end
 	end,
 
 	clearStack = function()
-		for s, state in pairs(StateManager._stack) do
+		for s, state in ipairs(StateManager._stack) do
 			state:_leave()
-			StateManager._stack[s] = nil
 		end
 		StateManager._stack = {}
 	end,
@@ -95,27 +73,30 @@ StateManager = {
 			new_state._loaded = true
 		end
 		if new_state.enter then new_state:enter() end
+		Debug.log("push",new_state.classname)
 	end,
 
 	-- remove newest state
 	pop = function(state_name)
-		local state = nil
-		local index = 1
+		function closingStatements(state)
+			Debug.log("pop",state.classname)
+			state._has_transition = false
+			state:_leave()
+		end
+
 		if state_name then
-			for s, obj_state in ipairs(StateManager._stack[#StateManager._stack]) do
+			for s, obj_state in ipairs(StateManager._stack) do
 				if obj_state.classname == state_name then
-					index = s
-					state = obj_state
+					closingStatements(obj_state)
+					table.remove(StateManager._stack, s)
 				end
 			end
 		else
-			state = StateManager._stack[#StateManager._stack]
+			local state = StateManager._stack[#StateManager._stack]
+			closingStatements(state)
+			table.remove(StateManager._stack)
 		end
-
-		state._transitioning = false
-		state:_leave()
-
-		table.remove(StateManager._stack, index)
+			Debug.log("state",#StateManager._stack)
 	end,
 
 	verifyState = function(state)
@@ -129,42 +110,65 @@ StateManager = {
 	end,
 
 	switch = function(name)
-		prev_state = State.current().classname
-
-		-- verify state name
-		local new_state = StateManager.verifyState(name)
-
 		-- add to state stack
 		StateManager.clearStack()
-		if new_state then
-			table.insert(StateManager._stack, new_state)
-			if new_state.load and not new_state._loaded then
-				new_state:load()
-				new_state._loaded = true
+		StateManager.push(name)
+	end,
+
+	_setupTransition = function(queue_info)
+		local anim_type = queue_info[3]
+
+		transition_obj.exit_state = queue_info[1]
+		transition_obj.enter_state = queue_info[2]
+		transition_obj.animation = anim_type
+
+		local diag_size = math.sqrt((game_width*game_width) + (game_height*game_height))
+
+		if anim_type == "circle-in" then
+			transition_obj.stencil_fn = function()
+				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.i)
 			end
-			new_state:_enter()
+			transition_obj.i = diag_size
+			transition_obj.tween = Tween(transition_obj, {i = 0}, .5)
+			transition_obj.enter_state._stencil_test = "greater"	
+			transition_obj.enter_state._stencil_test = "equal"	
+		end
+
+		if anim_type == "circle-out" then
+			transition_obj.stencil_fn = function()
+				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.i)
+			end
+			transition_obj.i = 0
+			transition_obj.tween = Tween(transition_obj, {i = diag_size}, .5)
+			transition_obj.enter_state._stencil_test = "equal"	
+			transition_obj.enter_state._stencil_test = "greater"
 		end
 	end,
 
 	transition = function(next_state, animation)
-		if not next_state._transitioning and not transitioning then
-			anim_type = animation
-			local curr_state = State.current()
+		next_state = StateManager.verifyState(next_state)
 
-			transitioning = true
-			next_state._transitioning = true
-			next_state._other_state = curr_state
+		local curr_state = StateManager:current()
+		if not curr_state._has_transition then
+			curr_state._has_transition = true
 
-			anim_tick = 0
-
-			if anim_type == "circle-out" or anim_type == "circle-in" then
-				big_size = math.sqrt((game_width*game_width) + (game_height*game_height))
+			if next_state then
+				table.insert(transition_queue, 1, {curr_state, next_state, animation})
 			end
 
-			prev_state = curr_state.classname
-			StateManager.switch(next_state)
-		else
-			table.insert(transition_queue, 1, {next_state, animation})
+			-- no transitions happening at the moment
+			if transition_obj.tween == nil and #transition_queue > 0 then
+				StateManager._setupTransition(table.remove(transition_queue))
+
+				StateManager.push(transition_obj.enter_state)
+				transition_obj.tween.onFinish = function()
+					StateManager.pop(transition_obj.exit_state.classname)
+					transition_obj.tween = nil
+					Debug.log("queue len",#transition_queue)
+					--StateManager.transition()
+				end
+				transition_obj.tween:play()
+			end
 		end
 	end,
 

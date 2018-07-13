@@ -68,6 +68,7 @@ function Igloo:update(dt)
 	
 	-- leaving igloo
 	if self.main_penguin.x > self.igloo_exit_x then
+		Debug.log("GO!")
 		State.transition(playState, 'circle-in')
 	end
 end
