@@ -123,13 +123,13 @@ Draw = Class{
     end,
 
     stack = function(fn)
-    	Draw.push()
+    	Draw.push('all')
     	fn()
     	Draw.pop()
     end,
 
-    push = function(...)
-    	love.graphics.push(...)
+    push = function()
+    	love.graphics.push('all')
     end,
 
     pop = function()

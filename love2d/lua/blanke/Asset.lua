@@ -83,7 +83,7 @@ Asset = Class{
 		-- SCENE
 		elseif path:ends('.scene') then
 			local scene_data = json.decode(love.filesystem.read(path))
-			if scene_data then return acceptAsset("scene", Scene():load(scene_data) ) end
+			if scene_data then return acceptAsset("scene", scene_data ) end
 
 		-- FILE (etc)
 		else

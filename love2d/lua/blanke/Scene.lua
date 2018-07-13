@@ -82,7 +82,7 @@ local SceneLayer = Class{
 	addHitbox = function(self, points, tag, color)
 		self.hitboxes[tag] = ifndef(self.hitboxes[tag], {})
 		local new_hitbox = Hitbox("polygon", points, tag)
-		new_hitbox.color = color
+		new_hitbox:setColor(color)
 		table.insert(self.hitboxes[tag], new_hitbox)
 	end,
 
@@ -98,7 +98,6 @@ local SceneLayer = Class{
 	end,
 
 	translate = function(self, x, y)
-		--[[
 		x, y = ifndef(x,0), ifndef(y,0)
 		self.offset[1] = self.offset[1] + x
 		self.offset[2] = self.offset[2] + y
@@ -106,7 +105,7 @@ local SceneLayer = Class{
 			for h, hitbox in ipairs(hitboxes) do
 				hitbox:move(x, y)
 			end
-		end]]
+		end
 	end,
 
 	draw = function(self)
@@ -133,15 +132,15 @@ local SceneLayer = Class{
 
 local Scene = Class{
 	init = function(self, asset_name)
-		if asset_name then
-			local scene = Asset.scene(asset_name)
-			assert(scene, 'Scene not found: \"'..tostring(asset_name)..'\"')
-			return scene
-		end
-
 		self.layers = {}
 		self.tilesets = {}
 		self.objects = {}
+        
+		if asset_name then
+			local scene = Asset.scene(asset_name)
+			assert(scene, 'Scene not found: \"'..tostring(asset_name)..'\"')
+			self:load(scene)
+		end
 	end,
 
 	getLayer = function(self, name)

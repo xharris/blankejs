@@ -123,7 +123,11 @@ function playState:draw()
 
 		Net.draw('DestructionWall')
 
-		levels:call("draw")
+		--levels:call("draw")
+		levels:forEach(function(l, level)
+			Debug.log(level.name_ref)
+			level:draw()
+		end)
 			
 		Net.draw('Penguin')
 		
@@ -132,6 +136,7 @@ function playState:draw()
 	
 	local ready = ''
 	if main_penguin.x > destruct_ready_x then ready = '\nREADY!' end
+	Draw.setColor('black')
 	Draw.text(tostring(Net.getPopulation())..' / '..tostring(game_start_population)..ready, game_width/2, 50)
 	
 	if Net.is_leader then
@@ -142,6 +147,7 @@ end
 
 function loadLevel(name)
 	local lvl_scene = Scene(name)
+	lvl_scene.name_ref = name..levels:size()
 	
 	-- get penguin spawn coords
 	if not main_penguin then
@@ -151,7 +157,7 @@ function loadLevel(name)
 		main_penguin:netSync()
 	end
 	
-	-- get level start and end
+	-- get level start and endd
 	local lvl_start = lvl_scene:getObjects("lvl_start")["layer0"][1]
 	local lvl_end = lvl_scene:getObjects("lvl_end")["layer0"][1]
 	
@@ -175,8 +181,7 @@ function loadLevel(name)
 	end
 	
 	lvl_scene:addHitbox("ground")
-	
-	lvl_scene:translate(offset_x, offset_y)
+	lvl_scene:translate(offset[1], offset[2])
 	
 	levels:add(lvl_scene)
 end

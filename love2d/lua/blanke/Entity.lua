@@ -63,6 +63,13 @@ Entity = Class{
 		self.collisionStopY = nil	
 
 		self.onCollision = {["*"] = function() end}
+
+		self.onMethod = {
+			draw = function(self, fn)
+				return function(...) Draw.stack(function(...) fn(self, ...) end) end
+			end
+		}
+
     	_addGameObject('entity', self)
     end,
 
@@ -269,9 +276,11 @@ Entity = Class{
 
 	debugCollision = function(self)
 		-- draw collision shapes
-		for s, shape in pairs(self.shapes) do
-			shape:draw("line")
-		end
+		Draw.stack(function()
+			for s, shape in pairs(self.shapes) do
+				shape:draw("line")
+			end
+		end)
 		return self
 	end,
 

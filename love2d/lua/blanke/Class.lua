@@ -71,7 +71,14 @@ local function new(class)
 	end
 
 	-- class implementation
-	class.__index = class
+	class.__index = function(self, key)
+		local val = class[key]
+		local classname = rawget(self, 'classname') or false
+		if classname and type(val) == "function" then
+			if class.onMethod and class.onMethod[key] then return class.onMethod[key] end
+		end
+		return val
+	end
 	class.init    = class.init    or class[1] or function() end
 	class.include = class.include or include
 	class.clone   = class.clone   or clone

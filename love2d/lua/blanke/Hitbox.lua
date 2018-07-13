@@ -61,10 +61,10 @@ Hitbox = Class{
 
 			local x, y = self:center()
 
-			love.graphics.push()
-			love.graphics.setColor(color)
-			self.HCShape:draw(ifndef(mode, 'fill'))
-			love.graphics.pop()
+            Draw.stack(function()
+                Draw.setColor(color)
+                self.HCShape:draw(ifndef(mode, 'fill'))
+			end)
 		end
 	end,
 
@@ -122,11 +122,8 @@ Hitbox = Class{
 	end,
 
 	setColor = function(self, new_color)
-		if type(new_color) == "string" then
-			self.color = hex2rgb(new_color)
-		else
-			self.color = new_color
-		end
+		self.color = Draw._parseColorArgs(new_color)
+        Debug.log(unpack(self.color))
 		self.color[4] = 255/2.5
 	end,
 

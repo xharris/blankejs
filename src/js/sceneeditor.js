@@ -129,13 +129,13 @@ class SceneEditor extends Editor {
 			let snapy = value[1];
 
 			if (this_ref.curr_image) {
-				if (snapx > 0) this_ref.curr_image.snap[0] = snapx;
-				if (snapy > 0) this_ref.curr_image.snap[1] = snapy;
-
-				this_ref.refreshImageGrid();
-
 				if (snapx <= 0 || snapy <= 0)
 					return this_ref.curr_image.snap.slice();
+
+				this_ref.curr_image.snap[0] = snapx;
+				this_ref.curr_image.snap[1] = snapy;
+
+				this_ref.refreshImageGrid();
 			}
 		});
 
@@ -146,13 +146,14 @@ class SceneEditor extends Editor {
 			let offsety = value[1];
 
 			if (this_ref.curr_image) {
-				if (offsetx > 0) this_ref.curr_image.offset[0] = offsetx;
-				if (offsety > 0) this_ref.curr_image.offset[1] = offsety;
+				if (isNaN(offsetx) || isNaN(offsety))
+					return this_ref.curr_image.offset.slice();
+
+				this_ref.curr_image.offset[0] = offsetx;
+				this_ref.curr_image.offset[1] = offsety;
 
 				this_ref.refreshImageGrid();
 
-				if (offsetx <= 0 || offsety <= 0)
-					return this_ref.curr_image.offset.slice();
 			}
 		});
 
@@ -163,13 +164,13 @@ class SceneEditor extends Editor {
 			let spacingy = value[1];
 
 			if (this_ref.curr_image) {
-				if (spacingx > 0) this_ref.curr_image.spacing[0] = spacingx;
-				if (spacingy > 0) this_ref.curr_image.spacing[1] = spacingy;
+				if (spacingx < 0 || spacingy < 0)
+					return this_ref.curr_image.spacing.slice();
+
+				this_ref.curr_image.spacing[0] = spacingx;
+				this_ref.curr_image.spacing[1] = spacingy;
 
 				this_ref.refreshImageGrid();
-
-				if (spacingx <= 0 || spacingy <= 0)
-					return this_ref.curr_image.spacing.slice();
 			}
 		});
 
@@ -524,6 +525,9 @@ class SceneEditor extends Editor {
 
 		document.addEventListener('fileChange', function(e){
 			if (e.detail.type == 'change') {
+				console.log('new',e.detail);
+				if (this_ref.curr_image)
+					console.log('old',this_ref.curr_image.path);
 				this_ref.refreshImageList();
 			}
 		});
@@ -866,10 +870,10 @@ class SceneEditor extends Editor {
 				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj, o){
 					if (del_uuid == obj.poly.uuid) {
 						e.target.destroy();
-						this_ref.export();
 						return true;
 					}
 				});
+				this_ref.export();
 			}
 		});
 
@@ -983,11 +987,17 @@ class SceneEditor extends Editor {
 		if (!layer) layer = this.curr_layer;
 		let place_image = img_ref;
 
-		let new_tile_texture = new PIXI.Texture(
-            place_image.texture,
-            new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
-        );
-        new_tile_texture.layer_uuid = layer.uuid;
+		let new_tile_texture;
+
+		try {
+			new_tile_texture = new PIXI.Texture(
+	            place_image.texture,
+	            new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
+	        );
+       		new_tile_texture.layer_uuid = layer.uuid;
+       	} catch (error) {
+       		blanke.toast("Error loading '"+img_ref.path+"'");
+       	}
 
         if (!new_tile_texture) return;
 
@@ -1005,8 +1015,6 @@ class SceneEditor extends Editor {
 				y -= this.selected_height;
 		}
 
-		let text_key = Math.floor(x - (x % layer.snap[0])).toString()+','+Math.floor(y - (y % layer.snap[1])).toString()+'.'+layer.uuid;
-
 		if (!from_load) {
 			if (x < 0) x -= layer.snap[0];
 			if (y < 0) y -= layer.snap[1];
@@ -1017,6 +1025,8 @@ class SceneEditor extends Editor {
 				new_tile.snapped = true;
 			}
 		}
+
+		let text_key = Math.floor(x - (x % layer.snap[0])).toString()+','+Math.floor(y - (y % layer.snap[1])).toString()+'.'+layer.uuid;
 
 		// add if a tile isn't already there
 		if (!place_image.pixi_images[text_key]) {
@@ -1197,22 +1207,26 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	loadImageTexture (img, onReady) {
+		let image_obj = new Image();
+		image_obj.onload = function(){
+			let base = new PIXI.BaseTexture(image_obj);
+			let texture = new PIXI.Texture(base);
+
+			// save texture info
+			img.texture = texture;	
+
+			if (onReady) onReady(img);
+		}
+		image_obj.src = "file://"+img.path;
+	}
+
 	setImage (path, onReady) {
 		path = app.cleanPath(path);
 		let img = this.getImage(path);
 		if (img) {
-			var this_ref = this;
-			let image_obj = new Image();
-			image_obj.onload = function(){
-				let base = new PIXI.BaseTexture(image_obj);
-				let texture = new PIXI.Texture(base);
-
-				// save texture info
-				img.texture = texture;	
-
-				if (onReady) onReady(img);
-			}
-			image_obj.src = "file://"+img.path;
+			this.loadImageTexture(img, onReady);
+			
 
 			// set image inputs
 			for (var property of ['snap', 'offset', 'spacing']) {

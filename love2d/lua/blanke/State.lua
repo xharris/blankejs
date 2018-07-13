@@ -40,12 +40,12 @@ StateManager = {
 
 				-- draw state being entered
 				love.graphics.setStencilTest(enter, 0)
-				state:draw()
+				Draw.stack(function() state:draw() end)
 
 				-- draw state being left
 				local other_state = state._other_state
 				love.graphics.setStencilTest(exit, 0)
-				other_state:draw()
+				Draw.stack(function() other_state:draw() end)
 
 				love.graphics.setStencilTest()
 
