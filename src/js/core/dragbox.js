@@ -230,6 +230,7 @@ class DragBox {
 
 	close () {
 		this.drag_container.remove();
+		if (this.onClose) this.onClose();
 	}
 
 	static closeAll (type) {

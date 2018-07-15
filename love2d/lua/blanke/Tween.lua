@@ -81,7 +81,7 @@ Tween = Class{
 					self:_onFinish()
 				end
 			else
-				self.var = self._func(self._start_val, self.value-self._start_val, self.duration, self._dt)
+				self.var = self._func(self._start_val, self.value-self._start_val, self.duration*1000, self._dt*1000)
 				-- finished?
 				if (self._start_val < self.value and self.var >= self.value) or (self._start_val > self.value and self.var <= self.value) then
 					self:_onFinish()
@@ -95,7 +95,7 @@ Tween = Class{
 		self._dt = 0
 
 		-- get starting values
-		self._start_val = self.value
+		self._start_val = self.var
 		if self._bezier then
 			self._start_val = 0
 		end
@@ -107,12 +107,17 @@ Tween = Class{
 		end
 	end,
 
+	isRunning = function(self)
+		return (self._go and self._dt > 0)
+	end,
+
 	destroy = function(self)
 		_destroyGameObject('tween',self)
 	end,
 
 	_onFinish = function(self) 
 		self._go = false
+		self._dt = 0
 		if self.onFinish then self:onFinish() end
 	end
 }

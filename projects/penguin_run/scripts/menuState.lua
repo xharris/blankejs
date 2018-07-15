@@ -8,7 +8,7 @@ function menuState:enter(previous)
 end
 
 function menuState:update(dt)
-
+	
 end
 
 function menuState:draw()

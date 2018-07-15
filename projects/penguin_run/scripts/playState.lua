@@ -1,6 +1,6 @@
 BlankE.addState("playState")
 
-play_mode = 'online'			-- local / online
+play_mode = 'local'			-- local / online
 game_start_population = 1
 best_penguin = nil
 
@@ -124,9 +124,9 @@ function playState:draw()
 		levels:call('draw','layer1')
 			
 		Net.draw('Penguin')
+		levels:call('draw','layer0')
 		if main_penguin then main_penguin:draw() end 
 			
-		levels:call('draw','layer0')
 	end)
 	
 	local ready = ''
@@ -147,7 +147,8 @@ function loadLevel(name)
 	-- get penguin spawn coords
 	if not main_penguin then
 		main_penguin = Penguin(true)
-		lvl_scene:addEntity("spawn", main_penguin, "bottom center")
+		--lvl_scene:addEntity("spawn", main_penguin, "bottom center")
+		Debug.log("penguin here",main_penguin.x,main_penguin.y)
 		penguin_spawn = {x=main_penguin.x, y=main_penguin.y}
 		main_penguin:netSync()
 	end

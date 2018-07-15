@@ -116,10 +116,10 @@ local SceneLayer = Class{
 			for image, batch in pairs(self.spritebatches) do
 				love.graphics.draw(batch)
 			end
-
+--[[
 			for e, entity in ipairs(self.entities) do
 				entity:draw()
-			end
+			end]]
 		end)
 
 		if self.draw_hitboxes then

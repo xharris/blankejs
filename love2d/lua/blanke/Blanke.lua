@@ -9,22 +9,22 @@ blanke_require('Util')
 blanke_require('Debug')
 
 game = {}
-
-function _addGameObject(type, obj)
+function _addGameObject(obj_type, obj)
     obj.uuid = uuid()
-    obj.type = type
+    obj.type = obj_type
     obj.pause = ifndef(obj.pause, false)
     obj.persistent = ifndef(obj.persistent, false)
     obj._destroyed = ifndef(obj._destroyed, false)
     obj.net_object = ifndef(obj.net_object, false)
-
+    obj._state_created = ifndef(StateManager.current(), {classname=""}).classname
+    
     if obj._update or obj.update then obj.auto_update = true end
 
     -- inject functions xD
     obj._destroyed = false
     if not obj.destroy then
     	obj.destroy = function(self)
-	    	_destroyGameObject(type,self)
+	    	_destroyGameObject(obj_type,self)
     		if self.onDestroy then self:onDestroy() end
 	    end
     end
@@ -79,6 +79,7 @@ local not_require = {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'
 for m, mod in ipairs(modules) do
 	if not table.hasValue(not_require, mod) then
 		_G[mod] = blanke_require(mod)
+		if not _G[mod].classname then _G[mod].classname = mod end
 	end
 end
 
@@ -219,6 +220,7 @@ BlankE = {
 					_loaded = false,
 					_off = true
 				}
+				StateManager.states[in_name] = new_state
 				_G[in_name] = new_state
 			end
 
@@ -254,10 +256,10 @@ BlankE = {
 		return state
 	end,
 
-	clearObjects = function(include_persistent)
+	clearObjects = function(include_persistent, state)
 		for key, objects in pairs(game) do
 			for o, obj in ipairs(objects) do
-				if not obj.persistent or include_persistent then
+				if (not obj.persistent or include_persistent) and (not state or state == obj._state_created) then
 					obj:destroy()
 					game[key][o] = nil
 				end
@@ -484,7 +486,6 @@ BlankE = {
 		BlankE.drawOutsideWindow()
 		love.graphics.pop()
 
-			
 		BlankE.drawToScale(function()
 
 			love.graphics.setScissor(
@@ -567,7 +568,6 @@ BlankE = {
 	    Net.disconnect()
 	    State.switch()
 	    BlankE.clearObjects(true)
-	    HC.resetHash()
 	    BlankE.restoreCallbacks()
 
 	    -- remove globals

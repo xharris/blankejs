@@ -1,12 +1,29 @@
 local transition_queue = {}
-local transition_obj = {
-	i = 0,
-	exit_state = nil,
-	enter_state = nil,
-	animation = '',
-	stencil_fn = nil,
-	tween = nil
-}
+local transition_obj = {}
+
+local resetTransitionObj = function()
+	if transition_obj.enter_state then
+		transition_obj.enter_state.transitioning = false
+		transition_obj.enter_state._has_transition = false
+		transition_obj.enter_state._stencil_test = nil
+	end
+	if transition_obj.exit_state then
+		transition_obj.exit_state.transitioning = false
+		transition_obj.exit_state._has_transition = false
+		transition_obj.exit_state._stencil_test = nil
+	end
+	Debug.log("resetting obj")
+	if transition_obj.tween then transition_obj.tween:destroy() end
+
+	transition_obj = {
+		exit_state = nil,
+		enter_state = nil,
+		animation = '',
+		stencil_fn = nil,
+		tween = nil
+	}
+end
+resetTransitionObj()
 
 local drawStateNormal = function(state)
 	local bg_color = ifndef(state.background_color, Draw.background_color)
@@ -27,32 +44,34 @@ end
 
 StateManager = {
 	_stack = {},
-	_callbacks = {'update','draw'},
 
 	iterateStateStack = function(func, ...)
-		local transition_active = (#transition_queue > 0)
+		local transition_active = (transition_obj.enter_state and transition_obj.exit_state)
 
 		for s, state in ipairs(StateManager._stack) do
-			if func == 'draw' and state.draw then
-				-- is a transition happening?
-				if transition_active then
-					-- is this the 'entering' state?
-					if transition_obj.enter_state.classname == state.classname then
-						drawStateStencil(state)
-					
-					-- is this the 'exiting' state?
-					elseif transition_obj.exit_state.classname == state.classname then
-						drawStateStencil(state)
+			if not state._off then
 
+				if func == 'draw' and state.draw then
+					-- is a transition happening?
+					if transition_active then
+						-- is this the 'entering' state?
+						if transition_obj.enter_state.classname == state.classname then
+							drawStateStencil(state)
+						
+						-- is this the 'exiting' state?
+						elseif transition_obj.exit_state.classname == state.classname then
+							drawStateStencil(state)
+
+						else
+							drawStateNormal(state)
+
+						end
 					else
 						drawStateNormal(state)
-
 					end
 				else
-					drawStateNormal(state)
+					if state[func] then state[func](...) end
 				end
-			else
-				if state[func] then state[func](...) end
 			end
 		end
 	end,
@@ -60,28 +79,33 @@ StateManager = {
 	clearStack = function()
 		for s, state in ipairs(StateManager._stack) do
 			state:_leave()
+            StateManager._stack[s] = nil
 		end
 		StateManager._stack = {}
+		StateManager.current_state = nil
 	end,
 
 	push = function(new_state)
 		new_state = StateManager.verifyState(new_state)
-		new_state._off = false
-		table.insert(StateManager._stack, new_state)
-		if new_state.load and not new_state._loaded then
-			new_state:load()
-			new_state._loaded = true
-		end
-		if new_state.enter then new_state:enter() end
-		Debug.log("push",new_state.classname)
+        
+        if new_state._off then
+            new_state._off = false
+            StateManager.current_state = new_state
+            table.insert(StateManager._stack, new_state)
+            if new_state.load and not new_state._loaded then
+                new_state:load()
+                new_state._loaded = true
+            end
+            if new_state.enter then new_state:enter() end
+        end
 	end,
 
 	-- remove newest state
 	pop = function(state_name)
 		function closingStatements(state)
-			Debug.log("pop",state.classname)
 			state._has_transition = false
 			state:_leave()
+			state._off = true
 		end
 
 		if state_name then
@@ -89,20 +113,22 @@ StateManager = {
 				if obj_state.classname == state_name then
 					closingStatements(obj_state)
 					table.remove(StateManager._stack, s)
+            		StateManager.current_state = StateManager._stack[#StateManager._stack]
 				end
 			end
 		else
 			local state = StateManager._stack[#StateManager._stack]
 			closingStatements(state)
 			table.remove(StateManager._stack)
+            StateManager.current_state = StateManager._stack[#StateManager._stack]
 		end
-			Debug.log("state",#StateManager._stack)
 	end,
 
+	states = {},
 	verifyState = function(state)
 		local obj_state = state
 		if type(state) == 'string' then 
-			if _G[state] then obj_state = _G[state] else
+			if StateManager.states[state] then obj_state = StateManager.states[state] else
 				error('State \"'..state..'\" does not exist')
 			end
 		end
@@ -112,7 +138,9 @@ StateManager = {
 	switch = function(name)
 		-- add to state stack
 		StateManager.clearStack()
-		StateManager.push(name)
+        if name ~= nil then
+            StateManager.push(name)
+        end
 	end,
 
 	_setupTransition = function(queue_info)
@@ -121,26 +149,25 @@ StateManager = {
 		transition_obj.exit_state = queue_info[1]
 		transition_obj.enter_state = queue_info[2]
 		transition_obj.animation = anim_type
+        
+        transition_obj.exit_state.transitioning = true
+        transition_obj.enter_state.transitioning = true
 
 		local diag_size = math.sqrt((game_width*game_width) + (game_height*game_height))
 
 		if anim_type == "circle-in" then
 			transition_obj.stencil_fn = function()
-				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.i)
+				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.tween.var)
 			end
-			transition_obj.i = diag_size
-			transition_obj.tween = Tween(transition_obj, {i = 0}, .5)
-			transition_obj.enter_state._stencil_test = "greater"	
+			transition_obj.tween = Tween(diag_size, 0, .5)
 			transition_obj.enter_state._stencil_test = "equal"	
 		end
 
 		if anim_type == "circle-out" then
 			transition_obj.stencil_fn = function()
-				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.i)
+				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.tween.var)
 			end
-			transition_obj.i = 0
-			transition_obj.tween = Tween(transition_obj, {i = diag_size}, .5)
-			transition_obj.enter_state._stencil_test = "equal"	
+			transition_obj.tween = Tween(0, diag_size, .5)
 			transition_obj.enter_state._stencil_test = "greater"
 		end
 	end,
@@ -149,35 +176,41 @@ StateManager = {
 		next_state = StateManager.verifyState(next_state)
 
 		local curr_state = StateManager:current()
-		if not curr_state._has_transition then
+		if next_state and not curr_state._has_transition and not next_state._has_transition then
+			Debug.log("adding",next_state.classname)
 			curr_state._has_transition = true
+			next_state._has_transition = true
 
-			if next_state then
-				table.insert(transition_queue, 1, {curr_state, next_state, animation})
+			table.insert(transition_queue, 1, {curr_state, next_state, animation})
+		end
+
+		if transition_obj.tween and not transition_obj.tween:isRunning() then
+			resetTransitionObj()
+			Debug.log("queue size",#transition_queue)
+		end
+
+		-- no transitions happening at the moment
+		if not transition_obj.tween and #transition_queue > 0 then
+			StateManager._setupTransition(transition_queue[1])
+
+			transition_obj.tween.onFinish = function()
+				local exit_state = transition_obj.exit_state
+				resetTransitionObj()
+				StateManager.pop(exit_state.classname)
+				table.remove(transition_queue)
+				Debug.log("now in",StateManager.current().classname)
+				Debug.log("--",#transition_queue, "left  --")
+				StateManager.transition()
 			end
+			transition_obj.tween:play()
+			StateManager.push(transition_obj.enter_state)
 
-			-- no transitions happening at the moment
-			if transition_obj.tween == nil and #transition_queue > 0 then
-				StateManager._setupTransition(table.remove(transition_queue))
-
-				StateManager.push(transition_obj.enter_state)
-				transition_obj.tween.onFinish = function()
-					StateManager.pop(transition_obj.exit_state.classname)
-					transition_obj.tween = nil
-					Debug.log("queue len",#transition_queue)
-					--StateManager.transition()
-				end
-				transition_obj.tween:play()
-			end
 		end
 	end,
 
+    current_state = nil,
 	current = function()
-		if #StateManager._stack == 1 then
-			return StateManager._stack[#StateManager._stack]
-		else
-			return StateManager._stack
-		end
+		return StateManager.current_state
 	end
 }
 
@@ -201,7 +234,7 @@ State = Class{
 
 	_leave = function(self)
 		if self.leave then self:leave() end
-		BlankE.clearObjects(false)
+		BlankE.clearObjects(false, self.classname)
 		self._off = true
 	end
 }

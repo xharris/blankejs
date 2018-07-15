@@ -129,6 +129,7 @@ function Penguin:onNetUpdate(name, value)
 end
 
 function Penguin:update(dt)
+	Debug.log('updatin')
 	local behind_wall = true
 	if not wall or self.x > wall.x then
 		behind_wall = false
@@ -143,7 +144,7 @@ function Penguin:update(dt)
             self.can_jump = MAX_JUMPS 
 		end	
 	)
-
+	
 	-- left/right movement
 	if not self.net_object then
 		self.hspeed = 0
@@ -219,6 +220,6 @@ function Penguin:draw()
 		end
 		self.sprite['hat'].yoffset = hat_y_offset
 	end
-
+	--Debug.log("at",self.x,self.y)
 	self:drawSprite('hat')
 end

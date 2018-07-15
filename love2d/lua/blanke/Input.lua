@@ -7,6 +7,7 @@ _Input = Class{
         self.onInput = nil
         self._on = false -- are any of the inputs active?
         self._reset_wheel = false
+        self.persistent = true
 
         -- implement later
         self.pressed = false
