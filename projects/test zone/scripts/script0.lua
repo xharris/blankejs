@@ -1,12 +1,16 @@
-Input.set("move_left", "left", "a")
-Input.set("move_right", "right", "d")
-Input.set("move_up", "up", "w")
-Input.set("move_down", "down", "s")
-
 Input.set("select", "mouse.1")
 Input["select"].can_repeat = false
 
 BlankE.addState("StateOne")
+
+main_font = Font({
+	size = 50,
+	align = "left"
+})
+Draw.setFont(main_font)
+
+transition1 = "clockwise"
+transition2 = "counter-clockwise"
 
 function StateOne:enter()
 	self.background_color = Draw.black
@@ -20,7 +24,7 @@ end
 
 function StateOne:update(dt)
 	if Input("select") then
-		State.transition("StateTwo", "circle-out")
+		State.transition("StateTwo", transition1)
 	end
 end
 
@@ -42,7 +46,7 @@ end
 
 function StateTwo:update(dt)
 	if Input("select") then
-		State.transition("StateOne", "circle-in")
+		State.transition("StateOne", transition2)
 	end
 end
 
@@ -56,7 +60,6 @@ BlankE.addEntity("Bob")
 function Bob:init()
 	self.color = Draw.white
 	self.number = 0
-	Draw.setFontSize(18)
 end
 
 function Bob:draw()

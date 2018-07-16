@@ -178,6 +178,34 @@ StateManager = {
 			transition_obj.enter_state._stencil_test = "greater"
 		end
 
+		if animation == "wipe-up" or animation == "wipe-down" then
+			transition_obj.stencil_fn = function()
+				Draw.rect("fill", 0, transition_obj.tween.var, game_width, game_height - transition_obj.tween.var)
+			end
+			if animation == "wipe-up" then
+				transition_obj.tween = Tween(game_width, 0, .5)
+				transition_obj.enter_state._stencil_test = "greater"
+			end
+			if animation == "wipe-down" then
+				transition_obj.tween = Tween(0, game_width, .5)
+				transition_obj.enter_state._stencil_test = "equal"
+			end
+		end
+
+		if animation == "clockwise" or animation == "counter-clockwise" then
+			transition_obj.stencil_fn = function()
+				love.graphics.arc("fill", game_width/2, game_height/2, diag_size, math.rad(270), math.rad(transition_obj.tween.var+270))
+			end
+			if animation == "clockwise" then
+				transition_obj.tween = Tween(0, 360, .5)
+				transition_obj.enter_state._stencil_test = "greater"
+			end
+			if animation == "counter-clockwise" then
+				transition_obj.tween = Tween(360, 0, .5)
+				transition_obj.enter_state._stencil_test = "equal"
+			end
+		end
+
 		if transition_obj.tween then
 			transition_obj.tween.auto_update = false
 		end

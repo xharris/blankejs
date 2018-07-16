@@ -92,11 +92,7 @@ Draw = Class{
 	setPointSize = function(size)
 		love.graphics.setPointSize(size)
 	end,
-
-	setFontSize = function(size)
-		Draw.font = love.graphics.newFont(size)
-	end,
-
+	
 	translate = function(x, y)
 		love.graphics.translate(x, y)
 	end,
