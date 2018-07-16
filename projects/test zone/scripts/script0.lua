@@ -13,6 +13,7 @@ function StateOne:enter()
 	
 	self.player = Bob()
 	self.player.color = Draw.red
+	self.player.number = 1
 	self.player.x = game_width /2
 	self.player.y = game_height /2
 end
@@ -34,6 +35,7 @@ function StateTwo:enter()
 	
 	self.player = Bob()
 	self.player.color = Draw.green
+	self.player.number = 2
 	self.player.x = game_width /2
 	self.player.y = game_height /2
 end
@@ -52,10 +54,14 @@ end
 BlankE.addEntity("Bob")
 
 function Bob:init()
-	self.color = Draw.green
+	self.color = Draw.white
+	self.number = 0
+	Draw.setFontSize(18)
 end
 
 function Bob:draw()
 	Draw.setColor(self.color)
 	Draw.circle("fill", self.x, self.y, sinusoidal(100, 150, 1))
+	Draw.setColor(Draw.invertColor(self.color))
+	Draw.text(self.number, self.x, self.y)
 end

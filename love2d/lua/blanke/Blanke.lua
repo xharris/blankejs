@@ -8,7 +8,13 @@ blanke_require('Globals')
 blanke_require('Util')
 blanke_require('Debug')
 
-game = {}
+function _getGameObjects(fn)
+	local curr_state = State.current()
+	if curr_state then
+		fn(curr_state.game)
+	end
+end
+
 function _addGameObject(obj_type, obj)
     obj.uuid = uuid()
     obj.type = obj_type
@@ -32,8 +38,10 @@ function _addGameObject(obj_type, obj)
     	obj.netSync = function(self) end
     end
 
-    game[type] = ifndef(game[type],{})
-    table.insert(game[type], obj)
+    _getGameObjects(function(game)
+    	game[type] = ifndef(game[type], {})
+   		table.insert(game[type], obj)
+   	end)
 
     if BlankE and BlankE._ide_mode then -- (cant access BlankE for some reason)
     	IDE.onAddGameObject(type)
@@ -41,11 +49,13 @@ function _addGameObject(obj_type, obj)
 end
 
 function _iterateGameGroup(group, func)
-	game[group] = ifndef(game[group], {})
-    for i, obj in ipairs(game[group]) do
-        ret_val = func(obj, i)
-        if ret_val ~= nil then return ret_val end
-    end
+    _getGameObjects(function(game)
+		game[group] = ifndef(game[group], {})
+	    for i, obj in ipairs(game[group]) do
+	        ret_val = func(obj, i, game)
+	        if ret_val ~= nil then return ret_val end
+	    end
+	end)
 end
 
 function _destroyGameObject(type, del_obj)
@@ -55,7 +65,7 @@ function _destroyGameObject(type, del_obj)
 	if del_obj._group and del_obj.uuid ~= nil then
 		del_obj._group:remove(del_obj)
 	end
-	_iterateGameGroup(type, function(obj, i) 
+	_iterateGameGroup(type, function(obj, i, game) 
 		if obj.uuid == del_obj.uuid then
 			table.remove(game[type],i)
 		end
@@ -257,21 +267,25 @@ BlankE = {
 	end,
 
 	clearObjects = function(include_persistent, state)
-		for key, objects in pairs(game) do
-			for o, obj in ipairs(objects) do
-				if (not obj.persistent or include_persistent) and (not state or state == obj._state_created) then
-					obj:destroy()
-					game[key][o] = nil
+	    _getGameObjects(function(game)
+			for key, objects in pairs(game) do
+				for o, obj in ipairs(objects) do
+					if (not obj.persistent or include_persistent) and (not state or state == obj._state_created) then
+						obj:destroy()
+						game[key][o] = nil
+					end
 				end
 			end
-		end
+		end)
 	end,
 
 	getByUUID = function(type, obj_uuid)
-		return _iterateGameGroup(type, function(obj, i)
-			if obj.uuid == obj_uuid then
-				return game[type][i]
-			end
+	    _getGameObjects(function(game)
+			return _iterateGameGroup(type, function(obj, i)
+				if obj.uuid == obj_uuid then
+					return game[type][i]
+				end
+			end)
 		end)
 	end,
 
@@ -431,32 +445,6 @@ BlankE = {
 				
     	if not BlankE.pause then
 			StateManager.iterateStateStack('update', dt)
-			
-		    for group, arr in pairs(game) do
-		        for i_e, e in ipairs(arr) do
-		            if e.auto_update and not e.pause then
-		                if e._update then
-		                	e:_update(dt)
-		                elseif e.update then
-			                e:update(dt)
-			            end
-		            end
-		        end
-		    end
-		elseif BlankE._ide_mode then
-		    for group, arr in pairs(game) do
-		    	if table.has_value({'scene', 'input', 'view'}, group) then
-			        for i_e, e in ipairs(arr) do
-			            if e.auto_update and not e.pause then
-			                if e._update then
-			                	e:_update(dt)
-			                else
-				                e:update(dt)
-				            end
-			            end
-			        end
-			    end
-		    end
 		end
 
 		if not BlankE._mouse_updated then

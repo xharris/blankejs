@@ -1,18 +1,12 @@
-local transition_queue = {}
 local transition_obj = {}
 
 local resetTransitionObj = function()
 	if transition_obj.enter_state then
-		transition_obj.enter_state.transitioning = false
-		transition_obj.enter_state._has_transition = false
 		transition_obj.enter_state._stencil_test = nil
 	end
 	if transition_obj.exit_state then
-		transition_obj.exit_state.transitioning = false
-		transition_obj.exit_state._has_transition = false
 		transition_obj.exit_state._stencil_test = nil
 	end
-	Debug.log("resetting obj")
 	if transition_obj.tween then transition_obj.tween:destroy() end
 
 	transition_obj = {
@@ -51,6 +45,20 @@ StateManager = {
 		for s, state in ipairs(StateManager._stack) do
 			if not state._off then
 
+				if func == 'update' then
+					for group, arr in pairs(state.game) do
+				        for i_e, e in ipairs(arr) do
+				            if e.auto_update and not e.pause then
+				                if e._update then
+				                	e:_update(...)
+				                elseif e.update then
+					                e:update(...)
+					            end
+				            end
+				        end
+				    end
+				end
+
 				if func == 'draw' and state.draw then
 					-- is a transition happening?
 					if transition_active then
@@ -73,6 +81,10 @@ StateManager = {
 					if state[func] then state[func](...) end
 				end
 			end
+		end
+
+		if func == 'update' and transition_obj.tween then
+			transition_obj.tween:update(...)
 		end
 	end,
 
@@ -103,7 +115,6 @@ StateManager = {
 	-- remove newest state
 	pop = function(state_name)
 		function closingStatements(state)
-			state._has_transition = false
 			state:_leave()
 			state._off = true
 		end
@@ -143,19 +154,15 @@ StateManager = {
         end
 	end,
 
-	_setupTransition = function(queue_info)
-		local anim_type = queue_info[3]
+	_setupTransition = function(curr_state, next_state, animation)
 
-		transition_obj.exit_state = queue_info[1]
-		transition_obj.enter_state = queue_info[2]
-		transition_obj.animation = anim_type
+		transition_obj.exit_state = curr_state
+		transition_obj.enter_state = next_state
+		transition_obj.animation = animation
         
-        transition_obj.exit_state.transitioning = true
-        transition_obj.enter_state.transitioning = true
-
 		local diag_size = math.sqrt((game_width*game_width) + (game_height*game_height))
 
-		if anim_type == "circle-in" then
+		if animation == "circle-in" then
 			transition_obj.stencil_fn = function()
 				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.tween.var)
 			end
@@ -163,48 +170,37 @@ StateManager = {
 			transition_obj.enter_state._stencil_test = "equal"	
 		end
 
-		if anim_type == "circle-out" then
+		if animation == "circle-out" then
 			transition_obj.stencil_fn = function()
 				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.tween.var)
 			end
 			transition_obj.tween = Tween(0, diag_size, .5)
 			transition_obj.enter_state._stencil_test = "greater"
 		end
+
+		if transition_obj.tween then
+			transition_obj.tween.auto_update = false
+		end
 	end,
 
 	transition = function(next_state, animation)
-		next_state = StateManager.verifyState(next_state)
+		if not (transition_obj.enter_state or transition_obj.exit_state) then
 
-		local curr_state = StateManager:current()
-		if next_state and not curr_state._has_transition and not next_state._has_transition then
-			Debug.log("adding",next_state.classname)
-			curr_state._has_transition = true
-			next_state._has_transition = true
+			local curr_state = StateManager.current()
+			next_state = StateManager.verifyState(next_state)
 
-			table.insert(transition_queue, 1, {curr_state, next_state, animation})
-		end
-
-		if transition_obj.tween and not transition_obj.tween:isRunning() then
 			resetTransitionObj()
-			Debug.log("queue size",#transition_queue)
-		end
 
-		-- no transitions happening at the moment
-		if not transition_obj.tween and #transition_queue > 0 then
-			StateManager._setupTransition(transition_queue[1])
+			StateManager._setupTransition(curr_state, next_state, animation)
 
 			transition_obj.tween.onFinish = function()
 				local exit_state = transition_obj.exit_state
 				resetTransitionObj()
 				StateManager.pop(exit_state.classname)
-				table.remove(transition_queue)
-				Debug.log("now in",StateManager.current().classname)
-				Debug.log("--",#transition_queue, "left  --")
-				StateManager.transition()
 			end
+
 			transition_obj.tween:play()
 			StateManager.push(transition_obj.enter_state)
-
 		end
 	end,
 
@@ -215,6 +211,7 @@ StateManager = {
 }
 
 State = Class{
+	game = {},
 	transition = function(...)
 		StateManager.transition(...)
 	end,

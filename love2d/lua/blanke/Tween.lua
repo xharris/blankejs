@@ -28,7 +28,7 @@ Tween = Class{
 		self._func = Tween.tween_func[self.type]
 		self._dt = 0
 
-		self.persistent = true
+		--self.persistent = true
 		_addGameObject('tween', self)
 	end,
 

@@ -61,7 +61,12 @@ Draw = Class{
 	end,
 
 	randomColor = function(alpha)
-		return {randRange(0,255), randRange(0,255), randRange(0,255), ifndef(alpha, 255)}
+		return {randRange(0,255)/255, randRange(0,255)/255, randRange(0,255)/255, ifndef(alpha, 1)}
+	end,
+
+	invertColor = function(r,g,b,a)
+		local color = Draw._parseColorArgs(r,g,b,a)
+		return {1 - color[1], 1 - color[2], 1 - color[3], a}
 	end,
 
 	setColor = function(r,g,b,a)
@@ -86,6 +91,10 @@ Draw = Class{
 
 	setPointSize = function(size)
 		love.graphics.setPointSize(size)
+	end,
+
+	setFontSize = function(size)
+		Draw.font = love.graphics.newFont(size)
 	end,
 
 	translate = function(x, y)
@@ -154,17 +163,15 @@ Draw = Class{
     polygon = function(...) return Draw.callDrawFunc('polygon', {...}) end,
     text 	= function(text, x, y, ...) 
     	if Draw.font then
-			return Draw.font:draw(text, x, y, ...)
-		else
-			return Draw.callDrawFunc('print', {text, x, y, ...})
+			Draw.font:draw(text, x, y, ...)--love.graphics.setFont(Draw.font)
 		end
+		return Draw.callDrawFunc('print', {text, x, y, ...})
     end,
     textf 	= function(text, x, y, ...)
     	if Draw.font then
-			return Draw.font:draw(text, x, y, ...)
-		else
-			return Draw.callDrawFunc('printf', {text, x, y, ...})
+			Draw.font:draw(text, x, y, ...)--love.graphics.setFont(Draw.font)
 		end
+		return Draw.callDrawFunc('printf', {text, x, y, ...})
     end,
 }
 
