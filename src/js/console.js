@@ -48,15 +48,17 @@ class Console extends Editor {
 	}
 
 	log (str) {
-		str = str.trim();
-		var duplicate = re_duplicate.exec(str);
-		
-		if (str !== ')' && str !== '') {
-			if (duplicate !== null) {
+		str = JSON.stringify(str.trim()).slice(1,-1);
+		let lines = str.split("\\n").map(line => JSON.parse("{\"str\":\""+line+"\"}").str)
+		console.log(lines)
+
+		for (let line of lines) {
+			console.log(line, this.el_log.childElementCount)
+			if (line.match(re_duplicate) && this.el_log.childElementCount > 0) {
 				this.el_log.lastElementChild.innerHTML = duplicate[0];
 			} else {
 				var el_line = app.createElement("p", "line");
-				el_line.innerHTML = str;
+				el_line.innerHTML = line;
 				this.el_log.appendChild(el_line);
 			}
 		}

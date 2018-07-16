@@ -15,6 +15,14 @@ transition2 = "counter-clockwise"
 function StateOne:enter()
 	self.background_color = Draw.black
 	
+	Debug.log("bob")
+	Debug.log("bob")
+	Debug.log("bob")
+	Debug.log("bob")
+	Debug.log("bob")
+	Debug.log(1,2,3,4,"sphagetti")
+	Debug.log(unpack({"all",4,"of","them"}))
+	
 	self.player = Bob()
 	self.player.color = Draw.red
 	self.player.number = 1
