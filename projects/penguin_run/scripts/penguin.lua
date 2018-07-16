@@ -129,7 +129,6 @@ function Penguin:onNetUpdate(name, value)
 end
 
 function Penguin:update(dt)
-	Debug.log('updatin')
 	local behind_wall = true
 	if not wall or self.x > wall.x then
 		behind_wall = false

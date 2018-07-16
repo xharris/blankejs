@@ -108,6 +108,7 @@ class AssetManager extends Editor {
 
 		el_file_form.setValue('filename', nwPATH.basename(path).replace(file_ext, ''));
 		el_file_form.setValue('folder', file_folder);
+		// TODO: does not work for scripts. come back to this later.
 		el_file_form.onChange('filename', function(value){
 			blanke.cooldownFn('file_rename', 2000, function(){
 				let new_path = nwPATH.resolve(nwPATH.join(app.project_path, 'assets', file_folder, value[0]+file_ext));

@@ -6,6 +6,7 @@ Image = Class{
 		self.name = name 
 
 		local asset = Asset.image(name)
+		Debug.log(name)
 
 		if img_data and tostring(img_data):contains("ImageData") then
 			self.image = love.graphics.newImage(img_data)

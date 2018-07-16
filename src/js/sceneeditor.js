@@ -129,9 +129,11 @@ class SceneEditor extends Editor {
 			let snapy = value[1];
 
 			if (this_ref.curr_image) {
-				if (snapx <= 0 || snapy <= 0)
+				if (isNaN(snapx) || isNaN(snapy <= 0))
 					return this_ref.curr_image.snap.slice();
 
+				if (snapx < 0) snapx = 0;
+				if (snapy < 0) snapy = 0;
 				this_ref.curr_image.snap[0] = snapx;
 				this_ref.curr_image.snap[1] = snapy;
 

@@ -2,6 +2,7 @@ Asset = Class{
 	image_ext = {'tif','tiff','gif','jpeg','jpg','jif','jiff','jp2','jpx','j2k','j2c','fpx','png','pcd','pdf'},
 	audio_ext = {'pcm','wav','aiff','mp3','aac','ogg','wma','flac','alac','wma'},
 	info = {},
+	paths_used = {},
 
 	loadScripts = function()
 		if Asset.info['script'] then
@@ -35,6 +36,9 @@ Asset = Class{
 
 	add = function(path, prefix)
 		path = cleanPath(path)
+		if table.hasValue(Asset.paths_used, path) then return else
+			table.insert(Asset.paths_used, path)
+		end
 
 		-- FOLDER
 		local file_info = love.filesystem.getInfo(path)

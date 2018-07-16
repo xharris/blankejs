@@ -542,12 +542,12 @@ class Code extends Editor {
 		}
 	}
 
-	rename (old_path, new_name) {
+	rename (old_path, new_path) {
 		var this_ref = this;
-		nwFS.readFile(nwPATH.dirname(this.file)+"/"+new_name, function(err, data){
-			if (err) {
-				nwFS.rename(old_path, nwPATH.dirname(this_ref.file)+"/"+new_name);
-				this_ref.file = nwPATH.dirname(this_ref.file)+"/"+new_name;
+		nwFS.readFile(new_path, function(err, data){
+			if (!err) {
+				nwFS.rename(old_path, new_path);
+				this_ref.file = new_path;
 				this_ref.setTitle(nwPATH.basename(this_ref.file));
 			}
 		});
@@ -568,7 +568,10 @@ class Code extends Editor {
 				"<label>new name: </label>"+
 				"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
 			{
-				"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".lua"); },
+				"yes": function() { 
+					let new_path = nwPATH.join(nwPATH.dirname(filename), app.getElement('#new-file-name').value+".lua");
+					this_ref.rename(filename, new_path);
+				},
 				"no": function() {}
 			});
 		}

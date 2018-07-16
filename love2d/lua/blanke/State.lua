@@ -97,8 +97,9 @@ StateManager = {
 		StateManager.current_state = nil
 	end,
 
-	push = function(new_state)
+	push = function(new_state, prev_state)
 		new_state = StateManager.verifyState(new_state)
+		prev_state = ifndef(ifndef(prev_state, StateManager.current_state), {classname=''}).classname
         
         if new_state._off then
             new_state._off = false
@@ -108,7 +109,7 @@ StateManager = {
                 new_state:load()
                 new_state._loaded = true
             end
-            if new_state.enter then new_state:enter() end
+            if new_state.enter then new_state:enter(prev_state) end
         end
 	end,
 
@@ -147,10 +148,11 @@ StateManager = {
 	end,
 
 	switch = function(name)
+		local current_state = StateManager.current_state
 		-- add to state stack
 		StateManager.clearStack()
         if name ~= nil then
-            StateManager.push(name)
+            StateManager.push(name, current_state)
         end
 	end,
 

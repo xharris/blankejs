@@ -13,14 +13,9 @@ local igloo_font = Font{
 
 function Igloo:init(from_outside)	
 	-- setup igloo 
-	self.img_igloo_back = Image("in_igloo_back")
-	self.img_igloo_outline = Image("in_igloo_outline")
 	self.img_peng_outline = Image("penguin_outline")
 	self.img_peng_outline:setScale(2)
 	self.main_penguin = Penguin(true)
-
-	self.img_igloo_back.x = self.x
-	self.img_igloo_back.y = self.y
 
 	self.igloo_exit_x = game_width - 100
 

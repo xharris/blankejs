@@ -1,4 +1,4 @@
-BlankE.addState("playState")
+BlankE.addState("PlayState")
 
 play_mode = 'local'			-- local / online
 game_start_population = 1
@@ -7,7 +7,7 @@ best_penguin = nil
 local main_penguin
 
 -- Called every time when entering the state.
-function playState:enter(previous)
+function PlayState:enter(previous)
 	wall = nil
 	main_penguin = nil
 	next_lvl_start = {0,0}
@@ -17,8 +17,6 @@ function playState:enter(previous)
 	
 	levels = Group() 
 	loadLevel("spawn")
-
-	in_igloo_menu = false
 
 	igloo_enter_x = penguin_spawn.x - 25
 	destruct_ready_x = 0
@@ -35,7 +33,7 @@ function playState:enter(previous)
 end
 
 local send_ready = false
-function playState:update(dt)
+function PlayState:update(dt)
 	bg_sky.color = hsv2rgb({195,37,100})-- hsv2rgb({186,39,88})
 	water_color = hsv2rgb({212,70,100})
 	
@@ -60,7 +58,7 @@ function playState:update(dt)
 	end
 
 	-- player wants to enter igloo
-	if main_penguin.x < igloo_enter_x then
+	if main_penguin.x < penguin_spawn.x - 25 then
 		Net.disconnect()
 
 		-- zoom in on igloo
@@ -68,10 +66,8 @@ function playState:update(dt)
 		main_view:moveToPosition(penguin_spawn.x, penguin_spawn.y)
 
 		-- transition to menu when zoomed in all the way
-		if not in_igloo_menu and not wall then
-			in_igloo_menu = true
+		if not wall then
 			main_view:zoom(3, 3, function()
-				
 				State.transition(menuState, "circle-out")
 			end)
 		end
@@ -80,7 +76,7 @@ function playState:update(dt)
 		if not Net.is_connected and play_mode == 'online' then
 			Net.join()
 		end
-		in_igloo_menu = false
+		
 		main_view:zoom(1)
 		main_view:follow(main_penguin)
 	end
@@ -88,7 +84,8 @@ function playState:update(dt)
 	-- load more levels!
 	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) then
 		--
-		local lvl_list = Asset.list('scene')
+		local lvl_list = Asset.list('scene','level')
+		Debug.log(unpack(lvl_list))
 		local choice = ''
 		repeat choice = table.random(lvl_list) until (choice ~= "spawn")
 		
@@ -105,7 +102,7 @@ function playState:update(dt)
 end
 
 local spawn_wall_count = 0
-function playState:draw()
+function PlayState:draw()
 	-- draw water
 	Draw.setColor(water_color)
 	Draw.rect('fill',0,0,game_width,game_height)
@@ -141,7 +138,7 @@ function playState:draw()
 end	
 
 function loadLevel(name)
-	local lvl_scene = Scene(name)
+	local lvl_scene = Scene('level/'..name)
 	lvl_scene.name_ref = name..levels:size()
 	
 	-- get penguin spawn coords
