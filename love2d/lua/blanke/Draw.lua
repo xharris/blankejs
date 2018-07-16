@@ -163,15 +163,17 @@ Draw = Class{
     polygon = function(...) return Draw.callDrawFunc('polygon', {...}) end,
     text 	= function(text, x, y, ...) 
     	if Draw.font then
-			Draw.font:draw(text, x, y, ...)--love.graphics.setFont(Draw.font)
+			return Draw.font:draw(text, x, y, ...)--love.graphics.setFont(Draw.font)
+		else
+			return Draw.callDrawFunc('print', {text, x, y, ...})
 		end
-		return Draw.callDrawFunc('print', {text, x, y, ...})
     end,
     textf 	= function(text, x, y, ...)
     	if Draw.font then
-			Draw.font:draw(text, x, y, ...)--love.graphics.setFont(Draw.font)
+			return Draw.font:draw(text, x, y, ...)--love.graphics.setFont(Draw.font)
+		else
+			return Draw.callDrawFunc('printf', {text, x, y, ...})
 		end
-		return Draw.callDrawFunc('printf', {text, x, y, ...})
     end,
 }
 
