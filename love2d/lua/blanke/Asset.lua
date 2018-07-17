@@ -36,9 +36,10 @@ Asset = Class{
 
 	add = function(path, prefix)
 		path = cleanPath(path)
-		if table.hasValue(Asset.paths_used, path) then return else
-			table.insert(Asset.paths_used, path)
-		end
+
+		-- TODO: not working as intended (for efficiency)
+		-- if table.hasValue(Asset.paths_used, path) then return end
+		-- table.insert(Asset.paths_used, path)
 
 		-- FOLDER
 		local file_info = love.filesystem.getInfo(path)

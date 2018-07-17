@@ -867,7 +867,7 @@ class SceneEditor extends Editor {
 		pixi_poly.interactive = true;
 		pixi_poly.on('rightup', function(e){
 			// remove from array
-			if (this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
+			if (!this_ref.placing_object && this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
 				let del_uuid = e.target.uuid;
 				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj, o){
 					if (del_uuid == obj.poly.uuid) {

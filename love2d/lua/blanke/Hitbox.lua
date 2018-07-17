@@ -63,6 +63,7 @@ Hitbox = Class{
 
             Draw.stack(function()
                 Draw.setColor(color)
+                Draw.setLineWidth(1)
                 self.HCShape:draw(ifndef(mode, 'fill'))
 			end)
 		end

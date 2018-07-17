@@ -102,7 +102,7 @@ function extname(str)
 end
 
 function cleanPath(path)
-	if path then return path:gsub("\\+","/") else return path end
+	if path then return path:gsub("[\\/]+","/") else return path end
 end
 
 function bitmask4(tile_map, tile_val, x, y)

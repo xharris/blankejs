@@ -31,10 +31,12 @@ function MenuState:enter(previous)
 	-- position the penguin
 	if previous == "PlayState" then
 		-- penguin walking in from outside
+		scene_igloo:addEntity("penguin_spawn2", penguin, "bottom right")
 	else
 		-- penguin spawned in igloo
 		scene_igloo:addEntity("penguin_spawn1", penguin, "bottom left")
 	end
+	Debug.log("penguin at",penguin.x,penguin.y)
 	
 	-- get menu images
 	img_peng_outline = Image("penguin_outline")
@@ -171,6 +173,7 @@ function MenuState:draw()
 	Draw.setFont(igloo_font)
 	Draw.text(play_mode, menu_left + (section_w*2) + (section_w/2) - (section_w/2), menu_top - igloo_font:get('size'))
 		
+	scene_igloo:draw("layer1")
 	Draw.translate(-penguin.x, -penguin.y - 20)
 	Draw.scale(2)
 	Draw.setColor('white')
@@ -185,5 +188,4 @@ function MenuState:draw()
 		refreshMenuHat()
 	end
 	
-	scene_igloo:draw("layer1")
 end

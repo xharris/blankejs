@@ -255,22 +255,22 @@ Entity = Class{
 		local sx = -info.xoffset
 		local sy = -info.yoffset
 
-		love.graphics.push("all")
-		love.graphics.translate(self.x, self.y)
-		love.graphics.rotate(math.rad(info.angle))
-		love.graphics.shear(info.xshear, info.yshear)
-		love.graphics.scale(info.xscale, info.yscale)
+		Draw.stack(function()
+			love.graphics.translate(self.x, self.y)
+			love.graphics.rotate(math.rad(info.angle))
+			love.graphics.shear(info.xshear, info.yshear)
+			love.graphics.scale(info.xscale, info.yscale)
 
-		-- draw sprite outline
-		love.graphics.setColor(0,255,0,255*(2/3))
-		if self._sprites[sprite_index] then
-			local sprite_width, sprite_height = self:getSpriteDims(sprite_index)
-			love.graphics.rectangle("line", -sx, -sy, sprite_width, sprite_height)
-		end
-		-- draw origin point
-		love.graphics.circle("line", 0, 0, 2)
-
-		love.graphics.pop()
+			-- draw sprite outline
+			Draw.setColor(0,1,0,2/3)
+			Draw.setLineWidth(1)
+			if self._sprites[sprite_index] then
+				local sprite_width, sprite_height = self:getSpriteDims(sprite_index)
+				love.graphics.rectangle("line", -sx, -sy, sprite_width, sprite_height)
+			end
+			-- draw origin point
+			love.graphics.circle("line", 0, 0, 2)
+		end)
 		return self
 	end,
 
@@ -335,22 +335,21 @@ Entity = Class{
 
 			-- draw current sprite (image, x,y, angle, sx, sy, ox, oy, kx, ky) s=scale, o=origin, k=shear
 			local img = self._images[sprite_index]
-			Draw.push('all')
+			Draw.stack(function()
+				if self.show_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
 
-			if self.show_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
-
-			Draw.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
-			--love.graphics.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
-			
-			-- is it an Animation or an Image
-			if img then
-				if sprite.update ~= nil then
-					sprite:draw(img(), math.floor(self.x+.5), math.floor(self.y+.5), math.rad(info.angle), info.xscale, info.yscale, -info.xoffset, -info.yoffset, info.xshear, info.yshear)
-				else
-					love.graphics.draw(img(), math.floor(self.x+.5), math.floor(self.y+.5), math.rad(info.angle), info.xscale, info.yscale, -info.xoffset, -info.yoffset, info.xshear, info.yshear)
+				Draw.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
+				--love.graphics.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
+				
+				-- is it an Animation or an Image
+				if img then
+					if sprite.update ~= nil then
+						sprite:draw(img(), math.floor(self.x+.5), math.floor(self.y+.5), math.rad(info.angle), info.xscale, info.yscale, -info.xoffset, -info.yoffset, info.xshear, info.yshear)
+					else
+						love.graphics.draw(img(), math.floor(self.x+.5), math.floor(self.y+.5), math.rad(info.angle), info.xscale, info.yscale, -info.xoffset, -info.yoffset, info.xshear, info.yshear)
+					end
 				end
-			end
-			Draw.pop()
+			end)
 		else
 			self.sprite_width = 0
 			self.sprite_height = 0

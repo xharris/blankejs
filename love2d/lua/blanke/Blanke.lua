@@ -267,16 +267,17 @@ BlankE = {
 	end,
 
 	clearObjects = function(include_persistent, state)
-	    _getGameObjects(function(game)
+	    if state then
+	    	local game = state.game
 			for key, objects in pairs(game) do
 				for o, obj in ipairs(objects) do
-					if (not obj.persistent or include_persistent) and (not state or state == obj._state_created) then
+					if not obj.persistent or include_persistent then
 						obj:destroy()
 						game[key][o] = nil
 					end
 				end
 			end
-		end)
+		end
 	end,
 
 	getByUUID = function(type, obj_uuid)

@@ -50,10 +50,8 @@ class Console extends Editor {
 	log (str) {
 		str = JSON.stringify(str.trim()).slice(1,-1);
 		let lines = str.split("\\n").map(line => JSON.parse("{\"str\":\""+line+"\"}").str)
-		console.log(lines)
 
 		for (let line of lines) {
-			console.log(line, this.el_log.childElementCount)
 			if (line.match(re_duplicate) && this.el_log.childElementCount > 0) {
 				this.el_log.lastElementChild.innerHTML = duplicate[0];
 			} else {

@@ -6,22 +6,26 @@ Image = Class{
 		self.name = name 
 
 		local asset = Asset.image(name)
-		Debug.log(name)
 
 		if img_data and tostring(img_data):contains("ImageData") then
 			self.image = love.graphics.newImage(img_data)
+			--Debug.log("data", name)
 
 		elseif asset then
 			self.image = asset
+			--Debug.log("asset", name)
 
 		elseif love.filesystem.getInfo(name) then
 			self.image = Asset.add(name)
+			--Debug.log("path", name)
 
 		else
-			error('Image not found: \"'..tostring(name)..'\"')
-			return
+			--Debug.log("NO", name)
 		end
-		
+		--Debug.log(self.image)
+
+		assert(self.image, 'Image not found: \"'..tostring(name)..'\"')
+
 		self.image:setWrap("clampzero","clampzero")
 		self.image:setFilter("nearest")
 

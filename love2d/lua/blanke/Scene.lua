@@ -116,19 +116,20 @@ local SceneLayer = Class{
 			for image, batch in pairs(self.spritebatches) do
 				love.graphics.draw(batch)
 			end
---[[
+			--[[
 			for e, entity in ipairs(self.entities) do
 				entity:draw()
-			end]]
+			end
+			]]
 		end)
 
-		if self.draw_hitboxes then
+		--if self.draw_hitboxes then
 			for name, hitboxes in pairs(self.hitboxes) do
 				for h, hitbox in ipairs(hitboxes) do
 					hitbox:draw('fill')
 				end
 			end
-		end
+		--end
 	end
 }
 
@@ -143,6 +144,8 @@ local Scene = Class{
 			assert(scene, 'Scene not found: \"'..tostring(asset_name)..'\"')
 			self:load(scene)
 		end
+
+		_addGameObject('scene', self)
 	end,
 
 	getLayer = function(self, name)

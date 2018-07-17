@@ -58,7 +58,7 @@ function PlayState:update(dt)
 	end
 
 	-- player wants to enter igloo
-	if main_penguin.x < penguin_spawn.x - 25 then
+	if main_penguin.x < penguin_spawn.x + 10 then
 		Net.disconnect()
 
 		-- zoom in on igloo
@@ -68,7 +68,7 @@ function PlayState:update(dt)
 		-- transition to menu when zoomed in all the way
 		if not wall then
 			main_view:zoom(3, 3, function()
-				State.transition(menuState, "circle-out")
+				State.transition(MenuState, "circle-out")
 			end)
 		end
 
@@ -85,7 +85,6 @@ function PlayState:update(dt)
 	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) then
 		--
 		local lvl_list = Asset.list('scene','level')
-		Debug.log(unpack(lvl_list))
 		local choice = ''
 		repeat choice = table.random(lvl_list) until (choice ~= "spawn")
 		
@@ -123,7 +122,10 @@ function PlayState:draw()
 		Net.draw('Penguin')
 		levels:call('draw','layer0')
 		if main_penguin then main_penguin:draw() end 
-			
+		
+		Draw.setColor("red")
+		Draw.setLineWidth(3)
+		Draw.line(penguin_spawn.x, 0, penguin_spawn.x, game_height)	
 	end)
 	
 	local ready = ''
@@ -140,15 +142,6 @@ end
 function loadLevel(name)
 	local lvl_scene = Scene('level/'..name)
 	lvl_scene.name_ref = name..levels:size()
-	
-	-- get penguin spawn coords
-	if not main_penguin then
-		main_penguin = Penguin(true)
-		--lvl_scene:addEntity("spawn", main_penguin, "bottom center")
-		Debug.log("penguin here",main_penguin.x,main_penguin.y)
-		penguin_spawn = {x=main_penguin.x, y=main_penguin.y}
-		main_penguin:netSync()
-	end
 	
 	-- get level start and end
 	local lvl_start = lvl_scene:getObjects("lvl_start")["layer0"][1]
@@ -168,8 +161,14 @@ function loadLevel(name)
 		last_lvl_end[2] + (lvl_end[2] - lvl_start[2])
 	}
 	
-	-- spawn: get 'ready to play' spot
-	if name == 'spawn' then
+	-- spawn: get 'ready to play' and 'spawn' spot
+	if name == 'spawn' and not main_penguin then
+		main_penguin = Penguin(true)
+		lvl_scene:addEntity("spawn", main_penguin, "top left")
+		Debug.log("penguin spawned at",main_penguin.x,main_penguin.y)
+		penguin_spawn = {x=main_penguin.x-10, y=main_penguin.y}
+		main_penguin:netSync()
+		
 		destruct_ready_x = lvl_scene:getTiles("layer0", "ground_crack")[1].x
 	end
 	
