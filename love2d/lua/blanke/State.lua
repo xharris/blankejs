@@ -261,7 +261,7 @@ State = Class{
 
 	_leave = function(self)
 		if self.leave then self:leave() end
-		BlankE.clearObjects(false, self)
+		BlankE.clearObjects(true, self)
 		self._off = true
 	end
 }

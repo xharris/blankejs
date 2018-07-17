@@ -271,7 +271,7 @@ BlankE = {
 	    	local game = state.game
 			for key, objects in pairs(game) do
 				for o, obj in ipairs(objects) do
-					if not obj.persistent or include_persistent then
+					if (not obj.persistent) or include_persistent then
 						obj:destroy()
 						game[key][o] = nil
 					end

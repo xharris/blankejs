@@ -118,10 +118,9 @@ function PlayState:draw()
 		Net.draw('DestructionWall')
 
 		levels:call('draw','layer1')
-			
 		Net.draw('Penguin')
-		levels:call('draw','layer0')
 		if main_penguin then main_penguin:draw() end 
+		levels:call('draw','layer0')
 		
 		Draw.setColor("red")
 		Draw.setLineWidth(3)
@@ -165,7 +164,6 @@ function loadLevel(name)
 	if name == 'spawn' and not main_penguin then
 		main_penguin = Penguin(true)
 		lvl_scene:addEntity("spawn", main_penguin, "top left")
-		Debug.log("penguin spawned at",main_penguin.x,main_penguin.y)
 		penguin_spawn = {x=main_penguin.x-10, y=main_penguin.y}
 		main_penguin:netSync()
 		

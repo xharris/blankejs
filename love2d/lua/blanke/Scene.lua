@@ -123,13 +123,13 @@ local SceneLayer = Class{
 			]]
 		end)
 
-		--if self.draw_hitboxes then
+		if self.draw_hitboxes then
 			for name, hitboxes in pairs(self.hitboxes) do
 				for h, hitbox in ipairs(hitboxes) do
 					hitbox:draw('fill')
 				end
 			end
-		--end
+		end
 	end
 }
 
