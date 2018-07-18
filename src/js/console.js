@@ -1,13 +1,8 @@
 var re_duplicate = /(.*)(\(\d+\)?)/;
-var consoles_active = 0;
 
 class Console extends Editor {
 	constructor (...args) {
 		super(...args);
-
-		if (consoles_active == 0) {
-			Editor.closeAll('Console');
-		}
 
 		this.setupDragbox();
 		this.container.width = 460;
@@ -32,19 +27,11 @@ class Console extends Editor {
 		this.appendChild(this.el_log);
 		this.el_log.focus();
 		
-		consoles_active += 1;
-
-		this.close_called = false;
-		this.addCallback('onClose', this.processClosed);
-
 		this.hideMenuButton();
 	}
 
 	processClosed () {
-		if (!this.close_called) {
-			this.close_called = true;
-			consoles_active -= 1;
-		}
+		this.close();
 	}
 
 	log (str) {

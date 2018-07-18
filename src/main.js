@@ -134,7 +134,9 @@ var app = {
 		};
 		let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)]);
 		let console_window = new Console(app, child);
-		child.on('close', console_window.processClosed)
+		child.on('close', function(){
+			console_window.processClosed()
+		})
 		//child.unref();
 		//Editor.closeAll('Console');
 	},

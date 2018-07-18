@@ -493,6 +493,7 @@ class SceneEditor extends Editor {
 		}
 		// moving camera with arrow keys
 		document.addEventListener('keydown', function(e){
+			if (document.activeElement === document.body) {
 			var keyCode = e.keyCode || e.which;
 
 			let vx = 0;
@@ -510,6 +511,7 @@ class SceneEditor extends Editor {
 			this_ref.camera[1] += vy;
 
 			this_ref.refreshCamera();
+		}
 		});
 
 		this.pixi.stage.addChild(this.overlay_container);
