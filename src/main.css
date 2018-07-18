@@ -611,6 +611,9 @@
   /*&:hover {*/
   /*}*/
 }
+.content[data-type="SceneEditor"] .sidebar p {
+  color: #ECEFF1;
+}
 .content[data-type="SceneEditor"] .sidebar button {
   transition: all ease-in-out 0.1s;
 }
@@ -700,6 +703,9 @@
 }
 .content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container button i {
   font-size: 10px;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container {
+  color: black;
 }
 .content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item {
   background-color: #CFD8DC;
@@ -799,6 +805,8 @@
   background-color: rgba(255, 255, 255, 0.5);
   padding: 4px;
   box-sizing: border-box;
+  width: 100%;
+  font-size: 16px;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text::-webkit-outer-spin-button,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-text::-webkit-outer-spin-button,
@@ -818,6 +826,8 @@
   width: 20%;
   display: inline-block;
   text-align: center;
+  line-height: 20px;
+  vertical-align: bottom;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-select,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-select,
@@ -886,6 +896,7 @@
   box-sizing: border-box;
   outline: none;
   background-color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
 }
 .content[data-type="SceneEditor"] .sidebar .object-container .color-object {
   width: 100%;

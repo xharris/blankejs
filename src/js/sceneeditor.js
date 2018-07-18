@@ -70,9 +70,9 @@ class SceneEditor extends Editor {
 
 		// IMAGE elements
 		this.el_image_form = new BlankeForm([
-			['snap', 'number', {'inputs':2, 'separator':'X'}],
-			['offset', 'number', {'inputs':2, 'separator':'X'}],
-			['spacing', 'number', {'inputs':2, 'separator':'X'}],
+			['snap', 'number', {'inputs':2, 'separator':'x'}],
+			['offset', 'number', {'inputs':2, 'separator':'x'}],
+			['spacing', 'number', {'inputs':2, 'separator':'x'}],
 			['align', 'select', {'choices':['top-left','top-right','bottom-left','bottom-right']}]
 		]);
 		this.el_image_info 		= app.createElement("p","image-info");
@@ -271,7 +271,7 @@ class SceneEditor extends Editor {
 
 		this.el_layer_form = new BlankeForm([
 			['name', 'text'],
-			['snap', 'number', {'inputs':2, 'separator':'X'}]
+			['snap', 'number', {'inputs':2, 'separator':'x'}]
 		]);
 
 		this.el_layer_form.setValue('snap', 32, 0);
@@ -1272,8 +1272,6 @@ class SceneEditor extends Editor {
 		this.layers.push(info);
 		this.setLayer(info.name);
 
-		this.refreshLayerList();
-
 		return info.name;
 	}
 
@@ -1316,6 +1314,7 @@ class SceneEditor extends Editor {
 			for (var l = 0; l < data.layers.length; l++) {
 				this.addLayer(data.layers[l]);
 			}
+			this.refreshLayerList();
 
 			// images
 			let this_ref = this;

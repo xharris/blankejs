@@ -1,9 +1,14 @@
 var last_box = null;
 var last_box_direction = 1;
+var box_sizes = {};
 
 class DragBox {
 	constructor (content_type) {
 		this.guid = guid();
+
+		this.title = '';
+		this.subtitle = '';
+
 		var this_ref = this;
 		this.drag_container = document.createElement("div");
 		this.drag_container.classList.add("drag-container");
@@ -133,6 +138,9 @@ class DragBox {
 			    target.setAttribute('data-y', this_ref.y);
 
 				this_ref.onResize(this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight);
+				box_sizes[this_ref.title] = [this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight];
+				
+				console.log(box_sizes)
 			});
 	}
 
@@ -189,7 +197,19 @@ class DragBox {
 	}
 
 	setTitle (value) {
-		this.drag_handle.innerHTML = value;
+		this.drag_handle.innerHTML = value+this.subtitle;
+		this.title = value;
+		if (box_sizes[value]) {
+			this.drag_container.style.width = box_sizes[value][0]+"px";
+			this.drag_container.style.height = box_sizes[value][1]+"px";
+		} else {
+			box_sizes[value] = [this.drag_container.offsetWidth, this.drag_container.offsetHeight];
+		}
+	}
+
+	setSubtitle (value) {
+		this.subtitle = value || '';
+		this.setTitle(this.title);
 	}
 
 	toggleVisible () {

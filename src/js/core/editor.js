@@ -86,6 +86,11 @@ class Editor {
 		this.container.setTitle(val);
 	}
 
+	setSubtitle (val) {
+		if (this.container_type == 'dragbox')
+			this.container.setSubtitle(val);
+	}
+
 	onMenuClick (e) {
 		this.toggleMenu();
 	}

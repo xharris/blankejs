@@ -470,11 +470,11 @@ class Code extends Editor {
 	}
 
 	addAsterisk () {
-		this.setTitle(nwPATH.basename(this.file)+"*");
+		this.setSubtitle("*");
 	}
 
 	removeAsterisk() {
-		this.setTitle(nwPATH.basename(this.file));
+		this.setSubtitle();
 	}
 
 	setFontSize (num) {
@@ -503,6 +503,7 @@ class Code extends Editor {
 		this.codemirror.refresh();
 
 		this.setTitle(nwPATH.basename(file_path));
+		this.removeAsterisk();
 		refreshObjectList(this.file, this.codemirror.getValue());
 	}
 
