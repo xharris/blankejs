@@ -138,7 +138,7 @@ function refreshObjectList (filename, content) {
 class Code extends Editor {
 	constructor (...args) {
 		super(...args);
-		this.setupTab();
+		this.setupDragbox();
 
 		var this_ref = this;
 		
@@ -607,7 +607,7 @@ function addScripts(folder_path) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
-							if (!Tab.focusTab(nwPATH.basename(file_path)))
+							if (!DragBox.focus(nwPATH.basename(file_path)))
 								(new Code(app)).edit(file_path);
 						},
 						tags: ['script'],

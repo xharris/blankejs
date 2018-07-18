@@ -41,10 +41,11 @@ class SceneEditor extends Editor {
 		this.game_height = window.innerHeight;
 
 		this.pixi = new PIXI.Application(this.game_width, this.game_height, {
-			backgroundColor: 0xFFFFFF,
+			backgroundColor: 0x424242,
 			antialias: false,
 			autoResize: true,
 		});
+		this.grid_color = 0xBDBDBD;
 		this.appendChild(this.pixi.view);
 
 		this.pixi.stage.interactive = true;
@@ -613,7 +614,7 @@ class SceneEditor extends Editor {
 			}
 
 			this.grid_graphics.clear();
-			this.grid_graphics.lineStyle(1, 0x000000, this.grid_opacity);
+			this.grid_graphics.lineStyle(1, this.grid_color, this.grid_opacity);
 			// vertical lines
 			for (var x = -snapx; x < stage_width + snapx; x += snapx) {
 				this.grid_graphics.moveTo(x, -snapy);
@@ -648,7 +649,7 @@ class SceneEditor extends Editor {
 
 			// origin line
 			this.origin_graphics.clear()
-			this.origin_graphics.lineStyle(3, 0x000000, this.grid_opacity);
+			this.origin_graphics.lineStyle(3, this.grid_color, this.grid_opacity);
 
 			// horizontal
 			this.origin_graphics.moveTo(0, this.camera[1])
@@ -1471,7 +1472,7 @@ function addScenes(folder_path) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
-							if (!Tab.focusTab(nwPATH.basename(file_path)))
+							if (!Tab.focus(nwPATH.basename(file_path)))
 								(new SceneEditor(app)).load(file_path);
 						},
 						tags: ['scene'],

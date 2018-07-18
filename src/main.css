@@ -482,8 +482,9 @@
   margin: 0px;
 }
 .content[data-type="Code"] {
-  padding-top: 33px;
-  padding-bottom: 22px;
+  /* TAB only
+    padding-top: 33px;
+    padding-bottom: 22px;*/
 }
 .content[data-type="Code"] .CodeMirror {
   font-size: 16px;
@@ -870,7 +871,7 @@
   font-size: 21px;
   font-weight: 500;
   background-color: #b0bec5;
-  transition: all ease-in-out 0.2s;
+  transition: all ease-in-out 0.1s;
   text-align: left;
   line-height: 14px;
 }
@@ -1513,9 +1514,13 @@ body {
   left: 0px;
   border-radius: 4px;
   transition: background-color ease-in-out 0.2s;
+  transition: opacity ease-in-out 0.2s;
 }
 .drag-container * {
   transition: opacity ease-in-out 0.2s;
+}
+.drag-container.invisible {
+  opacity: 0;
 }
 .drag-container.focused {
   background-color: rgba(97, 97, 97, 0.7);

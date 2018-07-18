@@ -746,7 +746,7 @@ function addMaps(folder_path) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
-							if (!Tab.focusTab(nwPATH.basename(file_path)))
+							if (!Tab.focus(nwPATH.basename(file_path)))
 								(new MapEditor(app)).load(file_path);
 						},
 						tags: ['map'],

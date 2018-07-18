@@ -34,7 +34,7 @@ class Tab {
 		this.tab_container.el_tab = this.tab;
 
 		this.setTitle(this.title);
-		Tab.focusTab(this.title);
+		Tab.focus(this.title);
 
 		var this_ref = this;
 		document.addEventListener('resize', function(e){
@@ -73,7 +73,7 @@ class Tab {
 		}
 	}
 
-	static focusTab (title) {
+	static focus (title) {
 		var contents = app.getElements("#tabs > .tab");
 		var ret_val = false;
 		var remove_elements = [];
@@ -121,7 +121,7 @@ class Tab {
 	setOnClick (fn, self) {
 		var this_ref = this;
 		var new_fn = function(self){
-			if (!Tab.focusTab(this_ref.title)){
+			if (!Tab.focus(this_ref.title)){
 				fn(self);
 			}
 		}
@@ -142,7 +142,7 @@ class Tab {
 		if (choose_another) {
 			var contents = app.getElements("#tabs > .tab");
 			if (contents.length > 0) {
-				Tab.focusTab(contents[contents.length-1].title);
+				Tab.focus(contents[contents.length-1].title);
 			}
 		}
 	}
@@ -162,7 +162,7 @@ class Tab {
 		var curr_title = app.getElement("#tabs > .tab:not(.hidden)").title;
 		for (var t = 0; t < contents.length; t++) {
 			if (contents[t].title == curr_title && t >= 1) {
-				Tab.focusTab(contents[t-1].title);
+				Tab.focus(contents[t-1].title);
 				return;
 			}
 		}

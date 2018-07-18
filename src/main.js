@@ -139,6 +139,10 @@ var app = {
 		//Editor.closeAll('Console');
 	},
 
+	toggleWindowVis: function() {
+		DragBox.showHideAll()
+	},
+
 	isServerRunning: function() {
 		return (nwNOOB.address != null);
 	},

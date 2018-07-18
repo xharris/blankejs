@@ -22,7 +22,8 @@ html {
 	left: 0px; right: 0px; top: 0px; bottom: 0px;
 }
 
-body {    width: 16px;
+body {
+	width: 16px;
     margin: auto;
     vertical-align: middle;
 	.win-drag();
@@ -156,9 +157,14 @@ body {    width: 16px;
 	left: 0px;
 	border-radius: 4px;
 	transition: background-color ease-in-out 0.2s;
+	transition: opacity ease-in-out 0.2s;
 
 	* {
 	    transition: opacity ease-in-out 0.2s;
+	}
+
+	&.invisible {
+		opacity: 0;
 	}
 
 	&.focused {

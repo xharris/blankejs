@@ -1,9 +1,10 @@
 Entity.addPlatforming = function(self, left, top, width, height)
-	local margin = 5
+	local left2 = left + self.sprite_xoffset
+	local top2 = top + self.sprite_yoffset
 
-	self:addShape("main_box", "rectangle", {left, top+margin, width, height-(margin*2)})		-- rectangle of whole players body
-	self:addShape("jump_box", "rectangle", {left+margin, height-margin, width-(margin*2), margin})	-- rectangle at players feet
-	self:addShape("head_box", "rectangle", {left+margin, top+self.sprite_yoffset, width-(margin*2), margin})
+	self:addShape("main_box", "rectangle", {left, top, width, height})		-- rectangle of whole players body
+	self:addShape("head_box", "rectangle", {left, top-(height-2), width, 2})
+	self:addShape("jump_box", "rectangle", {left, top+(height-2), width, 2})	-- rectangle at players feet
 	self:setMainShape("main_box")
 end
 

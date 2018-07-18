@@ -273,7 +273,7 @@ local Scene = Class{
 				local layer = self:getLayer(layer_name)
 				for p, polygon in ipairs(polygons) do
 					local new_entity
-					if ent_class.classname then 	-- arg is an already made entity
+					if ent_class.is_instance then 	-- arg is an already made entity
 						new_entity = ent_class
 					else							-- arg is a class that needs to be instantiated
 						new_entity = ent_class()

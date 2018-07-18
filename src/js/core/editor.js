@@ -17,6 +17,7 @@ class Editor {
 
 	setupDragbox() {
 		var this_ref = this;
+		this.container_type = 'dragbox';
 		// create drag box
 		this.container = new DragBox(this.constructor.name)
 		this.container.appendTo(workspace);
@@ -32,6 +33,7 @@ class Editor {
 
 	setupTab() {
 		var this_ref = this;
+		this.container_type = 'tab';
 		// create tab
 		this.container = new Tab(this.constructor.name);
 		this.container.appendChild(this.content_area);
@@ -43,7 +45,8 @@ class Editor {
 
 	// Tab ONLY
 	setOnClick() {
-		this.container.setOnClick.apply(this.container, arguments);
+		if (this.container == 'tab')
+			this.container.setOnClick.apply(this.container, arguments);
 	}
 
 	close() {

@@ -87,7 +87,7 @@ class DragBox {
 	}
 
 	// focus a dragbox with a certain title if it exists
-	static focusDragBox (title) {
+	static focus (title) {
 		var handles = app.getElements('.drag-handle');
 		for (var h = 0; h < handles.length; h++) {
 			if (handles[h].innerHTML == title) {
@@ -238,6 +238,13 @@ class DragBox {
 		for (var i = 0; i < windows.length; i++) {
 			if (!type || (type && windows[i].dataset.type == type))
 				windows[i].remove();
+		}
+	}
+
+	static showHideAll () {
+		var windows = app.getElements(".drag-container");
+		for (var i = 0; i < windows.length; i++) {
+			windows[i].classList.toggle("invisible");
 		}
 	}
 }

@@ -308,6 +308,12 @@ Entity = Class{
 	end,
 
 	drawSprite = function(self, sprite_index)
+		-- if no sprite is given, draw them all
+		if not sprite_index then
+			for name, info in pairs(self.sprite) do
+				self:drawSprite(name)
+			end
+		end
 		local sprite = self._sprites[sprite_index]
 		local info = self:getSpriteInfo(sprite_index)
 
@@ -403,7 +409,7 @@ Entity = Class{
 			local anim_w, anim_h = self._sprites[ani_name]:getDimensions()
 
 			self.sprite[ani_name] = {width=anim_w, height=anim_h}
-			self.sprite_width, self.sprite_height = anim_w, anim_h
+			self.sprite_width, self.sprite_height = ifndef(anim_w, 0), ifndef(anim_h, 0)
 
 		end
 		return self

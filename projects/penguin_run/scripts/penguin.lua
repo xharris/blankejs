@@ -51,7 +51,7 @@ function Penguin:init(is_main_player)
 	self.sprite_yoffset = -16
 	self.sprite_xoffset = -16
 
-	self:addPlatforming(5, 5, 20, 32)
+	self:addPlatforming(0, 5, 15, 26)
 
 	self.eyes = 1
 	self.sprite['eyes'].speed = 0

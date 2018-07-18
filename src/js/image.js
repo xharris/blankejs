@@ -37,7 +37,7 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'View images',
 		onSelect: function() {
-			if (!Tab.focusTab('Image Browser'))
+			if (!Tab.focus('Image Browser'))
 				new ImageBrowser(app);
 		},
 		tags: ['view']

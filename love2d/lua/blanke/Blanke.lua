@@ -18,6 +18,7 @@ end
 function _addGameObject(obj_type, obj)
     obj.uuid = uuid()
     obj.type = obj_type
+    obj.is_instance = true
     obj.pause = ifndef(obj.pause, false)
     obj.persistent = ifndef(obj.persistent, false)
     obj._destroyed = ifndef(obj._destroyed, false)

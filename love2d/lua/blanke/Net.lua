@@ -47,6 +47,7 @@ Net = {
             Net.init(address, port)
         end
 
+        Debug.log("connecting to",Net.address,Net.port)
         Net.client = noobhub.new({ server=Net.address; port=Net.port; })
         if Net.client then
             Net.is_connected = true

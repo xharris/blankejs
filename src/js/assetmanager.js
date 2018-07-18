@@ -162,7 +162,7 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'View assets',
 		onSelect: function() {
-			if (!DragBox.focusDragBox("Assets"))
+			if (!DragBox.focus("Assets"))
 				new AssetManager(app);
 		}
 	});
