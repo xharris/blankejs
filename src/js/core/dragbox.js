@@ -139,8 +139,6 @@ class DragBox {
 
 				this_ref.onResize(this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight);
 				box_sizes[this_ref.title] = [this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight];
-				
-				console.log(box_sizes)
 			});
 	}
 
