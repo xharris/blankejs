@@ -31,7 +31,8 @@ class Console extends Editor {
 	}
 
 	processClosed () {
-		this.close();
+		if (!this.had_error)
+			this.close();
 	}
 
 	log (str) {
@@ -52,6 +53,7 @@ class Console extends Editor {
 	}
 
 	err (str) {
+		this.had_error = true;
 		var re_error = /(\w+\.\w+:\d+):\s*(.+)/g;
 
 		var error_parts = re_error.exec(str);

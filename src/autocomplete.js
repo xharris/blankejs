@@ -190,6 +190,11 @@ module.exports.completions = {
 	"blanke-image-instance":[
 		{prop:"x"},
 		{prop:"y"},
+		{prop:"alpha"},
+		{prop:"orig_width", info:"read-only"},
+		{prop:"orig_height", info:"read-only"},
+		{prop:"width"},
+		{prop:"height"},
 		{fn:"draw"},
 		{fn:"crop",vars:{x:"",y:"",width:"",height:""}}
 	],

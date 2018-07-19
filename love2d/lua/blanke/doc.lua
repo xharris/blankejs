@@ -643,6 +643,9 @@ forEach(t, func)								-- will return a value and end early if 'func' returns a
 random(t)
 keys(t)
 
+map2Dindex(x, y, columns)
+map2Dcoords(i, columns)
+
 --[[
 #   #  ###### #######
 ##  #  #         #

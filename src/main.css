@@ -1532,6 +1532,7 @@ body {
 }
 .drag-container.invisible {
   opacity: 0;
+  pointer-events: none;
 }
 .drag-container.focused {
   background-color: rgba(97, 97, 97, 0.7);

@@ -440,17 +440,20 @@ class SceneEditor extends Editor {
 					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
 						x -= this_ref.camera[0];
 						y -= this_ref.camera[1];
-			        	let place_x = x - (x % this_ref.curr_layer.snap[0]);
-			        	let place_y = y - (y % this_ref.curr_layer.snap[1]);
-			        	let text_key = Math.floor(place_x).toString()+','+Math.floor(place_y).toString()+'.'+this_ref.curr_layer.uuid;
+						
+			        	for (let s in this_ref.curr_image.pixi_images) {
+			        		let sprite = this_ref.curr_image.pixi_images[s].sprite;
+			        		let rect = sprite.getBounds();
+			        		rect.x -= this_ref.camera[0];
+			        		rect.y -= this_ref.camera[1];
+			        		if (rect.contains(x,y)) {
+								sprite.destroy();
+								delete this_ref.curr_image.pixi_images[s];
+								this_ref.redrawTiles();
 
-						if (this_ref.curr_image.pixi_images[text_key]) {
-							this_ref.curr_image.pixi_images[text_key].sprite.destroy();
-							delete this_ref.curr_image.pixi_images[text_key];
-							this_ref.redrawTiles();
-
-							this_ref.export();
-						}
+								this_ref.export();
+			        		}
+			        	}
 					}
 
 					if (this_ref.obj_type == 'object') {
@@ -1018,9 +1021,7 @@ class SceneEditor extends Editor {
 				x -= this.selected_width;
 			if (align.includes("bottom"))
 				y -= this.selected_height;
-		}
 
-		if (!from_load) {
 			if (x < 0) x -= layer.snap[0];
 			if (y < 0) y -= layer.snap[1];
 
@@ -1232,7 +1233,6 @@ class SceneEditor extends Editor {
 		if (img) {
 			this.loadImageTexture(img, onReady);
 			
-
 			// set image inputs
 			for (var property of ['snap', 'offset', 'spacing']) {
 				this.el_image_form.setValue(property, img[property][0], 0);
@@ -1323,7 +1323,7 @@ class SceneEditor extends Editor {
 			data.images.forEach(function(img, i){
 				var full_path = nwPATH.normalize(nwPATH.resolve(app.project_path,img.path));
 				this_ref.images.push({
-					path: full_path,
+					path: app.cleanPath(full_path),
 					snap: img.snap,
 					offset: img.offset,
 					spacing: img.spacing,

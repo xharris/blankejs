@@ -74,6 +74,7 @@ function _destroyGameObject(type, del_obj)
 end	
 
 blanke_require("extra.printr")
+--ffmpeg  = blanke_require("extra.ffmpeg")
 json 	= blanke_require("extra.json")
 uuid 	= blanke_require("extra.uuid")
 
