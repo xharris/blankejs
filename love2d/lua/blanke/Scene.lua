@@ -256,6 +256,17 @@ local Scene = Class{
 				for layer_name, polygons in pairs(object.polygons) do
 					local layer = self:getLayer(layer_name)
 					for p, polygon in ipairs(polygons) do
+						if #polygon == 2 then
+							local x, y = polygon[1], polygon[2]
+							local snapx, snapy = layer.snap[1]/2, layer.snap[2]/2
+							polygon = {
+								x - snapx, y - snapy,
+								x + snapx, y - snapy,
+								x + snapx, y + snapy,
+								x - snapx, y + snapy
+							}
+							Debug.log(unpack(polygon))
+						end
 						layer:addHitbox(polygon, name, object.color)
 					end
 				end

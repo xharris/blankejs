@@ -10,10 +10,15 @@ function PlayState:enter(prev)
 	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
 	
 	main_camera = View()
-	
+	main_camera:follow(player)
 end
 
-function PlayState:draw()	
-	sc_level1:draw()
-	player:draw()
+function PlayState:update(dt)
+end
+
+function PlayState:draw()
+	main_camera:draw(function()
+		sc_level1:draw()
+		player:draw()
+	end)
 end
