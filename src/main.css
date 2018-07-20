@@ -1359,16 +1359,41 @@
 }
 .content[data-type="Docview"] .section {
   background-color: #212121;
+  color: #E0E0E0;
   margin: 3px;
 }
 .content[data-type="Docview"] .section .header {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
   margin: 0;
   padding: 10px;
+  color: #E0E0E0;
+  background-color: #212121;
+  transition: all ease-in-out 0.2s;
+  cursor: pointer;
+}
+.content[data-type="Docview"] .section .header:hover {
+  color: #212121;
+  background-color: #E0E0E0;
 }
 .content[data-type="Docview"] .section .body {
-  color: #E0E0E0;
-  white-space: nowrap;
+  white-space: pre;
   overflow: auto;
+  transition: all ease-out 0.2s;
+}
+.content[data-type="Docview"] .section .body.hidden {
+  height: 0px;
 }
 @font-face {
   font-family: ProggySquare;

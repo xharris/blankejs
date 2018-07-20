@@ -18,15 +18,13 @@ class Docview extends Editor {
 		function constructDocs(data) {
 		}
 
-		let re = /--\[\[(?:\\n)?\s*#\s*[#\s\\n]+(\w+)([^\]\[]+?)\]\]/g;
+		let re = /--\[\[\s*#\s*[#\s]+(\w+)([^\]\[]+?)\]\]/g;
 		let sections = [];
 		nwFS.readFile(nwPATH.join('love2d','lua','blanke','doc.lua'), 'utf-8', function(err, data){
 			if (!err) {
 				let matches = [];
 				let doc_data = [];
-				data = JSON.stringify(data);
-				console.log(data);
-				
+
 				// get the headers
 				do {
 					matches = re.exec(data);
@@ -49,11 +47,15 @@ class Docview extends Editor {
 				for (let sec of doc_data) {
 					let el_section = app.createElement("div","section");
 					let el_header = app.createElement("p","header");
-					let el_body = app.createElement("div","body");
+					let el_body = app.createElement("div",["body","hidden"]);
 
 					el_header.innerHTML = sec[0];
 					el_header.title = sec[1].trim();
 					el_body.innerHTML = sec[2];
+
+					el_header.addEventListener('click',function(){
+						el_body.classList.toggle('hidden');
+					});
 
 					el_section.appendChild(el_header);
 					el_section.appendChild(el_body);

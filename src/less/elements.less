@@ -946,15 +946,27 @@
 		margin: 3px;
 
 		.header {
+			.no-select();
+
 			margin: 0;
 			padding: 10px;
+			color: #E0E0E0;
+			background-color: #212121;
+			transition: all ease-in-out 0.2s;
+			cursor: pointer;
+
+			&:hover{
+				color: #212121;
+				background-color: #E0E0E0;
+			}
 		}
 		.body {
-			white-space: nowrap;
+			white-space: pre;
 			overflow: auto;
+			transition: all ease-out 0.2s;
 
 			&.hidden {
-
+				height: 0px;
 			}
 		}
 	}
