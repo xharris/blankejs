@@ -413,12 +413,31 @@ class SceneEditor extends Editor {
 		this.tile_straightedge = new PIXI.Graphics();
 		this.map_container.addChild(this.tile_straightedge);
 
+		function deleteTile(x,y) {
+			for (let s in this_ref.curr_image.pixi_images) {
+                let sprite = this_ref.curr_image.pixi_images[s].sprite;
+                let rect = sprite.getBounds();
+                rect.x -= this_ref.camera[0];
+                rect.y -= this_ref.camera[1];
+                if (rect.contains(x,y)) {
+                    sprite.destroy();
+                    delete this_ref.curr_image.pixi_images[s];
+                    this_ref.redrawTiles();
+
+                    this_ref.export();
+                }
+            }
+		}
+
+        this.pointer_down = -1;
 		this.pixi.stage.on('pointerdown',function(e){
 			
 			let x = e.data.global.x;
 			let y = e.data.global.y;
 			let btn = e.data.originalEvent.button;
-			let alt = e.data.originalEvent.altKey; 
+			let alt = e.data.originalEvent.altKey;
+
+			this_ref.pointer_down = btn;
 
 			x -= this_ref.camera[0];
 			y -= this_ref.camera[1];
@@ -442,30 +461,18 @@ class SceneEditor extends Editor {
 						x -= x % this_ref.curr_layer.snap[0];
 						y -= y % this_ref.curr_layer.snap[1];
 						this_ref.tile_start = [x, y];
+						bringToFront(this.tile_straightedge)
 					}
 				}
 
 				// removing object
 				if (btn == 2) {
-					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
-			        	for (let s in this_ref.curr_image.pixi_images) {
-			        		let sprite = this_ref.curr_image.pixi_images[s].sprite;
-			        		let rect = sprite.getBounds();
-			        		rect.x -= this_ref.camera[0];
-			        		rect.y -= this_ref.camera[1];
-			        		if (rect.contains(x,y)) {
-								sprite.destroy();
-								delete this_ref.curr_image.pixi_images[s];
-								this_ref.redrawTiles();
-
-								this_ref.export();
-			        		}
-			        	}
-					}
-
 					if (this_ref.obj_type == 'object') {
 						this_ref.removeObjectPoint();
 					}
+					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
+                        deleteTile(x,y);
+                    }
 				}
 
 			}
@@ -476,6 +483,7 @@ class SceneEditor extends Editor {
 			let y = e.data.global.y;
 			let btn = e.data.originalEvent.button;
 			let alt = e.data.originalEvent.altKey; 
+        	this_ref.pointer_down = -1;
 
 			x -= (this_ref.camera[0]);
 			y -= (this_ref.camera[1]);
@@ -485,49 +493,58 @@ class SceneEditor extends Editor {
 
 			if (!alt && !this_ref.dragging) {
 				if (btn == 0) {
+					this_ref.tile_straightedge.clear()
+
 					// place tiles in a snapped line
 					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
 						x -= x % this_ref.curr_layer.snap[0];
 						y -= y % this_ref.curr_layer.snap[1];
 
-						let ix = this_ref.tile_start[0],
-							iy = this_ref.tile_start[1],
-							target_x = x,
-							target_y = y,
-							x_incr = (target_x - ix)/this_ref.curr_layer.snap[0],
-							y_incr = (target_y - iy)/this_ref.curr_layer.snap[1],
-							xdiff = 0,
-							ydiff = 0;
+						let start_x = this_ref.tile_start[0],
+						    start_y = this_ref.tile_start[1];
+						if (x == this_ref.tile_start[0] && y == this_ref.tile_start[1]) {
+							this_ref.placeImage(x, y, this_ref.curr_image);
 
-						do {
-							xdiff = (target_x - ix);
-							ydiff = (target_y - iy);
+						} else {
+							let ix = start_x,
+								iy = start_y,
+								target_x = x,
+								target_y = y,
+								x_incr = this_ref.selected_width,
+								y_incr = this_ref.selected_height,
+								x_diff = Math.abs(target_x - start_x),
+								y_diff = Math.abs(target_y - start_y),
+								checkX = false,
+								checkY = false;
 
-							this_ref.placeImage(ix, iy, this_ref.curr_image);
+								if (x_diff > y_diff) 
+									y_incr = (target_y - start_y) / (x_diff / x_incr);
+								
+								if (x_diff < y_diff) 
+									x_incr = (target_x - start_x) / (y_diff / y_incr);
+								
+							do {
+								x_diff = (target_x - ix);
+								y_diff = (target_y - iy);
 
-							if (xdiff != 0) ix += (x_incr) * Math.sign(xdiff);
-							if (ydiff != 0) iy += (y_incr) * Math.sign(ydiff);
-						} while (xdiff != 0 || ydiff != 0);
+								this_ref.placeImage(ix, iy, this_ref.curr_image);
+
+								checkX = (start_x < target_x && ix < target_x) || (start_x > target_x && ix > target_x);
+								checkY = (start_y < target_y && iy < target_y) || (start_y > target_y && iy > target_y);
+
+								if (checkX) ix += x_incr;
+								if (checkY) iy += y_incr;
+							} while (checkX || checkY);
+						}
 					}
 				}
-			}
-		});
-
-		document.addEventListener('mouseup', function(e) {
-			if (e.button == 1 || (e.button == 0 && this_ref.dragging)) {
-				dragStop();
-			}
-
-
-			if (e.button == 0) {
-				this_ref.export();
 			}
 		});
 
 		this.pixi.stage.on('pointermove', function(e) {
 			let x = e.data.global.x;
 			let y = e.data.global.y;
-			let btn = e.data.originalEvent.button;
+			let btn = this_ref.pointer_down;
 			let alt = e.data.originalEvent.altKey; 
 
 			x -= (this_ref.camera[0]);
@@ -548,23 +565,42 @@ class SceneEditor extends Editor {
 				this_ref.refreshCamera();
 			}
 
-			console.log(e.data, e.data.button, btn)
 			if (!alt && !this_ref.dragging) {
 				if (btn == 0) {
 					// placing tiles in a snapped line
 					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
-						console.log("doin it",this_ref.tile_start[0], this_ref.tile_start[1],x,y)
 						this_ref.tile_straightedge.clear()
 						this_ref.tile_straightedge.lineStyle(2, 0xffffff)
 							.moveTo(this_ref.tile_start[0], this_ref.tile_start[1])
-							.lineTo(x,y);
+							.lineTo(x - (x % this_ref.curr_layer.snap[0]),
+								    y - (y % this_ref.curr_layer.snap[1])
+							);
 					}
-				}
+				}           
 			}
 
-			this_ref.drawDotPreview();
+			if (btn == 2) {
+				if (this_ref.obj_type == 'image' && this_ref.curr_image) {
+                    //blanke.cooldownFn("delete_tile",500,function(){
+                        deleteTile(x,y);                                
+                    //});
+				}
+            }
 
+			this_ref.drawDotPreview();
 		});
+        
+		document.addEventListener('mouseup', function(e) {
+			if (e.button == 1 || (e.button == 0 && this_ref.dragging)) {
+				dragStop();
+			}
+
+
+			if (e.button == 0) {
+				this_ref.export();
+			}
+		});
+        
 		// moving camera with arrow keys
 		document.addEventListener('keydown', function(e){
 			if (document.activeElement === document.body) {
