@@ -192,8 +192,8 @@ class SceneEditor extends Editor {
 		function selectImageTiles(e) {
 			if (e.target && e.target.matches('div.cell') && e.buttons != 0) {
 				if (e.buttons == 1) {
-					// if CTRL is not held down, clear all other tiles
-					if (!e.ctrlKey) {
+					// if SHIFT is not held down, clear all other tiles
+					if (!e.shiftKey) {
 						let el_tiles = document.querySelectorAll('.image-grid div.cell');
 						for (let tile of el_tiles) {
 							tile.classList.remove('selected');
@@ -570,7 +570,7 @@ class SceneEditor extends Editor {
 					// placing tiles in a snapped line
 					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
 						this_ref.tile_straightedge.clear()
-						this_ref.tile_straightedge.lineStyle(2, 0xffffff)
+						this_ref.tile_straightedge.lineStyle(2, 0xBDBDBD)
 							.moveTo(this_ref.tile_start[0], this_ref.tile_start[1])
 							.lineTo(x - (x % this_ref.curr_layer.snap[0]),
 								    y - (y % this_ref.curr_layer.snap[1])
@@ -1482,7 +1482,6 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
-		return;
 		if (this.deleted) return;
 
 		let export_data = {'objects':[], 'layers':[], 'images':[]};
