@@ -310,8 +310,12 @@ Entity = Class{
 	drawSprite = function(self, sprite_index)
 		-- if no sprite is given, draw them all
 		if not sprite_index then
-			for name, info in pairs(self.sprite) do
-				self:drawSprite(name)
+			if self.sprite_index then
+				self:drawSprite(self.sprite_index)
+			else
+				for name, info in pairs(self.sprite) do
+					self:drawSprite(name)
+				end
 			end
 		end
 		local sprite = self._sprites[sprite_index]
@@ -349,10 +353,11 @@ Entity = Class{
 				
 				-- is it an Animation or an Image
 				if img then
+					local draw_x, draw_y = math.floor(self.x), math.floor(self.y)
 					if sprite.update ~= nil then
-						sprite:draw(img(), math.floor(self.x+.5), math.floor(self.y+.5), math.rad(info.angle), info.xscale, info.yscale, -info.xoffset, -info.yoffset, info.xshear, info.yshear)
+						sprite:draw(img(), draw_x, draw_y, math.rad(info.angle), info.xscale, info.yscale, -math.floor(info.xoffset), -math.floor(info.yoffset), info.xshear, info.yshear)
 					else
-						love.graphics.draw(img(), math.floor(self.x+.5), math.floor(self.y+.5), math.rad(info.angle), info.xscale, info.yscale, -info.xoffset, -info.yoffset, info.xshear, info.yshear)
+						love.graphics.draw(img(), draw_x, draw_y, math.rad(info.angle), info.xscale, info.yscale, -math.floor(info.xoffset), -math.floor(info.yoffset), info.xshear, info.yshear)
 					end
 				end
 			end)
@@ -369,9 +374,7 @@ Entity = Class{
 			self:preDraw()
 		end
 
-		for name, info in pairs(self.sprite) do
-			self:drawSprite(name)
-		end
+		self:drawSprite()
 
 		if self.postDraw then
 			self:postDraw()

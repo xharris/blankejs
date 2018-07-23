@@ -288,7 +288,10 @@ View = Class{
 			BlankE._mouse_updated = true
 		end
 
-		self.camera:lockWindow(self.follow_x + self.offset_x + drag_offx + shake_x, self.follow_y + self.offset_y + drag_offy + shake_y, wx-self.max_distance, wx+self.max_distance,  wy-self.max_distance, wy+self.max_distance, self._smoother)
+		self.camera:lockWindow(
+			self.follow_x + self.offset_x + drag_offx + shake_x,
+			self.follow_y + self.offset_y + drag_offy + shake_y, 
+			wx-self.max_distance, wx+self.max_distance,  wy-self.max_distance, wy+self.max_distance, self._smoother)
 		if self._is_drawing > 0 then 
 			self._is_drawing = self._is_drawing - 1
 		end

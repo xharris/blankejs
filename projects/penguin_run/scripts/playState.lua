@@ -74,7 +74,7 @@ function PlayState:update(dt)
 
 	else
 		if not Net.is_connected and play_mode == 'online' then
-			Net.join("tcp://0.tcp.ngrok.io",13054)
+			Net.join()
 		end
 		
 		main_view:zoom(1)

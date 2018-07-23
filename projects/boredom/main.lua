@@ -16,4 +16,6 @@ function love.load()
 	BlankE.loadPlugin("Platformer")
 	
 	BlankE.init("PlayState")
+	
+	BlankE.draw_debug = true
 end

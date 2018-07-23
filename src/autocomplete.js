@@ -151,6 +151,7 @@ module.exports.completions = {
 		{prop:"xstart"},
 		{prop:"ystart"},
 
+		{prop:"sprite_index"},
 		{prop:"sprite_angle"},
 		{prop:"sprite_xscale"},
 		{prop:"sprite_yscale"},

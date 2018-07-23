@@ -38,6 +38,7 @@ end
 
 StateManager = {
 	_stack = {},
+	_in_transition = false,
 
 	iterateStateStack = function(func, ...)
 		local transition_active = (transition_obj.enter_state and transition_obj.exit_state)
@@ -227,9 +228,11 @@ StateManager = {
 				local exit_state = transition_obj.exit_state
 				resetTransitionObj()
 				StateManager.pop(exit_state.classname)
+				StateManager._in_transition = false
 			end
 
 			transition_obj.tween:play()
+			StateManager._in_transition = true
 			StateManager.push(transition_obj.enter_state)
 		end
 	end,

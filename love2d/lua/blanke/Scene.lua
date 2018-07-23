@@ -75,7 +75,7 @@ local SceneLayer = Class{
 			-- add to spritebatch
 			self.spritebatches[img_name] = ifndef(self.spritebatches[img_name], love.graphics.newSpriteBatch(self.images[img_name]()))
 			info.id = self.spritebatches[img_name]:add(love.graphics.newQuad(info.crop.x, info.crop.y, info.crop.w, info.crop.h, self.images[img_name].width, self.images[img_name].height), info.x, info.y)
-
+			
 			-- add to tile hashtable
 			self.hashtable:add(info.x, info.y, info)
 		end

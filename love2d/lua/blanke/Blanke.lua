@@ -4,6 +4,8 @@ function blanke_require(import)
 	return require(blanke_path..import)
 end
 
+--love.graphics.setDefaultFilter("nearest","nearest")
+
 blanke_require('Globals')
 blanke_require('Util')
 blanke_require('Debug')
@@ -147,13 +149,10 @@ BlankE = {
 			end
 		end
 
-		love.graphics.setDefaultFilter("nearest","nearest")
 		Scene._fake_view = View()
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 		Asset.loadScripts()
-		--BlankE.game_canvas = love.graphics.newCanvas(800,600)
-		--BlankE.game_canvas:setFilter("nearest")
 
 		love.graphics.setFont(BlankE.font)
 
@@ -477,20 +476,17 @@ BlankE = {
 		BlankE.drawOutsideWindow()
 		love.graphics.pop()
 
+		-- draw game
+		love.graphics.setScissor(
+			BlankE._offset_x * BlankE.scale_x,
+			BlankE._offset_y * BlankE.scale_y,
+			game_width * BlankE.scale_x,
+			game_height * BlankE.scale_y
+		)
 		BlankE.drawToScale(function()
-
-			love.graphics.setScissor(
-				BlankE._offset_x * BlankE.scale_x,
-				BlankE._offset_y * BlankE.scale_y,
-				game_width * BlankE.scale_x,
-				game_height * BlankE.scale_y
-			)
-
-			-- draw game
 			StateManager.iterateStateStack('draw')
-
-			love.graphics.setScissor()
 		end)
+		love.graphics.setScissor()
 		
 		if BlankE.draw_debug then Debug.draw() end
 
