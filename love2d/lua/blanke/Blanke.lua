@@ -9,6 +9,7 @@ end
 blanke_require('Globals')
 blanke_require('Util')
 blanke_require('Debug')
+blanke_require('Window')
 
 function _getGameObjects(fn)
 	local curr_state = State.current()
@@ -89,12 +90,12 @@ blanke_require('extra.noobhub')
 --grease 	= blanke_require('extra.grease')
 
 local modules = {'Map','Asset','Bezier','Camera','Canvas','Dialog','Draw','Effect','Entity','Font','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
-local not_require = {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
+-- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
-	if not table.hasValue(not_require, mod) then
+	--if not table.hasValue(not_require, mod) then
 		_G[mod] = blanke_require(mod)
 		if not _G[mod].classname then _G[mod].classname = mod end
-	end
+	--end
 end
 
 Signal.emit('modules_loaded')
