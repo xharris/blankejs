@@ -74,8 +74,12 @@ local function new(class)
 	class.__index = function(self, key)
 		local val = class[key]
 		local classname = rawget(self, 'classname') or false
-		if classname and type(val) == "function" then
-			if class.onMethod and class.onMethod[key] then return class.onMethod[key] end
+		if classname then
+			if type(val) == "function" then
+				if class.onMethod and class.onMethod[key] then return class.onMethod[key] end
+			else
+				if class.onProp and class.onProp[key] then return class.onProp[key] end
+			end
 		end
 		return val
 	end

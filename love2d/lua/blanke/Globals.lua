@@ -21,6 +21,8 @@ function updateGlobals(dt)
 	local x_scale, y_scale = width / CONF.window.width, height / CONF.window.height
 	local new_width, new_height = width, height
 
+	if not BlankE then return end
+
 	if BlankE.scale_mode == 'stretch' then
 		BlankE.scale_x = x_scale
 		BlankE.scale_y = y_scale
@@ -80,3 +82,5 @@ function updateGlobals(dt)
 	if BlankE.right > window_width then BlankE.right = window_width	end
 	if BlankE.bottom > window_height then BlankE.bottom = window_height end
 end
+
+updateGlobals(0)
