@@ -618,8 +618,8 @@
   transition: all ease-in-out 0.1s;
 }
 .content[data-type="SceneEditor"] .sidebar select {
-  outline: 1px solid #b0bec5;
-  outline-offset: -1px;
+  outline: 2px solid #b0bec5;
+  outline-offset: -2px;
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) {
   /* width: 50px;*/
@@ -637,6 +637,19 @@
   width: 100%;
 }
 .content[data-type="SceneEditor"] .sidebar * {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
   pointer-events: all;
   transition: all ease-in-out 0.2s;
 }
@@ -650,7 +663,6 @@
 }
 .content[data-type="SceneEditor"] .sidebar .select-placetype {
   border: none;
-  outline: none;
   padding: 5px;
   text-align: center;
   background-color: #b0bec5;
@@ -833,7 +845,6 @@
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-select,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-select {
   border: none;
-  outline: none;
   padding: 5px;
   text-align: center;
   background-color: #b0bec5;
@@ -843,7 +854,6 @@
 .content[data-type="SceneEditor"] .sidebar .object-container .input-letter,
 .content[data-type="SceneEditor"] .sidebar .object-container .select-letter {
   border: none;
-  outline: none;
   padding: 5px;
   text-align: center;
 }
@@ -909,7 +919,6 @@
 .content[data-type="SceneEditor"] .sidebar .input-layer,
 .content[data-type="SceneEditor"] .sidebar .select-layer {
   border: none;
-  outline: none;
   padding: 5px;
   text-align: center;
 }

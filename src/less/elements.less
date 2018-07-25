@@ -140,8 +140,8 @@
     	}
 
     	select {
-		    outline: 1px solid #b0bec5;
-		    outline-offset: -1px;
+		    outline: 2px solid #b0bec5;
+		    outline-offset: -2px;
     	}
 	    
 	    &:not(:hover) {
@@ -161,6 +161,7 @@
 	    }
 
 	    * {
+	    	.no-select();
 	    	pointer-events: all;
 	   	 	transition: all ease-in-out 0.2s;
 	    }
@@ -177,7 +178,6 @@
 
 	    .select-placetype {
 		    border: none;
-		    outline: none;
 		    padding: 5px;
 		    text-align: center;
     	    background-color: rgba(176,190,197 ,1);
@@ -363,7 +363,6 @@
 
 					.form-select {
 					    border: none;
-					    outline: none;
 					    padding: 5px;
 					    text-align: center;
 					    background-color: rgba(176,190,197 ,1);
@@ -378,7 +377,6 @@
 	    .object-container {
 		    .input-letter, .select-letter {
 			    border: none;
-			    outline: none;
 			    padding: 5px;
 			    text-align: center;
 		    }
@@ -454,7 +452,6 @@
 		/* LAYER */
 		.input-layer, .select-layer {
 		    border: none;
-		    outline: none;
 		    padding: 5px;
 		    text-align: center;
 	    }
