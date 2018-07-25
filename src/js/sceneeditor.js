@@ -496,7 +496,7 @@ class SceneEditor extends Editor {
 					this_ref.tile_straightedge.clear()
 
 					// place tiles in a snapped line
-					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
+					if (this_ref.placeImageReady()) {
 						x -= x % this_ref.curr_layer.snap[0];
 						y -= y % this_ref.curr_layer.snap[1];
 
@@ -541,17 +541,28 @@ class SceneEditor extends Editor {
 			}
 		});
 
+		this.place_mouse = [0,0];
 		this.pixi.stage.on('pointermove', function(e) {
 			let x = e.data.global.x;
 			let y = e.data.global.y;
 			let btn = this_ref.pointer_down;
 			let alt = e.data.originalEvent.altKey; 
 
-			x -= (this_ref.camera[0]);
-			y -= (this_ref.camera[1]);
+			this_ref.mouse[0] = x;// - (this_ref.camera[0]);
+			this_ref.mouse[1] = y;// - (this_ref.camera[1]);
 
-			this_ref.mouse[0] = x;
-			this_ref.mouse[1] = y;
+			this_ref.place_mouse = [x,y];
+			if (!e.data.originalEvent.ctrlKey) {
+				let mx = this_ref.mouse[0] - this_ref.camera[0];
+				let my = this_ref.mouse[1] - this_ref.camera[1];
+				this_ref.place_mouse = [
+					mx - (mx % this_ref.curr_layer.snap[0]),
+					my - (my % this_ref.curr_layer.snap[1])
+				]
+			}
+			this_ref.drawCrosshair();
+
+			// console.log(this_ref.mouse, this_ref.place_mouse);
 
 			if (this_ref.dragging) {
 				this_ref.camera = [
@@ -568,13 +579,11 @@ class SceneEditor extends Editor {
 			if (!alt && !this_ref.dragging) {
 				if (btn == 0) {
 					// placing tiles in a snapped line
-					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
+					if (this_ref.placeImageReady()) {
 						this_ref.tile_straightedge.clear()
 						this_ref.tile_straightedge.lineStyle(2, 0xBDBDBD)
 							.moveTo(this_ref.tile_start[0], this_ref.tile_start[1])
-							.lineTo(x - (x % this_ref.curr_layer.snap[0]),
-								    y - (y % this_ref.curr_layer.snap[1])
-							);
+							.lineTo(this_ref.place_mouse[0], this_ref.place_mouse[1]);
 					}
 				}           
 			}
@@ -582,7 +591,7 @@ class SceneEditor extends Editor {
 			if (btn == 2) {
 				if (this_ref.obj_type == 'image' && this_ref.curr_image) {
                     //blanke.cooldownFn("delete_tile",500,function(){
-                        deleteTile(x,y);                                
+                        deleteTile(this_ref.place_mouse[0], this_ref.place_mouse[1]);                                
                     //});
 				}
             }
@@ -737,17 +746,15 @@ class SceneEditor extends Editor {
 				this.grid_graphics.moveTo(-snapx, y);
 				this.grid_graphics.lineTo(stage_width + snapx, y);
 			}
-
-			this.drawOrigin();
 		}
 	}
 
 	refreshCamera () {
 		this.map_container.setTransform(this.camera[0], this.camera[1]);
-		this.drawOrigin();
+		this.drawCrosshair();
 	}
 
-	drawOrigin () {
+	drawCrosshair () {
 		if (this.curr_layer) {
 			var snapx = this.curr_layer.snap[0];
 			var snapy = this.curr_layer.snap[1];
@@ -759,16 +766,21 @@ class SceneEditor extends Editor {
 				this.overlay_container.addChild(this.origin_graphics);
 			}
 
-			// origin line
+			let center = [
+				this.place_mouse[0],
+				this.place_mouse[1]
+			];
+
+			// line style
 			this.origin_graphics.clear()
 			this.origin_graphics.lineStyle(3, this.grid_color, this.grid_opacity);
 
 			// horizontal
-			this.origin_graphics.moveTo(0, this.camera[1])
-			this.origin_graphics.lineTo(stage_width, this.camera[1]);
+			this.origin_graphics.moveTo(0, this.place_mouse[1])
+			this.origin_graphics.lineTo(stage_width, this.place_mouse[1]);
 			// vertical
-			this.origin_graphics.moveTo(this.camera[0], 0);
-			this.origin_graphics.lineTo(this.camera[0], stage_height);
+			this.origin_graphics.moveTo(this.place_mouse[0], 0);
+			this.origin_graphics.lineTo(this.place_mouse[0], stage_height);
 		}
 	}
 
@@ -877,6 +889,10 @@ class SceneEditor extends Editor {
 					this.selected_height = y - this.selected_ymin + this.curr_image.snap[1];
 			}
 		}
+	}
+
+	placeImageReady() {
+		return this.obj_type == 'image' && this.curr_image && this.selected_image_frames.length > 0;
 	}
 
 	refreshImageGrid() {

@@ -18,7 +18,7 @@ function Player:init()
 	self:addPlatforming(0,0,self.sprite_width,self.sprite_height)
 	self.gravity = 20
 	
-	self.move_speed = 220
+	self.move_speed = 250
 	self.max_jumps = 1
 	
 	self.jumps = self.max_jumps
