@@ -4,7 +4,7 @@ Entity.addPlatforming = function(self, left, top, width, height)
 
 	self:addShape("main_box", "rectangle", {left, top, width, height})		-- rectangle of whole players body
 	self:addShape("head_box", "rectangle", {left, top-(height-2), width, 2})
-	self:addShape("jump_box", "rectangle", {left, top+(height-2), width, 2})	-- rectangle at players feet
+	self:addShape("feet_box", "rectangle", {left, top+(height-2), width, 2})	-- rectangle at players feet
 	self:setMainShape("main_box")
 end
 
@@ -31,7 +31,7 @@ Entity.platformerCollide = function(self, ground_tag, fn_wall, fn_ceil, fn_floor
 		end
 	end
 	
-	self.onCollision["jump_box"] = function(other, sep_vector)
+	self.onCollision["feet_box"] = function(other, sep_vector)
         if other.tag == ground_tag and sep_vector.y < 0 then
             -- floor collision
         	if (fn_floor and fn_floor() ~= false) or fn_floor == nil then

@@ -58,6 +58,7 @@ local SceneLayer = Class{
 		
 		self.offx = 0
 		self.offy = 0
+		self.draw_hitboxes = false
 
 		self.draw_hitboxes = false
 	end,
@@ -209,6 +210,7 @@ local Scene = Class{
 	draw = function(self, layer_name)
 		for l, layer in ipairs(self.layers) do
 			if layer_name == nil or layer.name == layer_name then 
+				layer.draw_hitboxes = self.draw_hitboxes
 				layer:draw()
 			end
 		end

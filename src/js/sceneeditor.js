@@ -61,7 +61,9 @@ class SceneEditor extends Editor {
 		this.origin_graphics = new PIXI.Graphics();
 		this.coord_text_style = new PIXI.TextStyle({
 			fontSize: 12,
-			stroke: '#ffffff',
+			fill: 'white',
+			stroke: 'black',
+			strokeThickness: 2,
 			fontFamily: 'ProggySquare',
 			fontWeight: '100'
 		});
@@ -470,9 +472,11 @@ class SceneEditor extends Editor {
 						this_ref.placeObjectPoint(x, y);
 					
 					if(this_ref.obj_type == 'image') {
+						/*
 						x -= x % this_ref.curr_layer.snap[0];
 						y -= y % this_ref.curr_layer.snap[1];
-						this_ref.tile_start = [x, y];
+						*/
+						this_ref.tile_start = [this_ref.mouse[0], this_ref.mouse[1]];
 						bringToFront(this.tile_straightedge)
 					}
 				}
@@ -491,17 +495,11 @@ class SceneEditor extends Editor {
 		});
 
 		this.pixi.stage.on('pointerup',function(e){
-			let x = e.data.global.x;
-			let y = e.data.global.y;
+			let x = this_ref.mouse[0];
+			let y = this_ref.mouse[1];
 			let btn = e.data.originalEvent.button;
 			let alt = e.data.originalEvent.altKey; 
         	this_ref.pointer_down = -1;
-
-			x -= (this_ref.camera[0]);
-			y -= (this_ref.camera[1]);
-
-			if (x < 0) x -= this_ref.curr_layer.snap[0];
-			if (y < 0) y -= this_ref.curr_layer.snap[1];
 
 			if (!alt && !this_ref.dragging) {
 				if (btn == 0) {
@@ -509,9 +507,6 @@ class SceneEditor extends Editor {
 
 					// place tiles in a snapped line
 					if (this_ref.placeImageReady()) {
-						x -= x % this_ref.curr_layer.snap[0];
-						y -= y % this_ref.curr_layer.snap[1];
-
 						let start_x = this_ref.tile_start[0],
 						    start_y = this_ref.tile_start[1];
 						if (x == this_ref.tile_start[0] && y == this_ref.tile_start[1]) {
@@ -563,14 +558,14 @@ class SceneEditor extends Editor {
 			let snapx = this_ref.curr_layer.snap[0];
 			let snapy = this_ref.curr_layer.snap[1];
 			
-			if (x < 0) x -= snapx;
-			if (y < 0) y -= snapy;
-
 			let mx = x-this_ref.camera[0],
 				my = y-this_ref.camera[1];
 
-			this_ref.place_mouse = [x,y];
-			this_ref.mouse = [mx,my];
+			if (mx < 0) { mx -= snapx; x -= snapx; }
+			if (my < 0) { my -= snapy; y -= snapy; }
+
+			this_ref.place_mouse = [Math.floor(x),Math.floor(y)];
+			this_ref.mouse = [Math.floor(mx),Math.floor(my)];
 
 			if (!e.data.originalEvent.ctrlKey) {
 				this_ref.place_mouse = [
@@ -585,15 +580,10 @@ class SceneEditor extends Editor {
 			this_ref.drawCrosshair();
 
 			if (this_ref.dragging) {
-				this_ref.camera = [
-					this_ref.camera_start[0] + (e.data.global.x - this_ref.mouse_start.x) ,
+				this_ref.setCameraPosition(
+					this_ref.camera_start[0] + (e.data.global.x - this_ref.mouse_start.x),
 					this_ref.camera_start[1] + (e.data.global.y - this_ref.mouse_start.y) 
-				];
-				// move grid
-				this_ref.grid_container.x = this_ref.camera[0] % this_ref.curr_layer.snap[0];
-				this_ref.grid_container.y = this_ref.camera[1] % this_ref.curr_layer.snap[1];
-
-				this_ref.refreshCamera();
+				)
 			}
 
 			if (!alt && !this_ref.dragging) {
@@ -611,7 +601,7 @@ class SceneEditor extends Editor {
 			if (btn == 2) {
 				if (this_ref.obj_type == 'image' && this_ref.curr_image) {
                     //blanke.cooldownFn("delete_tile",500,function(){
-                        deleteTile(this_ref.mouse[0], this_ref.mouse[1]);                                
+                        deleteTile(mx, my);                                
                     //});
 				}
             }
@@ -693,14 +683,16 @@ class SceneEditor extends Editor {
 
 	onClose () {
 		app.removeSearchGroup("Scene");
+		nwFS.unlink(this.file);
 		addScenes(app.project_path);
 	}
 
 	onMenuClick (e) {
 		var this_ref = this;
 		app.contextMenu(e.x, e.y, [
+			{label:'close', click:function(){this_ref.close();}},
 			{label:'rename', click:function(){this_ref.renameModal()}},
-			{label:'delete', click:function(){this_ref.deleteModal()}}
+			{label:'delete', click:function(){this_ref.deleteModal()}},
 		]);
 	}
 
@@ -728,7 +720,6 @@ class SceneEditor extends Editor {
 	}
 
 	delete () {
-		nwFS.unlink(this.file);
 		this.deleted = true;
 		this.close();
 	}
@@ -770,6 +761,15 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	setCameraPosition (x, y) {
+		this.camera = [x, y];
+		// move grid
+		this.grid_container.x = this.camera[0] % this.curr_layer.snap[0];
+		this.grid_container.y = this.camera[1] % this.curr_layer.snap[1];
+
+		this.refreshCamera();
+	}
+
 	refreshCamera () {
 		this.map_container.setTransform(this.camera[0], this.camera[1]);
 		this.drawCrosshair();
@@ -797,7 +797,7 @@ class SceneEditor extends Editor {
 
 			// line style
 			this.origin_graphics.clear()
-			this.origin_graphics.lineStyle(3, this.grid_color, this.grid_opacity);
+			this.origin_graphics.lineStyle(2, 0xffffff, this.grid_opacity);
 
 			// horizontal
 			this.origin_graphics.moveTo(0, this.place_mouse[1])
@@ -1159,13 +1159,14 @@ class SceneEditor extends Editor {
 		let new_tile = {'x':0,'y':0,'w':0,'h':0,'snapped':false};
 
 		if (!from_load) {
+			let offx = 0, offy = 0;
+			// if (x - this.camera[0] < 0) offx = layer.snap[0];
+			// if (y - this.camera[1] < 0) offy = layer.snap[1];
+
 			x += (frame.x - this.selected_xmin);
 			y += (frame.y - this.selected_ymin);
 				
 			let align = place_image.align || "top-left";
-			
-			if (x < 0) x -= layer.snap[0];
-			if (y < 0) y -= layer.snap[1];
 
 			if (this.snap_on && !from_load) {
 				x -= x % layer.snap[0];
@@ -1181,7 +1182,7 @@ class SceneEditor extends Editor {
 			
 		}
 
-		let text_key = Math.floor(x - (x % layer.snap[0])).toString()+','+Math.floor(y - (y % layer.snap[1])).toString()+'.'+layer.uuid;
+		let text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+layer.uuid;
 
 		// add if a tile isn't already there
 		if (from_load || !place_image.pixi_images[text_key]) {
@@ -1521,8 +1522,7 @@ class SceneEditor extends Editor {
 
 			// settings
 			if (data.settings) {
-				this.camera = data.settings.camera;
-				this.refreshCamera();
+				this.setCameraPosition(data.settings.camera[0], data.settings.camera[1]);
 			}
 		}
 

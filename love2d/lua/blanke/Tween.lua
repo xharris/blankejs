@@ -62,11 +62,16 @@ Tween = Class{
 			if self._multival then
 				for key, value in pairs(self.value) do
 					local start_value = self._start_val[key]
-					self.var[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+					assert(type(start_value)~='function', "cannot use function value in Tween")
+
 					-- finished?
-					if (start_value < value and self.var[key] >= value) or (start_value > value and self.var[key] <= value) then
-						self:_onFinish()
+					if (start_value < value and self.var[key] < value) or (start_value > value and self.var[key] > value) then
+						self.var[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
 					end
+				end
+
+				if self._dt > self.duration then
+					self:_onFinish()
 				end
 			elseif self._bezier then
 				self._start_val = self._func(self._start_val, 100-self._start_val, self.duration*1000, self._dt*1000)
@@ -82,8 +87,8 @@ Tween = Class{
 				end
 			else
 				self.var = self._func(self._start_val, self.value-self._start_val, self.duration*1000, self._dt*1000)
-				-- finished?
-				if (self._start_val < self.value and self.var >= self.value) or (self._start_val > self.value and self.var <= self.value) then
+
+				if self._dt > self.duration then
 					self:_onFinish()
 				end
 			end

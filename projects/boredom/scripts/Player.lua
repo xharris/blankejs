@@ -20,7 +20,7 @@ function Player:init()
 	
 	self.move_speed = 250
 	self.max_jumps = 1
-	
+	self.dead = false
 	self.jumps = self.max_jumps
 end
 
@@ -30,6 +30,14 @@ function Player:update(dt)
 			self.jumps = self.max_jumps
 		end
 	)
+	
+	self.onCollision['main_box'] = function(other, sep)
+		if other.tag == "player_die" and not self.dead then
+			self.dead = true
+			local death_tween = Tween(main_camera,{angle=30, scale_x=3, scale_y=3},2,'quadratic out')
+			death_tween:play()
+		end
+	end
 
 	-- left/right movement
 	self.hspeed = 0

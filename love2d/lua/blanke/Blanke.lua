@@ -15,6 +15,8 @@ function _getGameObjects(fn)
 	local curr_state = State.current()
 	if curr_state then
 		fn(curr_state.game)
+	else
+		fn(StateManager._stray_objects)
 	end
 end
 

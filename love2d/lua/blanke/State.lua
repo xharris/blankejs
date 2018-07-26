@@ -39,9 +39,19 @@ end
 StateManager = {
 	_stack = {},
 	_in_transition = false,
+	_stray_objects = {},
 
 	iterateStateStack = function(func, ...)
 		local transition_active = (transition_obj.enter_state and transition_obj.exit_state)
+
+		-- update any stateless objects
+		if func == 'update' then
+			for cat, objects in pairs(StateManager._stray_objects) do
+				for o, obj in ipairs(objects) do
+					if obj[func] then obj[func](obj, ...) end
+				end
+			end
+		end
 
 		for s, state in ipairs(StateManager._stack) do
 			if not state._off then
