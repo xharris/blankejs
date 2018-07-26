@@ -59,6 +59,18 @@ class SceneEditor extends Editor {
 		this.grid_container = new PIXI.Container()
 		this.grid_graphics = new PIXI.Graphics();
 		this.origin_graphics = new PIXI.Graphics();
+		this.coord_text_style = new PIXI.TextStyle({
+			fontSize: 12,
+			stroke: '#ffffff',
+			fontFamily: 'ProggySquare',
+			fontWeight: '100'
+		});
+		this.coord_text_x = new PIXI.Text('x=0', this.coord_text_style);
+		this.coord_text_y = new PIXI.Text('y=0', this.coord_text_style);
+
+		this.grid_container.addChild(this.origin_graphics);
+		this.grid_container.addChild(this.coord_text_x);
+		this.grid_container.addChild(this.coord_text_y);
 
 		this.grid_container.addChild(this.grid_graphics);
 		this.overlay_container.addChild(this.origin_graphics);
@@ -551,14 +563,11 @@ class SceneEditor extends Editor {
 			let snapx = this_ref.curr_layer.snap[0];
 			let snapy = this_ref.curr_layer.snap[1];
 			
-			// x -= (this_ref.camera[0]);
-			// y -= (this_ref.camera[1]);
 			if (x < 0) x -= snapx;
 			if (y < 0) y -= snapy;
 
 			let mx = x-this_ref.camera[0],
 				my = y-this_ref.camera[1];
-
 
 			this_ref.place_mouse = [x,y];
 			this_ref.mouse = [mx,my];
@@ -773,15 +782,18 @@ class SceneEditor extends Editor {
 			var stage_width =  this.game_width;
 			var stage_height = this.game_height;
 
-			if (!this.origin_graphics) {
-				this.origin_graphics = new PIXI.Graphics();
-				this.grid_container.addChild(this.origin_graphics);
-			}
-
 			let center = [
 				this.place_mouse[0],
 				this.place_mouse[1]
 			];
+
+			this.coord_text_x.x = this.place_mouse[0];
+			this.coord_text_x.y = (this.game_height - this.place_mouse[1]) / 3 + this.place_mouse[1];
+			this.coord_text_x.text = 'x '+this.mouse[0];
+
+			this.coord_text_y.x = (this.game_width - this.place_mouse[0]) / 3 + this.place_mouse[0];
+			this.coord_text_y.y = this.place_mouse[1];
+			this.coord_text_y.text = 'y '+this.mouse[1];
 
 			// line style
 			this.origin_graphics.clear()
@@ -985,7 +997,7 @@ class SceneEditor extends Editor {
 		let pixi_poly = new PIXI.Graphics();
 
 		// add polygon points
-		pixi_poly.lineStyle(1.5, parseInt(curr_object.color.replace('#',"0x"),16), .75);
+		pixi_poly.lineStyle(2, parseInt(curr_object.color.replace('#',"0x"),16), .5);
 		pixi_poly.beginFill(parseInt(curr_object.color.replace('#',"0x"),16), .25);
 		if (points.length == 2) {
 			pixi_poly.drawRect(
@@ -1151,12 +1163,7 @@ class SceneEditor extends Editor {
 			y += (frame.y - this.selected_ymin);
 				
 			let align = place_image.align || "top-left";
-
-			if (align.includes("right"))
-				x -= this.selected_width;
-			if (align.includes("bottom"))
-				y -= this.selected_height;
-
+			
 			if (x < 0) x -= layer.snap[0];
 			if (y < 0) y -= layer.snap[1];
 
@@ -1165,12 +1172,19 @@ class SceneEditor extends Editor {
 				y -= y % layer.snap[1];
 				new_tile.snapped = true;
 			}
+
+			if (align.includes("right"))
+				x -= this.selected_width;
+			if (align.includes("bottom"))
+				y -= this.selected_height;
+
+			
 		}
 
 		let text_key = Math.floor(x - (x % layer.snap[0])).toString()+','+Math.floor(y - (y % layer.snap[1])).toString()+'.'+layer.uuid;
 
 		// add if a tile isn't already there
-		if (!place_image.pixi_images[text_key]) {
+		if (from_load || !place_image.pixi_images[text_key]) {
 			if (!place_image.pixi_tilemap[layer.uuid]) {
 				place_image.pixi_tilemap[layer.uuid] = new PIXI.Container();
 				layer.container.addChild(place_image.pixi_tilemap[layer.uuid]);
