@@ -33,20 +33,19 @@ function Player:init()
 end
 
 function Player:update(dt)
-	self:platformerCollide("ground", nil, nil,
-		function()
+	self:platformerCollide{
+		tag="ground", 
+		all=function(other, sep)
+			if other.tag == "player_die" and not self.dead then
+				self.dead = true
+				local death_tween = Tween(main_camera,{angle=30, scale_x=3, scale_y=3},2,'quadratic out')
+				death_tween:play()
+			end
+		end,
+		floor=function()
 			self.jumps = self.max_jumps
 		end
-	)
-	
-	self.onCollision['main_box'] = function(other, sep)
-		if other.tag == "player_die" and not self.dead then
-			self.dead = true
-			local death_tween = Tween(main_camera,{angle=30, scale_x=3, scale_y=3},2,'quadratic out')
-			death_tween:play()
-		end
-		return true
-	end
+	}
 
 	-- left/right movement
 	self.hspeed = 0

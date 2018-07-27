@@ -768,4 +768,4 @@ BlankE.loadPlugin(name)
 
 --Platformer
 (Entity):addPlatforming(left, top, width, height) 						-- creates hitboxes: main_box, head_box, feet_box
-(Entity):platformerCollider(hitbox_tag, fn_wall, fn_ceil, fn_floor)		-- hitbox_tag: name of hitbox to collide with, fn_?: callbacks. return false to ignore collision
+(Entity):platformerCollide{tag, wall, ceiling, floor, all}				-- tag: name of hitbox to collide with, [wall, ceiling, floor]: callbacks. return false to ignore collision
