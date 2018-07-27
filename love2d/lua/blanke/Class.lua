@@ -76,12 +76,20 @@ local function new(class)
 		local classname = rawget(self, 'classname') or false
 		if classname then
 			if type(val) == "function" then
-				if class.onMethod and class.onMethod[key] then return class.onMethod[key] end
+				if class.onGetMethod and class.onGetMethod[key] then return class.onGetMethod[key] end
 			else
-				if class.onProp and class.onProp[key] then return class.onProp[key] end
+				if class.onGetProp and class.onGetProp[key] then return class.onGetProp[key]() end
 			end
 		end
 		return val
+	end
+	-- class implementation
+	class.__newindex = function(self, key, value)
+		local classname = rawget(self, 'classname') or false
+		if classname then
+			if self.onSetProp and self.onSetProp[key] then value = self.onSetProp[key](self, key, value) end
+		end
+		rawset(self, key, value)
 	end
 	class.init    = class.init    or class[1] or function() end
 	class.include = class.include or include

@@ -64,9 +64,16 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
-		self.onMethod = {
+		self.onGetMethod = {
 			draw = function(self, fn)
 				return function(...) Draw.stack(function(...) fn(self, ...) end) end
+			end
+		}
+
+		self.onSetProp = {
+			sprite_index = function(self, prop, val)
+				self:refreshSpriteDims(val)
+				return val
 			end
 		}
 
@@ -179,7 +186,7 @@ Entity = Class{
 					local collisions = HC.neighbors(obj_shape)
 					for other in pairs(collisions) do
 					    local collides, dx, dy = obj_shape:collidesWith(other)
-					    if collides then
+					    if collides and not other.tag:contains(self.classname) then
 		                	local separating_vector = {['x']=dx, ['y']=dy}
 
 		                	self.collisions[name] = ifndef(self.collisions[name], {})
@@ -409,13 +416,18 @@ Entity = Class{
 			self._images[ani_name] = image
 			self._sprites[ani_name] = sprite
 
-			local anim_w, anim_h = self._sprites[ani_name]:getDimensions()
+			self:refreshSpriteDims(ani_name)
 
-			self.sprite[ani_name] = {width=anim_w, height=anim_h}
-			self.sprite_width, self.sprite_height = ifndef(anim_w, 0), ifndef(anim_h, 0)
-
+			self.sprite[ani_name] = {width=self.sprite_width, height=self.sprite_height}
 		end
 		return self
+	end,
+
+	refreshSpriteDims = function(self, name)
+		if self._sprites[name] then
+			local anim_w, anim_h = self._sprites[name]:getDimensions()
+			self.sprite_width, self.sprite_height = ifndef(anim_w, 0), ifndef(anim_h, 0)
+		end
 	end,
 
 	-- add a collision shape

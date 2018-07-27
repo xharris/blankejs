@@ -3,7 +3,7 @@
 BlankE = require('blanke.Blanke')
 
 function love.load()
-	Window.setResolution(2)
+	Window.setResolution(1)
 	
 	Asset.add('scripts')
 	Asset.add('assets')

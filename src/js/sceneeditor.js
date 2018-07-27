@@ -685,6 +685,7 @@ class SceneEditor extends Editor {
 
 	onClose () {
 		app.removeSearchGroup("Scene");
+		app.removeSearchGroup("scene_image");
 		nwFS.unlink(this.file);
 		addScenes(app.project_path);
 	}

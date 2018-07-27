@@ -1,10 +1,12 @@
 Entity.addPlatforming = function(self, left, top, width, height)
+	-- yes, unused at the moment
 	local left2 = left + self.sprite_xoffset
 	local top2 = top + self.sprite_yoffset
+	-- 
 
 	self:addShape("main_box", "rectangle", {left, top, width, height})		-- rectangle of whole players body
-	self:addShape("head_box", "rectangle", {left, top-(height-2), width, 2})
-	self:addShape("feet_box", "rectangle", {left, top+(height-2), width, 2})	-- rectangle at players feet
+	self:addShape("head_box", "rectangle", {left+2, top-(height-2), width-4, 2})
+	self:addShape("feet_box", "rectangle", {left+2, top+(height-2), width-4, 2})	-- rectangle at players feet
 	self:setMainShape("main_box")
 end
 
@@ -12,6 +14,7 @@ Entity.platformerCollide = function(self, ground_tag, fn_wall, fn_ceil, fn_floor
 	self.onCollision["main_box"] = function(other, sep_vector)	-- other: other hitbox in collision
 		if other.tag == ground_tag then
             -- horizontal collision
+            Debug.log("OW")
             if math.abs(sep_vector.x) > 0 then
                 if (fn_wall and fn_wall() ~= false) or fn_wall == nil then
 	                self:collisionStopX() 

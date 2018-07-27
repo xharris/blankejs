@@ -16,7 +16,8 @@ function Player:init()
 		name = "dead",
 		image = "player_dead"
 	}
-	Debug.log(self.sprite_width)
+	self.sprite_index = "stand"
+	
 	self.sprite_xoffset = -self.sprite_width / 2
 	self.sprite_yoffset = -self.sprite_height / 2 + 2
 	
@@ -44,6 +45,7 @@ function Player:update(dt)
 			local death_tween = Tween(main_camera,{angle=30, scale_x=3, scale_y=3},2,'quadratic out')
 			death_tween:play()
 		end
+		return true
 	end
 
 	-- left/right movement
