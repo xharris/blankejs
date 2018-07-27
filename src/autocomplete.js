@@ -126,7 +126,8 @@ module.exports.completions = {
 		}},
 		{fn:"update", callback: true},
 		{fn:"draw", callback: true},
-		{fn:"leave", callback: true}
+		{fn:"leave", callback: true},
+		{prop:"background_color"}
 	],
 	"blanke-entity":[
 		{fn:"init", callback: true},

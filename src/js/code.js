@@ -546,7 +546,7 @@ class Code extends Editor {
 	rename (old_path, new_path) {
 		var this_ref = this;
 		nwFS.readFile(new_path, function(err, data){
-			if (!err) {
+			if (err) { // if there's an error, the file doesn't already exist and therefore renaming can continue
 				nwFS.rename(old_path, new_path);
 				this_ref.file = new_path;
 				this_ref.setTitle(nwPATH.basename(this_ref.file));
@@ -647,12 +647,15 @@ document.addEventListener("openProject", function(e){
 				// overwrite the file if it exists. fuk it!!
 				nwFS.readdir(script_dir, function(err, files){
 					nwFS.writeFile(nwPATH.join(script_dir, 'script'+files.length+'.lua'),"\
--- create an Entity: BlankE.addClassType(\"Player\", \"Entity\");\n\n\
--- create a State: BlankE.addClassType(\"houseState\", \"State\");\
-					");
+-- create an Entity: BlankE.addEntity(\"Player\");\n\n\
+-- create a State: BlankE.addState(\"HouseState\");\
+					", function(err){
+						if (!err) {
+							// edit the new script
+							(new Code(app)).edit(nwPATH.join(script_dir, 'script'+files.length+'.lua'));
+						}
+					});
 
-					// edit the new script
-					(new Code(app)).edit(nwPATH.join(script_dir, 'script'+files.length+'.lua'));
 				});
 			});
 		},

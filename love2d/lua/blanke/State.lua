@@ -1,19 +1,13 @@
 local transition_obj = {}
 
 local resetTransitionObj = function()
-	if transition_obj.enter_state then
-		transition_obj.enter_state._stencil_test = nil
-	end
-	if transition_obj.exit_state then
-		transition_obj.exit_state._stencil_test = nil
-	end
 	if transition_obj.tween then transition_obj.tween:destroy() end
 
 	transition_obj = {
 		exit_state = nil,
 		enter_state = nil,
 		animation = '',
-		stencil_fn = nil,
+		transition_fn = nil,
 		tween = nil
 	}
 end
@@ -27,13 +21,6 @@ local drawStateNormal = function(state)
 		Draw.resetColor()
 	end
 	if state.draw then state:draw() end
-end
-
-local drawStateStencil = function(state)
-	love.graphics.stencil(transition_obj.stencil_fn, "replace", 1)
-	love.graphics.setStencilTest(state._stencil_test, 0)
-	drawStateNormal(state)
-	love.graphics.setStencilTest()
 end
 
 StateManager = {
@@ -75,11 +62,11 @@ StateManager = {
 					if transition_active then
 						-- is this the 'entering' state?
 						if transition_obj.enter_state.classname == state.classname then
-							drawStateStencil(state)
+							transition_obj.transition_fn(state)
 						
 						-- is this the 'exiting' state?
 						elseif transition_obj.exit_state.classname == state.classname then
-							drawStateStencil(state)
+							transition_obj.transition_fn(state)
 
 						else
 							drawStateNormal(state)
@@ -167,56 +154,86 @@ StateManager = {
         end
 	end,
 
-	_setupTransition = function(curr_state, next_state, animation)
+	_setupTransition = function(curr_state, next_state, animation, args)
 
 		transition_obj.exit_state = curr_state
 		transition_obj.enter_state = next_state
 		transition_obj.animation = animation
         
 		local diag_size = math.sqrt((game_width*game_width) + (game_height*game_height))
+		local stencil_fn = function(state, test, fn)
+			love.graphics.stencil(fn, "replace", 1)
+			love.graphics.setStencilTest(test, 0)
+			drawStateNormal(state)
+			love.graphics.setStencilTest()
+		end
 
 		if animation == "circle-in" then
-			transition_obj.stencil_fn = function()
-				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.tween.var)
+			transition_obj.transition_fn = function(state)
+				stencil_fn(state, "equal", function()
+					love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.tween.var)
+				end)
 			end
 			transition_obj.tween = Tween(diag_size, 0, .5)
-			transition_obj.enter_state._stencil_test = "equal"	
 		end
 
 		if animation == "circle-out" then
-			transition_obj.stencil_fn = function()
-				love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.tween.var)
+			transition_obj.transition_fn = function(state)
+				stencil_fn(state, "greater", function()
+					love.graphics.circle("fill", game_width / 2, game_height /2, transition_obj.tween.var)
+				end)
 			end
 			transition_obj.tween = Tween(0, diag_size, .5)
-			transition_obj.enter_state._stencil_test = "greater"
 		end
 
 		if animation == "wipe-up" or animation == "wipe-down" then
-			transition_obj.stencil_fn = function()
-				Draw.rect("fill", 0, transition_obj.tween.var, game_width, game_height - transition_obj.tween.var)
-			end
 			if animation == "wipe-up" then
+				transition_obj.transition_fn = function(state)
+					stencil_fn(state, "greater", function()
+						Draw.rect("fill", 0, transition_obj.tween.var, game_width, game_height - transition_obj.tween.var)
+					end)	
+				end
 				transition_obj.tween = Tween(game_width, 0, .5)
-				transition_obj.enter_state._stencil_test = "greater"
 			end
 			if animation == "wipe-down" then
+				transition_obj.transition_fn = function(state)
+					stencil_fn(state, "equal", function()
+						Draw.rect("fill", 0, transition_obj.tween.var, game_width, game_height - transition_obj.tween.var)
+					end)	
+				end
 				transition_obj.tween = Tween(0, game_width, .5)
-				transition_obj.enter_state._stencil_test = "equal"
 			end
 		end
 
 		if animation == "clockwise" or animation == "counter-clockwise" then
-			transition_obj.stencil_fn = function()
-				love.graphics.arc("fill", game_width/2, game_height/2, diag_size, math.rad(270), math.rad(transition_obj.tween.var+270))
-			end
 			if animation == "clockwise" then
+				transition_obj.transition_fn = function(state)
+					stencil_fn(state, "greater", function()
+						love.graphics.arc("fill", game_width/2, game_height/2, diag_size, math.rad(270), math.rad(transition_obj.tween.var+270))
+					end)
+				end
 				transition_obj.tween = Tween(0, 360, .5)
-				transition_obj.enter_state._stencil_test = "greater"
 			end
 			if animation == "counter-clockwise" then
+				transition_obj.transition_fn = function(state)
+					stencil_fn(state, "equal", function()
+						love.graphics.arc("fill", game_width/2, game_height/2, diag_size, math.rad(270), math.rad(transition_obj.tween.var+270))
+					end)
+				end
 				transition_obj.tween = Tween(360, 0, .5)
-				transition_obj.enter_state._stencil_test = "equal"
 			end
+		end
+
+		if animation == "fade" then
+			assert(args[1], "Fade transition requires color arg")
+			transition_obj.transition_fn = function(state)
+				Draw.stack(function()
+					Draw.setColor(args[1])
+					Draw.setAlpha(transition_obj.tween.var)
+					Draw.rect('fill',0,0,game_width,game_height)
+				end)
+			end
+			transition_obj.tween = Tween(0, 1, .5)
 		end
 
 		if transition_obj.tween then
@@ -224,7 +241,7 @@ StateManager = {
 		end
 	end,
 
-	transition = function(next_state, animation)
+	transition = function(next_state, animation, ...)
 		if not (transition_obj.enter_state or transition_obj.exit_state) then
 
 			local curr_state = StateManager.current()
@@ -232,7 +249,7 @@ StateManager = {
 
 			resetTransitionObj()
 
-			StateManager._setupTransition(curr_state, next_state, animation)
+			StateManager._setupTransition(curr_state, next_state, animation, {...})
 
 			transition_obj.tween.onFinish = function()
 				local exit_state = transition_obj.exit_state
