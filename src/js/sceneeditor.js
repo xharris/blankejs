@@ -15,7 +15,7 @@ class SceneEditor extends Editor {
 		this.file = '';
 		this.map_folder = '/maps';
 		
-		this.grid_opacity = 0.1;
+		this.grid_opacity = 0.05;
 		this.snap_on = true;
 		this.deleted = false;
 
@@ -446,18 +446,12 @@ class SceneEditor extends Editor {
         this.pointer_down = -1;
 		this.pixi.stage.on('pointerdown',function(e){
 			
-			let x = e.data.global.x;
-			let y = e.data.global.y;
+			let x = this_ref.mouse[0];
+			let y = this_ref.mouse[1];
 			let btn = e.data.originalEvent.button;
 			let alt = e.data.originalEvent.altKey;
 
 			this_ref.pointer_down = btn;
-
-			x -= this_ref.camera[0];
-			y -= this_ref.camera[1];
-
-			if (x < 0) x -= this_ref.curr_layer.snap[0];
-			if (y < 0) y -= this_ref.curr_layer.snap[1];
 
 			// dragging canvas
 			if (((btn == 1) || (btn == 0 && alt)) && !this_ref.dragging) {
@@ -469,14 +463,10 @@ class SceneEditor extends Editor {
 				// placing object
 				if (btn == 0) {
 					if(this_ref.obj_type == 'object') 
-						this_ref.placeObjectPoint(x, y);
+						this_ref.placeObjectPoint(this_ref.half_mouse[0], this_ref.half_mouse[1]);
 					
 					if(this_ref.obj_type == 'image') {
-						/*
-						x -= x % this_ref.curr_layer.snap[0];
-						y -= y % this_ref.curr_layer.snap[1];
-						*/
-						this_ref.tile_start = [this_ref.mouse[0], this_ref.mouse[1]];
+						this_ref.tile_start = [x,y];
 						bringToFront(this.tile_straightedge)
 					}
 				}
@@ -549,6 +539,8 @@ class SceneEditor extends Editor {
 		});
 
 		this.place_mouse = [0,0];
+		this.half_mouse = [0,0];
+		this.half_place_mouse = [0,0];
 		this.pixi.stage.on('pointermove', function(e) {
 			let x = e.data.global.x;
 			let y = e.data.global.y;
@@ -566,6 +558,8 @@ class SceneEditor extends Editor {
 
 			this_ref.place_mouse = [Math.floor(x),Math.floor(y)];
 			this_ref.mouse = [Math.floor(mx),Math.floor(my)];
+			this_ref.half_mouse = [Math.floor(mx),Math.floor(my)];
+			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
 			if (!e.data.originalEvent.ctrlKey) {
 				this_ref.place_mouse = [
@@ -575,6 +569,14 @@ class SceneEditor extends Editor {
 				this_ref.mouse = [
 					mx - (mx%snapx),
 					my - (my%snapy)
+				];
+				this_ref.half_place_mouse = [
+					x - (mx%(snapx/2)),
+					y - (my%(snapy/2))
+				]
+				this_ref.half_mouse = [
+					mx - (mx%(snapx/2)),
+					my - (my%(snapy/2))
 				];
 			}
 			this_ref.drawCrosshair();
@@ -1124,8 +1126,6 @@ class SceneEditor extends Editor {
 			// calculate snap
 			let snapx = this.curr_layer.snap[0] / 2;
 			let snapy = this.curr_layer.snap[1] / 2;
-			if (x < 0) x -= snapx;
-			if (y < 0) y -= snapy;
 			if (this.snap_on) {
 				x -= x % snapx;
 				y -= y % snapy;
@@ -1310,14 +1310,8 @@ class SceneEditor extends Editor {
 		if (this.obj_type == "object" && this.curr_object) {
 			let snapx = this.curr_layer.snap[0] / 2;
 			let snapy = this.curr_layer.snap[1] / 2;
-			let x = this.mouse[0]-this.camera[0];
-			let y = this.mouse[1]-this.camera[1];
-			if (x < 0) x -= snapx;
-			if (y < 0) y -= snapy;
-			if (this.snap_on) {
-				x -= x % snapx;
-				y -= y % snapy;
-			}
+			let x = this.half_mouse[0];
+			let y = this.half_mouse[1];
 
 			this.dot_preview.clear();
 			this.dot_preview.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .75);

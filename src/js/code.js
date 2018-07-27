@@ -418,7 +418,7 @@ class Code extends Editor {
 						});
 					}
 				}
-				//if (Object.keys(hints).includes(token_type)) {
+				blanke.cooldownFn("editor_show_hint", 250, function(){
 					editor.showHint({
 						hint: function(cm) {
 							let completions = {
@@ -441,7 +441,7 @@ class Code extends Editor {
 						},
 						completeSingle: false
 					});
-				//}
+				});
 			}
 		});
 

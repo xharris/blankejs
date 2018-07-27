@@ -137,6 +137,7 @@ class DragBox {
 			    target.setAttribute('data-x', this_ref.x);
 			    target.setAttribute('data-y', this_ref.y);
 
+			}).on('resizeend', function(event){
 				this_ref.onResize(this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight);
 				box_sizes[this_ref.title] = [this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight];
 			});
@@ -195,13 +196,15 @@ class DragBox {
 	}
 
 	setTitle (value) {
-		this.drag_handle.innerHTML = value+this.subtitle;
-		this.title = value;
-		if (box_sizes[value]) {
-			this.drag_container.style.width = box_sizes[value][0]+"px";
-			this.drag_container.style.height = box_sizes[value][1]+"px";
-		} else {
-			box_sizes[value] = [this.drag_container.offsetWidth, this.drag_container.offsetHeight];
+		if (this.drag_handle.innerHTML != value+this.subtitle) {
+			this.drag_handle.innerHTML = value+this.subtitle;
+			this.title = value;
+			if (box_sizes[value]) {
+				this.drag_container.style.width = box_sizes[value][0]+"px";
+				this.drag_container.style.height = box_sizes[value][1]+"px";
+			} else {
+				box_sizes[value] = [this.drag_container.offsetWidth, this.drag_container.offsetHeight];
+			}
 		}
 	}
 

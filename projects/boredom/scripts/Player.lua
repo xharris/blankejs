@@ -12,6 +12,11 @@ function Player:init()
 		frame_size = {21, 33},
 		speed = 0.2
 	}
+	self:addAnimation{
+		name = "dead",
+		image = "player_dead"
+	}
+	Debug.log(self.sprite_width)
 	self.sprite_xoffset = -self.sprite_width / 2
 	self.sprite_yoffset = -self.sprite_height / 2 + 2
 	
@@ -22,6 +27,8 @@ function Player:init()
 	self.max_jumps = 1
 	self.dead = false
 	self.jumps = self.max_jumps
+	
+	self.show_debug = true
 end
 
 function Player:update(dt)
@@ -41,37 +48,41 @@ function Player:update(dt)
 
 	-- left/right movement
 	self.hspeed = 0
-	if Input("move_left") then
-		self.hspeed = -self.move_speed
-	end
-	if Input("move_right") then
-		self.hspeed = self.move_speed
-	end
-	-- jumping
-	if Input("jump") and self.jumps > 0 then
-		self.vspeed = -650
-		self.jumps = self.jumps - 1
-	end
-	
-	-- animation
-	if self.hspeed == 0 then
-		self.sprite_index = "stand"	
-		
-	elseif self.hspeed > 0 then
-		self.sprite_xscale = 1
-		self.sprite_index = "walk"
-		
-	elseif self.hspeed < 0 then
-		self.sprite_xscale = -1
-		self.sprite_index = "walk"
-		
-	end
-	
-	if self.vspeed ~= 0 then
-		self.sprite_index = "walk"
-		self.sprite_speed = 0
-		self.sprite_frame = 2
+	if not self.dead then
+		if Input("move_left") then
+			self.hspeed = -self.move_speed
+		end
+		if Input("move_right") then
+			self.hspeed = self.move_speed
+		end
+		-- jumping
+		if Input("jump") and self.jumps > 0 then
+			self.vspeed = -650
+			self.jumps = self.jumps - 1
+		end
+
+		-- animation
+		if self.hspeed == 0 then
+			self.sprite_index = "stand"	
+
+		elseif self.hspeed > 0 then
+			self.sprite_xscale = 1
+			self.sprite_index = "walk"
+
+		elseif self.hspeed < 0 then
+			self.sprite_xscale = -1
+			self.sprite_index = "walk"
+
+		end
+
+		if self.vspeed ~= 0 then
+			self.sprite_index = "walk"
+			self.sprite_speed = 0
+			self.sprite_frame = 2
+		else
+			self.sprite_speed = 5
+		end
 	else
-		self.sprite_speed = 5
+		self.sprite_index = "dead"
 	end
 end
