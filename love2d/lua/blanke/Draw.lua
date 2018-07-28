@@ -1,5 +1,9 @@
 Draw = Class{
-	font = nil,
+	font = Font{
+		size=20,
+		color="black",
+		align="center"
+	},
 	background_color = {0,0,0,1},
 	color = {0,0,0,255},
 	reset_color = {1,1,1,1},
@@ -99,6 +103,15 @@ Draw = Class{
 
 	scale = function(x_scale, y_scale)
 		love.graphics.scale(x_scale, ifndef(y_scale, x_scale))
+	end,
+
+	shear = function(x, y)
+		love.graphics.shear(x,y)
+	end,
+
+	-- degrees
+	rotate = function(deg)
+		love.graphics.rotate(math.rad(deg))
 	end,
 
 	reset = function(dont_scale)

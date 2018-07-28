@@ -263,10 +263,10 @@ Entity = Class{
 		local sy = -info.yoffset
 
 		Draw.stack(function()
-			love.graphics.translate(self.x, self.y)
-			love.graphics.rotate(math.rad(info.angle))
-			love.graphics.shear(info.xshear, info.yshear)
-			love.graphics.scale(info.xscale, info.yscale)
+			Draw.translate(self.x, self.y)
+			Draw.rotate(info.angle)
+			Draw.shear(info.xshear, info.yshear)
+			Draw.scale(info.xscale, info.yscale)
 
 			-- draw sprite outline
 			Draw.setColor(0,1,0,2/3)

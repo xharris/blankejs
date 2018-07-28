@@ -1,14 +1,18 @@
 Font = Class{
+	_current_font = '',
 	init = function(self, options)
 		self.options = {
-			size = 12,
+			name = "console.ttf",
+			size = 22,
 			color = "white",
 			align = "left",
 			limit = -1
 		}
-		for key, val in pairs(options) do self.options[key] = val end
+		if options then
+			for key, val in pairs(options) do self.options[key] = val end
+		end
 
-		self.font = love.graphics.newFont(self.options.size)
+		self.font = love.graphics.newFont(self.options.name, self.options.size)
 	end,
 
 	_getOpt = function(self, key, override_opts)

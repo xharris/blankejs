@@ -40,7 +40,7 @@ function Player:update(dt)
 				self.dead = true
 				local transition_timer = Timer(1)
 				transition_timer:after(function()
-					State.transition(DeathState, 'clockwise')--'fade', 'black')	
+					State.transition(DeathState, 'fade', 'black')	
 				end)
 				local death_tween = Tween(main_camera,{angle=30, scale_x=3, scale_y=3},2,'quadratic out')
 				death_tween:play()

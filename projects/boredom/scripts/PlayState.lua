@@ -1,7 +1,7 @@
 BlankE.addState("PlayState");
 
 local player
-main_camera = View()
+main_camera = nil
 
 function PlayState:enter(prev)
 	Draw.setBackgroundColor('white')
@@ -10,6 +10,7 @@ function PlayState:enter(prev)
 	sc_level1:addHitbox("player_die")
 	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
 	
+	main_camera = View()
 	main_camera:follow(player)
 end
 

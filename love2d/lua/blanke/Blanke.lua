@@ -4,7 +4,7 @@ function blanke_require(import)
 	return require(blanke_path..import)
 end
 
---love.graphics.setDefaultFilter("nearest","nearest")
+-- love.graphics.setDefaultFilter("nearest","linear")
 
 blanke_require('Globals')
 blanke_require('Util')
@@ -91,7 +91,7 @@ HC 		= blanke_require('extra.HC')
 blanke_require('extra.noobhub')
 --grease 	= blanke_require('extra.grease')
 
-local modules = {'Map','Asset','Bezier','Camera','Canvas','Dialog','Draw','Effect','Entity','Font','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
+local modules = {'Map','Asset','Bezier','Camera','Canvas','Dialog','Font','Draw','Effect','Entity','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 -- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
 	--if not table.hasValue(not_require, mod) then
@@ -121,7 +121,7 @@ BlankE = {
 	_mouse_x = 0,
 	_mouse_y = 0,
 	game_canvas = nil,
-	font = love.graphics.newFont(),--(blanke_path..'ProggySquare'):gsub('[.]','/')..'.ttf', 16),
+	font = Font(),
 	draw_debug = false,
 
 	-- window scaling
@@ -152,12 +152,14 @@ BlankE = {
 			end
 		end
 
+
+
 		Scene._fake_view = View()
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 		Asset.loadScripts()
 
-		love.graphics.setFont(BlankE.font)
+		Draw.setFont(BlankE.font)
 
 	    -- figure out the first state to run
 	    if BlankE.first_state and not first_state then
@@ -458,9 +460,9 @@ BlankE = {
 	end,
 
 	drawToScale = function(func)
-		love.graphics.push()
-		love.graphics.scale(BlankE.scale_x, BlankE.scale_y)
-		love.graphics.translate(BlankE._offset_x, BlankE._offset_y)	
+		Draw.push()
+		Draw.scale(BlankE.scale_x, BlankE.scale_y)
+		Draw.translate(BlankE._offset_x, BlankE._offset_y)	
 
 		func()
 
@@ -468,8 +470,8 @@ BlankE = {
 	end,
 
 	reapplyScaling = function()
-		love.graphics.scale(BlankE.scale_x, BlankE.scale_y)
-		love.graphics.translate(BlankE._offset_x, BlankE._offset_y)	
+		Draw.scale(BlankE.scale_x, BlankE.scale_y)
+		Draw.translate(BlankE._offset_x, BlankE._offset_y)	
 	end,
 
 	draw = function()

@@ -783,35 +783,41 @@
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"],
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"],
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] {
   display: inline-block;
   width: 100%;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"][data-size="2"] .form-inputs .form-text {
   width: 40%;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="0"],
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text[data-index="0"],
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text[data-index="0"] {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text[data-index="0"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"][data-size="2"] .form-inputs .form-text[data-index="0"] {
   text-align: right;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"][data-size="2"] .form-inputs .form-text[data-index="1"],
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"][data-size="2"] .form-inputs .form-text[data-index="1"],
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text[data-index="1"] {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"][data-size="2"] .form-inputs .form-text[data-index="1"],
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"][data-size="2"] .form-inputs .form-text[data-index="1"] {
   text-align: left;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-label,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-label,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-label {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-label,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] .form-label {
   margin: 0px;
   margin-top: 5px;
   text-transform: uppercase;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-text,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] .form-inputs .form-text {
   border: none;
   outline: none;
   background-color: rgba(255, 255, 255, 0.5);
@@ -823,9 +829,11 @@
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text::-webkit-outer-spin-button,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-text::-webkit-outer-spin-button,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text::-webkit-outer-spin-button,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] .form-inputs .form-text::-webkit-outer-spin-button,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text::-webkit-inner-spin-button,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-text::-webkit-inner-spin-button,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text::-webkit-inner-spin-button {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text::-webkit-inner-spin-button,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] .form-inputs .form-text::-webkit-inner-spin-button {
   /* display: none; <- Crashes Chrome on hover */
   -webkit-appearance: none;
   margin: 0;
@@ -833,7 +841,8 @@
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-separator,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-separator,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-separator {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-separator,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] .form-inputs .form-separator {
   margin: 0px;
   width: 20%;
   display: inline-block;
@@ -843,13 +852,25 @@
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-select,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-select,
-.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-select {
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-select,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] .form-inputs .form-select {
   border: none;
   padding: 5px;
   text-align: center;
   background-color: #b0bec5;
   width: 100%;
   height: 20px;
+}
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-color,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-color,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-color,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] .form-inputs .form-color {
+  width: 100%;
+  padding: 0px;
+  margin: 0px;
+  border: none;
+  outline: none;
+  background-color: transparent;
 }
 .content[data-type="SceneEditor"] .sidebar .object-container .input-letter,
 .content[data-type="SceneEditor"] .sidebar .object-container .select-letter {

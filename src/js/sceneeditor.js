@@ -105,10 +105,9 @@ class SceneEditor extends Editor {
 
 		this.el_object_form = new BlankeForm([
 			['name', 'text', {'label':false}],
-			['color', 'color', {'label':false}]
+			['color', 'color', {'label':false}],
+			['size', 'number', {'inputs':2, 'separator':'x'}]
 		]);
-		this.el_input_name		= app.createElement("input","input-name");
-		this.el_color_object	= app.createElement("input","color-object");
 	
 		this.el_layer_container	= app.createElement("div","layer-container");
 		this.el_snap_container	= app.createElement("div","snap-container");
@@ -248,12 +247,12 @@ class SceneEditor extends Editor {
 		});
 
 		// object name
-		this.el_input_name.addEventListener('change', function(e){
+		this.el_object_form.onChange('name', function(value){
 			if (this_ref.curr_object) {
-				if (e.target.value == '')
-					e.target.value = this_ref.curr_object.name;
+				if (value[0] == '')
+					return this_ref.curr_object.name;
 				else {
-					this_ref.curr_object.name = e.target.value;
+					this_ref.curr_object.name = value[0];
 					this_ref.refreshObjectList();
 					this_ref.export();
 					this_ref.updateGlobalObjList();
@@ -262,14 +261,37 @@ class SceneEditor extends Editor {
 		});
 
 		// object color
-		this.el_color_object.type = "color";
-		this.el_color_object.addEventListener('change', function(e){
+		this.el_object_form.onChange('color', function(value){
 			if (this_ref.curr_object) {
-				this_ref.curr_object.color = e.target.value;
+				this_ref.curr_object.color = value[0];
 				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-					obj.poly.destroy();
-					this_ref.placeObject(obj.points);
+					this_ref.drawPoly(this_ref.curr_object, obj.points, obj.poly);
 				});
+				this_ref.export();
+				this_ref.updateGlobalObjList();
+			}
+		});
+
+		// object size
+		this.el_object_form.onChange('size', function(value){
+			let sizex = value[0];
+			let sizey = value[1];
+
+			if (this_ref.curr_object) {
+				if (isNaN(sizex) || isNaN(sizey))
+					return this_ref.curr_object.size.slice();
+
+				if (sizex < 0) sizex = 0;
+				if (sizey < 0) sizey = 0;
+				this_ref.curr_object.size[0] = sizex;
+				this_ref.curr_object.size[1] = sizey;
+
+				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
+					if (obj.points.length == 2) {
+						this_ref.drawPoly(this_ref.curr_object, obj.points, obj.poly);
+					}
+				});
+
 				this_ref.export();
 				this_ref.updateGlobalObjList();
 			}
@@ -363,8 +385,7 @@ class SceneEditor extends Editor {
 		this.el_object_container.appendChild(this.el_input_letter);
 		this.el_object_container.appendChild(this.el_sel_letter);
 		this.el_object_container.appendChild(this.el_btn_add_object);
-		this.el_object_container.appendChild(this.el_input_name);
-		this.el_object_container.appendChild(this.el_color_object);
+		this.el_object_container.appendChild(this.el_object_form.container);
 
 		// IMAGE
 		this.el_image_container.appendChild(this.el_image_info);
@@ -972,6 +993,32 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	drawPoly (obj, points, poly) {
+		if (!poly) poly = new PIXI.Graphics();
+		poly.clear();
+
+		// add polygon points
+		poly.lineStyle(2, parseInt(obj.color.replace('#',"0x"),16), .5);
+		poly.beginFill(parseInt(obj.color.replace('#',"0x"),16), .2);
+		if (points.length == 2) {
+			poly.drawRect(
+				points[0]-obj.size[0]/2,
+				points[1]-obj.size[1]/2,
+				obj.size[0],obj.size[1]
+			);
+		} else {
+			for (let p = 0; p < points.length; p+=2) {
+				if (p == 0)
+					poly.moveTo(points[p], points[p+1]);
+				else
+					poly.lineTo(points[p], points[p+1]);
+			}
+			poly.lineTo(points[0], points[1]);
+		}
+		poly.endFill();
+		return poly;
+	}
+
 	// when user presses enter to finish object
 	// also used when loading a file's objects
 	placeObject (points) {
@@ -997,27 +1044,7 @@ class SceneEditor extends Editor {
 		}
 
 		let curr_object = this.curr_object;
-		let pixi_poly = new PIXI.Graphics();
-
-		// add polygon points
-		pixi_poly.lineStyle(2, parseInt(curr_object.color.replace('#',"0x"),16), .5);
-		pixi_poly.beginFill(parseInt(curr_object.color.replace('#',"0x"),16), .25);
-		if (points.length == 2) {
-			pixi_poly.drawRect(
-				points[0]-this.curr_layer.snap[0]/2,
-				points[1]-this.curr_layer.snap[1]/2,
-				this.curr_layer.snap[0],this.curr_layer.snap[1]
-			);
-		} else {
-			for (let p = 0; p < points.length; p+=2) {
-				if (p == 0)
-					pixi_poly.moveTo(points[p], points[p+1]);
-				else
-					pixi_poly.lineTo(points[p], points[p+1]);
-			}
-			pixi_poly.lineTo(points[0], points[1]);
-		}
-		pixi_poly.endFill();
+		let pixi_poly = this.drawPoly(curr_object, points);
 
 		// add remove click
 		pixi_poly.interactive = true;
@@ -1036,6 +1063,7 @@ class SceneEditor extends Editor {
 		});
 
 		pixi_poly.uuid = guid();
+		
 		this.curr_layer.container.addChild(pixi_poly);
 
 		curr_object.pixi_texts.push({
@@ -1287,18 +1315,19 @@ class SceneEditor extends Editor {
 	addObject (info) {
 		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%<>?&+=";
 		var obj_name = 'object'+this.objects.length;
-		info = info || {
+
+		ifndef_obj(info, {
 			name: obj_name,
 			char: possible.charAt(Math.floor(Math.random() * possible.length)),
 			color: "#000000",
+			size: [this.curr_layer.snap[0], this.curr_layer.snap[1]],
 			uuid: guid()
-		}
+		});
 
 		info.pixi_texts = [];
 		this.objects.push(info);
 		this.refreshObjectList();
 		this.setObject(info.name);
-
 		this.drawDotPreview();
 	}
 
@@ -1326,11 +1355,7 @@ class SceneEditor extends Editor {
 	updateGlobalObjList() {
 		global_objects = [];
 		for (var o = 0; o < this.objects.length; o++) {
-			global_objects.push({
-				name: this.objects[o].name,
-				char: this.objects[o].char,
-				color: this.objects[o].color
-			});
+			global_objects.push(Object.assign(this.objects[0], {}));
 		}
 	}
 
@@ -1339,8 +1364,10 @@ class SceneEditor extends Editor {
 			if (this.objects[l].name === name) {
 				this.curr_object = this.objects[l];
 				this.el_input_letter.value = this.curr_object.char;
-				this.el_input_name.value = this.curr_object.name;
-				this.el_color_object.value = this.curr_object.color;
+				this.el_object_form.setValue('name', this.curr_object.name);
+				this.el_object_form.setValue('color', this.curr_object.color);
+				this.el_object_form.setValue('size', this.curr_object.size[0], 0);
+				this.el_object_form.setValue('size', this.curr_object.size[1], 1);
 
 				this.iterObjectInLayer (this.curr_layer.uuid, name, function(obj, o){
 					bringToFront(obj.poly);
@@ -1552,6 +1579,7 @@ class SceneEditor extends Editor {
 				name: obj.name,
 				char: obj.char,
 				color: obj.color,
+				size: obj.size,
 				uuid: obj.uuid,
 				polygons: {}
 			}

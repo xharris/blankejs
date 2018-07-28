@@ -66,9 +66,6 @@ StateManager = {
 						
 						-- is this the 'exiting' state?
 						elseif transition_obj.exit_state.classname == state.classname then
-							transition_obj.transition_fn(state)
-
-						else
 							drawStateNormal(state)
 
 						end
@@ -186,42 +183,38 @@ StateManager = {
 			transition_obj.tween = Tween(0, diag_size, .5)
 		end
 
-		if animation == "wipe-up" or animation == "wipe-down" then
-			if animation == "wipe-up" then
-				transition_obj.transition_fn = function(state)
-					stencil_fn(state, "greater", function()
-						Draw.rect("fill", 0, transition_obj.tween.var, game_width, game_height - transition_obj.tween.var)
-					end)	
-				end
-				transition_obj.tween = Tween(game_width, 0, .5)
+		if animation == "wipe-up" then
+			transition_obj.transition_fn = function(state)
+				stencil_fn(state, "greater", function()
+					Draw.rect("fill", 0, transition_obj.tween.var, game_width, game_height - transition_obj.tween.var)
+				end)	
 			end
-			if animation == "wipe-down" then
-				transition_obj.transition_fn = function(state)
-					stencil_fn(state, "equal", function()
-						Draw.rect("fill", 0, transition_obj.tween.var, game_width, game_height - transition_obj.tween.var)
-					end)	
-				end
-				transition_obj.tween = Tween(0, game_width, .5)
+			transition_obj.tween = Tween(game_width, 0, .5)
+		end
+		if animation == "wipe-down" then
+			transition_obj.transition_fn = function(state)
+				stencil_fn(state, "equal", function()
+					Draw.rect("fill", 0, transition_obj.tween.var, game_width, game_height - transition_obj.tween.var)
+				end)	
 			end
+			transition_obj.tween = Tween(0, game_width, .5)
 		end
 
-		if animation == "clockwise" or animation == "counter-clockwise" then
-			if animation == "clockwise" then
-				transition_obj.transition_fn = function(state)
-					stencil_fn(state, "greater", function()
-						love.graphics.arc("fill", game_width/2, game_height/2, diag_size, math.rad(270), math.rad(transition_obj.tween.var+270))
-					end)
-				end
-				transition_obj.tween = Tween(0, 360, .5)
+		if animation == "clockwise" then
+			transition_obj.transition_fn = function(state)
+				stencil_fn(state, "greater", function()
+					love.graphics.arc("fill", game_width/2, game_height/2, diag_size, math.rad(270), math.rad(transition_obj.tween.var+270))
+				end)
 			end
-			if animation == "counter-clockwise" then
-				transition_obj.transition_fn = function(state)
-					stencil_fn(state, "equal", function()
-						love.graphics.arc("fill", game_width/2, game_height/2, diag_size, math.rad(270), math.rad(transition_obj.tween.var+270))
-					end)
-				end
-				transition_obj.tween = Tween(360, 0, .5)
+			transition_obj.tween = Tween(0, 360, .5)
+		end
+		if animation == "counter-clockwise" then
+			transition_obj.transition_fn = function(state)
+				stencil_fn(state, "equal", function()
+					love.graphics.arc("fill", game_width/2, game_height/2, diag_size, math.rad(270), math.rad(transition_obj.tween.var+270))
+				end)
 			end
+			transition_obj.tween = Tween(360, 0, .5)
 		end
 
 		if animation == "fade" then
