@@ -25,7 +25,9 @@ Canvas = Class{
     
     drawTo = function(self, func)
         self:start()
-        func()
+        Draw.stack(function()
+            func()
+        end)
         self:stop()
     end,
     
