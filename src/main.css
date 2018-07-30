@@ -814,6 +814,12 @@
   margin-top: 5px;
   text-transform: uppercase;
 }
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs,
+.content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="color"] .form-inputs {
+  height: 100%;
+}
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="number"] .form-inputs .form-text,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="select"] .form-inputs .form-text,
@@ -824,6 +830,7 @@
   padding: 4px;
   box-sizing: border-box;
   width: 100%;
+  height: 100%;
   font-size: 16px;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-type="text"] .form-inputs .form-text::-webkit-outer-spin-button,
@@ -894,6 +901,7 @@
   width: 100%;
   height: 30px;
   float: right;
+  padding: 15px;
 }
 .content[data-type="SceneEditor"] .sidebar .object-container .select-letter option:first-child {
   display: none;
@@ -915,10 +923,26 @@
   transition: all ease-in-out 0.1s;
   text-align: left;
   line-height: 14px;
+  z-index: 10;
+  cursor: pointer;
 }
 .content[data-type="SceneEditor"] .sidebar .object-container .btn-add-object:hover {
   background-color: #8bc34a;
   color: white;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .form-group[data-name="name"] {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  height: 30px;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container .form-group[data-name="name"] .form-text {
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+}
+.content[data-type="SceneEditor"] .sidebar .object-container:hover .form-group[data-name="name"] {
+  width: calc(100% - 18px);
 }
 .content[data-type="SceneEditor"] .sidebar .object-container .input-name {
   width: 100%;

@@ -328,13 +328,15 @@
 	   		 		}
 	   		 	}
 
-				.form-label {
+	   		 	.form-label {
 	   		 		margin: 0px;
 				    margin-top: 5px;
 				    text-transform: uppercase;
 				}
 
 				.form-inputs {
+					height: 100%;
+
 					.form-text {
 		   		 		border: none;
 		   		 		outline: none;
@@ -342,6 +344,7 @@
 				    	padding: 4px;
 				    	box-sizing: border-box;
 				    	width: 100%;
+				    	height: 100%;
 				    	font-size: 16px;
 
 				    	&::-webkit-outer-spin-button,
@@ -408,6 +411,7 @@
 			    width: 100%;
 			    height: 30px;
 			    float: right;
+    			padding: 15px;
 
 			    option:first-child {
 			    	display: none;
@@ -431,11 +435,30 @@
 			    transition: all ease-in-out 0.1s;
 			    text-align: left;
 			    line-height: 14px;
+			    z-index: 10;
+			    cursor: pointer;
 
 			    &:hover {	
 				    background-color: rgba(139,195,74,1);
 				    color: white;
 			    }
+			}
+
+			.form-group[data-name="name"] {
+   		 		position: absolute;
+			    left: 0px;
+			    top: 0px;
+			    height: 30px;
+
+			    .form-text {
+			    	font-size: 16px;
+				    font-weight: 900;
+				    text-align: center;
+			   	}
+   		 	}
+
+			&:hover .form-group[data-name="name"] {
+			    width: calc(~'100% - 18px');
 			}
 
 			.input-name {

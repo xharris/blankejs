@@ -60,7 +60,7 @@ class SceneEditor extends Editor {
 		this.grid_graphics = new PIXI.Graphics();		// position wraps based on layer snap
 		this.origin_graphics = new PIXI.Graphics();
 		this.coord_text_style = new PIXI.TextStyle({
-			fontSize: 13,
+			fontSize: 14,
 			fill: 'white',
 			stroke: 'black',
 			strokeThickness: 2,
@@ -100,8 +100,7 @@ class SceneEditor extends Editor {
 
 		// OBJECT elements
 		this.el_object_container= app.createElement("div","object-container");
-		this.el_input_letter 	= app.createElement("input","input-letter");
-		this.el_sel_letter 		= app.createElement("select","select-letter");
+		this.el_sel_name 		= app.createElement("select","select-letter");
 		this.el_btn_add_object	= app.createElement("button","btn-add-object");
 
 		this.el_object_form = new BlankeForm([
@@ -223,28 +222,8 @@ class SceneEditor extends Editor {
 		this.el_image_grid.addEventListener('mousedown',selectImageTiles);
 
 		// OBJECT elements
-		this.el_sel_letter.addEventListener('change', function(e){
+		this.el_sel_name.addEventListener('change', function(e){
 			this_ref.setObject(e.target.value);
-		});
-		this.el_input_letter.maxLength = 1;
-		this.el_input_letter.placeholder = '-';
-
-		// object char
-		this.el_input_letter.addEventListener('input', function(e){
-			if (this_ref.curr_object) {
-				if (e.target.value == '')
-					e.target.value = this_ref.curr_object.char;
-				else {
-					this_ref.curr_object.char = e.target.value;
-					this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-						obj.label.text = this_ref.curr_object.char;
-					});
-					this_ref.updateGlobalObjList();
-				}
-			}
-		});
-		this.el_input_letter.addEventListener('click', function(e){
-			this.select();
 		});
 
 		// object name
@@ -253,6 +232,7 @@ class SceneEditor extends Editor {
 				if (value[0] == '')
 					return this_ref.curr_object.name;
 				else {
+					delete this_ref.obj_info[this_ref.curr_object.name];
 					this_ref.curr_object.name = value[0];
 					this_ref.refreshObjectList();
 					this_ref.export();
@@ -383,8 +363,7 @@ class SceneEditor extends Editor {
 		this.el_layer_container.appendChild(this.el_layer_form.container);
 
 		// OBJECT
-		this.el_object_container.appendChild(this.el_input_letter);
-		this.el_object_container.appendChild(this.el_sel_letter);
+		this.el_object_container.appendChild(this.el_sel_name);
 		this.el_object_container.appendChild(this.el_btn_add_object);
 		this.el_object_container.appendChild(this.el_object_form.container);
 
@@ -868,17 +847,17 @@ class SceneEditor extends Editor {
 
 	// refreshes object combo box 
 	refreshObjectList (obj_type='image') {
-		app.clearElement(this.el_sel_letter);
+		app.clearElement(this.el_sel_name);
 		var placeholder = app.createElement("option");
 		placeholder.selected = true;
 		placeholder.disabled = true;
-		this.el_sel_letter.appendChild(placeholder);
+		this.el_sel_name.appendChild(placeholder);
 
 		for (var o = 0; o < this.objects.length; o++) {
 			var new_option = app.createElement("option");
 			new_option.value = this.objects[o].name;
 			new_option.innerHTML = this.objects[o].name;
-			this.el_sel_letter.appendChild(new_option);
+			this.el_sel_name.appendChild(new_option);
 		}
 	}
 
@@ -1362,14 +1341,14 @@ class SceneEditor extends Editor {
 	drawDotPreview () {
 		if (!this.dot_preview) {
 			this.dot_preview = new PIXI.Graphics();
-			this.map_container.addChild(this.dot_preview);	
+			this.overlay_container.addChild(this.dot_preview);	
 		}
 
 		if (this.obj_type == "object" && this.curr_object) {
 			let snapx = this.curr_layer.snap[0] / 2;
 			let snapy = this.curr_layer.snap[1] / 2;
-			let x = this.half_mouse[0];
-			let y = this.half_mouse[1];
+			let x = this.half_place_mouse[0];
+			let y = this.half_place_mouse[1];
 
 			this.dot_preview.clear();
 			this.dot_preview.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .75);
@@ -1391,7 +1370,6 @@ class SceneEditor extends Editor {
 		for (var l = 0; l < this.objects.length; l++) {
 			if (this.objects[l].name === name) {
 				this.curr_object = this.objects[l];
-				this.el_input_letter.value = this.curr_object.char;
 				this.el_object_form.setValue('name', this.curr_object.name);
 				this.el_object_form.setValue('color', this.curr_object.color);
 				this.el_object_form.setValue('size', this.curr_object.size[0], 0);
@@ -1580,6 +1558,7 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
+		return;
 		if (this.deleted) return;
 
 		let export_data = {'objects':[], 'layers':[], 'images':[], 'settings':{
