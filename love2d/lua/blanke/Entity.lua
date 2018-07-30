@@ -16,8 +16,8 @@ Entity = Class{
 		self.scene_show_debug = false
 
 		-- x and y coordinate of sprite
-		self.x = Entity.x
-		self.y = Entity.y
+		self.x = ifndef(self.x, Entity.x)
+		self.y = ifndef(self.y, Entity.y)
 		self.parent = parent
 
 		Entity.x = 0
@@ -64,14 +64,14 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
-		self.onGetMethod = {
+		self.onMethod = {
 			draw = function(self, fn)
 				return function(...) Draw.stack(function(...) fn(self, ...) end) end
 			end
 		}
 
-		self.onSetProp = {
-			sprite_index = function(self, prop, val)
+	    self.onProp = {
+	    	sprite_index = function(self, prop, val)
 				self:refreshSpriteDims(val)
 				return val
 			end

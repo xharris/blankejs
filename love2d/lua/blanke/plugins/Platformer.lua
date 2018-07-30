@@ -18,9 +18,9 @@ Entity.platformerCollide = function(self, args)
 	local fn_all = ifndef(args.all, function() return true end)
 
 	self.onCollision["main_box"] = function(other, sep_vector)	-- other: other hitbox in collision
+        fn_all(other, sep_vector)
         -- horizontal collision
         if math.abs(sep_vector.x) > 0 then
-        	fn_all(other, sep_vector)
             if fn_wall(other, sep_vector) ~= false and other.tag == ground_tag then
                 self:collisionStopX() 
             end

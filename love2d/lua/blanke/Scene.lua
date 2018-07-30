@@ -117,11 +117,11 @@ local SceneLayer = Class{
 			for image, batch in pairs(self.spritebatches) do
 				love.graphics.draw(batch)
 			end
-			--[[
 			for e, entity in ipairs(self.entities) do
-				entity:draw()
+				if not table.hasValue(self.parent.dont_draw, entity.scene_tag) then
+					entity:draw()
+				end
 			end
-			]]
 		end)
 
 		if self.draw_hitboxes then
@@ -139,6 +139,7 @@ local Scene = Class{
 		self.layers = {}
 		self.tilesets = {}
 		self.objects = {}
+		self.dont_draw = {}
         
 		if asset_name then
 			local scene = Asset.scene(asset_name)
@@ -195,8 +196,7 @@ local Scene = Class{
 		-- objects (just store their info)
 		for o, object in ipairs(scene_data.objects) do
 			self.objects[object.name] = ifndef(self.objects[object.name], {})
-			local attributes = {'char', 'color', 'polygons'}
-			for a, attr in ipairs(attributes) do self.objects[object.name][attr] = object[attr] end
+			for k,v in pairs(object) do self.objects[object.name][k] = v end
 		end
 
 		return self
@@ -267,7 +267,6 @@ local Scene = Class{
 								x + snapx, y + snapy,
 								x - snapx, y + snapy
 							}
-							Debug.log(unpack(polygon))
 						end
 						layer:addHitbox(polygon, name, object.color)
 					end
@@ -281,18 +280,50 @@ local Scene = Class{
 	addEntity = function(self, obj_name, ent_class, align) 
 		local instances = {}
 		local object = self:getObjectInfo(obj_name)
+
 		if object then
 			for layer_name, polygons in pairs(object.polygons) do
 				local layer = self:getLayer(layer_name)
 				for p, polygon in ipairs(polygons) do
+
+					-- give entity information from scene
+					function applyInfo(obj)
+						obj.scene_tag = obj_name
+						obj.scene_size = object.size
+						obj.scene_rect = {0,0,0,0}
+						obj.x = polygon[1]
+						obj.y = polygon[2]
+						if #polygon == 2 then
+							polygon[1] = polygon[1] - (object.size[1] / 2)
+							polygon[2] = polygon[2] - (object.size[2] / 2)
+							polygon[3] = polygon[1] - (polygon[1] + (object.size[1] / 2))
+							polygon[4] = polygon[2] - (polygon[2] + (object.size[2] / 2))
+							obj.scene_rect = polygon
+						end
+						if #polygon == 8 then
+							local other_x = polygon[3]
+							if other_x == polygon[1] then other_x = polygon[5] end
+							if other_x == polygon[1] then other_x = polygon[7] end
+							local other_y = polygon[4]
+							if other_y == polygon[2] then other_y = polygon[6] end
+							if other_y == polygon[2] then other_y = polygon[8] end
+							obj.scene_rect = {
+								polygon[1], polygon[2],
+								other_x-polygon[1], other_y-polygon[2]
+							}
+						end
+						obj.scene_points = polygon
+					end
+
 					local new_entity
 					if ent_class.is_instance then 	-- arg is an already made entity
 						new_entity = ent_class
+						applyInfo(new_entity)
 					else							-- arg is a class that needs to be instantiated
+						ent_class._init_properties = {}
+						applyInfo(ent_class._init_properties)
 						new_entity = ent_class()
 					end
-					new_entity.x = polygon[1]
-					new_entity.y = polygon[2]
 
 					if align then
 						if align:contains("center") then

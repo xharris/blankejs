@@ -4,7 +4,7 @@ function blanke_require(import)
 	return require(blanke_path..import)
 end
 
--- love.graphics.setDefaultFilter("nearest","linear")
+-- love.graphics.setDefaultFilter("linear","nearest")
 
 blanke_require('Globals')
 blanke_require('Util')
@@ -151,8 +151,6 @@ BlankE = {
 				BlankE.injectCallbacks()
 			end
 		end
-
-
 
 		Scene._fake_view = View()
 	    uuid.randomseed(love.timer.getTime()*10000)

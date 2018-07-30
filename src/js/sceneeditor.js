@@ -52,28 +52,29 @@ class SceneEditor extends Editor {
 		this.pixi.stage.hitArea = this.pixi.screen;
 
 		// create map container
-		this.overlay_container = new PIXI.Container();
+		this.overlay_container = new PIXI.Container();	// displayed above everything
 		this.map_container = new PIXI.Container();
 		this.pixi.stage.addChild(this.map_container);
 
 		this.grid_container = new PIXI.Container()
-		this.grid_graphics = new PIXI.Graphics();
+		this.grid_graphics = new PIXI.Graphics();		// position wraps based on layer snap
 		this.origin_graphics = new PIXI.Graphics();
 		this.coord_text_style = new PIXI.TextStyle({
-			fontSize: 12,
+			fontSize: 13,
 			fill: 'white',
 			stroke: 'black',
 			strokeThickness: 2,
 			fontFamily: 'ProggySquare',
 			fontWeight: '100'
 		});
-		this.coord_text_x = new PIXI.Text('x=0', this.coord_text_style);
-		this.coord_text_y = new PIXI.Text('y=0', this.coord_text_style);
+		this.coord_text = new PIXI.Text('x 0 y 0', this.coord_text_style);
+		this.obj_info_text = new PIXI.Text('', this.coord_text_style);
+		this.obj_info = {};
+
+		this.overlay_container.addChild(this.coord_text);
+		this.overlay_container.addChild(this.obj_info_text);
 
 		this.grid_container.addChild(this.origin_graphics);
-		this.grid_container.addChild(this.coord_text_x);
-		this.grid_container.addChild(this.coord_text_y);
-
 		this.grid_container.addChild(this.grid_graphics);
 		this.overlay_container.addChild(this.origin_graphics);
 
@@ -568,14 +569,23 @@ class SceneEditor extends Editor {
 			let btn = this_ref.pointer_down;
 			let alt = e.data.originalEvent.altKey; 
 
+			// camera dragging
+			if (this_ref.dragging) {
+				this_ref.setCameraPosition(
+					this_ref.camera_start[0] + (x - this_ref.mouse_start.x),
+					this_ref.camera_start[1] + (y - this_ref.mouse_start.y) 
+				)
+			}
+			
 			let snapx = this_ref.curr_layer.snap[0];
 			let snapy = this_ref.curr_layer.snap[1];
-			
+
 			let mx = x-this_ref.camera[0],
 				my = y-this_ref.camera[1];
 
 			if (mx < 0) { mx -= snapx; x -= snapx; }
 			if (my < 0) { my -= snapy; y -= snapy; }
+
 
 			this_ref.place_mouse = [Math.floor(x),Math.floor(y)];
 			this_ref.mouse = [Math.floor(mx),Math.floor(my)];
@@ -583,14 +593,14 @@ class SceneEditor extends Editor {
 			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
 			if (!e.data.originalEvent.ctrlKey) {
-				this_ref.place_mouse = [
-					x - (mx%snapx),
-					y - (my%snapy)
-				]
 				this_ref.mouse = [
 					mx - (mx%snapx),
 					my - (my%snapy)
 				];
+				this_ref.place_mouse = [
+					x - (mx%snapx),
+					y - (my%snapy)
+				]
 				this_ref.half_place_mouse = [
 					x - (mx%(snapx/2)),
 					y - (my%(snapy/2))
@@ -601,13 +611,6 @@ class SceneEditor extends Editor {
 				];
 			}
 			this_ref.drawCrosshair();
-
-			if (this_ref.dragging) {
-				this_ref.setCameraPosition(
-					this_ref.camera_start[0] + (e.data.global.x - this_ref.mouse_start.x),
-					this_ref.camera_start[1] + (e.data.global.y - this_ref.mouse_start.y) 
-				)
-			}
 
 			if (!alt && !this_ref.dragging) {
 				if (btn == 0) {
@@ -666,9 +669,9 @@ class SceneEditor extends Editor {
 		}
 		});
 
-		this.pixi.stage.addChild(this.overlay_container);
 		this.pixi.stage.addChild(this.map_container);
 		this.pixi.stage.addChild(this.grid_container);
+		this.pixi.stage.addChild(this.overlay_container);
 
 		this.drawGrid();
 		
@@ -682,10 +685,8 @@ class SceneEditor extends Editor {
 
 		document.addEventListener('fileChange', function(e){
 			if (e.detail.type == 'change') {
-				console.log('new',e.detail);
 				if (this_ref.curr_image)
-					console.log('old',this_ref.curr_image.path);
-				this_ref.refreshImageList();
+					this_ref.refreshImageList();
 			}
 		});
 
@@ -811,13 +812,13 @@ class SceneEditor extends Editor {
 				this.place_mouse[1]
 			];
 
-			this.coord_text_x.x = this.place_mouse[0];
-			this.coord_text_x.y = (this.game_height - this.place_mouse[1]) / 3 + this.place_mouse[1];
-			this.coord_text_x.text = 'x '+this.mouse[0];
+			this.coord_text.x = (this.game_width - this.place_mouse[0]) / 3 + this.place_mouse[0];
+			this.coord_text.y = this.place_mouse[1] + 8;
+			this.coord_text.text = 'x '+this.mouse[0]+' y '+this.mouse[1];
 
-			this.coord_text_y.x = (this.game_width - this.place_mouse[0]) / 3 + this.place_mouse[0];
-			this.coord_text_y.y = this.place_mouse[1];
-			this.coord_text_y.text = 'y '+this.mouse[1];
+			this.obj_info_text.x = (this.game_width - this.place_mouse[0]) / 3 + this.place_mouse[0];
+			this.obj_info_text.y = this.place_mouse[1] + 20;
+			this.obj_info_text.text = Object.keys(this.obj_info).join('\n');
 
 			// line style
 			this.origin_graphics.clear()
@@ -1054,6 +1055,8 @@ class SceneEditor extends Editor {
 				let del_uuid = e.target.uuid;
 				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj, o){
 					if (del_uuid == obj.poly.uuid) {
+						if (this_ref.obj_info[curr_object.name])
+							delete this_ref.obj_info[curr_object.name];
 						e.target.destroy();
 						return true;
 					}
@@ -1061,8 +1064,24 @@ class SceneEditor extends Editor {
 				this_ref.export();
 			}
 		});
+		// add mouse enter/out events
+		const polyHover = function (e) {
+			let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);
+			if (obj_ref) {
+				if (e.type == "mouseover") {
+					this_ref.obj_info[obj_ref.name] = true;
+				}
+				else if (e.type == "mouseout") {
+					if (this_ref.obj_info[obj_ref.name])
+						delete this_ref.obj_info[obj_ref.name];
+				}
+			}
+		}
+		pixi_poly.on('mouseover',polyHover);
+		pixi_poly.on('mouseout',polyHover);
 
 		pixi_poly.uuid = guid();
+		pixi_poly.obj_uuid = this.curr_object.uuid;
 		
 		this.curr_layer.container.addChild(pixi_poly);
 
@@ -1311,11 +1330,20 @@ class SceneEditor extends Editor {
 		}		
 	}
 
+	getObjByUUID (uuid) {
+		for (var l = 0; l < this.objects.length; l++) {
+			if (this.objects[l].uuid == uuid) {
+				return this.objects[l];
+			}
+		}	
+	}
+
 	// https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 	addObject (info) {
 		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%<>?&+=";
 		var obj_name = 'object'+this.objects.length;
 
+		info = info || {};
 		ifndef_obj(info, {
 			name: obj_name,
 			char: possible.charAt(Math.floor(Math.random() * possible.length)),

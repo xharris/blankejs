@@ -186,4 +186,6 @@ Draw = Class{
     end,
 }
 
+--love.graphics.setLineStyle("rough")
+
 return Draw

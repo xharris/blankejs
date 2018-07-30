@@ -1,6 +1,6 @@
 Canvas = Class{
-    init = function(self)
-        self.canvas = love.graphics.newCanvas()
+    init = function(self, width, height)
+        self.canvas = love.graphics.newCanvas(width, height)
         self.width = self.canvas:getWidth()
         self.height = self.canvas:getHeight()
         
@@ -29,8 +29,8 @@ Canvas = Class{
         self:stop()
     end,
     
-    draw = function(self)
-        love.graphics.draw(self.canvas)
+    draw = function(self, ...)
+        love.graphics.draw(self.canvas, ...)
     end,
 }
 

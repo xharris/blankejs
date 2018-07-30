@@ -498,6 +498,10 @@ nwWIN.on('loaded', function() {
 	document.addEventListener("openProject",function(){
 		app.hideWelcomeScreen();
 		app.loadSettings();
+
+		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
+			nwGUI.Shell.openItem(app.project_path);
+		}});
 	});
 
 	// app.openProject('projects/boredom');

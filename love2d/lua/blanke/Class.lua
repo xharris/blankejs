@@ -76,9 +76,9 @@ local function new(class)
 		local classname = rawget(self, 'classname') or false
 		if classname then
 			if type(val) == "function" then
-				if class.onGetMethod and class.onGetMethod[key] then return class.onGetMethod[key] end
+				if class.onMethod and class.onMethod[key] then return class.onMethod[key] end
 			else
-				if class.onGetProp and class.onGetProp[key] then return class.onGetProp[key]() end
+				if class.onProp and class.onProp[key] then return class.onProp[key]() end
 			end
 		end
 		return val
@@ -87,7 +87,7 @@ local function new(class)
 	class.__newindex = function(self, key, value)
 		local classname = rawget(self, 'classname') or false
 		if classname then
-			if self.onSetProp and self.onSetProp[key] then value = self.onSetProp[key](self, key, value) end
+			if self.onProp and self.onProp[key] then value = self.onProp[key](self, key, value) end
 		end
 		rawset(self, key, value)
 	end
@@ -95,9 +95,19 @@ local function new(class)
 	class.include = class.include or include
 	class.clone   = class.clone   or clone
 
+
 	-- constructor call
 	return setmetatable(class, {__call = function(c, ...)
 		local o = setmetatable({}, c)
+
+		-- apply init properties
+		if class._init_properties then
+			for k, v in pairs(class._init_properties) do
+				o[k] = v
+			end
+			class._init_properties = nil
+		end
+
 		if o._init then
 			o:_init(...)
 		end

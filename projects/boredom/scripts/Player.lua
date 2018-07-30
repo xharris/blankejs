@@ -19,7 +19,7 @@ function Player:init()
 	self.sprite_index = "stand"
 	
 	self.sprite_xoffset = -self.sprite_width / 2
-	self.sprite_yoffset = -self.sprite_height / 2 + 2
+	self.sprite_yoffset = -self.sprite_height / 2
 	
 	self:addPlatforming(0,0,self.sprite_width,self.sprite_height)
 	self.gravity = 20
@@ -28,8 +28,6 @@ function Player:init()
 	self.max_jumps = 1
 	self.dead = false
 	self.jumps = self.max_jumps
-	
-	self.show_debug = true
 end
 
 function Player:update(dt)
