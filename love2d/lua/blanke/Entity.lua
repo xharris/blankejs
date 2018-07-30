@@ -448,6 +448,10 @@ Entity = Class{
 		new_hitbox:setParent(self)
 		new_hitbox:moveTo(self.x, self.y)
 		self.shapes[name] = new_hitbox
+
+		if not self._main_shape then
+			self:setMainShape(name)
+		end
 		return self
 	end,
 

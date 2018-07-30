@@ -50,10 +50,12 @@ function MovingBlock:update(dt)
 			if self.move_dir == "L" then
 				self.hspeed = -50
 			end
+			Debug.log(self.hspeed)
 		end
 	end
 end
 
 function MovingBlock:draw()
+	Draw.crop(self.x,self.y,self.coll_x-self.x,self.scene_rect[4])
 	self.canvas:draw(self.x, self.y)
 end
