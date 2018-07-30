@@ -96,12 +96,17 @@ var app = {
 		}, true);
 	},
 
+	closeProject: function() {
+		app.saveSettings();
+		dispatchEvent("closeProject", {path: app.project_path});
+	},
+
 	openProject: function(path) {
 		// validate: only open if there's a main.lua
 		nwFS.readdir(path, 'utf8', function(err, files){
 			if (!err && files.includes('main.lua')) {
 				if (app.project_path)
-					dispatchEvent("closeProject", {path: app.project_path});
+					app.closeProject();
 
 				app.project_path = path;
 
@@ -262,7 +267,12 @@ var app = {
 		if (app.isProjectOpen()) {	
 			nwFS.readFile(nwPATH.join(app.project_path,"ide_data"), 'utf-8', function(err, data){
 				if (!err) {
-					app.project_settings = JSON.parse(data);
+					try {
+						app.project_settings = JSON.parse(data);
+					} catch(e) {
+						app.project_settings = {};
+						app.saveSettings();
+					}
 					if (callback) callback();
 				}
 			});
@@ -305,8 +315,6 @@ var app = {
 }
 
 nwWIN.on('loaded', function() {
-	nwWIN.showDevTools();
-
 	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
 	app.os = os_names[nwOS.type()];
 	app.loadAppData(function(){
@@ -483,6 +491,12 @@ nwWIN.on('loaded', function() {
 			}
 		}
 	}));
+
+	nwWIN.on('close',function(){
+		this.hide();
+		app.closeProject();
+		this.close(true);
+	});
 
 	dispatchEvent("ideReady");
 	app.addSearchKey({key: 'Open project', onSelect: function() {

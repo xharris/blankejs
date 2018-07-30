@@ -187,15 +187,24 @@ Entity = Class{
 					for other in pairs(collisions) do
 					    local collides, dx, dy = obj_shape:collidesWith(other)
 					    if collides and not other.tag:contains(self.classname) then
-		                	local separating_vector = {['x']=dx, ['y']=dy}
+		                	local sep_vec = {x=dx, y=dy, point_x=0, point_y=0}
+
+		                	-- calculate location of collision
+		                	local bx, by, bw, bh = unpack(obj_shape.init_bbox)
+		                	bw = bw - bx
+		                	bh = bh - by
+		                	if dx < 0 then sep_vec.point_y = by; sep_vec.point_x = (bw + dx) end
+		                	if dx > 0 then sep_vec.point_y = by; sep_vec.point_x = dx end
+		                	if dy < 0 then sep_vec.point_x = bx; sep_vec.point_y = (bh + dy) end
+		                	if dy > 0 then sep_vec.point_x = bx; sep_vec.point_y = dy end
 
 		                	self.collisions[name] = ifndef(self.collisions[name], {})
-					    	self.collisions[name][other.tag] = separating_vector
+					    	self.collisions[name][other.tag] = sep_vec
 
 							-- collision action functions
 							self.collisionStopX = function(self)
 								for name, shape in pairs(self.shapes) do
-									shape:move(separating_vector.x, 0)
+									shape:move(sep_vec.x, 0)
 								end
 					            self.hspeed = 0
 					            speedx = 0
@@ -204,7 +213,7 @@ Entity = Class{
 
 							self.collisionStopY = function(self)
 								for name, shape in pairs(self.shapes) do
-									shape:move(0, separating_vector.y)
+									shape:move(0, sep_vec.y)
 								end
 					            self.vspeed = 0
 					            speedy = 0
@@ -217,7 +226,7 @@ Entity = Class{
 							end
 
 							-- call users collision callback if it exists
-							fn(other, separating_vector)
+							fn(other, sep_vec)
 						end
 					end
 				end

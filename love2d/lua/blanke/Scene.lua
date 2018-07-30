@@ -119,7 +119,9 @@ local SceneLayer = Class{
 			end
 			for e, entity in ipairs(self.entities) do
 				if not table.hasValue(self.parent.dont_draw, entity.scene_tag) then
-					entity:draw()
+					Draw.stack(function()
+						entity:draw()
+					end)
 				end
 			end
 		end)

@@ -114,9 +114,14 @@ Draw = Class{
 		love.graphics.rotate(math.rad(deg))
 	end,
 
+	crop = function(x,y,w,h)
+		love.graphics.setScissor(x,y,w,h)
+	end,	
+
 	reset = function(dont_scale)
 		Draw.color = Draw.reset_color
 		Draw.setColor(Draw.color)
+		love.graphics.setScissor()
 		love.graphics.origin()
 		if not dont_scale then BlankE.reapplyScaling() end
 	end,
