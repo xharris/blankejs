@@ -6,6 +6,7 @@ main_camera = nil
 function PlayState:enter(prev)
 	Draw.setBackgroundColor('white')
 	sc_level1 = Scene("level1")
+	sc_level1.draw_order = {"MovingBlock","ground","spike","Player"}
 	-- hitboxes
 	sc_level1:addHitbox("ground")
 	sc_level1:addHitbox("player_die")

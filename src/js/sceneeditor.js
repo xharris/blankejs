@@ -1558,7 +1558,6 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
-		return;
 		if (this.deleted) return;
 
 		let export_data = {'objects':[], 'layers':[], 'images':[], 'settings':{

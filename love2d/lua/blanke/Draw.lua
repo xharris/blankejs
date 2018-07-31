@@ -114,15 +114,24 @@ Draw = Class{
 		love.graphics.rotate(math.rad(deg))
 	end,
 
+	crop_used = false,
 	crop = function(x,y,w,h)
-		love.graphics.setScissor(x,y,w,h)
+		local function stencilFn()
+			love.graphics.rectangle("fill",x,y,w,h)
+		end
+		love.graphics.stencil(stencilFn, "replace",1)
+		love.graphics.setStencilTest("greater",0)
+		Draw.crop_used = true
 	end,	
 
 	reset = function(dont_scale)
 		Draw.color = Draw.reset_color
 		Draw.setColor(Draw.color)
-		love.graphics.setScissor()
 		love.graphics.origin()
+    	if Draw.crop_used then
+    		Draw.crop_used = false
+    		love.graphics.setStencilTest()
+    	end
 		if not dont_scale then BlankE.reapplyScaling() end
 	end,
 
@@ -156,6 +165,10 @@ Draw = Class{
     end,
 
     pop = function()
+    	if Draw.crop_used then
+    		Draw.crop_used = false
+    		love.graphics.setStencilTest()
+    	end
     	love.graphics.pop()
     end,
 

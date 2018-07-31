@@ -55,6 +55,7 @@ local SceneLayer = Class{
 		self.spritebatches = {}
 		self.hitboxes = {}
 		self.entities = {}
+		self.obj_name_list = {} -- contains list of all tile and entity names
 		
 		self.offx = 0
 		self.offy = 0
@@ -79,6 +80,8 @@ local SceneLayer = Class{
 			
 			-- add to tile hashtable
 			self.hashtable:add(info.x, info.y, info)
+
+			self.obj_name_list[img_name] = true
 		end
 	end,
 
@@ -90,7 +93,10 @@ local SceneLayer = Class{
 	end,
 
 	addEntity = function(self, instance)
-		table.insert(self.entities, instance)
+		self.entities[instance.classname] = ifndef(self.entities[instance.classname], {})
+		table.insert(self.entities[instance.classname], instance)
+
+		self.obj_name_list[instance.classname] = true
 	end,
 
 	getTiles = function(self, name)
@@ -111,18 +117,40 @@ local SceneLayer = Class{
 		end
 	end,
 
-	draw = function(self)
-		Draw.stack(function()
-			Draw.translate(self.offx, self.offy)
-			for image, batch in pairs(self.spritebatches) do
-				love.graphics.draw(batch)
-			end
-			for e, entity in ipairs(self.entities) do
+	_drawObj = function(self, name)-- tile
+		if self.spritebatches[name] then
+			love.graphics.draw(self.spritebatches[name])
+		end
+
+		-- entity
+		if self.entities[name] then
+			for e, entity in ipairs(self.entities[name]) do
 				if not table.hasValue(self.parent.dont_draw, entity.scene_tag) then
 					Draw.stack(function()
 						entity:draw()
 					end)
 				end
+			end
+		end
+	end,
+
+	draw = function(self, draw_order)
+		Draw.stack(function()
+			Draw.translate(self.offx, self.offy)
+
+			local drawn = {}
+
+			-- draw specified objects
+			if draw_order then
+				for name, _ in pairs(draw_order) do
+					drawn[name] = true
+					self:_drawObj(name)
+				end
+			end
+
+			-- draw everything else
+			for name, _ in pairs(self.obj_name_list) do
+				self:_drawObj(name)
 			end
 		end)
 
@@ -142,6 +170,7 @@ local Scene = Class{
 		self.tilesets = {}
 		self.objects = {}
 		self.dont_draw = {}
+		self.draw_order = nil
         
 		if asset_name then
 			local scene = Asset.scene(asset_name)
@@ -213,7 +242,7 @@ local Scene = Class{
 		for l, layer in ipairs(self.layers) do
 			if layer_name == nil or layer.name == layer_name then 
 				layer.draw_hitboxes = self.draw_hitboxes
-				layer:draw()
+				layer:draw(self.draw_order)
 			end
 		end
 	end,
