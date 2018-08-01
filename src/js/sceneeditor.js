@@ -978,7 +978,7 @@ class SceneEditor extends Editor {
 		poly.clear();
 
 		// add polygon points
-		poly.lineStyle(2, parseInt(obj.color.replace('#',"0x"),16), .5);
+		poly.lineStyle(1, parseInt(obj.color.replace('#',"0x"),16), .5);
 		poly.beginFill(parseInt(obj.color.replace('#',"0x"),16), .2);
 		if (points.length == 2) {
 			poly.drawRect(

@@ -130,6 +130,7 @@ Hitbox = Class{
 
 	setParent = function(self, parent)
 		self.parent = parent
+		self.HCShape.parent = parent
 	end
 }
 

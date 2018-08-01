@@ -103,7 +103,7 @@ Entity = Class{
     	-- subtract friction
     	if self.hspeed ~= 0 then 
     		self.hspeed = self.hspeed + -(self.hspeed * self.friction)
-    		if self.friction < 1 and math.abs(self.hspeed) <= 50 then
+    		if self.friction < 1 and self.friction > 0 and math.abs(self.hspeed) <= 50 then
     			self.hspeed = 0
     		end
     	end

@@ -28,9 +28,13 @@ function Player:init()
 	self.max_jumps = 1
 	self.dead = false
 	self.jumps = self.max_jumps
+	
+	self.platform_hspeed = 0
 end
 
 function Player:update(dt)
+	self.hspeed = self.platform_hspeed
+	
 	self:platformerCollide{
 		tag="ground", 
 		all=function(other, sep)
@@ -45,19 +49,23 @@ function Player:update(dt)
 				transition_timer:start()
 			end
 		end,
-		floor=function()
+		floor=function(other, sep)
 			self.jumps = self.max_jumps
+			
+			self.platform_hspeed = 0
+			if other.tag == "ground" and other.parent and other.parent.hspeed then
+				self.platform_hspeed = other.parent.hspeed / 2
+			end
 		end
 	}
 
 	-- left/right movement
-	self.hspeed = 0
 	if not self.dead then
 		if Input("move_left") then
-			self.hspeed = -self.move_speed
+			self.hspeed = -self.move_speed + self.platform_hspeed
 		end
 		if Input("move_right") then
-			self.hspeed = self.move_speed
+			self.hspeed = self.move_speed + self.platform_hspeed
 		end
 		-- jumping
 		if Input("jump") and self.jumps > 0 then
@@ -69,11 +77,11 @@ function Player:update(dt)
 		if self.hspeed == 0 then
 			self.sprite_index = "stand"	
 
-		elseif self.hspeed > 0 then
+		elseif Input("move_right") then
 			self.sprite_xscale = 1
 			self.sprite_index = "walk"
 
-		elseif self.hspeed < 0 then
+		elseif Input("move_left") then
 			self.sprite_xscale = -1
 			self.sprite_index = "walk"
 

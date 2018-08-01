@@ -142,7 +142,7 @@ local SceneLayer = Class{
 
 			-- draw specified objects
 			if draw_order then
-				for name, _ in pairs(draw_order) do
+				for _, name in ipairs(draw_order) do
 					drawn[name] = true
 					self:_drawObj(name)
 				end
@@ -150,7 +150,9 @@ local SceneLayer = Class{
 
 			-- draw everything else
 			for name, _ in pairs(self.obj_name_list) do
-				self:_drawObj(name)
+				if not drawn[name] then
+					self:_drawObj(name)
+				end
 			end
 		end)
 
@@ -327,8 +329,8 @@ local Scene = Class{
 						if #polygon == 2 then
 							polygon[1] = polygon[1] - (object.size[1] / 2)
 							polygon[2] = polygon[2] - (object.size[2] / 2)
-							polygon[3] = polygon[1] - (polygon[1] + (object.size[1] / 2))
-							polygon[4] = polygon[2] - (polygon[2] + (object.size[2] / 2))
+							polygon[3] = math.abs(polygon[1] - (polygon[1] + (object.size[1] / 2)))
+							polygon[4] = math.abs(polygon[2] - (polygon[2] + (object.size[2] / 2)))
 							obj.scene_rect = polygon
 						end
 						if #polygon == 8 then
@@ -340,7 +342,7 @@ local Scene = Class{
 							if other_y == polygon[2] then other_y = polygon[8] end
 							obj.scene_rect = {
 								polygon[1], polygon[2],
-								other_x-polygon[1], other_y-polygon[2]
+								math.abs(other_x-polygon[1]), math.abs(other_y-polygon[2])
 							}
 						end
 						obj.scene_points = polygon
