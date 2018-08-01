@@ -139,18 +139,11 @@ Draw = Class{
 		Draw.setColor(Draw.reset_color)
 		return Draw
 	end,
-
-	_draw = function(func)
-		love.graphics.push('all')
-		func()
-		love.graphics.pop()
-		return Draw
-	end,
     
     callDrawFunc = function(shape, args)
-		Draw._draw(function()
+		--Draw.stack(function()
 			love.graphics[shape](unpack(args))
-		end)
+		--end)
 		return Draw
     end,
 

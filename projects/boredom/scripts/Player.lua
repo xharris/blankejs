@@ -69,7 +69,7 @@ function Player:update(dt)
 		end
 		-- jumping
 		if Input("jump") and self.jumps > 0 then
-			self.vspeed = -650
+			self.vspeed = -700
 			self.jumps = self.jumps - 1
 		end
 

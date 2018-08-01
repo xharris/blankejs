@@ -324,27 +324,33 @@ local Scene = Class{
 						obj.scene_tag = obj_name
 						obj.scene_size = object.size
 						obj.scene_rect = {0,0,0,0}
-						obj.x = polygon[1]
-						obj.y = polygon[2]
+
+						local x, y, w, h = polygon[1], polygon[2], object.size[1], object.size[2]
+
 						if #polygon == 2 then
 							polygon[1] = polygon[1] - (object.size[1] / 2)
 							polygon[2] = polygon[2] - (object.size[2] / 2)
 							polygon[3] = math.abs(polygon[1] - (polygon[1] + (object.size[1] / 2)))
 							polygon[4] = math.abs(polygon[2] - (polygon[2] + (object.size[2] / 2)))
-							obj.scene_rect = polygon
+							x, y = polygon[1], polygon[2]
+						else
+							-- x,y is smallest, x2, y2 is largest
+							local x2, y2 = x, y
+							for i = 1,#polygon,2 do
+								-- smallest
+								if polygon[i] < x then x = polygon[i] end
+								if polygon[i+1] < y then y = polygon[i+1] end
+								-- largest
+								if polygon[i] > x2 then x2 = polygon[i] end
+								if polygon[i+1] > y2 then y2 = polygon[i+1] end
+							end
+							w = x2 - x 
+							h = y2 - y
 						end
-						if #polygon == 8 then
-							local other_x = polygon[3]
-							if other_x == polygon[1] then other_x = polygon[5] end
-							if other_x == polygon[1] then other_x = polygon[7] end
-							local other_y = polygon[4]
-							if other_y == polygon[2] then other_y = polygon[6] end
-							if other_y == polygon[2] then other_y = polygon[8] end
-							obj.scene_rect = {
-								polygon[1], polygon[2],
-								math.abs(other_x-polygon[1]), math.abs(other_y-polygon[2])
-							}
-						end
+
+						obj.x = x
+						obj.y = y
+						obj.scene_rect = {x,y,w,h}
 						obj.scene_points = polygon
 					end
 
@@ -360,20 +366,20 @@ local Scene = Class{
 
 					if align then
 						if align:contains("center") then
-							new_entity.x = polygon[1] - new_entity.sprite_width/2
-							new_entity.y = polygon[2] - new_entity.sprite_height/2
+							new_entity.x = new_entity.x - new_entity.sprite_width/2
+							new_entity.y = new_entity.y - new_entity.sprite_height/2
 						end
 						if align:contains("top") then
-							new_entity.y = polygon[2] - layer.snap[2]/2
+							new_entity.y = new_entity.y
 						end
 						if align:contains("bottom") then
-							new_entity.y = polygon[2] + layer.snap[2]/2 - new_entity.sprite_height
+							new_entity.y = new_entity.y - new_entity.sprite_height
 						end
 						if align:contains("left") then
-							new_entity.x = polygon[1] - layer.snap[1]/2
+							new_entity.x = new_entity.x
 						end
 						if align:contains("right") then
-							new_entity.x = polygon[1] + layer.snap[1]/2 - new_entity.sprite_width
+							new_entity.x = new_entity.x - new_entity.sprite_width
 						end
 					end
 

@@ -42,7 +42,7 @@ Font = Class{
 
 		Draw.setColor(get('color'))
 		love.graphics.setFont(self.font)
-		love.graphics.printf(text, x, y, limit, get('align'))
+		love.graphics.printf(ifndef(text, "nil"), x, y, limit, get('align'))
 	end,
 }
 
