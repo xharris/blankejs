@@ -1000,3 +1000,51 @@
 		}
 	}
 }
+
+.content[data-type="Exporter"] {
+	.editor-content {
+		box-sizing: border-box;
+		background-color: #212121;
+		padding: 10px;
+	}
+
+	.platforms {
+		position: relative;
+		padding-top: 3px;
+	    border: 1px solid @window-background;
+	    border-radius: 2px;
+
+	    .title1 {
+    	    color: @search-text-focus;
+		    margin: 0px;
+		    position: absolute;
+		    top: -6px;
+		    left: 6px;
+		    background-color: #212121;
+		    padding: 0px 5px;
+	    }
+	}
+
+	.platform {
+		width: 40px;
+		height: 40px;
+		padding: 10px;
+		margin: 5px;
+		display: inline-block;
+	    border: 1px dashed @window-background;
+		transition: all ease-in-out 0.2s;
+
+		&:hover {
+			border: none;
+		}
+
+		.icon {
+			width: 100%;
+			height: 100%;
+		}
+	}
+}
+
+
+
+
