@@ -580,10 +580,10 @@ class Code extends Editor {
 }
 
 document.addEventListener('fileChange', function(e){
-	if (e.detail.type == 'change') {
+	// if (e.detail.type == 'change') {
 		app.removeSearchGroup("Code");
 		addScripts(app.project_path);
-	}
+	// }
 });
 
 function addScripts(folder_path) {

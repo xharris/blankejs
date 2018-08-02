@@ -4,7 +4,6 @@ Font = Class{
 		self.options = {
 			name = "console.ttf",
 			size = 22,
-			color = "white",
 			align = "left",
 			limit = -1
 		}
@@ -39,8 +38,7 @@ Font = Class{
 
 		local limit = get('limit')
 		if limit <= 0 then limit = game_width - x end
-
-		Draw.setColor(get('color'))
+ 
 		love.graphics.setFont(self.font)
 		love.graphics.printf(ifndef(text, "nil"), x, y, limit, get('align'))
 	end,

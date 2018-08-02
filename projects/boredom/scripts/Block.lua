@@ -1,6 +1,10 @@
-BlankE.addEntity("MovingBlock")
+-- Block: sticks out of the ground and can move
 
-function MovingBlock:init()	
+BlankE.addEntity("Block")
+
+function Block:init(rect)
+	self.scene_rect = rect
+	
 	-- draw block
 	self.canvas = Canvas(self.scene_rect[3], self.scene_rect[4])
 	self.canvas:drawTo(function()
@@ -28,43 +32,40 @@ function MovingBlock:init()
 	local rw, rh = self.scene_rect[3], self.scene_rect[4]
 	self:addShape("main","rectangle",{rw,rh,rw,rh}, "ground")
 	
-	self.coll_x, self.move_dir = nil, nil
+	self.coll_x, self.coll_y, self.move_dir = nil, nil, nil
 end
 
-function MovingBlock:update(dt)
+function Block:update(dt)
 	self.onCollision["main"] = function(other, sep)
-		if other.tag == "ground" and not self.coll_x then
+		if other.tag == "ground" and not self.coll_x and not self.coll_y then
 			self.coll_x = self.x + sep.point_x
-			
-			if sep.x < 0 then self.move_dir = "R" end
-			if sep.x > 0 then self.move_dir = "L" end
+			self.coll_y = self.y + sep.point_y
 		end
 		
-		if other.tag == "Player.feet_box" and self.hspeed == 0 then
-			if self.move_dir == "R" then
-				self.move_tween = Tween(self, {hspeed=100}, 1, "quadratic in")
-				self.move_tween:play()
-			end
-			if self.move_dir == "L" then
-				self.move_tween = Tween(self, {hspeed=-100}, 1, "quadratic in")
-				self.move_tween:play()
-			end
-		end
+		if self.collisionCB then self:collisionCB(other, sep) end
 	end
 	
 	-- destroy when too far
 	if (self.move_dir == "R" and self.coll_x < self.x) or
-	   (self.move_dir == "L" and self.coll_x > self.x + self.scene_rect[3]) then
+	   (self.move_dir == "L" and self.coll_x > self.x + self.scene_rect[3]) or
+	   (self.move_dir == "U" and self.coll_y > self.y) or
+	   (self.move_dir == "D" and self.coll_y < self.y) then
 		self:destroy()	
 	end
 end
 
-function MovingBlock:draw()
+function Block:draw()
+	local x, y, w, h = self.x, self.y, 0, 0
 	if self.move_dir == "R" then
-		Draw.crop(self.x,self.y,self.coll_x-self.x+2,self.scene_rect[4])
+		x, y, w, h = self.x,self.y,self.coll_x-self.x+2,self.scene_rect[4]
 	elseif self.move_dir == "L" then
-		Draw.crop(self.coll_x-1,self.y,self.scene_rect[3]-(self.coll_x-self.x)+2,self.scene_rect[4])
+		x, y, w, h = self.coll_x-1,self.y,self.scene_rect[3]-(self.coll_x-self.x)+2,self.scene_rect[4]
+	elseif self.move_dir == "U" then
+	
+	elseif self.move_dir == "D" then
+		x, y, w, h = self.x,self.y,self.scene_rect[3],self.coll_y-self.y+2
 	end
 	
+	Draw.crop(x,y,w,h)
 	self.canvas:draw(self.x, self.y)
 end

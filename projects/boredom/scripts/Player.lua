@@ -53,8 +53,13 @@ function Player:update(dt)
 			self.jumps = self.max_jumps
 			
 			self.platform_hspeed = 0
-			if other.tag == "ground" and other.parent and other.parent.hspeed then
-				self.platform_hspeed = other.parent.hspeed / 2
+			if other.tag == "ground" and other.parent then
+				if other.parent.hspeed then
+					self.platform_hspeed = other.parent.hspeed / 1.5
+				end
+				if other.parent.vspeed then
+					self.y = other.parent.y - self.sprite_height
+				end
 			end
 		end
 	}

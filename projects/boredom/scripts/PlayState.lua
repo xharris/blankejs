@@ -13,6 +13,7 @@ function PlayState:enter(prev)
 	-- entities
 	local player = sc_level1:addEntity("player", Player, "bottom-center")[1]
 	sc_level1:addEntity("moving_block", MovingBlock)
+	sc_level1:addEntity("door", DoorBlock)
 	
 	main_camera = View()
 	main_camera:follow(player)

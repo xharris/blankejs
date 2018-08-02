@@ -121,7 +121,6 @@ BlankE = {
 	_mouse_x = 0,
 	_mouse_y = 0,
 	game_canvas = Canvas(800, 600),
-	font = Font(),
 	draw_debug = false,
 
 	-- window scaling
@@ -156,8 +155,6 @@ BlankE = {
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 		Asset.loadScripts()
-
-		Draw.setFont(BlankE.font)
 
 	    -- figure out the first state to run
 	    if BlankE.first_state and not first_state then

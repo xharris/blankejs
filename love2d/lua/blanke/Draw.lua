@@ -1,9 +1,9 @@
 Draw = Class{
-	font = Font{
+	font = nil,
+	--[[Font{
 		size=20,
-		color="black",
 		align="center"
-	},
+	},]]
 	background_color = {0,0,0,1},
 	color = {0,0,0,255},
 	reset_color = {1,1,1,1},
@@ -169,6 +169,8 @@ Draw = Class{
     	if type(new_font) == "string" and Asset.has('font', new_font) then
     		Draw.font = Asset.get('font', new_font)
     	elseif type(new_font) == 'table' then
+    		Draw.font = new_font
+    	else
     		Draw.font = new_font
     	end 
     end,
