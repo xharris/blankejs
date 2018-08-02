@@ -60,17 +60,10 @@ function MovingBlock:update(dt)
 end
 
 function MovingBlock:draw()
-	Draw.setColor("red")
 	if self.move_dir == "R" then
-		Draw.rect("line",self.x,self.y,self.coll_x-self.x+3,self.scene_rect[4])
+		Draw.crop(self.x,self.y,self.coll_x-self.x+2,self.scene_rect[4])
 	elseif self.move_dir == "L" then
-		Draw.rect("line",self.coll_x-2,self.y,self.scene_rect[3]-(self.coll_x-self.x)+2,self.scene_rect[4])
-	end
-	Draw.setColor("white")
-	if self.move_dir == "R" then
-		Draw.crop(self.x,self.y,self.coll_x-self.x+3,self.scene_rect[4])
-	elseif self.move_dir == "L" then
-		Draw.crop(self.coll_x-2,self.y,self.scene_rect[3]-(self.coll_x-self.x)+2,self.scene_rect[4])
+		Draw.crop(self.coll_x-1,self.y,self.scene_rect[3]-(self.coll_x-self.x)+2,self.scene_rect[4])
 	end
 	
 	self.canvas:draw(self.x, self.y)

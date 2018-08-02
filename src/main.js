@@ -286,7 +286,6 @@ var app = {
 
 	hideWelcomeScreen: function() {
 		app.getElement("#welcome").classList.add("hidden");
-		app.getElement("#workspace-window").classList.add("active");
 	},
 
 	addAsset: function(res_type, path) {
@@ -496,6 +495,34 @@ nwWIN.on('loaded', function() {
 		this.hide();
 		app.closeProject();
 		this.close(true);
+	});
+
+	// file drop zone
+	window.addEventListener('dragover', function(e) {
+		e.preventDefault();
+		if (app.isProjectOpen())
+			app.getElement("#drop-zone").classList.add("active");
+		return false;
+	});
+	window.addEventListener('drop', function(e) {
+		e.preventDefault();
+
+		if (app.isProjectOpen()) {
+			let files = e.dataTransfer.files;
+			for (let f of files) {
+				blanke.toast("adding file \'"+f.name+"\'");
+				app.addAsset(app.findAssetType(f.path),f.path);
+			}
+			app.getElement("#drop-zone").classList.remove("active");
+		}
+
+		return false;
+	});
+	window.addEventListener('dragleave', function(e) {
+		e.preventDefault();
+		if (app.isProjectOpen())
+			app.getElement("#drop-zone").classList.remove("active");
+		return false;
 	});
 
 	dispatchEvent("ideReady");

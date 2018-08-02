@@ -26,7 +26,6 @@ body {
 	width: 16px;
     margin: auto;
     vertical-align: middle;
-	.win-drag();
 
 	width: 100%;
 	height: 100%;
@@ -141,14 +140,30 @@ body {
 	}
 }
 
-#workspace-window.active {
-	.win-nodrag();
-	position: absolute;
+#drop-zone {
+    pointer-events: none;
+    position: absolute;
     top: 34px;
     left: 0px;
     right: 0px;
     bottom: 21px;
-    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    z-index: 20;
+    transition: all ease-in-out 0.2s;
+
+    p {
+	    .centered();
+
+	    color: @search-text-focus;
+	    text-align: center;
+	    font-size: 32px;
+	    margin: 0px;
+    }
+
+	&.active {
+		opacity: 1;
+	}
 }
 
 .drag-container {
@@ -336,6 +351,7 @@ body {
 }
 
 #search-container {
+	.win-drag();
 	position: absolute;
     top: 0px;
     left: 0px;
@@ -344,8 +360,11 @@ body {
     z-index: 100;
     background-color: rgba(0,0,0,0.1);
 
-    #search-input {
+    * {
 		.win-nodrag();
+    }
+
+    #search-input {
 	    height: 100%;
 	    padding: 0px 15px;
 	    margin: 0px;

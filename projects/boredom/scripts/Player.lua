@@ -85,9 +85,11 @@ function Player:update(dt)
 			self.sprite_xscale = -1
 			self.sprite_index = "walk"
 
+		else
+			self.sprite_index = "stand"	
 		end
 
-		if self.vspeed ~= 0 then
+		if self.vspeed ~= 0 or self.jumps == 0 then
 			self.sprite_index = "walk"
 			self.sprite_speed = 0
 			self.sprite_frame = 2
