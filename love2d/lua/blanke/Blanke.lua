@@ -120,7 +120,7 @@ BlankE = {
 	_snap_mouse_y = 0,
 	_mouse_x = 0,
 	_mouse_y = 0,
-	game_canvas = nil,
+	game_canvas = Canvas(800, 600),
 	font = Font(),
 	draw_debug = false,
 
@@ -480,16 +480,13 @@ BlankE = {
 		love.graphics.pop()
 
 		-- draw game
-		love.graphics.setScissor(
-			BlankE._offset_x * BlankE.scale_x,
-			BlankE._offset_y * BlankE.scale_y,
-			game_width * BlankE.scale_x,
-			game_height * BlankE.scale_y
-		)
-		BlankE.drawToScale(function()
+		BlankE.game_canvas:drawTo(function()
 			StateManager.iterateStateStack('draw')
 		end)
-		love.graphics.setScissor()
+
+		BlankE.drawToScale(function()
+			BlankE.game_canvas:draw(0, 0, 0, 1, 1)
+		end)
 		
 		if BlankE.draw_debug then Debug.draw() end
 

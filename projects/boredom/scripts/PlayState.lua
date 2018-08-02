@@ -1,6 +1,6 @@
 BlankE.addState("PlayState");
 
-local player
+--local player
 main_camera = nil
 
 function PlayState:enter(prev)
@@ -11,11 +11,10 @@ function PlayState:enter(prev)
 	sc_level1:addHitbox("ground")
 	sc_level1:addHitbox("player_die")
 	-- entities
-	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
+	local player = sc_level1:addEntity("player", Player, "bottom-center")[1]
 	sc_level1:addEntity("moving_block", MovingBlock)
 	
 	main_camera = View()
-	main_camera.zoom = 2
 	main_camera:follow(player)
 end
 

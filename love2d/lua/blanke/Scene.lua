@@ -326,13 +326,14 @@ local Scene = Class{
 						obj.scene_rect = {0,0,0,0}
 
 						local x, y, w, h = polygon[1], polygon[2], object.size[1], object.size[2]
+						local new_polygon = {}
 
 						if #polygon == 2 then
-							polygon[1] = polygon[1] - (object.size[1] / 2)
-							polygon[2] = polygon[2] - (object.size[2] / 2)
-							polygon[3] = math.abs(polygon[1] - (polygon[1] + (object.size[1] / 2)))
-							polygon[4] = math.abs(polygon[2] - (polygon[2] + (object.size[2] / 2)))
-							x, y = polygon[1], polygon[2]
+							new_polygon[1] = polygon[1] - (object.size[1] / 2)
+							new_polygon[2] = polygon[2] - (object.size[2] / 2)
+							new_polygon[3] = math.abs(polygon[1] - (polygon[1] + (object.size[1] / 2)))
+							new_polygon[4] = math.abs(polygon[2] - (polygon[2] + (object.size[2] / 2)))
+							x, y = new_polygon[1], new_polygon[2]
 						else
 							-- x,y is smallest, x2, y2 is largest
 							local x2, y2 = x, y
@@ -351,7 +352,7 @@ local Scene = Class{
 						obj.x = x
 						obj.y = y
 						obj.scene_rect = {x,y,w,h}
-						obj.scene_points = polygon
+						obj.scene_points = new_polygon
 					end
 
 					local new_entity

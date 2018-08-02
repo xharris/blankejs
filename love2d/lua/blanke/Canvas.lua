@@ -13,7 +13,7 @@ Canvas = Class{
     
     start = function(self)
         --self._prev_canvas = love.graphics.getCanvas()
-        love.graphics.setCanvas(self.canvas)
+        love.graphics.setCanvas{self.canvas, stencil=true}
         if self.auto_clear then
             love.graphics.clear()
         end
@@ -25,9 +25,7 @@ Canvas = Class{
     
     drawTo = function(self, func)
         self:start()
-        Draw.stack(function()
-            func()
-        end)
+        func()
         self:stop()
     end,
     
