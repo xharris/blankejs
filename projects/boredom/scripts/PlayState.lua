@@ -26,10 +26,6 @@ function PlayState:enter(prev)
 	main_camera:follow(player)
 end
 
-function PlayState:update(dt)
-	
-end
-
 function PlayState:draw()
 	main_camera:draw(function()
 		sc_level1:draw()

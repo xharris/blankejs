@@ -4,6 +4,13 @@ Group = Class{
 		self.children = {}
 	end,
 
+	__index = function(self, i)
+		if type(i) == "number" then
+			return rawget(self, "children")[i]
+		end
+		return rawget(Group, i)
+	end,
+
 	add = function(self, obj)
 		obj._group = self
 		table.insert(self.children, obj)

@@ -87,12 +87,13 @@
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 3px;
-  border: none !important;
+  border: none;
   outline: none;
   background-color: transparent;
   font-size: 14px;
   cursor: pointer;
   vertical-align: top;
+  border-radius: 2px;
   transition: all ease-in-out 0.4s;
 }
 .ui-button:hover {
@@ -121,12 +122,13 @@
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 3px;
-  border: none !important;
+  border: none;
   outline: none;
   background-color: transparent;
   font-size: 14px;
   cursor: pointer;
   vertical-align: top;
+  border-radius: 2px;
   transition: all ease-in-out 0.4s;
   height: 26px;
   width: 26px;
@@ -161,12 +163,11 @@
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 3px;
-  border: none !important;
-  background-color: transparent;
   font-size: 14px;
   vertical-align: top;
+  border-radius: 2px;
   padding: 5px 10px;
-  background-color: white;
+  background-color: transparent;
   border: none;
   outline: none;
   border-radius: 0px;
@@ -1603,11 +1604,12 @@ body {
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 3px;
-  border: none !important;
+  border: none;
   outline: none;
   background-color: transparent;
   font-size: 14px;
   vertical-align: top;
+  border-radius: 2px;
   transition: all ease-in-out 0.4s;
   height: 26px;
   width: 26px;

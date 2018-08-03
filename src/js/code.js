@@ -164,7 +164,7 @@ class Code extends Editor {
 		    	});				    	
 
 		      	// comment
-		      	if (stream.match(/\s*--/)) {
+		      	if (stream.match(/\s*--/) || baseCur.includes("comment")) {
 		      		while ((ch = stream.next()) != null && !stream.eol());
 		      		return "comment";
 		      	}

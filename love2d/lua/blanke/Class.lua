@@ -70,31 +70,10 @@ local function new(class)
 		include(class, other)
 	end
 
-	-- class implementation
-	class.__index = function(self, key)
-		local val = class[key]
-		local classname = rawget(self, 'classname') or false
-		if classname then
-			if type(val) == "function" then
-				if class.onMethod and class.onMethod[key] then return class.onMethod[key] end
-			else
-				if class.onProp and class.onProp[key] then return class.onProp[key]() end
-			end
-		end
-		return val
-	end
-	-- class implementation
-	class.__newindex = function(self, key, value)
-		local classname = rawget(self, 'classname') or false
-		if classname then
-			if self.onProp and self.onProp[key] then value = self.onProp[key](self, key, value) end
-		end
-		rawset(self, key, value)
-	end
+	class.__index = class.__index or class
 	class.init    = class.init    or class[1] or function() end
 	class.include = class.include or include
 	class.clone   = class.clone   or clone
-
 
 	-- constructor call
 	return setmetatable(class, {__call = function(c, ...)

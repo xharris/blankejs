@@ -46,26 +46,30 @@ function Block:update(dt)
 	end
 	
 	-- destroy when too far
-	if (self.move_dir == "R" and self.coll_x < self.x) or
-	   (self.move_dir == "L" and self.coll_x > self.x + self.scene_rect[3]) or
-	   (self.move_dir == "U" and self.coll_y > self.y) or
-	   (self.move_dir == "D" and self.coll_y < self.y) then
-		self:destroy()	
+	if self.coll_x and self.coll_y then
+		if (self.move_dir == "R" and self.coll_x < self.x) or
+		   (self.move_dir == "L" and self.coll_x > self.x + self.scene_rect[3]) or
+		   (self.move_dir == "U" and self.coll_y > self.y) or
+		   (self.move_dir == "D" and self.coll_y < self.y) then
+			self:destroy()	
+		end
 	end
 end
 
 function Block:draw()
-	local x, y, w, h = self.x, self.y, 0, 0
-	if self.move_dir == "R" then
-		x, y, w, h = self.x,self.y,self.coll_x-self.x+2,self.scene_rect[4]
-	elseif self.move_dir == "L" then
-		x, y, w, h = self.coll_x-1,self.y,self.scene_rect[3]-(self.coll_x-self.x)+2,self.scene_rect[4]
-	elseif self.move_dir == "U" then
-	
-	elseif self.move_dir == "D" then
-		x, y, w, h = self.x,self.y,self.scene_rect[3],self.coll_y-self.y+2
+	if self.coll_x and self.coll_y then
+		local x, y, w, h = self.x, self.y, 0, 0
+		if self.move_dir == "R" then
+			x, y, w, h = self.x,self.y,self.coll_x-self.x+3,self.scene_rect[4]
+		elseif self.move_dir == "L" then
+			x, y, w, h = self.coll_x-2,self.y,self.scene_rect[3]-(self.coll_x-self.x)+2,self.scene_rect[4]
+		elseif self.move_dir == "U" then
+
+		elseif self.move_dir == "D" then
+			x, y, w, h = self.x,self.y,self.scene_rect[3],self.coll_y-self.y+2
+		end
+
+		Draw.crop(x,y,w,h)
 	end
-	
-	Draw.crop(x,y,w,h)
 	self.canvas:draw(self.x, self.y)
 end

@@ -64,21 +64,15 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
-		self.onMethod = {
-			draw = function(self, fn)
-				return function(...) Draw.stack(function(...) fn(self, ...) end) end
-			end
-		}
-
-	    self.onProp = {
-	    	sprite_index = function(self, prop, val)
-				self:refreshSpriteDims(val)
-				return val
-			end
-		}
-
     	_addGameObject('entity', self)
     end,
+
+    __newindex = function(self, k, v)
+    	if k == "sprite_index" then
+			self:refreshSpriteDims(v)
+    	end
+    	rawset(self, k, v)
+    end,	
 
     __eq = function(self, other)
     	return (self.uuid == other.uuid)
