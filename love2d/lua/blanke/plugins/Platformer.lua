@@ -12,6 +12,7 @@ end
 
 Entity.platformerCollide = function(self, args)
 	local ground_tag = args.tag
+	local ground_contains_tag = args.tag_contains
 	local fn_wall = ifndef(args.wall, function() return true end)
 	local fn_ceil = ifndef(args.ceiling, function() return true end)
 	local fn_floor = ifndef(args.floor, function() return true end)
@@ -21,7 +22,7 @@ Entity.platformerCollide = function(self, args)
         fn_all(other, sep_vector)
         -- horizontal collision
         if math.abs(sep_vector.x) > 0 then
-            if fn_wall(other, sep_vector) ~= false and other.tag == ground_tag then
+            if fn_wall(other, sep_vector) ~= false and (other.tag == ground_tag or (ground_contains_tag and other.tag:contains(ground_contains_tag))) then
                 self:collisionStopX() 
             end
         end
@@ -31,7 +32,7 @@ Entity.platformerCollide = function(self, args)
 		-- ceiling collision
         if sep_vector.y > 0 and self.vspeed < 0 then
         	fn_all(other, sep_vector)
-            if fn_ceil(other, sep_vector) ~= false and other.tag == ground_tag then
+            if fn_ceil(other, sep_vector) ~= false and (other.tag == ground_tag or (ground_contains_tag and other.tag:contains(ground_contains_tag))) then
            		self:collisionStopY()
             end
         end
@@ -41,7 +42,7 @@ Entity.platformerCollide = function(self, args)
         -- floor collision
         if sep_vector.y < 0 then
         	fn_all(other, sep_vector)
-        	if fn_floor(other, sep_vector) ~= false and other.tag == ground_tag then
+        	if fn_floor(other, sep_vector) ~= false and (other.tag == ground_tag or (ground_contains_tag and other.tag:contains(ground_contains_tag))) then
         		self:collisionStopY()
         	end
         end 

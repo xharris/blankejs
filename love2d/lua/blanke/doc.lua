@@ -768,4 +768,7 @@ BlankE.loadPlugin(name)
 
 --Platformer
 (Entity):addPlatforming(left, top, width, height) 						-- creates hitboxes: main_box, head_box, feet_box
-(Entity):platformerCollide{tag, wall, ceiling, floor, all}				-- tag: name of hitbox to collide with, [wall, ceiling, floor]: callbacks. return false to ignore collision
+(Entity):platformerCollide{tag, tag_contains, wall, ceiling, floor, all}				-- tag: name of hitbox to collide with, [wall, ceiling, floor]: callbacks. return false to ignore collision
+
+-- tag: exact tag match for ground
+-- tag_contains: if the tag contains the given string

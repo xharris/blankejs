@@ -36,9 +36,9 @@ function Player:update(dt)
 	self.hspeed = self.platform_hspeed
 	
 	self:platformerCollide{
-		tag="ground", 
+		tag_contains="ground", 
 		all=function(other, sep)
-			if other.tag == "player_die" and not self.dead then
+			if other.tag:contains("die") and not self.dead then
 				self.dead = true
 				local transition_timer = Timer(1)
 				transition_timer:after(function()

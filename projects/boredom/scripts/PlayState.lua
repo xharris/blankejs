@@ -2,19 +2,22 @@ BlankE.addState("PlayState");
 
 --local player
 main_camera = nil
+local player = nil
 
 function PlayState:enter(prev)
 	Draw.setBackgroundColor('white')
 	sc_level1 = Scene("level1")
-	sc_level1.draw_order = {"ground","MovingBlock","spike","Player"}
+	sc_level1.draw_order = {"ground","MovingBlock","SpikeBlock","spike","Player"}
 	
 	-- hitboxes
 	sc_level1:addHitbox("ground")
 	sc_level1:addHitbox("player_die")
 	
 	-- entities
-	local player = sc_level1:addEntity("player", Player, "bottom-center")[1]
+	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
 	sc_level1:addEntity("moving_block", MovingBlock)
+	local spikeblock_u = sc_level1:addEntity("spike_blockU", SpikeBlock)
+	spikeblock_u:call("setMoveDir", "U")
 	-- movingblock
 	local moveblock_l = sc_level1:addEntity("moving_blockL", MovingBlock)
 	moveblock_l:call("setMoveDir","L")
@@ -24,6 +27,12 @@ function PlayState:enter(prev)
 	
 	main_camera = View()
 	main_camera:follow(player)
+end
+
+function PlayState:update(dt)
+	if player.dead and Input("restart") then
+		State.switch(PlayState)	
+	end
 end
 
 function PlayState:draw()

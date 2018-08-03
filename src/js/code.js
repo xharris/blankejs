@@ -500,11 +500,12 @@ class Code extends Editor {
 
 		this.codemirror.setValue(text);
 		this.codemirror.clearHistory();
-		this.codemirror.refresh();
 
 		this.setTitle(nwPATH.basename(file_path));
 		this.removeAsterisk();
 		refreshObjectList(this.file, this.codemirror.getValue());
+
+		this.codemirror.refresh();
 	}
 
 	save () {
