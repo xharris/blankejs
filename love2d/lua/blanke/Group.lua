@@ -36,6 +36,12 @@ Group = Class{
 		end
 	end,
 
+	setProperty = function(self, attr, value)
+		for i_c, c in ipairs(self.children) do
+			if c[attr] then c[attr] = value end
+		end
+	end,
+
 	call = function(self, func_name, ...)
 		for i_c, c in ipairs(self.children) do
 			if c[func_name] then c[func_name](c, ...) end

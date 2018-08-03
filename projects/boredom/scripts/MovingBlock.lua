@@ -6,6 +6,10 @@ function MovingBlock:init()
 	self.block.y = self.y
 end
 
+function MovingBlock:setMoveDir(dir)
+	self.block.move_dir = dir
+end
+
 function MovingBlock:update(dt)
 	self.block.collisionCB = function(block, other, sep)
 		if other.tag == "ground" and not block.move_dir then

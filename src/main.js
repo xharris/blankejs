@@ -1,7 +1,7 @@
 /*
 BUGS:
--	deleting a script prevents new ones from being opened for editing
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
+- 	sceneeditor: pointerup event after pointerdown event happens outside of window --> freeze
 */
 
 var nwGUI = require('nw.gui');

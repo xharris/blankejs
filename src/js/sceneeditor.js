@@ -248,6 +248,7 @@ class SceneEditor extends Editor {
 				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
 					this_ref.drawPoly(this_ref.curr_object, obj.points, obj.poly);
 				});
+				this_ref.refreshObjectList();
 				this_ref.export();
 				this_ref.updateGlobalObjList();
 			}
@@ -856,6 +857,7 @@ class SceneEditor extends Editor {
 		for (var o = 0; o < this.objects.length; o++) {
 			var new_option = app.createElement("option");
 			new_option.value = this.objects[o].name;
+			new_option.style.color = this.objects[o].color;
 			new_option.innerHTML = this.objects[o].name;
 			this.el_sel_name.appendChild(new_option);
 		}

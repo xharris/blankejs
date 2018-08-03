@@ -5,8 +5,8 @@ Entity.addPlatforming = function(self, left, top, width, height)
 	-- 
 
 	self:addShape("main_box", "rectangle", {left, top, width, height})		-- rectangle of whole players body
-	self:addShape("head_box", "rectangle", {left+2, top-(height-2), width-4, 2})
-	self:addShape("feet_box", "rectangle", {left+2, top+(height-2), width-4, 2})	-- rectangle at players feet
+	self:addShape("head_box", "rectangle", {left, top-(height-2), width-6, 2})
+	self:addShape("feet_box", "rectangle", {left, top+(height-2), width-6, 2})	-- rectangle at players feet
 	self:setMainShape("main_box")
 end
 

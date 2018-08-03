@@ -311,7 +311,7 @@ local Scene = Class{
 
 	-- returns table of created entities
 	addEntity = function(self, obj_name, ent_class, align) 
-		local instances = {}
+		local instances = Group()
 		local object = self:getObjectInfo(obj_name)
 
 		if object then
@@ -386,7 +386,7 @@ local Scene = Class{
 					end
 
 					layer:addEntity(new_entity)
-					table.insert(instances, new_entity)
+					instances:add(new_entity)
 				end
 			end
 		end
