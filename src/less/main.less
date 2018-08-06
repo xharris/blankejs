@@ -367,6 +367,7 @@ body {
 
     &.no-project {
     	* {
+			.win-drag();
     		opacity: 0;
     		pointer-events: none;
     	}
@@ -614,10 +615,11 @@ body {
 	    background-color: white;
 	    border: 1px solid black;
     	box-shadow: 1px 1px 5px 1px black;
+    	margin: 8px;
 
 		.content {
 		    margin: 0px;
-		    border: 4px outset #424242;
+		    border: 2px outset #424242;
 		    background-color: #424242;
 		    padding: 5px;
 		    color: #FAFAFA;
