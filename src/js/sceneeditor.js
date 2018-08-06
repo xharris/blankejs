@@ -120,7 +120,7 @@ class SceneEditor extends Editor {
 		this.el_sel_object		= app.createElement("select","select-object");
 		this.el_input_object	= app.createElement("input","input-object");
 		// add object types
-		let obj_types = ['image','object'];
+		let obj_types = ['image','object','tag'];
 		for (var o = 0; o < obj_types.length; o++) {
 			var new_option = app.createElement("option");
 			new_option.value = obj_types[o];
@@ -981,7 +981,7 @@ class SceneEditor extends Editor {
 
 		// add polygon points
 		poly.lineStyle(1, parseInt(obj.color.replace('#',"0x"),16), .5);
-		poly.beginFill(parseInt(obj.color.replace('#',"0x"),16), .2);
+		poly.beginFill(parseInt(obj.color.replace('#',"0x"),16), .1);
 		if (points.length == 2) {
 			poly.drawRect(
 				points[0]-obj.size[0]/2,
@@ -1030,6 +1030,17 @@ class SceneEditor extends Editor {
 
 		// add remove click
 		pixi_poly.interactive = true;
+		pixi_poly.on('leftup', function(e){
+			if (this_ref.obj_type == 'tag') {
+				blanke.showModal(
+					"<label>object tag: </label>"+
+					"<input class='ui-input' id='obj-tag' style='width:100px;'/>",
+				{
+					"yes": function() { this_ref.rename(filename, app.getElement('#obj-tag').value+".scene"); },
+					"no": function() {}
+				});
+			}
+		});
 		pixi_poly.on('rightup', function(e){
 			// remove from array
 			if (!this_ref.placing_object && this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
@@ -1158,6 +1169,15 @@ class SceneEditor extends Editor {
 			if (this.snap_on) {
 				x -= x % snapx;
 				y -= y % snapy;
+			}
+
+			// place it in between closest two points
+			let pts = this.placing_object.points;
+			let cx1 = pts[0], last_x_dist = Math.abs(cx1 - x), cx2 = pts[1];
+			let cy1 = pts[0], last_y_dist = Math.abs(cy1 - y), cy2 = pts[1];
+
+			for (let p = 0; p < pts.length; p+=2) {
+				if (Math.abs(pts[p] - cx1) < )
 			}
 
 			// add to main shape
@@ -1560,6 +1580,7 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
+		return;
 		if (this.deleted) return;
 
 		let export_data = {'objects':[], 'layers':[], 'images':[], 'settings':{
