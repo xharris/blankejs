@@ -572,7 +572,7 @@ class SceneEditor extends Editor {
 			this_ref.half_mouse = [Math.floor(mx),Math.floor(my)];
 			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
-			if (!e.data.originalEvent.ctrlKey) {
+			if (!e.data.originalEvent.ctrlKey || this_ref.obj_type == "object") {
 				this_ref.mouse = [
 					mx - (mx%snapx),
 					my - (my%snapy)
@@ -782,8 +782,6 @@ class SceneEditor extends Editor {
 
 	drawCrosshair () {
 		if (this.curr_layer) {
-			var snapx = this.curr_layer.snap[0];
-			var snapy = this.curr_layer.snap[1];
 			var stage_width =  this.game_width;
 			var stage_height = this.game_height;
 
@@ -791,13 +789,19 @@ class SceneEditor extends Editor {
 				this.place_mouse[0],
 				this.place_mouse[1]
 			];
+			if (this.obj_type == "object") {
+				center = [
+					this.half_place_mouse[0],
+					this.half_place_mouse[1]
+				];
+			}
 
-			this.coord_text.x = (this.game_width - this.place_mouse[0]) / 3 + this.place_mouse[0];
-			this.coord_text.y = this.place_mouse[1] + 8;
+			this.coord_text.x = (this.game_width - center[0]) / 3 + center[0];
+			this.coord_text.y = center[1] + 8;
 			this.coord_text.text = 'x '+this.mouse[0]+' y '+this.mouse[1];
 
-			this.obj_info_text.x = (this.game_width - this.place_mouse[0]) / 3 + this.place_mouse[0];
-			this.obj_info_text.y = this.place_mouse[1] + 20;
+			this.obj_info_text.x = (this.game_width - center[0]) / 3 + center[0];
+			this.obj_info_text.y = center[1] + 20;
 			this.obj_info_text.text = Object.keys(this.obj_info).join('\n');
 
 			// line style
@@ -805,11 +809,11 @@ class SceneEditor extends Editor {
 			this.origin_graphics.lineStyle(2, 0xffffff, this.grid_opacity);
 
 			// horizontal
-			this.origin_graphics.moveTo(0, this.place_mouse[1])
-			this.origin_graphics.lineTo(stage_width, this.place_mouse[1]);
+			this.origin_graphics.moveTo(0, center[1])
+			this.origin_graphics.lineTo(stage_width, center[1]);
 			// vertical
-			this.origin_graphics.moveTo(this.place_mouse[0], 0);
-			this.origin_graphics.lineTo(this.place_mouse[0], stage_height);
+			this.origin_graphics.moveTo(center[0], 0);
+			this.origin_graphics.lineTo(center[0], stage_height);
 		}
 	}
 
@@ -1097,7 +1101,12 @@ class SceneEditor extends Editor {
 
 	removeObjectPoint () {
 		if (this.placing_object) {
-			// remove a point
+
+			/*
+			let pt_order = this.placing_object.point_order;
+			this.placing_object.points.splice(pt_order[pt_order.length-1], 2);
+			this.placing_object.point_order.pop();
+			*/
 			this.placing_object.points.pop();
 			this.placing_object.points.pop();
 
@@ -1159,7 +1168,8 @@ class SceneEditor extends Editor {
 				this.placing_object = {
 					graphic: new PIXI.Graphics(),
 					graphic_dots: [],	// add later
-					points: []
+					points: [],
+					point_order: [],
 				}
 			}
 
@@ -1171,16 +1181,31 @@ class SceneEditor extends Editor {
 				y -= y % snapy;
 			}
 
-			// place it in between closest two points
+			/* place it in between closest two points (probably wont)
 			let pts = this.placing_object.points;
-			let cx1 = pts[0], last_x_dist = Math.abs(cx1 - x), cx2 = pts[1];
-			let cy1 = pts[0], last_y_dist = Math.abs(cy1 - y), cy2 = pts[1];
+			let closest_i = 0;
+			let closest_dist = -1;
 
+			let dist = 0;
 			for (let p = 0; p < pts.length; p+=2) {
-				if (Math.abs(pts[p] - cx1) < )
+				if (p == 0)
+					dist = Math.hypot(pts[pts.length-2] - x, pts[pts.length-1] - y) + 
+						   Math.hypot(pts[p] - x, pts[p+1] - y);
+				else
+					dist = Math.hypot(pts[p-2] - x, pts[p-1] - y) + 
+						   Math.hypot(pts[p] - x, pts[p+1] - y);
+
+				if (dist < closest_dist || closest_dist == -1) {
+					closest_dist = dist;
+					closest_i = p;
+				}
 			}
 
 			// add to main shape
+			this.placing_object.points.splice(closest_i, 0, y);
+			this.placing_object.points.splice(closest_i, 0, x);
+			this.placing_object.point_order.push(closest_i);
+			*/
 			this.placing_object.points.push(x, y);
 
 			this.redrawPlacingObject();
