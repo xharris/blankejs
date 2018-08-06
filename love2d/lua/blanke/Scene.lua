@@ -125,7 +125,7 @@ local SceneLayer = Class{
 		-- entity
 		if self.entities[name] then
 			for e, entity in ipairs(self.entities[name]) do
-				if not table.hasValue(self.parent.dont_draw, entity.scene_tag) then
+				if not table.hasValue(self.parent.dont_draw, entity.scene_name) then
 					Draw.stack(function()
 						entity:draw()
 					end)
@@ -291,6 +291,13 @@ local Scene = Class{
 				for layer_name, polygons in pairs(object.polygons) do
 					local layer = self:getLayer(layer_name)
 					for p, polygon in ipairs(polygons) do
+						local tag = table.remove(polygon, 1)
+						if tag == '' then
+							tag = name
+						else
+							tag = name..'.'..tag
+						end
+
 						if #polygon == 2 then
 							local x, y = polygon[1], polygon[2]
 							local snapx, snapy = layer.snap[1]/2, layer.snap[2]/2
@@ -301,7 +308,7 @@ local Scene = Class{
 								x - snapx, y + snapy
 							}
 						end
-						layer:addHitbox(polygon, name, object.color)
+						layer:addHitbox(polygon, tag, object.color)
 					end
 				end
 			end
@@ -320,8 +327,9 @@ local Scene = Class{
 				for p, polygon in ipairs(polygons) do
 
 					-- give entity information from scene
-					function applyInfo(obj)
-						obj.scene_tag = obj_name
+					function applyInfo(obj)	
+						obj.scene_name = obj_name
+						obj.scene_tag = table.remove(polygon, 1)
 						obj.scene_size = object.size
 						obj.scene_rect = {0,0,0,0}
 

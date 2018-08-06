@@ -362,6 +362,14 @@ body {
 
     * {
 		.win-nodrag();
+		transition: all ease-in-out 0.2s;
+    }
+
+    &.no-project {
+    	* {
+    		opacity: 0;
+    		pointer-events: none;
+    	}
     }
 
     #search-input {

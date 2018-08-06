@@ -69,7 +69,7 @@ var app = {
 	},
 
 	isProjectOpen: function() {
-		return (app.project_path != "");
+		return (app.project_path && app.project_path != "");
 	},
 
 	newProject: function(path) {
@@ -97,15 +97,22 @@ var app = {
 	},
 
 	closeProject: function() {
-		app.saveSettings();
-		dispatchEvent("closeProject", {path: app.project_path});
+		if (app.isProjectOpen()) {
+			app.saveSettings();
+			app.getElement("#search-container").classList.add("no-project");
+			if (app.isServerRunning()) 
+				app.stopServer();
+
+			dispatchEvent("closeProject", {path: app.project_path});
+			app.project_path = '';
+		}
 	},
 
 	openProject: function(path) {
 		// validate: only open if there's a main.lua
 		nwFS.readdir(path, 'utf8', function(err, files){
 			if (!err && files.includes('main.lua')) {
-				if (app.project_path)
+				if (app.isProjectOpen())
 					app.closeProject();
 
 				app.project_path = path;
@@ -120,6 +127,7 @@ var app = {
 				app.settings.recent_files.unshift(path);
 				app.saveAppData();
 
+				app.getElement("#search-container").classList.remove("no-project");
 				dispatchEvent("openProject", {path: path});
 			}
 		});
@@ -286,6 +294,10 @@ var app = {
 
 	hideWelcomeScreen: function() {
 		app.getElement("#welcome").classList.add("hidden");
+	},
+
+	showWelcomeScreen: function() {
+		app.getElement("#welcome").classList.remove("hidden");
 	},
 
 	addAsset: function(res_type, path) {
@@ -542,6 +554,10 @@ nwWIN.on('loaded', function() {
 
 		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
 			nwGUI.Shell.openItem(app.project_path);
+		}});
+		app.addSearchKey({key: 'Close project', onSelect: function() {
+			app.closeProject();
+			app.showWelcomeScreen();
 		}});
 	});
 

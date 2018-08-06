@@ -359,6 +359,11 @@ class SceneEditor extends Editor {
 			return layer_name;
 		}
 
+		// TAG
+		this.el_tag_form = new BlankeForm([
+			['value', 'text', {'label':false}]
+		]);
+
 		// LAYER
 		this.el_layer_container.appendChild(this.el_layer_control.container);
 		this.el_layer_container.appendChild(this.el_layer_form.container);
@@ -379,6 +384,7 @@ class SceneEditor extends Editor {
 		this.el_sidebar.appendChild(this.el_sel_placetype);
 		this.el_sidebar.appendChild(this.el_object_container);
 		this.el_sidebar.appendChild(this.el_image_container);
+		this.el_sidebar.appendChild(this.el_tag_form.container);
 
 		this.appendChild(this.el_sidebar);
 		
@@ -802,7 +808,7 @@ class SceneEditor extends Editor {
 
 			this.obj_info_text.x = (this.game_width - center[0]) / 3 + center[0];
 			this.obj_info_text.y = center[1] + 20;
-			this.obj_info_text.text = Object.keys(this.obj_info).join('\n');
+			this.obj_info_text.text = Object.values(this.obj_info).join('\n');
 
 			// line style
 			this.origin_graphics.clear()
@@ -821,13 +827,17 @@ class SceneEditor extends Editor {
 	refreshObjectType () {
 		this.obj_type = this.el_sel_placetype.value;
 		this.el_image_container.classList.add('hidden');
-		this.el_object_container.classList.add('hidden');		
+		this.el_object_container.classList.add('hidden');
+		this.el_tag_form.container.classList.add('hidden');		
 		
 		if (this.obj_type == 'image' && this.curr_image) {
 			this.el_image_container.classList.remove('hidden');
 		}
 		if (this.obj_type == 'object') {
 			this.el_object_container.classList.remove('hidden');
+		}
+		if (this.obj_type == 'tag') {
+			this.el_tag_form.container.classList.remove('hidden');
 		}
 	}
 
@@ -984,7 +994,7 @@ class SceneEditor extends Editor {
 		poly.clear();
 
 		// add polygon points
-		poly.lineStyle(1, parseInt(obj.color.replace('#',"0x"),16), .5);
+		poly.lineStyle(1, parseInt(obj.color.replace('#',"0x"),16), .5, 0);
 		poly.beginFill(parseInt(obj.color.replace('#',"0x"),16), .1);
 		if (points.length == 2) {
 			poly.drawRect(
@@ -1007,7 +1017,7 @@ class SceneEditor extends Editor {
 
 	// when user presses enter to finish object
 	// also used when loading a file's objects
-	placeObject (points) {
+	placeObject (points, obj_tag) {
 		let this_ref = this;
 
 		if (points.length > 2) {
@@ -1032,20 +1042,30 @@ class SceneEditor extends Editor {
 		let curr_object = this.curr_object;
 		let pixi_poly = this.drawPoly(curr_object, points);
 
-		// add remove click
 		pixi_poly.interactive = true;
-		pixi_poly.on('leftup', function(e){
-			if (this_ref.obj_type == 'tag') {
-				blanke.showModal(
-					"<label>object tag: </label>"+
-					"<input class='ui-input' id='obj-tag' style='width:100px;'/>",
-				{
-					"yes": function() { this_ref.rename(filename, app.getElement('#obj-tag').value+".scene"); },
-					"no": function() {}
-				});
+		pixi_poly.on('pointerup', function(e){
+			// add tag
+			let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);
+			if (e.data.originalEvent.button == 0 && this_ref.obj_type == 'tag') {
+				let tag = this_ref.el_tag_form.getValue("value");
+				if (tag) {
+					e.target.tag = tag;
+					this_ref.obj_info[obj_ref.name] = obj_ref.name+" ("+e.target.tag+")";
+					this_ref.drawCrosshair();
+					this_ref.export();
+				}
 			}
 		});
 		pixi_poly.on('rightup', function(e){
+			// remove tag
+			let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);
+			if (this_ref.obj_type == 'tag') {
+				e.target.tag = '';
+				this_ref.obj_info[obj_ref.name] = obj_ref.name;
+				this_ref.drawCrosshair();
+				this_ref.export();
+			}
+
 			// remove from array
 			if (!this_ref.placing_object && this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
 				let del_uuid = e.target.uuid;
@@ -1065,7 +1085,10 @@ class SceneEditor extends Editor {
 			let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);
 			if (obj_ref) {
 				if (e.type == "mouseover") {
-					this_ref.obj_info[obj_ref.name] = true;
+					if (e.target.tag)
+						this_ref.obj_info[obj_ref.name] = obj_ref.name+" ("+e.target.tag+")";
+					else
+						this_ref.obj_info[obj_ref.name] = obj_ref.name;
 				}
 				else if (e.type == "mouseout") {
 					if (this_ref.obj_info[obj_ref.name])
@@ -1078,6 +1101,8 @@ class SceneEditor extends Editor {
 
 		pixi_poly.uuid = guid();
 		pixi_poly.obj_uuid = this.curr_object.uuid;
+		if (obj_tag)
+			pixi_poly.tag = obj_tag;
 		
 		this.curr_layer.container.addChild(pixi_poly);
 
@@ -1579,7 +1604,8 @@ class SceneEditor extends Editor {
 				for (var layer_name in obj.polygons) {
 					this.setLayer(layer_name);
 					for (var c = 0; c < obj.polygons[layer_name].length; c++) {
-						this.placeObject(obj.polygons[layer_name][c]);
+						let obj_points = obj.polygons[layer_name][c];
+						this.placeObject(obj_points.slice(1), obj_points[0]);
 					}
 				}
 			}
@@ -1605,7 +1631,6 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
-		return;
 		if (this.deleted) return;
 
 		let export_data = {'objects':[], 'layers':[], 'images':[], 'settings':{
@@ -1642,7 +1667,9 @@ class SceneEditor extends Editor {
 					if (!exp_obj.polygons[obj.pixi_texts[t].layer_name])
 						exp_obj.polygons[obj.pixi_texts[t].layer_name] = [];
 
-					exp_obj.polygons[obj.pixi_texts[t].layer_name].push(obj.pixi_texts[t].points.slice());
+					exp_obj.polygons[obj.pixi_texts[t].layer_name].push(
+						[ifndef(obj.pixi_texts[t].poly.tag,'')].concat(obj.pixi_texts[t].points.slice())
+					);
 				}
 			}
 			export_data.objects.push(exp_obj);

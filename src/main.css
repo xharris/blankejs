@@ -87,12 +87,13 @@
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 3px;
-  border: none !important;
+  border: none;
   outline: none;
   background-color: transparent;
   font-size: 14px;
   cursor: pointer;
   vertical-align: top;
+  border-radius: 2px;
   transition: all ease-in-out 0.4s;
 }
 .ui-button:hover {
@@ -121,12 +122,13 @@
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 3px;
-  border: none !important;
+  border: none;
   outline: none;
   background-color: transparent;
   font-size: 14px;
   cursor: pointer;
   vertical-align: top;
+  border-radius: 2px;
   transition: all ease-in-out 0.4s;
   height: 26px;
   width: 26px;
@@ -161,12 +163,11 @@
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 3px;
-  border: none !important;
-  background-color: transparent;
   font-size: 14px;
   vertical-align: top;
+  border-radius: 2px;
   padding: 5px 10px;
-  background-color: white;
+  background-color: transparent;
   border: none;
   outline: none;
   border-radius: 0px;
@@ -1192,7 +1193,7 @@
 }
 .content[data-type="MapEditor"] .sidebar .btn-add-object {
   position: absolute;
-  padding: 0px 2.8px;
+  padding: 1px 3px;
   margin: 0px;
   border: none;
   outline: none;
@@ -1201,12 +1202,13 @@
   top: 7.5px;
   left: -7.5px;
   border-radius: 100%;
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 500;
   background-color: #b0bec5;
-  transition: all ease-in-out 0.2s;
+  transition: all ease-in-out 0.1s;
   text-align: left;
-  line-height: 14px;
+  line-height: 15px;
+  z-index: 10;
 }
 .content[data-type="MapEditor"] .sidebar .btn-add-object:hover {
   background-color: #8bc34a;
@@ -1603,11 +1605,12 @@ body {
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 3px;
-  border: none !important;
+  border: none;
   outline: none;
   background-color: transparent;
   font-size: 14px;
   vertical-align: top;
+  border-radius: 2px;
   transition: all ease-in-out 0.4s;
   height: 26px;
   width: 26px;
@@ -1878,6 +1881,11 @@ body {
 }
 #search-container * {
   -webkit-app-region: no-drag;
+  transition: all ease-in-out 0.2s;
+}
+#search-container.no-project * {
+  opacity: 0;
+  pointer-events: none;
 }
 #search-container #search-input {
   height: 100%;
