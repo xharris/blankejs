@@ -450,6 +450,9 @@ class Code extends Editor {
 		this.codemirror.on('change', function(cm, obj){
 			this_ref.addAsterisk();
 		});
+		this.codemirror.on('focus', function(cm, obj){
+			this_ref.focus();
+		});
 		this_ref.codemirror.refresh();
 		this.addCallback('onResize', function(w, h) {
 			this_ref.codemirror.refresh();
