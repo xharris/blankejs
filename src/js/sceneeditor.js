@@ -1,3 +1,8 @@
+// rework object editor:
+// - click empty space: add rectangle object
+// - click on edge of object (point is on edge): add point in between points of edge
+// - can drag points (important)
+
 var earcut = require('./includes/earcut.js');
 var global_objects = [];
 

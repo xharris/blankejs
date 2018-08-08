@@ -6,6 +6,9 @@ function SpikeBlock:init()
 	
 	self.start_y = self.y
 	
+	self.block = Block({self.x,self.y,self.scene_rect[3],3})
+	self.block.merge_ground = false
+	
 	-- draw spikes
 	self.canv_spike = Canvas(self.block_w, self.img_spike.height)
 	self.canv_spike:drawTo(function()
@@ -20,5 +23,6 @@ end
 
 function SpikeBlock:draw()
 	self.canv_spike:draw(self.x, self.y-self.img_spike.height)
+	self.block:draw()
 	self:debugCollision()
 end

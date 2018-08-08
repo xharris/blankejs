@@ -124,20 +124,18 @@ Draw = Class{
 		Draw.crop_used = true
 	end,	
 
-	reset = function(dont_scale)
-		Draw.color = Draw.reset_color
-		Draw.setColor(Draw.color)
-		love.graphics.origin()
-    	if Draw.crop_used then
+	reset = function(only)
+    	if only == "color" or not only then 
+			Draw.color = Draw.reset_color
+			Draw.setColor(Draw.color)
+		end
+		if only == "transform" or not only then
+			love.graphics.origin()
+		end
+		if (only == "crop" or not only) and Draw.crop_used then
     		Draw.crop_used = false
     		love.graphics.setStencilTest()
-    	end
-		if not dont_scale then BlankE.reapplyScaling() end
-	end,
-
-	resetColor = function()
-		Draw.setColor(Draw.reset_color)
-		return Draw
+		end
 	end,
     
     callDrawFunc = function(shape, args)
@@ -158,10 +156,7 @@ Draw = Class{
     end,
 
     pop = function()
-    	if Draw.crop_used then
-    		Draw.crop_used = false
-    		love.graphics.setStencilTest()
-    	end
+    	Draw.reset("crop")
     	love.graphics.pop()
     end,
 

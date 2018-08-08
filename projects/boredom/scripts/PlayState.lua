@@ -15,6 +15,7 @@ function PlayState:enter(prev)
 	
 	-- entities
 	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
+	
 	sc_level1:addEntity("moving_block", MovingBlock)
 	local spikeblock_u = sc_level1:addEntity("spike_blockU", SpikeBlock)
 	spikeblock_u:call("setMoveDir", "U")
@@ -23,6 +24,7 @@ function PlayState:enter(prev)
 	moveblock_l:call("setMoveDir","L")
 	local moveblock_r = sc_level1:addEntity("moving_blockR", MovingBlock)
 	moveblock_r:call("setMoveDir","R")
+	
 	sc_level1:addEntity("door", DoorBlock)
 	
 	main_camera = View()
@@ -30,7 +32,7 @@ function PlayState:enter(prev)
 end
 
 function PlayState:update(dt)
-	if player.dead and Input("restart") then
+	if Input("restart") and player.dead then
 		State.switch(PlayState)	
 	end
 end

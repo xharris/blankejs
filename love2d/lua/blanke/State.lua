@@ -18,7 +18,7 @@ local drawStateNormal = function(state)
 	if bg_color then
 		Draw.setColor(bg_color)
 		Draw.rect('fill', 0,0,game_width,game_height)
-		Draw.resetColor()
+		Draw.reset("color")
 	end
 	if state.draw then state:draw() end
 end

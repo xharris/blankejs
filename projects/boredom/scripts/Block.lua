@@ -4,9 +4,19 @@ BlankE.addEntity("Block")
 
 function Block:init(rect)
 	self.scene_rect = rect
+	self.merge_ground = true
 	
 	-- draw block
 	self.canvas = Canvas(self.scene_rect[3], self.scene_rect[4])
+	self:updateCanvas()
+	
+	local rw, rh = self.scene_rect[3], self.scene_rect[4]
+	self:addShape("main","rectangle",{rw,rh,rw,rh}, "ground")
+	
+	self.coll_x, self.coll_y, self.move_dir = nil, nil, nil
+end
+
+function Block:updateCanvas()
 	self.canvas:drawTo(function()
 		Draw.setColor("black")
 		Draw.rect("line",
@@ -28,16 +38,11 @@ function Block:init(rect)
 			self.scene_rect[3]-4, self.scene_rect[4]-4
 		)
 	end)
-	
-	local rw, rh = self.scene_rect[3], self.scene_rect[4]
-	self:addShape("main","rectangle",{rw,rh,rw,rh}, "ground")
-	
-	self.coll_x, self.coll_y, self.move_dir = nil, nil, nil
 end
 
 function Block:update(dt)
 	self.onCollision["main"] = function(other, sep)
-		if other.tag == "ground" and not self.coll_x and not self.coll_y then
+		if other.tag == "ground" then
 			self.coll_x = self.x + sep.point_x
 			self.coll_y = self.y + sep.point_y
 		end
@@ -57,7 +62,7 @@ function Block:update(dt)
 end
 
 function Block:draw()
-	if self.coll_x and self.coll_y then
+	if self.merge_ground and (self.coll_x or self.coll_y) then
 		local x, y, w, h = self.x, self.y, 0, 0
 		if self.move_dir == "R" then
 			x, y, w, h = self.x,self.y,self.coll_x-self.x+3,self.scene_rect[4]

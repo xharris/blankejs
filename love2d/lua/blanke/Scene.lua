@@ -117,7 +117,8 @@ local SceneLayer = Class{
 		end
 	end,
 
-	_drawObj = function(self, name)-- tile
+	_drawObj = function(self, name)
+		-- tile
 		if self.spritebatches[name] then
 			love.graphics.draw(self.spritebatches[name])
 		end
@@ -291,11 +292,13 @@ local Scene = Class{
 				for layer_name, polygons in pairs(object.polygons) do
 					local layer = self:getLayer(layer_name)
 					for p, polygon in ipairs(polygons) do
-						local tag = table.remove(polygon, 1)
-						if tag == '' then
-							tag = name
-						else
-							tag = name..'.'..tag
+
+						local tag = name
+						if type(polygon[1]) ~= "number" then
+							table.remove(polygon, 1)
+							if tag ~= name then
+								tag = name..'.'..tag
+							end
 						end
 
 						if #polygon == 2 then
@@ -329,7 +332,8 @@ local Scene = Class{
 					-- give entity information from scene
 					function applyInfo(obj)	
 						obj.scene_name = obj_name
-						obj.scene_tag = table.remove(polygon, 1)
+						obj.scene_tag = ''
+						if type(polygon[1]) ~= "number" then obj.scene_tag = table.remove(polygon, 1) end
 						obj.scene_size = object.size
 						obj.scene_rect = {0,0,0,0}
 
