@@ -18,7 +18,7 @@ end
 
 function Block:updateCanvas()
 	self.canvas:drawTo(function()
-		Draw.setLineWidth(3)
+		Draw.setLineWidth(4)
 		Draw.setColor("white")
 		Draw.rect("fill",0,0,self.scene_rect[3],self.scene_rect[4])
 		Draw.setColor("black")
@@ -28,7 +28,7 @@ end
 
 function Block:update(dt)
 	self.onCollision["main"] = function(other, sep)
-		if other.tag == "ground" then
+		if other.tag == "ground" and not (self.coll_x or self.coll_y) then
 			self.coll_x = self.x + sep.point_x
 			self.coll_y = self.y + sep.point_y
 		end
@@ -62,7 +62,4 @@ function Block:draw()
 		Draw.crop(x,y,w,h)
 	end
 	self.canvas:draw(self.x, self.y)
-	Draw.reset("crop")
-	Draw.setColor("red")
-	Draw.rect("line",x, y, w, h)
 end

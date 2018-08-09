@@ -778,7 +778,7 @@ class SceneEditor extends Editor {
 	}
 
 	setCameraPosition (x, y) {
-		this.camera = [parseInt(x), parseInt(y)];
+		this.camera = [x, y];
 		// move grid
 		this.grid_container.x = this.camera[0] % this.curr_layer.snap[0];
 		this.grid_container.y = this.camera[1] % this.curr_layer.snap[1];
