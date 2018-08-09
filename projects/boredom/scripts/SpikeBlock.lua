@@ -3,17 +3,34 @@ BlankE.addEntity("SpikeBlock")
 function SpikeBlock:init()
 	self.img_spike = Image("spike")
 	self.block_w = self.scene_rect[3] + (self.img_spike.width - (self.scene_rect[3] % self.img_spike.width))
+	self.block_h = self.scene_rect[4] + (self.img_spike.width - (self.scene_rect[4] % self.img_spike.width))
 	self.activated = false
 	self.start_y = self.y
 	
-	self.block = Block({0,0,self.scene_rect[3],2})
+	if self.scene_tag == "U" then
+		self.block = Block({0,0,self.scene_rect[3],2})
+		self.canv_spike = Canvas(self.block_w, self.img_spike.height)
+	elseif self.scene_tag == "R" then
+		self.img_spike.xoffset = self.img_spike.width/2
+		self.img_spike.yoffset = self.img_spike.height/2
+		self.img_spike.angle = 90
+		
+		self.block = Block({self.scene_rect[3]-2,0,2,self.scene_rect[4]})
+		self.canv_spike = Canvas(self.img_spike.height, self.block_h)
+	end
+		
 	self.block.merge_ground = false
 	
 	-- draw spikes
-	self.canv_spike = Canvas(self.block_w, self.img_spike.height)
 	self.canv_spike:drawTo(function()
-		for x = 0, self.block_w, self.img_spike.width do
-			self.img_spike:draw(x,0)	
+		if self.scene_tag == "U" then
+			for x = 0, self.block_w, self.img_spike.width do
+				self.img_spike:draw(x,0)	
+			end
+		elseif self.scene_tag == "R" then
+			for y = 0, self.block_h, self.img_spike.width do
+				self.img_spike:draw(0,y)
+			end
 		end
 	end)
 	

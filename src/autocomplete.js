@@ -193,6 +193,11 @@ module.exports.completions = {
 	"blanke-image-instance":[
 		{prop:"x"},
 		{prop:"y"},
+		{prop:"angle"},
+		{prop:"xscale"},
+		{prop:"yscale"},
+		{prop:"xoffset"},
+		{prop:"yoffset"},
 		{prop:"alpha"},
 		{prop:"orig_width", info:"read-only"},
 		{prop:"orig_height", info:"read-only"},

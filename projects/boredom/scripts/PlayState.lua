@@ -15,21 +15,13 @@ function PlayState:enter(prev)
 	-- entities
 	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
 	
+	-- blocks
 	sc_level1:addEntity("moving_block", MovingBlock)
-	local spikeblock_u = sc_level1:addEntity("spike_blockU", SpikeBlock)
-	spikeblock_u:call("setMoveDir", "U")
-	-- movingblock
-	local moveblock_l = sc_level1:addEntity("moving_blockL", MovingBlock)
-	moveblock_l:call("setMoveDir","L")
-	local moveblock_r = sc_level1:addEntity("moving_blockR", MovingBlock)
-	moveblock_r:call("setMoveDir","R")
-	
+	sc_level1:addEntity("spike_block", SpikeBlock)
 	sc_level1:addEntity("door", DoorBlock)
 	
 	main_camera = View()
 	main_camera:follow(player)
-	
-	sc_level1.draw_hitboxes = {"spike_blockStop"}
 end
 
 function PlayState:update(dt)
