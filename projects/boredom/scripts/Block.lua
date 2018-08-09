@@ -5,26 +5,13 @@ BlankE.addEntity("Block")
 function Block:init(rect)
 	self.scene_rect = rect
 	self.merge_ground = true
-	
-	-- draw block
-	self.canvas = Canvas(self.scene_rect[3], self.scene_rect[4])
-	self:updateCanvas()
-	
+		
 	local rw, rh = self.scene_rect[3], self.scene_rect[4]
 	self:addShape("main","rectangle",{rw,rh,rw,rh}, "ground")
 	
 	self.coll_x, self.coll_y, self.move_dir = nil, nil, nil
 end
 
-function Block:updateCanvas()
-	self.canvas:drawTo(function()
-		Draw.setLineWidth(4)
-		Draw.setColor("white")
-		Draw.rect("fill",0,0,self.scene_rect[3],self.scene_rect[4])
-		Draw.setColor("black")
-		Draw.rect("line",0,0,self.scene_rect[3],self.scene_rect[4])	
-	end)
-end
 
 function Block:update(dt)
 	self.onCollision["main"] = function(other, sep)
@@ -59,7 +46,12 @@ function Block:draw()
 		elseif self.move_dir == "D" then
 			x, y, w, h = self.x,self.y,self.scene_rect[3],self.coll_y-self.y+2
 		end
-		Draw.crop(x,y,w,h)
 	end
-	self.canvas:draw(self.x, self.y)
+	Draw.crop(x,y,w,h)
+	
+	Draw.setLineWidth(3)
+	Draw.setColor("white")
+	Draw.rect("fill",self.x,self.y,self.scene_rect[3],self.scene_rect[4])
+	Draw.setColor("black")
+	Draw.rect("line",self.x,self.y,self.scene_rect[3],self.scene_rect[4])	
 end

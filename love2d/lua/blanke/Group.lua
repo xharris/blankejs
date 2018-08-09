@@ -2,6 +2,7 @@ local _views = {}
 Group = Class{
 	init = function (self)
 		self.children = {}
+    	self.uuid = uuid()
 	end,
 
 	__index = function(self, i)
@@ -12,7 +13,8 @@ Group = Class{
 	end,
 
 	add = function(self, obj)
-		obj._group = self
+		obj._group = ifndef(obj._group, {})
+		obj._group[self.uuid] = self
 		table.insert(self.children, obj)
 	end,
 
@@ -22,15 +24,14 @@ Group = Class{
 		end
 	end,
 
-	remove = function(self, i)
-		if (type(i) == "number") then
-			self.children[i] = nil
-		elseif i.uuid then
+	remove = function(self, o)
+		if (type(o) == "number") then
+			self.children[o] = nil
+		elseif o.uuid then
 			local i = 1
 			while i <= #self.children do
-				if self.children[i] and self.children[i].uuid and self.children[i].uuid == uuid then
+				if self.children[i] and self.children[i].uuid and self.children[i].uuid == o.uuid then
 					self:remove(i)
-					--i = #self.children + 1
 				end
 				i = i + 1
 			end
@@ -58,7 +59,7 @@ Group = Class{
 	destroy = function(self)
 		-- do a forEach to prevent infinite loop with _group var
 		self:forEach(function(o, obj)
-			obj._group = nil
+			obj._group[self.uuid] = nil
 			if obj.destroy then obj:destroy() end
 		end)
 		self.children = {}

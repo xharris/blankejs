@@ -10,8 +10,7 @@ function PlayState:enter(prev)
 	sc_level1.draw_order = {"ground","MovingBlock","SpikeBlock","spike","Player"}
 	
 	-- hitboxes
-	sc_level1:addHitbox("ground")
-	sc_level1:addHitbox("player_die")
+	sc_level1:addHitbox("ground", "player_die", "spike_blockStop")
 	
 	-- entities
 	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
@@ -29,6 +28,8 @@ function PlayState:enter(prev)
 	
 	main_camera = View()
 	main_camera:follow(player)
+	
+	sc_level1.draw_hitboxes = {"spike_blockStop"}
 end
 
 function PlayState:update(dt)

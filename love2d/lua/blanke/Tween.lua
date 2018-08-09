@@ -24,9 +24,8 @@ Tween = Class{
 
 		self:setValue(value)
 
-		self._go = false
+		self:reset()
 		self._func = Tween.tween_func[self.type]
-		self._dt = 0
 
 		--self.persistent = true
 		_addGameObject('tween', self)
@@ -97,9 +96,26 @@ Tween = Class{
 
 	play = function(self)
 		self._go = true
-		self._dt = 0
 
+		
+	end,
+
+	stop = function(self)
+		self._go = false
+	end,
+
+	isRunning = function(self)
+		return (self._go and self._dt > 0)
+	end,
+
+	destroy = function(self)
+		_destroyGameObject('tween',self)
+	end,
+
+	reset = function(self)
 		-- get starting values
+		self._go = false
+		self._dt = 0
 		self._start_val = self.var
 		if self._bezier then
 			self._start_val = 0
@@ -112,17 +128,8 @@ Tween = Class{
 		end
 	end,
 
-	isRunning = function(self)
-		return (self._go and self._dt > 0)
-	end,
-
-	destroy = function(self)
-		_destroyGameObject('tween',self)
-	end,
-
 	_onFinish = function(self) 
-		self._go = false
-		self._dt = 0
+		self:reset()
 		if self.onFinish then self:onFinish() end
 	end
 }

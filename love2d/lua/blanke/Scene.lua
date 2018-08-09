@@ -60,8 +60,6 @@ local SceneLayer = Class{
 		self.offx = 0
 		self.offy = 0
 		self.draw_hitboxes = false
-
-		self.draw_hitboxes = false
 	end,
 
 	-- {image (path/name), x, y, crop {x,y,w,h}}
@@ -158,9 +156,14 @@ local SceneLayer = Class{
 		end)
 
 		if self.draw_hitboxes then
+			local specific = false
+			if type(self.draw_hitboxes) == "table" then specific = true end
+
 			for name, hitboxes in pairs(self.hitboxes) do
-				for h, hitbox in ipairs(hitboxes) do
-					hitbox:draw('fill')
+				if not specific or (specific and table.hasValue(self.draw_hitboxes, name)) then 
+					for h, hitbox in ipairs(hitboxes) do
+						hitbox:draw('fill')
+					end
 				end
 			end
 		end

@@ -9,6 +9,7 @@ Entity = Class{
 	net_excludes = {'^_images$','^_sprites$','^sprite$','previous$','start$','^shapes$','^collision','^onCollision$','^is_net_entity$'},
     _init = function(self, parent)    
     	self.classname = ifndef(self.classname, 'Entity')
+
     	self._destroyed = false
 	    self._images = {}		
 		self._sprites = {} 			-- is actually the animations
@@ -64,6 +65,7 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
+		_G[self.classname].instances:add(self)
     	_addGameObject('entity', self)
     end,
 

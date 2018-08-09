@@ -1,3 +1,5 @@
+-- TODO: add ability to change shape size
+
 Hitbox = Class{
 	_color = {},
 	polygonCheck = true,
@@ -59,12 +61,18 @@ Hitbox = Class{
 		if self._enabled then
 			local color = Draw._parseColorArgs(ifndef(Hitbox._color[self.HCShape.tag], self.color))
 			color[4] = .3
+			local limit = 200 / 255
+			if color[1] >= limit and color[2] >= limit and color[3] >= limit then
+				color[1] = limit
+				color[2] = limit
+				color[3] = limit
+			end
 
 			local x, y = self:center()
 
             Draw.stack(function()
-                Draw.setColor(color)
                 Draw.setLineWidth(1)
+                Draw.setColor(color)
                 self.HCShape:draw(ifndef(mode, 'fill'))
 			end)
 		end
