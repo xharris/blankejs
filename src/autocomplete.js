@@ -95,8 +95,7 @@ module.exports.completions = {
 		{fn:"setBackgroundColor", vars:color_vars},
 		{fn:"randomColor", vars:{ alpha:'' }},
 		{fn:"setColor", vars:color_vars},
-		{fn:"resetColor"},
-		{fn:"stack", vars:{ fn:'' }, info:"resets all draw operations after fn. push -> fn -> pop"},
+		{fn:"setLineWidth", vars:{ width:'' }},
 		{fn:"point", vars:{ x:'', y:'' }},
 		{fn:"points"},
 		{fn:"line", vars:{ x1:'', y1:'', x2:'', y2:'' }},
@@ -105,6 +104,8 @@ module.exports.completions = {
 		{fn:"polygon"},
 		{fn:"text", vars:{ text:'', x:'', y:'', etc:'' }},
 		{fn:"textf"},
+		{fn:"reset", vars:{ specific:'(optional) color, crop, transform' }},
+		{fn:"stack", vars:{ fn:'' }, info:"resets all draw operations after fn. push -> fn -> pop"}
 	],
 	"blanke-input":[
 		{fn:"set", vars:{ label:'', input1:'input to catch</br>- letters: w, a, s, d, ...', etc:'' }}

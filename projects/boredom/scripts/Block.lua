@@ -18,25 +18,11 @@ end
 
 function Block:updateCanvas()
 	self.canvas:drawTo(function()
-		Draw.setColor("black")
-		Draw.rect("line",
-			0, 2,
-			self.scene_rect[3], self.scene_rect[4]-4
-		)
-		Draw.rect("line",
-			2, 0,
-			self.scene_rect[3]-4, self.scene_rect[4]
-		)
-		Draw.rect("line",
-			1, 1,
-			self.scene_rect[3]-2, self.scene_rect[4]-2
-		)
-		Draw.rect("line", unpack(self.scene_rect))
+		Draw.setLineWidth(3)
 		Draw.setColor("white")
-		Draw.rect("fill",
-			2, 2,
-			self.scene_rect[3]-4, self.scene_rect[4]-4
-		)
+		Draw.rect("fill",0,0,self.scene_rect[3],self.scene_rect[4])
+		Draw.setColor("black")
+		Draw.rect("line",0,0,self.scene_rect[3],self.scene_rect[4])	
 	end)
 end
 
@@ -51,9 +37,9 @@ function Block:update(dt)
 	end
 	
 	-- destroy when too far
-	if self.coll_x and self.coll_y then
-		if (self.move_dir == "R" and self.coll_x < self.x) or
-		   (self.move_dir == "L" and self.coll_x > self.x + self.scene_rect[3]) or
+	if self.coll_x or self.coll_y then
+		if (self.move_dir == "R" and self.x > self.coll_x) or
+		   (self.move_dir == "L" and self.x + self.scene_rect[3] < self.coll_x) or
 		   (self.move_dir == "U" and self.coll_y > self.y) or
 		   (self.move_dir == "D" and self.coll_y < self.y) then
 			self:destroy()	
@@ -62,8 +48,8 @@ function Block:update(dt)
 end
 
 function Block:draw()
+	local x, y, w, h = self.x, self.y, self.scene_rect[3], self.scene_rect[4]
 	if self.merge_ground and (self.coll_x or self.coll_y) then
-		local x, y, w, h = self.x, self.y, 0, 0
 		if self.move_dir == "R" then
 			x, y, w, h = self.x,self.y,self.coll_x-self.x+3,self.scene_rect[4]
 		elseif self.move_dir == "L" then
@@ -73,8 +59,10 @@ function Block:draw()
 		elseif self.move_dir == "D" then
 			x, y, w, h = self.x,self.y,self.scene_rect[3],self.coll_y-self.y+2
 		end
-
 		Draw.crop(x,y,w,h)
 	end
 	self.canvas:draw(self.x, self.y)
+	Draw.reset("crop")
+	Draw.setColor("red")
+	Draw.rect("line",x, y, w, h)
 end

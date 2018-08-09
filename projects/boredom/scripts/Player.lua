@@ -55,7 +55,7 @@ function Player:update(dt)
 			self.platform_hspeed = 0
 			if other.tag == "ground" and other.parent then
 				if other.parent.hspeed then
-					self.platform_hspeed = other.parent.hspeed / 1.25
+					self.platform_hspeed = other.parent.hspeed
 				end
 				if other.parent.vspeed then
 					self.y = other.parent.y - self.sprite_height
@@ -72,6 +72,12 @@ function Player:update(dt)
 		if Input("move_right") then
 			self.hspeed = self.move_speed + self.platform_hspeed
 		end
+		
+		-- remove uncessecary platform speed
+		if (Input("move_left") or Input("move_right")) and self:hadCollision("feet_box","ground") then
+			self.platform_hspeed = 0
+		end
+		
 		-- jumping
 		if Input("jump") and self.jumps > 0 then
 			self.vspeed = -700

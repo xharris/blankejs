@@ -292,26 +292,26 @@ local Scene = Class{
 				for layer_name, polygons in pairs(object.polygons) do
 					local layer = self:getLayer(layer_name)
 					for p, polygon in ipairs(polygons) do
+						local points = table.copy(polygon)
 
-						local tag = name
-						if type(polygon[1]) ~= "number" then
-							table.remove(polygon, 1)
-							if tag ~= name then
-								tag = name..'.'..tag
-							end
+						local tag = table.remove(points, 1)
+						if tag ~= name and tag ~= "" then
+							tag = name..'.'..tag
+						else
+							tag = name
 						end
 
-						if #polygon == 2 then
-							local x, y = polygon[1], polygon[2]
+						if #points == 2 then
+							local x, y = points[1], points[2]
 							local snapx, snapy = layer.snap[1]/2, layer.snap[2]/2
-							polygon = {
+							points = {
 								x - snapx, y - snapy,
 								x + snapx, y - snapy,
 								x + snapx, y + snapy,
 								x - snapx, y + snapy
 							}
 						end
-						layer:addHitbox(polygon, tag, object.color)
+						layer:addHitbox(points, tag, object.color)
 					end
 				end
 			end
@@ -328,34 +328,34 @@ local Scene = Class{
 			for layer_name, polygons in pairs(object.polygons) do
 				local layer = self:getLayer(layer_name)
 				for p, polygon in ipairs(polygons) do
+					local points = table.copy(polygon)
 
 					-- give entity information from scene
 					function applyInfo(obj)	
 						obj.scene_name = obj_name
-						obj.scene_tag = ''
-						if type(polygon[1]) ~= "number" then obj.scene_tag = table.remove(polygon, 1) end
+						obj.scene_tag = table.remove(points, 1)
 						obj.scene_size = object.size
 						obj.scene_rect = {0,0,0,0}
 
-						local x, y, w, h = polygon[1], polygon[2], object.size[1], object.size[2]
+						local x, y, w, h = points[1], points[2], object.size[1], object.size[2]
 						local new_polygon = {}
 
-						if #polygon == 2 then
-							new_polygon[1] = polygon[1] - (object.size[1] / 2)
-							new_polygon[2] = polygon[2] - (object.size[2] / 2)
-							new_polygon[3] = math.abs(polygon[1] - (polygon[1] + (object.size[1] / 2)))
-							new_polygon[4] = math.abs(polygon[2] - (polygon[2] + (object.size[2] / 2)))
+						if #points == 2 then
+							new_polygon[1] = points[1] - (object.size[1] / 2)
+							new_polygon[2] = points[2] - (object.size[2] / 2)
+							new_polygon[3] = math.abs(points[1] - (points[1] + (object.size[1] / 2)))
+							new_polygon[4] = math.abs(points[2] - (points[2] + (object.size[2] / 2)))
 							x, y = new_polygon[1], new_polygon[2]
 						else
 							-- x,y is smallest, x2, y2 is largest
 							local x2, y2 = x, y
-							for i = 1,#polygon,2 do
+							for i = 1,#points,2 do
 								-- smallest
-								if polygon[i] < x then x = polygon[i] end
-								if polygon[i+1] < y then y = polygon[i+1] end
+								if points[i] < x then x = points[i] end
+								if points[i+1] < y then y = points[i+1] end
 								-- largest
-								if polygon[i] > x2 then x2 = polygon[i] end
-								if polygon[i+1] > y2 then y2 = polygon[i+1] end
+								if points[i] > x2 then x2 = points[i] end
+								if points[i+1] > y2 then y2 = points[i+1] end
 							end
 							w = x2 - x 
 							h = y2 - y

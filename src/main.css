@@ -599,7 +599,7 @@
   background-color: rgba(207, 216, 220, 0.25);
   transition: all ease-in-out 0.2s;
   margin-top: 38px;
-  z-index: 10;
+  z-index: 5;
   /*&:hover {*/
   width: 150px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
@@ -880,6 +880,25 @@
   outline: none;
   background-color: transparent;
 }
+.content[data-type="SceneEditor"] .sidebar .object-container {
+  /*
+			.form-group[data-name="name"] {
+   		 		position: absolute;
+			    left: 0px;
+			    top: 0px;
+			    height: 30px;
+
+			    .form-text {
+			    	font-size: 16px;
+				    font-weight: 900;
+				    text-align: center;
+			   	}
+   		 	}
+
+			&:hover .form-group[data-name="name"] {
+			    width: calc(~'100% - 18px');
+			}*/
+}
 .content[data-type="SceneEditor"] .sidebar .object-container .input-letter,
 .content[data-type="SceneEditor"] .sidebar .object-container .select-letter {
   border: none;
@@ -900,9 +919,9 @@
 .content[data-type="SceneEditor"] .sidebar .object-container .select-letter {
   background-color: #b0bec5;
   width: 100%;
-  height: 30px;
+  /* height: 30px; */
   float: right;
-  padding: 15px;
+  padding: 2px;
 }
 .content[data-type="SceneEditor"] .sidebar .object-container .select-letter option {
   font-size: 16px;
@@ -933,20 +952,6 @@
 .content[data-type="SceneEditor"] .sidebar .object-container .btn-add-object:hover {
   background-color: #8bc34a;
   color: white;
-}
-.content[data-type="SceneEditor"] .sidebar .object-container .form-group[data-name="name"] {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  height: 30px;
-}
-.content[data-type="SceneEditor"] .sidebar .object-container .form-group[data-name="name"] .form-text {
-  font-size: 16px;
-  font-weight: 900;
-  text-align: center;
-}
-.content[data-type="SceneEditor"] .sidebar .object-container:hover .form-group[data-name="name"] {
-  width: calc(100% - 18px);
 }
 .content[data-type="SceneEditor"] .sidebar .object-container .input-name {
   width: 100%;
@@ -1871,6 +1876,19 @@ body {
 }
 #search-container {
   -webkit-app-region: drag;
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
   position: absolute;
   top: 0px;
   left: 0px;

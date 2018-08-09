@@ -4,6 +4,8 @@ function MovingBlock:init()
 	self.block = Block(self.scene_rect)
 	self.block.x = self.x
 	self.block.y = self.y
+	
+	if self.scene_tag ~= '' then self.block.move_dir = self.scene_tag end
 end
 
 function MovingBlock:setMoveDir(dir)

@@ -65,7 +65,7 @@ class SceneEditor extends Editor {
 		this.grid_graphics = new PIXI.Graphics();		// position wraps based on layer snap
 		this.origin_graphics = new PIXI.Graphics();
 		this.coord_text_style = new PIXI.TextStyle({
-			fontSize: 14,
+			fontSize: 16,
 			fill: 'white',
 			stroke: 'black',
 			strokeThickness: 2,
@@ -109,7 +109,7 @@ class SceneEditor extends Editor {
 		this.el_btn_add_object	= app.createElement("button","btn-add-object");
 
 		this.el_object_form = new BlankeForm([
-			['name', 'text', {'label':false}],
+			['name', 'text'],//, {'label':false}],
 			['color', 'color', {'label':false}],
 			['size', 'number', {'inputs':2, 'separator':'x'}]
 		]);
@@ -778,7 +778,7 @@ class SceneEditor extends Editor {
 	}
 
 	setCameraPosition (x, y) {
-		this.camera = [x, y];
+		this.camera = [parseInt(x), parseInt(y)];
 		// move grid
 		this.grid_container.x = this.camera[0] % this.curr_layer.snap[0];
 		this.grid_container.y = this.camera[1] % this.curr_layer.snap[1];
@@ -807,12 +807,15 @@ class SceneEditor extends Editor {
 				];
 			}
 
-			this.coord_text.x = (this.game_width - center[0]) / 3 + center[0];
-			this.coord_text.y = center[1] + 8;
+			this.coord_text.x = parseInt((this.game_width - center[0]) / 3 + center[0]);
+			this.coord_text.y = parseInt(center[1] + 8);
 			this.coord_text.text = 'x '+this.mouse[0]+' y '+this.mouse[1];
+			if (this.obj_type == "object") {
+				this.coord_text.text = 'x '+this.half_mouse[0]+' y '+this.half_mouse[1];
+			}
 
-			this.obj_info_text.x = (this.game_width - center[0]) / 3 + center[0];
-			this.obj_info_text.y = center[1] + 20;
+			this.obj_info_text.x = parseInt((this.game_width - center[0]) / 3 + center[0]);
+			this.obj_info_text.y = parseInt(center[1] + 20);
 			this.obj_info_text.text = Object.values(this.obj_info).join('\n');
 
 			// line style
@@ -868,10 +871,13 @@ class SceneEditor extends Editor {
 	// refreshes object combo box 
 	refreshObjectList (obj_type='image') {
 		app.clearElement(this.el_sel_name);
+
 		var placeholder = app.createElement("option");
 		placeholder.selected = true;
 		placeholder.disabled = true;
 		this.el_sel_name.appendChild(placeholder);
+
+		this.el_sel_name.setAttribute("size", 4);
 
 		for (var o = 0; o < this.objects.length; o++) {
 			var new_option = app.createElement("option");

@@ -171,8 +171,9 @@ Draw = Class{
     end,
 
     setLineWidth = love.graphics.setLineWidth,
+    setPointSize = love.graphics.setPointSize,
     
-    point   = function(...) return Draw.callDrawFunc('points', {...}) end,
+    point   = function(...) return Draw.callDrawFunc('points', {...}) end, 	-- point was removed in 10.0
     points 	= function(...) return Draw.callDrawFunc('points', {...}) end,
     line 	= function(...) return Draw.callDrawFunc('line', {...}) end,
     rect 	= function(...) return Draw.callDrawFunc('rectangle', {...}) end,
