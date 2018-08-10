@@ -86,7 +86,7 @@ local SceneLayer = Class{
 	addHitbox = function(self, points, tag, color)
 		self.hitboxes[tag] = ifndef(self.hitboxes[tag], {})
 		local new_hitbox = Hitbox("polygon", points, tag)
-		new_hitbox:setColor(color)
+		if color then new_hitbox:setColor(color) end
 		table.insert(self.hitboxes[tag], new_hitbox)
 	end,
 
@@ -215,7 +215,8 @@ local Scene = Class{
 				image = Image(img_name),
 				snap = image.snap,
 				offset = image.offset,
-				spacing = image.spacing
+				spacing = image.spacing,
+				coords = image.coords
 			}
 			
 			-- add placed tile data
@@ -321,6 +322,30 @@ local Scene = Class{
 		end
 		return self
 	end,
+
+	addTileHitbox = function(self, ...)
+		local tile_names = {...}
+
+		for n, name in ipairs(tile_names) do
+			if self.tilesets[name] then
+				for layer_name, coords in pairs(self.tilesets[name].coords) do
+					for c, coord in ipairs(coords) do
+						local layer = self:getLayer(layer_name)
+						local points = table.copy(coord)
+
+						points = {
+							points[1], 				points[2],
+							points[1],				points[2]+points[6],
+							points[1]+points[5], 	points[2]+points[6],
+							points[1]+points[5], 	points[2],
+						}
+
+						layer:addHitbox(points, name)
+					end
+				end
+			end
+		end
+	end,	
 
 	-- returns table of created entities
 	addEntity = function(self, obj_name, ent_class, align) 

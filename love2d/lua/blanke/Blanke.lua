@@ -29,6 +29,10 @@ function _addGameObject(obj_type, obj)
     obj._destroyed = ifndef(obj._destroyed, false)
     obj.net_object = ifndef(obj.net_object, false)
     obj._state_created = ifndef(StateManager.current(), {classname=""}).classname
+
+    if _G[obj.classname] and _G[obj.classname].instances then 
+    	_G[obj.classname].instances:add(obj)
+    end
     
     if obj._update or obj.update then obj.auto_update = true end
 
@@ -94,11 +98,12 @@ HC 		= blanke_require('extra.HC')
 blanke_require('extra.noobhub')
 --grease 	= blanke_require('extra.grease')
 
-local modules = {'Map','Asset','Bezier','Camera','Canvas','Dialog','Font','Draw','Effect','Entity','Group','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
+local modules = {'Group','Map','Asset','Bezier','Camera','Canvas','Dialog','Font','Draw','Effect','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 -- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
 	--if not table.hasValue(not_require, mod) then
 		_G[mod] = blanke_require(mod)
+		if not mod == "Group" and not _G[mod].instances then _G[mod].instances = Group() end
 		if not _G[mod].classname then _G[mod].classname = mod end
 	--end
 end

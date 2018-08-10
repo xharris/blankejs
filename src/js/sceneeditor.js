@@ -640,24 +640,38 @@ class SceneEditor extends Editor {
 		// moving camera with arrow keys
 		document.addEventListener('keydown', function(e){
 			if (document.activeElement === document.body) {
-			var keyCode = e.keyCode || e.which;
+				var keyCode = e.keyCode || e.which;
 
-			let vx = 0;
-			let vy = 0;
-			// left
-			if (keyCode == 37) vx = this_ref.curr_layer.snap[0];
-			// right
-			if (keyCode == 39) vx = -this_ref.curr_layer.snap[0];
-			// up
-			if (keyCode == 38) vy = this_ref.curr_layer.snap[1];
-			// down
-			if (keyCode == 40) vy = -this_ref.curr_layer.snap[1];
+				let vx = 0;
+				let vy = 0;
+				// left
+				if (keyCode == 37) vx = this_ref.curr_layer.snap[0];
+				// right
+				if (keyCode == 39) vx = -this_ref.curr_layer.snap[0];
+				// up
+				if (keyCode == 38) vy = this_ref.curr_layer.snap[1];
+				// down
+				if (keyCode == 40) vy = -this_ref.curr_layer.snap[1];
 
-			this_ref.camera[0] += vx;
-			this_ref.camera[1] += vy;
+				this_ref.setCameraPosition(this_ref.camera[0] + vx, this_ref.camera[1] + vy);
 
-			this_ref.refreshCamera();
-		}
+				// show camera grabbing hand
+				if (e.key == "Alt")
+					this_ref.pixi.view.style.cursor = "all-scroll";
+
+				/* TODO: cancel things 
+				if (e.key == "Esc") {
+        			this_ref.pointer_down = -1;
+
+        			// ... like placing tiles in a line
+				}*/
+			}
+		});
+
+		document.addEventListener('keyup', function(e){
+			if (document.activeElement === document.body) {
+				this_ref.pixi.view.style.cursor = "auto";
+			}
 		});
 
 		this.pixi.stage.addChild(this.map_container);
@@ -1005,8 +1019,15 @@ class SceneEditor extends Editor {
 		poly.clear();
 
 		// add polygon points
-		poly.lineStyle(1, parseInt(obj.color.replace('#',"0x"),16), .5, 0);
-		poly.beginFill(parseInt(obj.color.replace('#',"0x"),16), .1);
+		let old_color = parseInt(obj.color.replace('#',"0x"), 16);
+		let color = obj.color.replace("#","").toRgb();
+
+		if (color.r > 200 && color.g > 200 && color.b > 200) color = parseInt("0xC8C8C8", 16);
+		else color = old_color;
+
+		poly.blendMode = PIXI.BLEND_MODES.OVERLAY;
+		poly.lineStyle(2, color, .5, 0);
+		poly.beginFill(old_color, .1);
 		if (points.length == 2) {
 			poly.drawRect(
 				points[0]-obj.size[0]/2,

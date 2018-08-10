@@ -65,7 +65,6 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
-		_G[self.classname].instances:add(self)
     	_addGameObject('entity', self)
     end,
 

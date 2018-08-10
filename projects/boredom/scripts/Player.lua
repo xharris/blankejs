@@ -30,7 +30,6 @@ function Player:init()
 	self.jumps = self.max_jumps
 	
 	self.platform_hspeed = 0
-	self.show_debug = true
 end
 
 function Player:update(dt)
