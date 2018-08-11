@@ -11,7 +11,7 @@ function PlayState:enter(prev)
 	
 	-- hitboxes
 	sc_level1:addTileHitbox("ground")
-	sc_level1:addHitbox("player_die", "spike_blockStop")
+	sc_level1:addHitbox("ground", "player_die", "spike_blockStop")
 	
 	-- entities
 	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
@@ -20,9 +20,7 @@ function PlayState:enter(prev)
 	sc_level1:addEntity("moving_block", MovingBlock)
 	sc_level1:addEntity("spike_block", SpikeBlock)
 	sc_level1:addEntity("door", DoorBlock)
-	
-	sc_level1.draw_hitboxes = true
-	
+		
 	main_camera = View()
 	main_camera:follow(player)
 end

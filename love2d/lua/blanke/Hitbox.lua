@@ -47,7 +47,11 @@ Hitbox = Class{
 		end
 
 		self.HCShape.tag = tag
-		self.HCShape.init_bbox = {self.HCShape:bbox()}
+		self.HCShape.box = {self.HCShape:bbox()}
+		self.HCShape.x = self.HCShape.box[1]
+		self.HCShape.y = self.HCShape.box[2]
+		self.HCShape.width = self.HCShape.box[3]-self.HCShape.box[1]
+		self.HCShape.height = self.HCShape.box[4]-self.HCShape.box[2]
 
 		self._enabled = true
 		self.color = {255,0,0,255/3}

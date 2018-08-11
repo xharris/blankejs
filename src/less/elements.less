@@ -169,7 +169,10 @@
 	    > div {
 	    	position: relative;
 	    	width: 100%;
-	    	padding-bottom: 15px;
+
+	    	&:not(:last-child) {
+	    		padding-bottom: 15px;
+	    	}
 
 	    	&.hidden {
 	    		display: none;
@@ -311,7 +314,7 @@
 			width: 100%;
    		 	box-sizing: border-box;
 
-			.form-group[data-type="text"], .form-group[data-type="number"], .form-group[data-type="select"], .form-group[data-type="color"] {
+			.form-group {
 				display: inline-block;
 	   		 	width: 100%;
 
@@ -328,6 +331,13 @@
 	   		 		}
 	   		 	}
 
+	   		 	&[data-name="delete"] {
+	   		 		button:hover {
+	   		 			background-color: rgb(244, 67, 54);
+	   		 			color: rgb(250, 250, 250);;
+	   		 		}
+	   		 	}
+
 	   		 	.form-label {
 	   		 		margin: 0px;
 				    margin-top: 5px;
@@ -336,6 +346,22 @@
 
 				.form-inputs {
 					height: 100%;
+
+					.form-button {
+		   		 		border: none;
+		   		 		outline: none;
+				    	background-color: rgba(255,255,255,0.5);
+				    	padding: 4px;
+				    	box-sizing: border-box;
+				    	width: 100%;
+				    	height: 100%;
+				    	font-size: 16px;
+
+						margin-top: 5px;
+						border-radius: 2px;
+						cursor: pointer;
+	   		 			transition: all ease-in-out 0.1s;
+					}
 
 					.form-text {
 		   		 		border: none;
@@ -409,9 +435,13 @@
 			.select-letter {
 	    	    background-color: rgba(176,190,197 ,1);
 			    width: 100%;
-			    /* height: 30px; */
 			    float: right;
     			padding: 2px;
+
+    			&[size="0"] {
+    				height: 30px;
+    				padding-left: 10px;
+    			}
 
     			option {
     				font-size: 16px;

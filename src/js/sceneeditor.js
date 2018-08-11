@@ -111,7 +111,8 @@ class SceneEditor extends Editor {
 		this.el_object_form = new BlankeForm([
 			['name', 'text'],//, {'label':false}],
 			['color', 'color', {'label':false}],
-			['size', 'number', {'inputs':2, 'separator':'x'}]
+			['size', 'number', {'inputs':2, 'separator':'x'}],
+			['delete', 'button']
 		]);
 	
 		this.el_layer_container	= app.createElement("div","layer-container");
@@ -274,13 +275,50 @@ class SceneEditor extends Editor {
 				this_ref.curr_object.size[1] = sizey;
 
 				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-					if (obj.points.length == 2) {
-						this_ref.drawPoly(this_ref.curr_object, obj.points, obj.poly);
-					}
+					this_ref.drawPoly(this_ref.curr_object, obj.points, obj.poly);
 				});
 
 				this_ref.export();
 				this_ref.updateGlobalObjList();
+			}
+		});
+
+		// object deletion
+		this.el_object_form.onChange('delete', function(){
+			if (this_ref.curr_object) {
+
+				for (var l = 0; l < this_ref.objects.length; l++) {
+					if (this_ref.objects[l].uuid == this_ref.curr_object.uuid) {
+
+						blanke.showModal(
+							"<label>remove '"+this_ref.objects[l].name+"'?? </label>",
+						{
+						"yes": function() {
+							// remove instances
+							this_ref.iterObject(this_ref.objects[l].name, function(obj) {
+								obj.poly.destroy()
+							});
+
+							// remove the object
+							this_ref.objects.splice(l, 1);
+							this_ref.refreshObjectList();
+
+							// select the instance before it (if there is one)
+							if (l == 0)
+								l++;
+							if (l > this_ref.objects.length)
+								l = this_ref.objects.length - 1;
+							if (l > 0)
+								this_ref.setObject(this_ref.objects[l-1].name);
+							else
+								this_ref.setObject();
+				 		},
+							"no": function() {}
+						});
+
+						break;
+					}
+				}
 			}
 		});
 
@@ -368,6 +406,7 @@ class SceneEditor extends Editor {
 		this.el_tag_form = new BlankeForm([
 			['value', 'text', {'label':false}]
 		]);
+		this.el_tag_form.container.classList.add("tag-container");
 
 		// LAYER
 		this.el_layer_container.appendChild(this.el_layer_control.container);
@@ -887,11 +926,21 @@ class SceneEditor extends Editor {
 		app.clearElement(this.el_sel_name);
 
 		var placeholder = app.createElement("option");
-		placeholder.selected = true;
 		placeholder.disabled = true;
 		this.el_sel_name.appendChild(placeholder);
 
-		this.el_sel_name.setAttribute("size", 4);
+		if (this.objects.length == 0) {
+			placeholder.selected = true;
+			placeholder.innerHTML = "<< add an object";
+		}
+		this.el_sel_name.setAttribute("size", Math.min(4, this.objects.length));
+
+		// if there's only one object, dont bother showing a list
+		if (this.objects.length == 1) {
+			this.el_sel_name.style.display = "none";
+		} else {
+			this.el_sel_name.style.display = "block";
+		}
 
 		for (var o = 0; o < this.objects.length; o++) {
 			var new_option = app.createElement("option");
@@ -1479,12 +1528,17 @@ class SceneEditor extends Editor {
 				this.el_object_form.setValue('size', this.curr_object.size[0], 0);
 				this.el_object_form.setValue('size', this.curr_object.size[1], 1);
 
+				this.el_object_form.container.style.display = "block";	
+
 				this.iterObjectInLayer (this.curr_layer.uuid, name, function(obj, o){
 					bringToFront(obj.poly);
 				});
 				return;
 			}
-		}	
+		}
+
+		// no object of that name found
+		this.el_object_form.container.style.display = "none";	
 	}
 
 	getImage (path) {

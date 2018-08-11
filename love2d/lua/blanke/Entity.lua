@@ -185,7 +185,7 @@ Entity = Class{
 		                	local sep_vec = {x=dx, y=dy, point_x=0, point_y=0}
 
 		                	-- calculate location of collision
-		                	local bx, by, bw, bh = unpack(obj_shape.init_bbox)
+		                	local bx, by, bw, bh = unpack(obj_shape.box)
 		                	bw = bw - bx
 		                	bh = bh - by
 		                	if dx < 0 then sep_vec.point_y = by; sep_vec.point_x = (bw + dx) end
