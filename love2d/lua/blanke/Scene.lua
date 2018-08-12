@@ -124,7 +124,8 @@ local SceneLayer = Class{
 		-- entity
 		if self.entities[name] then
 			for e, entity in ipairs(self.entities[name]) do
-				if not table.hasValue(self.parent.dont_draw, entity.scene_name) then
+				if not table.hasValue(Scene.dont_draw, entity.scene_name) and
+				   not table.hasValue(self.parent.dont_draw, entity.scene_name) then
 					Draw.stack(function()
 						entity:draw()
 					end)
@@ -171,10 +172,20 @@ local SceneLayer = Class{
 }
 
 local Scene = Class{
+	
+	-- things that automatically load on Scene creation
+	tile_hitboxes = {},
+	hitboxes = {},
+	entities = {},
+
+	dont_draw = {},
+	draw_order = {}, -- overriden by instance draw_order
+
 	init = function(self, asset_name)
 		self.layers = {}
 		self.tilesets = {}
 		self.objects = {}
+		self.entities = {}
 		self.obj_uuid_ref = {}
 		self.dont_draw = {}
 		self.draw_order = nil
@@ -249,6 +260,13 @@ local Scene = Class{
 			self.obj_uuid_ref[BlankE.settings.scene.objects[uuid].name] = uuid
 		end
 
+		-- hitboxes, tilehitboxes, and entities
+		self:addTileHitbox(unpack(Scene.tile_hitboxes))
+		self:addHitbox(unpack(Scene.hitboxes))
+		for e, ent in ipairs(Scene.entities) do
+			self:addEntity(ent[1], ent[2], ent[3])
+		end
+
 		return self
 	end,
 
@@ -256,7 +274,7 @@ local Scene = Class{
 		for l, layer in ipairs(self.layers) do
 			if layer_name == nil or layer.name == layer_name then 
 				layer.draw_hitboxes = self.draw_hitboxes
-				layer:draw(self.draw_order)
+				layer:draw(ifndef(self.draw_order, Scene.draw_order))
 			end
 		end
 	end,
@@ -376,6 +394,10 @@ local Scene = Class{
 				end
 			end
 		end
+	end,
+
+	getEntities = function(self, obj_name)
+		return self.entities[obj_name]
 	end,	
 
 	-- returns table of created entities
@@ -464,8 +486,13 @@ local Scene = Class{
 			end
 
 		end
+		self.entities[obj_name] = instances
 		return instances
-	end
+	end,
+
+	chain = function(self, name, start_name, end_name)
+		local next_scene
+	end,
 }
 
 return Scene

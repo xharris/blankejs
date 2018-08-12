@@ -6,22 +6,23 @@ local player = nil
 
 function PlayState:enter(prev)
 	Draw.setBackgroundColor('white')
-	sc_level1 = Scene("level1")
-	sc_level1.draw_order = {
-		"SpikeBlock","ground","MovingBlock","spike","DoorBlock","Player"
-	}
 	
 	-- hitboxes
-	sc_level1:addTileHitbox("ground")
-	sc_level1:addHitbox("ground", "player_die", "spike_blockStop")
+	Scene.tile_hitboxes = {"ground"}
+	Scene.hitboxes = {"ground", "player_die", "spike_blockStop"}
+	Scene.entities = {
+		{"moving_block", MovingBlock},
+		{"spike_block", SpikeBlock},
+		{"door", DoorBlock}
+	}
+	Scene.dont_draw = {"player"}
+	Scene.draw_order = {"SpikeBlock","ground","MovingBlock","spike","DoorBlock"}
 	
-	-- entities
+	sc_level1 = Scene("level1")
 	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
 	
-	-- blocks
-	sc_level1:addEntity("moving_block", MovingBlock)
-	sc_level1:addEntity("spike_block", SpikeBlock)
-	sc_level1:addEntity("door", DoorBlock)
+	sc_boss1 = Scene("boss1")
+	sc_level1:chain(sc_boss1, "lvl_start", "lvl_end")
 		
 	main_camera = View()
 	main_camera:follow(player)
@@ -36,5 +37,6 @@ end
 function PlayState:draw()
 	main_camera:draw(function()
 		Scene.instances:call('draw')
+		player:draw()
 	end)
 end
