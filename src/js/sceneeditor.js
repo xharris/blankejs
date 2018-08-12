@@ -4,7 +4,6 @@
 // - can drag points (important)
 
 var earcut = require('./includes/earcut.js');
-var global_objects = [];
 
 // http://www.html5gamedevs.com/topic/7507-how-to-move-the-sprite-to-the-top/?do=findComment&comment=45162
 function bringToFront(sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {         if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.push(sprite);}}
@@ -616,8 +615,6 @@ class SceneEditor extends Editor {
 			let mx = x-this_ref.camera[0],
 				my = y-this_ref.camera[1];
 
-			if (mx < 0) { mx -= snapx; x -= snapx; }
-			if (my < 0) { my -= snapy; y -= snapy; }
 
 
 			this_ref.place_mouse = [Math.floor(x),Math.floor(y)];
@@ -626,6 +623,9 @@ class SceneEditor extends Editor {
 			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
 			if (!e.data.originalEvent.ctrlKey || this_ref.obj_type == "object") {
+				if (mx < 0) { mx -= snapx; x -= snapx; }
+				if (my < 0) { my -= snapy; y -= snapy; }
+
 				this_ref.mouse = [
 					mx - (mx%snapx),
 					my - (my%snapy)
@@ -1527,11 +1527,16 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	updateGlobalObjList() {
-		global_objects = [];
-		for (var o = 0; o < this.objects.length; o++) {
-			global_objects.push(Object.assign(this.objects[o], {}));
+	loadObjectsFromSettings() {
+		if (app.project_settings.scene.objects) {
+			this.objects = [];
+			
+			for (let uuid in app.project_settings.scene.objects) {
+				let obj = app.project_settings.scene.objects[uuid];
+				this.addObject(obj);
+			}
 		}
+		this.refreshObjectList();
 	}
 
 	setObject (name) {
@@ -1696,31 +1701,21 @@ class SceneEditor extends Editor {
 				});				
 			});
 
+			this.loadObjectsFromSettings();
 
 			// objects
-			for (var o = 0; o < data.objects.length; o++) {
-				var obj = data.objects[o];
-				this.addObject(obj);
+			for (var o = 0; o < this.objects.length; o++) {
+				var obj = this.objects[o];
+				this.setObject(obj.name);
 
-				for (var layer_name in obj.polygons) {
+				for (var layer_name in data.objects[obj.uuid]) {
 					this.setLayer(layer_name);
-					for (var c = 0; c < obj.polygons[layer_name].length; c++) {
-						let obj_points = obj.polygons[layer_name][c];
+					for (var c = 0; c < data.objects[obj.uuid][layer_name].length; c++) {
+						let obj_points = data.objects[obj.uuid][layer_name][c];
 						this.placeObject(obj_points.slice(1), obj_points[0]);
 					}
 				}
 			}
-
-			if (data.objects.length > 0) 
-				this.updateGlobalObjList();
-
-			else {
-				for (var o = 0; o < global_objects.length; o++) {
-					this.addObject(global_objects[o]);
-				}
-			}
-
-			this.refreshObjectList();
 
 			// settings
 			if (data.settings) {
@@ -1732,12 +1727,12 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
-		return;
 		if (this.deleted) return;
 
-		let export_data = {'objects':[], 'layers':[], 'images':[], 'settings':{
+		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
 			camera:this.camera
 		}};
+		app.project_settings.scene = {};
 		let layer_names = {};
 
 		// layers
@@ -1754,27 +1749,36 @@ class SceneEditor extends Editor {
 		}
 
 		// objects
+		app.project_settings.scene.objects = [];
 		for (let o = 0; o < this.objects.length; o++) {
 			let obj = this.objects[o];
-			let exp_obj = {
+
+			// save object info
+			let setting_obj = {
 				name: obj.name,
 				char: obj.char,
 				color: obj.color,
 				size: obj.size,
-				uuid: obj.uuid,
-				polygons: {}
+				uuid: obj.uuid
 			}
+			app.project_settings.scene.objects.push(setting_obj);
+			app.saveSettings();
+
+			let polygons = {};
+
+			// save object coordinates
 			for (let t in obj.pixi_texts) { 
 				if (obj.pixi_texts[t] && layer_names[obj.pixi_texts[t].layer_name]) {
-					if (!exp_obj.polygons[obj.pixi_texts[t].layer_name])
-						exp_obj.polygons[obj.pixi_texts[t].layer_name] = [];
+					if (!polygons[obj.pixi_texts[t].layer_name])
+						polygons[obj.pixi_texts[t].layer_name] = [];
 
-					exp_obj.polygons[obj.pixi_texts[t].layer_name].push(
+					polygons[obj.pixi_texts[t].layer_name].push(
 						[ifndef(obj.pixi_texts[t].poly.tag,'')].concat(obj.pixi_texts[t].points.slice())
 					);
 				}
 			}
-			export_data.objects.push(exp_obj);
+
+			export_data.objects[obj.uuid] = polygons;
 		}
 
 		//images

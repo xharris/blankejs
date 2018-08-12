@@ -98,7 +98,7 @@ var app = {
 
 	closeProject: function() {
 		if (app.isProjectOpen()) {
-			app.saveSettings();
+			// app.saveSettings();
 			app.getElement("#search-container").classList.add("no-project");
 			if (app.isServerRunning()) 
 				app.stopServer();
@@ -116,6 +116,7 @@ var app = {
 					app.closeProject();
 
 				app.project_path = path;
+				app.loadSettings();
 
 				// watch for file changes
 				app.watch = nwFS.watch(app.project_path, function(evt_type, file) {
@@ -273,7 +274,7 @@ var app = {
 	project_settings:{},
 	loadSettings: function(callback){
 		if (app.isProjectOpen()) {	
-			nwFS.readFile(nwPATH.join(app.project_path,"ide_data"), 'utf-8', function(err, data){
+			nwFS.readFile(nwPATH.join(app.project_path,"config.json"), 'utf-8', function(err, data){
 				if (!err) {
 					try {
 						app.project_settings = JSON.parse(data);
@@ -288,7 +289,7 @@ var app = {
 	},
 	saveSettings: function(){
 		if (app.isProjectOpen()) {
-			nwFS.writeFile(nwPATH.join(app.project_path,"ide_data"), JSON.stringify(app.project_settings));
+			nwFS.writeFile(nwPATH.join(app.project_path,"config.json"), JSON.stringify(app.project_settings));
 		}
 	},
 
@@ -565,7 +566,6 @@ nwWIN.on('loaded', function() {
 
 	document.addEventListener("openProject",function(){
 		app.hideWelcomeScreen();
-		app.loadSettings();
 
 		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
 			nwGUI.Shell.openItem(app.project_path);
