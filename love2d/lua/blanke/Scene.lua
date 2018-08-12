@@ -113,6 +113,12 @@ local SceneLayer = Class{
 				hitbox:move(x, y)
 			end
 		end
+		for uuid, entities in pairs(self.entities) do
+			entities:forEach(function(e, ent)
+				ent.x = ent.x + x
+				ent.y = ent.y + y
+			end)
+		end
 	end,
 
 	_drawObj = function(self, name)
@@ -158,10 +164,14 @@ local SceneLayer = Class{
 
 		if self.draw_hitboxes then
 			local specific = false
-			if type(self.draw_hitboxes) == "table" then specific = true end
+			local draw_string = ''
+			if type(self.draw_hitboxes) == "table" then
+				specific = true
+				draw_string = table.join(self.draw_hitboxes)
+			end
 
 			for name, hitboxes in pairs(self.hitboxes) do
-				if not specific or (specific and table.hasValue(self.draw_hitboxes, name)) then 
+				if not specific or (specific and draw_string:contains(name)) then 
 					for h, hitbox in ipairs(hitboxes) do
 						hitbox:draw('fill')
 					end
@@ -179,7 +189,9 @@ local Scene = Class{
 	entities = {},
 
 	dont_draw = {},
-	draw_order = {}, -- overriden by instance draw_order
+	draw_order = {}, -- overridden by instance draw_order
+
+	draw_outside_view = {}, -- TODO
 
 	init = function(self, asset_name)
 		self.layers = {}
@@ -286,10 +298,11 @@ local Scene = Class{
 		return self
 	end,
 
-	-- TODO: probably won't work with new config.json
 	getObjects = function(self, name)
-		if self.objects[name] then
-			return self.objects[name].polygons
+		local obj_uuid = self.obj_uuid_ref[name]
+
+		if obj_uuid ~= nil then
+			return self.objects[obj_uuid]
 		end
 		return {}
 	end,
@@ -485,13 +498,53 @@ local Scene = Class{
 				end
 			end
 
+			self.entities[obj_name] = instances
 		end
-		self.entities[obj_name] = instances
 		return instances
 	end,
 
-	chain = function(self, name, start_name, end_name)
-		local next_scene
+	-- end_name: end of previous scene
+	-- start_name: start of next scene
+	chain = function(self, next_scene, end_name, start_name)
+		local new_start_name = start_name:split(".")[1]
+		local new_end_name = end_name:split(".")[1]
+
+		local obj_start, obj_end
+
+		-- get end position of previous scene
+		local end_list = self:getObjects(new_end_name)
+		if end_list then
+			obj_end = (function()
+				for layer_uuid, coords in pairs(end_list) do
+					for c, coord in ipairs(coords) do
+						if new_end_name..coord[1] == end_name then
+							return {coord[2],coord[3]}
+						end
+					end
+				end
+				return nil
+			end)()
+		end
+
+		-- get start position of next scene
+		local start_list = next_scene:getObjects(new_start_name)
+		if start_list then
+			obj_start = (function()
+				for layer_uuid, coords in pairs(start_list) do
+					for c, coord in ipairs(coords) do
+						if new_start_name..coord[1] == start_name then
+							return {coord[2],coord[3]}
+						end
+					end
+				end
+				return nil
+			end)()
+		end
+
+		-- connect the scenes
+		if obj_start and obj_end then
+			next_scene:translate(obj_end[1] - obj_start[1], obj_end[2] - obj_start[2])
+		end
 	end,
 }
 

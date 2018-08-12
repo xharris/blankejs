@@ -257,6 +257,7 @@ class Code extends Editor {
             		font_size -= 1;
             		this_ref.setFontSize(font_size);
             	},
+            	"Shift-Tab": "indentLess",
             	"Ctrl-F": "findPersistent",
             	"Ctrl-Space": "autocomplete"
             }
@@ -453,10 +454,11 @@ class Code extends Editor {
 		this.codemirror.on('click', function(cm, obj){
 			this_ref.focus();
 		});
-		this_ref.codemirror.refresh();
+		this.codemirror.refresh();
 		this.addCallback('onResize', function(w, h) {
 			this_ref.codemirror.refresh();
 		});
+
 		// prevents user from saving a million times by holding the button down
 		/*document.addEventListener('keyup', function(e){
 			if (e.key == "s" && e.ctrlKey) {

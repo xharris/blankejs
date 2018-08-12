@@ -4,9 +4,10 @@ Entity.addPlatforming = function(self, left, top, width, height)
 	local top2 = top + self.sprite_yoffset
 	-- 
 
-	self:addShape("main_box", "rectangle", {left, top, width, height})		-- rectangle of whole players body
-	self:addShape("head_box", "rectangle", {left, top-(height-2), width, 2})--width-6, 2})
-	self:addShape("feet_box", "rectangle", {left, top+(height-2), width-6, 2})	-- rectangle at players feet
+	self:addShape("main_box", "rectangle", {left, top, width, height-2})		-- rectangle of whole players body
+	self:addShape("head_box", "rectangle", {left, top-(height-2), width*.5, 2})
+	self:addShape("feet_box", "rectangle", {left, top+(height+2), width*.5, 2})	-- rectangle at players feet
+
 	self:setMainShape("main_box")
 end
 
@@ -27,25 +28,21 @@ Entity.platformerCollide = function(self, args)
                 self:collisionStopX() 
             end
         end
-	end
-	
-	self.onCollision["head_box"] = function(other, sep_vector)
-		-- ceiling collision
-        if sep_vector.y > 0 and self.vspeed < 0 then
-        	fn_all(other, sep_vector)
+
+        -- head collision
+        if sep_vector.y > 0 and self.vspeed < 0 and self.shapes["head_box"]:getHCShape():collidesWith(other) then
+			fn_all(other, sep_vector)
             if fn_ceil(other, sep_vector) ~= false and (other.tag == ground_tag or (ground_contains_tag and other.tag:contains(ground_contains_tag))) then
            		self:collisionStopY()
             end
         end
-	end
-	
-	self.onCollision["feet_box"] = function(other, sep_vector)
-        -- floor collision
-        if sep_vector.y < 0 then
-        	fn_all(other, sep_vector)
+
+        -- foot collision
+        if sep_vector.y < 0 and self.shapes["feet_box"]:getHCShape():collidesWith(other) then
+			fn_all(other, sep_vector)
         	if fn_floor(other, sep_vector) ~= false and (other.tag == ground_tag or (ground_contains_tag and other.tag:contains(ground_contains_tag))) then
         		self:collisionStopY()
         	end
-        end 
+        end
     end
 end

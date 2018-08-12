@@ -615,15 +615,13 @@ class SceneEditor extends Editor {
 			let mx = x-this_ref.camera[0],
 				my = y-this_ref.camera[1];
 
-
-
 			this_ref.place_mouse = [Math.floor(x),Math.floor(y)];
 			this_ref.mouse = [Math.floor(mx),Math.floor(my)];
 			this_ref.half_mouse = [Math.floor(mx),Math.floor(my)];
 			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
 			if (!e.data.originalEvent.ctrlKey || this_ref.obj_type == "object") {
-				if (mx < 0) { mx -= snapx; x -= snapx; }
+				if (mx < 0) { mx -= snapx; }
 				if (my < 0) { my -= snapy; y -= snapy; }
 
 				this_ref.mouse = [
@@ -634,6 +632,8 @@ class SceneEditor extends Editor {
 					x - (mx%snapx),
 					y - (my%snapy)
 				]
+
+				if (my < 0) { my += snapy/2; y += snapy/2; }
 				this_ref.half_place_mouse = [
 					x - (mx%(snapx/2)),
 					y - (my%(snapy/2))
@@ -746,7 +746,7 @@ class SceneEditor extends Editor {
 			}
 		});
 
-		window.onresize = function (event){
+		window.addEventListener('resize', function (event){
 			var w = window.innerWidth;
 			var h = window.innerHeight;
 			//this part resizes the canvas but keeps ratio the same
@@ -758,7 +758,7 @@ class SceneEditor extends Editor {
 			this_ref.game_height = h;
 
 			this_ref.drawGrid();
-		}
+		})
 	}
 
 	onClose () {

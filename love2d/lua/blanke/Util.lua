@@ -276,6 +276,8 @@ function table.len(t)
 	return count
 end
 
+table.join = table.concat
+
 function map2Dindex(x, y, columns)
 	return (y-1) * columns + x
 end

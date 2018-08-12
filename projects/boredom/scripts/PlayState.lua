@@ -13,16 +13,17 @@ function PlayState:enter(prev)
 	Scene.entities = {
 		{"moving_block", MovingBlock},
 		{"spike_block", SpikeBlock},
-		{"door", DoorBlock}
+		{"door", DoorBlock},
+		{"boss1", Boss1}
 	}
 	Scene.dont_draw = {"player"}
 	Scene.draw_order = {"SpikeBlock","ground","MovingBlock","spike","DoorBlock"}
 	
-	sc_level1 = Scene("level1")
-	player = sc_level1:addEntity("player", Player, "bottom-center")[1]
+	-- sc_level1 = Scene("level1")
 	
 	sc_boss1 = Scene("boss1")
-	sc_level1:chain(sc_boss1, "lvl_start", "lvl_end")
+	-- sc_level1:chain(sc_boss1, "lvl_end", "lvl_start")
+	player = sc_boss1:addEntity("player", Player, "bottom-center")[1]
 		
 	main_camera = View()
 	main_camera:follow(player)
