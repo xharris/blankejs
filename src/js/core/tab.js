@@ -77,19 +77,12 @@ class Tab {
 		var contents = app.getElements("#tabs > .tab");
 		var ret_val = false;
 		var remove_elements = [];
+
+		let focus_i = -1;
 		for (var t = 0; t < contents.length; t++) {
 			if (contents[t].title == title) {
-				contents[t].setAttribute('age',0);
+				focus_i = t;
 
-				contents[t].classList.remove("hidden");
-				contents[t].el_tab_container.classList.remove("hidden");
-				// move to front of tabs
-				contents[t].parentNode.removeChild(contents[t]);
-				app.getElement('#tabs').appendChild(contents[t]);
-				ret_val = true;
-
-				if (contents[t].this_ref.onTabFocus)
-					contents[t].this_ref.onTabFocus();
 			} else {
 
 				contents[t].setAttribute('age', parseInt(contents[t].getAttribute('age'))+1);
@@ -100,7 +93,24 @@ class Tab {
 
 				contents[t].classList.add("hidden");
 				contents[t].el_tab_container.classList.add("hidden");
+
+				if (contents[t].this_ref.onTabLoseFocus)
+					contents[t].this_ref.onTabLoseFocus();
 			}
+		}
+
+		if (focus_i >= 0) {
+			contents[focus_i].setAttribute('age',0);
+
+			contents[focus_i].classList.remove("hidden");
+			contents[focus_i].el_tab_container.classList.remove("hidden");
+			// move to front of tabs
+			contents[focus_i].parentNode.removeChild(contents[focus_i]);
+			app.getElement('#tabs').appendChild(contents[focus_i]);
+			ret_val = true;
+			
+			if (contents[focus_i].this_ref.onTabFocus)
+				contents[focus_i].this_ref.onTabFocus();
 		}
 
 		// remove old tabs

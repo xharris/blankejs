@@ -45,7 +45,7 @@ class Editor {
 
 	// Tab ONLY
 	setOnClick() {
-		if (this.container == 'tab')
+		if (this.container_type == 'tab')
 			this.container.setOnClick.apply(this.container, arguments);
 	}
 

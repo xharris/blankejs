@@ -29,6 +29,7 @@ class SceneEditor extends Editor {
 		this.curr_image	= null;		// reference from this.images[]
 		this.layers = [];
 		this.objects = [];			// all objects placed on the canvas
+		this.obj_polys = {};
 		this.images = [];			// placeable images in project folders {path, snap[x,y], pixi_images{}}
 
 		this.placing_object = false;
@@ -241,7 +242,6 @@ class SceneEditor extends Editor {
 					this_ref.curr_object.name = value[0];
 					this_ref.refreshObjectList();
 					this_ref.export();
-					this_ref.updateGlobalObjList();
 				}
 			}
 		});
@@ -255,7 +255,6 @@ class SceneEditor extends Editor {
 				});
 				this_ref.refreshObjectList();
 				this_ref.export();
-				this_ref.updateGlobalObjList();
 			}
 		});
 
@@ -278,7 +277,6 @@ class SceneEditor extends Editor {
 				});
 
 				this_ref.export();
-				this_ref.updateGlobalObjList();
 			}
 		});
 
@@ -722,10 +720,18 @@ class SceneEditor extends Editor {
 
 		this.drawGrid();
 		
+		// tab focus
+		this.addCallback("onTabFocus", function(){
+			this_ref.loadObjectsFromSettings();
+		});
+		this.addCallback("onTabLostFocus", function(){
+			this_ref.export();
+		});
+
 		// tab click
 		this.setOnClick(function(self){
-			(new MapEditor(app)).load(self.file);
-		}, this);	
+			(new SceneEditor(app)).load(self.file);
+		}, this);
 
 		this.obj_type = 'object';
 		this.refreshObjectType();
@@ -888,7 +894,10 @@ class SceneEditor extends Editor {
 	}
 
 	// when object place type selector is changed
-	refreshObjectType () {
+	refreshObjectType (new_type) {
+		if (new_type) 
+			this.el_sel_placetype.value = new_type;
+
 		this.obj_type = this.el_sel_placetype.value;
 		this.el_image_container.classList.add('hidden');
 		this.el_object_container.classList.add('hidden');
@@ -909,17 +918,6 @@ class SceneEditor extends Editor {
 
 	// refreshes combo box
 	refreshLayerList (old_name, new_name) {
-		// rename layer in objects
-		if (old_name && new_name) {		
-			for (var o = 0; o < this.objects.length; o++) {
-				for (let t in this.objects[o].pixi_texts) {
-					var text = this.objects[o].pixi_texts[t];
-					if (text && text.layer_name == old_name) 
-						text.layer_name = new_name
-				}
-			}
-		}
-
 		if (this.layers.length == 0)
 			this.addLayer();
 
@@ -937,24 +935,28 @@ class SceneEditor extends Editor {
 		placeholder.disabled = true;
 		this.el_sel_name.appendChild(placeholder);
 
-		if (this.objects.length == 0) {
+		let object_count = Object.keys(this.objects).length;
+
+		if (object_count == 0) {
 			placeholder.selected = true;
 			placeholder.innerHTML = "<< add an object";
 		}
-		this.el_sel_name.setAttribute("size", Math.min(4, this.objects.length));
+		this.el_sel_name.setAttribute("size", Math.min(4, object_count));
 
 		// if there's only one object, dont bother showing a list
-		if (this.objects.length == 1) {
+		if (object_count == 1) {
 			this.el_sel_name.style.display = "none";
 		} else {
 			this.el_sel_name.style.display = "block";
 		}
 
-		for (var o = 0; o < this.objects.length; o++) {
+		for (let uuid in this.objects) {
+			let obj = this.objects[uuid];
+
 			var new_option = app.createElement("option");
-			new_option.value = this.objects[o].name;
-			new_option.style.color = this.objects[o].color;
-			new_option.innerHTML = this.objects[o].name;
+			new_option.value = obj.name;
+			new_option.style.color = obj.color;
+			new_option.innerHTML = obj.name;
 			this.el_sel_name.appendChild(new_option);
 		}
 
@@ -1061,23 +1063,6 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	// remove current object type placed on canvas
-	removeObject (x, y, obj_ref, layer_ref) {
-		if (obj_ref && layer_ref) {
-	    	let place_x = x - (x % (layer_ref.snap[0] / 2));
-	    	let place_y = y - (y % (layer_ref.snap[1] / 2));
-	    	let text_key = Math.floor(place_x).toString()+','+Math.floor(place_y).toString()+'.'+obj_ref.uuid;
-
-			if (obj_ref.pixi_texts[text_key]) {
-				obj_ref.pixi_texts[text_key].label.destroy();
-				obj_ref.pixi_texts[text_key].destroy();
-				delete obj_ref.pixi_texts[text_key];
-
-				this_ref.export();
-			}
-		}
-	}
-
 	drawPoly (obj, points, poly) {
 		if (!poly) poly = new PIXI.Graphics();
 		poly.clear();
@@ -1165,7 +1150,7 @@ class SceneEditor extends Editor {
 			// remove from array
 			if (!this_ref.placing_object && this_ref.curr_layer && this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
 				let del_uuid = e.target.uuid;
-				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj, o){
+				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj){
 					if (del_uuid == obj.poly.uuid) {
 						if (this_ref.obj_info[curr_object.name])
 							delete this_ref.obj_info[curr_object.name];
@@ -1202,11 +1187,12 @@ class SceneEditor extends Editor {
 		
 		this.curr_layer.container.addChild(pixi_poly);
 
-		curr_object.pixi_texts.push({
+		if (!this.obj_polys[curr_object.uuid]) this.obj_polys[curr_object.uuid] = {};
+		if (!this.obj_polys[curr_object.uuid][this.curr_layer.uuid]) this.obj_polys[curr_object.uuid][this.curr_layer.uuid] = [];
+		
+		this.obj_polys[curr_object.uuid][this.curr_layer.uuid].push({
 			poly: pixi_poly,
-			points: points,
-			layer_uuid: this.curr_layer.uuid,
-			layer_name: this.curr_layer.name
+			points: points
 		});
 	}
 
@@ -1445,16 +1431,18 @@ class SceneEditor extends Editor {
 
 	// return true if object should be removed
 	iterObject (name, func) {
-		for (var l = 0; l < this.objects.length; l++) {
-			if (this.objects[l].name === name) {
-				var new_array = [];
-				for (var t in this.objects[l].pixi_texts) {
-					if (this.objects[l].pixi_texts[t]) {
-						let remove_obj = func(this.objects[l].pixi_texts[t], t);
-						if (!remove_obj) new_array.push(this.objects[l].pixi_texts[t]);
+		for (let obj_uuid in this.objects) {
+			if (this.objects[obj_uuid].name === name) {
+				for (let layer_uuid in this.obj_polys[obj_uuid]) {
+					var new_array = [];
+
+					for (let obj in this.obj_polys[obj_uuid][layer_uuid]) {
+
+						let remove_obj = func(this.obj_polys[obj_uuid][layer_uuid][obj]);
+						if (!remove_obj) new_array.push(this.obj_polys[obj_uuid][layer_uuid][obj]);
 					}
+					this.obj_polys[obj_uuid][layer_uuid] = new_array;
 				}
-				this.objects[l].pixi_texts = new_array;
 				return;
 			}
 		}
@@ -1462,33 +1450,29 @@ class SceneEditor extends Editor {
 
 	// return true if object should be removed
 	iterObjectInLayer (layer_uuid, name, func) {
-		for (var l = 0; l < this.objects.length; l++) {
-			var new_array = [];
-			if (this.objects[l].name === name) {
-				for (var t in this.objects[l].pixi_texts) {
-					if (this.objects[l].pixi_texts[t].layer_uuid == layer_uuid) {
-						let remove_obj = func(this.objects[l].pixi_texts[t], t);
-						if (!remove_obj) new_array.push(this.objects[l].pixi_texts[t]);
+		for (let obj_uuid in this.objects) {
+			if (this.objects[obj_uuid].name === name) {
+				for (let layer_name in this.obj_polys[obj_uuid]) {
+					let new_array = [];
+					for (let obj in this.obj_polys[obj_uuid][layer_name]) {
+						let remove_obj = func(this.obj_polys[obj_uuid][layer_name][obj]);
+						if (!remove_obj) new_array.push(this.obj_polys[obj_uuid][layer_name][obj]);
 					}
+					this.obj_polys[obj_uuid][layer_name] = new_array;
 				}
-				this.objects[l].pixi_texts = new_array;
 				return;
 			}
 		}		
 	}
 
 	getObjByUUID (uuid) {
-		for (var l = 0; l < this.objects.length; l++) {
-			if (this.objects[l].uuid == uuid) {
-				return this.objects[l];
-			}
-		}	
+		return this.objects[uuid];
 	}
 
 	// https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 	addObject (info) {
 		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%<>?&+=";
-		var obj_name = 'object'+this.objects.length;
+		var obj_name = 'object'+Object.keys(this.objects).length;
 
 		info = info || {};
 		ifndef_obj(info, {
@@ -1499,8 +1483,7 @@ class SceneEditor extends Editor {
 			uuid: guid()
 		});
 
-		info.pixi_texts = [];
-		this.objects.push(info);
+		this.objects[info.uuid] = info;
 		this.refreshObjectList();
 		this.setObject(info.name);
 		this.drawDotPreview();
@@ -1528,21 +1511,32 @@ class SceneEditor extends Editor {
 	}
 
 	loadObjectsFromSettings() {
+		let this_ref = this;
+		
 		if (app.project_settings.scene.objects) {
-			this.objects = [];
+			let last_obj_name = '';
+			if (this.curr_object)
+				last_obj_name = this.curr_object.name;
 			
+			this.objects = [];
+
 			for (let uuid in app.project_settings.scene.objects) {
 				let obj = app.project_settings.scene.objects[uuid];
 				this.addObject(obj);
+
+				this.iterObject(obj.name, function(obj_poly) {
+					this_ref.drawPoly(obj, obj_poly.points, obj_poly.poly);
+				});
 			}
+			this.refreshObjectList();
+			this.setObject(last_obj_name);
 		}
-		this.refreshObjectList();
 	}
 
 	setObject (name) {
-		for (var l = 0; l < this.objects.length; l++) {
-			if (this.objects[l].name === name) {
-				this.curr_object = this.objects[l];
+		for (let uuid in this.objects) {
+			if (this.objects[uuid].name === name) {
+				this.curr_object = this.objects[uuid];
 				this.el_object_form.setValue('name', this.curr_object.name);
 				this.el_object_form.setValue('color', this.curr_object.color);
 				this.el_object_form.setValue('size', this.curr_object.size[0], 0);
@@ -1550,7 +1544,7 @@ class SceneEditor extends Editor {
 
 				this.el_object_form.container.style.display = "block";	
 
-				this.iterObjectInLayer (this.curr_layer.uuid, name, function(obj, o){
+				this.iterObjectInLayer (this.curr_layer.uuid, name, function(obj){
 					bringToFront(obj.poly);
 				});
 				return;
@@ -1615,13 +1609,15 @@ class SceneEditor extends Editor {
 
 	addLayer (info) {
 		var layer_name = 'layer'+this.layers.length;
-		info = info || {
+		
+		info = info || {};
+		ifndef_obj(info, {
 			name: layer_name,
 			depth: 0,
 			offset: [0, 0],
 			snap: [32, 32],
 			uuid: guid()
-		}
+		});
 
 		info.snap = info.snap.map(Number);
 
@@ -1642,12 +1638,14 @@ class SceneEditor extends Editor {
 
 	setLayer (name) {
 		for (var l = 0; l < this.layers.length; l++) {
-			if (this.layers[l].name === name) {
+			if (this.layers[l].name == name) {
 				this.curr_layer = this.layers[l];
 				this.el_layer_form.setValue('name', this.curr_layer.name);
 				this.el_layer_form.setValue('snap', this.curr_layer.snap[0], 0);
 				this.el_layer_form.setValue('snap', this.curr_layer.snap[1], 1);
+				
 				this.layers[l].container.alpha = 1;
+				this.map_container.setChildIndex(this.layers[l].container, this.map_container.children.length-1);
 				
 				this.el_layer_control.selectItem(name);
 
@@ -1655,7 +1653,6 @@ class SceneEditor extends Editor {
 				// make other layers transparent
 				this.layers[l].container.alpha = 0.25;
 			}
-			this.map_container.setChildIndex(this.layers[l].container, this.map_container.children.length-1);
 		}
 		this.drawGrid();
 	}
@@ -1704,8 +1701,8 @@ class SceneEditor extends Editor {
 			this.loadObjectsFromSettings();
 
 			// objects
-			for (var o = 0; o < this.objects.length; o++) {
-				var obj = this.objects[o];
+			for (let obj_uuid in this.objects) {
+				var obj = this.objects[obj_uuid];
 				this.setObject(obj.name);
 
 				for (var layer_name in data.objects[obj.uuid]) {
@@ -1720,6 +1717,9 @@ class SceneEditor extends Editor {
 			// settings
 			if (data.settings) {
 				this.setCameraPosition(data.settings.camera[0], data.settings.camera[1]);
+				this.setLayer(data.settings.last_active_layer);
+				this.refreshObjectType(data.settings.last_object_type);
+				this.setObject(data.settings.last_object_name);
 			}
 		}
 
@@ -1730,9 +1730,14 @@ class SceneEditor extends Editor {
 		if (this.deleted) return;
 
 		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
-			camera:this.camera
+			camera:this.camera,
+			last_active_layer:this.curr_layer.name,
+			last_object_type:this.obj_type,
+			last_object_name:this.curr_object.name
 		}};
-		app.project_settings.scene = {};
+		if (!app.project_settings.scene)
+			app.project_settings.scene = {};
+
 		let layer_names = {};
 
 		// layers
@@ -1749,36 +1754,30 @@ class SceneEditor extends Editor {
 		}
 
 		// objects
-		app.project_settings.scene.objects = [];
-		for (let o = 0; o < this.objects.length; o++) {
-			let obj = this.objects[o];
+		if (!app.project_settings.scene.objects)
+			app.project_settings.scene.objects = {};
+		for (let obj_uuid in this.objects) {
+			let obj = this.objects[obj_uuid];
 
 			// save object info
-			let setting_obj = {
-				name: obj.name,
-				char: obj.char,
-				color: obj.color,
-				size: obj.size,
-				uuid: obj.uuid
-			}
-			app.project_settings.scene.objects.push(setting_obj);
-			app.saveSettings();
+			app.project_settings.scene.objects[obj_uuid] = obj;
 
 			let polygons = {};
 
 			// save object coordinates
-			for (let t in obj.pixi_texts) { 
-				if (obj.pixi_texts[t] && layer_names[obj.pixi_texts[t].layer_name]) {
-					if (!polygons[obj.pixi_texts[t].layer_name])
-						polygons[obj.pixi_texts[t].layer_name] = [];
-
-					polygons[obj.pixi_texts[t].layer_name].push(
-						[ifndef(obj.pixi_texts[t].poly.tag,'')].concat(obj.pixi_texts[t].points.slice())
-					);
+			for (let layer_name in this.obj_polys[obj_uuid]) { 
+				let polys = this.obj_polys[obj_uuid][layer_name];
+				if (polys.length > 0) {
+					polygons[layer_name] = [];
+				
+					for (let p in polys) {
+						polygons[layer_name].push(
+							[ifndef(polys[p].poly.tag,'')].concat(polys[p].points.slice())
+						);
+					}
+					export_data.objects[obj.uuid] = polygons;
 				}
 			}
-
-			export_data.objects[obj.uuid] = polygons;
 		}
 
 		//images
@@ -1814,6 +1813,7 @@ class SceneEditor extends Editor {
 				export_data.images.push(exp_img);
 		}
 
+		app.saveSettings();
 		nwFS.writeFileSync(this.file, JSON.stringify(export_data));
 	}
 }
