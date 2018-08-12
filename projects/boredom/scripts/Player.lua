@@ -54,10 +54,10 @@ function Player:update(dt)
 			
 			self.platform_hspeed = 0
 			if other.tag == "ground" and other.parent then
-				if other.parent.hspeed then
+				if other.parent.hspeed ~= 0 then
 					self.platform_hspeed = other.parent.hspeed
 				end
-				if other.parent.vspeed then
+				if other.parent.vspeed ~= 0 then
 					self.y = other.parent.y - self.sprite_height
 				end
 			end

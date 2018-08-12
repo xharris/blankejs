@@ -175,6 +175,7 @@ local Scene = Class{
 		self.layers = {}
 		self.tilesets = {}
 		self.objects = {}
+		self.obj_uuid_ref = {}
 		self.dont_draw = {}
 		self.draw_order = nil
         
@@ -193,16 +194,27 @@ local Scene = Class{
 		end
 	end,
 
+	getLayerByUUID = function(self, uuid)
+		for l, layer in ipairs(self.layers) do
+			if layer.uuid == uuid then return layer end
+		end
+	end,
+
+	sortLayers = function(self)
+		table.sort(self.layers, function(a, b) return a.depth < b.depth end)
+		return self
+	end,
+
 	load = function(self, scene_data)
 		-- layers
 		for l, layer in ipairs(scene_data.layers) do
 			local new_layer = SceneLayer()
 			new_layer.parent = self
 
-			local attributes = {'name', 'depth', 'offset', 'snap'}
+			local attributes = {'name', 'depth', 'offset', 'snap', 'uuid'}
 			for a, attr in ipairs(attributes) do new_layer[attr] = layer[attr] end
 
-			table.insert(self.layers, new_layer) 
+			table.insert(self.layers, new_layer)
 		end
 		self:sortLayers()
 
@@ -231,17 +243,12 @@ local Scene = Class{
 			end
 		end
 
-		-- objects (just store their info)
-		for o, object in ipairs(scene_data.objects) do
-			self.objects[object.name] = ifndef(self.objects[object.name], {})
-			for k,v in pairs(object) do self.objects[object.name][k] = v end
+		-- objects (just store their coordinates)
+		self.objects = scene_data.objects
+		for uuid, objs in pairs(scene_data.objects) do
+			self.obj_uuid_ref[BlankE.settings.scene.objects[uuid].name] = uuid
 		end
 
-		return self
-	end,
-
-	sortLayers = function(self)
-		table.sort(self.layers, function(a, b) return a.depth < b.depth end)
 		return self
 	end,
 
@@ -261,6 +268,7 @@ local Scene = Class{
 		return self
 	end,
 
+	-- TODO: probably won't work with new config.json
 	getObjects = function(self, name)
 		if self.objects[name] then
 			return self.objects[name].polygons
@@ -268,10 +276,30 @@ local Scene = Class{
 		return {}
 	end,
 
+	-- static
+	getObjectNames = function()
+		local names = {}
+		if BlankE.settings.scene then
+			for uuid, info in pairs(BlankE.settings.scene.objects) do
+				table.insert(names, info.name)
+			end
+		end	
+		return names
+	end,
+
 	getObjectInfo = function(self, name)
-		if self.objects[name] then
-			return self.objects[name]
+		assert(BlankE.settings.scene.objects, "no Scene object with name'"..name.."'")	 
+		for uuid, info in pairs(BlankE.settings.scene.objects) do
+			if info.name == name then
+				return info
+			end
 		end
+		error("no Scene object with name'"..name.."'")
+	end,
+
+	getObjectByUUID = function(self, uuid)
+		assert(BlankE.settings.scene.objects, "no Scene object with name'"..name.."'")	 
+		return BlankE.settings.scene.objects[uuid]
 	end,
 
 	-- info = {x, y, rect{}, image}
@@ -291,10 +319,12 @@ local Scene = Class{
 		local obj_names = {...}
 
 		for n, name in ipairs(obj_names) do
-			local object = self:getObjectInfo(name)
-			if object then
-				for layer_name, polygons in pairs(object.polygons) do
-					local layer = self:getLayer(layer_name)
+			local object_uuid = self.obj_uuid_ref[name]
+			if object_uuid then
+
+				local object = self:getObjectInfo(name)
+				for layer_uuid, polygons in pairs(self.objects[object_uuid]) do
+					local layer = self:getLayerByUUID(layer_uuid)
 					for p, polygon in ipairs(polygons) do
 						local points = table.copy(polygon)
 
@@ -318,6 +348,7 @@ local Scene = Class{
 						layer:addHitbox(points, tag, object.color)
 					end
 				end
+
 			end
 		end
 		return self
@@ -350,11 +381,13 @@ local Scene = Class{
 	-- returns table of created entities
 	addEntity = function(self, obj_name, ent_class, align) 
 		local instances = Group()
-		local object = self:getObjectInfo(obj_name)
 
-		if object then
-			for layer_name, polygons in pairs(object.polygons) do
-				local layer = self:getLayer(layer_name)
+		local object_uuid = self.obj_uuid_ref[obj_name]
+		if object_uuid then
+
+			local object = self:getObjectInfo(obj_name)
+			for layer_uuid, polygons in pairs(self.objects[object_uuid]) do
+				local layer = self:getLayerByUUID(layer_uuid)
 				for p, polygon in ipairs(polygons) do
 					local points = table.copy(polygon)
 
@@ -429,6 +462,7 @@ local Scene = Class{
 					instances:add(new_entity)
 				end
 			end
+
 		end
 		return instances
 	end

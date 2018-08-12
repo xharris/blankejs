@@ -64,6 +64,7 @@ class SceneEditor extends Editor {
 		this.grid_container = new PIXI.Container()
 		this.grid_graphics = new PIXI.Graphics();		// position wraps based on layer snap
 		this.origin_graphics = new PIXI.Graphics();
+		this.crosshair_graphics = new PIXI.Graphics();
 		this.coord_text_style = new PIXI.TextStyle({
 			fontSize: 16,
 			fill: 'white',
@@ -79,9 +80,10 @@ class SceneEditor extends Editor {
 		this.overlay_container.addChild(this.coord_text);
 		this.overlay_container.addChild(this.obj_info_text);
 
-		this.grid_container.addChild(this.origin_graphics);
+		// this.grid_container.addChild(this.origin_graphics);
 		this.grid_container.addChild(this.grid_graphics);
 		this.overlay_container.addChild(this.origin_graphics);
+		this.overlay_container.addChild(this.crosshair_graphics);
 
 		var el_br = app.createElement("br");
 
@@ -722,6 +724,7 @@ class SceneEditor extends Editor {
 		
 		// tab focus
 		this.addCallback("onTabFocus", function(){
+			this_ref.refreshImageList();
 			this_ref.loadObjectsFromSettings();
 		});
 		this.addCallback("onTabLostFocus", function(){
@@ -836,6 +839,28 @@ class SceneEditor extends Editor {
 				this.grid_graphics.moveTo(-snapx, y);
 				this.grid_graphics.lineTo(stage_width + snapx, y);
 			}
+
+			this.drawOrigin();
+		}
+	}
+
+	drawOrigin () {
+		if (this.curr_layer) {
+			var snapx = this.curr_layer.snap[0];
+			var snapy = this.curr_layer.snap[1];
+			var stage_width =  this.game_width;
+			var stage_height = this.game_height;
+
+			// origin line
+			this.origin_graphics.clear()
+			this.origin_graphics.lineStyle(1, this.grid_color, .25);
+
+			// horizontal
+			this.origin_graphics.moveTo(0, this.camera[1])
+			this.origin_graphics.lineTo(stage_width, this.camera[1]);
+			// vertical
+			this.origin_graphics.moveTo(this.camera[0], 0);
+			this.origin_graphics.lineTo(this.camera[0], stage_height);
 		}
 	}
 
@@ -851,6 +876,7 @@ class SceneEditor extends Editor {
 	refreshCamera () {
 		this.map_container.setTransform(this.camera[0], this.camera[1]);
 		this.drawCrosshair();
+		this.drawOrigin();
 	}
 
 	drawCrosshair () {
@@ -881,15 +907,15 @@ class SceneEditor extends Editor {
 			this.obj_info_text.text = Object.values(this.obj_info).join('\n');
 
 			// line style
-			this.origin_graphics.clear()
-			this.origin_graphics.lineStyle(2, 0xffffff, this.grid_opacity);
+			this.crosshair_graphics.clear()
+			this.crosshair_graphics.lineStyle(2, 0xffffff, this.grid_opacity);
 
 			// horizontal
-			this.origin_graphics.moveTo(0, center[1])
-			this.origin_graphics.lineTo(stage_width, center[1]);
+			this.crosshair_graphics.moveTo(0, center[1])
+			this.crosshair_graphics.lineTo(stage_width, center[1]);
 			// vertical
-			this.origin_graphics.moveTo(center[0], 0);
-			this.origin_graphics.lineTo(center[0], stage_height);
+			this.crosshair_graphics.moveTo(center[0], 0);
+			this.crosshair_graphics.lineTo(center[0], stage_height);
 		}
 	}
 

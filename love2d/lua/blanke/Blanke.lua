@@ -105,6 +105,7 @@ for m, mod in ipairs(modules) do
 		_G[mod] = blanke_require(mod)
 		if not mod == "Group" and not _G[mod].instances then _G[mod].instances = Group() end
 		if not _G[mod].classname then _G[mod].classname = mod end
+		if mod ~= "Group" and not _G[mod].instances then _G[mod].instances = Group() end
 	--end
 end
 
@@ -142,12 +143,19 @@ BlankE = {
 	scale_x = 1,
 	scale_y = 1,
 
+	settings = {}, -- game settings from config.json
+
 	_callbacks_replaced = false,
 	old_love = {},
 	pause = false,
 	first_state = '',
 	_class_type = {},
 	init = function(first_state, ide_mode)
+		-- load config file
+		if love.filesystem.getInfo("config.json") then
+			BlankE.settings = json.decode(love.filesystem.read('config.json'))
+		end
+
 		BlankE._ide_mode = ifndef(ide_mode, BlankE._iBde_mode)
 		View.global_drag_enable = BlankE._ide_mode
 

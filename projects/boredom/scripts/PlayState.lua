@@ -35,6 +35,6 @@ end
 
 function PlayState:draw()
 	main_camera:draw(function()
-		sc_level1:draw()
+		Scene.instances:call('draw')
 	end)
 end

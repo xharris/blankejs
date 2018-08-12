@@ -30,7 +30,23 @@ body {
 	width: 100%;
 	height: 100%;
 	background-color: @window-background;
-	border: 1px solid black;
+
+	position: relative;
+    border: 1px solid black;
+    border-top: none;
+}
+
+body:before { top: 0px; }
+body:after { bottom: -3px; }
+
+body:before, body:after {
+    content: "";
+    position: absolute;
+    background-image: linear-gradient(to right, black, rgba(100, 221, 23, .5), black);
+    left: 0px;
+    right: 0px;
+    height: 1px;
+    z-index: 1000;
 }
 
 .blanke-icon {
@@ -359,8 +375,8 @@ body {
     right: 0px;
     height: 34px;
     z-index: 100;
-    background-color: rgba(0,0,0,0.1);
-
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%);
+ 
     * {
 		.win-nodrag();
 		transition: all ease-in-out 0.2s;
