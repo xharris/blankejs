@@ -2127,3 +2127,37 @@ body {
   padding: 5px;
   color: #FAFAFA;
 }
+.crosshair {
+  position: absolute;
+  pointer-events: none;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  z-index: 200;
+}
+.crosshair .x {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  width: 2px;
+}
+.crosshair .y {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  height: 2px;
+}
+.crosshair .x,
+.crosshair .y {
+  animation-duration: .5s;
+  animation-name: crosshair-fade-out;
+}
+@keyframes crosshair-fade-out {
+  from {
+    background-color: rgba(255, 255, 255, 0.25);
+  }
+  to {
+    background-color: transparent;
+  }
+}

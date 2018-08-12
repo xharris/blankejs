@@ -322,6 +322,21 @@ var app = {
 	},
 	cleanPath: function(path) {
 		return nwPATH.normalize(path).replaceAll('\\\\','/');;
+	},
+	flashCrosshair: function(x, y) {
+		let el_cross = app.createElement("div","crosshair");
+		let el_crossx = app.createElement("div","x");
+		let el_crossy = app.createElement("div","y");
+		el_cross.appendChild(el_crossx);
+		el_cross.appendChild(el_crossy);
+
+		el_crossx.style.left = x+"px";
+		el_crossy.style.top = y+"px";
+
+		app.getElement("body").appendChild(el_cross);
+		setTimeout(function(){
+			blanke.destroyElement(el_cross);
+		}, 1000);
 	}
 }
 

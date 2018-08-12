@@ -16,15 +16,16 @@ end
 function Block:update(dt)
 	self.onCollision["main"] = function(other, sep)
 		if other.tag == "ground" and not (self.coll_x or self.coll_y) then
-			if self.move_dir == "L" then
+			if self.move_dir == "L" and other.x < self.x then
 				self.coll_x = self.x + (other.width - (self.x - other.x))
 			end
-			if self.move_dir == "R" then
+			if self.move_dir == "R" and other.x > self.x then
 				self.coll_x = self.x + (other.x - self.x)
 			end
 			
-			-- TODO: not working
-			self.coll_y = self.y + sep.point_y
+			if self.move_dir == "U" and other.y < self.y then
+				self.coll_y = self.y + (other.height - (self.y - other.y))
+			end
 		end
 		
 		if self.collisionCB then self:collisionCB(other, sep) end
@@ -34,7 +35,7 @@ function Block:update(dt)
 	if self.coll_x or self.coll_y then
 		if (self.move_dir == "R" and self.coll_x and self.x > self.coll_x) or
 		   (self.move_dir == "L" and self.coll_x and self.x + self.scene_rect[3] < self.coll_x) or
-		   (self.move_dir == "U" and self.coll_y and self.coll_y > self.y) or
+		   (self.move_dir == "U" and self.coll_y and self.coll_y > self.y + self.scene_rect[4]) or
 		   (self.move_dir == "D" and self.coll_y and self.coll_y < self.y) then
 			self:destroy()	
 		end
@@ -49,7 +50,7 @@ function Block:draw()
 		elseif self.move_dir == "L" and self.coll_x then
 			x, y, w, h = self.coll_x-2,self.y,self.scene_rect[3]-(self.coll_x-self.x)+2,self.scene_rect[4]
 		elseif self.move_dir == "U" and self.coll_y then
-
+			x, y, w, h = self.x, self.coll_y-2, self.scene_rect[3], self.scene_rect[4]-(self.coll_y - self.y)+2
 		elseif self.move_dir == "D" and self.coll_y then
 			x, y, w, h = self.x,self.y,self.scene_rect[3],self.coll_y-self.y+2
 		end
@@ -60,5 +61,7 @@ function Block:draw()
 	Draw.setColor("white")
 	Draw.rect("fill",self.x,self.y,self.scene_rect[3],self.scene_rect[4])
 	Draw.setColor("black")
-	Draw.rect("line",self.x,self.y,self.scene_rect[3],self.scene_rect[4])	
+	Draw.rect("line",self.x,self.y,self.scene_rect[3],self.scene_rect[4])
+	
+	Draw.reset("crop")
 end

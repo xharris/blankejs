@@ -128,7 +128,7 @@ Draw = Class{
     	if only == "color" or not only then 
 			Draw.color = Draw.reset_color
 			Draw.setColor(Draw.color)
-		end
+		end 
 		if only == "transform" or not only then
 			love.graphics.origin()
 		end

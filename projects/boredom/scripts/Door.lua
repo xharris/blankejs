@@ -1,1 +1,0 @@
-BlankE.addEntity("DoorBlock")

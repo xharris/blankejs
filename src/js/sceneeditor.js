@@ -25,7 +25,7 @@ class SceneEditor extends Editor {
 		this.deleted = false;
 
 		this.obj_type = '';
-		this.curr_layer = null;
+		this.curr_layer = {snap:[1,1]};
 		this.curr_object = null;	// reference from this.objects[]
 		this.curr_image	= null;		// reference from this.images[]
 		this.layers = [];
@@ -606,9 +606,12 @@ class SceneEditor extends Editor {
 					this_ref.camera_start[1] + (y - this_ref.mouse_start.y) 
 				)
 			}
-			
-			let snapx = this_ref.curr_layer.snap[0];
-			let snapy = this_ref.curr_layer.snap[1];
+		
+			let snapx = 1, snapy = 1;	
+			if (this_ref.curr_layer) {
+				snapx = this_ref.curr_layer.snap[0];
+				snapy = this_ref.curr_layer.snap[1];
+			}
 
 			let mx = x-this_ref.camera[0],
 				my = y-this_ref.camera[1];
@@ -678,7 +681,7 @@ class SceneEditor extends Editor {
         
 		// moving camera with arrow keys
 		document.addEventListener('keydown', function(e){
-			if (document.activeElement === document.body) {
+			if (document.activeElement === document.body && this_ref.curr_layer) {
 				var keyCode = e.keyCode || e.which;
 
 				let vx = 0;
@@ -896,6 +899,8 @@ class SceneEditor extends Editor {
 		}
 		if (this.obj_type == 'object') {
 			this.el_object_container.classList.remove('hidden');
+
+			this.refreshObjectList();
 		}
 		if (this.obj_type == 'tag') {
 			this.el_tag_form.container.classList.remove('hidden');
@@ -914,6 +919,9 @@ class SceneEditor extends Editor {
 				}
 			}
 		}
+
+		if (this.layers.length == 0)
+			this.addLayer();
 
 		let layer_list = this.layers.map(layer => layer.name);
 		this.el_layer_control.setItems(layer_list);
@@ -948,6 +956,13 @@ class SceneEditor extends Editor {
 			new_option.style.color = this.objects[o].color;
 			new_option.innerHTML = this.objects[o].name;
 			this.el_sel_name.appendChild(new_option);
+		}
+
+		if (!this.curr_object) {
+			// don't show properties if no object selected
+			this.el_object_form.container.style.display = "none";	
+		} else {
+			this.el_object_form.container.style.display = "block";	
 		}
 	}
 
@@ -1148,7 +1163,7 @@ class SceneEditor extends Editor {
 			}
 
 			// remove from array
-			if (!this_ref.placing_object && this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
+			if (!this_ref.placing_object && this_ref.curr_layer && this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
 				let del_uuid = e.target.uuid;
 				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj, o){
 					if (del_uuid == obj.poly.uuid) {
@@ -1515,7 +1530,7 @@ class SceneEditor extends Editor {
 	updateGlobalObjList() {
 		global_objects = [];
 		for (var o = 0; o < this.objects.length; o++) {
-			global_objects.push(Object.assign(this.objects[0], {}));
+			global_objects.push(Object.assign(this.objects[o], {}));
 		}
 	}
 
@@ -1717,6 +1732,7 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
+		return;
 		if (this.deleted) return;
 
 		let export_data = {'objects':[], 'layers':[], 'images':[], 'settings':{

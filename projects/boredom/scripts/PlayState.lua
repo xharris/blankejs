@@ -7,7 +7,9 @@ local player = nil
 function PlayState:enter(prev)
 	Draw.setBackgroundColor('white')
 	sc_level1 = Scene("level1")
-	sc_level1.draw_order = {"SpikeBlock","ground","MovingBlock","spike","Player"}
+	sc_level1.draw_order = {
+		"SpikeBlock","ground","MovingBlock","spike","DoorBlock","Player"
+	}
 	
 	-- hitboxes
 	sc_level1:addTileHitbox("ground")

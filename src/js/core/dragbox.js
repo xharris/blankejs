@@ -1,4 +1,5 @@
 var last_box = null;
+let snap = 32;
 var last_box_direction = 1;
 var box_sizes = {};
 
@@ -138,7 +139,17 @@ class DragBox {
 			    target.setAttribute('data-x', this_ref.x);
 			    target.setAttribute('data-y', this_ref.y);
 
-			}).on('resizeend', function(event){
+			}).on('resizeend', function(e){
+				let width = parseInt(e.target.style.width);
+				let height = parseInt(e.target.style.height);
+				width = width - (width % snap);
+				height = height - ((height+34) % snap);
+
+			    e.target.style.width = width+'px';
+			    e.target.style.height = height+'px';
+
+				app.flashCrosshair(this_ref.x + width, this_ref.y + height);
+
 				this_ref.onResize(this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight);
 				box_sizes[this_ref.title] = [this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight];
 			});
@@ -192,6 +203,19 @@ class DragBox {
 				    // update the posiion attributes
 				    target.setAttribute('data-x', this_ref.x);
 				    target.setAttribute('data-y', this_ref.y);
+				},
+				onend: function(e) {
+					let x = this_ref.x - (this_ref.x % snap);
+					let y = this_ref.y - ((this_ref.y+34) % snap);
+
+					if (y < 34) y = 34;
+
+				    e.target.style.webkitTransform = e.target.style.transform =
+				      'translate(' + x + 'px, ' + y + 'px)';
+				    e.target.setAttribute('data-x', x);
+				    e.target.setAttribute('data-y', y);
+
+					app.flashCrosshair(x, y);
 				}
 			});
 	}

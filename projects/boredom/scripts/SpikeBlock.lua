@@ -45,7 +45,7 @@ function SpikeBlock:update(dt)
 	local player = Player.instances[1]
 	if not self.activated and player then
 		if self.scene_tag == "U" then
-			if player.x > self.x and player.x < self.x+self.block_w and player.y < self.y and player.x > self.y - 64 then
+			if player.x > self.x and player.x < self.x+self.block_w and player.y < self.y and player.y > self.y - 64 then
 				self.activated = true
 				self.move_tween = Tween(self, {vspeed=-180}, 3, "linear")
 				self.move_tween:play()
