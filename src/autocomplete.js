@@ -209,7 +209,11 @@ module.exports.completions = {
 	"blanke-scene-instance":[
 		{prop:"draw_hitboxes"},
 		{fn:"addHitbox",vars:{ object_name:"", etc:"" }},
+		{fn:"addTileHitbox",vars:{ image_name:"", etc:"" }},
 		{fn:"addEntity",vars:{ object_name:"", entity_class:"", alignment:"center, left, right, top, bottom, top-left, center-bottom, etc." }},
+		{fn:"getEntities",vars:{ object_name:"" }},
+		{fn:"chain",vars:{ next_scene:"Scene object", end_object:"ending object of previous scene", start_object:"starting object of next scene"}},
+		{fn:"translate",vars:{ x:"", y:"" }},
 		{fn:"draw"}
 	]
 }

@@ -21,7 +21,7 @@ function Player:init()
 	self.sprite_xoffset = -self.sprite_width / 2
 	self.sprite_yoffset = -self.sprite_height / 2
 	
-	self:addPlatforming(0,0,self.sprite_width-10,self.sprite_height)
+	self:addPlatforming(0,0,self.sprite_width-10,self.sprite_height+1)
 	self.gravity = 20
 	
 	self.move_speed = 280
