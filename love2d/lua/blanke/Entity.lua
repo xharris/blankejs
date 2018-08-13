@@ -68,6 +68,12 @@ Entity = Class{
     	_addGameObject('entity', self)
     end,
 
+    _post_init = function(self)
+		if not self.sprite_index then
+			self.sprite_index = table.keys(self._sprites)[1]
+		end
+    end,
+
     __newindex = function(self, k, v)
     	if k == "sprite_index" then
 			self:refreshSpriteDims(v)
@@ -323,10 +329,6 @@ Entity = Class{
 		if not sprite_index then
 			if self.sprite_index then
 				self:drawSprite(self.sprite_index)
-			else
-				for name, info in pairs(self.sprite) do
-					self:drawSprite(name)
-				end
 			end
 		end
 		local sprite = self._sprites[sprite_index]
@@ -421,7 +423,6 @@ Entity = Class{
 			self._sprites[ani_name] = sprite
 
 			self:refreshSpriteDims(ani_name)
-
 			self.sprite[ani_name] = {width=self.sprite_width, height=self.sprite_height}
 		end
 		return self
@@ -473,7 +474,7 @@ Entity = Class{
 	-- other : Entity object
 	-- returns distance between center of self and other object in pixels
 	distance = function(self, other)
-		return self:distance(other.x, other.y)
+		return self:distancePoint(other.x, other.y)
 	end,
 
 	-- self direction and speed will be set towards the given point

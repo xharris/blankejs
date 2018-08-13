@@ -22,7 +22,10 @@ module.exports.class_regex = {
 
 // Group 1: name of instance 
 module.exports.instance_regex = {
-	'entity': 	/\b(\w+)\s*=\s*<class_name>\(\).*/g,
+	'entity': 	[
+		/\b(\w+)\s*=\s*<class_name>\(\).*/g,
+		/\b(\w+)\s*=\s*<class_name>\.instances\[\d+\].*/g
+	],
 	//'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"][\w\.]+[\'\"]\)\s+?/g,
@@ -179,13 +182,14 @@ module.exports.completions = {
 		}},
 		{fn:"drawSprite",vars:{ name:'calls default draw function for given animation name' }},
 
+		{fn:"distance", vars:{ other:"Entity" }},
 		{fn:"distancePoint", vars:{ x:'', y:'' }, info:'entity origin distance from point'},
 		{fn:"moveTowardsPoint", vars:{ x:'', y:'', speed:'' }},
 		{fn:"containsPoint", vars:{ x:'', y:'' }, info:'checks if a point is inside the sprite (not hitboxes)'},
 
 		{fn:"destroy"},
 
-		{fn:"hadCollision",vars:{self_name:'', other_name:''}},
+		{fn:"hadCollision",vars:{shape_name:'', other_tag:''}},
 		{fn:"getCollisions",vars:{shape_name:''}},
 		{fn:"debugSprite",vars:{sprite_index:''}},
 		{fn:"debugCollision"}

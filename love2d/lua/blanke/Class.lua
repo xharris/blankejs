@@ -92,6 +92,11 @@ local function new(class)
 		end
 		if o.init then
 			local ret_val =	o:init(...)
+
+			if o._post_init then
+				o:_post_init(...)
+			end
+
 			if ret_val then return ret_val end
 		end
 	    

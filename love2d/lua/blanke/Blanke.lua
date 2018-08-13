@@ -256,7 +256,7 @@ BlankE = {
 				_G[in_name] = Class{__includes=Entity,
 					type = "entity",
 					classname=in_name,
-					instances = Group()
+					instances=Group()
 				}
 			end
 		end

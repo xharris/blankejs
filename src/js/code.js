@@ -109,27 +109,36 @@ function refreshObjectList (filename, content) {
 	iterateRegex(re_class);
 	iterateRegex(re_instance);
 
+	function checkInstance(cat, regex) {
+		var ret_instance_match;
+
+		if(!object_instances[filename])
+			object_instances[filename] = {};
+		if(!object_instances[filename][cat])
+			object_instances[filename][cat] = [];
+		do {
+			ret_instance_match = regex.exec(content);
+			if (!ret_instance_match) {
+				// continue; // no longer usable after adding 'for (let obj_name of ret_matches)'
+			}
+			else if(!object_instances[filename][cat].includes(ret_instance_match[1])) {
+				object_instances[filename][cat].push(ret_instance_match[1]);
+			}
+
+		} while (ret_instance_match)
+	}
+
 	for (let category in object_list) {
 		for (let obj_name in object_list[category]) {
 			// get instances made with those classes
 			if (re_instance[category]) {
-				var regex_instance = new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags);
-				var ret_instance_match;
-
-				if(!object_instances[filename])
-					object_instances[filename] = {};
-				if(!object_instances[filename][category])
-					object_instances[filename][category] = [];
-				do {
-					ret_instance_match = regex_instance.exec(content);
-					if (!ret_instance_match) {
-						// continue; // no longer usable after adding 'for (let obj_name of ret_matches)'
+				if (Array.isArray(re_instance[category])) {
+					for (let subre of re_instance[category]) {
+						checkInstance(category, new RegExp(subre.source.replace('<class_name>', obj_name), subre.flags))
 					}
-					else if(!object_instances[filename][category].includes(ret_instance_match[1])) {
-						object_instances[filename][category].push(ret_instance_match[1]);
-					}
-
-				} while (ret_instance_match)
+				} else {
+					checkInstance(category, new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags));
+				}
 			}
 		}
 	}
