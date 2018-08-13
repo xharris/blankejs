@@ -10,16 +10,17 @@ var nwWALK = require('walk');
 var nwPATH = require('path');
 var nwOS = require('os');
 var nwWIN = nwGUI.Window.get();
-const { spawn, execFile } = require('child_process')
+const { spawn, execFile, exec } = require('child_process')
 const { cwd, env, platform } = require('process')
 var nwNOOB = require('./js/server.js');
+var nwZIP = require('archiver');
 
 var app = {
 	project_path: "",
 	watch: null,
 	game_window: null,
 	maximized: false,
-	os: null,
+	os: null, // win, mac, linux
 
 	getElement: function(sel) {
 		return document.querySelector(sel);
