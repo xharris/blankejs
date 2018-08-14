@@ -1,5 +1,5 @@
 View = Class{
-	init = function(self)
+	init = function(self, follow_entity)
 		-- the final draw position
 		self.x = 0
 		self.y = 0
@@ -7,7 +7,7 @@ View = Class{
 		self.port_width = game_width
 		self.port_height = game_height
 
-        self.follow_entity = nil
+        self.follow_entity = follow_entity
         self.offset_x = 0
         self.offset_y = 0
 
@@ -53,7 +53,7 @@ View = Class{
 
 	attach = function(self)
 		local half_w, half_h = self.port_width/2, self.port_height/2
-		Draw.push()
+		Draw.push('all')
 		Draw.translate(math.floor(half_w), math.floor(half_h))
 		Draw.scale(self.scale_x, self.scale_y)
 		Draw.rotate(self.angle)

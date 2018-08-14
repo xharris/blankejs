@@ -91,7 +91,7 @@ local SceneLayer = Class{
 	end,
 
 	addEntity = function(self, instance)
-		self.entities[instance.classname] = ifndef(self.entities[instance.classname], {})
+		self.entities[instance.classname] = ifndef(self.entities[instance.classname], Group())
 		table.insert(self.entities[instance.classname], instance)
 
 		self.obj_name_list[instance.classname] = true

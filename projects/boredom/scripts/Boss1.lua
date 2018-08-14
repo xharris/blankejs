@@ -28,7 +28,19 @@ function Boss1:init()
 	self:setMainShape("main")
 	self.sprite_index = "sleep"
 	
-	self.sleep_z
+	-- stage 0 
+	self.z_canvas = Canvas(30, 30)
+	self.z_canvas:drawTo(function()
+		Draw.setColor("black")
+		Draw.text("Z",0,0)
+	end)
+	self.sleep_z = Repeater(self.z_canvas,{
+		x = self.x + 5,
+		y = self.y + 10,
+		linear_accel_x = -10,
+		linear_accel_y = -10,
+		end_color = {1,1,1,0}
+	})
 end
 
 function Boss1:update(dt)
@@ -43,13 +55,21 @@ function Boss1:update(dt)
 	if self.stage == 0 and player then
 		if self:distance(player) < 35 then
 			self.sprite_index = "idle"
+			self.stage = 1
 		end
 	end	
 end
 
 function Boss1:draw()
 	self:drawSprite()
-	
+		
 	-- stage 0: draw Z's
-	
+	if self.stage == 0 then
+		self.sleep_z:draw()
+	elseif self.stage == 1 then
+	-- stage 1: waking up
+		self.sleep_z:draw()
+		self.sleep_z.linear_accel_x = 0
+		self.sleep_z.linear_accel_y = 0
+	end
 end

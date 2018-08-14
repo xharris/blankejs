@@ -52,7 +52,7 @@ function _addGameObject(obj_type, obj)
     	game[type] = ifndef(game[type], {})
    		table.insert(game[type], obj)
    	end)
-Debug.log(obj.classname)
+   	
     if BlankE and BlankE._ide_mode then -- (cant access BlankE for some reason)
     	IDE.onAddGameObject(type)
     end

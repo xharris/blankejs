@@ -318,6 +318,12 @@ function table.merge(...)
     end
 end
 
+function table.update(old, new)
+	for k, v in pairs(new) do
+		old[k] = v
+	end
+end
+
 --[[
 
 	MATH

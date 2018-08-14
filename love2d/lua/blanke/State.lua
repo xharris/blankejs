@@ -57,7 +57,7 @@ StateManager = {
 				    end
 				end
 
-				if func == 'draw' and state.draw then
+				if func == 'draw' and state.draw and not state._off then
 					-- is a transition happening?
 					if transition_active then
 						-- is this the 'entering' state?
