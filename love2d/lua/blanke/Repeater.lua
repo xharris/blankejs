@@ -1,13 +1,9 @@
 Repeater = Class{
 	init = function(self, texture, options)
 		self.real_texture = nil
+		self.entity_tex = false
 
-		if texture.classname then
-			if texture.classname == "Image" then self.real_texture = texture.image end
-			if texture.classname == "Canvas" then self.real_texture = texture.canvas end
-		end
-
-		assert(self.real_texture, "not a valid Repeater texture");
+		self:setTexture(texture)
 
 		self.system = love.graphics.newParticleSystem(self.real_texture)
 
@@ -30,11 +26,42 @@ Repeater = Class{
 	end,
 
 	update = function(self, dt)
+		if self.entity_tex then
+			self:updateEntityTexture()
+		end
 		self.system:update(dt)
+	end,
+
+	updateEntityTexture = function(self)
+		local index = self.entity_tex.sprite_index
+		if index then
+			self.real_texture = self._images[index]
+			self.system:setTexture(self.real_texture)
+			local sprite = self.entity_tex.sprite[index]
+		end
 	end,
 
 	setSpeed = function(self, min, max)
 		self.system:setSpeed(min, max)
+	end,
+
+	setTexture = function(self, texture)
+		self.entity_tex = false
+
+		if texture.classname then
+			if texture.classname == "Image" then self.real_texture = texture.image end
+			if texture.classname == "Canvas" then self.real_texture = texture.canvas end
+			if texture._entity then
+				self.entity_tex = texture
+				self:updateEntityTexture()
+			end
+		end
+
+		assert(self.real_texture, "not a valid Repeater texture")
+
+		if self.system then
+			self.system:setTexture(self.real_texture)
+		end
 	end,
 
 	draw = function(self)

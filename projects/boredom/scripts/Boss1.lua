@@ -34,6 +34,11 @@ function Boss1:init()
 		Draw.setColor("black")
 		Draw.text("Z",0,0)
 	end)
+	self.y_canvas = Canvas(30, 30)
+	self.y_canvas:drawTo(function()
+		Draw.setColor("black")
+		Draw.text("Y",0,0)
+	end)
 	self.sleep_z = Repeater(self.z_canvas,{
 		x = self.x + 5,
 		y = self.y + 10,
@@ -69,7 +74,6 @@ function Boss1:draw()
 	elseif self.stage == 1 then
 	-- stage 1: waking up
 		self.sleep_z:draw()
-		self.sleep_z.linear_accel_x = 0
-		self.sleep_z.linear_accel_y = 0
+		self.sleep_z:setTexture(self.y_canvas)
 	end
 end

@@ -30,6 +30,8 @@ function Player:init()
 	self.jumps = self.max_jumps
 	
 	self.platform_hspeed = 0
+	
+	self.rep = Repeater(self)
 end
 
 function Player:update(dt)
