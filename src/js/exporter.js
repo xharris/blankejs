@@ -37,7 +37,7 @@ class Exporter extends Editor {
 		this.appendChild(this.el_platforms);
 	}
 
-	createLove (dir) {
+	createLove (dir, cb) {
 		let love_path = nwPATH.join(dir, app.settings.export.name+".love");
 
 		let output = nwFS.createWriteStream(love_path);
@@ -46,7 +46,8 @@ class Exporter extends Editor {
 		});
 
 		output.on('close', function(){
-			// done 
+			// done
+			if (cb) cb(love_path);
 		});
 		archive.pipe(output);
 		archive.glob("**/*",{
@@ -57,8 +58,6 @@ class Exporter extends Editor {
 			ignore: ["dist","dist/**/*"]
 		});
 		archive.finalize();
-
-		return love_path
 	}
 
 	export (target_os) {
@@ -69,22 +68,30 @@ class Exporter extends Editor {
 		nwFS.emptyDir(os_dir, function(err){
 
 			// create a LOVE file
-			let love_path = this_ref.createLove(os_dir);
+			this_ref.createLove(os_dir, function(love_path){
+				// export to WINDOWS
+				if (target_os == "windows") {
+					let exec_cmd = '';
+					// currently on MAC/LINUX
+					if (app.os == "mac" || app.os == "linux") {
+						exec_cmd = "cat "+nwPATH.join("love2d","love.exe")+" "+love_path+" > "+nwPATH.join(os_dir, project_name+".exe");
+					}
+					// currently on WINDOWS
+					if (app.os == "win") {
+						exec_cmd = "copy /b "+nwPATH.join("love2d","love.exe")+"+"+love_path+" "+nwPATH.join(os_dir, project_name+".exe");
+					}
 
-			// export to WINDOWS
-			if (target_os == "windows") {
-				// currently on MAC/LINUX
-				if (app.os == "mac" || app.os == "linux") {
-					exec("cat "+nwPATH.join("love2d","love.exe")+" "+love_path+" > "+nwPATH.join(os_dir, project_name+".exe"), (err, stdout, stderr) =>{
+					exec(exec_cmd, (err, stdout, stderr) =>{
 						if (err) {
 							console.error(err);
 							return;
 						}
 
-						nwFS.removeSync(love_path);
+						//nwFS.removeSync(love_path);
 						nwFS.copySync("love2d",os_dir,{filter:function(path){
 							path = path.replace(process.cwd(),"");
-							let exclude = ["love.app","love.exe","\/lua"];
+							console.log(path)
+							let exclude = ["love.app","love.exe","lovec.exe",/[\\\/]lua/g];
 
 							for (let e of exclude) {
 								if (path.includes(e)) {
@@ -97,29 +104,30 @@ class Exporter extends Editor {
 						blanke.toast("Export done!");
 					});
 				}
-			}
 
-			// exporting to MAC
-			if (target_os == "mac") {
-				nwFS.copySync(nwPATH.join("love2d","love.app"), nwPATH.join(os_dir,project_name+".app"));
-				nwFS.moveSync(love_path, nwPATH.join(os_dir,project_name+".app","Contents","Resources",project_name+".love"));
-				// make replacements in Info.plist
-				nwFS.readFile(nwPATH.join(os_dir,project_name+".app","Contents","Info.plist"), {encoding:'utf-8'}, function(err, data){
-					if (err) { console.error(err); return; }
-
-					data.replace("org.love2d.love", "com.XHH."+project_name);
-					data.replace("LÖVE", project_name);
-					data.replace(/<key>UTExportedTypeDeclarations<\/key>\s*<array>[\s\S]+<\/array>/g, "");
-
-					nwFS.writeFile(nwPATH.join(os_dir,project_name+".app","Contents","Info.plist"), data, function(err){
+				// exporting to MAC
+				if (target_os == "mac") {
+					nwFS.copySync(nwPATH.join("love2d","love.app"), nwPATH.join(os_dir,project_name+".app"));
+					nwFS.moveSync(love_path, nwPATH.join(os_dir,project_name+".app","Contents","Resources",project_name+".love"));
+					// make replacements in Info.plist
+					nwFS.readFile(nwPATH.join(os_dir,project_name+".app","Contents","Info.plist"), {encoding:'utf-8'}, function(err, data){
 						if (err) { console.error(err); return; }
-						blanke.toast("Export done!");
-					});
-				})
-			}
 
-			// exporting to LINUX
-			// ... just keep the .love file I guess (TODO: look into AppImages)
+						data.replace("org.love2d.love", "com.XHH."+project_name);
+						data.replace("LÖVE", project_name);
+						data.replace(/<key>UTExportedTypeDeclarations<\/key>\s*<array>[\s\S]+<\/array>/g, "");
+
+						nwFS.writeFile(nwPATH.join(os_dir,project_name+".app","Contents","Info.plist"), data, function(err){
+							if (err) { console.error(err); return; }
+							blanke.toast("Export done!");
+						});
+					})
+				}
+
+				// exporting to LINUX
+				// ... just keep the .love file I guess (TODO: look into AppImages)
+			});
+
 		});
 	}
 }

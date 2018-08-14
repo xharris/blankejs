@@ -608,8 +608,8 @@ function addScripts(folder_path) {
 		files.forEach(function(file){
 			var full_path = nwPATH.join(folder_path, file);
 			nwFS.stat(full_path, function(err, file_stat){		
-				// iterate through directory			
-				if (file_stat.isDirectory()) 
+				// iterate through directory		
+				if (file_stat.isDirectory() && file != "dist") 
 					addScripts(full_path);
 
 				// add file to search pool

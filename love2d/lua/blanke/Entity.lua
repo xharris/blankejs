@@ -330,6 +330,9 @@ Entity = Class{
 		if not sprite_index then
 			if self.sprite_index then
 				self:drawSprite(self.sprite_index)
+			else
+				self.sprite_width = 0
+				self.sprite_height = 0
 			end
 		end
 		local sprite = self._sprites[sprite_index]
@@ -375,9 +378,6 @@ Entity = Class{
 					end
 				end
 			end)
-		else
-			self.sprite_width = 0
-			self.sprite_height = 0
 		end
 	end,
 

@@ -35,7 +35,7 @@ class AssetManager extends Editor {
 		let walker = nwWALK.walk(app.project_path);
 		this.file_paths = [];
 		walker.on('file', function(path, stat, next){
-			if (stat.isFile()) {
+			if (!path.includes('\/dist\/') && stat.isFile()) {
 				let full_path = nwPATH.resolve(nwPATH.join(path, stat.name));
 				this_ref.addFile(full_path);
 			}

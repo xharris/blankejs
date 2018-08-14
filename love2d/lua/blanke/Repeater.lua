@@ -4,7 +4,7 @@ Repeater = Class{
 		self.entity_tex = false
 
 		self:setTexture(texture)
-
+		
 		self.system = love.graphics.newParticleSystem(self.real_texture)
 
 		self.x = 0
@@ -16,11 +16,15 @@ Repeater = Class{
 		self.linear_accel_y = 0
 		self.linear_damp_x = 0
 		self.linear_damp_y = 0
+		self.spawn_x = 0
+		self.spawn_y = 0
 		-- self.speed = 0 -- needs max
 		self.color = {1,1,1,1}
 		self.end_color = {1,1,1,1}
 
-		table.update(self, options)
+		if options then
+			table.update(self, options)
+		end
 
 		_addGameObject('repeater', self)
 	end,
@@ -35,9 +39,13 @@ Repeater = Class{
 	updateEntityTexture = function(self)
 		local index = self.entity_tex.sprite_index
 		if index then
-			self.real_texture = self._images[index]
-			self.system:setTexture(self.real_texture)
-			local sprite = self.entity_tex.sprite[index]
+			self.real_texture = self.entity_tex._images[index].image
+			local sprite = self.entity_tex._sprites[index]
+
+			if self.system then
+				self.system:setTexture(self.real_texture)
+				self.system:setQuads(unpack(sprite.frames))
+			end
 		end
 	end,
 
@@ -70,6 +78,7 @@ Repeater = Class{
 		self.system:setEmissionRate(self.rate)
 		self.system:setLinearAcceleration(self.linear_accel_x, self.linear_accel_y)
 		self.system:setLinearDamping(self.linear_damp_x, self.linear_damp_y)
+		self.system:setPosition(self.spawn_x, self.spawn_y)
 		
 		local c1 = Draw._parseColorArgs(self.color)
 		local c2 = Draw._parseColorArgs(self.end_color)
