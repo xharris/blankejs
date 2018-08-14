@@ -1,7 +1,10 @@
 Repeater = Class{
 	init = function(self, texture)
-		
-	end,
+		if texture.classname then
+			if texture.classname == "Image" then end
+			if texture.classname == "" then end
+		end
+	end
 }
 
 return Repeater

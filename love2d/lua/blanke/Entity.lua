@@ -7,8 +7,9 @@ Entity = Class{
 	y = 0,
 	net_sync_vars = {'x', 'y', 'persistent'},
 	net_excludes = {'^_images$','^_sprites$','^sprite$','previous$','start$','^shapes$','^collision','^onCollision$','^is_net_entity$'},
-    _init = function(self, parent)    
-    	self.classname = ifndef(self.classname, 'Entity')
+    _init = function(self, parent) 
+    	self._entity = true   
+    	self.classname = ifndef(self.classname, 'entity')
 
     	self._destroyed = false
 	    self._images = {}		
