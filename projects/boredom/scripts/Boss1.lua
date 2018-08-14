@@ -27,6 +27,8 @@ function Boss1:init()
 	})			
 	self:setMainShape("main")
 	self.sprite_index = "sleep"
+	
+	self.sleep_z
 end
 
 function Boss1:update(dt)
