@@ -7,7 +7,6 @@ function love.load()
 	Asset.add('assets/hats/','hat')
 	Asset.add('assets/image/')
 	Asset.add('maps/')
-	Asset.add('scenes/levels/','level')
 	Asset.add('scenes/')
 	Asset.add('scripts/')
 
@@ -15,7 +14,7 @@ function love.load()
 	UI.color('window_outline', Draw.blue)
 	UI.color('element_bg', Draw.dark_blue)
 
-  	BlankE.init('MenuState')
+  	BlankE.init('PlayState')
 
 	Input.set('menu_up', 'w', 'up')
 	Input.set('menu_down', 's', 'down')

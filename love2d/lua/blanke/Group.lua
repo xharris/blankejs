@@ -7,7 +7,9 @@ Group = Class{
 
 	__index = function(self, i)
 		if type(i) == "number" then
-			return rawget(self, "children")[i]
+			local children = rawget(self, "children")
+			if i < 0 then i = #children + (i + 1) end
+			return children[i]
 		end
 		return rawget(Group, i)
 	end,

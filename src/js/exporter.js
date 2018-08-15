@@ -87,14 +87,13 @@ class Exporter extends Editor {
 							return;
 						}
 
-						//nwFS.removeSync(love_path);
+						nwFS.removeSync(love_path);
 						nwFS.copySync("love2d",os_dir,{filter:function(path){
 							path = path.replace(process.cwd(),"");
-							console.log(path)
-							let exclude = ["love.app","love.exe","lovec.exe",/[\\\/]lua/g];
+							let exclude = [".app",".exe",/[\\\/]lua/];
 
 							for (let e of exclude) {
-								if (path.includes(e)) {
+								if (path.match(e)) {
 									return false;
 								}
 							}
@@ -113,9 +112,9 @@ class Exporter extends Editor {
 					nwFS.readFile(nwPATH.join(os_dir,project_name+".app","Contents","Info.plist"), {encoding:'utf-8'}, function(err, data){
 						if (err) { console.error(err); return; }
 
-						data.replace("org.love2d.love", "com.XHH."+project_name);
-						data.replace("LÖVE", project_name);
-						data.replace(/<key>UTExportedTypeDeclarations<\/key>\s*<array>[\s\S]+<\/array>/g, "");
+						data = data.replace("org.love2d.love", "com.XHH."+project_name);
+						data = data.replace(/L\u00D6VE/g, project_name);
+						data = data.replace(/<key>UTExportedTypeDeclarations<\/key>\s*<array>[\s\S]+<\/array>/g, "");
 
 						nwFS.writeFile(nwPATH.join(os_dir,project_name+".app","Contents","Info.plist"), data, function(err){
 							if (err) { console.error(err); return; }

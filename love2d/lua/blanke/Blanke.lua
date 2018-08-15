@@ -578,10 +578,10 @@ BlankE = {
 	    end
 	end,
 
-	errhand = function(msg)
-		if BlankE._ide_mode then IDE.errd = true; end
-		local trace = debug.traceback()
-		print(msg)
+	errorhandler = function(msg)
+		-- local trace = debug.traceback()
+
+		print(debug.traceback("Error: " .. tostring(msg), 10):gsub("\n[^\n]+$", ""))
 	 	
 	 	--[[
 	 		old_errhand(msg)
@@ -589,8 +589,8 @@ BlankE = {
 	end,
 }
 
-local old_errhand = love.errhand
---love.errhand = BlankE.errhand
+local old_errorhandler = love.errorhandler
+love.errorhandler = BlankE.errorhandler
 
 BlankE.addClassType('_err_state', 'State')
 _err_state.error_msg = 'NO GAME'
@@ -669,6 +669,6 @@ function _empty_state:draw()
 	love.graphics.pop()
 end	
 
-error = BlankE.errhand
+--error = BlankE.errorhandler
 
 return BlankE

@@ -801,8 +801,10 @@ class SceneEditor extends Editor {
 	}
 
 	delete () {
+		nwFS.remove(this.file);
 		this.deleted = true;
 		this.close();
+		SceneEditor.refreshSceneList();
 	}
 
 	deleteModal () {
@@ -1396,9 +1398,9 @@ class SceneEditor extends Editor {
 			if (!place_image.pixi_tilemap[layer.uuid]) {
 				place_image.pixi_tilemap[layer.uuid] = new PIXI.Container();
 				layer.container.addChild(place_image.pixi_tilemap[layer.uuid]);
-
-				layer.container.setChildIndex(place_image.pixi_tilemap[layer.uuid], 0);
 			}
+			layer.container.setChildIndex(place_image.pixi_tilemap[layer.uuid], 0);
+			bringToFront(place_image.pixi_tilemap[layer.uuid])
 
 
 			let new_sprite = new PIXI.Sprite(new_tile_texture);
@@ -1753,13 +1755,13 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
-		if (this.deleted) return;
+		if (this.deleted || app.error_occured) return;
 
 		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
 			camera:this.camera,
 			last_active_layer:this.curr_layer.name,
 			last_object_type:this.obj_type,
-			last_object_name:this.curr_object.name
+			last_object_name:ifndef(this.curr_object, {name:null}).name
 		}};
 		if (!app.project_settings.scene)
 			app.project_settings.scene = {};
@@ -1839,15 +1841,21 @@ class SceneEditor extends Editor {
 				export_data.images.push(exp_img);
 		}
 
-		app.saveSettings();
-		nwFS.writeFileSync(this.file, JSON.stringify(export_data));
+		if (!app.error_occured) {
+			app.saveSettings();
+			nwFS.writeFileSync(this.file, JSON.stringify(export_data));
+		}
+	}
+
+	static refreshSceneList(path) {
+		app.removeSearchGroup("Scene");
+		addScenes(ifndef(path, app.project_path));
 	}
 }
 
 document.addEventListener('fileChange', function(e){
 	if (e.detail.type == 'change') {
-		app.removeSearchGroup("Scene");
-		addScenes(app.project_path);
+		SceneEditor.refreshSceneList();
 	}
 });
 
@@ -1885,8 +1893,7 @@ document.addEventListener("closeProject", function(e){
 
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
-	app.removeSearchGroup("Scene");
-	addScenes(proj_path);
+	SceneEditor.refreshSceneList(proj_path);
 
 	app.addSearchKey({
 		key: 'Create scene',

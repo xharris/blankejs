@@ -51,6 +51,7 @@ class Editor {
 
 	close() {
 		this.container.close();
+		if (this.onClose) this.onClose();
 		this.closed = true;
 	}
 

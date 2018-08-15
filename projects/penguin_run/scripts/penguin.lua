@@ -137,12 +137,13 @@ function Penguin:update(dt)
 		best_penguin = self
 	end
 	
-	self:platformerCollide("ground",nil,nil,
+	self:platformerCollide{
+		tag="ground",
 		-- floor collision
-		function()
+		floor=function()
             self.can_jump = MAX_JUMPS 
 		end	
-	)
+	}
 	
 	-- left/right movement
 	if not self.net_object then

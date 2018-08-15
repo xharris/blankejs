@@ -31,10 +31,11 @@ function Player:init()
 	
 	self.platform_hspeed = 0
 	
+	--[[
 	self.rep = Repeater(self,{
 		rate = 30,
 		end_color={1,1,1,0}
-	})
+	})]]
 end
 
 function Player:draw()
@@ -43,7 +44,6 @@ function Player:draw()
 end
 
 function Player:update(dt)
-	Debug.log(self.sprite_width, self.sprite_height)
 	self.rep.spawn_x = self.x - (self.sprite_width / 2)
 	self.rep.spawn_y = self.y - (self.sprite_height / 2)
 	

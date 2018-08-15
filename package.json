@@ -2,6 +2,7 @@
   "name": "blankejs",
   "description": "program graphics",
   "main": "src/index.html",
+  "chromium-args":"--disable-devtools",
   "window": {
     "frame": false,
     "transparent": true,

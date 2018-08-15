@@ -10,12 +10,13 @@ local main_penguin
 function PlayState:enter(previous)
 	wall = nil
 	main_penguin = nil
-	next_lvl_start = {0,0}
 	last_lvl_end = {0,0}
 	penguin_spawn = nil
 	tile_snap = 32
 	
-	levels = Group() 
+	Scene.tile_hitboxes = {"ground"}
+	Scene.hitboxes = {"ground"}
+	
 	loadLevel("spawn")
 
 	igloo_enter_x = penguin_spawn.x - 25
@@ -83,10 +84,10 @@ function PlayState:update(dt)
 	
 	-- load more levels!
 	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) then
-		--
-		local lvl_list = Asset.list('scene','level')
+
+		local lvl_list = Asset.list('scene')
 		local choice = ''
-		repeat choice = table.random(lvl_list) until (choice ~= "spawn")
+		repeat choice = table.random(lvl_list) until (#lvl_list == 1 or choice ~= "spawn")
 		
 		if play_mode == 'local' then
 			loadLevel(choice)
@@ -107,7 +108,7 @@ function PlayState:draw()
 	Draw.rect('fill',0,0,game_width,game_height)
 	
 	-- draw sky
-	Draw.resetColor()
+	Draw.reset('color')
 	bg_sky:tileX()
 
 	-- draw objects
@@ -117,10 +118,10 @@ function PlayState:draw()
 
 		Net.draw('DestructionWall')
 
-		levels:call('draw','layer1')
+		Scene.instances:call('draw','back')
 		Net.draw('Penguin')
 		if main_penguin then main_penguin:draw() end 
-		levels:call('draw','layer0')
+		Scene.instances:call('draw','front')
 		
 		Draw.setColor("red")
 		Draw.setLineWidth(3)
@@ -139,27 +140,14 @@ function PlayState:draw()
 end	
 
 function loadLevel(name)
-	local lvl_scene = Scene('level/'..name)
-	lvl_scene.name_ref = name..levels:size()
+	local lvl_scene = Scene(name)
+	lvl_scene.name_ref = name..Scene.instances:size()
 	
-	-- get level start and end
-	local lvl_start = lvl_scene:getObjects("lvl_start")["layer0"][1]
-	local lvl_end = lvl_scene:getObjects("lvl_end")["layer0"][1]
-	
-	-- if not the first level, offset it
-	local offset = {last_lvl_end[1], last_lvl_end[2]}
-	if name ~= 'spawn' then
-		offset = {
-			last_lvl_end[1] - lvl_start[1],
-			last_lvl_end[2] - lvl_start[2]
-		}
+	-- chain to the last scene
+	if name ~= "spawn" then
+		Scene.instances[-1]:chain(lvl_scene, "lvl_end", "lvl_start")
 	end
-	
-	last_lvl_end = {
-		last_lvl_end[1] + (lvl_end[1] - lvl_start[1]),
-		last_lvl_end[2] + (lvl_end[2] - lvl_start[2])
-	}
-	
+			
 	-- spawn: get 'ready to play' and 'spawn' spot
 	if name == 'spawn' and not main_penguin then
 		main_penguin = Penguin(true)
@@ -167,13 +155,10 @@ function loadLevel(name)
 		penguin_spawn = {x=main_penguin.x-10, y=main_penguin.y}
 		main_penguin:netSync()
 		
-		destruct_ready_x = lvl_scene:getTiles("layer0", "ground_crack")[1].x
+		destruct_ready_x = lvl_scene:getTiles("front", "ground_crack")[1].x
 	end
 	
-	lvl_scene:addHitbox("ground")
-	lvl_scene:translate(offset[1], offset[2])
-	
-	levels:add(lvl_scene)
+	last_lvl_end = {game_width, game_height}
 end
 
 function startDestruction()

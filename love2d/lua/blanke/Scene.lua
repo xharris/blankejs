@@ -207,6 +207,7 @@ local Scene = Class{
 			assert(scene, 'Scene not found: \"'..tostring(asset_name)..'\"')
 			self:load(scene)
 		end
+		self.name = asset_name
 
 		_addGameObject('scene', self)
 	end,
@@ -343,6 +344,7 @@ local Scene = Class{
 	-- {{x, y, image (img_name), crop{x, y, w, h} }}
 	getTiles = function(self, layer_name, img_name)
 		local layer = self:getLayer(layer_name)
+		assert(layer, "no such layer "..layer_name.." in "..self.name)
 		return layer:getTiles(img_name)
 	end,
 

@@ -20,16 +20,13 @@ View = Class{
         self.scale_x = 1
         self.scale_y = 1
 
-        self.onProp = {
-        	zoom = function(self, prop, val)
-        		self.scale_x = val
-        		self.scale_y = val
-				print(self.scale_x, self.scale_y)
-        		return val
-	     	end
-   		}
-
         _addGameObject('view',self)
+	end,
+
+	zoom = function(self, x, y)
+		y = ifndef(y, x)
+		self.scale_x = x
+		self.scale_y = y
 	end,
 
 	follow = function(self, entity)

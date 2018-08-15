@@ -20,7 +20,8 @@ var app = {
 	watch: null,
 	game_window: null,
 	maximized: false,
-	os: null, // win, mac, linux
+	os: null, // win, mac, linux,
+	error_occured: null,
 
 	getElement: function(sel) {
 		return document.querySelector(sel);
@@ -345,6 +346,12 @@ var app = {
 nwWIN.on('loaded', function() {
 	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
 	app.os = os_names[nwOS.type()];
+
+	window.addEventListener("error", function(e){
+		app.error_occured = e;
+	});
+
+
 	app.loadAppData(function(){
 		// Welcome screen
 

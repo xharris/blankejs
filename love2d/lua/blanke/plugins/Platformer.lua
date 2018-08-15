@@ -13,7 +13,7 @@ end
 
 Entity.platformerCollide = function(self, args)
 	local ground_tag = args.tag
-	local ground_contains_tag = args.tag_contains
+	local ground_contains_tag = ifndef(args.tag_contains, '')
 
 	local fn_wall = ifndef(args.wall, function() return true end)
 	local fn_ceil = ifndef(args.ceiling, function() return true end)
