@@ -724,13 +724,15 @@ class SceneEditor extends Editor {
 		this.drawGrid();
 		
 		// tab focus
+		this.has_focus = true;
 		this.addCallback("onTabFocus", function(){
 			this_ref.refreshImageList();
-			console.log('refresh it')
 			this_ref.loadObjectsFromSettings();
+			this_ref.has_focus = true;
 		});
 		this.addCallback("onTabLostFocus", function(){
 			this_ref.export();
+			this_ref.has_focus = false;
 		});
 
 		// tab click
@@ -742,8 +744,8 @@ class SceneEditor extends Editor {
 		this.refreshObjectType();
 
 		document.addEventListener('fileChange', function(e){
-			if (e.detail.type == 'change') {
-				if (this_ref.curr_image)
+			if (e.detail.type == 'change' && this_ref.has_focus) {
+				if (this_ref.curr_image && app.findAssetType(e.detail.file) == "image")
 					this_ref.refreshImageList();
 			}
 		});
@@ -1007,6 +1009,7 @@ class SceneEditor extends Editor {
 			if (stat.isFile() && !stat.name.startsWith(".") && app.findAssetType(stat.name) == 'image') {
 				let full_path = nwPATH.join(path, stat.name);
 				var img_path = nwPATH.relative(app.project_path,full_path).replace(/assets[/\\]/,'');
+
 				app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
 					this_ref.setImage(nwPATH.resolve(full_path), function(img){			
 						// set current image variable

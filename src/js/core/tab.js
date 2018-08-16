@@ -109,8 +109,9 @@ class Tab {
 			app.getElement('#tabs').appendChild(contents[focus_i]);
 			ret_val = true;
 			
-			if (contents[focus_i].this_ref.onTabFocus)
+			if (contents[focus_i].this_ref.onTabFocus) {
 				contents[focus_i].this_ref.onTabFocus();
+			}
 		}
 
 		// remove old tabs
