@@ -560,8 +560,10 @@ class Code extends Editor {
 
 	rename (old_path, new_path) {
 		var this_ref = this;
-		nwFS.readFile(new_path, function(err, data){
-			if (err) { // if there's an error, the file doesn't already exist and therefore renaming can continue
+		nwFS.stat(new_path, function(err, stats){
+			// toLowerCase compensates for case-insensitive filesystems (windows)
+			if (!stats.isFile() || (old_path.toLowerCase() == new_path.toLowerCase())) {
+				// if there's an error, the file doesn't already exist and therefore renaming can continue
 				nwFS.rename(old_path, new_path);
 				this_ref.file = new_path;
 				this_ref.setTitle(nwPATH.basename(this_ref.file));

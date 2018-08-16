@@ -10,7 +10,7 @@ local main_penguin
 function PlayState:enter(previous)
 	wall = nil
 	main_penguin = nil
-	last_lvl_end = {0,0}
+	last_lvl_end = {x=0, y=0}
 	penguin_spawn = nil
 	tile_snap = 32
 	
@@ -83,7 +83,7 @@ function PlayState:update(dt)
 	end
 	
 	-- load more levels!
-	if best_penguin and best_penguin.x > last_lvl_end[1] - (game_width/2) then
+	if best_penguin and best_penguin.x > last_lvl_end.x - (game_width/2) then
 
 		local lvl_list = Asset.list('scene')
 		local choice = ''
@@ -136,6 +136,7 @@ function PlayState:draw()
 	if Net.is_leader then
 		Draw.setColor('yellow')
 		Draw.circle('fill',20,20,50)
+		Draw.reset('color')
 	end
 end	
 
@@ -158,7 +159,7 @@ function loadLevel(name)
 		destruct_ready_x = lvl_scene:getTiles("front", "ground_crack")[1].x
 	end
 	
-	last_lvl_end = {game_width, game_height}
+	last_lvl_end = lvl_scene:getObjects("lvl_end")["back"][1]
 end
 
 function startDestruction()

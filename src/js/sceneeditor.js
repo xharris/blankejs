@@ -621,7 +621,7 @@ class SceneEditor extends Editor {
 			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
 			if (!e.data.originalEvent.ctrlKey || this_ref.obj_type == "object") {
-				if (mx < 0) { mx -= snapx; }
+				if (mx < 0) { mx -= snapx; x -= snapx; }
 				if (my < 0) { my -= snapy; y -= snapy; }
 
 				this_ref.mouse = [
@@ -633,6 +633,7 @@ class SceneEditor extends Editor {
 					y - (my%snapy)
 				]
 
+				if (mx < 0) { mx += snapx/2; x += snapx/2; }
 				if (my < 0) { my += snapy/2; y += snapy/2; }
 				this_ref.half_place_mouse = [
 					x - (mx%(snapx/2)),
@@ -725,6 +726,7 @@ class SceneEditor extends Editor {
 		// tab focus
 		this.addCallback("onTabFocus", function(){
 			this_ref.refreshImageList();
+			console.log('refresh it')
 			this_ref.loadObjectsFromSettings();
 		});
 		this.addCallback("onTabLostFocus", function(){

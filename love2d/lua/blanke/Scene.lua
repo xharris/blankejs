@@ -197,6 +197,7 @@ local Scene = Class{
 		self.layers = {}
 		self.tilesets = {}
 		self.objects = {}
+		self.obj_coord_list = {}
 		self.entities = {}
 		self.obj_uuid_ref = {}
 		self.dont_draw = {}
@@ -270,7 +271,21 @@ local Scene = Class{
 		-- objects (just store their coordinates)
 		self.objects = scene_data.objects
 		for uuid, objs in pairs(scene_data.objects) do
-			self.obj_uuid_ref[BlankE.settings.scene.objects[uuid].name] = uuid
+			local obj_name = BlankE.settings.scene.objects[uuid].name
+			self.obj_uuid_ref[obj_name] = uuid
+
+			-- get object coord list in case user needs to get objects
+			self.obj_coord_list[obj_name] = {}
+			local objects = self.objects[uuid]
+			for l_uuid, obj_list in pairs(objects) do
+				local layer_name = self:getLayerByUUID(l_uuid).name
+				self.obj_coord_list[obj_name][layer_name] = {}
+				for o_uuid, coord in ipairs(obj_list) do
+					table.insert(self.obj_coord_list[obj_name][layer_name], {
+						x = coord[2], y = coord[3]
+					})
+				end
+			end
 		end
 
 		-- hitboxes, tilehitboxes, and entities
@@ -296,14 +311,26 @@ local Scene = Class{
 		for l, layer in ipairs(self.layers) do
 			layer:translate(x, y)
 		end
+		
+		for name, layers in pairs(self.obj_coord_list) do
+			for o, coord in ipairs(layers) do
+				coord.x = coord.x + x
+				coord.y = coord.y + y
+			end
+		end
+
 		return self
 	end,
 
-	getObjects = function(self, name)
+	getObjects = function(self, name, with_uuid)
 		local obj_uuid = self.obj_uuid_ref[name]
 
 		if obj_uuid ~= nil then
-			return self.objects[obj_uuid]
+			if with_uuid then
+				return self.objects[obj_uuid]
+			else
+				return self.obj_coord_list[name]
+			end
 		end
 		return {}
 	end,
@@ -514,7 +541,7 @@ local Scene = Class{
 		local obj_start, obj_end
 
 		-- get end position of previous scene
-		local end_list = self:getObjects(new_end_name)
+		local end_list = self:getObjects(new_end_name, true)
 		if end_list then
 			obj_end = (function()
 				for layer_uuid, coords in pairs(end_list) do
@@ -529,7 +556,7 @@ local Scene = Class{
 		end
 
 		-- get start position of next scene
-		local start_list = next_scene:getObjects(new_start_name)
+		local start_list = next_scene:getObjects(new_start_name, true)
 		if start_list then
 			obj_start = (function()
 				for layer_uuid, coords in pairs(start_list) do
