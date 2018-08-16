@@ -136,8 +136,8 @@ function PlayState:draw()
 	if Net.is_leader then
 		Draw.setColor('yellow')
 		Draw.circle('fill',20,20,50)
-		Draw.reset('color')
 	end
+	Draw.reset('color')
 end	
 
 function loadLevel(name)
@@ -146,7 +146,7 @@ function loadLevel(name)
 	
 	-- chain to the last scene
 	if name ~= "spawn" then
-		Scene.instances[-1]:chain(lvl_scene, "lvl_end", "lvl_start")
+		Scene.instances[-2]:chain(lvl_scene, "lvl_end", "lvl_start")
 	end
 			
 	-- spawn: get 'ready to play' and 'spawn' spot
@@ -156,10 +156,16 @@ function loadLevel(name)
 		penguin_spawn = {x=main_penguin.x-10, y=main_penguin.y}
 		main_penguin:netSync()
 		
-		destruct_ready_x = lvl_scene:getTiles("front", "ground_crack")[1].x
+		local destruct_tile = lvl_scene:getTiles("back", "ground_crack")[1]
+		if descruct_tile then
+			destruct_ready_x = destruct_tile.x
+		end
 	end
 	
-	last_lvl_end = lvl_scene:getObjects("lvl_end")["back"][1]
+	last_lvl_end = {
+		x=lvl_scene.offset_x,
+		y=lvl_scene.offset_y
+	}
 end
 
 function startDestruction()

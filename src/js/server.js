@@ -27,7 +27,7 @@ function refreshServerPopulation() {
 var noobserver = require('net').createServer()
 var sockets = {}  // this is where we store all current client socket connections
 var leaders = {}
-var saved_messages = [];
+var saved_messages = {};
 var cfg = {
 	port: process.env.PORT || 8080,
   buffer_size: 1024 * 16, // buffer allocated per each socket client
@@ -92,8 +92,10 @@ noobserver.on('connection', function (socket) {
 		}));
 
 		// send them saved messages >:)
-		for (var msg of saved_messages) {
-			socket.write(msg);
+		if (saved_messages[socket.channel]) {
+			for (var msg of saved_messages[socket.channel]) {
+				socket.write(msg);
+			}
 		}
 	
 		var subscribers = Object.keys(sockets[socket.channel]);
@@ -127,7 +129,9 @@ noobserver.on('connection', function (socket) {
 
 			// save this message for future clients?
 			if (json.includes('"save"')) {
-				saved_messages.push(str);
+				if (!saved_messages[socket.channel])
+					saved_messages[socket.channel] = [];
+				saved_messages[socket.channel].push(str);
 			}
 
 			str = str.substr(end + 13)  // cut the message and remove the precedant part of the buffer since it can't be processed
@@ -168,7 +172,8 @@ var _destroySocket = function (socket) {
 			leaders[socket.channel] = random_id;
 		} else {
 			// no one left :'(
-			leaders[socket.channel] = null;
+			delete leaders[socket.channel];
+			delete saved_messages[socket.channel];
 			_log(socket.channel,"is empty");
 		}
 	}

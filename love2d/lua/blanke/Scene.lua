@@ -202,6 +202,8 @@ local Scene = Class{
 		self.obj_uuid_ref = {}
 		self.dont_draw = {}
 		self.draw_order = nil
+		self.offset_x = 0
+		self.offset_y = 0
         
 		if asset_name then
 			local scene = Asset.scene(asset_name)
@@ -282,7 +284,7 @@ local Scene = Class{
 				self.obj_coord_list[obj_name][layer_name] = {}
 				for o_uuid, coord in ipairs(obj_list) do
 					table.insert(self.obj_coord_list[obj_name][layer_name], {
-						x = coord[2], y = coord[3]
+						 tag = coord[1], x = coord[2], y = coord[3]
 					})
 				end
 			end
@@ -308,16 +310,20 @@ local Scene = Class{
 	end,
 
 	translate = function(self, x, y)
+		self.offset_x = self.offset_x + x
+		self.offset_y = self.offset_y + y
+
 		for l, layer in ipairs(self.layers) do
 			layer:translate(x, y)
 		end
-		
+
 		for name, layers in pairs(self.obj_coord_list) do
 			for o, coord in ipairs(layers) do
 				coord.x = coord.x + x
 				coord.y = coord.y + y
 			end
 		end
+
 
 		return self
 	end,
@@ -541,13 +547,13 @@ local Scene = Class{
 		local obj_start, obj_end
 
 		-- get end position of previous scene
-		local end_list = self:getObjects(new_end_name, true)
+		local end_list = self:getObjects(new_end_name)
 		if end_list then
 			obj_end = (function()
-				for layer_uuid, coords in pairs(end_list) do
+				for layer_name, coords in pairs(end_list) do
 					for c, coord in ipairs(coords) do
-						if new_end_name..coord[1] == end_name then
-							return {coord[2],coord[3]}
+						if new_end_name..coord.tag == end_name then
+							return {coord.x, coord.y}
 						end
 					end
 				end
@@ -556,13 +562,13 @@ local Scene = Class{
 		end
 
 		-- get start position of next scene
-		local start_list = next_scene:getObjects(new_start_name, true)
+		local start_list = next_scene:getObjects(new_start_name)
 		if start_list then
 			obj_start = (function()
-				for layer_uuid, coords in pairs(start_list) do
+				for layer_name, coords in pairs(start_list) do
 					for c, coord in ipairs(coords) do
-						if new_start_name..coord[1] == start_name then
-							return {coord[2],coord[3]}
+						if new_start_name..coord.tag == start_name then
+							return {coord.x,coord.y}
 						end
 					end
 				end
@@ -572,7 +578,7 @@ local Scene = Class{
 
 		-- connect the scenes
 		if obj_start and obj_end then
-			next_scene:translate(obj_end[1] - obj_start[1], obj_end[2] - obj_start[2])
+			next_scene:translate(obj_end[1] - obj_start[1] + self.offset_x, obj_end[2] - obj_start[2] + self.offset_y)
 		end
 	end,
 }
