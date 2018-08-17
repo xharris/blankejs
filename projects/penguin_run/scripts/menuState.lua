@@ -24,17 +24,16 @@ function MenuState:enter(previous)
 	self.background_color = Draw.black
 	scene_igloo = Scene("igloo")
 	penguin = Penguin(true)
-	
-	scene_igloo:addHitbox("ground")
-	leave_x = scene_igloo:getObjects("penguin_spawn2")["layer0"][1][1]
+		
+	leave_x = scene_igloo:getObjects("spawn.R")["back"][1].x
 	
 	-- position the penguin
 	if previous == "PlayState" then
 		-- penguin walking in from outside
-		scene_igloo:addEntity("penguin_spawn2", penguin, "bottom right")
+		scene_igloo:addEntity("spawn.R", penguin, "bottom right")
 	else
 		-- penguin spawned in igloo
-		scene_igloo:addEntity("penguin_spawn1", penguin, "bottom left")
+		scene_igloo:addEntity("spawn.L", penguin, "bottom left")
 	end
 	
 	-- get menu images
@@ -73,7 +72,7 @@ end
 
 local circle_alpha = {80,80,80}
 function MenuState:draw()
-	scene_igloo:draw("layer0")
+	scene_igloo:draw("back")
 	
 	-- draw menu
 	local penguin_section = 0
@@ -178,7 +177,7 @@ function MenuState:draw()
 	penguin:draw()
 	Draw.reset()
 	
-	scene_igloo:draw("layer1")
+	scene_igloo:draw("front")
 		
 	-- draw outfit
 	img_peng_outline:draw()

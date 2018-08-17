@@ -901,14 +901,14 @@ class SceneEditor extends Editor {
 				];
 			}
 
-			this.coord_text.x = parseInt((this.game_width - center[0]) / 3 + center[0]);
+			this.coord_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
 			this.coord_text.y = parseInt(center[1] + 8);
 			this.coord_text.text = 'x '+this.mouse[0]+' y '+this.mouse[1];
 			if (this.obj_type == "object") {
 				this.coord_text.text = 'x '+this.half_mouse[0]+' y '+this.half_mouse[1];
 			}
 
-			this.obj_info_text.x = parseInt((this.game_width - center[0]) / 3 + center[0]);
+			this.obj_info_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
 			this.obj_info_text.y = parseInt(center[1] + 20);
 			this.obj_info_text.text = Object.values(this.obj_info).join('\n');
 
@@ -1913,11 +1913,8 @@ document.addEventListener("openProject", function(e){
 					var new_scene_editor = new SceneEditor(app)
 					// add some premade objects from previous map
 					new_scene_editor.load(nwPATH.join(map_dir, 'scene'+files.length+'.scene'));
-					for (var o = 0; o < global_objects.length; o++) {
-						new_scene_editor.addObject(global_objects[o]);
-					}
-					new_scene_editor.addLayer();
-					new_scene_editor.refreshObjectList();
+					new_scene_editor.refreshLayerList();
+					new_scene_editor.loadObjectsFromSettings();
 				});
 			});	
 		},

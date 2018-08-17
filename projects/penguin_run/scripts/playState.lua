@@ -5,6 +5,7 @@ game_start_population = 1
 best_penguin = nil
 
 local main_penguin
+local levels
 
 -- Called every time when entering the state.
 function PlayState:enter(previous)
@@ -13,10 +14,8 @@ function PlayState:enter(previous)
 	last_lvl_end = {x=0, y=0}
 	penguin_spawn = nil
 	tile_snap = 32
-	
-	Scene.tile_hitboxes = {"ground"}
-	Scene.hitboxes = {"ground"}
-	
+		
+	levels = Group()
 	loadLevel("spawn")
 
 	igloo_enter_x = penguin_spawn.x - 25
@@ -64,7 +63,7 @@ function PlayState:update(dt)
 
 		-- zoom in on igloo
 		main_view:follow()
-		main_view:moveToPosition(penguin_spawn.x, penguin_spawn.y)
+		main_view:moveTo(penguin_spawn.x, penguin_spawn.y)
 
 		-- transition to menu when zoomed in all the way
 		if not wall then
@@ -87,7 +86,7 @@ function PlayState:update(dt)
 
 		local lvl_list = Asset.list('scene')
 		local choice = ''
-		repeat choice = table.random(lvl_list) until (#lvl_list == 1 or choice ~= "spawn")
+		repeat choice = table.random(lvl_list) until (#lvl_list == 1 or (choice ~= "spawn" and choice ~= "igloo"))
 		
 		if play_mode == 'local' then
 			loadLevel(choice)
@@ -118,10 +117,10 @@ function PlayState:draw()
 
 		Net.draw('DestructionWall')
 
-		Scene.instances:call('draw','back')
+		levels:call('draw','back')
 		Net.draw('Penguin')
 		if main_penguin then main_penguin:draw() end 
-		Scene.instances:call('draw','front')
+		levels:call('draw','front')
 		
 		Draw.setColor("red")
 		Draw.setLineWidth(3)
@@ -142,11 +141,11 @@ end
 
 function loadLevel(name)
 	local lvl_scene = Scene(name)
-	lvl_scene.name_ref = name..Scene.instances:size()
+	lvl_scene.name_ref = name..levels:size()
 	
 	-- chain to the last scene
 	if name ~= "spawn" then
-		Scene.instances[-2]:chain(lvl_scene, "lvl_end", "lvl_start")
+		levels[-1]:chain(lvl_scene, "lvl_end", "lvl_start")
 	end
 			
 	-- spawn: get 'ready to play' and 'spawn' spot
@@ -166,6 +165,8 @@ function loadLevel(name)
 		x=lvl_scene.offset_x,
 		y=lvl_scene.offset_y
 	}
+	
+	levels:add(lvl_scene)
 end
 
 function startDestruction()

@@ -328,14 +328,38 @@ local Scene = Class{
 		return self
 	end,
 
-	getObjects = function(self, name, with_uuid)
+	_splitNameTag = function(self, obj_name)
+		return unpack(obj_name:split("."))
+	end,
+
+	_list_cache = {},
+	getObjects = function(self, obj_name, with_uuid)
+		local name, tag = self:_splitNameTag(obj_name)
 		local obj_uuid = self.obj_uuid_ref[name]
 
 		if obj_uuid ~= nil then
 			if with_uuid then
 				return self.objects[obj_uuid]
 			else
-				return self.obj_coord_list[name]
+				-- if there is a tag, only return objects with the included tag
+				if tag then
+					if not self._list_cache[obj_name] then
+						local ret_list = {}
+						for l_name, layers in pairs(self.obj_coord_list[name]) do
+							ret_list[l_name] = {}
+							for o, coord in ipairs(layers) do
+								if coord.tag == tag then
+									table.insert(ret_list[l_name], coord)
+								end
+							end
+						end
+						self._list_cache[obj_name] = ret_list
+					end
+					
+					return self._list_cache[obj_name]
+				else
+					return self.obj_coord_list[name]
+				end
 			end
 		end
 		return {}
@@ -451,11 +475,12 @@ local Scene = Class{
 	-- returns table of created entities
 	addEntity = function(self, obj_name, ent_class, align) 
 		local instances = Group()
+		local name, tag = self:_splitNameTag(obj_name)
 
-		local object_uuid = self.obj_uuid_ref[obj_name]
+		local object_uuid = self.obj_uuid_ref[name]
 		if object_uuid then
 
-			local object = self:getObjectInfo(obj_name)
+			local object = self:getObjectInfo(name)
 			for layer_uuid, polygons in pairs(self.objects[object_uuid]) do
 				local layer = self:getLayerByUUID(layer_uuid)
 				for p, polygon in ipairs(polygons) do
@@ -463,7 +488,7 @@ local Scene = Class{
 
 					-- give entity information from scene
 					function applyInfo(obj)	
-						obj.scene_name = obj_name
+						obj.scene_name = name
 						obj.scene_tag = table.remove(points, 1)
 						obj.scene_size = object.size
 						obj.scene_rect = {0,0,0,0}
@@ -498,42 +523,44 @@ local Scene = Class{
 						obj.scene_points = new_polygon
 					end
 
-					local new_entity
-					if ent_class.is_instance then 	-- arg is an already made entity
-						new_entity = ent_class
-						applyInfo(new_entity)
-					else							-- arg is a class that needs to be instantiated
-						ent_class._init_properties = {}
-						applyInfo(ent_class._init_properties)
-						new_entity = ent_class()
-					end
+					if not tag or tag == points[1] then
+						local new_entity
+						if ent_class.is_instance then 	-- arg is an already made entity
+							new_entity = ent_class
+							applyInfo(new_entity)
+						else							-- arg is a class that needs to be instantiated
+							ent_class._init_properties = {}
+							applyInfo(ent_class._init_properties)
+							new_entity = ent_class()
+						end
 
-					if align then
-						local rect = new_entity.scene_rect
-						if align:contains("center") then
-							new_entity.x = new_entity.x + (rect[3]/2) - (new_entity.sprite_width/2)
-							new_entity.y = new_entity.y + (rect[4]/2) - (new_entity.sprite_height/2)
+						if align then
+							local rect = new_entity.scene_rect
+							if align:contains("center") then
+								new_entity.x = new_entity.x + (rect[3]/2) - (new_entity.sprite_width/2)
+								new_entity.y = new_entity.y + (rect[4]/2) - (new_entity.sprite_height/2)
+							end
+							if align:contains("top") then
+								new_entity.y = new_entity.y
+							end
+							if align:contains("bottom") then
+								new_entity.y = new_entity.y + rect[4] - new_entity.sprite_height
+							end
+							if align:contains("left") then
+								new_entity.x = new_entity.x
+							end
+							if align:contains("right") then
+								new_entity.x = new_entity.x + rect[3] - new_entity.sprite_width
+							end
 						end
-						if align:contains("top") then
-							new_entity.y = new_entity.y
-						end
-						if align:contains("bottom") then
-							new_entity.y = new_entity.y + rect[4] - new_entity.sprite_height
-						end
-						if align:contains("left") then
-							new_entity.x = new_entity.x
-						end
-						if align:contains("right") then
-							new_entity.x = new_entity.x + rect[3] - new_entity.sprite_width
-						end
-					end
 
-					layer:addEntity(new_entity)
-					instances:add(new_entity)
+						layer:addEntity(new_entity)
+						instances:add(new_entity)
+					end
 				end
 			end
 
-			self.entities[obj_name] = instances
+			self.entities[name] = instances
 		end
 		return instances
 	end,

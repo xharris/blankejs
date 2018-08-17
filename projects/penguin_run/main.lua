@@ -9,12 +9,16 @@ function love.load()
 	Asset.add('maps/')
 	Asset.add('scenes/')
 	Asset.add('scripts/')
+	
+	Scene.tile_hitboxes = {"ground"}
+	Scene.hitboxes = {"ground"}
 
+	-- TODO: remove?
 	UI.color('window_bg', Draw.baby_blue)
 	UI.color('window_outline', Draw.blue)
 	UI.color('element_bg', Draw.dark_blue)
 
-  	BlankE.init('PlayState')
+  	BlankE.init('MenuState')
 
 	Input.set('menu_up', 'w', 'up')
 	Input.set('menu_down', 's', 'down')

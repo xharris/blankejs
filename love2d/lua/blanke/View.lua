@@ -14,7 +14,7 @@ View = Class{
         -- ways for camera to move towards x,y
         self.move_type = 'snap'
         -- lockX
-        self.lock_x = 0
+        self.lock_rect = {0,0,game_width,game_height}
 
         self.angle = 0
         self.scale_x = 1
@@ -23,20 +23,30 @@ View = Class{
         _addGameObject('view',self)
 	end,
 
-	zoom = function(self, x, y)
+	zoom = function(self, x, y, cb_finish)
 		y = ifndef(y, x)
 		self.scale_x = x
 		self.scale_y = y
+
+		if cb_finish then cb_finish() end
 	end,
 
 	follow = function(self, entity)
 		self.follow_entity = entity
 	end,
 
+	moveTo = function(self, x, y)
+		self.follow_entity = nil
+
+	end,
+
 	update = function(self, dt)
 		local follow_x, follow_y = 0, 0
+
 		if self.follow_entity then
 			follow_x, follow_y = self.follow_entity.x, self.follow_entity.y
+		else
+			follow_x, follow_y = self.x, self.y
 		end
 
 		local target_x = follow_x + self.offset_x
