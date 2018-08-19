@@ -6,9 +6,6 @@ function love.load()
 	
 	Asset.add('assets/hats/','hat')
 	Asset.add('assets/image/')
-	Asset.add('maps/')
-	Asset.add('scenes/')
-	Asset.add('scripts/')
 	
 	Scene.tile_hitboxes = {"ground"}
 	Scene.hitboxes = {"ground"}

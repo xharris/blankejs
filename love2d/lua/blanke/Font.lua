@@ -3,7 +3,7 @@ Font = Class{
 	init = function(self, options)
 		self.options = {
 			name = "console.ttf",
-			size = 22,
+			size = 12,
 			align = "left",
 			limit = -1
 		}

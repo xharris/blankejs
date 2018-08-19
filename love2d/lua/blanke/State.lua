@@ -20,7 +20,7 @@ local drawStateNormal = function(state)
 		Draw.rect('fill', 0,0,game_width,game_height)
 		Draw.reset("color")
 	end
-	if state.draw then state:draw() end
+	if state.draw then Draw.stack(function() state:draw() end) end
 end
 
 StateManager = {

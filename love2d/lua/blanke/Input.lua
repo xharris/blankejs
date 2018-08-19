@@ -75,22 +75,28 @@ _Input = Class{
     _isOn = function(self)
         if not self.can_repeat and self.pressed then return false end
 
+        local ret_val = {}
+
         for input, val in pairs(self.in_key) do
-            if val == true then self.pressed = true; return true end
+            if val == true then self.pressed = true; table.insert(ret_val, input) end
         end
         
         for input, val in pairs(self.in_mouse) do
             if input:starts("wheel") and val ~= 0 then
                 self.in_mouse[input] = 0
                 return val
-            elseif val == true then self.pressed = true; return true end
+            elseif val == true then self.pressed = true; table.insert(ret_val, input) end
         end
         
         for input, val in pairs(self.in_region) do
             if val == true then self.pressed = true; return true end
         end
 
-        return false
+        if #ret_val == 0 then
+            return false
+        else
+            return ret_val
+        end
     end,
     
     __call = function(self)
@@ -184,9 +190,7 @@ Input = {
             local ret_val = false
             local args = {...}
             for a, arg in pairs(args) do
-                if Input.keys[arg]() then
-                    ret_val = true
-                end
+                ret_val = Input.keys[arg]()
             end
             return ret_val
         end

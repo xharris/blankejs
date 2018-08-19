@@ -5,9 +5,6 @@ BlankE = require('blanke.Blanke')
 function love.load()
 	Window.setResolution(1)
 	
-	Asset.add('scripts')
-	Asset.add('assets')
-	Asset.add('scenes')
 	
 	Input.set('move_left', 'left','a')
 	Input.set('move_right', 'right','d')

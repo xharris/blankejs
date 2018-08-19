@@ -160,6 +160,14 @@ Draw = Class{
     	love.graphics.pop()
     end,
 
+    grid = function(rows, columns, h_spacing, v_spacing, func)
+    	for x = 0, columns - 1 do
+    		for y = 0, rows - 1 do
+    			func(x * h_spacing, y * v_spacing, x+1, y+1)
+    		end
+    	end
+    end,
+
     setFont = function(new_font)
     	if type(new_font) == "string" and Asset.has('font', new_font) then
     		Draw.font = Asset.get('font', new_font)

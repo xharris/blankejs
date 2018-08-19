@@ -34,12 +34,26 @@ Asset = Class{
 		return ret_table
 	end,
 
-	add = function(path, prefix)
+	isPathAdded = function(path, prefix)
+		if not prefix then
+			return Asset.paths_used[path]
+		else
+			return Asset.paths_used[path..prefix]
+		end
+	end,
+
+	add = function(path, prefix, no_duplicate)
 		path = cleanPath(path)
 
 		-- TODO: not working as intended (for efficiency)
 		-- if table.hasValue(Asset.paths_used, path) then return end
-		-- table.insert(Asset.paths_used, path)
+		if no_duplicate and Asset.isPathAdded(path, prefix) then return end
+
+		if not prefix then
+			Asset.paths_used[path] = true
+		else
+			Asset.paths_used[path..prefix] = true
+		end
 
 		-- FOLDER
 		local file_info = love.filesystem.getInfo(path)

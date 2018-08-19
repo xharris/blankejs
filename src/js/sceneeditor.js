@@ -1669,9 +1669,9 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	setLayer (name) {
+	setLayer (name, is_uuid) {
 		for (var l = 0; l < this.layers.length; l++) {
-			if (this.layers[l].name == name) {
+			if ((is_uuid && this.layers[l].uuid == name) || this.layers[l].name == name) {
 				this.curr_layer = this.layers[l];
 				this.el_layer_form.setValue('name', this.curr_layer.name);
 				this.el_layer_form.setValue('snap', this.curr_layer.snap[0], 0);
@@ -1739,7 +1739,7 @@ class SceneEditor extends Editor {
 				this.setObject(obj.name);
 
 				for (var layer_name in data.objects[obj.uuid]) {
-					this.setLayer(layer_name);
+					this.setLayer(layer_name, true);
 					for (var c = 0; c < data.objects[obj.uuid][layer_name].length; c++) {
 						let obj_points = data.objects[obj.uuid][layer_name][c];
 						this.placeObject(obj_points.slice(1), obj_points[0]);
