@@ -171,8 +171,8 @@ BlankE = {
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 
-		Asset.add('scripts', nil, true)
 		Asset.add('assets', nil, true)
+		Asset.add('scripts', nil, true)
 		Asset.add('scenes', nil, true)
 		Asset.loadScripts()
 

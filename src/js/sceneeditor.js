@@ -1709,7 +1709,7 @@ class SceneEditor extends Editor {
 			// images
 			let this_ref = this;
 			data.images.forEach(function(img, i){
-				var full_path = nwPATH.normalize(nwPATH.resolve(app.project_path,img.path));
+				var full_path = nwPATH.normalize(nwPATH.join(app.project_path,img.path));
 				this_ref.images.push({
 					path: app.cleanPath(full_path),
 					snap: img.snap,
@@ -1816,8 +1816,17 @@ class SceneEditor extends Editor {
 		}
 
 		//images
+		let re_img_path = /.*(assets\/.*)/g;
 		for (let obj of this.images) {
-			let img_path = app.cleanPath(nwPATH.relative(app.project_path,obj.path));
+			let orig_path = app.cleanPath(nwPATH.relative(app.project_path,obj.path))
+			let img_path = re_img_path.exec(orig_path);
+
+			if (img_path) {
+				img_path = img_path[1];
+			} else {
+				img_path = orig_path;
+			}
+			
 			let exp_img = {
 				path: img_path,
 				snap: obj.snap,

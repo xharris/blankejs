@@ -5,7 +5,6 @@ function love.load()
 	BlankE.loadPlugin('Platformer')
 	
 	Asset.add('assets/hats/','hat')
-	Asset.add('assets/image/')
 	
 	Scene.tile_hitboxes = {"ground"}
 	Scene.hitboxes = {"ground"}

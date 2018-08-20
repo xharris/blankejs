@@ -122,6 +122,9 @@ Asset = Class{
 
 	get = function(category, name)
 		if Asset.has(category, name) then
+			if not Asset.info[category][name] then
+				name = Asset.getNameFromPath(category, name)
+			end
 			return Asset.info[category][name].object
 		end
 	end,
