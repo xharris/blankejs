@@ -477,8 +477,8 @@ BlankE = {
 
 	drawToScale = function(func)
 		Draw.push()
-		Draw.scale(BlankE.scale_x, BlankE.scale_y)
-		Draw.translate(BlankE._offset_x, BlankE._offset_y)	
+		--Draw.scale(BlankE.scale_x, BlankE.scale_y)
+		--Draw.translate(BlankE._offset_x, BlankE._offset_y)	
 
 		func()
 
@@ -502,9 +502,7 @@ BlankE = {
 			StateManager.iterateStateStack('draw')
 		end)
 
-		BlankE.drawToScale(function()
-			BlankE.game_canvas:draw(0, 0, 0, 1, 1)
-		end)
+		BlankE.game_canvas:draw(BlankE._offset_x * BlankE.scale_x, BlankE._offset_y * BlankE.scale_y, 0, BlankE.scale_x, BlankE.scale_y)
 		
 		if BlankE.draw_debug then Debug.draw() end
 

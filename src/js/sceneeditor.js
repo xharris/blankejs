@@ -480,17 +480,19 @@ class SceneEditor extends Editor {
 
 		function deleteTile(x,y) {
 			for (let s in this_ref.curr_image.pixi_images) {
-                let sprite = this_ref.curr_image.pixi_images[s].sprite;
-                let rect = sprite.getBounds();
-                rect.x -= this_ref.camera[0];
-                rect.y -= this_ref.camera[1];
-                if (rect.contains(x,y)) {
-                    sprite.destroy();
-                    delete this_ref.curr_image.pixi_images[s];
-                    this_ref.redrawTiles();
+				if (this_ref.curr_image.pixi_images[s].layer_name == this_ref.curr_layer.name) {
+	                let sprite = this_ref.curr_image.pixi_images[s].sprite;
+	                let rect = sprite.getBounds();
+	                rect.x -= this_ref.camera[0];
+	                rect.y -= this_ref.camera[1];
+	                if (rect.contains(x,y)) {
+	                    sprite.destroy();
+	                    delete this_ref.curr_image.pixi_images[s];
+	                    this_ref.redrawTiles();
 
-                    this_ref.export();
-                }
+	                    this_ref.export();
+	                }
+	            }
             }
 		}
 
@@ -522,7 +524,7 @@ class SceneEditor extends Editor {
 					}
 				}
 
-				// removing object
+				// removing object/tile
 				if (btn == 2) {
 					if (this_ref.obj_type == 'object') {
 						this_ref.removeObjectPoint();

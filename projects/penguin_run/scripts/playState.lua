@@ -100,7 +100,6 @@ function PlayState:update(dt)
 	end
 end
 
-local spawn_wall_count = 0
 function PlayState:draw()
 	-- draw water
 	Draw.setColor(water_color)
@@ -121,22 +120,12 @@ function PlayState:draw()
 		Net.draw('Penguin')
 		if main_penguin then main_penguin:draw() end 
 		levels:call('draw','front')
-		
-		Draw.setColor("red")
-		Draw.setLineWidth(3)
-		Draw.line(penguin_spawn.x, 0, penguin_spawn.x, game_height)	
 	end)
 	
 	local ready = ''
 	if main_penguin.x > destruct_ready_x then ready = '\nREADY!' end
 	Draw.setColor('black')
 	Draw.text(tostring(Net.getPopulation())..' / '..tostring(game_start_population)..ready, game_width/2, 50)
-	
-	if Net.is_leader then
-		Draw.setColor('yellow')
-		Draw.circle('fill',20,20,50)
-	end
-	Draw.reset('color')
 end	
 
 function loadLevel(name)
@@ -180,6 +169,8 @@ Net.on('ready', function()
 	Net.addObject(main_penguin)
 end)
 
+local last_total_population = 0
+local pop_refresh_timer = Timer(10)
 Net.on('event', function(data)
 	if data.event == "spawn_wall" then
 		spawn_wall_count = spawn_wall_count + 1
@@ -187,8 +178,15 @@ Net.on('event', function(data)
 		if spawn_wall_count >= Net.getPopulation() then
 			startDestruction()
 		end
+	end
 		
-	elseif data.event == "load_level" then
+	if data.event == "load_level" then
 		loadLevel(data.info)
+	end
+		
+	if data.event == "client.connect" then
+		pop_refresh_timer:reset()
+		pop_refresh_timer:start()
+			
 	end
 end)

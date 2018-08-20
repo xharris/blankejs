@@ -51,7 +51,7 @@ function Penguin:init(is_main_player)
 	self.sprite_yoffset = -16
 	self.sprite_xoffset = -16
 
-	self:addPlatforming(0, 5, 15, 26)
+	self:addPlatforming(0, 4, 15, 26)
 
 	self.eyes = 1
 	self.sprite['eyes'].speed = 0
@@ -60,7 +60,6 @@ function Penguin:init(is_main_player)
 		self:setColor(self:getColor())
 		self:setHat(Penguin.main_penguin_info.hat)
 	end
-	self.show_debug = true
 end
 
 function Penguin:getColor()
@@ -206,7 +205,7 @@ function Penguin:draw()
 	self:drawSprite('walk_fill')
 
 	local eyes_y_offset = 0
-	if self.sprite_speed > 0 and self.sprite_frame == 2 then
+	if (self.sprite_speed > 0 and self.sprite_frame == 2) or self.vspeed ~= 0 then
 		eyes_y_offset = -1
 	end
 	self.sprite['eyes'].yoffset = eyes_y_offset

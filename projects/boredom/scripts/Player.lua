@@ -12,6 +12,8 @@ function Player:init()
 		frame_size = {21, 33},
 		speed = 0.2
 	}
+	self.sprite["walk"].yoffset = -1
+	
 	self:addAnimation{
 		name = "dead",
 		image = "player_dead"
@@ -39,13 +41,13 @@ function Player:init()
 end
 
 function Player:draw()
-	self.rep:draw()
+	--self.rep:draw()
 	self:drawSprite()
 end
 
 function Player:update(dt)
-	self.rep.spawn_x = self.x - (self.sprite_width / 2)
-	self.rep.spawn_y = self.y - (self.sprite_height / 2)
+	--self.rep.spawn_x = self.x - (self.sprite_width / 2)
+	--self.rep.spawn_y = self.y - (self.sprite_height / 2)
 	
 	self.hspeed = self.platform_hspeed
 	

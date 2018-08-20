@@ -145,8 +145,8 @@ var app = {
 
 	play: function() { 
 		let love_path = {
-			'win': nwPATH.join('love2d','love.exe'),
-			'mac': nwPATH.resolve(nwPATH.join('love2d','love.app','Contents','MacOS','love'))
+			'win': nwPATH.join(app.settings.engine_path,'love.exe'),
+			'mac': nwPATH.resolve(nwPATH.join(app.settings.engine_path,'love.app','Contents','MacOS','love'))
 		};
 		let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)]);
 		let console_window = new Console(app, child);
@@ -246,9 +246,8 @@ var app = {
 		app.search_funcs[hash] = null;
 		app.search_args[hash] = null;
 	},
-	settings: {
-		'recent_files':[]
-	},
+
+	settings: {},
 	getAppDataFolder: function(){
 		return env.APPDATA || (app.os == 'mac' ? nwPATH.join(env.HOME, 'Library/Preferences') : '/var/local');
 	},
@@ -259,6 +258,10 @@ var app = {
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
 			if (!err) {
 				app.settings = JSON.parse(data);
+				ifndef_obj(app.settings, {
+					recent_files:[],
+					engine_path:'love2d'
+				});
 			}
 			if (callback) callback();
 		});
@@ -291,7 +294,7 @@ var app = {
 	},
 	saveSettings: function(){
 		if (app.isProjectOpen()) {
-			nwFS.writeFile(nwPATH.join(app.project_path,"config.json"), JSON.stringify(app.project_settings));
+			nwFS.writeFile(nwPATH.join(app.project_path,"config.json"), JSON.stringify(app.project_settings, null, 4));
 		}
 	},
 

@@ -348,7 +348,6 @@ local Scene = Class{
 						for l_name, layers in pairs(self.obj_coord_list[name]) do
 							ret_list[l_name] = {}
 							for o, coord in ipairs(layers) do
-								Debug.log(l_name, name, tag, coord.tag)
 								if coord.tag == tag then
 									table.insert(ret_list[l_name], coord)
 								end

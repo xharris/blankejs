@@ -3,7 +3,7 @@
 BlankE = require('blanke.Blanke')
 
 function love.load()
-	Window.setResolution(1)
+	Window.setResolution(2)
 	
 	
 	Input.set('move_left', 'left','a')
