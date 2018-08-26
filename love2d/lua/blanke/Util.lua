@@ -58,6 +58,7 @@ function ifndef(var_check, default)
 	return default
 end
 
+-- both inclusive
 function randRange(n1, n2)
 	return love.math.random(n1, n2)
 end

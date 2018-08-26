@@ -6,13 +6,19 @@ Debug = {
     _duplicate_line = '',
     
     draw = function()
-        for i_line, line in ipairs(Debug.lines) do
+        local fnt_height = Debug._font:getHeight()
+        local win_height = love.graphics:getHeight()
+        local lines = math.min(game_height / fnt_height, #Debug.lines)
+
+        for i_line = 1, lines do
+            line = Debug.lines[i_line]
+
             love.graphics.push()
             local alpha = 255
-            local y = BlankE.top + (i_line-1)*Debug._font:getHeight()
-            if y > love.graphics:getHeight()/2 then
-                alpha = 255 - ((y-love.graphics:getHeight()/2)/(love.graphics:getHeight()/2)*255)
-            end
+            local y = BlankE.top + (i_line-1)*fnt_height
+            if y > win_height/2 then
+                alpha = 255 - ((y-win_height/2)/(win_height/2)*255)
+            end 
             love.graphics.setColor(255,0,0,alpha)
             love.graphics.setFont(Debug._font)
             love.graphics.print(line, BlankE.left + Debug.margin, y+Debug.margin)
@@ -49,6 +55,9 @@ Debug = {
             Debug._duplicate_line = ''
             
             table.insert(Debug.lines, 1, new_line)
+            if #Debug.lines > (game_height / Debug._font:getHeight()) then
+                table.remove(Debug.lines, #Debug.lines)
+            end
         end
         print(new_line)
         return Debug

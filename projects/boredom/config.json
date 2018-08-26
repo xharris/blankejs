@@ -140,6 +140,16 @@
                     32
                 ],
                 "uuid": "41ea8fda"
+            },
+            "882bbb6a": {
+                "name": "boss1_stopper",
+                "char": "E",
+                "color": "#ff8080",
+                "size": [
+                    16,
+                    32
+                ],
+                "uuid": "882bbb6a"
             }
         }
     }

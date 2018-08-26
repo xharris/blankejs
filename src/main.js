@@ -260,7 +260,8 @@ var app = {
 				app.settings = JSON.parse(data);
 				ifndef_obj(app.settings, {
 					recent_files:[],
-					engine_path:'love2d'
+					engine_path:'love2d',
+					autocomplete_path:'./autocomplete.js'
 				});
 			}
 			if (callback) callback();

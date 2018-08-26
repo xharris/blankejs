@@ -30,7 +30,8 @@ module.exports.instance_regex = {
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
 	'group': 	/\b((?:self.|self:)?\w+)\s*=\s*Group\(\).*/g,
-	'bezier': 	/\b((?:self.|self:)?\w+)\s*=\s*Bezier\([\d.,]*\).*/g
+	'bezier': 	/\b((?:self.|self:)?\w+)\s*=\s*Bezier\([\d.,]*\).*/g,
+	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g
 }
 
 // how to treat use of the 'self' keyword when used inside a callback
@@ -219,5 +220,15 @@ module.exports.completions = {
 		{fn:"chain",vars:{ next_scene:"Scene object", end_object:"ending object of previous scene", start_object:"starting object of next scene"}},
 		{fn:"translate",vars:{ x:"", y:"" }},
 		{fn:"draw"}
+	],
+	"blanke-timer-instance":[
+		{prop:"time", info:"seconds passed after starting"},
+		{prop:"duration", info:"timer duration (sec)"},
+		{prop:"countdown", info:"read-only version of [time] except counts backwards"},
+		{fn:"start"},
+		{fn:"before", vars:{ func:'', delay:'optional' }},
+		{fn:"every", vars:{ func:'', delay:'optional' }},
+		{fn:"after", vars:{ func:'', delay:'optional' }},
+		{fn:"reset"}
 	]
 }

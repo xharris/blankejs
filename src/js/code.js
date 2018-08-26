@@ -6,8 +6,8 @@ var object_instances = {};
 var autocomplete, re_class, re_class_list, re_class_and_instance, hints, re_instance, callbacks;
 
 function reloadCompletions() {
-	delete require.cache[require.resolve('./autocomplete.js')];
-	autocomplete = require('./autocomplete.js');
+	delete require.cache[require.resolve(app.settings.autocomplete_path)];
+	autocomplete = require(app.settings.autocomplete_path);
 
 	re_class = autocomplete.class_regex;
 	re_class_list = null;

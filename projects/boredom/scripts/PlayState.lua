@@ -9,7 +9,7 @@ function PlayState:enter(prev)
 	
 	-- hitboxes
 	Scene.tile_hitboxes = {"ground"}
-	Scene.hitboxes = {"ground", "player_die", "spike_blockStop"}
+	Scene.hitboxes = {"ground", "player_die", "spike_blockStop", "boss1_stopper"}
 	Scene.entities = {
 		{"moving_block", MovingBlock},
 		{"spike_block", SpikeBlock},
