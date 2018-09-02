@@ -4,7 +4,7 @@ function blanke_require(import)
 	return require(blanke_path..import)
 end
 
-love.graphics.setDefaultFilter("nearest","nearest")
+--love.graphics.setDefaultFilter("nearest","nearest")
 
 blanke_require('Globals')
 blanke_require('Util')
@@ -133,7 +133,6 @@ BlankE = {
 	draw_debug = false,
 
 	-- window scaling
-	scale_mode = 'scale',
 	left = 0,
 	top = 0,
 	right = 0,

@@ -646,7 +646,7 @@ document.addEventListener("openProject", function(e){
 	
 	reloadCompletions();
 	// reload completions on file change
-	nwFS.watchFile('src/autocomplete.js', function(e){
+	nwFS.watchFile(app.settings.autocomplete_path, function(e){
 		reloadCompletions();
 		blanke.toast("autocomplete reloaded!");
 	});

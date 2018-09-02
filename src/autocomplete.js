@@ -5,7 +5,7 @@ let color_vars = {
 	a:'optional alpha'
 }
 
-module.exports.class_list = ['Net','Group','Draw','BlankE','Asset','Input','Image','Scene','Bezier'];
+module.exports.class_list = ['Net','Group','Draw','BlankE','Asset','Input','Image','Scene','Bezier','Window'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -230,5 +230,11 @@ module.exports.completions = {
 		{fn:"every", vars:{ func:'', delay:'optional' }},
 		{fn:"after", vars:{ func:'', delay:'optional' }},
 		{fn:"reset"}
+	],
+	"blanke-window":[
+		{prop:"aspect_ratio", info:"table. default: {4,3}"},
+		{prop:"scale_mode", info:"scale, stretch, fit, center"},
+		{fn:"getResolution"},
+		{fn:"setResolution", vars:{ w:'', h:'' }, info:"uses predefined ratio if only 'w' is given"}
 	]
 }

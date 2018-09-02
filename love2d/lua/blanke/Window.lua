@@ -1,6 +1,7 @@
 Window = {
 	aspect_ratio = {4,3},
 	resolution = 1,
+	scale_mode = 'scale',
 
 	aspect_ratios = { {4,3},{16,10},{16,9} },
 	resolutions = { 640, 800, 960, 1024, 1280, 1400, 1440, 1600, 1856, 1920, 2048 },

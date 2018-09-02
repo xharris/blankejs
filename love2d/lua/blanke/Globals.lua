@@ -23,7 +23,7 @@ function updateGlobals(dt)
 
 	if not BlankE then return end
 
-	if BlankE.scale_mode == 'stretch' then
+	if Window.scale_mode == 'stretch' then
 		BlankE.scale_x = x_scale
 		BlankE.scale_y = y_scale
 		BlankE.left = 0
@@ -32,7 +32,7 @@ function updateGlobals(dt)
 	end
 
 	-- TODO: doesn't work if window is greater than desired width/height
-	if BlankE.scale_mode == 'scale' then
+	if Window.scale_mode == 'scale' then
 		local scale = (math.min(x_scale, y_scale))
 		new_width, new_height = width / x_scale, height / y_scale
 
@@ -48,7 +48,7 @@ function updateGlobals(dt)
 	end
 
 	-- not working yet
-	if BlankE.scale_mode == 'fit' then
+	if Window.scale_mode == 'fit' then
 		local scale = (math.max(x_scale, y_scale))
 		new_width, new_height = width / x_scale, height / y_scale
 
@@ -63,7 +63,7 @@ function updateGlobals(dt)
 		end
 	end
 
-	if BlankE.scale_mode == 'center' then
+	if Window.scale_mode == 'center' then
 		BlankE.scale_x = 1
 		BlankE.scale_y = 1
 	end

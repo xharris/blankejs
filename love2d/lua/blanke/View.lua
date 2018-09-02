@@ -54,17 +54,17 @@ View = Class{
 
 		-- do transitional tween stuff
 
-		self.x = target_x
-		self.y = target_y
+		self.x = math.floor(target_x)
+		self.y = math.floor(target_y)
 	end,
 
 	attach = function(self)
-		local half_w, half_h = self.port_width/2, self.port_height/2
+		local half_w, half_h = math.floor(self.port_width/2), math.floor(self.port_height/2)
 		Draw.push('all')
-		Draw.translate(math.floor(half_w), math.floor(half_h))
+		Draw.translate(half_w, half_h)
 		Draw.scale(self.scale_x, self.scale_y)
 		Draw.rotate(self.angle)
-		Draw.translate(-math.floor(self.x), -math.floor(self.y))
+		Draw.translate(-self.x, -self.y)
 	end,
 
 	detach = function(self)

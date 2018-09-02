@@ -62,6 +62,14 @@ function Boss1:init()
 		color={1,0,0,1},
 		end_color={1,1,1,0}
 	})
+	
+	-- stage timer
+	self.main_timer:after(function()
+			Debug.log("hi")
+		if self.stage == 1 then
+			self.stage = 2	
+		end
+	end)
 end
 
 function Boss1:update(dt)
@@ -85,13 +93,8 @@ function Boss1:update(dt)
 end
 
 function Boss1:draw()
-	self:drawSprite()
+	self.run_blur:draw()
 	
-	self.main_timer:after(function()
-		if self.stage == 1 then
-			self.stage = 2	
-		end
-	end)
 		
 	-- stage 0: draw Z's
 	if self.stage == 0 then
@@ -109,4 +112,6 @@ function Boss1:draw()
 		self.hspeed = -5
 		
 	end
+	
+	self:drawSprite()
 end

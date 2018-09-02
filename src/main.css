@@ -2146,6 +2146,9 @@ body:after {
   padding: 5px;
   color: #FAFAFA;
 }
+.blankejs-toasts .toast-container .content a {
+  color: #64DD17;
+}
 .crosshair {
   position: absolute;
   pointer-events: none;
