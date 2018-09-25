@@ -5,5 +5,5 @@ function love.load()
 	BlankE.draw_debug = true
 	
 	Asset.add('scripts')
-	BlankE.init("StateOne")
+	BlankE.init("MainState")
 end

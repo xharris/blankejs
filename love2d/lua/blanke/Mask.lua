@@ -1,16 +1,18 @@
 Mask = Class{
-	init = function(self, func, mask_type)
-		self.func = func
+	init = function(self, mask_type, func)
+		self.fn = func
 		self.mask_type = mask_type
 		self.mask_val = 1
 	end,
 
-	enable = function(self)
-		love.graphics.stencil(self.func, self.mask_type, self.mask_val)
-		love.graphics.setStencilTest("greater", 0)
+	on = function(self)
+		if self.fn then
+			love.graphics.stencil(self.fn, self.mask_type, self.mask_val)
+			love.graphics.setStencilTest("greater", 0)
+		end
 	end,
 
-	disable = function(self)
+	off = function(self)
 		love.graphics.setStencilTest()
 	end,
 }

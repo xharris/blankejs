@@ -37,13 +37,24 @@ class Editor {
 		// create tab
 		this.container = new Tab(this.constructor.name);
 		this.container.appendChild(this.content_area);
-		this.container.tab.oncontextmenu = function(e) {
+		
+		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
-		}
+		});
 		this.container.onClose = this.onClose;
 	}
 
-	// Tab ONLY
+	setupFibWindow() {
+		var this_ref = this;
+		this.container_type = "fibwindow";
+		this.container = new FibWindow(this.constructor.name);
+		this.conainter.appendChild(this.content_area);
+		this.container.btn_menu.onclick = function(e) {
+			this_ref.onMenuClick(e);
+		}
+	}
+
+	// Tab ONLY	
 	setOnClick() {
 		if (this.container_type == 'tab')
 			this.container.setOnClick.apply(this.container, arguments);

@@ -2024,26 +2024,26 @@ body:after {
   border-left-width: 2px;
   border-left-color: white;
 }
-#tabs {
+#history {
   -webkit-app-region: no-drag;
   display: inline-block;
 }
-#tabs .tab {
+#history .entry {
   line-height: 22px;
   display: inline-block;
   cursor: pointer;
   position: relative;
 }
-#tabs .tab > * {
+#history .entry > * {
   display: inline-block;
   vertical-align: middle;
   transition: all 0.2s ease-in-out;
 }
-#tabs .tab .tab-title-container {
+#history .entry .entry-title-container {
   padding-left: 12px;
   padding-right: 0px;
 }
-#tabs .tab .tab-title-container .tab-title {
+#history .entry .entry-title-container .entry-title {
   -webkit-touch-callout: none;
   /* iOS Safari */
   -webkit-user-select: none;
@@ -2060,41 +2060,42 @@ body:after {
   color: #616161;
   padding: 0px 5px;
 }
-#tabs .tab .tab-title-container .tab-title:hover {
+#history .entry:hover .entry-title {
+  color: #f0f0f0;
   text-decoration: underline;
 }
-#tabs .tab i {
+#history .entry i {
   cursor: default;
   margin: 0px 5px;
 }
-#tabs .tab .triangle-left,
-#tabs .tab .triangle-right {
+#history .entry .triangle-left,
+#history .entry .triangle-right {
   position: absolute;
   width: 0;
   height: 0;
 }
-#tabs .tab .triangle-left {
+#history .entry .triangle-left {
   border-top: 11px solid #424242;
   border-bottom: 11px solid #424242;
   border-left: 13px solid transparent;
   left: 0px;
   display: none;
 }
-#tabs .tab .triangle-right {
+#history .entry .triangle-right {
   border-top: 11px solid transparent;
   border-bottom: 11px solid transparent;
   border-left: 13px solid #424242;
   display: none;
 }
-#tabs .tab:first-child i {
+#history .entry:first-child i {
   display: none;
 }
-#tabs .tab:not(.hidden) .tab-title {
+#history .entry:not(.hidden) .entry-title {
   color: #f0f0f0;
   background-color: #424242;
 }
-#tabs .tab:not(.hidden) .triangle-right,
-#tabs .tab:not(.hidden) .triangle-left {
+#history .entry:not(.hidden) .triangle-right,
+#history .entry:not(.hidden) .triangle-left {
   display: inline-block;
 }
 #status-bar {

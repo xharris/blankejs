@@ -4,36 +4,19 @@ var MAX_AGE = 6;
 class Tab {
 	constructor (content_type) {
 		this.guid = guid()
-		this.title = 'tab'+count;
+		this.setTitle('tab'+count);
 		count++;
-
-		// add to tab bar
-		var el_tab_bar = app.getElement("#tabs");
-		this.tab = app.createElement("div","tab");
-		this.tab.this_ref = this;
-		this.tab.dataset.guid = this.guid;
-		this.tab.dataset.type = content_type;
-		this.tab_title_container = app.createElement("div","tab-title-container");
-		this.tab_title = app.createElement("div","tab-title");
-		this.tab_title_container.appendChild(this.tab_title)
-		this.tab_tri_left = app.createElement("div", "triangle-left");
-		this.tab_tri_right = app.createElement("div", "triangle-right");
-		this.tab.appendChild(this.tab_title_container);
-		this.tab.appendChild(this.tab_tri_left);
-		this.tab.appendChild(this.tab_tri_right);
-		el_tab_bar.appendChild(this.tab);
 
 		// add content to workspace
 		var workspace = app.getElement('#workspace');
 		this.tab_container = app.createElement('div', 'content');
 		this.tab_container.dataset.type = content_type;
 		this.tab_container.dataset.guid = this.guid;
+		this.tab_container.this_ref = this;
 		workspace.appendChild(this.tab_container);
 
-		this.tab.el_tab_container = this.tab_container;
-		this.tab_container.el_tab = this.tab;
-
-		this.setTitle(this.title);
+		// add to history
+		this.history_id = app.addHistory(this.title);
 		Tab.focus(this.title);
 
 		var this_ref = this;
@@ -74,59 +57,23 @@ class Tab {
 	}
 
 	static focus (title) {
-		var contents = app.getElements("#tabs > .tab");
-		var ret_val = false;
-		var remove_elements = [];
-
-		let focus_i = -1;
+		let found = false;
+		let contents = app.getElements("#workspace > .content");
 		for (var t = 0; t < contents.length; t++) {
-			if (contents[t].title == title) {
-				focus_i = t;
-
+			if (contents[t].this_ref.title == title){
+				contents[t].classList.remove("hidden");
+				found = true;
+				app.addHistory(title);
 			} else {
-
-				contents[t].setAttribute('age', parseInt(contents[t].getAttribute('age'))+1);
-
-				if (parseInt(contents[t].getAttribute('age')) > MAX_AGE) {
-					remove_elements.push(contents[t].this_ref);
-				}
-
 				contents[t].classList.add("hidden");
-				contents[t].el_tab_container.classList.add("hidden");
-
-				if (contents[t].this_ref.onTabLoseFocus)
-					contents[t].this_ref.onTabLoseFocus();
 			}
 		}
-
-		if (focus_i >= 0) {
-			contents[focus_i].setAttribute('age',0);
-
-			contents[focus_i].classList.remove("hidden");
-			contents[focus_i].el_tab_container.classList.remove("hidden");
-			// move to front of tabs
-			contents[focus_i].parentNode.removeChild(contents[focus_i]);
-			app.getElement('#tabs').appendChild(contents[focus_i]);
-			ret_val = true;
-			
-			if (contents[focus_i].this_ref.onTabFocus) {
-				contents[focus_i].this_ref.onTabFocus();
-			}
-		}
-
-		// remove old tabs
-		for (var e in remove_elements) {
-			let obj_tab = remove_elements[e];
-			obj_tab.close();
-		}
-
-		return ret_val;
+		return found;
 	}
 
 	setTitle (new_title) {
 		this.title = new_title;
-		this.tab.title = new_title;
-		this.tab_title.innerHTML = new_title;
+		app.setHistoryText(this.history_id, new_title);
 	}
 
 	setOnClick (fn, self) {
@@ -136,26 +83,14 @@ class Tab {
 				fn(self);
 			}
 		}
-		this.tab.addEventListener('click',new_fn);
-		this.tab_title.addEventListener('click',new_fn);
+		app.setHistoryClick(this.history_id, new_fn);
 	}
 
 	close () {
-		var choose_another = false;
-		if (!this.tab.classList.contains("hidden")) {
-			choose_another = true;
-		}
 		if (this.onClose) this.onClose();
 		
-		this.tab.remove();
+		app.removeHistory(this.history_id);
 		this.tab_container.remove();
-
-		if (choose_another) {
-			var contents = app.getElements("#tabs > .tab");
-			if (contents.length > 0) {
-				Tab.focus(contents[contents.length-1].title);
-			}
-		}
 	}
 
 	static closeAll (type) {

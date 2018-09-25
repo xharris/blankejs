@@ -58,7 +58,7 @@ View = Class{
 		self.y = math.floor(target_y)
 	end,
 
-	attach = function(self)
+	on = function(self)
 		local half_w, half_h = math.floor(self.port_width/2), math.floor(self.port_height/2)
 		Draw.push('all')
 		Draw.translate(half_w, half_h)
@@ -67,14 +67,14 @@ View = Class{
 		Draw.translate(-self.x, -self.y)
 	end,
 
-	detach = function(self)
+	off = function(self)
 		Draw.pop()
 	end,
 
 	draw = function(self, fn)
-		self:attach()
+		self:on()
 		fn()
-		self:detach()
+		self:off()
 	end
 }
 

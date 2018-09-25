@@ -508,13 +508,11 @@ body:before, body:after {
 	}
 }
 
-
-
-#tabs {
+#history {
 	.win-nodrag();
 	display: inline-block;
 
-	.tab {
+	.entry {
 		line-height: 22px;
 		display: inline-block;
 		cursor: pointer;
@@ -526,18 +524,21 @@ body:before, body:after {
 			transition: all 0.2s ease-in-out;
 		}
 
-		.tab-title-container {
+		.entry-title-container {
 			padding-left: 12px;
 			padding-right: 0px;
 
-			.tab-title {
+			.entry-title {
 				.no-select();
 				color: #616161;
     			padding: 0px 5px;
+			}
+		}
 
-				&:hover {
-					text-decoration: underline;
-				}
+		&:hover {
+			.entry-title {
+				color: @search-text-focus;
+				text-decoration: underline;
 			}
 		}
 
@@ -574,7 +575,7 @@ body:before, body:after {
 		}
 
 		&:not(.hidden) {
-			.tab-title {
+			.entry-title {
 				color: @search-text-focus;
 				background-color: @window-background;
 			}

@@ -3,7 +3,7 @@ let snap = 32;
 var last_box_direction = 1;
 var box_sizes = {};
 
-class DragBox {
+class FibWindow {
 	constructor (content_type) {
 		this.guid = guid();
 
@@ -11,57 +11,31 @@ class DragBox {
 		this.subtitle = '';
 
 		var this_ref = this;
-		this.history_id = app.addHistory(this.title);
-		app.setHistoryClick(this.history_id, function(){
-			this_ref.focus();
-		});
-
-		this.drag_container = document.createElement("div");
-		this.drag_container.classList.add("drag-container");
-		this.drag_container.id = "drag-container-"+this.guid;
-		this.drag_container.dataset.type = content_type;
-		this.drag_container.addEventListener("click", function() {
+		this.fib_container = document.createElement("div");
+		this.fib_container.classList.add("fib-container");
+		this.fib_container.id = "fib-container-"+this.guid;
+		this.fib_container.dataset.type = content_type;
+		this.fib_container.addEventListener("click", function() {
 			// reset z index of others
-			app.getElements('.drag-container').forEach(function(e){
-				e.style.zIndex = 10;
+			app.getElements('.fib-container').forEach(function(e){
+				//e.style.zIndex = 10;
 				e.classList.remove('focused');
 			});
 			// bring this one to top
-			this.style.zIndex = 15;
+			//this.style.zIndex = 15;
 			this.classList.add('focused');
 		});
-		this.drag_container.click();
-
-		this.drag_handle = document.createElement("div");
-		this.drag_handle.classList.add("drag-handle");
-		this.drag_handle.id = "drag-handle-"+this.guid;
-		this.drag_handle.ondblclick = function() {
-			this_ref.toggleVisible();
-		}
-		this.drag_container.appendChild(this.drag_handle);
-
-		this.resize_handle = document.createElement("div");
-		this.resize_handle.classList.add("resize-handle");
-		this.resize_handle.id = "resize-"+this.guid;
-		this.drag_container.appendChild(this.resize_handle);
-
-		this.drag_content = document.createElement("div");
-		this.drag_content.classList.add("content");
-		this.drag_content.id = "content-"+this.guid;
-		this.drag_content.dataset.type = content_type;
 
 		this.btn_close = document.createElement("button");
 		this.btn_close.classList.add("btn-close");
 		this.btn_close.innerHTML = "<i class=\"mdi mdi-close\"></i>"
 		this.btn_close.onclick = function() { this_ref.close(); }
-		this.drag_container.appendChild(this.btn_close);
+		this.fib_container.appendChild(this.btn_close);
 
 		this.btn_menu = document.createElement("button");
 		this.btn_menu.classList.add("btn-menu");
 		this.btn_menu.innerHTML = "<i class=\"mdi mdi-menu\"></i>"
-		this.drag_container.appendChild(this.btn_menu);
-
-		this.drag_container.appendChild(this.drag_content);
+		this.fib_container.appendChild(this.btn_menu);
 
 		this.x = 0;
 		this.y = 0;
@@ -104,7 +78,6 @@ class DragBox {
 		for (var h = 0; h < handles.length; h++) {
 			if (handles[h].innerHTML == title) {
 				handles[h].click();
-				app.addHistory(title);
 				return true;
 			}
 		}
@@ -236,7 +209,6 @@ class DragBox {
 			} else {
 				box_sizes[value] = [this.drag_container.offsetWidth, this.drag_container.offsetHeight];
 			}
-			app.setHistoryText(this.history_id, this.title);
 		}
 	}
 

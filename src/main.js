@@ -1,4 +1,8 @@
 /*
+TODO:
+-	separate tabs from history bar
+-	implement fibonnaci-sized windows
+
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
 - 	sceneeditor: pointerup event after pointerdown event happens outside of window --> freeze
@@ -328,7 +332,7 @@ var app = {
 		return 'other';
 	},
 	cleanPath: function(path) {
-		return nwPATH.normalize(path).replaceAll('\\\\','/');;
+		return nwPATH.normalize(path).replaceAll('\\\\','/');
 	},
 	flashCrosshair: function(x, y) {
 		let el_cross = app.createElement("div","crosshair");
@@ -344,6 +348,76 @@ var app = {
 		setTimeout(function(){
 			blanke.destroyElement(el_cross);
 		}, 1000);
+	},
+
+	// TAB BAR (history)
+	history_ref: {},
+	addHistory: function(title) {
+		if (!title) return;
+
+		// check if it already exists
+		let exists = null;
+		for (let id in app.history_ref) {
+			let e = app.history_ref[id];
+			if (e.title == title) {
+				exists = e;
+			}
+			e.entry.classList.add("hidden");
+		}
+
+		let el_history_bar = app.getElement("#history");
+
+		if (exists) {
+			// move it to front of history
+			el_history_bar.removeChild(exists.entry);
+			el_history_bar.appendChild(exists.entry);
+
+			exists.entry.classList.remove("hidden");
+			return exists.entry.dataset.guid;
+
+		} else {
+			// add a new entry
+			let id = guid();
+
+			let entry = app.createElement("div","entry");
+			let entry_title_container = app.createElement("div","entry-title-container");
+			let entry_title = app.createElement("div","entry-title");
+			let tab_tri_left = app.createElement("div", "triangle-left");
+			let tab_tri_right = app.createElement("div", "triangle-right");
+
+			entry.dataset.guid = id;
+			// entry.dataset.type = content_type;
+			entry_title_container.appendChild(entry_title)
+
+			entry.appendChild(entry_title_container);
+			entry.appendChild(tab_tri_left);
+			entry.appendChild(tab_tri_right);
+			el_history_bar.appendChild(entry);
+
+			app.history_ref[id] = {'entry':entry, 'entry_title':entry_title, 'title':title};
+			return id;
+		}
+	},
+
+	setHistoryClick: function(id, fn_onclick) {
+		if (app.history_ref[id]) app.history_ref[id].entry_title.addEventListener('click',fn_onclick);
+	},
+
+	setHistoryContextMenu: function(id, fn_onmenu) {
+		if (app.history_ref[id]) app.history_ref[id].entry.oncontextmenu = fn_onmenu;
+	},
+
+	setHistoryText: function(id, text) {
+		if (app.history_ref[id]) {
+			app.history_ref[id].entry_title.innerHTML = text;
+			app.history_ref[id].title = text;
+		}
+	},
+
+	removeHistory: function(id) {
+		blanke.destroyElement(app.history_ref[id].entry);
+		blanke.destroyElement(app.history_ref[id].entry_title);
+		delete app.history_ref[id];
 	}
 }
 
