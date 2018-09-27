@@ -6,6 +6,7 @@ class Docview extends Editor {
 
 		this.setupDragbox();
 		this.setTitle('Docs');
+		this.removeHistory();
 		this.hideMenuButton();
 
 		this.container.width = 400;
@@ -15,12 +16,9 @@ class Docview extends Editor {
 
 		this.doc_container = app.createElement("div","doc-container");
 
-		function constructDocs(data) {
-		}
-
 		let re = /--\[\[\s*#\s*[#\s]+(\w+)([^\]\[]+?)\]\]/g;
 		let sections = [];
-		nwFS.readFile(nwPATH.join('love2d','lua','blanke','doc.lua'), 'utf-8', function(err, data){
+		nwFS.readFile(nwPATH.join(app.settings.engine_path,'lua','blanke','doc.lua'), 'utf-8', function(err, data){
 			if (!err) {
 				let matches = [];
 				let doc_data = [];

@@ -336,6 +336,7 @@ var app = {
 	cleanPath: function(path) {
 		return nwPATH.normalize(path).replaceAll('\\\\','/');
 	},
+	workspace_margin_top: 34,
 	flashCrosshair: function(x, y) {
 		let el_cross = app.createElement("div","crosshair");
 		let el_crossx = app.createElement("div","x");
@@ -344,7 +345,7 @@ var app = {
 		el_cross.appendChild(el_crossy);
 
 		el_crossx.style.left = x+"px";
-		el_crossy.style.top = y+"px";
+		el_crossy.style.top = (y+app.workspace_margin_top)+"px";
 
 		app.getElement("body").appendChild(el_cross);
 		setTimeout(function(){

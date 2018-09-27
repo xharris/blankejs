@@ -55,6 +55,10 @@ class Editor {
 		}
 	}
 
+	removeHistory() {
+		app.removeHistory(this.container.history_id);
+	}
+
 	// Tab ONLY	
 	setOnClick() {
 		if (this.container_type == 'tab')

@@ -4,6 +4,7 @@ class AssetManager extends Editor {
 		var this_ref = this;
 
 		this.setupDragbox();
+		this.removeHistory();
 		this.container.width = 400;
 		this.container.height = 250;
 

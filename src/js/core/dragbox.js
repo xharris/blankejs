@@ -13,7 +13,7 @@ class DragBox {
 		var this_ref = this;
 		this.history_id = app.addHistory(this.title);
 		
-		app.setOnClick(this.history_id, function(){
+		app.setHistoryClick(this.history_id, function(){
 			this_ref.focus();
 		});
 
@@ -72,10 +72,6 @@ class DragBox {
 			this.y = last_box.y + (20 * last_box_direction);
 			last_box_direction *= -1;
 		}
-		// prevent from spawning box inside title bar
-		if (this.y < 34) {
-			this.y = 34;
-		}
 		
 		last_box = this;
 
@@ -125,7 +121,7 @@ class DragBox {
 				restictEdges: {
 					outer: 'parent',
 					endOnly: true,
-					elementRect: { top: 34, left: 0, bottom: 23, right: 1 }
+					elementRect: { top: 0, left: 0, bottom: 23, right: 1 }
 				}
 			})
 			.on('resizemove', function (event) {
@@ -154,7 +150,7 @@ class DragBox {
 				let width = parseInt(e.target.style.width);
 				let height = parseInt(e.target.style.height);
 				width = width - (width % snap);
-				height = height - ((height+34) % snap);
+				height = height - ((height) % snap);
 
 			    e.target.style.width = width+'px';
 			    e.target.style.height = height+'px';
@@ -200,11 +196,6 @@ class DragBox {
 
 				    this_ref.x = parseInt(this_ref.x);
 				    this_ref.y = parseInt(this_ref.y);
-	
-					// prevent from spawning box inside title bar
-					if (this_ref.y < 34) {
-						this_ref.y = 34;
-					}	
 						    
 				    // translate the element
 				    target.style.webkitTransform =
@@ -217,9 +208,8 @@ class DragBox {
 				},
 				onend: function(e) {
 					let x = this_ref.x - (this_ref.x % snap);
-					let y = this_ref.y - ((this_ref.y+34) % snap);
+					let y = this_ref.y - (this_ref.y % snap);
 
-					if (y < 34) y = 34;
 
 				    e.target.style.webkitTransform = e.target.style.transform =
 				      'translate(' + x + 'px, ' + y + 'px)';

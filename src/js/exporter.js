@@ -12,6 +12,7 @@ class Exporter extends Editor {
 
 		this.setupDragbox();
 		this.setTitle('Exporter');
+		this.removeHistory();
 		this.hideMenuButton();
 
 		this.container.width = 400;
