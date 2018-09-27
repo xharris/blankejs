@@ -150,7 +150,6 @@ class Code extends Editor {
 		this.setupFibWindow();
 
 		var this_ref = this;
-		
 		this.file = '';
 		this.script_folder = "/scripts";
 
@@ -476,11 +475,12 @@ class Code extends Editor {
 			}
 		});*/
 
-		// tab click
+		/* tab click
 		this.setOnClick(function(self){
 			(new Code(app)).edit(self.file);
 			this_ref.setFontSize(font_size);
 		}, this);
+		*/
 	}
 
 	addAsterisk () {
@@ -510,6 +510,7 @@ class Code extends Editor {
 		var this_ref = this;
 
 		this.file = file_path;
+
 		var text = nwFS.readFileSync(file_path, 'utf-8');
 
 		this.codemirror.setValue(text);
@@ -518,6 +519,10 @@ class Code extends Editor {
 		this.setTitle(nwPATH.basename(file_path));
 		this.removeAsterisk();
 		refreshObjectList(this.file, this.codemirror.getValue());
+
+		this.setOnClick(function(){
+			openScript(this_ref.file);
+		})
 
 		this.codemirror.refresh();
 	}
@@ -603,6 +608,11 @@ document.addEventListener('fileChange', function(e){
 	// }
 });
 
+function openScript(file_path) {
+	if (!(FibWindow.focus(nwPATH.basename(file_path)) || FibWindow.focus(nwPATH.basename(file_path)+"*")))
+		(new Code(app)).edit(file_path);
+}
+
 function addScripts(folder_path) {
 	var file_list = [];
 	nwFS.readdir(folder_path, function(err, files) {
@@ -625,8 +635,7 @@ function addScripts(folder_path) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
-							if (!(DragBox.focus(nwPATH.basename(file_path)) || DragBox.focus(nwPATH.basename(file_path)+"*")))
-								(new Code(app)).edit(file_path);
+							openScript(file_path);
 						},
 						tags: ['script'],
 						args: [full_path],

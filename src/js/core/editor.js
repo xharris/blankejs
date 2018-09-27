@@ -59,6 +59,8 @@ class Editor {
 	setOnClick() {
 		if (this.container_type == 'tab')
 			this.container.setOnClick.apply(this.container, arguments);
+		if (this.container_type == 'fibwindow')
+			app.setHistoryClick(this.container.history_id, arguments[0]);
 	}
 
 	close() {

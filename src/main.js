@@ -360,20 +360,14 @@ var app = {
 		for (let id in app.history_ref) {
 			let e = app.history_ref[id];
 			if (e.title == title) {
-				exists = e;
+				exists = id;
 			}
-			e.entry.classList.add("hidden");
 		}
 
 		let el_history_bar = app.getElement("#history");
 
-		if (exists) {
-			// move it to front of history
-			el_history_bar.removeChild(exists.entry);
-			el_history_bar.appendChild(exists.entry);
-
-			exists.entry.classList.remove("hidden");
-			return exists.entry.dataset.guid;
+		if (exists != null) {
+			return app.setHistoryMostRecent(exists);
 
 		} else {
 			// add a new entry
@@ -399,8 +393,24 @@ var app = {
 		}
 	},
 
+	setHistoryMostRecent: function(id) {
+		let e = app.history_ref[id];
+		let el_history_bar = app.getElement("#history");
+
+		// move it to front of history
+		el_history_bar.removeChild(e.entry);
+		el_history_bar.appendChild(e.entry);
+
+		return e.entry.dataset.guid;
+	},
+
 	setHistoryClick: function(id, fn_onclick) {
-		if (app.history_ref[id]) app.history_ref[id].entry_title.addEventListener('click',fn_onclick);
+		if (app.history_ref[id]) {
+			app.history_ref[id].entry_title.addEventListener('click',function(){
+				fn_onclick();
+				app.setHistoryMostRecent(id);
+			});
+		}
 	},
 
 	setHistoryContextMenu: function(id, fn_onmenu) {

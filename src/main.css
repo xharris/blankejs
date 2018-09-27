@@ -1976,9 +1976,6 @@ body:after {
   line-height: 18px;
   text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 }
-.fib-container.collapsed > .resize-handle {
-  display: none;
-}
 .fib-container .content {
   position: absolute;
   top: 20px;
@@ -2219,12 +2216,12 @@ body:after {
 #history .entry:first-child i {
   display: none;
 }
-#history .entry:not(.hidden) .entry-title {
+#history .entry:nth-last-child(1) .entry-title {
   color: #f0f0f0;
   background-color: #424242;
 }
-#history .entry:not(.hidden) .triangle-right,
-#history .entry:not(.hidden) .triangle-left {
+#history .entry:nth-last-child(1) .triangle-right,
+#history .entry:nth-last-child(1) .triangle-left {
   display: inline-block;
 }
 #status-bar {

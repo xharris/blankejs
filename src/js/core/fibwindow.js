@@ -1,4 +1,5 @@
 var boxes = [];
+var MAX_WINDOWS = 5;
 
 class FibWindow {
 	constructor (content_type) {
@@ -8,11 +9,6 @@ class FibWindow {
 		this.subtitle = '';
 
 		var this_ref = this;
-		this.history_id = app.addHistory(this.title);
-
-		app.setHistoryClick(this.history_id, function(){
-			this_ref.focus();
-		});
 
 		this.fib_container = document.createElement("div");
 		this.fib_container.classList.add("fib-container");
@@ -31,6 +27,9 @@ class FibWindow {
 
 		this.fib_title = document.createElement("div");
 		this.fib_title.classList.add("fib-title");
+		this.fib_title.ondblclick = function() {
+			this_ref.focus();
+		}
 		this.fib_container.appendChild(this.fib_title);
 
 		this.fib_content = document.createElement("div");
@@ -71,13 +70,16 @@ class FibWindow {
 		FibWindow.focus(this.title);
 	}	
 
-	// focus a dragbox with a certain title if it exists
+	// focus a fibwindow with a certain title if it exists
 	static focus (title) {
 		FibWindow.showAll();
-		var handles = app.getElements('.fib-title');
-		for (var h = 0; h < handles.length; h++) {
-			if (handles[h].innerHTML == title) {
-				handles[h].click();
+
+		for (var b = 0; b < boxes.length; b++) {
+			if (boxes[b].title == title) {
+				boxes[b].fib_title.click();
+				boxes.unshift(boxes.splice(b,1)[0]);
+				FibWindow.resizeWindows();
+
 				return true;
 			}
 		}
@@ -86,6 +88,13 @@ class FibWindow {
 
 	static resizeWindows () {
 		let x = 0, y = 0, width = 50, height = 100;
+
+		// more than max allowed fibwindows?
+		if (boxes.length > MAX_WINDOWS) {
+			// remove oldest one
+			let killed_box = boxes.pop();
+			killed_box.close();
+		}
 
 		if (boxes.length == 1) width = 100;
 
@@ -113,6 +122,8 @@ class FibWindow {
 		if (this.fib_title.innerHTML != value+this.subtitle) {
 			this.fib_title.innerHTML = value+this.subtitle;
 			this.title = value;
+
+			if (!this.history_id) this.history_id = app.addHistory(this.title);
 			app.setHistoryText(this.history_id, this.title);
 		}
 	}

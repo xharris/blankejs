@@ -462,10 +462,6 @@ body:before, body:after {
 	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 	}
 
-	&.collapsed > .resize-handle {
-		display: none;
-	}
-
 	.content {
 		position: absolute;
 	    top: 20px;
@@ -709,7 +705,7 @@ body:before, body:after {
 			}
 		}
 
-		&:not(.hidden) {
+		&:nth-last-child(1) {
 			.entry-title {
 				color: @search-text-focus;
 				background-color: @window-background;

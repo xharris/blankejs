@@ -13,7 +13,7 @@ class DragBox {
 		var this_ref = this;
 		this.history_id = app.addHistory(this.title);
 		
-		app.setHistoryClick(this.history_id, function(){
+		app.setOnClick(this.history_id, function(){
 			this_ref.focus();
 		});
 

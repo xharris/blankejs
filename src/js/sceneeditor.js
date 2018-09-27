@@ -1693,7 +1693,12 @@ class SceneEditor extends Editor {
 	}
 
 	load (file_path) {
+		let this_ref = this;
+
 		this.file = file_path;
+		this.setHistoryClick = function() {
+			openScene(this_ref.file);
+		}
 		var data = nwFS.readFileSync(file_path, 'utf-8');
 		var first_layer = null;
 
@@ -1875,6 +1880,11 @@ document.addEventListener('fileChange', function(e){
 	}
 });
 
+function openScene(file_path) {
+	if (!FibWindow.focus(nwPATH.basename(file_path)))
+		(new SceneEditor(app)).load(file_path);
+}
+
 function addScenes(folder_path) {
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
@@ -1890,8 +1900,7 @@ function addScenes(folder_path) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
-							if (!Tab.focus(nwPATH.basename(file_path)))
-								(new SceneEditor(app)).load(file_path);
+							openScene(file_path);
 						},
 						tags: ['scene'],
 						args: [full_path],
