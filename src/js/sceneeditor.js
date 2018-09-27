@@ -12,7 +12,7 @@ function sendToBack(sprite, parent) {var sprite = (typeof(sprite) != "undefined"
 class SceneEditor extends Editor {
 	constructor (...args) {
 		super(...args);
-		this.setupTab();
+		this.setupDragbox();
 
 		var this_ref = this;
 

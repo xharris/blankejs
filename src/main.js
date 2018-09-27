@@ -353,8 +353,6 @@ var app = {
 	// TAB BAR (history)
 	history_ref: {},
 	addHistory: function(title) {
-		if (!title) return;
-
 		// check if it already exists
 		let exists = null;
 		for (let id in app.history_ref) {

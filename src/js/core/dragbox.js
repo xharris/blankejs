@@ -12,6 +12,7 @@ class DragBox {
 
 		var this_ref = this;
 		this.history_id = app.addHistory(this.title);
+		
 		app.setHistoryClick(this.history_id, function(){
 			this_ref.focus();
 		});
@@ -95,6 +96,10 @@ class DragBox {
 
 	getContent () {
 		return this.drag_container;
+	}
+
+	focus () {
+		DragBox.focus(this.title);
 	}
 
 	// focus a dragbox with a certain title if it exists

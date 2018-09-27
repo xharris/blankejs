@@ -147,7 +147,7 @@ function refreshObjectList (filename, content) {
 class Code extends Editor {
 	constructor (...args) {
 		super(...args);
-		this.setupDragbox();
+		this.setupFibWindow();
 
 		var this_ref = this;
 		

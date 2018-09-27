@@ -1,16 +1,16 @@
-var last_box = null;
-let snap = 32;
-var last_box_direction = 1;
-var box_sizes = {};
+var boxes = [];
 
 class FibWindow {
 	constructor (content_type) {
 		this.guid = guid();
 
+		console.log ("ehoo")
 		this.title = '';
 		this.subtitle = '';
 
 		var this_ref = this;
+		this.history_id = app.addHistory(this.title);
+
 		this.fib_container = document.createElement("div");
 		this.fib_container.classList.add("fib-container");
 		this.fib_container.id = "fib-container-"+this.guid;
@@ -26,6 +26,9 @@ class FibWindow {
 			this.classList.add('focused');
 		});
 
+		this.fib_title = document.createElement("div");
+		this.fib_title.classList.add("title");
+
 		this.btn_close = document.createElement("button");
 		this.btn_close.classList.add("btn-close");
 		this.btn_close.innerHTML = "<i class=\"mdi mdi-close\"></i>"
@@ -39,36 +42,20 @@ class FibWindow {
 
 		this.x = 0;
 		this.y = 0;
-		// place at an offset of the last box
-		if (last_box) {
-			this.x = last_box.x + (20 * last_box_direction);
-			this.y = last_box.y + (20 * last_box_direction);
-			last_box_direction *= -1;
-		}
-		// prevent from spawning box inside title bar
-		if (this.y < 34) {
-			this.y = 34;
-		}
-		
-		last_box = this;
 
-		this.setupDrag();
-		this.setupResize();
-
-	    // translate the element
-	    this.move(this.x, this.y);
+		boxes.unshift(this);
 	}
 
 	get width () {
-		return this.drag_container.offsetWidth;
+		return this.fib_container.offsetWidth;
 	}
 
 	get height () {
-		return this.drag_container.offsetHeight;
+		return this.fib_container.offsetHeight;
 	}
 
 	getContent () {
-		return this.drag_container;
+		return this.fib_container;
 	}
 
 	// focus a dragbox with a certain title if it exists
@@ -84,131 +71,55 @@ class FibWindow {
 		return false;
 	}
 
-	setupResize () {
-		var this_ref = this;
-		interact('#'+this.drag_container.id)
-			.resizable({
-				allowFrom: '#resize-'+this.guid,
-				edges: {right:true, bottom:true, left:false, top:false},
-				restictEdges: {
-					outer: 'parent',
-					endOnly: true,
-					elementRect: { top: 34, left: 0, bottom: 23, right: 1 }
-				}
-			})
-			.on('resizemove', function (event) {
-			    var target = event.target;
-		        this_ref.x = (parseFloat(target.getAttribute('data-x')) || 0);
-		        this_ref.y = (parseFloat(target.getAttribute('data-y')) || 0);
+	static resizeWindows () {
+		for (let b = 0; b < boxes.length; b++) {
+			let box_ref = boxes[b];
 
-			    // update the element's style
-			    target.style.width  = event.rect.width + 'px';
-			    target.style.height = event.rect.height + 'px';
+			// resize
+		    var target = event.target;
+	        this_ref.x = (parseFloat(target.getAttribute('data-x')) || 0);
+	        this_ref.y = (parseFloat(target.getAttribute('data-y')) || 0);
 
-			    // translate when resizing from top or left edges
-			    this_ref.x += event.deltaRect.left;
-			    this_ref.y += event.deltaRect.top;
+		    // update the element's style
+		    target.style.width  = event.rect.width + 'px';
+		    target.style.height = event.rect.height + 'px';
 
-			    this_ref.x = parseInt(this_ref.x);
-			    this_ref.y = parseInt(this_ref.y);
+		    // translate when resizing from top or left edges
+		    this_ref.x += event.deltaRect.left;
+		    this_ref.y += event.deltaRect.top;
 
-			    target.style.webkitTransform = target.style.transform =
-			        'translate(' + this_ref.x + 'px,' + this_ref.y + 'px)';
+		    this_ref.x = parseInt(this_ref.x);
+		    this_ref.y = parseInt(this_ref.y);
 
-			    target.setAttribute('data-x', this_ref.x);
-			    target.setAttribute('data-y', this_ref.y);
+		    target.style.webkitTransform = target.style.transform =
+		        'translate(' + this_ref.x + 'px,' + this_ref.y + 'px)';
 
-			}).on('resizeend', function(e){
-				let width = parseInt(e.target.style.width);
-				let height = parseInt(e.target.style.height);
-				width = width - (width % snap);
-				height = height - ((height+34) % snap);
+		    target.setAttribute('data-x', this_ref.x);
+		    target.setAttribute('data-y', this_ref.y);
 
-			    e.target.style.width = width+'px';
-			    e.target.style.height = height+'px';
+			// move
+	        // keep the dragged position in the data-x/data-y attributes
+	        this.x = x;
+	        this.y = y;
 
-				app.flashCrosshair(this_ref.x + width, this_ref.y + height);
+			// translate the element
+		    this.fib_container.style.webkitTransform =
+		    this.fib_container.style.transform =
+		      'translate(' + this.x + 'px, ' + this.y + 'px)';
 
-				this_ref.onResize(this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight);
-				box_sizes[this_ref.title] = [this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight];
-			});
-	}
+		    // update the posiion attributes
+		    this.fib_container.setAttribute('data-x', this.x);
+		    this.fib_container.setAttribute('data-y', this.y);
 
-	move (x, y) {
-        // keep the dragged position in the data-x/data-y attributes
-        this.x = x;
-        this.y = y;
-
-		// translate the element
-	    this.drag_container.style.webkitTransform =
-	    this.drag_container.style.transform =
-	      'translate(' + this.x + 'px, ' + this.y + 'px)';
-
-	    // update the posiion attributes
-	    this.drag_container.setAttribute('data-x', this.x);
-	    this.drag_container.setAttribute('data-y', this.y);
-	}
-
-	setupDrag () {
-		var this_ref = this;
-		interact('#'+this.drag_container.id)
-			.draggable({
-				ignoreFrom: '#content-'+this.guid,
-				inertia: true,
-				restrict: {
-					restriction: "parent",
-					endOnly: true,
-					elementRect: {top:0, left:0, bottom:1, right:1}
-				},
-				onmove: function(event) {
-				    var target = event.target;
-			        // keep the dragged position in the data-x/data-y attributes
-			        this_ref.x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-			        this_ref.y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-				    this_ref.x = parseInt(this_ref.x);
-				    this_ref.y = parseInt(this_ref.y);
-	
-					// prevent from spawning box inside title bar
-					if (this_ref.y < 34) {
-						this_ref.y = 34;
-					}	
-						    
-				    // translate the element
-				    target.style.webkitTransform =
-				    target.style.transform =
-				      'translate(' + this_ref.x + 'px, ' + this_ref.y + 'px)';
-
-				    // update the posiion attributes
-				    target.setAttribute('data-x', this_ref.x);
-				    target.setAttribute('data-y', this_ref.y);
-				},
-				onend: function(e) {
-					let x = this_ref.x - (this_ref.x % snap);
-					let y = this_ref.y - ((this_ref.y+34) % snap);
-
-					if (y < 34) y = 34;
-
-				    e.target.style.webkitTransform = e.target.style.transform =
-				      'translate(' + x + 'px, ' + y + 'px)';
-				    e.target.setAttribute('data-x', x);
-				    e.target.setAttribute('data-y', y);
-
-					app.flashCrosshair(x, y);
-				}
-			});
+			box_ref.onResize(this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight);
+		}
 	}
 
 	setTitle (value) {
-		if (this.drag_handle.innerHTML != value+this.subtitle) {
-			this.drag_handle.innerHTML = value+this.subtitle;
+		if (this.fib_title.innerHTML != value+this.subtitle) {
+			this.fib_title.innerHTML = value+this.subtitle;
 			this.title = value;
-			if (box_sizes[value]) {
-				this.drag_container.style.width = box_sizes[value][0]+"px";
-				this.drag_container.style.height = box_sizes[value][1]+"px";
-			} else {
-				box_sizes[value] = [this.drag_container.offsetWidth, this.drag_container.offsetHeight];
-			}
+			app.setHistoryText(this.history_id, this.title);
 		}
 	}
 
@@ -217,44 +128,25 @@ class FibWindow {
 		this.setTitle(this.title);
 	}
 
-	toggleVisible () {
-		this.drag_container.classList.toggle("collapsed");
-
-		if (this.drag_container.classList.contains('collapsed')) {
-			interact('#'+this.drag_container.id).unset();
-			this.setupDrag();
-		} else {
-			this.setupResize();
-		}
-	}
-
 	appendTo (element) {
-		element.appendChild(this.drag_container);
+		element.appendChild(this.fib_container);
 	}
 
 	onResize (w, h) {
 
 	}
 
-	set width(w) {
-		this.drag_container.style.width = w.toString()+"px";
-	}
-
-	set height(h) {
-		this.drag_container.style.height = h.toString()+"px";
-	}
-
 	setContent (element) {
-		this.drag_content.innerHTML = "";
-		this.drag_content.appendChild(element);
+		this.fib_container.innerHTML = "";
+		this.fib_container.appendChild(element);
 	}
 
 	appendChild (element) {
-		this.drag_content.appendChild(element);
+		this.fib_container.appendChild(element);
 	}
 
 	close () {
-		this.drag_container.remove();
+		this.fib_container.remove();
 		if (this.onClose) this.onClose();
 	}
 

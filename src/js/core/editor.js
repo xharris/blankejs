@@ -48,7 +48,8 @@ class Editor {
 		var this_ref = this;
 		this.container_type = "fibwindow";
 		this.container = new FibWindow(this.constructor.name);
-		this.conainter.appendChild(this.content_area);
+		this.container.appendTo(workspace);
+		this.container.appendChild(this.content_area);
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
