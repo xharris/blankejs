@@ -4,12 +4,15 @@ class FibWindow {
 	constructor (content_type) {
 		this.guid = guid();
 
-		console.log ("ehoo")
 		this.title = '';
 		this.subtitle = '';
 
 		var this_ref = this;
 		this.history_id = app.addHistory(this.title);
+
+		app.setHistoryClick(this.history_id, function(){
+			this_ref.focus();
+		});
 
 		this.fib_container = document.createElement("div");
 		this.fib_container.classList.add("fib-container");
@@ -27,7 +30,12 @@ class FibWindow {
 		});
 
 		this.fib_title = document.createElement("div");
-		this.fib_title.classList.add("title");
+		this.fib_title.classList.add("fib-title");
+		this.fib_container.appendChild(this.fib_title);
+
+		this.fib_content = document.createElement("div");
+		this.fib_content.classList.add("content");
+		this.fib_content.dataset.type = content_type;
 
 		this.btn_close = document.createElement("button");
 		this.btn_close.classList.add("btn-close");
@@ -40,10 +48,11 @@ class FibWindow {
 		this.btn_menu.innerHTML = "<i class=\"mdi mdi-menu\"></i>"
 		this.fib_container.appendChild(this.btn_menu);
 
-		this.x = 0;
-		this.y = 0;
+		this.fib_container.appendChild(this.fib_content);
 
 		boxes.unshift(this);
+
+		FibWindow.resizeWindows();
 	}
 
 	get width () {
@@ -58,10 +67,14 @@ class FibWindow {
 		return this.fib_container;
 	}
 
+	focus () {
+		FibWindow.focus(this.title);
+	}	
+
 	// focus a dragbox with a certain title if it exists
 	static focus (title) {
-		DragBox.showAll();
-		var handles = app.getElements('.drag-handle');
+		FibWindow.showAll();
+		var handles = app.getElements('.fib-title');
 		for (var h = 0; h < handles.length; h++) {
 			if (handles[h].innerHTML == title) {
 				handles[h].click();
@@ -72,46 +85,27 @@ class FibWindow {
 	}
 
 	static resizeWindows () {
+		let x = 0, y = 0, width = 50, height = 100;
+
+		if (boxes.length == 1) width = 100;
+
 		for (let b = 0; b < boxes.length; b++) {
 			let box_ref = boxes[b];
 
-			// resize
-		    var target = event.target;
-	        this_ref.x = (parseFloat(target.getAttribute('data-x')) || 0);
-	        this_ref.y = (parseFloat(target.getAttribute('data-y')) || 0);
+			box_ref.fib_container.style.left = x+"%";
+			box_ref.fib_container.style.top = y+"%";
+			box_ref.fib_container.style.width = width+'%';
+			box_ref.fib_container.style.height = height+'%';
 
-		    // update the element's style
-		    target.style.width  = event.rect.width + 'px';
-		    target.style.height = event.rect.height + 'px';
-
-		    // translate when resizing from top or left edges
-		    this_ref.x += event.deltaRect.left;
-		    this_ref.y += event.deltaRect.top;
-
-		    this_ref.x = parseInt(this_ref.x);
-		    this_ref.y = parseInt(this_ref.y);
-
-		    target.style.webkitTransform = target.style.transform =
-		        'translate(' + this_ref.x + 'px,' + this_ref.y + 'px)';
-
-		    target.setAttribute('data-x', this_ref.x);
-		    target.setAttribute('data-y', this_ref.y);
-
-			// move
-	        // keep the dragged position in the data-x/data-y attributes
-	        this.x = x;
-	        this.y = y;
-
-			// translate the element
-		    this.fib_container.style.webkitTransform =
-		    this.fib_container.style.transform =
-		      'translate(' + this.x + 'px, ' + this.y + 'px)';
-
-		    // update the posiion attributes
-		    this.fib_container.setAttribute('data-x', this.x);
-		    this.fib_container.setAttribute('data-y', this.y);
-
-			box_ref.onResize(this_ref.drag_content.offsetWidth, this_ref.drag_content.offsetHeight);
+			box_ref.onResize(box_ref.fib_content.offsetWidth, box_ref.fib_content.offsetHeight);		
+		
+			if ((b+1) % 2 == 0) {
+				if (b < boxes.length - 2) width /= 2;
+				y += height;
+			} else {
+				if (b < boxes.length - 2) height /= 2;
+				x += width;
+			}
 		}
 	}
 
@@ -137,21 +131,27 @@ class FibWindow {
 	}
 
 	setContent (element) {
-		this.fib_container.innerHTML = "";
-		this.fib_container.appendChild(element);
+		this.fib_content.innerHTML = "";
+		this.fib_content.appendChild(element);
 	}
 
 	appendChild (element) {
-		this.fib_container.appendChild(element);
+		this.fib_content.appendChild(element);
 	}
 
 	close () {
 		this.fib_container.remove();
 		if (this.onClose) this.onClose();
+		for (let b = 0; b < boxes.length; b++) {
+			if (boxes[b].history_id == this.history_id) {
+				boxes.splice(b,1);
+			}
+		}
+		FibWindow.resizeWindows();
 	}
 
 	static closeAll (type) {
-		var windows = app.getElements(".drag-container");
+		var windows = app.getElements(".fib-container");
 		for (var i = 0; i < windows.length; i++) {
 			if (!type || (type && windows[i].dataset.type == type))
 				windows[i].remove();
@@ -159,21 +159,21 @@ class FibWindow {
 	}
 
 	static showHideAll () {
-		var windows = app.getElements(".drag-container");
+		var windows = app.getElements(".fib-container");
 		for (var i = 0; i < windows.length; i++) {
 			windows[i].classList.toggle("invisible");
 		}
 	}
 
 	static showAll () {
-		var windows = app.getElements(".drag-container");
+		var windows = app.getElements(".fib-container");
 		for (var i = 0; i < windows.length; i++) {
 			windows[i].classList.remove("invisible");
 		}
 	}
 
 	static hideAll () {	
-		var windows = app.getElements(".drag-container");
+		var windows = app.getElements(".fib-container");
 		for (var i = 0; i < windows.length; i++) {
 			windows[i].classList.add("invisible");
 		}

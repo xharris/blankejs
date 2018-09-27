@@ -1665,10 +1665,15 @@ body:after {
   float: left;
 }
 #workspace {
-  height: 100%;
   background-color: transparent;
   overflow: hidden;
-  position: relative;
+  position: absolute;
+  margin-bottom: 23px;
+  margin-top: 34px;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
   /* z-index: 20; */
 }
 #workspace > .content {
@@ -1944,7 +1949,7 @@ body:after {
 .fib-container.focused > .btn-menu {
   opacity: 1;
 }
-.fib-container .drag-handle {
+.fib-container .fib-title {
   -webkit-touch-callout: none;
   /* iOS Safari */
   -webkit-user-select: none;
@@ -1970,14 +1975,6 @@ body:after {
   padding-left: 26px;
   line-height: 18px;
   text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
-}
-.fib-container .resize-handle {
-  position: absolute;
-  right: 0px;
-  bottom: 0px;
-  width: 20px;
-  height: 20px;
-  z-index: 1000;
 }
 .fib-container.collapsed > .resize-handle {
   display: none;

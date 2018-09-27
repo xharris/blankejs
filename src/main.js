@@ -305,10 +305,12 @@ var app = {
 
 	hideWelcomeScreen: function() {
 		app.getElement("#welcome").classList.add("hidden");
+		app.getElement("#workspace").style.pointerEvents = "auto";
 	},
 
 	showWelcomeScreen: function() {
 		app.getElement("#welcome").classList.remove("hidden");
+		app.getElement("#workspace").style.pointerEvents = "none";
 	},
 
 	addAsset: function(res_type, path) {
@@ -638,6 +640,8 @@ nwWIN.on('loaded', function() {
 	});
 
 	dispatchEvent("ideReady");
+	app.showWelcomeScreen();
+
 	app.addSearchKey({key: 'Open project', onSelect: function() {
 		app.openProjectDialog();
 	}});

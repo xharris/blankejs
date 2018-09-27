@@ -3,7 +3,7 @@
 // - click on edge of object (point is on edge): add point in between points of edge
 // - can drag points (important)
 
-var earcut = require('./includes/earcut.js');
+// var earcut = require('./includes/earcut.js');
 
 // http://www.html5gamedevs.com/topic/7507-how-to-move-the-sprite-to-the-top/?do=findComment&comment=45162
 function bringToFront(sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {         if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.push(sprite);}}
@@ -12,7 +12,7 @@ function sendToBack(sprite, parent) {var sprite = (typeof(sprite) != "undefined"
 class SceneEditor extends Editor {
 	constructor (...args) {
 		super(...args);
-		this.setupDragbox();
+		this.setupFibWindow();
 
 		var this_ref = this;
 
