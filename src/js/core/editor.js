@@ -29,6 +29,7 @@ class Editor {
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
+		return this;
 	}
 
 	setupTab() {
@@ -42,6 +43,7 @@ class Editor {
 			this_ref.onMenuClick(e);
 		});
 		this.container.onClose = this.onClose;
+		return this;
 	}
 
 	setupFibWindow() {
@@ -53,6 +55,7 @@ class Editor {
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
+		return this;
 	}
 
 	removeHistory() {
@@ -76,18 +79,17 @@ class Editor {
 	static closeAll (type) {
 		DragBox.closeAll(type);
 		Tab.closeAll(type);
+		FibWindow.closeAll();
 	}
 
 	addCallback(cb_name, new_func) {
 		this.container[cb_name] = new_func;
 	}
 
-	// Dragbox ONLY
 	get width() {
 		return this.container.width;
 	}
 
-	// Dragbox ONLY
 	get height() {
 		return this.container.height;
 	}
@@ -103,11 +105,13 @@ class Editor {
 
 	setTitle (val) {
 		this.container.setTitle(val);
+		return this;
 	}
 
 	setSubtitle (val) {
 		if (this.container_type == 'dragbox')
 			this.container.setSubtitle(val);
+		return this;
 	}
 
 	onMenuClick (e) {

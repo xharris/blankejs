@@ -591,6 +591,12 @@
   transform: translateY(-50%);
   transform: translate(-50%, -50%);
 }
+.content[data-type="SceneEditor"] #toggle-scene-sidebar {
+  position: absolute;
+  top: 0px;
+  right: 5px;
+  margin-top: 8px;
+}
 .content[data-type="SceneEditor"] .sidebar {
   position: absolute;
   right: 5px;
@@ -611,6 +617,9 @@
   /* IMAGE */
   /*&:hover {*/
   /*}*/
+}
+.content[data-type="SceneEditor"] .sidebar.hidden {
+  right: -100%;
 }
 .content[data-type="SceneEditor"] .sidebar p {
   color: #ECEFF1;
@@ -1627,6 +1636,7 @@ body:after {
   width: 26px;
   padding: 0px;
   cursor: pointer;
+  position: relative;
   margin: 0px;
   width: 23px;
   height: 23px;
@@ -1657,6 +1667,15 @@ body:after {
 }
 .tool-container button:hover > .blanke-icon {
   opacity: 1;
+}
+.tool-container .btn-badge {
+  position: absolute;
+  right: 1px;
+  bottom: -5px;
+  margin: 0px;
+  color: #c8c8c8;
+  line-height: 18px;
+  text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 }
 #sidebar {
   /* width: 155px; */
@@ -1877,19 +1896,33 @@ body:after {
 .fib-container {
   background-color: transparent;
   position: absolute;
-  top: 0px;
   left: 0px;
+  right: 0px;
   border-radius: 4px;
-  transition: background-color ease-in-out 0.2s;
-  transition: opacity ease-in-out 0.2s;
+  /* transition: background-color ease-in-out 0.2s;
+	transition: opacity ease-in-out 0.2s; */
   transition: all ease-in-out 0.2s;
+  will-change: transform;
 }
 .fib-container * {
   transition: opacity ease-in-out 0.2s;
 }
 .fib-container.invisible {
   opacity: 0;
+  display: none;
   pointer-events: none;
+}
+.fib-container.no-split {
+  -webkit-transform: translate(0%, 0%) !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 1;
+  pointer-events: auto;
+  background: transparent;
+}
+.fib-container.no-split > .content {
+  top: 0px;
+  margin: 0px;
 }
 .fib-container.focused {
   background-color: rgba(97, 97, 97, 0.7);

@@ -116,6 +116,13 @@
 		.centered();
 	}
 
+	#toggle-scene-sidebar {
+		position: absolute;
+		top: 0px;
+		right: @window-padding;
+		margin-top: 8px;
+	}
+
 	.sidebar {
 	    position: absolute;
 	    right: @window-padding;
@@ -125,6 +132,10 @@
 	    transition: all ease-in-out 0.2s;
 	    margin-top: 38px;
 	    z-index: 5;
+
+	    &.hidden {
+	    	right: -100%;
+	    }
 
 	    /*&:hover {*/
 	    	width: 150px;  	

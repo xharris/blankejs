@@ -1,0 +1,16 @@
+{
+    "scene": {
+        "objects": {
+            "adccfbb8": {
+                "name": "object0",
+                "char": "#",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "adccfbb8"
+            }
+        }
+    }
+}

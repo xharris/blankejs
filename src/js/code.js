@@ -522,7 +522,7 @@ class Code extends Editor {
 
 		this.setOnClick(function(){
 			openScript(this_ref.file);
-		})
+		});
 
 		this.codemirror.refresh();
 	}

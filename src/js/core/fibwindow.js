@@ -1,5 +1,6 @@
 var boxes = [];
-var MAX_WINDOWS = 5;
+var MAX_WINDOWS = 10; //5;
+var split_enabled = true;
 
 class FibWindow {
 	constructor (content_type) {
@@ -14,6 +15,7 @@ class FibWindow {
 		this.fib_container.classList.add("fib-container");
 		this.fib_container.id = "fib-container-"+this.guid;
 		this.fib_container.dataset.type = content_type;
+		this.fib_container.this_ref = this;
 		this.fib_container.addEventListener("click", function() {
 			// reset z index of others
 			app.getElements('.fib-container').forEach(function(e){
@@ -24,6 +26,9 @@ class FibWindow {
 			//this.style.zIndex = 15;
 			this.classList.add('focused');
 		});
+
+		this.fib_container.addEventListener("transitionend", this.callResize.bind(this));
+		window.addEventListener('resize', this.callResize.bind(this));
 
 		this.fib_title = document.createElement("div");
 		this.fib_title.classList.add("fib-title");
@@ -52,6 +57,13 @@ class FibWindow {
 		boxes.unshift(this);
 
 		FibWindow.resizeWindows();
+	}
+
+	callResize () {
+		let this_ref = this;
+		blanke.cooldownFn('scene-resize-'+this.guid, 100, function(){	
+			this_ref.onResize(this_ref.fib_content.offsetWidth, this_ref.fib_content.offsetHeight);
+		});
 	}
 
 	get width () {
@@ -86,6 +98,16 @@ class FibWindow {
 		return false;
 	}
 
+	// only show the first window and not the split screens
+	static toggleSplit () {
+		split_enabled = !split_enabled;
+		this.resizeWindows();
+	}
+
+	static refreshBadgeNum () {
+		app.setBadgeNum("#fibwindow-badge", boxes.length);
+	}
+
 	static resizeWindows () {
 		let x = 0, y = 0, width = 50, height = 100;
 
@@ -101,21 +123,51 @@ class FibWindow {
 		for (let b = 0; b < boxes.length; b++) {
 			let box_ref = boxes[b];
 
-			box_ref.fib_container.style.left = x+"%";
-			box_ref.fib_container.style.top = y+"%";
-			box_ref.fib_container.style.width = width+'%';
-			box_ref.fib_container.style.height = height+'%';
+			let b2 = b+1;
 
-			box_ref.onResize(box_ref.fib_content.offsetWidth, box_ref.fib_content.offsetHeight);		
-		
-			if ((b+1) % 2 == 0) {
-				if (b < boxes.length - 2) width /= 2;
-				y += height;
+			if (b2 < boxes.length || b2 % 2 == 0) {
+				if (b2 % 2 == 0) x += 100;
+				else x *= 2;
+			}
+
+			if (b2 < boxes.length || b2 % 2 != 0) {
+				if (b2 % 2 != 0 && b2 >= 3) y += 100;
+				else y *= 2;
+			}
+
+			// don't show header if it's the only window showing
+			if ((boxes.length == 1) || !split_enabled) {
+				box_ref.fib_container.classList.add("no-split");
 			} else {
-				if (b < boxes.length - 2) height /= 2;
-				x += width;
+				box_ref.fib_container.classList.remove("no-split");
+			}
+
+			if (split_enabled) {
+				box_ref.fib_container.classList.remove("invisible");
+				box_ref.fib_container.style.webkitTransform = "translate("+x+"%, "+y+"%)";
+
+				box_ref.fib_container.style.width = width+'%';
+				box_ref.fib_container.style.height = height+'%';
+
+			} else {
+				if (b == 0) {
+					box_ref.fib_container.classList.remove("invisible");
+
+				} else {
+					box_ref.fib_container.classList.add("invisible");
+
+				}
+
+			}
+			
+			if (b2 % 2 == 0) {
+				if (b2 < boxes.length - 1) width /= 2;
+			} else {
+				if (b2 < boxes.length - 1) height /= 2;
 			}
 		}
+
+		FibWindow.refreshBadgeNum();
 	}
 
 	setTitle (value) {
@@ -167,6 +219,7 @@ class FibWindow {
 			if (!type || (type && windows[i].dataset.type == type))
 				windows[i].remove();
 		}
+		boxes = [];
 	}
 
 	static showHideAll () {

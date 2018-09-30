@@ -112,6 +112,7 @@ class DragBox {
 		return false;
 	}
 
+
 	setupResize () {
 		var this_ref = this;
 		interact('#'+this.drag_container.id)
@@ -253,6 +254,7 @@ class DragBox {
 
 	appendTo (element) {
 		element.appendChild(this.drag_container);
+		DragBox.refreshBadgeNum();
 	}
 
 	onResize (w, h) {
@@ -279,6 +281,12 @@ class DragBox {
 	close () {
 		this.drag_container.remove();
 		if (this.onClose) this.onClose();
+		DragBox.refreshBadgeNum();
+	}
+
+	static refreshBadgeNum () {
+		var windows = app.getElements(".drag-container");
+		app.setBadgeNum("#dragbox-badge", windows.length);
 	}
 
 	static closeAll (type) {

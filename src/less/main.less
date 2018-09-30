@@ -106,6 +106,7 @@ body:before, body:after {
 	button {
 		.ui-button-sphere();
 		cursor: pointer;
+		position: relative;
 
 		&:hover {
 			color: @search-text-focus;
@@ -125,6 +126,16 @@ body:before, body:after {
 		&:hover > .blanke-icon {
 			opacity: 1;
 		}
+	}
+
+	.btn-badge {
+		position: absolute;
+	    right: 1px;
+	    bottom: -5px;
+	    margin: 0px;
+	    color: rgba(200, 200, 200, 1);
+	    line-height: 18px;
+	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 	}
 }
 
@@ -362,12 +373,13 @@ body:before, body:after {
 .fib-container {
 	background-color: transparent;
 	position: absolute;
-	top: 0px;
 	left: 0px;
+	right: 0px;
 	border-radius: 4px;
-	transition: background-color ease-in-out 0.2s;
-	transition: opacity ease-in-out 0.2s;
+	/* transition: background-color ease-in-out 0.2s;
+	transition: opacity ease-in-out 0.2s; */
 	transition: all ease-in-out 0.2s;
+	will-change: transform;
 
 	* {
 	    transition: opacity ease-in-out 0.2s;
@@ -375,7 +387,23 @@ body:before, body:after {
 
 	&.invisible {
 		opacity: 0;
+		display: none;
 		pointer-events: none;
+	}
+
+	&.no-split {
+		-webkit-transform: translate(0%, 0%) !important;
+
+		width: 100% !important;
+		height: 100% !important;
+		opacity: 1;
+		pointer-events: auto;
+		background: transparent;
+
+		>.content {
+			top: 0px;
+			margin: 0px;
+		}
 	}
 
 	&.focused {

@@ -7,8 +7,8 @@
   "window": {
     "frame": false,
     "transparent": true,
-    "width": 1080,
-    "height": 750,
+    "width":  800,
+    "height": 600,
     "icon": "src/logo.png"
   },
   "build": {

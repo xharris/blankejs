@@ -48,6 +48,14 @@ var app = {
 		}
 	},
 
+	setBadgeNum: function(id, num) {
+		if (num > 0) {
+			app.getElement(id).innerHTML = num;
+		} else {
+			app.getElement(id).innerHTML = '';
+		}
+	},
+
     contextMenu: function(x, y, items) {
         var menu = new nwGUI.Menu();
         for (var i = 0; i < items.length; i++) {
@@ -111,6 +119,7 @@ var app = {
 
 			dispatchEvent("closeProject", {path: app.project_path});
 			app.project_path = '';
+			Editor.closeAll();
 		}
 	},
 
@@ -162,7 +171,11 @@ var app = {
 	},
 
 	toggleWindowVis: function() {
-		DragBox.showHideAll()
+		DragBox.showHideAll();
+	},
+
+	toggleSplit: function() {
+		FibWindow.toggleSplit();
 	},
 
 	isServerRunning: function() {

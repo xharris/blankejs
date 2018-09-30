@@ -401,6 +401,14 @@ class SceneEditor extends Editor {
 			return layer_name;
 		}
 
+		// hide/show scene menu
+		this.el_toggle_sidebar = app.createElement("button", "ui-button-sphere");
+		this.el_toggle_sidebar.id = "toggle-scene-sidebar";
+		this.el_toggle_sidebar.innerHTML = "<i class='mdi mdi-light mdi-page-layout-sidebar-right'></i>";
+		this.el_toggle_sidebar.onclick = function() {
+			this_ref.el_sidebar.classList.toggle("hidden");
+		}
+
 		// TAG
 		this.el_tag_form = new BlankeForm([
 			['value', 'text', {'label':false}]
@@ -430,6 +438,7 @@ class SceneEditor extends Editor {
 		this.el_sidebar.appendChild(this.el_tag_form.container);
 
 		this.appendChild(this.el_sidebar);
+		this.appendChild(this.el_toggle_sidebar);
 		
 		function dragStart() {
 			if (!this_ref.dragging && this_ref.can_drag) {
@@ -752,19 +761,21 @@ class SceneEditor extends Editor {
 			}
 		});
 
-		window.addEventListener('resize', function (event){
-			var w = window.innerWidth;
-			var h = window.innerHeight;
-			//this part resizes the canvas but keeps ratio the same
-			this_ref.pixi.renderer.view.style.width = w + "px";
-			this_ref.pixi.renderer.view.style.height = h + "px";
-			//this part adjusts the ratio:
-			this_ref.pixi.renderer.resize(w,h);
-			this_ref.game_width = w;
-			this_ref.game_height = h;
+		this.addCallback('onResize', this.resizeEditor.bind(this));
+	}
 
-			this_ref.drawGrid();
-		})
+	resizeEditor () {
+		let w = this.width;
+		let h = this.height;
+
+		this.pixi.renderer.view.style.width = w + "px";
+		this.pixi.renderer.view.style.height = h + "px";
+		//this part adjusts the ratio:
+		this.pixi.renderer.resize(w,h);
+		this.game_width = w;
+		this.game_height = h;
+
+		this.drawGrid();
 	}
 
 	onClose () {
@@ -1696,9 +1707,7 @@ class SceneEditor extends Editor {
 		let this_ref = this;
 
 		this.file = file_path;
-		this.setHistoryClick = function() {
-			openScene(this_ref.file);
-		}
+
 		var data = nwFS.readFileSync(file_path, 'utf-8');
 		var first_layer = null;
 
@@ -1764,6 +1773,9 @@ class SceneEditor extends Editor {
 		}
 
 		this.setTitle(nwPATH.basename(file_path));
+		this.setOnClick(function(){
+			openScene(this_ref.file);
+		});
 	}
 
 	export () {
@@ -1881,6 +1893,7 @@ document.addEventListener('fileChange', function(e){
 });
 
 function openScene(file_path) {
+	console.log('open',file_path)
 	if (!FibWindow.focus(nwPATH.basename(file_path)))
 		(new SceneEditor(app)).load(file_path);
 }
