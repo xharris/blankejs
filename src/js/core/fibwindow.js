@@ -167,6 +167,8 @@ class FibWindow {
 			}
 		}
 
+		// update the history bar
+		if (boxes.length > 0 && boxes[0].history_id) app.setHistoryMostRecent(boxes[0].history_id);
 		FibWindow.refreshBadgeNum();
 	}
 
