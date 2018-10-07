@@ -82,6 +82,8 @@ class Exporter extends Editor {
 		let engine_path = app.settings.engine_path;
 		let project_name = app.project_settings.export.name;
 
+		blanke.toast("Starting export for "+target_os, 1000);
+	
 		nwFS.emptyDir(os_dir, function(err){
 
 			// create a LOVE file
@@ -112,7 +114,7 @@ class Exporter extends Editor {
 						nwFS.removeSync(love_path);
 						nwFS.copySync(engine_path,os_dir,{filter:function(path){
 							path = path.replace(process.cwd(),"");
-							let exclude = [".app",".exe",/[\\\/]lua/];
+							let exclude = [".app",".exe",/[\\\/]lua([\\\/]|\b)/];
 
 							for (let e of exclude) {
 								if (path.match(e)) {

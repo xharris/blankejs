@@ -5,6 +5,7 @@ class Console extends Editor {
 		super(...args);
 
 		this.setupDragbox();
+		this.removeHistory()
 		this.container.width = 460;
 		this.container.height = 130;
 

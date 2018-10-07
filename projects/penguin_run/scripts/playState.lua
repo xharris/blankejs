@@ -74,7 +74,8 @@ function PlayState:update(dt)
 
 	else
 		if not Net.is_connected and play_mode == 'online' then
-			Net.join("blanke-server-penguin-run.193b.starter-ca-central-1.openshiftapps.com", 8080)
+			Net.join("206.189.202.40",80)
+			--"blanke-server-penguin-run.193b.starter-ca-central-1.openshiftapps.com", 8080)
 		end
 		
 		main_view:zoom(1)

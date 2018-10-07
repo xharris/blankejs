@@ -442,6 +442,13 @@ var app = {
 		blanke.destroyElement(app.history_ref[id].entry);
 		blanke.destroyElement(app.history_ref[id].entry_title);
 		delete app.history_ref[id];
+	},
+
+	clearHistory: function() {
+		let history_ids = app.history_ref.keys();
+		for (let h = 0; h < history_ids[h].length; h++) {
+			app.removeHistory(history_ids[h]);
+		}
 	}
 }
 
@@ -685,6 +692,7 @@ nwWIN.on('loaded', function() {
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();
 			app.showWelcomeScreen();
+			app.clearHistory();
 		}});
 	});
 
