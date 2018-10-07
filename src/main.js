@@ -449,6 +449,24 @@ var app = {
 		for (let h = 0; h < history_ids[h].length; h++) {
 			app.removeHistory(history_ids[h]);
 		}
+	},
+
+	// rename a file only if the new path doesn't exist
+	renameSafely: function(old_path, new_path, fn_done) {
+		nwFS.pathExists(new_path, (err, exists) => {
+			// file exists
+			if (exists && fn_done)
+				fn_done(false);
+			else {
+				// does not exist, continue with renaming
+				nwFS.rename(old_path, new_path, (err) => {
+					if (err)
+						fn_done(false);
+					else
+						fn_done(true);
+				})
+			}
+		})
 	}
 }
 

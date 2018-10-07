@@ -565,15 +565,13 @@ class Code extends Editor {
 
 	rename (old_path, new_path) {
 		var this_ref = this;
-		nwFS.stat(new_path, function(err, stats){
-			// toLowerCase compensates for case-insensitive filesystems (windows)
-			if (!stats.isFile() || (old_path.toLowerCase() == new_path.toLowerCase())) {
-				// if there's an error, the file doesn't already exist and therefore renaming can continue
-				nwFS.rename(old_path, new_path);
+		app.renameSafely(old_path, new_path, (success) => {
+			if (success) {
 				this_ref.file = new_path;
 				this_ref.setTitle(nwPATH.basename(this_ref.file));
-			}
-		});
+			} else
+				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
+		})
 	}
 
 	renameModal () {

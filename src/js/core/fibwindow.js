@@ -8,6 +8,7 @@ class FibWindow {
 
 		this.title = '';
 		this.subtitle = '';
+		this.history_id = app.addHistory(this.title);
 
 		var this_ref = this;
 
@@ -177,7 +178,7 @@ class FibWindow {
 			this.fib_title.innerHTML = value+this.subtitle;
 			this.title = value;
 
-			if (!this.history_id) this.history_id = app.addHistory(this.title);
+			
 			app.setHistoryText(this.history_id, this.title);
 		}
 	}

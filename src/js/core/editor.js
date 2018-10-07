@@ -55,6 +55,9 @@ class Editor {
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
+		app.setHistoryContextMenu(this.container.history_id, function(e) {
+			this_ref.onMenuClick(e);
+		});
 		return this;
 	}
 

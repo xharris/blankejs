@@ -796,12 +796,14 @@ class SceneEditor extends Editor {
 
 	rename (old_path, new_name) {
 		var this_ref = this;
-		nwFS.readFile(nwPATH.dirname(this.file)+"/"+new_name, function(err, data){
-			if (err) {
-				nwFS.rename(old_path, nwPATH.dirname(this_ref.file)+"/"+new_name);
-				this_ref.file = nwPATH.dirname(this_ref.file)+"/"+new_name;
+		let new_path = nwPATH.dirname(this.file)+"/"+new_name;
+		
+		app.renameSafely(old_path, new_path, (success) => {
+			if (success) {
+				this_ref.file = new_path;
 				this_ref.setTitle(nwPATH.basename(this_ref.file));
-			}
+			} else
+				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
 		});
 	}
 
