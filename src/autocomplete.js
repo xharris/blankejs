@@ -27,7 +27,7 @@ module.exports.instance_regex = {
 		/\b(\w+)\s*=\s*<class_name>\.instances\[\d+\].*/g
 	],
 	//'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
-	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.]+[\'\"]\)\s+?/g,
+	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
 	'group': 	/\b((?:self.|self:)?\w+)\s*=\s*Group\(\).*/g,
 	'bezier': 	/\b((?:self.|self:)?\w+)\s*=\s*Bezier\([\d.,]*\).*/g,

@@ -112,7 +112,7 @@ class Editor {
 	}
 
 	setSubtitle (val) {
-		if (this.container_type == 'dragbox')
+		if (this.container_type == 'dragbox' || this.container_type == 'fibwindow')
 			this.container.setSubtitle(val);
 		return this;
 	}

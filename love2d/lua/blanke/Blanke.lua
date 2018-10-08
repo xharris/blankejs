@@ -96,6 +96,9 @@ Signal 	= blanke_require('Signal')
 anim8 	= blanke_require('extra.anim8')
 HC 		= blanke_require('extra.HC')
 blanke_require('extra.noobhub')
+lurker	= blanke_require("extra.lurker")
+lurker.quiet = true
+
 --grease 	= blanke_require('extra.grease')
 
 local modules = {'Group','Repeater','Map','Asset','Bezier','Camera','Canvas','Dialog','Font','Draw','Effect','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
@@ -448,6 +451,8 @@ BlankE = {
 	end,
 
 	update = function(dt)
+		lurker.update()
+	    
 	    dt = math.min(dt, min_dt) * dt_mod
 	    next_time = next_time + min_dt
 

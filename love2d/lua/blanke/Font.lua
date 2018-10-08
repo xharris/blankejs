@@ -3,6 +3,7 @@ Font = Class{
 	init = function(self, options)
 		self.options = {
 			name = "console.ttf",
+			image = '',
 			size = 12,
 			align = "left",
 			limit = -1
@@ -11,7 +12,15 @@ Font = Class{
 			for key, val in pairs(options) do self.options[key] = val end
 		end
 
-		self.font = love.graphics.newFont(self.options.name, self.options.size)
+		self:_makeFontObj()
+	end,
+
+	_makeFontObj = function(self)
+		if self.options.image == '' then
+			self.font = love.graphics.newFont(self.options.name, self.options.size)
+		else
+			self.font = love.graphics.newImageFont(Asset.getInfo('image',self.options.image).path, self.options.characters)
+		end
 	end,
 
 	_getOpt = function(self, key, override_opts)
@@ -23,10 +32,10 @@ Font = Class{
 	end,
 
 	set = function(self, key, val)
-		if key == 'size' and self.options.size ~= val then
-			self.font = love.graphics.newFont(val)
-		end
 		self.options[key] = val
+		if key == 'size' then
+			self:_makeFontObj()	
+		end
 	end,
 
 	get = function(self, key)

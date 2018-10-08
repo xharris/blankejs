@@ -435,6 +435,11 @@ var app = {
 		if (app.history_ref[id]) {
 			app.history_ref[id].entry_title.innerHTML = text;
 			app.history_ref[id].title = text;
+
+			for (let h in app.history_ref) {
+				if (app.history_ref[h].title == text && h != id)
+					app.removeHistory(h);
+			}
 		}
 	},
 

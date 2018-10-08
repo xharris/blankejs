@@ -1,6 +1,7 @@
 var boxes = [];
 var MAX_WINDOWS = 10; //5;
 var split_enabled = true;
+var SHOW_SINGLE_BOX_TITLEBAR = true;
 
 class FibWindow {
 	constructor (content_type) {
@@ -137,7 +138,7 @@ class FibWindow {
 			}
 
 			// don't show header if it's the only window showing
-			if ((boxes.length == 1) || !split_enabled) {
+			if ((boxes.length == 1 && !SHOW_SINGLE_BOX_TITLEBAR) || !split_enabled) {
 				box_ref.fib_container.classList.add("no-split");
 			} else {
 				box_ref.fib_container.classList.remove("no-split");
