@@ -6,7 +6,7 @@ Draw = Class{
 	},]]
 	background_color = {0,0,0,1},
 	color = {0,0,0,255},
-	reset_color = {1,1,1,1},
+	reset_color = {255,255,255,255},
 
 	colors = {'red','pink','purple','indigo','baby_blue','blue',
 			  'dark_blue','green','yellow','orange','brown',
@@ -126,8 +126,7 @@ Draw = Class{
 
 	reset = function(only)
     	if only == "color" or not only then 
-			Draw.color = Draw.reset_color
-			Draw.setColor(Draw.color)
+			Draw.setColor("white")
 		end 
 		if only == "transform" or not only then
 			love.graphics.origin()

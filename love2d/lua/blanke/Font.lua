@@ -42,6 +42,10 @@ Font = Class{
 		if self.options[key] ~= nil then return self.options[key] end
 	end,
 
+	getWidth = function(self, text)
+		return self.font:getWidth(text)
+	end,
+
 	draw = function(self, text, x, y, options) -- options can override font options
 		local get = function(key) return self:_getOpt(key, options) end -- because im lazy
 

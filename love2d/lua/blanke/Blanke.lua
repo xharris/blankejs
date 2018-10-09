@@ -4,7 +4,7 @@ function blanke_require(import)
 	return require(blanke_path..import)
 end
 
---love.graphics.setDefaultFilter("nearest","nearest")
+love.graphics.setDefaultFilter("nearest","nearest")
 
 blanke_require('Globals')
 blanke_require('Util')

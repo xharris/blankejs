@@ -95,10 +95,15 @@ module.exports.completions = {
 		{fn:"list", vars:{ file_type:'script / image / map / file' }}
 	],
 	"blanke-draw":[
-		{prop:"colors", info:'list of available colors'},
+		{fn:"translate", vars:{ x:'', y:'' }},
+		{fn:"scale", vars:{ x:'', y:'' }},
+		{fn:"shear", vars:{ x:'', y:'' }},
+		{fn:"rotate", vars:{ degrees:'' }},
+		{fn:"crop", vars:{ x:'', y:'', width:'', height:'' }},
 		{fn:"setBackgroundColor", vars:color_vars},
 		{fn:"randomColor", vars:{ alpha:'' }},
 		{fn:"setColor", vars:color_vars},
+		{prop:"colors", info:'list of available colors'},
 		{fn:"setLineWidth", vars:{ width:'' }},
 		{fn:"point", vars:{ x:'', y:'' }},
 		{fn:"points"},

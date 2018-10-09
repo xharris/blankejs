@@ -33,11 +33,12 @@ Image = Class{
 		self.yoffset = 0
 		self.color = {255,255,255}
 		self.alpha = 255
+		self.int_position = true
 
 		self.orig_width = self.image:getWidth()
 		self.orig_height = self.image:getHeight()
-		self.width = self.orig_width * self.xscale
-		self.height = self.orig_height * self.yscale
+		self.width = self.orig_width * math.abs(self.xscale)
+		self.height = self.orig_height * math.abs(self.yscale)
 		self.crop_rect = {0,0,self.orig_width,self.orig_height}
 	end,
 
@@ -52,13 +53,13 @@ Image = Class{
 
 	setWidth = function(self, width)
 		self.xscale = width / self.orig_width
-		self.width = self.orig_width * self.xscale
+		self.width = self.orig_width * math.abs(self.xscale)
 		return self
 	end,
 
 	setHeight = function(self, height)
 		self.yscale = height / self.orig_height
-		self.height = self.orig_height * self.yscale
+		self.height = self.orig_height * math.abs(self.yscale)
 		return self
 	end,
 
@@ -70,26 +71,31 @@ Image = Class{
 	setScale = function(self, x, y)
 		if not y then y = x end
 		self.xscale = x
-		self.width = self.orig_width * self.xscale
+		self.width = self.orig_width * math.abs(self.xscale)
 		self.yscale = y
-		self.height = self.orig_height * self.yscale
+		self.height = self.orig_height * math.abs(self.yscale)
 	end,
 
 	draw = function(self, x, y)
-		self.width = self.orig_width * self.xscale
-		self.height = self.orig_height * self.yscale
+		self.width = self.orig_width * math.abs(self.xscale)
+		self.height = self.orig_height * math.abs(self.yscale)
 
 		x = ifndef(x, self.x)
 		y = ifndef(y, self.y)
 
-		love.graphics.push()
-		love.graphics.setColor(Draw._parseColorArgs(self.color[1], self.color[2], self.color[3], self.alpha))	
-		if self.quad then
-			love.graphics.draw(self.image, self.quad, x, y, math.rad(self.angle), self.xscale, self.yscale, self.xoffset, self.yoffset, self.xshear, self.yshear)
-		else
-			love.graphics.draw(self.image, x, y, math.rad(self.angle), self.xscale, self.yscale, self.xoffset, self.yoffset, self.xshear, self.yshear)
+		if self.int_position then
+			x = math.floor(x)
+			y = math.floor(y)
 		end
-		love.graphics.pop()
+
+		Draw.stack(function()
+			love.graphics.setColor(Draw._parseColorArgs(self.color[1], self.color[2], self.color[3], self.alpha))	
+			if self.quad then
+				love.graphics.draw(self.image, self.quad, x, y, math.rad(self.angle), self.xscale, self.yscale, self.xoffset, self.yoffset, self.xshear, self.yshear)
+			else
+				love.graphics.draw(self.image, x, y, math.rad(self.angle), self.xscale, self.yscale, self.xoffset, self.yoffset, self.xshear, self.yshear)
+			end
+		end)
 		return self
 	end,
 

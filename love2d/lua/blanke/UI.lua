@@ -4,6 +4,38 @@ Signal.on('modules_loaded', function()
 end)
 
 UI = Class{
+	element_dim = {},
+	ret_element = {},
+	update = function(dt)
+		function mouseInElement(btn_dimensions)
+			return 
+				mouse_x > btn_dimensions[1] and	mouse_y > btn_dimensions[2] and
+				mouse_x < btn_dimensions[3] and mouse_y < btn_dimensions[4]
+		end
+
+		if Input("_UI_mouse1") then
+			for name, dims in pairs(UI.element_dim) do
+				if mouseInElement(dims) then
+					UI.ret_element[name] = true
+				else
+					UI.ret_element[name] = false
+				end
+			end
+		else
+			for name, dims in pairs(UI.element_dim) do
+				UI.ret_element[name] = false
+			end
+		end
+	end,
+
+	button = function(name, x, y, w, h)
+		UI.element_dim[name] = {x,y,x+w,y+h}
+
+		return UI.ret_element[name]
+	end
+}
+
+oldUI = Class{
 	margin = 4,
 	element_width = 100,
 	element_height = 16,
