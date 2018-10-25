@@ -121,6 +121,7 @@ var app = {
 			app.project_path = '';
 			Editor.closeAll();
 			app.clearHistory();
+			app.showWelcomeScreen();
 		}
 	},
 
@@ -451,8 +452,8 @@ var app = {
 	},
 
 	clearHistory: function() {
-		let history_ids = app.history_ref.keys();
-		for (let h = 0; h < history_ids[h].length; h++) {
+		let history_ids = Object.keys(app.history_ref);
+		for (let h = 0; h < history_ids.length; h++) {
 			app.removeHistory(history_ids[h]);
 		}
 		app.getElement("#history").innerHTML = "";
@@ -716,7 +717,6 @@ nwWIN.on('loaded', function() {
 		}});
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();
-			app.showWelcomeScreen();
 		}});
 	});
 
