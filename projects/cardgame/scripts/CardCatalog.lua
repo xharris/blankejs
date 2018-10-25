@@ -13,14 +13,34 @@ function CardCatalog:addCard(new_card)
 	self.cards:add(new_card)
 end
 
+function CardCatalog:getCardsList()
+	local ret_table = {}
+	self.cards:forEach(function(c, card)
+		table.insert(ret_table, card:getHash())	
+	end)
+	return ret_table
+end
+
 function CardCatalog:setSize(w,h)
 	self.width = w - (w % 50) + self.img_button.width + 2
 	self.height = h - (h % 50)
 end
 
+function CardCatalog:removeCardIndex(c)
+	self.cards:remove(c)
+end
+
+function CardCatalog:clearCards()
+	self.cards:clear()
+end
+
 function CardCatalog:draw()
+	Draw.reset()
 	Draw.setColor("black")
 	
+	local card_primary = Input("primary")
+	local card_secondary = Input("secondary")
+		
 	-- scroll bar
 	local width = self.width - self.img_button.width - 2
 	local visibile_rows = self.height % 50
@@ -36,34 +56,58 @@ function CardCatalog:draw()
 		end
 	end
 	
-	-- draw up/down buttons
+	-- UP Button
 	self.img_button.x = self.x + self.width - self.img_button.width + 2
 	self.img_button.y = self.y + self.img_button.height
 	self.img_button.yscale = -1
+	if self.scroll_y > 0 then
+		self.img_button.alpha = 1
+	else
+		self.img_button.alpha = .25
+	end
 	self.img_button:draw()
 	
-	if UI.button("btn_catalog_up", self.img_button.x, self.img_button.y - self.img_button.height, self.img_button.width, self.img_button.height) then
+	if card_primary == 1 and UI.mouseInside(self.img_button.x, self.img_button.y - self.img_button.height, self.img_button.width, self.img_button.height) then
 		scrollUp()
 	end
 	
+	-- DOWN Button
 	self.img_button.x = self.x + self.width - self.img_button.width + 2
 	self.img_button.y = self.y + self.height - self.img_button.height
 	self.img_button.yscale = 1
+	if self.y - self.scroll_y + (total_rows * 50) > self.y + self.height then
+		self.img_button.alpha = 1
+	else
+		self.img_button.alpha = .25
+	end
 	self.img_button:draw()
 	
-	if UI.button("btn_catalog_down", self.img_button.x, self.img_button.y, self.img_button.width, self.img_button.height) then
+	if card_primary == 1 and UI.mouseInside(self.img_button.x, self.img_button.y, self.img_button.width, self.img_button.height) then
 		scrollDown()
 	end
+	
+	local hover_rect = nil
 	
 	-- draw cards
 	local cx, cy = self.x, self.y
 	self.cards:forEach(function(c, card)
 		card.x = cx
 		card.y = cy - self.scroll_y
-		card.cost = c
 			
 		if card.y > self.y - 2 and card.y < self.y + self.height then
 			card:draw()
+				
+			if UI.mouseInside(card.x, card.y, card.width, card.height) then
+				hover_rect = {card.x, card.y, card.width, card.height}
+					
+				if card_primary == 1 and self.onCardSelect then
+					self:onCardSelect(card:getInfo(), c)
+				end
+					
+				if card_secondary == 1 and self.onCardAction then
+					self:onCardAction(card:getInfo(), c)	
+				end
+			end
 		end
 
 		cx = cx + card.width
@@ -72,5 +116,13 @@ function CardCatalog:draw()
 			cy = cy + card.height
 		end
 	end)
+	Draw.setColor("black")
 	Draw.rect("line",self.x,self.y,width,self.height)
+	
+	if hover_rect then
+		Draw.setColor("white")
+		Draw.setLineWidth(2)
+		Draw.rect("line", hover_rect[1], hover_rect[2], hover_rect[3], hover_rect[4])
+	end
+
 end

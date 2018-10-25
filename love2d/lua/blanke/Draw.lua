@@ -127,6 +127,7 @@ Draw = Class{
 	reset = function(only)
     	if only == "color" or not only then 
 			Draw.setColor("white")
+			Draw.setLineWidth(1)
 		end 
 		if only == "transform" or not only then
 			love.graphics.origin()

@@ -147,22 +147,22 @@ function Penguin:update(dt)
 	-- left/right movement
 	if not self.net_object then
 		self.hspeed = 0
-		if Input("player_right") then
+		if Input("player_right") > 0 then
 			self.hspeed = self.walk_speed
 			self:netSync('x','y')
 		end
-		if Input("player_left") then
+		if Input("player_left") > 0 then
 			self.hspeed = -self.walk_speed
 			self:netSync('x','y')
 		end
 		
-		if Input("player_up") then
+		if Input("player_up") > 0 then
 			self:jump()
 			self:netSync('x','y')
 		end
 		self:netSync('hspeed','vspeed')
 
-		if Input("emote1") then
+		if Input("emote1") == 1 then
 			self:setEyes(2)
 		end
 	end

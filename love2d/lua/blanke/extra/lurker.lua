@@ -135,7 +135,7 @@ function lurker.onerror(e, nostacktrace)
   love.graphics.setFont(love.graphics.newFont(12))
 
   love.draw = function()
-  --[[
+  
     local pad = 25
     local width = love.graphics.getWidth()
 
@@ -165,7 +165,7 @@ function lurker.onerror(e, nostacktrace)
     drawtext(msg, pad, pad + 90, colors[5], width - pad * 2)
 
     love.graphics.reset()
-    ]]
+    
   end
 end
 

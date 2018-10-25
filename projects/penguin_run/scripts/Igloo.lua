@@ -50,7 +50,7 @@ end
 
 function Igloo:update(dt)
 	self.onCollision["closet"] = function(other, sep_vector)
-		if other.tag:contains("Penguin") and Input('confirm') then
+		if other.tag:contains("Penguin") and Input('confirm') == 1 then
 			if not self.ent_closet or self.ent_closet._destroyed then
 				self.ent_closet = OutfitMenu(self.main_penguin)
 			end
@@ -111,7 +111,7 @@ function Igloo:draw()
 	end
 	
 	-- menu control
-	if Input('confirm') then
+	if Input('confirm') == 1 then
 		-- color
 		if penguin_section == 2 then
 			Penguin.main_penguin_info.color_index = Penguin.main_penguin_info.color_index + 1
@@ -121,7 +121,7 @@ function Igloo:draw()
 		end
 		self.main_penguin:setColor()
 	end
-	if Input('menu_down') then
+	if Input('menu_down') == 1 then
 		-- hat
 		if penguin_section == 1 then
 			local hat_name = Penguin.main_penguin_info.hat
@@ -142,7 +142,7 @@ function Igloo:draw()
 		self.main_penguin:setHat()
 		self:refreshMenuHat()
 	end
-	if Input('menu_up') then
+	if Input('menu_up') == 1 then
 		-- hat
 		if penguin_section == 1 then
 			local hat_name = Penguin.main_penguin_info.hat

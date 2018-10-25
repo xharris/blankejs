@@ -58,6 +58,10 @@ function ifndef(var_check, default)
 	return default
 end
 
+function cond(condition, yes, no)
+	if condition then return yes else return no end
+end
+
 -- both inclusive
 function randRange(n1, n2)
 	return love.math.random(n1, n2)
@@ -319,9 +323,12 @@ function table.merge(...)
     end
 end
 
+-- puts all keys/values from new into old
 function table.update(old, new)
-	for k, v in pairs(new) do
-		old[k] = v
+	if type(new) == "table" then
+		for k, v in pairs(new) do
+			old[k] = v
+		end
 	end
 end
 

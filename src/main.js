@@ -120,6 +120,7 @@ var app = {
 			dispatchEvent("closeProject", {path: app.project_path});
 			app.project_path = '';
 			Editor.closeAll();
+			app.clearHistory();
 		}
 	},
 
@@ -454,6 +455,7 @@ var app = {
 		for (let h = 0; h < history_ids[h].length; h++) {
 			app.removeHistory(history_ids[h]);
 		}
+		app.getElement("#history").innerHTML = "";
 	},
 
 	// rename a file only if the new path doesn't exist
@@ -715,7 +717,6 @@ nwWIN.on('loaded', function() {
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();
 			app.showWelcomeScreen();
-			app.clearHistory();
 		}});
 	});
 

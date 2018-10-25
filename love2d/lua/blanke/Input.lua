@@ -27,12 +27,12 @@ _Input = Class{
 	add = function(self, input, ...)
         if input:starts("mouse") or input:starts("wheel") then
             local btn = input:split(".")[2]
-            self.in_mouse[input] = false
+            self.in_mouse[input] = 0
         elseif input == 'region' then
             self:addRegion(...)
 
         else -- regular keyboard input
-            self.in_key[input] = love.keyboard.isDown(ifndef(btn, input))
+            self.in_key[input] = 0 --cond(love.keyboard.isDown(ifndef(btn, input)), 1, 0)
             
         end
         return self
@@ -76,24 +76,35 @@ _Input = Class{
         if not self.can_repeat and self.pressed then return false end
 
         local ret_val = {}
+        local last_val = nil
+        function addRet(input_name, value)
+            last_val = value
+            ret_val[input_name] = value
+        end
 
         for input, val in pairs(self.in_key) do
-            if val == true then self.pressed = true; table.insert(ret_val, input) end
+            if val > 0 then self.pressed = true; addRet(input, val) end
         end
         
         for input, val in pairs(self.in_mouse) do
             if input:starts("wheel") and val ~= 0 then
                 self.in_mouse[input] = 0
                 return val
-            elseif val == true then self.pressed = true; table.insert(ret_val, input) end
+            elseif val > 0 then self.pressed = true; addRet(input, val) end
         end
         
         for input, val in pairs(self.in_region) do
             if val == true then self.pressed = true; return true end
         end
 
-        if #ret_val == 0 then
+        if not last_val then
             return false
+        elseif table.len(ret_val) == 1 then
+            if last_val == 0 then
+                return false
+            else
+                return last_val
+            end
         else
             return ret_val
         end
@@ -116,22 +127,33 @@ Input = {
     
     keypressed = function(key)
         for o, obj in pairs(Input.keys) do
-            if obj.in_key[key] ~= nil then obj.in_key[key] = true end
+            if obj.in_key[key] ~= nil then obj.in_key[key] = obj.in_key[key] + 1 end
         end
         return Input
     end,
     
     keyreleased = function(key)
         for o, obj in pairs(Input.keys) do
-            if obj.in_key[key] ~= nil then obj.in_key[key] = false; obj.pressed = false end
+            if obj.in_key[key] ~= nil then obj.in_key[key] = 0; obj.pressed = false end
         end
         return Input
+    end,
+
+    update = function()
+        for o, obj in pairs(Input.keys) do
+            for input_name, val in pairs(obj.in_mouse) do
+                if obj.in_mouse[input_name] > 0 then obj.in_mouse[input_name] = obj.in_mouse[input_name] + 1 end  
+            end
+            for input_name, val in pairs(obj.in_key) do
+                if obj.in_key[input_name] > 0 then obj.in_key[input_name] = obj.in_key[input_name] + 1 end
+            end
+        end
     end,
     
     mousepressed = function(x, y, button)
         local btn_string = "mouse." .. button
         for o, obj in pairs(Input.keys) do
-            if obj.in_mouse[btn_string] ~= nil then obj.in_mouse[btn_string] = true end
+            if obj.in_mouse[btn_string] ~= nil then obj.in_mouse[btn_string] = obj.in_mouse[btn_string] + 1 end
             
             local region = obj:getRegion(x, y)
             if region ~= nil then
@@ -144,7 +166,7 @@ Input = {
     mousereleased = function(x, y, button)
         local btn_string = "mouse." .. button
         for o, obj in pairs(Input.keys) do
-            if obj.in_mouse[btn_string] ~= nil then obj.in_mouse[btn_string] = false end
+            if obj.in_mouse[btn_string] ~= nil then obj.in_mouse[btn_string] = 0 end
             
             local region = obj:getRegion(x, y)
             if region ~= nil then
@@ -190,7 +212,9 @@ Input = {
             local ret_val = false
             local args = {...}
             for a, arg in pairs(args) do
-                ret_val = Input.keys[arg]()
+                if Input.keys[arg] then
+                    ret_val = Input.keys[arg]()
+                end
             end
             return ret_val
         end

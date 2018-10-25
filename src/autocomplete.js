@@ -29,10 +29,14 @@ module.exports.instance_regex = {
 	//'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
-	'group': 	/\b((?:self.|self:)?\w+)\s*=\s*Group\(\).*/g,
-	'bezier': 	/\b((?:self.|self:)?\w+)\s*=\s*Bezier\([\d.,]*\).*/g,
+	'group': 	[
+		/\b(?:self\.)?(\w+)\s*=\s*Group\(\)\s+?/g,
+		/\b(\w+\.instances).*/g
+	],
+	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\d.,]*\)\s+?/g,
 	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g
 }
+// old group/bezier regex: /\b(?:self.|self:)?(\w+)\s*=\s*Group\(\).*/g
 
 // how to treat use of the 'self' keyword when used inside a callback
 module.exports.self_reference = {
@@ -73,12 +77,14 @@ module.exports.completions = {
 		{fn:"add", vars:{ obj:'' }},
 		{fn:"get", vars:{ index:'' }},
 		{fn:"remove", vars:{ index:'number / reference to object with a uuid' }},
+		{fn:"clear", vars:{ clear:'' }},
 		{fn:"forEach", vars:{ func: 'calls func(index, obj) for each object'}},
 		{fn:"call", vars:{ func_name:'calls object[func_name](...) for each object', etc:'' }},
 		{fn:"destroy"},
 		{fn:"closest_point", info:'Entity only. get Entity closest to point', vars:{ x:'', y:'' }},
 		{fn:"closest", info:'Entity only. get Entity closest to entity'},
-		{fn:"size", info:'number of children'}
+		{fn:"size", info:'number of children'},
+		{fn:"sort", vars:{ attribute:'', descending:'default: false' }}
 	],
 	"blanke-bezier-instance":[
 		{fn:"addPoint", vars:{ x:'', y:'', i:'optional index. -1 = last' }},

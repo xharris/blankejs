@@ -99,7 +99,7 @@ function MenuState:draw()
 	end
 	
 	-- menu control
-	if Input('confirm') then
+	if Input('confirm') == 1 then
 		-- color
 		if penguin_section == 2 then
 			Penguin.main_penguin_info.color_index = Penguin.main_penguin_info.color_index + 1
@@ -109,7 +109,7 @@ function MenuState:draw()
 		end
 		penguin:setColor()
 	end
-	if Input('menu_down') then
+	if Input('menu_down') == 1 then
 		-- hat
 		if penguin_section == 1 then
 			local hat_name = Penguin.main_penguin_info.hat
@@ -130,7 +130,7 @@ function MenuState:draw()
 		penguin:setHat()
 		refreshMenuHat()
 	end
-	if Input('menu_up') then
+	if Input('menu_up') == 1 then
 		-- hat
 		if penguin_section == 1 then
 			local hat_name = Penguin.main_penguin_info.hat

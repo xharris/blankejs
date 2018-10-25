@@ -10,7 +10,7 @@ Debug = {
         local win_height = love.graphics:getHeight()
         local lines = math.min(game_height / fnt_height, #Debug.lines)
 
-        for i_line = 1, lines do
+        for i_line = lines, 1, -1 do
             line = Debug.lines[i_line]
 
             love.graphics.push()
@@ -54,7 +54,7 @@ Debug = {
             Debug._duplicate_count = 0
             Debug._duplicate_line = ''
             
-            table.insert(Debug.lines, 1, new_line)
+            table.insert(Debug.lines, new_line) --1, new_line)
             if #Debug.lines > (game_height / Debug._font:getHeight()) then
                 table.remove(Debug.lines, #Debug.lines)
             end

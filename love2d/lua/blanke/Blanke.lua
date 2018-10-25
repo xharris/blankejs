@@ -95,6 +95,7 @@ Signal 	= blanke_require('Signal')
 
 anim8 	= blanke_require('extra.anim8')
 HC 		= blanke_require('extra.HC')
+SpatialHash = blanke_require('extra.HC.spatialhash')
 blanke_require('extra.noobhub')
 lurker	= blanke_require("extra.lurker")
 lurker.quiet = true
@@ -477,6 +478,7 @@ BlankE = {
 		if not BlankE._mouse_updated then
 			BlankE._mouse_x, BlankE._mouse_y = mouse_x, mouse_y
 		end
+
 	end,
 
 	drawToScale = function(func)
@@ -506,6 +508,7 @@ BlankE = {
 			StateManager.iterateStateStack('draw')
 		end)
 
+		Input.update()
 		BlankE.game_canvas:draw(BlankE._offset_x * BlankE.scale_x, BlankE._offset_y * BlankE.scale_y, 0, BlankE.scale_x, BlankE.scale_y)
 		
 		if BlankE.draw_debug then Debug.draw() end
@@ -525,6 +528,7 @@ BlankE = {
 	        return
 	    end
 	    love.timer.sleep(next_time - cur_time)
+	    
 	end,
 
 	drawOutsideWindow = function()

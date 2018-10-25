@@ -440,6 +440,7 @@ num[4] 	red
 -- class methods
 setBackgroundColor(r, g, b, a)
 setColor(r, g, b, a)				
+randomColor(a)						-- random color with alpha a
 resetColor()						-- color = reset_color	
 push()
 pop()
@@ -475,6 +476,7 @@ Timer([duration])						-- in seconds
 int duration							-- 0s
 bool disable_on_all_called				-- true. The timer will stop running once every supplied function is called
 int time 								-- elapsed time in seconds
+bool running
 
 -- instance methods
 before(function, [delay])				-- starts immediately unless delay is supplied
@@ -643,6 +645,7 @@ forEach(t, func)								-- will return a value and end early if 'func' returns a
 random(t)
 keys(t)
 join(t, sep)
+update(old, new)								-- update values in old table with values in new table
 
 map2Dindex(x, y, columns)
 map2Dcoords(i, columns)

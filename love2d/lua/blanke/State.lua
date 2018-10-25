@@ -144,9 +144,9 @@ StateManager = {
 
 	switch = function(name)
 		local current_state = StateManager.current_state
-		-- add to state stack
-		StateManager.clearStack()
-        if name ~= nil then
+        if name ~= nil and name ~= '' then
+			-- add to state stack
+			StateManager.clearStack()
             StateManager.push(name, current_state)
         end
 	end,

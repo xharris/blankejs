@@ -1,5 +1,8 @@
 BlankE.addEntity("Card")
 
+Save.open("cards.json")
+Card.cards = Save.file_data
+
 local fnt_cardname = Font{
 	image = "fnt_card",
 	characters = " abcdefghijklmnopqrstuvwxyz" ..
@@ -14,24 +17,63 @@ header_mask:setup("outside")
 local small_art_mask = Mask("replace")
 small_art_mask:setup("inside")
 
-function Card:init()
-	self.name = "Basic Bird"
-	self.attribute = "bird"
-	self.cost = 0
-	self.description = "once per turn: cannot be fired"
-	
-	self.img_attr = Image("attr_bird")
-	self.img_art = Image("Basic Bird")
-	
+function Card:init(hash_val)		
 	self.fnt_description = Font{
 		size = 20
 	}
+	self.size = 'S'
 	
-	self:setSize('L')
+	if hash_val then
+		self:useHash(hash_val)
+		self:setSize('L')
+	end
 end
 
-function Card:update(dt)
+function Card:getInfo()
+	return {
+		hash = self.hash_val,
+		card_type = self.card_type,
+		name = self.name,
+		attribute = self.attribute,
+		cost = self.cost,
+		description = self.description,
+		quick = self.quick
+	}
+end
 
+function Card:useHash(hash)
+	if Card.cards[hash] then
+		self.hash_val = hash
+		self:useInfo(Card.cards[hash])
+	end
+end
+
+function Card:copy()
+	return Card(self.hash)
+end
+
+function Card:useInfo(info)
+	table.update(self, info)
+	
+	self.attribute = string.lower(self.attribute)
+	
+	if Asset.has('image',"attr_"..self.attribute) then
+		self.img_attr = Image("attr_"..self.attribute)
+	else
+		self.img_attr = Image("attr_bird")	
+	end
+	
+	if Asset.has('image',self.name) then
+		self.img_art = Image(self.name)
+	else
+		self.img_art = Image("bird_blank")
+	end
+	self:setSize(self.size)
+	return self
+end
+
+function Card:getHash()
+	return self.hash_val
 end
 
 --[[
@@ -45,28 +87,43 @@ function Card:setSize(new_size)
 		self.width = 50
 		self.height = 50
 		self.margin = 0
+		self.scale = 1
 		
-		self.img_art:setScale(1)
 	end
 	
 	if self.size == 'L' then
 		self.width = 262
 		self.height = 150
 		self.margin = 10
+		self.scale = 2
 		
-		self.img_art:setScale(2)
-		self.fnt_description:set("limit",self.width - self.img_art.width - (self.margin*5))
 	end
 	
-	self.scale = 1 
+	if self.img_art then
+		self.img_art:setScale(self.scale)
+		if self.size == "L" then
+			self.fnt_description:set("limit",self.width - self.img_art.width - (self.margin*5))
+		end
+	end
 end
 
 function Card:draw()
+	if not self.name then return end
+	
 	local draw_x = self.x
 	local draw_y = self.y
 
 	-- fill
+	Draw.reset()
 	Draw.setColor("grey")
+	if self.card_type == "P" then
+		Draw.setColor("blue")
+	elseif self.card_type == "S" then
+		Draw.setColor("green")
+	elseif self.card_type == "I" then
+		Draw.setColor("orange")
+	end
+	
 	Draw.rect("fill",draw_x, draw_y, self.width, self.height)
 
 	-- outline

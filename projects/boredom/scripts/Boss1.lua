@@ -65,7 +65,6 @@ function Boss1:init()
 	
 	-- stage timer
 	self.main_timer:after(function()
-			Debug.log("hi")
 		if self.stage == 1 then
 			self.stage = 2	
 		end
@@ -93,8 +92,7 @@ function Boss1:update(dt)
 end
 
 function Boss1:draw()
-	self.run_blur:draw()
-	
+	-- self.run_blur:draw()
 		
 	-- stage 0: draw Z's
 	if self.stage == 0 then

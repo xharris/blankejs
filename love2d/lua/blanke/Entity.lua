@@ -1,6 +1,7 @@
 local cos = math.cos
 local sin = math.sin
 local rad = math.rad
+local entity_spash = {}
 
 Entity = Class{
 	x = 0,
@@ -10,6 +11,10 @@ Entity = Class{
     _init = function(self, parent) 
     	self._entity = true   
     	self.classname = ifndef(self.classname, 'entity')
+
+    	if not entity_spash[self.classname] then
+    		entity_spash[self.classname] = SpatialHash(math.min(game_width, game_height)/2)
+    	end
 
     	self._destroyed = false
 	    self._images = {}		
@@ -73,6 +78,7 @@ Entity = Class{
 		if not self.sprite_index then
 			self.sprite_index = table.keys(self._sprites)[1]
 		end
+		-- entity_spash[self.classname]:register(self, self.x, self.y, self.x, self.y)
     end,
 
     __newindex = function(self, k, v)
@@ -92,6 +98,7 @@ Entity = Class{
     		shape:destroy()
     	end
 
+    	-- entity_spash[self.classname]:remove(self)
     	_destroyGameObject('entity', self)
     end,
 
@@ -248,7 +255,12 @@ Entity = Class{
 		end
 
 		self:netSync()
-
+--[[
+		entity_spash[self.classname]:update(self,
+			self.xprevious, self.yprevious, self.xprevious, self.yprevious,
+			self.x, self.y, self.y, self.y
+		)
+		]]
 		return self
 	end,
 
@@ -494,7 +506,36 @@ Entity = Class{
         	end
         end
         return false
-    end
+    end--[[,
+
+    getNearby = function(self, classname)
+    	if entity_spash[classname] then
+    		return entity_spash[classname]:cell(entity_spash[classname]:cellCoords(self.x, self.y))
+    	else
+    		return {}
+    	end
+    end]]
 }
+
+Entity.getNearby = function(classname, x, y)
+    	if entity_spash[classname] then
+    		return entity_spash[classname]:cellAt(x, y)
+    	else
+    		return {}
+    	end
+end
+
+Entity.drawHash = function(classname)
+	if entity_spash[classname] then
+		entity_spash[classname]:draw('line')
+	end
+end
+
+Entity.getCell = function(classname, x, y)
+	if entity_spash[classname] then
+		return entity_spash[classname]:cellCoords(x, y)
+	end
+	return 0, 0
+end
 
 return Entity

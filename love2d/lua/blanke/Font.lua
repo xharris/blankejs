@@ -46,6 +46,10 @@ Font = Class{
 		return self.font:getWidth(text)
 	end,
 
+	getHeight = function(self)
+		return self.font:getHeight()
+	end,
+
 	draw = function(self, text, x, y, options) -- options can override font options
 		local get = function(key) return self:_getOpt(key, options) end -- because im lazy
 

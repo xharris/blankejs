@@ -28,7 +28,7 @@ Group = Class{
 
 	remove = function(self, o)
 		if (type(o) == "number") then
-			self.children[o] = nil
+			return table.remove(self.children, o)-- self.children[o] = nil
 		elseif o.uuid then
 			local i = 1
 			while i <= #self.children do
@@ -37,6 +37,13 @@ Group = Class{
 				end
 				i = i + 1
 			end
+		end
+	end,
+
+	clear = function(self)
+		local size = self:size()
+		for i = 1, size do
+			self:remove(i)
 		end
 	end,
 
@@ -68,12 +75,13 @@ Group = Class{
 	end,
 
 	-- for Entity only
-	closest_point = function(self, x, y)
-		local min_dist, min_ent
+	closestPoint = function(self, x, y)
+		local min_dist = -1
+		local min_ent
 
 		for i_e, e in ipairs(self.children) do
-			local dist = e:distance_point(x, y)
-			if dist < min_dist then
+			local dist = e:distancePoint(x, y)
+			if min_dist == -1 or dist < min_dist then
 				min_dist = dist
 				min_ent = e
 			end
@@ -89,6 +97,12 @@ Group = Class{
 	size = function(self)
 		return #self.children
 	end,
+
+	sort = function(self, attr, descending)
+		local sort_fn = function (a, b) return a[attr] < b[attr] end
+		if descending then sort_fn = function (a, b) return a[attr] > b[attr] end end
+		table.sort(self.children, sort_fn)
+	end
 }
 
 return Group

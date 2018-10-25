@@ -1,21 +1,142 @@
 Signal.on('modules_loaded', function()
-	Input.set("_UI_mouse1", "mouse.1")
-	Input["_UI_mouse1"].can_repeat = false
+	Input.set("_UI_primary", "mouse.1")
 end)
+
+UIList = Class{
+	init = function(self, in_opts)
+		self.options = {
+			x=0, y=0, rows=1, columns=1, item_width=1, item_height=1, max_width=0, max_height=0, size=0,
+			scroll_image=nil,
+			fn_drawContainer=function(x,y,w,h)
+				Draw.stack(function()
+					Draw.reset()
+					Draw.setColor("black")
+					Draw.rect("line", x, y, w, h)
+				end)
+			end,
+			fn_drawItem=function()
+
+			end
+		}
+		table.update(self.options, ifndef(in_opts, {}))
+
+		if self.options.max_width == 0 then self.options.max_width = game_width - self.options.x end
+		if self.options.max_height == 0 then self.options.max_height = game_height - self.options.y end
+
+		self.scroll_pos = 1
+
+		_addGameObject('uilist', self)
+	end,
+
+	setSize = function(self, size)
+		self.options.size = size
+		return self
+	end,
+
+	-- +1 up / -1 down
+	scroll = function(self, amt)
+		self.scroll_pos = self.scroll_pos + amt
+		local upper_limit = self.options.size - math.max(
+			math.floor(self.options.max_width / self.options.item_width),
+			math.floor(self.options.max_height / self.options.item_height),
+			math.floor((self.options.max_width*self.options.max_height) / (self.options.item_width*self.options.item_height))
+			) + 1
+		if self.scroll_pos > upper_limit then
+			self.scroll_pos = upper_limit
+		end
+		if self.scroll_pos < 1 then
+			self.scroll_pos = 1
+		end
+		return self
+	end,
+
+	draw = function(self)
+		local options = self.options
+
+		-- container/border
+		local scroll_w, scroll_h = 20, 20
+		if options.scroll_image then
+			scroll_w = options.scroll_image.width
+			scroll_h = options.scroll_image.height
+		end
+
+		options.fn_drawContainer(options.x, options.y, options.max_width, options.max_height)
+
+		-- draw items
+		local x, y = 0, 0
+		local w, h = options.item_width, options.item_height
+		for i = self.scroll_pos, options.size do
+			if i <= options.size and x + w - 1 < options.max_width and y + h - 1 < options.max_height then
+				-- local c, r = map2Dindex(i, options.columns)
+				w, h = options.fn_drawItem(i, x+self.options.x, y+self.options.y)
+				w = ifndef(w, options.item_width)
+				h = ifndef(w, options.item_height)
+
+				x = x + w
+				if x + w > options.max_width then
+					x = 0
+					y = y + h
+				end
+			end
+		end
+
+		-- scroll buttons
+		local scroll_x, scroll_up_y, scroll_down_y = options.x + options.max_width, options.y, options.y + options.max_height - scroll_h
+		if options.scroll_image then
+
+		else
+			Draw.stack(function()
+				-- scroll up btn
+				Draw.setColor("white")
+				Draw.rect("fill",scroll_x,scroll_up_y,scroll_w,scroll_h)
+				Draw.setColor("black")
+				Draw.rect("line",scroll_x,scroll_up_y,scroll_w,scroll_h)
+
+				-- scroll down btn
+				Draw.setColor("white")
+				Draw.rect("fill",scroll_x,scroll_down_y,scroll_w,scroll_h)
+				Draw.setColor("black")
+				Draw.rect("line",scroll_x,scroll_down_y,scroll_w,scroll_h)
+			end)
+		end
+
+
+		if Input("_UI_primary") == 1 then
+			-- scroll up click
+			if UI.mouseInside(scroll_x, scroll_up_y, scroll_w, scroll_h) then
+				self:scroll(-1)
+			end
+			-- scroll down click
+			if UI.mouseInside(scroll_x, scroll_down_y, scroll_w, scroll_h) then
+				self:scroll(1)
+			end
+		end
+	end
+}
 
 UI = Class{
 	element_dim = {},
 	ret_element = {},
+	color_names = {'red','purple','blue','green','yellow','orange','brown','black'},
+	colors = {
+		red={{255,205,210,255},{244,67,54,255},{183,28,28,255}},
+		purple={{225,190,231,255},{156,39,176,255},{74,20,140,255}},
+		blue={{179,229,252,255},{3,169,244,255},{1,87,155,255}},
+		green={{200,230,201,255},{76,175,80,255},{27,94,32,255}},
+		yellow={{255,249,196,255},{255,235,59,255},{245,127,23,255}},
+		orange={{255,204,188,255},{255,87,34,255},{191,54,12,255}},
+		brown={{215,204,200,255},{121,85,72,255},{62,39,35,255}},
+		black={{245,245,245,255},{158,158,158,255},{33,33,33,255}}
+	},
+	mouseInside = function(x,y,w,h)
+		return
+			mouse_x > x and mouse_x < x + w and
+			mouse_y > y and mouse_y < y + h
+	end,
 	update = function(dt)
-		function mouseInElement(btn_dimensions)
-			return 
-				mouse_x > btn_dimensions[1] and	mouse_y > btn_dimensions[2] and
-				mouse_x < btn_dimensions[3] and mouse_y < btn_dimensions[4]
-		end
-
 		if Input("_UI_mouse1") then
 			for name, dims in pairs(UI.element_dim) do
-				if mouseInElement(dims) then
+				if UI.mouseInside(dims[1], dims[2], dims[3], dims[4]) then
 					UI.ret_element[name] = true
 				else
 					UI.ret_element[name] = false
@@ -32,6 +153,10 @@ UI = Class{
 		UI.element_dim[name] = {x,y,x+w,y+h}
 
 		return UI.ret_element[name]
+	end,
+
+	list = function(in_opts)
+		return UIList(in_opts)
 	end
 }
 
