@@ -48,12 +48,21 @@ class AssetManager extends Editor {
 		let this_ref = this;
 		let file_type = app.findAssetType(path);
 
+		function defineDragData(d_type, d_val) {
+			return function(ev) {
+				ev.dataTransfer.setData(d_type, d_val);
+			}
+		}
+
 		if (file_type != 'other') {
 			let el_file_row = app.createElement("div", "file-row");
 
 			el_file_row.setAttribute('data-path',path);
 			el_file_row.setAttribute('data-type',file_type);
 			el_file_row.innerHTML = nwPATH.basename(path);
+			el_file_row.draggable = true;
+			el_file_row.ondragstart = defineDragData("text/plain", path);
+
 			el_file_row.addEventListener('click',function(ev){
 				let el_files = app.getElements('.file-list > .file-row');
 				for (let e = 0; e < el_files.length; e++) {
