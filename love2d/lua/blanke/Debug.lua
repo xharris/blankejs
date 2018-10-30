@@ -19,9 +19,10 @@ Debug = {
             if y > win_height/2 then
                 alpha = 255 - ((y-win_height/2)/(win_height/2)*255)
             end 
-            love.graphics.setColor(255,0,0,alpha)
+            Draw.reset("color")
+            Draw.setColor(1,0,0,alpha)
             love.graphics.setFont(Debug._font)
-            love.graphics.print(line, BlankE.left + Debug.margin, y+Debug.margin)
+            Draw.text(line, BlankE.left + Debug.margin, y+Debug.margin)
             love.graphics.pop()
         end
         love.graphics.setColor(255,255,255,255)

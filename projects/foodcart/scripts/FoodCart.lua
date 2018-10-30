@@ -13,6 +13,7 @@ function FoodCart:init()
 	
 	self.prepare_timer = Timer()
 	self.serve_timer = Timer()
+	self.serve_timer.duration = 5
 	
 	self.prepare_timer:every(function()
 		self.food:add(Food())
@@ -24,18 +25,40 @@ function FoodCart:draw()
 	Draw.rect("fill", self.x - 30, self.y - 20, 60, 40)
 	Draw.setColor("black")
 	Draw.text(self.food:size(), self.x - 30, self.y - 20)
+	Draw.setColor("red")
+	-- property rect
+	-- Draw.rect("line",self.x - 40, self.y - 30, 80, 60 + math.floor(self.line:size() / 3) * 22) 
 	Draw.reset()
+end
+
+function FoodCart:update(dt)
+	if Input("primary") == 1 then
+		self:servePenguin()
+	end
+end
+
+function FoodCart:onProperty(x, y)
+	function check(_x, _y, w, h) return x > _x and y > _y and x < _x+w and y < _y+h end
+	
+	-- main food stand + line of penguins
+	if check(self.x - 40, self.y - 30, 80, 60 + math.floor(self.line:size() / 3) * 22) then return true end
+	
+	return false
 end
 
 function FoodCart:getLineCoords(index)
 	local columns = 3
 	local x, y = map2Dcoords(index, columns)
-	if y % 2 == 0 then x = (columns + 1) - x end -- this makes the line serpent-style
+	local facing = -1
+	if y % 2 == 0 then
+		x = (columns + 1) - x
+		facing = 1
+	end -- this makes the line serpent-style
 
 	x = self.x - 20 + ((x - 1) * 20)
-	y = self.y + 25 + ((y - 1) * 20)
+	y = self.y + 25 + ((y - 1) * 10)
 
-	return randRange(x-1, x+1), randRange(y-1, y+1)
+	return randRange(x-1, x+1), randRange(y-1, y+1), facing
 end
 
 -- serve the first penguin in line
@@ -51,8 +74,9 @@ end
 
 function FoodCart:updateLine()
 	self.line:forEach(function(p, penguin)
-		local x, y = self:getLineCoords(p)
-		penguin:setTarget(x, y)
+		local x, y, facing = self:getLineCoords(p)
+		penguin:setTarget(x, y, true)
+		penguin.queue_facing = facing
 	end)
 end
 
@@ -73,4 +97,3 @@ function FoodCart:addToLine(penguin)
 end
 
 function FoodCart:removeFromLine(penguin) end
-function FoodCart:updateLine() end

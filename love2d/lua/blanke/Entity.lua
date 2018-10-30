@@ -146,6 +146,7 @@ Entity = Class{
 		end
 
 		-- check for collisions
+		local dx, dy = 0, 0
 		if not self.pause then
 			-- calculate speed/direction
 			local speedx, speedy = 0,0
@@ -176,8 +177,8 @@ Entity = Class{
 			self.xprevious = self.x
 			self.yprevious = self.y
 
-			local dx = self.hspeed + speedx
-			local dy = self.vspeed + speedy
+			dx = self.hspeed + speedx
+			dy = self.vspeed + speedy
 
 			-- move all shapes
 			for s, shape in pairs(self.shapes) do
@@ -253,6 +254,12 @@ Entity = Class{
 				self.speed = self.speed - (self.speed * self.friction)*dt
 			end
 		end
+
+		local old_hspd, old_vspd = self.hspeed, self.vspeed
+		self.hspeed = dx * dt
+		self.vspeed = dy * dt
+		if self.postUpdate then self:postUpdate(dt) end
+		self.hspeed, self.vspeed = old_hspd, old_vspd
 
 		self:netSync()
 --[[

@@ -5,9 +5,6 @@ local player_cart
 
 function PlayState:enter()
 	placeObjects()
-	Timer():every(function()
-		everything:sort("y")
-	end, 1):start()
 end
 
 function placeObjects()
@@ -22,6 +19,10 @@ function placeObjects()
 		everything:add(Npc())
 	end
 	everything:add(player_cart)
+end
+
+function PlayState:update(dt)
+	everything:sort("y")
 end
 
 function PlayState:draw()

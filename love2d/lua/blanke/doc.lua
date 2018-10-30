@@ -159,6 +159,7 @@ addShape(...)						--[[
 setMainShape(name)
 removeShape(name)					-- disables a shape. it is still in the shapes table however and will be replaced using addShape(same_name)
 distancePoint(x ,y)				-- entity origin distance from point
+distance(other_entity)
 moveTowardsPoint(x, y, speed)		-- sets direction and speed vars
 containsPoint(x, y)				-- checks if a point is inside the sprite (not hitboxes)
 
@@ -731,7 +732,7 @@ obj[] children
 add(obj)
 get(index)
 remove(index)				-- index can be number or reference to object with a uuid
-forEach(func)				-- calls func(index, obj) for each object
+forEach(func)				-- calls func(index, obj) for each object. If true is returned, the loop will break early
 call(func_name, [args])		-- calls obj[func_name](args) for each object
 destroy()					-- destroys all objects in group
 closest_point(x, y)			-- Entity only. get Entity closest to point

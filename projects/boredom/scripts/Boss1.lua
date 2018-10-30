@@ -4,6 +4,13 @@ local player
 
 function Boss1:init()
 	self.stage = 0
+	
+	self.initial_speed = 70
+	self.incr_speed = 5
+	self.max_speed = 80 -- don't fall off until boss is at max speed
+	self.turn_dist = 100 -- distance between player/boss that causes turn around
+	
+	self.turning = 0
 	--[[ 
 	0 - asleep
 	1 - 4: NOT asleep (wow)
@@ -19,7 +26,9 @@ function Boss1:init()
 	}
 	self:addAnimation{
 		name="walk1",
-		image="boss1_walk1"
+		image="boss1_walk1",
+		frames = {'1-2',1},
+		frame_size = {36,41}
 	}
 	
 	self.x = self.scene_rect[1]
@@ -68,6 +77,7 @@ function Boss1:init()
 		if self.stage == 1 then
 			self.stage = 2	
 		end
+			Debug.log(self.stage)
 	end)
 end
 
@@ -83,12 +93,24 @@ function Boss1:update(dt)
 		end
 	end
 	
+	-- start turn around
+	if not self.turning and (self.hspeed < 0 and player.x > self.x + self.turn_dist) or (self.hspeed > 0 and player.x < self.x - self.turn_dist) then
+		self.turning = 1 * math.sign(self.hspeed)
+		Debug.log(self.turning)
+	end
+	
+	-- finish turn around
+	--if self.turning != 0 and self.hspeed 
+	
 	if self.stage == 0 and player then
-		if self:distance(player) < 35 then
+		if self:distance(player) < 45 then
 			self.sprite_index = "idle"
 			self.stage = 1
 		end
-	end	
+	
+	elseif self.stage == 1 and not self.main_timer.running then
+		self.main_timer:start()
+	end
 end
 
 function Boss1:draw()
@@ -102,13 +124,17 @@ function Boss1:draw()
 	-- stage 1: waking up
 		self.sleep_z:draw()
 		self.sleep_z:setTexture(self.y_canvas)
-		self.main_timer:start()
+		self.sprite_index = "idle"
 		
 	elseif self.stage == 2 then
 	-- stage 2: walking
 		self.sprite_index = "walk1"
-		self.hspeed = -5
+		self.sprite_speed = 0.4
+		self.hspeed = -70
 		
+	elseif self.stage == 3 then
+	-- stage 3: jogging
+		self.sprite_speed = 0.8
 	end
 	
 	self:drawSprite()
