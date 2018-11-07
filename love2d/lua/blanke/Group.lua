@@ -91,7 +91,7 @@ Group = Class{
 	end,
 
 	closest = function(self, ent)
-		return self:closest_point(ent.x, ent.y)
+		return self:closestPoint(ent.x, ent.y)
 	end,
 
 	size = function(self)

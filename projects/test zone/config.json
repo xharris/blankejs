@@ -12,5 +12,8 @@
                 "uuid": "adccfbb8"
             }
         }
+    },
+    "export": {
+        "name": "test zone"
     }
 }

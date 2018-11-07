@@ -96,22 +96,21 @@ class Exporter extends Editor {
 				if (target_os == "windows") {
 					let exec_cmd = '';
 					let exe_path = nwPATH.join(os_dir, project_name+".exe");
-					// currently on MAC/LINUX
-					if (app.os == "mac" || app.os == "linux") {
-						exec_cmd = "cat "+nwPATH.join(engine_path,"love.exe")+" "+love_path+" > "+exe_path;
-					}
-					// currently on WINDOWS
-					if (app.os == "win") {
-						exec_cmd = "copy /b "+nwPATH.join(engine_path,"love.exe")+"+"+love_path+" "+exe_path;
-					}
 
-					exec(exec_cmd, (err, stdout, stderr) =>{
-						if (err) {
-							console.error(err);
-							return;
-						}
-
+					// TODO: test on mac/linux
+					// copy /b love.exe+game.love game.exe
+					let f_loveexe = nwFS.createReadStream(nwPATH.join(engine_path,"love.exe"), {flags:'r', encoding:'binary'});
+					let f_gamelove = nwFS.createReadStream(love_path, {flags:'r', encoding:'binary'});
+					let f_gameexe = nwFS.createWriteStream(exe_path, {flags:'w', encoding:'binary'});
+					// set up callbacks
+					f_loveexe.on('end', ()=>{ f_gamelove.pipe(f_gameexe, {end:false}); })
+					f_gamelove.on('end', ()=>{ f_gameexe.end(''); })
+					// start merging
+					f_loveexe.pipe(f_gameexe, {end:false});
+					// finished all merging
+					f_gameexe.on('finish', () => {
 						nwFS.removeSync(love_path);
+						// copy dlls and stuff
 						nwFS.copySync(engine_path,os_dir,{filter:function(path){
 							path = path.replace(process.cwd(),"");
 							let exclude = [".app",".exe",/[\\\/]lua([\\\/]|\b)/];

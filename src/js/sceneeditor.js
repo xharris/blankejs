@@ -918,9 +918,9 @@ class SceneEditor extends Editor {
 
 			this.coord_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
 			this.coord_text.y = parseInt(center[1] + 8);
-			this.coord_text.text = 'x '+this.mouse[0]+' y '+this.mouse[1];
+			this.coord_text.text = 'x '+parseInt(this.mouse[0])+' y '+parseInt(this.mouse[1]);
 			if (this.obj_type == "object") {
-				this.coord_text.text = 'x '+this.half_mouse[0]+' y '+this.half_mouse[1];
+				this.coord_text.text = 'x '+parseInt(this.half_mouse[0])+' y '+parseInt(this.half_mouse[1]);
 			}
 
 			this.obj_info_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
@@ -1936,7 +1936,7 @@ document.addEventListener("openProject", function(e){
 	SceneEditor.refreshSceneList(proj_path);
 
 	app.addSearchKey({
-		key: 'Create scene',
+		key: 'Add a scene',
 		onSelect: function() {
 			var map_dir = nwPATH.join(app.project_path,'scenes');
 			// overwrite the file if it exists. fuk it (again)!!

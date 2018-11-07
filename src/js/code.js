@@ -662,26 +662,58 @@ document.addEventListener("openProject", function(e){
 	app.removeSearchGroup("Code");
 	addScripts(proj_path);
 
+	function key_addScript(content) {
+		var script_dir = nwPATH.join(app.project_path,'scripts');
+		nwFS.stat(script_dir, function(err, stat) {
+			if (err) nwFS.mkdirSync(script_dir);
+			// overwrite the file if it exists. fuk it!!
+			nwFS.readdir(script_dir, function(err, files){
+				nwFS.writeFile(nwPATH.join(script_dir, 'script'+files.length+'.lua'), content, function(err){
+					if (!err) {
+						// edit the new script
+						(new Code(app)).edit(nwPATH.join(script_dir, 'script'+files.length+'.lua'));
+					}
+				});
+
+			});
+		});
+	}
+
 	app.addSearchKey({
-		key: 'Create script',
+		key: 'Add a script',
 		onSelect: function() {
-			var script_dir = nwPATH.join(app.project_path,'scripts');
-			nwFS.stat(script_dir, function(err, stat) {
-				if (err) nwFS.mkdirSync(script_dir);
-				// overwrite the file if it exists. fuk it!!
-				nwFS.readdir(script_dir, function(err, files){
-					nwFS.writeFile(nwPATH.join(script_dir, 'script'+files.length+'.lua'),"\
+			key_addScript("\
 -- create an Entity: BlankE.addEntity(\"Player\");\n\n\
 -- create a State: BlankE.addState(\"HouseState\");\
-					", function(err){
-						if (!err) {
-							// edit the new script
-							(new Code(app)).edit(nwPATH.join(script_dir, 'script'+files.length+'.lua'));
-						}
-					});
-
-				});
-			});
+				");
+		},
+		tags: ['new']
+	});
+	app.addSearchKey({
+		key: 'Add a state',
+		onSelect: function() {
+			key_addScript("\
+BlankE.addState(\"MyNewState\");\n\n\
+function MyNewState:enter()\n\n\
+end\n\n\
+function MyNewState:update(dt)\n\n\
+end\n\n\
+function MyNewState:draw()\n\n\
+end\n");
+		},
+		tags: ['new']
+	});
+	app.addSearchKey({
+		key: 'Add an entity',
+		onSelect: function() {
+			key_addScript("\
+BlankE.addEntity(\"MyNewEntity\");\n\n\
+function MyNewEntity:init()\n\n\
+end\n\n\
+function MyNewEntity:update(dt)\n\n\
+end\n\n\
+function MyNewEntity:draw()\n\n\
+end\n");
 		},
 		tags: ['new']
 	});

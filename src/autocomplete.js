@@ -82,7 +82,7 @@ module.exports.completions = {
 		{fn:"call", vars:{ func_name:'calls object[func_name](...) for each object', etc:'' }},
 		{fn:"destroy"},
 		{fn:"closest_point", info:'Entity only. get Entity closest to point', vars:{ x:'', y:'' }},
-		{fn:"closest", info:'Entity only. get Entity closest to entity'},
+		{fn:"closest", info:'Entity only. get Entity closest to entity', vars:{ entity:'' }},
 		{fn:"size", info:'number of children'},
 		{fn:"sort", vars:{ attribute:'', descending:'default: false' }}
 	],

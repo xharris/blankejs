@@ -452,7 +452,7 @@ BlankE = {
 	end,
 
 	update = function(dt)
-		lurker.update()
+		if lurker then lurker.update() end
 	    
 	    dt = math.min(dt, min_dt) * dt_mod
 	    next_time = next_time + min_dt
@@ -483,8 +483,8 @@ BlankE = {
 
 	drawToScale = function(func)
 		Draw.push()
-		--Draw.scale(BlankE.scale_x, BlankE.scale_y)
-		--Draw.translate(BlankE._offset_x, BlankE._offset_y)	
+		Draw.scale(BlankE.scale_x, BlankE.scale_y)
+		Draw.translate(BlankE._offset_x, BlankE._offset_y)	
 
 		func()
 
@@ -502,6 +502,8 @@ BlankE = {
 		love.graphics.scale(BlankE.scale_x, BlankE.scale_y)
 		BlankE.drawOutsideWindow()
 		love.graphics.pop()
+
+		Debug.log(BlankE.scale_x, BlankE.scale_y)
 
 		-- draw game
 		BlankE.game_canvas:drawTo(function()

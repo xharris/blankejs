@@ -42,7 +42,7 @@ body:after { bottom: -3px; }
 body:before, body:after {
     content: "";
     position: absolute;
-    background-image: linear-gradient(to right, black, rgba(100, 221, 23, .5), black);
+    background-image: linear-gradient(to right, black, rgba(90, 217, 164, .5), black); /* 100, 221, 23 */
     left: 0px;
     right: 0px;
     height: 1px;
@@ -219,11 +219,11 @@ body:before, body:after {
 	}
 
 	&.focused {
-		background-color: rgba(97,97,97 ,.7);
+		background-color: @sub-window-background;
 	}
 
 	&:hover {
-		background-color: rgba(97,97,97 ,.7);
+		background-color: @sub-window-background;
 	}
 
 	&.collapsed {
@@ -407,11 +407,11 @@ body:before, body:after {
 	}
 
 	&.focused {
-		background-color: rgba(97,97,97 ,.7);
+		background-color: @sub-window-background;
 	}
 
 	&:hover {
-		background-color: rgba(97,97,97 ,.7);
+		background-color: @sub-window-background;
 	}
 
 	&.collapsed {
@@ -534,8 +534,8 @@ body:before, body:after {
     right: 0px;
     height: 34px;
     z-index: 100;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%);
- 
+    /* background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%); */
+
     * {
 		.win-nodrag();
 		transition: all ease-in-out 0.2s;
@@ -629,6 +629,7 @@ body:before, body:after {
 
 		button {
 		    font-size: 24px;
+		    line-height: 24px;
 
 			&:hover {
 				border-left-width: 4px;
@@ -753,7 +754,7 @@ body:before, body:after {
     left: 1px;
     right: 0px; 
     z-index: 100;
-    background-color: rgba(0,0,0,0.1);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.1) 30%, transparent 100%); /* rgba(0,0,0,0.1); */
 }
 
 #status-icons {

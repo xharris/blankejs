@@ -2,7 +2,8 @@
 <html>
 	<head>
 		<script type="text/javascript">
-			require('nw.gui').Window.get().showDevTools();
+			var DEV_MODE = false;
+			if (DEV_MODE) require('nw.gui').Window.get().showDevTools();
 		</script>
 
 		<!-- Material Design Icons -->

@@ -497,7 +497,7 @@
 }
 .content[data-type="Code"] .cm-matchhighlight {
   background-color: rgba(178, 255, 89, 0.5);
-  color: black;
+  color: black !important;
   outline: 1px solid rgba(178, 255, 89, 0.5);
 }
 .content[data-type="Code"] .CodeMirror-selection-highlight-scrollbar {
@@ -1476,7 +1476,7 @@
 .content[data-type="Exporter"] .platforms {
   position: relative;
   padding-top: 3px;
-  border: 1px solid #424242;
+  border: 1px solid #39414e;
   border-radius: 2px;
 }
 .content[data-type="Exporter"] .platforms .title1 {
@@ -1494,7 +1494,7 @@
   padding: 10px;
   margin: 5px;
   display: inline-block;
-  border: 1px dashed #424242;
+  border: 1px dashed #39414e;
   transition: all ease-in-out 0.2s;
 }
 .content[data-type="Exporter"] .platform:hover {
@@ -1532,7 +1532,7 @@ body {
   vertical-align: middle;
   width: 100%;
   height: 100%;
-  background-color: #424242;
+  background-color: #39414e;
   position: relative;
   border: 1px solid black;
   border-top: none;
@@ -1547,7 +1547,8 @@ body:before,
 body:after {
   content: "";
   position: absolute;
-  background-image: linear-gradient(to right, black, rgba(100, 221, 23, 0.5), black);
+  background-image: linear-gradient(to right, black, rgba(90, 217, 164, 0.5), black);
+  /* 100, 221, 23 */
   left: 0px;
   right: 0px;
   height: 1px;
@@ -1763,10 +1764,10 @@ body:after {
   pointer-events: none;
 }
 .drag-container.focused {
-  background-color: rgba(97, 97, 97, 0.7);
+  background-color: rgba(127, 140, 161, 0.7);
 }
 .drag-container:hover {
-  background-color: rgba(97, 97, 97, 0.7);
+  background-color: rgba(127, 140, 161, 0.7);
 }
 .drag-container.collapsed {
   max-height: 24px;
@@ -1938,10 +1939,10 @@ body:after {
   margin: 0px;
 }
 .fib-container.focused {
-  background-color: rgba(97, 97, 97, 0.7);
+  background-color: rgba(127, 140, 161, 0.7);
 }
 .fib-container:hover {
-  background-color: rgba(97, 97, 97, 0.7);
+  background-color: rgba(127, 140, 161, 0.7);
 }
 .fib-container.collapsed {
   max-height: 24px;
@@ -2074,7 +2075,7 @@ body:after {
   right: 0px;
   height: 34px;
   z-index: 100;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%), radial-gradient(ellipse at top, rgba(100, 221, 23, 0.25) 1%, transparent 40%);
+  /* background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%); */
 }
 #search-container * {
   -webkit-app-region: no-drag;
@@ -2169,6 +2170,7 @@ body:after {
 }
 #welcome .header-buttons button {
   font-size: 24px;
+  line-height: 24px;
 }
 #welcome .header-buttons button:hover {
   border-left-width: 4px;
@@ -2248,8 +2250,8 @@ body:after {
   height: 0;
 }
 #history .entry .triangle-left {
-  border-top: 11px solid #424242;
-  border-bottom: 11px solid #424242;
+  border-top: 11px solid #39414e;
+  border-bottom: 11px solid #39414e;
   border-left: 13px solid transparent;
   left: 0px;
   display: none;
@@ -2257,7 +2259,7 @@ body:after {
 #history .entry .triangle-right {
   border-top: 11px solid transparent;
   border-bottom: 11px solid transparent;
-  border-left: 13px solid #424242;
+  border-left: 13px solid #39414e;
   display: none;
 }
 #history .entry:first-child i {
@@ -2265,7 +2267,7 @@ body:after {
 }
 #history .entry:nth-last-child(1) .entry-title {
   color: #f0f0f0;
-  background-color: #424242;
+  background-color: #39414e;
 }
 #history .entry:nth-last-child(1) .triangle-right,
 #history .entry:nth-last-child(1) .triangle-left {
@@ -2278,7 +2280,8 @@ body:after {
   left: 1px;
   right: 0px;
   z-index: 100;
-  background-color: rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.1) 30%, transparent 100%);
+  /* rgba(0,0,0,0.1); */
 }
 #status-icons {
   display: inline-block;

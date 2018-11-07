@@ -3,7 +3,7 @@ Debug = {
     _font = love.graphics.newFont(12),
     margin = 15,
     _duplicate_count = 0,
-    _duplicate_line = '',
+    _last_line = '',
     
     draw = function()
         local fnt_height = Debug._font:getHeight()
@@ -11,7 +11,7 @@ Debug = {
         local lines = math.min(game_height / fnt_height, #Debug.lines)
 
         for i_line = lines, 1, -1 do
-            line = Debug.lines[i_line]
+            line = Debug.lines[lines - i_line + 1]
 
             love.graphics.push()
             local alpha = 255
@@ -41,25 +41,18 @@ Debug = {
     
     log = function(...)
         local new_line = table.concat(table.toString({...}),'\t')        
-        if #Debug.lines > 1 and Debug.lines[1] == new_line or Debug._duplicate_line == new_line then
+        if Debug._last_line == new_line then
             Debug._duplicate_count = Debug._duplicate_count + 1
-            
-            if Debug._duplicate_line == '' then
-                Debug._duplicate_line = new_line
-            end
-
-            new_line = new_line .. '('..Debug._duplicate_count..')'
-
-            Debug.lines[1] = new_line
+            Debug.lines[#Debug.lines] = new_line .. '('..Debug._duplicate_count..')'
         else
             Debug._duplicate_count = 0
-            Debug._duplicate_line = ''
             
             table.insert(Debug.lines, new_line) --1, new_line)
             if #Debug.lines > (game_height / Debug._font:getHeight()) then
                 table.remove(Debug.lines, #Debug.lines)
             end
         end
+        Debug._last_line = new_line
         print(new_line)
         return Debug
     end,

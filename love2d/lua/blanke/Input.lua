@@ -98,10 +98,10 @@ _Input = Class{
         end
 
         if not last_val then
-            return false
+            return 0
         elseif table.len(ret_val) == 1 then
             if last_val == 0 then
-                return false
+                return 0
             else
                 return last_val
             end

@@ -21,6 +21,7 @@ Tween = Class{
 		self.duration = ifndef(duration, 1)
 		self.type = ifndef(func_type, 'linear')
 		self.valid = true
+		self.running = false
 
 		self:setValue(value)
 
@@ -64,8 +65,14 @@ Tween = Class{
 					assert(type(start_value)~='function', "cannot use function value in Tween")
 
 					-- finished?
+					Debug.log(start_value, value-start_value, self.var[key])
 					if (start_value < value and self.var[key] < value) or (start_value > value and self.var[key] > value) then
-						self.var[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+						local dir = math.sign(start_value - value)
+						if dir < 0 then -- increasing
+							self.var[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+						elseif dir > 0 then -- decreasing
+							self.var[key] = (value-start_value) - self._func(value-start_value, start_value, self.duration*1000, self._dt*1000)
+						end
 					end
 				end
 
@@ -96,12 +103,12 @@ Tween = Class{
 
 	play = function(self)
 		self._go = true
-
-		
+		self.running = true
 	end,
 
 	stop = function(self)
 		self._go = false
+		self.running = false
 	end,
 
 	isRunning = function(self)
@@ -117,6 +124,7 @@ Tween = Class{
 		self._go = false
 		self._dt = 0
 		self._start_val = self.var
+		self.running = false
 		if self._bezier then
 			self._start_val = 0
 		end

@@ -159,17 +159,19 @@ var app = {
 	},
 
 	play: function() { 
-		let love_path = {
-			'win': nwPATH.join(app.settings.engine_path,'love.exe'),
-			'mac': nwPATH.resolve(nwPATH.join(app.settings.engine_path,'love.app','Contents','MacOS','love'))
-		};
-		let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)]);
-		let console_window = new Console(app, child);
-		child.on('close', function(){
-			console_window.processClosed()
-		})
-		//child.unref();
-		//Editor.closeAll('Console');
+		if (app.isProjectOpen()) {
+			let love_path = {
+				'win': nwPATH.join(app.settings.engine_path,'love.exe'),
+				'mac': nwPATH.resolve(nwPATH.join(app.settings.engine_path,'love.app','Contents','MacOS','love'))
+			};
+			let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)]);
+			let console_window = new Console(app, child);
+			child.on('close', function(){
+				console_window.processClosed()
+			})
+			//child.unref();
+			//Editor.closeAll('Console');
+		}
 	},
 
 	toggleWindowVis: function() {
@@ -705,7 +707,7 @@ nwWIN.on('loaded', function() {
 	app.addSearchKey({key: 'New project', onSelect: function() {
 		app.newProjectDialog();
 	}});
-	app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
+	if (DEV_MODE) app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 	app.addSearchKey({key: 'Start Server', onSelect: app.runServer});
 	app.addSearchKey({key: 'Stop Server', onSelect: app.stopServer});
 
