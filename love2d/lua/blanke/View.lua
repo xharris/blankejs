@@ -3,24 +3,39 @@ View = Class{
 		-- the final draw position
 		self.x = 0
 		self.y = 0
+		self.top = 0
+		self.left = 0
+		self.bottom = 0
+		self.right = 0
 
-		self.port_width = game_width
-		self.port_height = game_height
+		self._port_w = game_width
+		self._port_h = game_height
+
+		self.port_width = -1
+		self.port_height = -1
 
         self.follow_entity = follow_entity
         self.offset_x = 0
         self.offset_y = 0
 
+        local w,h = self:getSize()
+
         -- ways for camera to move towards x,y
         self.move_type = 'snap'
         -- lockX
-        self.lock_rect = {0,0,game_width,game_height}
+        self.lock_rect = {0,0,w,h}
 
         self.angle = 0
         self.scale_x = 1
         self.scale_y = 1
 
+        self._half_w, self._half_h = math.floor(w/2), math.floor(h/2)
+
         _addGameObject('view',self)
+	end,
+
+	getSize = function(self)
+		return cond(self.port_width >= 0, self.port_width, self._port_w), cond(self.port_height >= 0, self.port_height, self._port_h)
 	end,
 
 	zoom = function(self, x, y, cb_finish)
@@ -41,6 +56,8 @@ View = Class{
 	end,
 
 	update = function(self, dt)
+		self._port_w = game_width
+		self._port_h = game_height
 		local follow_x, follow_y = 0, 0
 
 		if self.follow_entity then
@@ -56,12 +73,21 @@ View = Class{
 
 		self.x = math.floor(target_x)
 		self.y = math.floor(target_y)
+
+		self.top = self.y - self._half_h
+		self.left = self.x - self._half_w
+
+		local w,h = self:getSize()
+
+		self.right = self.left + w
+		self.bottom = self.top + h
 	end,
 
 	on = function(self)
-		local half_w, half_h = math.floor(self.port_width/2), math.floor(self.port_height/2)
+		local w,h = self:getSize()
+		self._half_w, self._half_h = math.floor(w/2), math.floor(h/2)
 		Draw.push('all')
-		Draw.translate(half_w, half_h)
+		Draw.translate(self._half_w, self._half_h)
 		Draw.scale(self.scale_x, self.scale_y)
 		Draw.rotate(self.angle)
 		Draw.translate(-self.x, -self.y)

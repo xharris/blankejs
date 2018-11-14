@@ -732,27 +732,24 @@
   color: black;
 }
 .content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item {
-  background-color: #CFD8DC;
-  outline: 1px solid #CFD8DC;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item:hover {
-  outline: 1px solid #b0bec5;
+  /* outline: 1px solid #CFD8DC; */
 }
 .content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item-text {
   text-align: left;
 }
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item > .item-actions {
-  opacity: 1;
-}
 .content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item {
   position: relative;
-  height: 32px;
+  height: 18px;
   margin: 0px 1px;
   background-color: transparent;
   outline: 0px dotted rgba(176, 190, 197, 0);
 }
 .content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item:hover {
-  outline: 1px dashed #b0bec5;
+  background-color: #CFD8DC;
+  /* outline: 1px dashed rgb(176, 190, 197); */
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item:hover > .item-actions {
+  opacity: 1;
 }
 .content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item.selected {
   background-color: #b0bec5;
@@ -775,16 +772,22 @@
     not supported by any browser */
   left: 0px;
   height: 100%;
-  line-height: 32px;
+  line-height: 18px;
   padding: 0px 10px;
   box-sizing: border-box;
   width: 100%;
-  text-align: center;
+  text-align: left;
 }
 .content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item .item-actions {
   right: 0px;
   opacity: 0;
   transition: all ease-in-out 0.1s;
+}
+.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item .item-actions > button {
+  margin: 0px;
+  height: 18px;
+  border-radius: 2px;
+  width: 18px;
 }
 .content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item > * {
   position: absolute;

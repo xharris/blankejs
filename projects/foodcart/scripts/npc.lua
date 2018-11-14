@@ -65,14 +65,13 @@ function Npc:update(dt)
 end
 
 function Npc:draw()	
-	if true then
+	if false then
 		eff_selected:draw(function()
 			self.penguin:draw()
 		end)
-		-- self.selected = false
-	else
-		self.penguin:draw()
 	end
+		-- self.selected = false
+	self.penguin:draw()
 	
 	if UI.mouseInside(self.penguin.x - 16, self.penguin.y, 32, 32) then
 		Draw.setColor("black")

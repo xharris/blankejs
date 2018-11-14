@@ -13,4 +13,5 @@ end
 function DestructionWall:draw()
 	Draw.setColor('red')
 	Draw.line(self.x, main_view.top, self.x, main_view.bottom)
+	Draw.reset('color')
 end

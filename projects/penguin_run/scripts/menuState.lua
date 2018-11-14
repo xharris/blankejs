@@ -2,7 +2,6 @@ BlankE.addClassType("MenuState", "State")
 
 local scene_igloo
 local penguin
-
 local leave_x
 
 -- menu images
@@ -71,7 +70,10 @@ function refreshMenuHat()
 end
 
 local circle_alpha = {80,80,80}
+local igloo_w = Image("in_igloo_back").width
 function MenuState:draw()
+	Draw.translate((game_width-igloo_w) / 2, 0)
+	
 	scene_igloo:draw("back")
 	
 	-- draw menu
@@ -160,6 +162,7 @@ function MenuState:draw()
 	Draw.rect("fill", menu_left + section_w + rect_margin2 + (section_w/2) - (section_w/2), menu_top + rect_margin2, section_w - (rect_margin2*2), section_w - (rect_margin2*2))
 	Draw.setAlpha(1)
 	Draw.rect("fill", menu_left + section_w + rect_margin + (section_w/2) - (section_w/2), menu_top + rect_margin, section_w - (rect_margin*2), section_w - (rect_margin*2))
+	Draw.reset("color")
 	
 	-- draw earth icon
 	img_earth.x = (menu_left + (section_w*2)) + (section_w/2) - (img_earth.width/2)
@@ -171,11 +174,12 @@ function MenuState:draw()
 	Draw.setFont(igloo_font)
 	Draw.text(play_mode, menu_left + (section_w*2) + (section_w/2) - (section_w/2), menu_top - igloo_font:get('size'))
 		
-	Draw.translate(-penguin.x, -penguin.y - 20)
-	Draw.scale(2)
-	Draw.setColor('white')
-	penguin:draw()
-	Draw.reset()
+	Draw.stack(function()
+		Draw.translate(-penguin.x, -penguin.y - 20)
+		Draw.scale(2)
+		Draw.setColor('white')
+		penguin:draw()
+	end)
 	
 	scene_igloo:draw("front")
 		

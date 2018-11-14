@@ -1,27 +1,24 @@
 mouse_x = 0
 mouse_y = 0
-game_width = 0
-game_height = 0
+game_width = 1
+game_height = 1
 window_width = 0
 window_height = 0
 game_time = 0
 dt_mod = 1
 
-CONF = {
-    window = {
-        width = 800,
-        height = 600
-    }
-}
-
 function updateGlobals(dt)
 	game_time = game_time + dt
 
 	local width, height = love.window.fromPixels(love.graphics.getDimensions())
-	local x_scale, y_scale = width / CONF.window.width, height / CONF.window.height
-	local new_width, new_height = width, height
+	local x_scale, y_scale = width / game_width, height / game_height
+	window_width = width
+	window_height = height
 
 	if not BlankE then return end
+	
+	game_width = BlankE.game_canvas.width
+	game_height = BlankE.game_canvas.height
 
 	if Window.scale_mode == 'stretch' then
 		BlankE.scale_x = x_scale
@@ -69,10 +66,10 @@ function updateGlobals(dt)
 	end
 
 	mouse_x, mouse_y = BlankE.scaledMouse(love.mouse.getX() + ifndef(Effect._mouse_offx, 0), love.mouse.getY() + ifndef(Effect._mouse_offy, 0))
-	game_width = new_width
-	game_height = new_height
-	window_width = width / BlankE.scale_x
-	window_height = height / BlankE.scale_y
+	--game_width = new_width
+	--game_height = new_height
+	--window_width = width / BlankE.scale_x
+	--window_height = height / BlankE.scale_y
 
 	BlankE.right = game_width
 	BlankE.bottom = game_height

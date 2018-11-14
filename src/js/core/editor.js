@@ -73,8 +73,8 @@ class Editor {
 			app.setHistoryClick(this.container.history_id, arguments[0]);
 	}
 
-	close() {
-		this.container.close();
+	close(...args) {
+		this.container.close(...args);
 		if (this.onClose) this.onClose();
 		this.closed = true;
 	}

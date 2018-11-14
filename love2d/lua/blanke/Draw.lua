@@ -83,6 +83,8 @@ Draw = Class{
 		return Draw
 	end,
 
+	getColor = love.graphics.getColor,
+
 	setAlpha = function(a)
 		a = clamp(a,0,255)
 		if a > 1 then a = a / 255 end

@@ -143,6 +143,7 @@ BlankE = {
 	bottom = 0,
 	_offset_x = 0,
 	_offset_y = 0,
+	_upscaling = 1,
 	scale_x = 1,
 	scale_y = 1,
 
@@ -153,13 +154,17 @@ BlankE = {
 	pause = false,
 	first_state = '',
 	_class_type = {},
-	init = function(first_state, ide_mode)
+	init = function(first_state, in_options)
+		options = {
+			window_size = 3
+		}
+		table.update(options, in_options)
+
 		-- load config file
 		if love.filesystem.getInfo("config.json") then
 			BlankE.settings = json.decode(love.filesystem.read('config.json'))
 		end
 
-		BlankE._ide_mode = ifndef(ide_mode, BlankE._iBde_mode)
 		View.global_drag_enable = BlankE._ide_mode
 
 		if not BlankE._callbacks_replaced then
@@ -170,7 +175,6 @@ BlankE = {
 			end
 		end
 
-		Scene._fake_view = View()
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 
@@ -190,9 +194,10 @@ BlankE = {
 			first_state = _G[first_state]
 		end
 		State.switch(first_state)  
-		BlankE._is_init = true
 
-		-- print("BlankE initialized")
+		Window.setResolution(options.window_size, nil, true)
+
+		BlankE._is_init = true
 	end,
 
 	injectCallbacks = function()
@@ -498,12 +503,12 @@ BlankE = {
 
 	draw = function()
 		-- draw borders
-		love.graphics.push()
-		love.graphics.scale(BlankE.scale_x, BlankE.scale_y)
-		BlankE.drawOutsideWindow()
-		love.graphics.pop()
+		Draw.stack(function()
+			--love.graphics.scale(BlankE.scale_x, BlankE.scale_y)
+			BlankE.drawOutsideWindow()
+		end)
 
-		Debug.log(BlankE.scale_x, BlankE.scale_y)
+		--Debug.log(BlankE.scale_x, BlankE.scale_y)
 
 		-- draw game
 		BlankE.game_canvas:drawTo(function()
@@ -511,8 +516,9 @@ BlankE = {
 		end)
 
 		Input.update()
-		BlankE.game_canvas:draw(BlankE._offset_x * BlankE.scale_x, BlankE._offset_y * BlankE.scale_y, 0, BlankE.scale_x, BlankE.scale_y)
-		
+
+		BlankE.game_canvas:draw(math.floor(BlankE._offset_x * BlankE.scale_x), math.floor(BlankE._offset_y * BlankE.scale_y), 0, BlankE.scale_x, BlankE.scale_x)
+
 		if BlankE.draw_debug then Debug.draw() end
 
         -- disable any scenes that aren't being actively drawn
@@ -554,6 +560,8 @@ BlankE = {
 		_iterateGameGroup("effect", function(effect)
 			effect:resizeCanvas(w, h)
 		end)
+		window_width = w 
+		window_height = h
 	end,
 
 	keypressed = function(key)

@@ -2,6 +2,7 @@ Canvas = Class{
     last_active = nil,
     init = function(self, width, height)
         self.canvas = love.graphics.newCanvas(width, height)
+        self.canvas:setFilter("nearest", "nearest")
         self.width = self.canvas:getWidth()
         self.height = self.canvas:getHeight()
         
@@ -18,32 +19,18 @@ Canvas = Class{
     end,
     
     resize = function(self, w, h)
-        self.canvas = love.graphics.newCanvas(width, height)
+        self.canvas = love.graphics.newCanvas(w, h)
+        self.width = self.canvas:getWidth()
+        self.height = self.canvas:getHeight()
     end,
 
-    start = function(self)
-        self.active = true
-        self._prev_canvas = Canvas.last_active
-        Canvas.last_active = self
-
-        love.graphics.setCanvas{self.canvas, stencil=true}
-        if self.auto_clear then
-            love.graphics.clear({1,1,1,0})
-        end
-    end,
-    
-    stop = function(self)
-        self.active = false
-        if self.last_active == self then
-            self.last_active = nil
-        end
-        love.graphics.setCanvas(self._prev_canvas)
-    end,
-    
     drawTo = function(self, func)
-        self:start()
-        func()
-        self:stop()
+        self.canvas:renderTo(function()
+            if self.auto_clear then
+                love.graphics.clear(Draw.background_color)
+            end
+            func()
+        end)
     end,
     
     draw = function(self, ...)

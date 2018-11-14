@@ -33,6 +33,7 @@ function MainState:enter()
 	end
 end
 
+local eff = Effect("crt")
 function MainState:draw()
 	--[[ 
 	test_mask:draw(function()
@@ -40,7 +41,13 @@ function MainState:draw()
 		Draw.rect("fill", 0, 0, game_width, game_height)
 	end)
 	]]
+	img_mask.x = game_width / 2 --sinusoidal(game_width / 4, game_width - (game_width / 4), 0.5)
+	img_mask.y = game_height / 2
+	eff.radius = sinusoidal(0,100,1)
+	eff:draw(function()
+		img_mask:draw()
+	end)
 	
 	ui_element_list:setSize(grp_elements:size())
-	ui_element_list:draw()
+	--ui_element_list:draw()
 end

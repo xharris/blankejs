@@ -201,8 +201,8 @@ function Penguin:draw()
 	self.sprite['walk'].color = Draw.white
 	self.sprite['walk_fill'].color = self.color
 
-	self:drawSprite('walk')
 	self:drawSprite('walk_fill')
+	self:drawSprite('walk')
 
 	local eyes_y_offset = 0
 	if (self.sprite_speed > 0 and self.sprite_frame == 2) or self.vspeed ~= 0 then

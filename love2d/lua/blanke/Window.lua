@@ -3,8 +3,8 @@ Window = {
 	resolution = 1,
 	scale_mode = 'scale',
 
-	aspect_ratios = { {4,3},{16,10},{16,9} },
-	resolutions = { 640, 800, 960, 1024, 1280, 1400, 1440, 1600, 1856, 1920, 2048 },
+	aspect_ratios = { {4,3},{5,4},{16,10},{16,9} },
+	resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 },--640, 800, 960, 1024, 1280, 1400, 1440, 1600, 1856, 1920, 2048 },
 	
 	getResolution = function(index)
 		Window.resolution = ifndef(index, Window.resolution)
@@ -12,11 +12,13 @@ Window = {
 		return res, res / Window.aspect_ratio[1] * Window.aspect_ratio[2]
 	end,
 
-	setResolution = function(w, h)
+	setResolution = function(w, h, resize_canvas)
 		if not h then
 			w, h = Window.getResolution(w)
 		end
+		if resize_canvas then BlankE.game_canvas:resize(w,h) end
 		love.window.updateMode(w,h)
+		updateGlobals(0)
 	end
 }
 

@@ -206,15 +206,19 @@ class FibWindow {
 		this.fib_content.appendChild(element);
 	}
 
-	close () {
+	close (remove_history) {
 		this.fib_container.remove();
-		if (this.onClose) this.onClose();
+
+		if (this.onClose) remove_history = ifndef(this.onClose(), remove_history);
 		for (let b = 0; b < boxes.length; b++) {
 			if (boxes[b].history_id == this.history_id) {
 				boxes.splice(b,1);
 			}
 		}
 		FibWindow.resizeWindows();
+
+		if (remove_history)
+			app.removeHistory(this.history_id);
 	}
 
 	static closeAll (type) {

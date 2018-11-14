@@ -1,11 +1,13 @@
 BlankE.addState("PlayState")
 
-play_mode = 'online'			-- local / online
+play_mode = 'local'			-- local / online
 game_start_population = 1
 best_penguin = nil
 
+local tmr_spawn_wall = Timer(5)
 local main_penguin
 local levels
+local destruct_ready_x = 0
 
 -- Called every time when entering the state.
 function PlayState:enter(previous)
@@ -19,7 +21,6 @@ function PlayState:enter(previous)
 	loadLevel("spawn")
 
 	igloo_enter_x = penguin_spawn.x - 25
-	destruct_ready_x = 0
 
 	Draw.setBackgroundColor('white2')
 	water_color = hsv2rgb({212,70,100})
@@ -30,9 +31,19 @@ function PlayState:enter(previous)
 	main_view = View()
 	main_view.zoom_type = 'damped'
 	main_view.zoom_speed = .05
+	
+	-- destruction wall spawn timer
+	tmr_spawn_wall:after(function()
+		if play_mode == 'online' then
+			if Net.getPopulation() > 1 and Net.is_leader then
+				Net.event("spawn_wall")
+			else
+				tmr_spawn_wall:start()	
+			end
+		end
+	end)
 end
 
-local send_ready = false
 function PlayState:update(dt)
 	bg_sky.color = hsv2rgb({195,37,100})-- hsv2rgb({186,39,88})
 	water_color = hsv2rgb({212,70,100})
@@ -46,15 +57,8 @@ function PlayState:update(dt)
 	end
 
 	-- enough players to start game
-	if main_penguin.x > destruct_ready_x and not in_igloo_menu then
-		if play_mode == 'online' and Net.getPopulation() >= game_start_population and not send_ready then
-			send_ready = true
-			Net.event("spawn_wall")
-		end
-
-		if play_mode == 'local' then
-			startDestruction()
-		end
+	if play_mode == 'local' and destruct_ready_x ~= 0 and main_penguin.x > destruct_ready_x then
+		startDestruction()
 	end
 
 	-- player wants to enter igloo
@@ -125,7 +129,8 @@ function PlayState:draw()
 	local ready = ''
 	if main_penguin.x > destruct_ready_x then ready = '\nREADY!' end
 	Draw.setColor('black')
-	Draw.text(tostring(Net.getPopulation())..' / '..tostring(game_start_population)..ready, game_width/2, 50)
+	Draw.text(tmr_spawn_wall.countdown, game_width/2, 50)
+	
 end	
 
 function loadLevel(name)
@@ -140,12 +145,12 @@ function loadLevel(name)
 	-- spawn: get 'ready to play' and 'spawn' spot
 	if name == 'spawn' and not main_penguin then
 		main_penguin = Penguin(true)
-		lvl_scene:addEntity("spawn", main_penguin, "top left")
+		lvl_scene:addEntity("spawn", main_penguin, "bottom left")
 		penguin_spawn = {x=main_penguin.x-10, y=main_penguin.y}
 		main_penguin:netSync()
 		
 		local destruct_tile = lvl_scene:getTiles("back", "ground_crack")[1]
-		if descruct_tile then
+		if destruct_tile then
 			destruct_ready_x = destruct_tile.x
 		end
 	end
@@ -156,12 +161,21 @@ function loadLevel(name)
 	}
 	
 	levels:add(lvl_scene)
+	
+	-- create canvas for level
+	local lvl_canvas = Canvas()
+	lvl_canvas:drawTo(function()
+		lvl_scene:draw("back")
+		lvl_scene:draw("front")
+	end)
 end
 
 function startDestruction()
 	if not wall then
-		--wall = DestructionWall()
-		--wall.x = -32
+		Debug.log('start')
+		tmr_spawn_wall:reset()
+		wall = DestructionWall()
+		wall.x = -32
 	end
 end
 
@@ -170,14 +184,9 @@ Net.on('ready', function()
 end)
 
 local last_total_population = 0
-local pop_refresh_timer = Timer(10)
 Net.on('event', function(data)
 	if data.event == "spawn_wall" then
-		spawn_wall_count = spawn_wall_count + 1
-
-		if spawn_wall_count >= Net.getPopulation() then
-			startDestruction()
-		end
+		startDestruction()
 	end
 		
 	if data.event == "load_level" then
@@ -185,8 +194,7 @@ Net.on('event', function(data)
 	end
 		
 	if data.event == "client.connect" then
-		pop_refresh_timer:reset()
-		pop_refresh_timer:start()
+		tmr_spawn_wall:start()
 			
 	end
 end)

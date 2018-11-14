@@ -33,6 +33,7 @@ Effect = Class{
 
             for p, default in pairs(_effects[name].params) do
                 self[p] = default
+                self.params[p] = default
                 if p == "textureSize" or p == "texSize" then
                     self[p] = {game_width, game_height}
                 end
@@ -43,6 +44,7 @@ Effect = Class{
         end 
 
         if self.create then self:create() end
+        self.ready = true
 
         _addGameObject('effect',self)
     end,
@@ -67,8 +69,8 @@ Effect = Class{
         --local curr_canvas = love.graphics.getCanvas()
         local offx = -((game_width/2) - (canvas.width/2))
         local offy = -((game_height/2) - (canvas.height/2))
-        --canvas:drawTo(function()
-        Draw.stack(function()
+        canvas:drawTo(function()
+        --Draw.stack(function()
             Draw.translate(offx, offy)
             func()
             Draw.translate(-offx, -offy)
@@ -92,22 +94,14 @@ Effect = Class{
             love.graphics.setShader()
             love.graphics.setBlendMode(curr_blend)
         end)
-
-
         self.canvas:draw()
+
+        love.graphics.setBlendMode(curr_blend)
 --[[
         love.graphics.setColor(curr_color)
         love.graphics.setShader(shader)
         love.graphics.setBlendMode('alpha', 'premultiplied')
-
-        self:applyCanvas(func, canvas)
-        canvas:draw(
-            (game_width/2) - (canvas.width/2),
-            (game_height/2) - (canvas.height/2),
-         0)
-        love.graphics.setBlendMode(curr_blend)
-        love.graphics.setShader(curr_shader)
-        ]]
+]]
     end,
 
     applyParams = function(self)
@@ -116,11 +110,11 @@ Effect = Class{
             local var_name = p
             local var_value = default
 
-            if self[p] ~= nil and not self._appliedParams[var_name] then
+            if self[p] ~= nil and self._appliedParams[var_name] == true then
                 var_value = self[p]
-                self.params[var_name] = var_value
                 self:send(var_name, var_value)
             end
+            self.params[var_name] = var_value
         end
         self._appliedParams = {}
     end,
@@ -140,13 +134,16 @@ Effect = Class{
 
         -- call extra draw function
         else
+            self:applyParams()
             self.effect_data.extra_draw(self, func)
         end
         return self
     end,
 
     getParam = function(self, name)
-        if self.params[name] then
+        if self[name] then
+            return self[name]
+        else
             return self.params[name]
         end
     end,
@@ -186,7 +183,7 @@ EffectManager = Class{
     new = function (options)
         local new_eff = {}
         new_eff.string = ifndef(options.shader,'')
-        new_eff.params = ifndef(options.params, {})
+        new_eff.params = ifndef(table.deepcopy(options.params), {})
         new_eff.extra_draw = options.draw
         new_eff.warp_effect = ifndef(options.warp_effect, false)
 
@@ -362,15 +359,20 @@ vec4 effect(vec4 color, Image tex, vec2 tc, vec2 sc)
 
 EffectManager.new{
     name = 'crt',
-    params = {['angle']=0,['radius']=4,['direction']={0,0}},--['strength'] = {1, 1}, ['size'] = {20, 20}},
+    params = {['angle']=0,['radius']=50,['direction']={0,0}},--['strength'] = {1, 1}, ['size'] = {20, 20}},
     effect = [[
-        pixel.r = Texel(texture, texCoord - direction).r;
-        pixel.b = Texel(texture, texCoord + direction).b;
-        pixel.a = 1.0;
+            pixel.r = Texel(texture, texCoord - direction).r; 
+            pixel.b = Texel(texture, texCoord + direction).b; 
+            pixel.a = Texel(texture, texCoord).a;
+            
+            if (Texel(texture, texCoord - direction).a > 0 || Texel(texture, texCoord + direction).a > 0)
+                pixel.a = 1.0; 
     ]],
-    draw = function(self, draw) 
-        local dx = math.cos(math.rad(self.angle)) * self.radius / game_width
-        local dy = math.sin(math.rad(self.angle)) * self.radius / game_height
+    draw = function(self, draw)
+        local angle, radius = self.angle, self.radius
+        local dx = math.cos(math.rad(angle)) * radius / game_width
+        local dy = math.sin(math.rad(angle)) * radius / game_height
+        
         self:send("direction", {dx,dy})
         
         self:applyShader(draw)

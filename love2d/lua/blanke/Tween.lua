@@ -65,7 +65,6 @@ Tween = Class{
 					assert(type(start_value)~='function', "cannot use function value in Tween")
 
 					-- finished?
-					Debug.log(start_value, value-start_value, self.var[key])
 					if (start_value < value and self.var[key] < value) or (start_value > value and self.var[key] > value) then
 						local dir = math.sign(start_value - value)
 						if dir < 0 then -- increasing

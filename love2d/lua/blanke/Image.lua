@@ -31,8 +31,8 @@ Image = Class{
 		self.yscale = 1
 		self.xoffset = 0
 		self.yoffset = 0
-		self.color = {255,255,255}
-		self.alpha = 255
+		self.color = {1,1,1}
+		self.alpha = 1
 		self.int_position = true
 
 		self.orig_width = self.image:getWidth()

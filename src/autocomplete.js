@@ -233,7 +233,7 @@ module.exports.completions = {
 		{fn:"draw"}
 	],
 	"blanke-timer-instance":[
-		{prop:"time", info:"seconds passed after starting"},
+		{prop:"time", info:"seconds elapsed"},
 		{prop:"duration", info:"timer duration (sec)"},
 		{prop:"countdown", info:"read-only version of [time] except counts backwards"},
 		{fn:"start"},

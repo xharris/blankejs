@@ -389,7 +389,14 @@ class SceneEditor extends Editor {
 		});
 		this.el_layer_control.onItemAction = function(icon, text) {
 			if (icon == "delete") {
-				this_ref.el_layer_control.removeItem(text);
+				blanke.showModal(
+					"delete \'"+text+"\'?",
+					{
+						"yes": function() { this_ref.el_layer_control.removeItem(text); },
+						"no": function() {}
+					}
+				);
+				
 			}
 		}
 		this.el_layer_control.onItemSelect = function(text) {
@@ -822,8 +829,8 @@ class SceneEditor extends Editor {
 	delete () {
 		nwFS.remove(this.file);
 		this.deleted = true;
-		this.close();
 		SceneEditor.refreshSceneList();
+		this.close(true);
 	}
 
 	deleteModal () {
@@ -1895,7 +1902,6 @@ document.addEventListener('fileChange', function(e){
 });
 
 function openScene(file_path) {
-	console.log('open',file_path)
 	if (!FibWindow.focus(nwPATH.basename(file_path)))
 		(new SceneEditor(app)).load(file_path);
 }
@@ -1929,6 +1935,7 @@ function addScenes(folder_path) {
 
 document.addEventListener("closeProject", function(e){	
 	app.removeSearchGroup("Scene");
+	app.removeSearchGroup("scene_image");
 });
 
 document.addEventListener("openProject", function(e){

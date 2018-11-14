@@ -10,8 +10,8 @@ Debug = {
         local win_height = love.graphics:getHeight()
         local lines = math.min(game_height / fnt_height, #Debug.lines)
 
-        for i_line = lines, 1, -1 do
-            line = Debug.lines[lines - i_line + 1]
+        for i_line = 1, lines do
+            line = Debug.lines[i_line]
 
             love.graphics.push()
             local alpha = 255
@@ -20,6 +20,7 @@ Debug = {
                 alpha = 255 - ((y-win_height/2)/(win_height/2)*255)
             end 
             Draw.reset("color")
+            Draw.setFont()
             Draw.setColor(1,0,0,alpha)
             love.graphics.setFont(Debug._font)
             Draw.text(line, BlankE.left + Debug.margin, y+Debug.margin)
@@ -41,13 +42,13 @@ Debug = {
     
     log = function(...)
         local new_line = table.concat(table.toString({...}),'\t')        
-        if Debug._last_line == new_line then
+        if false then --Debug._last_line == new_line then
             Debug._duplicate_count = Debug._duplicate_count + 1
-            Debug.lines[#Debug.lines] = new_line .. '('..Debug._duplicate_count..')'
+            Debug.lines[#Debug.lines] = new_line .. '('..(Debug._duplicate_count+1)..')'
         else
             Debug._duplicate_count = 0
             
-            table.insert(Debug.lines, new_line) --1, new_line)
+            table.insert(Debug.lines, 1, new_line)
             if #Debug.lines > (game_height / Debug._font:getHeight()) then
                 table.remove(Debug.lines, #Debug.lines)
             end

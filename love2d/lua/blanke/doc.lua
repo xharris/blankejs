@@ -640,6 +640,7 @@ at(num)
 find(t, value)
 hasValue(t, value)
 copy(t)
+deepcopy(t)
 toNumber(t)
 len(t)
 forEach(t, func)								-- will return a value and end early if 'func' returns a value

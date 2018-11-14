@@ -260,32 +260,28 @@
 
 				&:hover {
 					.item {
-						background-color: #CFD8DC;
-						outline: 1px solid #CFD8DC;
-
-						&:hover {
-							outline: 1px solid rgb(176, 190, 197);
-						}
+						/* outline: 1px solid #CFD8DC; */
 					}
 
 					.item-text {
 						text-align: left;
 					}
-
-					.item > .item-actions {
-						opacity: 1;
-					}
 				}
 
 				.item {
 					position: relative;
-					height: 32px;
+					height: 18px;
 					margin: 0px 1px;
 					background-color: transparent;
 					outline: 0px dotted rgba(176, 190, 197, 0);
 
 					&:hover {
-						outline: 1px dashed rgb(176, 190, 197);
+						background-color: #CFD8DC;
+						/* outline: 1px dashed rgb(176, 190, 197); */
+
+						> .item-actions {
+							opacity: 1;
+						}
 					}
 
 					&.selected {
@@ -299,12 +295,12 @@
 
 						left:0px;
 					    height: 100%;
-   	 					line-height: 32px;
+   	 					line-height: 18px;
    	 					padding: 0px 10px;
    	 					box-sizing: border-box;
 
    	 					width: 100%;
-   	 					text-align: center;
+   	 					text-align: left;
 					}
 
 					.item-actions {
@@ -312,6 +308,13 @@
 						opacity: 0;
 
 						transition: all ease-in-out 0.1s;
+
+						> button {
+							margin: 0px;
+						    height: 18px;
+						    border-radius: 2px;
+						    width: 18px;
+						}
 					}
 				}
 

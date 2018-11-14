@@ -1,16 +1,6 @@
 {
     "scene": {
         "objects": {
-            "adccfbb8": {
-                "name": "object0",
-                "char": "#",
-                "color": "#000000",
-                "size": [
-                    32,
-                    32
-                ],
-                "uuid": "adccfbb8"
-            },
             "1704d412": {
                 "name": "lvl_end",
                 "char": "U",
@@ -50,10 +40,17 @@
                     32
                 ],
                 "uuid": "41ea8fda"
+            },
+            "adccfbb8": {
+                "name": "object0",
+                "char": "#",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "adccfbb8"
             }
         }
-    },
-    "export": {
-        "name": "test zone"
     }
 }
