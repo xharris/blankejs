@@ -162,7 +162,7 @@ body:before, body:after {
 	> .content {
 		/* outline: 1px solid #212121; */
 	}
-
+/*
 	canvas {
 	    margin: 0;
 	    position: absolute;
@@ -170,7 +170,7 @@ body:before, body:after {
 	    left: 50%;
 	    margin-right: -50%;
 	    transform: translate(-50%, -50%);
-	}
+	}*/
 }
 
 #drop-zone {
@@ -841,5 +841,62 @@ body:before, body:after {
 	}
 	to {
 		background-color: transparent;
+	}
+}
+
+.form-container {
+	width: 50%;
+	display: inline-block;
+	box-sizing: border-box;
+
+	input {
+		outline: 1px solid fade(@ide-green, 0%);
+    	outline-offset: 0px;
+    	transition: all ease-in-out 0.1s;
+
+    	&:focus {
+			outline: 1px solid @ide-green;
+	    	outline-offset: 1px;
+    	}
+	}
+	
+	.form-label {
+		margin-top: 4px;
+		margin-bottom: 0px;
+	}
+
+	.form-text, .form-select {
+		background: rgba(255,255,255,0.3);
+		border: none;
+		padding: 3px;
+		font-size: 14px;
+	}
+
+	.form-group[data-size="2"] .form-text, .form-group[data-type="number"] .form-text {
+		width: 40px;
+	}
+
+	.form-separator {
+		display: inline;
+		margin: 5px;
+	}
+
+	.form-button {
+	    margin-top: 6px;
+    	border: none;
+	    padding: 3px;
+	    background: rgba(255,255,255,0.3);
+	    outline: 1px solid rgba(0,0,0,0.5);
+	    border-radius: 2px;
+	    transition: all ease-in-out 0.1s;
+
+	    &:hover {
+			outline: 1px solid @ide-green;
+	    }
+	    &:active {
+	    	background: rgba(255,255,255,0.6);
+			outline: 1px solid @ide-green;
+	    	outline-offset: 1px;
+    	}
 	}
 }

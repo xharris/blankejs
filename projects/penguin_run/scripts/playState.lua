@@ -11,7 +11,7 @@ local destruct_ready_x = 0
 
 -- Called every time when entering the state.
 function PlayState:enter(previous)
-	wall = nil
+	wall = DestructionWall()
 	main_penguin = nil
 	last_lvl_end = {x=0, y=0}
 	penguin_spawn = nil
@@ -70,7 +70,7 @@ function PlayState:update(dt)
 		main_view:moveTo(penguin_spawn.x, penguin_spawn.y)
 
 		-- transition to menu when zoomed in all the way
-		if not wall then
+		if wall.hspeed == 0 then
 			main_view:zoom(3, 3, function()
 				State.transition(MenuState, "circle-out")
 			end)
@@ -159,22 +159,16 @@ function loadLevel(name)
 		x=lvl_scene.offset_x,
 		y=lvl_scene.offset_y
 	}
+	print_r(lvl_scene:getTiles())
 	
 	levels:add(lvl_scene)
-	
-	-- create canvas for level
-	local lvl_canvas = Canvas()
-	lvl_canvas:drawTo(function()
-		lvl_scene:draw("back")
-		lvl_scene:draw("front")
-	end)
 end
 
 function startDestruction()
 	if not wall then
 		Debug.log('start')
 		tmr_spawn_wall:reset()
-		wall = DestructionWall()
+		wall:start()
 		wall.x = -32
 	end
 end

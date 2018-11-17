@@ -8,7 +8,7 @@ Canvas = Class{
         
         self.active = false
         self.auto_clear = true
-        --self.clear_color = {1,1,1,0}
+        self.clear_color = {1,1,1,0}
         self._prev_canvas = nil
         
         _addGameObject('canvas',self)
@@ -25,12 +25,13 @@ Canvas = Class{
     end,
 
     drawTo = function(self, func)
-        self.canvas:renderTo(function()
-            if self.auto_clear then
-                love.graphics.clear(Draw.background_color)
-            end
-            func()
-        end)
+        self._prev_canvas = love.graphics.getCanvas()
+        love.graphics.setCanvas{self.canvas, stencil=true}
+        if self.auto_clear then
+            love.graphics.clear(self.clear_color)
+        end
+        func()
+        love.graphics.setCanvas(self._prev_canvas)
     end,
     
     draw = function(self, ...)

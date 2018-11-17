@@ -18,6 +18,7 @@ const { spawn, execFile, exec } = require('child_process')
 const { cwd, env, platform } = require('process')
 var nwNOOB = require('./js/server.js');
 var nwZIP = require('archiver');
+var nwRECURSIVE = require("recursive-readdir");
 
 var app = {
 	project_path: "",
@@ -332,6 +333,7 @@ var app = {
 
 	addAsset: function(res_type, path) {
 		nwFS.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
+		dispatchEvent("asset_added",{type: res_type, path: app.project_path});
 	},
 
 	// determine an assets type based on file extension
@@ -342,6 +344,21 @@ var app = {
 		'scene':['scene'],
 		'script':['lua']
 	},
+	getAssets: function(f_type, cb) {
+		let extensions = app.allowed_extensions[f_type];
+		if (!extensions) return;
+		
+		function ignoreFiles (file, stats) {
+			return (
+				stats.isFile() &&
+				!extensions.includes(nwPATH.extname(file).slice(1))
+			);
+		}
+		nwRECURSIVE(app.project_path, [ignoreFiles],
+		function(err, files){
+			if (cb) cb(files);
+		});
+	},
 	findAssetType: function(path) {
 		let ext = nwPATH.extname(path).substr(1);
 		for (let a_type in app.allowed_extensions) {
@@ -349,6 +366,12 @@ var app = {
 				return a_type;
 		}
 		return 'other';
+	},
+	shortenAsset: function(path){
+		return nwPATH.relative(app.project_path,path).replace(/assets[/\\]/,'');
+	},
+	lengthenAsset: function(path){
+		return nwPATH.resolve(nwPATH.join(app.project_path,'assets',path));
 	},
 	cleanPath: function(path) {
 		return nwPATH.normalize(path).replaceAll('\\\\','/');
@@ -413,6 +436,7 @@ var app = {
 
 	setHistoryMostRecent: function(id) {
 		let e = app.history_ref[id];
+		if (!e) return;
 		let el_history_bar = app.getElement("#history");
 
 		// move it to front of history

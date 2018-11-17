@@ -146,6 +146,7 @@ addAnimation{...}					--[[
 	frames = {...}					-- {'1-2', 1} means columns 1-2 and row 1
 	frame_size = {width, height}	-- {32,32} means each frame is 32 by 32
 	speed = float					-- 0.1 smaller = faster
+	offset = {x, y}
 ]]
 drawSprite(sprite_index)			-- calls default draw function for given animation name
 addShape(...)						--[[

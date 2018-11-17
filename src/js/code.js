@@ -243,6 +243,7 @@ class Code extends Editor {
 			theme: "material",
             smartIndent : true,
             lineNumbers : true,
+            gutters:["CodeMirror-linenumbers","gutter-event"],
             lineWrapping : false,
             indentUnit : 4,
             tabSize : 4,
@@ -270,6 +271,36 @@ class Code extends Editor {
             	"Ctrl-Space": "autocomplete"
             }
 		});
+
+		this.gutterEvents = {
+			':addAnim':{
+				tooltip:'make a spritesheet animation',
+				fn:function(line_text, cm, obj){
+					let spr_prvw = new SpritesheetPreview(app);
+					spr_prvw.onCopyCode = function(vals){
+						let frames = "{"+['\"1-'+vals.frames+'\"'].join(',')+"}"; // TODO: change later to compensate for turning some frames off
+						
+						let args = {
+							name:'\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\"',
+							image:'\"'+app.cleanPath(vals.image.replace(/.*\\(.*)\.\w+/g,"$1"))+'\"',
+							frames:frames,
+							frame_size:"{"+['\"'+vals['frame size'][0]+'\"','\"'+vals['frame size'][1]+'\"'].join(',')+"}",
+							speed:vals.speed,
+							offset:"{"+[vals.offset[0],vals.offset[1]].join(',')+"}"
+							// TODO: border (padding)
+						}
+						let arg_str = "";
+						for (let key in args) {
+							arg_str += (key+"="+args[key]+", ");
+						}
+						arg_str = arg_str.slice(0,-2);
+						line_text = line_text.replace(/(\s*)(\w+):addAnim.+/g,"$1$2:addAnimation{"+arg_str+"}");
+						this_ref.codemirror.replaceRange(line_text,
+							{line:obj.from.line,ch:0}, {line:obj.from.line,ch:10000000});
+					}
+				}
+			}
+		}
 
 		this.autocompleting = false;
 		this.last_word = '';
@@ -457,6 +488,21 @@ class Code extends Editor {
 		this.setFontSize(font_size);
 		//this.codemirror.setSize("100%", "100%");
 		this.codemirror.on('change', function(cm, obj){
+			let line_text = cm.getLine(obj.from.line);
+			cm.clearGutter('gutter-event');
+			for (let txt in this_ref.gutterEvents) {
+				if (line_text.includes(txt)) {
+					let el_gutter = blanke.createElement('div','gutter-evt');
+					el_gutter.innerHTML="<i class='mdi mdi-flash'></i>";
+					if (this_ref.gutterEvents[txt].tooltip)
+						el_gutter.title = this_ref.gutterEvents[txt].tooltip;
+					el_gutter.addEventListener('click',function(){
+						this_ref.gutterEvents[txt].fn(line_text, cm, obj);
+					});
+					cm.setGutterMarker(obj.from.line, 'gutter-event', el_gutter);
+				}
+			}
+
 			this_ref.addAsterisk();
 		});
 		this.codemirror.on('click', function(cm, obj){

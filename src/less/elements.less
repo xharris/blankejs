@@ -3,6 +3,22 @@
     padding-top: 33px;
     padding-bottom: 22px;*/
 
+    .gutter-event {
+    	width: 10px;
+    }
+
+    .gutter-evt {
+	    cursor: pointer;
+
+    	i {
+	    	color: rgb(83,127,126);
+	    	transition: all ease-in-out 0.2s;
+	    }
+	    &:hover i {
+    		color: lighten(rgb(83,127,126), 40%);
+    	}
+    }
+
 	.CodeMirror {
 		font-size: 16px;
 		height: 100%;
@@ -1098,6 +1114,86 @@
 	}
 }
 
+.content[data-type="SpritesheetPreview"] {
+	background: @sub-window-background;
 
+	.editor-content {
+		overflow: hidden;
+	}
 
+	.form-container {
+		padding-left: 3px;
+		padding-bottom: 10px;
+		height: 100%;
+    	overflow: auto;
+	}
 
+	.show-prvw {
+	    position: absolute;
+	    bottom: 20px;
+	    left: 50%;
+	    margin-left: 12px;
+	    padding: 4px 5px;
+	    font-size: 16px;
+	    text-transform: uppercase;
+	    border: none;
+	    border-radius: 2px;
+	    outline: 1px solid fade(@ide-green, 90%);
+	    z-index: 10;
+	    transition: all ease-in-out 0.2s;
+
+	    &:hover {
+	    	background: @ide-green;
+	    	background: fade(@ide-green, 90%);
+	    }
+	}
+
+	.prvw-container {
+		width: 50%;
+		display: inline-block;
+		vertical-align: top;
+		overflow: auto;
+    	height: 100%;
+    	position: relative;
+		background: url("includes/grid.png");
+
+		.image, .frames-container, .prvw {
+			transition: all ease-in-out 0.1s;
+		}
+
+		&.enable-prvw .image, &.enable-prvw .frames-container {
+			filter: blur(5px);
+		}
+		&:not(.enable-prvw) .prvw { opacity: 0; }
+
+		.prvw {
+			position: fixed;
+		    margin-top: 23px;
+		    top: 2px;
+		    margin-left: 2px;
+		    pointer-events: none;
+		    left: 50%;
+		}
+
+		.frames-container {
+		    position: absolute;
+		    top: 0px;
+		    left: 0px;
+		    width: 100%;
+		    height: 100%;
+		    pointer-events: none;
+
+		    .frame {
+		    	outline: 1px solid red;
+		    	display: inline-block;
+		    	position: absolute;
+		    	pointer-events: all;
+
+		    	&.ignore {
+		    		outline-style: dashed;
+		    		background: rgba(255,0,0,0.5);
+		    	}
+		    }
+		}
+	}
+}

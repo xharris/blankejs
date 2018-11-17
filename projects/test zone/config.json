@@ -55,5 +55,43 @@
     },
     "export": {
         "name": "test zone"
+    },
+    "spritesheet_prvw": {
+        "image\\sprite-example.png": {
+            "name": "mario_",
+            "offset": [
+                41,
+                8
+            ],
+            "speed": 0.15,
+            "frame size": [
+                30,
+                44
+            ],
+            "frames": 2,
+            "columns": 2,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\sprite-example.png"
+        },
+        "image\\cat.png": {
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 0,
+            "frame size": [
+                15,
+                16
+            ],
+            "frames": 1,
+            "columns": 1,
+            "padding": [
+                0,
+                0
+            ]
+        }
     }
 }

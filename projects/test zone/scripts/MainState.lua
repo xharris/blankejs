@@ -21,7 +21,9 @@ local ui_element_list = UI.list{
 	end
 }
 
+local mario
 function MainState:enter()
+	mario = Mario()
 	Draw.setBackgroundColor("white")
 	test_mask.fn = function()
 		test_mask:useImageAlphaMask(img_mask)
@@ -35,6 +37,7 @@ end
 
 local eff = Effect("crt")
 function MainState:draw()
+	mario:draw()
 	--[[ 
 	test_mask:draw(function()
 		Draw.setColor("white")

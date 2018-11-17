@@ -3,6 +3,9 @@ BlankE.addEntity("DestructionWall")
 DestructionWall.net_sync_vars = {'x'}
 
 function DestructionWall:init()
+end
+
+function DestructionWall:start()
 	self.hspeed = 150
 end
 

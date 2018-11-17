@@ -112,6 +112,7 @@ for m, mod in ipairs(modules) do
 		if mod ~= "Group" and not _G[mod].instances then _G[mod].instances = Group() end
 	--end
 end
+Physics = love.physics
 
 Signal.emit('modules_loaded')
 
@@ -517,7 +518,9 @@ BlankE = {
 
 		Input.update()
 
+    	love.graphics.setBlendMode('alpha', 'premultiplied')
 		BlankE.game_canvas:draw(math.floor(BlankE._offset_x * BlankE.scale_x), math.floor(BlankE._offset_y * BlankE.scale_y), 0, BlankE.scale_x, BlankE.scale_x)
+		love.graphics.setBlendMode('alpha')
 
 		if BlankE.draw_debug then Debug.draw() end
 
