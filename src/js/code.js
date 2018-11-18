@@ -275,16 +275,16 @@ class Code extends Editor {
 		this.gutterEvents = {
 			':addAnim':{
 				tooltip:'make a spritesheet animation',
-				fn:function(line_text, cm, obj){
+				fn:function(line_text, cm, cur){
 					let spr_prvw = new SpritesheetPreview(app);
 					spr_prvw.onCopyCode = function(vals){
-						let frames = "{"+['\"1-'+vals.frames+'\"'].join(',')+"}"; // TODO: change later to compensate for turning some frames off
-						
+						let rows = Math.floor(vals.frames/vals.columns);
+
 						let args = {
 							name:'\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\"',
 							image:'\"'+app.cleanPath(vals.image.replace(/.*\\(.*)\.\w+/g,"$1"))+'\"',
-							frames:frames,
-							frame_size:"{"+['\"'+vals['frame size'][0]+'\"','\"'+vals['frame size'][1]+'\"'].join(',')+"}",
+							frames:"{"+vals['selected frames'].join(',')+"}",
+							frame_size:"{"+vals['frame size'].join(',')+"}",
 							speed:vals.speed,
 							offset:"{"+[vals.offset[0],vals.offset[1]].join(',')+"}"
 							// TODO: border (padding)
@@ -296,7 +296,7 @@ class Code extends Editor {
 						arg_str = arg_str.slice(0,-2);
 						line_text = line_text.replace(/(\s*)(\w+):addAnim.+/g,"$1$2:addAnimation{"+arg_str+"}");
 						this_ref.codemirror.replaceRange(line_text,
-							{line:obj.from.line,ch:0}, {line:obj.from.line,ch:10000000});
+							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
 					}
 				}
 			}
@@ -487,8 +487,9 @@ class Code extends Editor {
 
 		this.setFontSize(font_size);
 		//this.codemirror.setSize("100%", "100%");
-		this.codemirror.on('change', function(cm, obj){
-			let line_text = cm.getLine(obj.from.line);
+		function checkGutterEvents(cm, obj) {
+			let cur = cm.getCursor();
+			let line_text = cm.getLine(cur.line);
 			cm.clearGutter('gutter-event');
 			for (let txt in this_ref.gutterEvents) {
 				if (line_text.includes(txt)) {
@@ -497,15 +498,20 @@ class Code extends Editor {
 					if (this_ref.gutterEvents[txt].tooltip)
 						el_gutter.title = this_ref.gutterEvents[txt].tooltip;
 					el_gutter.addEventListener('click',function(){
-						this_ref.gutterEvents[txt].fn(line_text, cm, obj);
+						this_ref.gutterEvents[txt].fn(line_text, cm, cur);
 					});
-					cm.setGutterMarker(obj.from.line, 'gutter-event', el_gutter);
+					cm.setGutterMarker(cur.line, 'gutter-event', el_gutter);
 				}
 			}
-
+		}
+		this.codemirror.on('cursorActivity',function(cm){
+			checkGutterEvents(cm);
+		})
+		this.codemirror.on('change', function(cm, obj){
 			this_ref.addAsterisk();
 		});
 		this.codemirror.on('click', function(cm, obj){
+
 			this_ref.focus();
 		});
 		this.codemirror.refresh();

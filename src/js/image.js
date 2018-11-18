@@ -47,6 +47,7 @@ class SpritesheetPreview extends Editor {
 		this.appendChild(this.el_prvw_container);
 
 		// start animation
+		this.frames = [];
 		this.frame_coords = [];
 		this.frame = 0;
 		this.duration = this_ref.el_sheet_form.getValue("speed")*1000;
@@ -106,7 +107,7 @@ class SpritesheetPreview extends Editor {
 
 			this_ref.el_image.src = src;
 		});
-		for (let prop of ["offset","speed","frame size", "columns", "frames", "columns"]) {
+		for (let prop of ["name","offset","speed","frame size", "columns", "frames", "columns"]) {
 			this.el_sheet_form.onChange(prop, function(){ this_ref.updateFrames(); });
 		}
 
@@ -121,13 +122,15 @@ class SpritesheetPreview extends Editor {
 		let frames = this.el_sheet_form.getValue("frames");
 		let columns = this.el_sheet_form.getValue("columns");
 		let padding = [0,0]; // TODO: add later
+
 		return {
 			'name':name,'offset':offset,'speed':speed,'frame size':frame_dims,
-			'frames':frames,'columns':columns,'padding':padding,'image':this.selected_img
+			'frames':frames,'selected frames':this.frames,'columns':columns,'padding':padding,'image':this.selected_img
 		}
 	}
 
 	updateFrames () {
+		let this_ref = this;
 		let vals = this.getValues();
 
 		// save last used values for this image
@@ -153,10 +156,11 @@ class SpritesheetPreview extends Editor {
 			});
 			this.el_frames_container.appendChild(el_frame);
 
-			x += vals['frame size'][0];
+			x += vals['frame size'][0] + vals.padding[0];
+			
 			if ( x > vals.offset[0] + (vals.columns * (vals['frame size'][0]+vals.padding[0])) ) {
 				x = vals.offset[0];
-				y += vals['frame size'][1] + vals.padding[1];
+				y += (vals['frame size'][1] + vals.padding[1]);
 			}
 		}
 
@@ -171,15 +175,48 @@ class SpritesheetPreview extends Editor {
 		let el_frames = Array.from(this.el_frames_container.children);
 		let img_width = this.el_image.width;
 		let img_height = this.el_image.height;
+		let vals = this.getValues();
 
-		for (let f in el_frames) {
+		this.frames = [];
+		let last_x = undefined, last_y = undefined, x_chain = [1,1], y_chain = [1,1];
+		for (let f = 0; f < el_frames.length; f++) {
 			if (!el_frames[f].classList.contains("ignore")) {
+				let x = parseInt(el_frames[f].style.left);
+				let y = parseInt(el_frames[f].style.top);
 				this.frame_coords.push([
-					parseInt(el_frames[f].style.left), parseInt(el_frames[f].style.top),
+					x, y,
 					parseInt(el_frames[f].style.width), parseInt(el_frames[f].style.height)
 				]);
+
+				function addChain() {
+					// turn x and y into a single string/int
+					if (x_chain[0] == x_chain[1]) x_chain = x_chain[0];
+					else x_chain = '\"'+x_chain[0]+"-"+x_chain[1]+"\"";
+					if (y_chain[0] == y_chain[1]) y_chain = y_chain[0];
+					else y_chain = '\"'+y_chain[0]+"-"+y_chain[1]+"\"";
+					// add it to list of frames
+					this_ref.frames.push(x_chain, y_chain);
+					// find where the next chain begins
+					let new_x = Math.floor((x-vals.offset[0]) / (vals['frame size'][0] + vals.padding[0])) + 1;
+					let new_y = Math.floor((y-vals.offset[1]) / (vals['frame size'][1] + vals.padding[1])) + 1;
+					x_chain = [new_x,new_x]; y_chain = [new_y,new_y];
+				}
+
+				// add to frame list
+				if (f > 0 || el_frames.length == 1) {
+					if (last_y == y) x_chain[1]++;
+					if (last_x == x) y_chain[1]++;
+
+					if (last_x != x && last_y != y) 
+						addChain();
+					
+					if (f == el_frames.length-1)
+						addChain();
+				}
+				last_x = x; last_y = y;
 			} 
 		}
+
 		this.duration = this_ref.el_sheet_form.getValue("speed")*1000;
 	}
 

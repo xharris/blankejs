@@ -58,18 +58,19 @@
     },
     "spritesheet_prvw": {
         "image\\sprite-example.png": {
-            "name": "mario_",
+            "name": "mario_walk",
             "offset": [
                 41,
                 8
             ],
             "speed": 0.15,
             "frame size": [
-                30,
+                31,
                 44
             ],
-            "frames": 2,
-            "columns": 2,
+            "frames": 3,
+            "selected frames": [],
+            "columns": 1,
             "padding": [
                 0,
                 0
@@ -77,6 +78,7 @@
             "image": "image\\sprite-example.png"
         },
         "image\\cat.png": {
+            "name": "",
             "offset": [
                 0,
                 0
@@ -87,11 +89,33 @@
                 16
             ],
             "frames": 1,
+            "selected frames": [],
             "columns": 1,
             "padding": [
                 0,
                 0
-            ]
+            ],
+            "image": "image\\cat.png"
+        },
+        "image\\Basic Bird.png": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 0,
+            "frame size": [
+                0,
+                0
+            ],
+            "frames": 0,
+            "selected frames": [],
+            "columns": 0,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\Basic Bird.png"
         }
     }
 }
