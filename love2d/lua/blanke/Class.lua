@@ -75,6 +75,7 @@ local function new(class)
 	class.include = class.include or include
 	class.clone   = class.clone   or clone
 	class.onPropSet = {}
+	class.onPropGet = {}
 	class._hiddenProps = {}
 
 	class.__newindex = function(c,k,v)
@@ -117,6 +118,10 @@ local function new(class)
 	end,
 	__index = function(c,k)
 		local hidden_props = rawget(c, '_hiddenProps')
+		local prop_get = rawget(c,'onPropGet')
+		if prop_get and prop_get[k] then
+			return prop_get[k](c)
+		end
     	if hidden_props and hidden_props[k] ~= nil then
     		return hidden_props[k]
     	end

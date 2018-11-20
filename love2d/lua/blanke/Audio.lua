@@ -21,9 +21,16 @@ Audio = Class{
 
 		assert(self.audio, 'Audio not found: \"'..tostring(name)..'\"')
 	
-		self.onPropSet["pitch"] = function(self, v)
-			self.audio:setPitch(v)
-		end
+		self.x = 0; self.y = 0; self.z = 0;
+
+		self.onPropSet["pitch"] = function(self, v) self.audio:setPitch(v) end
+		self.onPropSet["volume"] = function(self, v) self.audio:setVolume(v) end
+		self.onPropSet["x"] = function(self, v) self.audio:setPosition(v,self.y,self.z) end
+		self.onPropSet["y"] = function(self, v) self.audio:setPosition(self.x,v,self.z) end
+		self.onPropSet["z"] = function(self, v) self.audio:setPosition(self.x,self.y,v) end
+		self.onPropSet["looping"] = function(self, v) self.audio:setLooping(v) end
+
+		self.onPropGet["seconds"] = function() return self.audio:tell("seconds") end
 	end,
 
 	play = function(self) self.audio:play()	end,
@@ -68,6 +75,10 @@ Audio = Class{
 			end
 		end
 	end,
+
+	seek = function(self, ...)
+		self.audio:seek(...)
+	end
 }
 
 return Audio

@@ -22,7 +22,9 @@ local ui_element_list = UI.list{
 }
 
 local mario
-local my_song = Audio("m_boss1a")
+local my_song = Audio("m_hit")
+my_song.looping = true
+my_song.volume = 0.2
 function MainState:enter()
 	mario = Mario()
 	my_song:play()
@@ -39,8 +41,17 @@ end
 
 local eff = Effect("crt")
 function MainState:draw()
-	my_song.pitch = sinusoidal(100,200,1)/100	
-	Debug.log("its",my_song.pitch)
+	--local val = sinusoidal(-100,100,1)
+	my_song.z = mouse_x - (game_width / 2)
+	my_song.y = mouse_y - (game_height / 2)
+	Debug.log("its",my_song.z,my_song.y,my_song.seconds)
+	
+	if Input("lclick").released then
+		my_song:play()
+	end
+	if Input("rclick").released then
+		my_song:pause()
+	end
 	
 	mario:draw()
 	--[[ 
