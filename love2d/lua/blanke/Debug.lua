@@ -42,7 +42,7 @@ Debug = {
     
     log = function(...)
         local new_line = table.concat(table.toString({...}),'\t')        
-        if false then --Debug._last_line == new_line then
+        if Debug._last_line == new_line then
             Debug._duplicate_count = Debug._duplicate_count + 1
             Debug.lines[#Debug.lines] = new_line .. '('..(Debug._duplicate_count+1)..')'
         else

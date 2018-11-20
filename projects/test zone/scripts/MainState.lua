@@ -22,8 +22,10 @@ local ui_element_list = UI.list{
 }
 
 local mario
+local my_song = Audio("m_boss1a")
 function MainState:enter()
 	mario = Mario()
+	my_song:play()
 	Draw.setBackgroundColor("white")
 	test_mask.fn = function()
 		test_mask:useImageAlphaMask(img_mask)
@@ -37,6 +39,9 @@ end
 
 local eff = Effect("crt")
 function MainState:draw()
+	my_song.pitch = sinusoidal(100,200,1)/100	
+	Debug.log("its",my_song.pitch)
+	
 	mario:draw()
 	--[[ 
 	test_mask:draw(function()

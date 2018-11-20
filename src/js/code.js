@@ -294,7 +294,8 @@ class Code extends Editor {
 							arg_str += (key+"="+args[key]+", ");
 						}
 						arg_str = arg_str.slice(0,-2);
-						line_text = line_text.replace(/(\s*)(\w+):addAnim.+/g,"$1$2:addAnimation{"+arg_str+"}");
+						line_text = line_text.replace(/(\s*)(\w+):addAnim.*/g,"$1$2:addAnimation{"+arg_str+"}");
+						console.log('string',line_text)
 						this_ref.codemirror.replaceRange(line_text,
 							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
 					}

@@ -25,12 +25,7 @@ function Boss1:init()
 		name="idle",
 		image="boss1_idle"
 	}
-	self:addAnimation{
-		name="walk1",
-		image="boss1_walk1",
-		frames = {'1-2',1},
-		frame_size = {36,41}
-	}
+	self:addAnimation{name="walk1", image="boss1_walk1", frames={"1-2",1}, frame_size={36,41}, speed=1, offset={0,0}}
 	
 	self.x = self.scene_rect[1]
 	self.y = self.scene_rect[2]

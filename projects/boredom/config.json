@@ -152,5 +152,27 @@
                 "uuid": "882bbb6a"
             }
         }
+    },
+    "spritesheet_prvw": {
+        "image\\boss1_walk1.png": {
+            "name": "walk1",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame size": [
+                36,
+                41
+            ],
+            "frames": 2,
+            "selected frames": [],
+            "columns": 2,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\boss1_walk1.png"
+        }
     }
 }

@@ -95,6 +95,15 @@ Asset = Class{
 			local image = love.graphics.newImage(path)
 			if image then return acceptAsset("image", image) end
 
+		-- AUDIO
+		elseif table.hasValue(Asset.audio_ext, asset_ext) then
+			local audio_type = "static"
+			if BlankE.settings.audio and BlankE.settings.audio[path] then
+				audio_type = BlankE.settings.audio[path].type
+			end
+			local audio = love.audio.newSource(path,audio_type)
+			if audio then return acceptAsset("audio",audio) end
+
 		-- MAP
 		elseif path:ends('.map') then
 			return acceptAsset("map", Map():load(love.filesystem.read(path)))
@@ -140,6 +149,7 @@ Asset = Class{
 	end,
 
 	image = function(name) return Asset.get('image', name) end,
+	audio = function(name) return Asset.get('audio', name) end,
 	script = function(name) return Asset.get('script', name) end,
 	map = function(name) return Asset.get('map', name) end,
 	scene = function(name) return Asset.get('scene', name) end,

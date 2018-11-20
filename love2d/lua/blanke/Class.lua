@@ -70,10 +70,21 @@ local function new(class)
 		include(class, other)
 	end
 
-	class.__index = class.__index or class
+	class.__index = class
 	class.init    = class.init    or class[1] or function() end
 	class.include = class.include or include
 	class.clone   = class.clone   or clone
+	class.onPropSet = {}
+	class._hiddenProps = {}
+
+	class.__newindex = function(c,k,v)
+		if c.onPropSet[k] ~= nil then
+			v = ifndef(c.onPropSet[k](c,v), v)
+			c._hiddenProps[k] = v
+			return
+		end
+		rawset(c,k,v)
+	end
 
 	-- constructor call
 	return setmetatable(class, {__call = function(c, ...)
@@ -99,9 +110,18 @@ local function new(class)
 
 			if ret_val then return ret_val end
 		end
+
+
 	    
 	    return o
-	end})
+	end,
+	__index = function(c,k)
+		local hidden_props = rawget(c, '_hiddenProps')
+    	if hidden_props and hidden_props[k] ~= nil then
+    		return hidden_props[k]
+    	end
+    	return rawget(class, k)
+ 	end})
 end
 
 -- interface for cross class-system compatibility (see https://github.com/bartbes/Class-Commons).

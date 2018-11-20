@@ -29,12 +29,13 @@ module.exports.instance_regex = {
 	//'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
+	'audio': 	/\b(\w+)\s*=\s*Audio\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
 	'group': 	[
 		/\b(?:self\.)?(\w+)\s*=\s*Group\(\)\s+?/g,
 		/\b(\w+\.instances).*/g
 	],
 	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\d.,]*\)\s+?/g,
-	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g
+	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g,
 }
 // old group/bezier regex: /\b(?:self.|self:)?(\w+)\s*=\s*Group\(\).*/g
 
@@ -123,7 +124,7 @@ module.exports.completions = {
 		{fn:"stack", vars:{ fn:'' }, info:"resets all draw operations after fn. push -> fn -> pop"}
 	],
 	"blanke-input":[
-		{fn:"set", vars:{ label:'', input1:'input to catch</br>- letters: w, a, s, d, ...', etc:'' }}
+		{fn:"set", vars:{ label:'', input1:'input to catch</br>- mouse: mouse.1, mouse.2, ...</br>- letters: w, a, s, d, ...', etc:'' }}
 	],
 	"blanke-input-instance":[
 		{prop: "can_repeat"},
@@ -221,6 +222,14 @@ module.exports.completions = {
 		{prop:"height"},
 		{fn:"draw"},
 		{fn:"crop",vars:{x:"",y:"",width:"",height:""}}
+	],
+	"blanke-audio-instance":[
+		{fn:"play"},
+		{fn:"pause"},
+		{fn:"stop"},
+		{fn:"playAll",info:"play all Audio use the same asset"},
+		{fn:"stopAll",info:"pause all Audio use the same asset"},
+		{fn:"pauseAll",info:"stop all Audio use the same asset"},
 	],
 	"blanke-scene-instance":[
 		{prop:"draw_hitboxes"},

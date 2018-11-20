@@ -12,6 +12,7 @@ _Input = Class{
         -- implement later
         self.pressed = false
         self.released = false
+        self._release_checked = false
 
         self.can_repeat = true
 
@@ -72,6 +73,26 @@ _Input = Class{
         return nil
     end,
 
+    -- a mouse/keyboard input has been pressed
+    press = function(self)
+        self.pressed = true
+        self.released = false
+        self._release_checked = false
+    end,
+
+    -- a mouse/keyboard input has been released
+    release = function(self)
+        self.pressed = false
+        self.released = true
+        self._release_checked = false
+    end,
+
+    -- check if .release value should be reset
+    releaseCheck = function(self)
+        if self._release_checked then self.released = false 
+        else self._release_checked = true end
+    end,
+
     _isOn = function(self)
         if not self.can_repeat and self.pressed then return false end
 
@@ -127,14 +148,20 @@ Input = {
     
     keypressed = function(key)
         for o, obj in pairs(Input.keys) do
-            if obj.in_key[key] ~= nil then obj.in_key[key] = obj.in_key[key] + 1 end
+            if obj.in_key[key] ~= nil then
+                obj:press()
+                obj.in_key[key] = obj.in_key[key] + 1
+            end
         end
         return Input
     end,
     
     keyreleased = function(key)
         for o, obj in pairs(Input.keys) do
-            if obj.in_key[key] ~= nil then obj.in_key[key] = 0; obj.pressed = false end
+            if obj.in_key[key] ~= nil then
+                obj:release()
+                obj.in_key[key] = 0; obj.pressed = false
+            end
         end
         return Input
     end,
@@ -153,7 +180,10 @@ Input = {
     mousepressed = function(x, y, button)
         local btn_string = "mouse." .. button
         for o, obj in pairs(Input.keys) do
-            if obj.in_mouse[btn_string] ~= nil then obj.in_mouse[btn_string] = obj.in_mouse[btn_string] + 1 end
+            if obj.in_mouse[btn_string] ~= nil then
+                obj:press()
+                obj.in_mouse[btn_string] = obj.in_mouse[btn_string] + 1
+            end
             
             local region = obj:getRegion(x, y)
             if region ~= nil then
@@ -166,7 +196,10 @@ Input = {
     mousereleased = function(x, y, button)
         local btn_string = "mouse." .. button
         for o, obj in pairs(Input.keys) do
-            if obj.in_mouse[btn_string] ~= nil then obj.in_mouse[btn_string] = 0 end
+            if obj.in_mouse[btn_string] ~= nil then
+                obj:release()
+                obj.in_mouse[btn_string] = 0
+            end
             
             local region = obj:getRegion(x, y)
             if region ~= nil then
@@ -209,13 +242,15 @@ Input = {
         end,
 
         __call = function(self, ...)
-            local ret_val = false
+            local ret_val = nil
             local args = {...}
             for a, arg in pairs(args) do
                 if Input.keys[arg] then
-                    ret_val = Input.keys[arg]()
+                    ret_val = Input.keys[arg]
+                    ret_val:releaseCheck()
                 end
             end
+            assert(ret_val, 'Input not found: \"'..tostring(...)..'\"')
             return ret_val
         end
     }

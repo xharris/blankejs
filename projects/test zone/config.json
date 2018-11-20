@@ -56,6 +56,11 @@
     "export": {
         "name": "test zone"
     },
+    "audio": {
+        "audio\\m_hit.wav": {
+            "type": "static"
+        }
+    },
     "spritesheet_prvw": {
         "image\\sprite-example.png": {
             "name": "mario_walk",

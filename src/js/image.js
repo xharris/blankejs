@@ -1,6 +1,7 @@
 class SpritesheetPreview extends Editor {
 	constructor (...args) {
 		super(...args);
+		// TODO: add option to give default values for el_sheet_form
 		let this_ref = this;
 
 		this.setupDragbox();

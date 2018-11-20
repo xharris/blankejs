@@ -101,7 +101,7 @@ UIList = Class{
 		end
 
 
-		if Input("_UI_primary") == 1 then
+		if Input("_UI_primary").pressed then
 			-- scroll up click
 			if UI.mouseInside(scroll_x, scroll_up_y, scroll_w, scroll_h) then
 				self:scroll(-1)
@@ -134,7 +134,7 @@ UI = Class{
 			mouse_y > y and mouse_y < y + h
 	end,
 	update = function(dt)
-		if Input("_UI_mouse1") then
+		if Input("_UI_primary").pressed then
 			for name, dims in pairs(UI.element_dim) do
 				if UI.mouseInside(dims[1], dims[2], dims[3], dims[4]) then
 					UI.ret_element[name] = true
@@ -205,7 +205,7 @@ oldUI = Class{
 				mouse_y < btn_dimensions[2] + btn_dimensions[4]
 		end
 
-		if Input("_UI_mouse1") then
+		if Input("_UI_primary").released then
 			for e, el in ipairs(UI._element_stack) do
 				if el.type == 'button' then
 					if mouseInElement(el.button) then
