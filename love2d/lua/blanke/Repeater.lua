@@ -7,21 +7,35 @@ Repeater = Class{
 		self.ent_systems = {}
 		self.system = nil
 
+		function set(prop, ...)
+			if self.system ~= nil then self.system[prop](self.system, ...) end
+		end
+
+		self.onPropSet["lifetime"] = function(self, v) set("setParticleLifetime",v) end
+		self.onPropSet["duration"] = function(self, v) set("setEmitterLifetime",v) end
+		self.onPropSet["rate"] = function(self, v) set("setEmissionRate",v) end
+		self.onPropSet["linear_accel_x"] = function(self, v) set("setLinearAcceleration",v,self.linear_accel_y) end
+		self.onPropSet["linear_accel_y"] = function(self, v) set("setLinearAcceleration",self.linear_accel_x,v) end
+		self.onPropSet["linear_damp_x"] = function(self, v) set("setLinearDamping",v,self.linear_damp_y) end
+		self.onPropSet["linear_damp_y"] = function(self, v) set("setLinearDamping",self.linear_damp_x,v) end
+		self.onPropSet["spawn_x"] = function(self, v) set("setPosition",v,self.spawn_y) end
+		self.onPropSet["spawn_y"] = function(self, v) set("setPosition",self.spawn_x,v) end
+
+		local default_props = {"linear_accel_x","linear_accel_y","linear_damp_x","linear_damp_y","spawn_x","spawn_y"}
+		for p, prop in ipairs(default_props) do
+			self.onPropGet[prop] = function() return 0 end
+		end
+		self.onPropGet["duration"] = function() return -1 end
+		self.onPropGet["lifetime"] = function() return 3 end
+		self.onPropGet["rate"] = function() return 1 end
+
 		self:setTexture(texture)
-	
+
 		self.x = 0
 		self.y = 0
-		self.duration = -1
-		self.lifetime = 5 -- needs max
-		self.rate = 1
-		self.linear_accel_x = 0 -- needs max
-		self.linear_accel_y = 0
-		self.linear_damp_x = 0
-		self.linear_damp_y = 0
-		self.spawn_x = 0
-		self.spawn_y = 0
+
 		-- self.speed = 0 -- needs max
-		self.color = {1,1,1,1}
+		self.start_color = {1,1,1,1}
 		self.end_color = {1,1,1,1}
 
 
@@ -29,7 +43,7 @@ Repeater = Class{
 			table.update(self, options)
 		end
 
-		self.color = Draw._parseColorArgs(self.color)
+		self.start_color = Draw._parseColorArgs(self.start_color)
 		self.end_color = Draw._parseColorArgs(self.end_color)
 
 		_addGameObject('repeater', self)
@@ -82,8 +96,8 @@ Repeater = Class{
 						},
 						t = 0,
 						max_t = self:_getVal("lifetime"),
-						start_color = table.copy(self.color),
-						color = table.copy(self.color),
+						start_color = table.copy(self.start_color),
+						color = table.copy(self.start_color),
 						end_color = table.copy(self.end_color),
 
 						accel_x = self:_getVal('linear_accel_x'),
@@ -112,10 +126,10 @@ Repeater = Class{
 						-- COLOR
 						local p = t / info.max_t
 						for c = 1,4 do
-							info.color[c] = (info.end_color[c] - info.start_color[c]) * p + info.start_color[c]
-							--info.color[c] (1.0 - p) * info.start_color[c] + p * info.end_color[c] + 0.5
+							info.start_color[c] = (info.end_color[c] - info.start_color[c]) * p + info.start_color[c]
+							--info.start_color[c] (1.0 - p) * info.start_color[c] + p * info.end_color[c] + 0.5
 						end
-						sys_props.batch:setColor(unpack(info.color))
+						sys_props.batch:setColor(unpack(info.start_color))
 
 						-- POSITION
 						local x, y = info.batch_args[3], info.batch_args[4]
@@ -147,6 +161,8 @@ Repeater = Class{
 	setTexture = function(self, texture)
 		self.entity_tex = false
 
+		assert(texture, "Invalid texture '"..tostring(texture).."'")
+
 		if texture.classname then
 			if texture.classname == "Image" then self.real_texture = texture.image end
 			if texture.classname == "Canvas" then self.real_texture = texture.canvas end
@@ -165,6 +181,7 @@ Repeater = Class{
 			else
 				self.system:setTexture(self.real_texture)
 			end
+			self:_refreshMutators()
 		end
 	end,
 
@@ -176,15 +193,7 @@ Repeater = Class{
 				love.graphics.draw(props.batch)
 			end
 		else
-			-- drawing normal particle system
-			self.system:setParticleLifetime(self.lifetime)
-			self.system:setEmitterLifetime(self.duration)
-			self.system:setEmissionRate(self.rate)
-			self.system:setLinearAcceleration(self.linear_accel_x, self.linear_accel_y)
-			self.system:setLinearDamping(self.linear_damp_x, self.linear_damp_y)
-			self.system:setPosition(self.spawn_x, self.spawn_y)
-			
-			local c1 = Draw._parseColorArgs(self.color)
+			local c1 = Draw._parseColorArgs(self.start_color)
 			local c2 = Draw._parseColorArgs(self.end_color)
 			self.system:setColors(c1[1], c1[2], c1[3], c1[4], c2[1], c2[2], c2[3], c2[4])
 

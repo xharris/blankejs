@@ -1420,6 +1420,11 @@
   margin: 2px 4px;
   background-color: rgba(255, 255, 255, 0.7);
   padding: 1px;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="AssetManager"] .file-preview .preview-container span:hover {
+  background-color: #212121;
+  color: #E0E0E0;
 }
 .content[data-type="AssetManager"] .file-preview .form-container {
   display: inline-block;
@@ -1612,6 +1617,21 @@
 .content[data-type="SpritesheetPreview"] .prvw-container .frames-container .frame.ignore {
   outline-style: dashed;
   background: rgba(255, 0, 0, 0.5);
+}
+.content[data-type="SpritesheetPreview"] .prvw-container .image-size {
+  color: black;
+  font-size: 16px;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  margin: 2px 4px;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 1px;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="SpritesheetPreview"] .prvw-container .image-size:hover {
+  background-color: #212121;
+  color: #E0E0E0;
 }
 @font-face {
   font-family: ProggySquare;

@@ -5,7 +5,7 @@ let color_vars = {
 	a:'optional alpha'
 }
 
-module.exports.class_list = ['Net','Group','Draw','BlankE','Asset','Input','Image','Scene','Bezier','Window'];
+module.exports.class_list = ['Net','Group','Draw','BlankE','Asset','Input','Image','Scene','Bezier','Window','math'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -35,7 +35,7 @@ module.exports.instance_regex = {
 		/\b(\w+\.instances).*/g
 	],
 	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\d.,]*\)\s+?/g,
-	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g,
+	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g
 }
 // old group/bezier regex: /\b(?:self.|self:)?(\w+)\s*=\s*Group\(\).*/g
 
@@ -59,6 +59,35 @@ module.exports.completions = {
 		{fn:"addEntity", vars:{ object_name:'Player / Powerup / ...' }},
 		{fn:"loadPlugin", vars:{ name:'' }},
 		{prop:"draw_debug"}
+	],
+	"blanke-math":[
+		{fn:'abs',vars:{n:''}},
+		{fn:'acos',vars:{n:''}},
+		{fn:'asin',vars:{n:''}},
+		{fn:'atan'},
+		{fn:'ceil'},
+		{fn:'cos'},
+		{fn:'deg'},
+		{fn:'exp'},
+		{fn:'floor'},
+		{fn:'modf'},
+		{fn:'huge'},
+		{fn:'log'},
+		{fn:'max'},
+		{fn:'maxinteger'},
+		{fn:'min'},
+		{fn:'mininteger'},
+		{fn:'modf'},
+		{fn:'pi'},
+		{fn:'rad'},
+		{fn:'random'},
+		{fn:'randomseed'},
+		{fn:'sin'},
+		{fn:'sqrt'},
+		{fn:'tan'},
+		{fn:'tointeger'},
+		{fn:'type'},
+		{fn:'ult'}
 	],
 	"blanke-net":[
 		{prop:"id", info:"clientid assigned on connecting to a network"},
@@ -224,12 +253,19 @@ module.exports.completions = {
 		{fn:"crop",vars:{x:"",y:"",width:"",height:""}}
 	],
 	"blanke-audio-instance":[
+		{prop:"pitch"},
+		{prop:"volume"},
+		{prop:"x",info:"position"},
+		{prop:"y",info:"position"},
+		{prop:"z",info:"position"},
+		{prop:"looping"},
+		{prop:"seconds",info:"currently playing position"},
 		{fn:"play"},
 		{fn:"pause"},
 		{fn:"stop"},
-		{fn:"playAll",info:"play all Audio use the same asset"},
-		{fn:"stopAll",info:"pause all Audio use the same asset"},
-		{fn:"pauseAll",info:"stop all Audio use the same asset"},
+		{fn:"playAll",info:"play all Audio that use the same asset"},
+		{fn:"stopAll",info:"pause all Audio that use the same asset"},
+		{fn:"pauseAll",info:"stop all Audio that use the same asset"}
 	],
 	"blanke-scene-instance":[
 		{prop:"draw_hitboxes"},

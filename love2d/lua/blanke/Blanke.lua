@@ -157,9 +157,15 @@ BlankE = {
 	_class_type = {},
 	init = function(first_state, in_options)
 		options = {
-			window_size = 3
+			window_size = 3,
+			plugins={}
 		}
 		table.update(options, in_options)
+
+		-- load plugins
+		for p, plugin in ipairs(options.plugins) do
+			BlankE.loadPlugin(plugin)
+		end
 
 		-- load config file
 		if love.filesystem.getInfo("config.json") then

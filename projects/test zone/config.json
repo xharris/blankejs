@@ -110,6 +110,31 @@
             ],
             "speed": 0,
             "frame size": [
+                23,
+                22
+            ],
+            "frames": 1,
+            "selected frames": [
+                1,
+                1,
+                1,
+                1
+            ],
+            "columns": 1,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\Basic Bird.png"
+        },
+        "image\\ground.png": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 0,
+            "frame size": [
                 0,
                 0
             ],
@@ -120,7 +145,7 @@
                 0,
                 0
             ],
-            "image": "image\\Basic Bird.png"
+            "image": "image\\ground.png"
         }
     }
 }

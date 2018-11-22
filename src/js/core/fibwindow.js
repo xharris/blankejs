@@ -84,6 +84,14 @@ class FibWindow {
 		FibWindow.focus(this.title);
 	}	
 
+	// only returns a list of all the window titles
+	static getWindowList () {
+		let titles = [];
+		let el_windows = blanke.getElements(".fib-title");
+		for (let w = 0; w < el_windows.length; w++) { titles.push(el_windows[w].innerHTML); }
+		return titles;
+	}
+
 	// focus a fibwindow with a certain title if it exists
 	static focus (title) {
 		FibWindow.showAll();

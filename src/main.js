@@ -1,11 +1,19 @@
 /*
+
+C - completed
+T - completed but needs more testing
+
 TODO:
--	separate tabs from history bar
--	implement fibonnaci-sized windows
+C	separate tabs from history bar
+C	implement fibonnaci-sized windows
+C	sprite sheet preview: should display image dimensions		
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
-- 	sceneeditor: pointerup event after pointerdown event happens outside of window --> freeze
+T 	sceneeditor: pointerup event after pointerdown event happens outside of window --> freeze
+T	sceneeditor: create new scene, remove premade layers, rename layer -> other layers come back
+T 	sceneeditor: image search keys still remain after closing scene editor
+T	sceneeditor: re-opening opens 3 instances
 */
 
 var nwGUI = require('nw.gui');

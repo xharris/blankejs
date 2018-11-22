@@ -392,7 +392,7 @@ class SceneEditor extends Editor {
 				blanke.showModal(
 					"delete \'"+text+"\'?",
 					{
-						"yes": function() { this_ref.el_layer_control.removeItem(text); },
+						"yes": function() { this_ref.removeLayer(text); },
 						"no": function() {}
 					}
 				);
@@ -753,11 +753,6 @@ class SceneEditor extends Editor {
 			this_ref.has_focus = false;
 		});
 
-		// tab click
-		this.setOnClick(function(self){
-			(new SceneEditor(app)).load(self.file);
-		}, this);
-
 		this.obj_type = 'object';
 		this.refreshObjectType();
 
@@ -787,7 +782,10 @@ class SceneEditor extends Editor {
 
 	onClose () {
 		app.removeSearchGroup("Scene");
-		app.removeSearchGroup("scene_image");
+		// if this is the last scene open
+		if (!FibWindow.getWindowList().some(t => t.endsWith('.scene')))
+			app.removeSearchGroup("scene_image");
+		
 		nwFS.unlink(this.file);
 		addScenes(app.project_path);
 	}
@@ -809,6 +807,7 @@ class SceneEditor extends Editor {
 			if (success) {
 				this_ref.file = new_path;
 				this_ref.setTitle(nwPATH.basename(this_ref.file));
+				Scene.refreshSceneList();
 			} else
 				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
 		});
@@ -1682,6 +1681,16 @@ class SceneEditor extends Editor {
 		this.setLayer(info.name);
 
 		return info.name;
+	}
+
+	removeLayer (name) {
+		for (let l = 0; l < this.layers.length; l++) {
+			if (this.layers[l].name == name) {
+				this.layers.splice(l,1);
+			}
+		}
+		this.el_layer_control.removeItem(name);
+		this.refreshLayerList();
 	}
 
 	getLayer (name, is_uuid) {

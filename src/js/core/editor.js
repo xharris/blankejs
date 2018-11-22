@@ -58,6 +58,7 @@ class Editor {
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
+		this.container.onClose = this.onClose;
 		return this;
 	}
 

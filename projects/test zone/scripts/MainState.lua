@@ -1,7 +1,7 @@
 BlankE.addState("MainState")
 
 local img_mask = Image("Basic Bird")
-img_mask:setScale(6)
+img_mask:setScale(2)
 local test_mask = Mask()
 test_mask:setup("inside")
 local offset = 0
@@ -22,13 +22,13 @@ local ui_element_list = UI.list{
 }
 
 local mario
-local my_song = Audio("m_hit")
-my_song.looping = true
-my_song.volume = 0.2
+local rptr
 function MainState:enter()
 	mario = Mario()
-	my_song:play()
-	Draw.setBackgroundColor("white")
+	rptr = Repeater(mario)
+	rptr.rate = 100
+	rptr.lifetime = 1
+	
 	test_mask.fn = function()
 		test_mask:useImageAlphaMask(img_mask)
 	end
@@ -41,17 +41,12 @@ end
 
 local eff = Effect("crt")
 function MainState:draw()
-	--local val = sinusoidal(-100,100,1)
-	my_song.z = mouse_x - (game_width / 2)
-	my_song.y = mouse_y - (game_height / 2)
-	Debug.log("its",my_song.z,my_song.y,my_song.seconds)
+	rptr.spawn_x = mouse_x
+	rptr.spawn_y = mouse_y
+	print(randRange(0,100)/100)
+	rptr.end_color = {randRange(0,100)/100,randRange(0,100)/100,randRange(0,100)/100,0}
 	
-	if Input("lclick").released then
-		my_song:play()
-	end
-	if Input("rclick").released then
-		my_song:pause()
-	end
+	rptr:draw()
 	
 	mario:draw()
 	--[[ 
@@ -59,7 +54,7 @@ function MainState:draw()
 		Draw.setColor("white")
 		Draw.rect("fill", 0, 0, game_width, game_height)
 	end)
-	]]
+	
 	img_mask.x = game_width / 2 --sinusoidal(game_width / 4, game_width - (game_width / 4), 0.5)
 	img_mask.y = game_height / 2
 	eff.radius = sinusoidal(0,100,1)
@@ -69,4 +64,5 @@ function MainState:draw()
 	
 	ui_element_list:setSize(grp_elements:size())
 	--ui_element_list:draw()
+	]]
 end

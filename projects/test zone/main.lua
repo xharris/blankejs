@@ -6,6 +6,10 @@ function love.load()
 	
 	Input.set("lclick","mouse.1")
 	Input.set("rclick","mouse.2")
+		
+	BlankE.init("PlatformState",{
+		plugins={"Platformer"}	
+	})
 	
-	BlankE.init("MainState")
+	Draw.setBackgroundColor("black")
 end

@@ -10,7 +10,7 @@ Asset = Class{
 				if asset.category == 'script' then
 					result, chunk = pcall(asset.object)
 					if not result then
-						print(chunk)
+						--print(chunk)
 						error(chunk)
 					end
 				end

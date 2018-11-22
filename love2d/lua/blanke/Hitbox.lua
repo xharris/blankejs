@@ -58,6 +58,9 @@ Hitbox = Class{
 		self.parent = nil
 		self.args = args
 		self.auto_update = false
+
+		self.onPropSet["angle"] = function(self,v) if self._enabled then self.HCShape:setRotation(math.rad, self.xoffset, self.yoffset) end end
+
 		_addGameObject('hitbox', self)
 	end,
 

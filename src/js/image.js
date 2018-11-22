@@ -31,6 +31,7 @@ class SpritesheetPreview extends Editor {
 		this.el_preview = blanke.createElement("canvas", "prvw");
 		this.el_btn_show_prvw = blanke.createElement("button", "show-prvw");
 		this.el_frames_container = blanke.createElement("div", "frames-container");
+	  	this.el_image_size = app.createElement("span","image-size");
 
 		this.el_image.draggable = false;
 		this.el_btn_show_prvw.innerHTML = "PREVIEW";
@@ -44,6 +45,7 @@ class SpritesheetPreview extends Editor {
 		this.el_prvw_container.appendChild(this.el_image);
 		this.el_prvw_container.appendChild(this.el_preview);
 		this.el_prvw_container.appendChild(this.el_frames_container);
+		this.el_prvw_container.appendChild(this.el_image_size);
 		this.appendChild(this.el_btn_show_prvw);
 		this.appendChild(this.el_prvw_container);
 
@@ -97,6 +99,8 @@ class SpritesheetPreview extends Editor {
 				this_ref.el_preview.innerHTML = "<img src='"+src+"'/>";
 				this_ref.el_preview.width = this_ref.el_image.width;
 				this_ref.el_preview.height = this_ref.el_image.height;
+
+				this_ref.el_image_size.innerHTML = this_ref.el_image.width + " x " + this_ref.el_image.height;
 
 				// use last used values
 				if (app.project_settings.spritesheet_prvw && app.project_settings.spritesheet_prvw[this_ref.selected_img]) {

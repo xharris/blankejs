@@ -77,6 +77,12 @@ local function new(class)
 	class.onPropSet = {}
 	class.onPropGet = {}
 	class._hiddenProps = {}
+	-- calls all of the setters using their current values
+	class._refreshMutators = function(self)
+		for prop, fn in pairs(self.onPropSet) do
+			self[prop] = self[prop]
+		end
+	end
 
 	class.__newindex = function(c,k,v)
 		if c.onPropSet[k] ~= nil then
@@ -105,6 +111,13 @@ local function new(class)
 		if o.init then
 			local ret_val =	o:init(...)
 
+			-- get default values for onPropSet variables
+			for var, fn in pairs(o.onPropSet) do
+				if o.onPropGet[var] then
+					o._hiddenProps[var] = o.onPropGet[var](o)
+				end
+			end
+
 			if o._post_init then
 				o:_post_init(...)
 			end
@@ -119,12 +132,12 @@ local function new(class)
 	__index = function(c,k)
 		local hidden_props = rawget(c, '_hiddenProps')
 		local prop_get = rawget(c,'onPropGet')
-		if prop_get and prop_get[k] then
-			return prop_get[k](c)
-		end
     	if hidden_props and hidden_props[k] ~= nil then
     		return hidden_props[k]
     	end
+		if prop_get and prop_get[k] then
+			return prop_get[k](c)
+		end
     	return rawget(class, k)
  	end})
 end

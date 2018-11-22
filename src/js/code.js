@@ -622,6 +622,7 @@ class Code extends Editor {
 			if (success) {
 				this_ref.file = new_path;
 				this_ref.setTitle(nwPATH.basename(this_ref.file));
+
 			} else
 				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
 		})
@@ -650,12 +651,16 @@ class Code extends Editor {
 			});
 		}
 	}
+
+	static refreshCodeList(path) {
+		app.removeSearchGroup("Code");
+		addScripts(ifndef(path, app.project_path));
+	}
 }
 
 document.addEventListener('fileChange', function(e){
 	// if (e.detail.type == 'change') {
-		app.removeSearchGroup("Code");
-		addScripts(app.project_path);
+		Code.refreshCodeList();
 	// }
 });
 
@@ -712,8 +717,7 @@ document.addEventListener("openProject", function(e){
 	});
 
 	var proj_path = e.detail.path;
-	app.removeSearchGroup("Code");
-	addScripts(proj_path);
+	Code.refreshCodeList(proj_path);
 
 	function key_addScript(content) {
 		var script_dir = nwPATH.join(app.project_path,'scripts');

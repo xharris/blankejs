@@ -71,6 +71,8 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
+		self.onPropSet["sprite_index"] = function(self,v) self:refreshSpriteDims(v) end
+
     	_addGameObject('entity', self)
     end,
 
@@ -80,13 +82,6 @@ Entity = Class{
 		end
 		-- entity_spash[self.classname]:register(self, self.x, self.y, self.x, self.y)
     end,
-
-    __newindex = function(self, k, v)
-    	if k == "sprite_index" then
-			self:refreshSpriteDims(v)
-    	end
-    	rawset(self, k, v)
-    end,	
 
     __eq = function(self, other)
     	return (self.uuid == other.uuid)
