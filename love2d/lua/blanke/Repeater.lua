@@ -35,16 +35,15 @@ Repeater = Class{
 		self.y = 0
 
 		-- self.speed = 0 -- needs max
-		self.start_color = {1,1,1,1}
-		self.end_color = {1,1,1,1}
+		self.onPropSet["start_color"] = function(self, v) return Draw._parseColorArgs(v) end
+		self.onPropSet["end_color"] = function(self, v) return Draw._parseColorArgs(v) end
 
+		self.onPropGet["start_color"] = function() return {1,1,1,1} end
+		self.onPropGet["end_color"] = function() return {1,1,1,1} end
 
 		if options then
 			table.update(self, options)
 		end
-
-		self.start_color = Draw._parseColorArgs(self.start_color)
-		self.end_color = Draw._parseColorArgs(self.end_color)
 
 		_addGameObject('repeater', self)
 	end,
@@ -193,8 +192,8 @@ Repeater = Class{
 				love.graphics.draw(props.batch)
 			end
 		else
-			local c1 = Draw._parseColorArgs(self.start_color)
-			local c2 = Draw._parseColorArgs(self.end_color)
+			local c1 = self.start_color
+			local c2 = self.end_color
 			self.system:setColors(c1[1], c1[2], c1[3], c1[4], c2[1], c2[2], c2[3], c2[4])
 
 			love.graphics.draw(self.system, self.x, self.y)

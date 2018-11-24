@@ -8,8 +8,6 @@ function Penguin:init()
 	
 	self:addPlatforming(0,0,self.sprite_width,self.sprite_height)
 	self.gravity = 20
-	
-	self.show_debug = true
 end
 
 function Penguin:update(dt)

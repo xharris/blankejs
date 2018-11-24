@@ -59,6 +59,7 @@ local SceneLayer = Class{
 		
 		self.offx = 0
 		self.offy = 0
+		self.angle = 0
 		self.draw_hitboxes = false
 	end,
 
@@ -122,9 +123,24 @@ local SceneLayer = Class{
 		end
 	end,
 
+	setRotation = function(self, a)
+		self.angle = a
+		-- rotate hitboxes
+		for name, hitboxes in pairs(self.hitboxes) do
+			for h, hitbox in ipairs(hitboxes) do
+				hitbox.center_x = self.parent.center_x + self.offx
+				hitbox.center_y = self.parent.center_y + self.offy
+				hitbox.angle = a
+			end
+		end
+	end,
+
 	_drawObj = function(self, name)
 		Draw.stack(function()
 			Draw.translate(self.offx, self.offy)
+			Draw.translate(self.parent.center_x, self.parent.center_y)
+			Draw.rotate(self.angle)
+			Draw.translate(-self.parent.center_x, -self.parent.center_y)
 
 			-- tile
 			if self.spritebatches[name] then
@@ -205,6 +221,9 @@ local Scene = Class{
 		self.draw_order = nil
 		self.offset_x = 0
 		self.offset_y = 0
+
+		self.center_x = 0
+		self.center_y = 0
         
 		if asset_name then
 			local scene = Asset.scene(asset_name)
@@ -212,6 +231,14 @@ local Scene = Class{
 			self:load(scene)
 		end
 		self.name = asset_name
+
+		self.onPropSet["angle"] = function(self, v)
+			-- call on layers
+			for l, layer in ipairs(self.layers) do
+				layer:setRotation(v)
+			end
+		end
+		self.onPropGet["angle"] = function() return 0 end
 
 		_addGameObject('scene', self)
 	end,

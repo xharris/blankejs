@@ -1,3 +1,8 @@
+/* list of changes
+	re_class_list: removed ^ at beginning
+	changed order in defineMode: instance > class_list
+*/
+
 var font_size = 16;
 var object_list = {}
 var object_src = {};
@@ -12,7 +17,7 @@ function reloadCompletions() {
 	re_class = autocomplete.class_regex;
 	re_class_list = null;
 	if (autocomplete.class_list)
-		re_class_list = '^('+autocomplete.class_list.join('|')+')';
+		re_class_list = '('+autocomplete.class_list.join('|')+')';
 	hints = autocomplete.completions;
 	re_instance = autocomplete.instance_regex;
 
@@ -176,14 +181,7 @@ class Code extends Editor {
 		      		while ((ch = stream.next()) != null && !stream.eol());
 		      		return "comment";
 		      	}
-
-		      	// class list (Draw, Asset, etc)
-				if (re_class_list) {
-					let match = stream.match(new RegExp(re_class_list));
-					if (match) {
-						return baseCur+"blanke-class blanke-"+match[1].toLowerCase();
-					}
-				}	
+	
 
 				// class instances
 				for (let file in object_instances) {
@@ -197,6 +195,14 @@ class Code extends Editor {
 			      		}
 			      	}
 		      	}
+
+		      	// class list (Draw, Asset, etc)
+				if (re_class_list) {
+					let match = stream.match(new RegExp(re_class_list));
+					if (match) {
+						return baseCur+"blanke-class blanke-"+match[1].toLowerCase();
+					}
+				}
 
 				// user made classes (PlayState, Player)
 		    	for (let category in object_list) {

@@ -10,7 +10,7 @@ Draw = Class{
 
 	colors = {'red','pink','purple','indigo','baby_blue','blue',
 			  'dark_blue','green','yellow','orange','brown',
-			  'gra/ey','black','white','black2','white2'},
+			  'gray/grey','black','white','black2','white2'},
 	red = {244,67,54,255},
 	pink = {233,30,99,255},
 	purple = {103,58,183,255},
@@ -206,5 +206,6 @@ Draw = Class{
 }
 
 --love.graphics.setLineStyle("rough")
+Draw["gray/grey"] = {158,158,158,255}
 
 return Draw

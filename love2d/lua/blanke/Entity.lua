@@ -72,6 +72,8 @@ Entity = Class{
 		self.onCollision = {["*"] = function() end}
 
 		self.onPropSet["sprite_index"] = function(self,v) self:refreshSpriteDims(v) end
+		self.onPropSet["angle"] = function(self,v) self:rotateTo(v) end
+		self.onPropGet["angle"] = function() return 0 end
 
     	_addGameObject('entity', self)
     end,
@@ -244,6 +246,8 @@ Entity = Class{
 				self.x = self.x + dx*dt
 				self.y = self.y + dy*dt
 			end
+			self.xprevious = self.x
+			self.yprevious = self.y
 
 			if self.speed > 0 then
 				self.speed = self.speed - (self.speed * self.friction)*dt
@@ -301,6 +305,9 @@ Entity = Class{
 				love.graphics.rectangle("line", -sx, -sy, sprite_width, sprite_height)
 			end
 			-- draw origin point
+			Draw.setColor(0,0,0,2/3)
+			love.graphics.circle("line", 0, 0, 2)
+			Draw.setColor(0,1,0,2/3)
 			love.graphics.circle("line", 0, 0, 2)
 		end)
 		return self
@@ -377,8 +384,6 @@ Entity = Class{
 			-- draw current sprite (image, x,y, angle, sx, sy, ox, oy, kx, ky) s=scale, o=origin, k=shear
 			local img = self._images[sprite_index]
 			Draw.stack(function()
-				if self.show_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
-
 				Draw.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
 				--love.graphics.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
 				
@@ -391,6 +396,8 @@ Entity = Class{
 						love.graphics.draw(img(), draw_x, draw_y, math.rad(info.angle), info.xscale, info.yscale, -math.floor(info.xoffset), -math.floor(info.yoffset), info.xshear, info.yshear)
 					end
 				end
+
+				if self.show_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
 			end)
 		end
 	end,
@@ -491,6 +498,14 @@ Entity = Class{
 	distance = function(self, other)
 		return self:distancePoint(other.x, other.y)
 	end,
+
+	rotateTo = function(self, angle)
+		for s, shape in pairs(self.shapes) do
+			shape.center_x = self.x
+			shape.center_y = self.y
+			shape.angle = angle
+		end
+	end, 
 
 	-- self direction and speed will be set towards the given point
 	-- this method will not set the speed back to 0 

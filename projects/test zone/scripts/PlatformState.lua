@@ -1,16 +1,16 @@
 BlankE.addState("PlatformState");
 
-local lvl, penguin
+local lvl, penguin, main_view
 	
 function PlatformState:enter()
-	
 	lvl = Scene("level1")
 	
 	penguin = Penguin()
+	main_view = View(penguin)
 	
 	lvl:translate(game_width / 2, game_height / 2)
 	lvl:addEntity("spawn",penguin)
-	lvl:addHitbox("ground")
+	lvl:addTileHitbox("ground")
 end
 
 function PlatformState:update(dt)
@@ -18,6 +18,7 @@ function PlatformState:update(dt)
 end
 
 function PlatformState:draw()
-	lvl.draw_hitboxes = true
-	lvl:draw()
+	main_view:draw(function()
+		lvl:draw()
+	end)
 end

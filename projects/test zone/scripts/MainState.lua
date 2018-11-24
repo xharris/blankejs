@@ -25,9 +25,7 @@ local mario
 local rptr
 function MainState:enter()
 	mario = Mario()
-	rptr = Repeater(mario)
-	rptr.rate = 100
-	rptr.lifetime = 1
+	rptr = Repeater(mario,{rate=100, lifetime=1})
 	
 	test_mask.fn = function()
 		test_mask:useImageAlphaMask(img_mask)
@@ -43,9 +41,9 @@ local eff = Effect("crt")
 function MainState:draw()
 	rptr.spawn_x = mouse_x
 	rptr.spawn_y = mouse_y
-	print(randRange(0,100)/100)
-	rptr.end_color = {randRange(0,100)/100,randRange(0,100)/100,randRange(0,100)/100,0}
 	
+	rptr.end_color = {randRange(0,100)/100,randRange(0,100)/100,randRange(0,100)/100,0}
+
 	rptr:draw()
 	
 	mario:draw()

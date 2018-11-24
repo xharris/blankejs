@@ -1,9 +1,10 @@
 let color_vars = {
-	r:'red component (0-1 or 0-255) / hex (#ffffff) / string (\'blue\')',
+	r:'red component (0-1 or 0-255) / hex (#ffffff) / preset (\'blue\')',
 	g:'green component',
 	b:'blue component',
 	a:'optional alpha'
 }
+let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
 
 module.exports.class_list = ['Net','Group','Draw','BlankE','Asset','Input','Image','Scene','Bezier','Window','math'];
 
@@ -30,6 +31,8 @@ module.exports.instance_regex = {
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
 	'audio': 	/\b(\w+)\s*=\s*Audio\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
+	'view': 	/\b(\w+)\s*=\s*View\([\w\.\s]+\)\s+?/g,
+	'repeater':	/\b(\w+)\s*=\s*Repeater\([\w\.\s\,\{\}\=]*\)?\s?/g,
 	'group': 	[
 		/\b(?:self\.)?(\w+)\s*=\s*Group\(\)\s+?/g,
 		/\b(\w+\.instances).*/g
@@ -61,36 +64,37 @@ module.exports.completions = {
 		{prop:"draw_debug"}
 	],
 	"blanke-math":[
+		{fn:'min',vars:{etc:''}},
+		{fn:'max',vars:{etc:''}},
+
+		{fn:'sqrt',vars:{n:'must be positive'}},
 		{fn:'abs',vars:{n:''}},
-		{fn:'acos',vars:{n:''}},
-		{fn:'asin',vars:{n:''}},
-		{fn:'atan'},
-		{fn:'ceil'},
-		{fn:'cos'},
-		{fn:'deg'},
-		{fn:'exp'},
-		{fn:'floor'},
-		{fn:'modf'},
-		{fn:'huge'},
-		{fn:'log'},
-		{fn:'max'},
+		{fn:'ceil',vars:{n:''}},
+		{fn:'floor',vars:{n:''}},
+		{fn:'deg',vars:{radians:''}},
+		{fn:'rad',vars:{degrees:''}},
+		{fn:'pi'},
+
+		{fn:'sin',vars:{n:''},info:'returns radians'},
+		{fn:'cos',vars:{n:''},info:'returns radians'},
+		{fn:'tan',vars:{n:''},info:'returns radians'},
+		{fn:'acos',vars:{n:''},info:'returns radians'},
+		{fn:'asin',vars:{n:''},info:'returns radians'},
+		{fn:'atan',vars:{y:'',x:'optional'},info:'returns radians'},
+
+		{fn:'exp',vars:{n:''},info:'e^n (natural log)'},
+		{fn:'log',vars:{n:''},info:'inverse of math.exp'},
+		{fn:'modf',vars:{n:''},info:'splits a decimal, Ex. -5.3 -> -5, -0.3'},
+		{fn:'huge',info:'+infinity'},
 		{fn:'maxinteger'},
-		{fn:'min'},
 		{fn:'mininteger'},
 		{fn:'modf'},
-		{fn:'pi'},
-		{fn:'rad'},
-		{fn:'random'},
-		{fn:'randomseed'},
-		{fn:'sin'},
-		{fn:'sqrt'},
-		{fn:'tan'},
 		{fn:'tointeger'},
-		{fn:'type'},
-		{fn:'ult'}
+		{fn:'type',vars:{n:''},info:"whether n is \'integer\',\'float\',nil (NaN)"},
+		{fn:'ult',vars:{m:'',n:''},info:"true IF abs(m) < abs(n) ELSE false"}
 	],
 	"blanke-net":[
-		{prop:"id", info:"clientid assigned on connecting to a network"},
+		{prop:"id", info:"unique clientid assigned upon connecting to a network"},
 		{prop:"is_leader", info:"check this value if you only want to run a Net action once on a server"},
 		{fn:"join", vars:{ address:"localhost", port:"8080" }},
 		{fn:"disconnect"},
@@ -150,7 +154,10 @@ module.exports.completions = {
 		{fn:"text", vars:{ text:'', x:'', y:'', etc:'' }},
 		{fn:"textf"},
 		{fn:"reset", vars:{ specific:'(optional) color, crop, transform' }},
-		{fn:"stack", vars:{ fn:'' }, info:"resets all draw operations after fn. push -> fn -> pop"}
+		{fn:"stack", vars:{ fn:'' }, info:"resets all draw operations after fn. push -> fn -> pop"},
+		{prop:'red'},{prop:'pink'},{prop:'purple'},{prop:'indigo'},{prop:'baby_blue'},{prop:'blue'},{prop:'dark_blue'},{prop:'green'},
+		{prop:'yellow'},{prop:'orange'},{prop:'brown'},{prop:'gray'},{prop:'grey'},{prop:'black'},{prop:'white'},{prop:'black2'},
+		{prop:'white2'},
 	],
 	"blanke-input":[
 		{fn:"set", vars:{ label:'', input1:'input to catch</br>- mouse: mouse.1, mouse.2, ...</br>- letters: w, a, s, d, ...', etc:'' }}
@@ -193,6 +200,7 @@ module.exports.completions = {
 		{prop:"hspeed"},
 		{prop:"vspeed"},
 		{prop:"speed", info:"best used with 'direction'"},
+		{prop:"angle", info:"changes angle of hitboxes"},
 		{prop:"xprevious"},
 		{prop:"yprevious"},
 		{prop:"xstart"},
@@ -275,6 +283,9 @@ module.exports.completions = {
 		{prop:"draw_order"}
 	],
 	"blanke-scene-instance":[
+		{prop:"angle",info:"rotate all tiles and hitboxes (not entities)"},
+		{prop:"center_x",info:"center used when rotating with .angle"},
+		{prop:"center_y",info:"center used when rotating with .angle"},
 		{prop:"draw_hitboxes"},
 		{fn:"addHitbox",vars:{ object_name:"", etc:"" }},
 		{fn:"addTileHitbox",vars:{ image_name:"", etc:"" }},
@@ -293,6 +304,35 @@ module.exports.completions = {
 		{fn:"every", vars:{ func:'', delay:'optional' }},
 		{fn:"after", vars:{ func:'', delay:'optional' }},
 		{fn:"reset"}
+	],
+	"blanke-view-instance":[
+		{prop:"angle"},
+		{prop:"scale_x"},
+		{prop:"scale_y"},
+		{prop:"port_width"},
+		{prop:"port_height"},
+		{prop:"top",info:"read only"},
+		{prop:"bottom",info:"read only"},
+		{prop:"left",info:"read only"},
+		{prop:"right",info:"read only"},
+		{fn:"follow",vars:{ entity_instance:'' }},
+		{fn:"zoom",vars:{ x:'', y:'' }},
+		{fn:"draw",vars:{ draw_fn:'' }}
+	],
+	"blanke-repeater-instance":[
+		{prop:"lifetime"},
+		{prop:"duration"},
+		{prop:"rate"},
+		{prop:"spawn_x"},
+		{prop:"spawn_y"},
+		{prop:"start_color",info:color_prop},
+		{prop:"end_color",info:color_prop},
+		{prop:"linear_accel_x"},
+		{prop:"linear_accel_y"},
+		{prop:"linear_damp_x"},
+		{prop:"linear_damp_y"},
+		{fn:"draw"},
+		{fn:"setTexture",vars:{'texture':'entity_instance, image, canvas'}}
 	],
 	"blanke-window":[
 		{prop:"aspect_ratio", info:"table. default: {4,3}"},
