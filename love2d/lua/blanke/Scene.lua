@@ -86,6 +86,7 @@ local SceneLayer = Class{
 	addHitbox = function(self, points, tag, color)
 		self.hitboxes[tag] = ifndef(self.hitboxes[tag], {})
 		local new_hitbox = Hitbox("polygon", points, tag)
+		new_hitbox:move(self.offx, self.offy)
 		if color then new_hitbox:setColor(color) end
 		table.insert(self.hitboxes[tag], new_hitbox)
 	end,
@@ -113,7 +114,7 @@ local SceneLayer = Class{
 				hitbox:move(x, y)
 			end
 		end
-		for uuid, entities in pairs(self.entities) do
+		for name, entities in pairs(self.entities) do
 			entities:forEach(function(e, ent)
 				ent.x = ent.x + x
 				ent.y = ent.y + y
@@ -122,10 +123,14 @@ local SceneLayer = Class{
 	end,
 
 	_drawObj = function(self, name)
-		-- tile
-		if self.spritebatches[name] then
-			love.graphics.draw(self.spritebatches[name])
-		end
+		Draw.stack(function()
+			Draw.translate(self.offx, self.offy)
+
+			-- tile
+			if self.spritebatches[name] then
+				love.graphics.draw(self.spritebatches[name])
+			end
+		end)
 
 		-- entity
 		if self.entities[name] then
@@ -141,26 +146,22 @@ local SceneLayer = Class{
 	end,
 
 	draw = function(self, draw_order)
-		Draw.stack(function()
-			Draw.translate(self.offx, self.offy)
+		local drawn = {}
 
-			local drawn = {}
-
-			-- draw specified objects
-			if draw_order then
-				for _, name in ipairs(draw_order) do
-					drawn[name] = true
-					self:_drawObj(name)
-				end
+		-- draw specified objects
+		if draw_order then
+			for _, name in ipairs(draw_order) do
+				drawn[name] = true
+				self:_drawObj(name)
 			end
+		end
 
-			-- draw everything else
-			for name, _ in pairs(self.obj_name_list) do
-				if not drawn[name] then
-					self:_drawObj(name)
-				end
+		-- draw everything else
+		for name, _ in pairs(self.obj_name_list) do
+			if not drawn[name] then
+				self:_drawObj(name)
 			end
-		end)
+		end
 
 		if self.draw_hitboxes then
 			local specific = false
@@ -197,9 +198,9 @@ local Scene = Class{
 		self.layers = {}
 		self.tilesets = {}
 		self.objects = {}
-		self.obj_coord_list = {}
-		self.entities = {}
-		self.obj_uuid_ref = {}
+		self.obj_coord_list = {}	-- loaded from .scene file
+		self.entities = {}			-- instances that are added through addEntity and don't belong to a layer
+		self.obj_uuid_ref = {}		-- loaded from .scene file
 		self.dont_draw = {}
 		self.draw_order = nil
 		self.offset_x = 0
@@ -313,8 +314,17 @@ local Scene = Class{
 		self.offset_x = self.offset_x + x
 		self.offset_y = self.offset_y + y
 
+		-- call on layers
 		for l, layer in ipairs(self.layers) do
 			layer:translate(x, y)
+		end
+
+		-- call on instances that were added manually
+		for name, entities in pairs(self.entities) do
+			entities:forEach(function(e, ent)
+				ent.x = ent.x + x
+				ent.y = ent.y + y
+			end)
 		end
 
 		for name, layers in pairs(self.obj_coord_list) do
@@ -328,6 +338,7 @@ local Scene = Class{
 		return self
 	end,
 
+	-- returns name, tag
 	_splitNameTag = function(self, obj_name)
 		return unpack(obj_name:split("."))
 	end,
@@ -476,6 +487,7 @@ local Scene = Class{
 	addEntity = function(self, obj_name, ent_class, align) 
 		local instances = Group()
 		local name, tag = self:_splitNameTag(obj_name)
+		local offx, offy = self.offset_x, self.offset_y
 
 		local object_uuid = self.obj_uuid_ref[name]
 		if object_uuid then
@@ -517,8 +529,8 @@ local Scene = Class{
 							h = y2 - y
 						end
 
-						obj.x = x
-						obj.y = y
+						obj.x = x + offx
+						obj.y = y + offy
 						obj.scene_rect = {x,y,w,h}
 						obj.scene_points = new_polygon
 					end

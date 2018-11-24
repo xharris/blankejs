@@ -5,7 +5,7 @@ function DeathState:enter()
 end
 
 function DeathState:draw()
-	if Input("restart") then
+	if Input("restart").released then
 		State.switch(PlayState)	
 	end
 	

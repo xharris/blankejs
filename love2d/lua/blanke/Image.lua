@@ -130,7 +130,7 @@ Image = Class{
 	end,
 
     __call = function(self)
-    	return self.image
+    		return self.image
 	end,
 
 	-- break up image into pieces

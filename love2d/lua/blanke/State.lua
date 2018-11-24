@@ -41,7 +41,7 @@ StateManager = {
 		end
 
 		for s, state in ipairs(StateManager._stack) do
-			if not state._off then
+			if state._off == false then
 
 				if func == 'update' then
 					for group, arr in pairs(state.game) do
@@ -57,7 +57,7 @@ StateManager = {
 				    end
 				end
 
-				if func == 'draw' and state.draw and not state._off then
+				if func == 'draw' and state.draw then
 					-- is a transition happening?
 					if transition_active then
 						-- is this the 'entering' state?

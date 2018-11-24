@@ -22,13 +22,12 @@ function PlayState:enter(prev)
 	--sc_level1 = Scene("level1")
 	sc_boss1 = Scene("boss1")
 	--sc_level1:chain(sc_boss1, "lvl_end", "lvl_start")
-	player = sc_boss1:addEntity("player", Player, "bottom-center")[1]
-		
+	player = sc_boss1:addEntity("player", Player, "bottom-center"):get(1)
 	main_camera = View(player)
 end
 
 function PlayState:update(dt)
-	if Input("restart") and player.dead then
+	if Input("restart").released and player.dead then
 		State.switch(PlayState)	
 	end
 end

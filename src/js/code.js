@@ -768,8 +768,6 @@ BlankE.addEntity(\"MyNewEntity\");\n\n\
 function MyNewEntity:init()\n\n\
 end\n\n\
 function MyNewEntity:update(dt)\n\n\
-end\n\n\
-function MyNewEntity:draw()\n\n\
 end\n");
 		},
 		tags: ['new']

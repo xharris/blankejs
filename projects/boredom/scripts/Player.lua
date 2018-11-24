@@ -5,13 +5,7 @@ function Player:init()
 		name = "stand",
 		image = "player_stand"
 	}
-	self:addAnimation{
-		name = "walk",
-		image = "player_walk",
-		frames = {'1-2', 1},
-		frame_size = {21, 33},
-		speed = 0.2
-	}
+	self:addAnimation{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.2, offset={0,0}}
 	self.sprite["walk"].yoffset = -1
 	
 	self:addAnimation{
@@ -72,20 +66,20 @@ function Player:update(dt)
 
 	-- left/right movement
 	if not self.dead then
-		if Input("move_left") > 0 then
+		if Input("move_left").pressed then
 			self.hspeed = -self.move_speed + self.platform_hspeed
 		end
-		if Input("move_right") > 0 then
+		if Input("move_right").pressed then
 			self.hspeed = self.move_speed + self.platform_hspeed
 		end
 		
 		-- remove uncessecary platform speed
-		if (Input("move_left") > 0 or Input("move_right") > 0) and self:hadCollision("feet_box","ground") then
+		if (Input("move_left").pressed or Input("move_right").pressed) and self:hadCollision("feet_box","ground") then
 			self.platform_hspeed = 0
 		end
 		
 		-- jumping
-		if Input("jump") > 0 and self.jumps > 0 then
+		if Input("jump").pressed and self.jumps > 0 then
 			self.vspeed = -700
 			self.jumps = self.jumps - 1
 		end
@@ -94,11 +88,11 @@ function Player:update(dt)
 		if self.hspeed == 0 then
 			self.sprite_index = "stand"	
 
-		elseif Input("move_right")> 0 then
+		elseif Input("move_right").pressed then
 			self.sprite_xscale = 1
 			self.sprite_index = "walk"
 
-		elseif Input("move_left") > 0 then
+		elseif Input("move_left").pressed then
 			self.sprite_xscale = -1
 			self.sprite_index = "walk"
 

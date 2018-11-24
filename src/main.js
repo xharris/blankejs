@@ -6,7 +6,8 @@ T - completed but needs more testing
 TODO:
 C	separate tabs from history bar
 C	implement fibonnaci-sized windows
-C	sprite sheet preview: should display image dimensions		
+C	sprite sheet preview: should display image dimensions
+-	find and replace		
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down

@@ -26,7 +26,7 @@ module.exports.instance_regex = {
 		/\b(\w+)\s*=\s*<class_name>\(\).*/g,
 		/\b(\w+)\s*=\s*<class_name>\.instances\[\d+\].*/g
 	],
-	//'input': 	/\bInput\.keys(\[[\'\"]\w+[\'\"]\])/g,
+	'input': 	/\b(Input\([\'\"]\w+[\'\"]\))/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
 	'audio': 	/\b(\w+)\s*=\s*Audio\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
@@ -266,6 +266,13 @@ module.exports.completions = {
 		{fn:"playAll",info:"play all Audio that use the same asset"},
 		{fn:"stopAll",info:"pause all Audio that use the same asset"},
 		{fn:"pauseAll",info:"stop all Audio that use the same asset"}
+	],
+	"blanke-scene":[
+		{prop:"tile_hitboxes"},
+		{prop:"hitboxes"},
+		{prop:"entities"},
+		{prop:"dont_draw"},
+		{prop:"draw_order"}
 	],
 	"blanke-scene-instance":[
 		{prop:"draw_hitboxes"},

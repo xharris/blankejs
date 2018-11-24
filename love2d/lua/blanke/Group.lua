@@ -1,17 +1,14 @@
-local _views = {}
 Group = Class{
 	init = function (self)
 		self.children = {}
     	self.uuid = uuid()
-	end,
 
-	__index = function(self, i)
-		if type(i) == "number" then
-			local children = rawget(self, "children")
-			if i < 0 then i = #children + (i + 1) end
-			return children[i]
+		self.onPropGet["_number"] = function(o, i)
+			print("get",i,"from",o:size())
+			return o:get(i)
 		end
-		return rawget(Group, i)
+
+		_prepareGameObject("group", self)
 	end,
 
 	add = function(self, obj)
@@ -21,6 +18,9 @@ Group = Class{
 	end,
 
 	get = function(self, i)
+    	while i < 0 do
+    		i = #self.children + (i + 1)
+    	end
 		if self.children[i] then
 			return self.children[i]
 		end

@@ -126,8 +126,8 @@
                 "char": "5",
                 "color": "#00fdff",
                 "size": [
-                    32,
-                    32
+                    16,
+                    16
                 ],
                 "uuid": "da04e1b6"
             },
@@ -150,6 +150,16 @@
                     32
                 ],
                 "uuid": "882bbb6a"
+            },
+            "adccfbb8": {
+                "name": "object0",
+                "char": "#",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "adccfbb8"
             }
         }
     },
@@ -173,6 +183,29 @@
                 0
             ],
             "image": "image\\boss1_walk1.png"
+        },
+        "image\\player_walk.png": {
+            "name": "walk",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 0.2,
+            "frame size": [
+                21,
+                33
+            ],
+            "frames": 2,
+            "selected frames": [
+                "\"1-2\"",
+                1
+            ],
+            "columns": 2,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\player_walk.png"
         }
     }
 }

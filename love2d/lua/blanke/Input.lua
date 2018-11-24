@@ -138,6 +138,7 @@ _Input = Class{
 
 Input = {
     keys = {},
+    last_key='',
 
     set = function(name, ...)
         local new_input = _Input(...)
@@ -147,6 +148,7 @@ Input = {
     end,    
     
     keypressed = function(key)
+        Input.last_key = key
         for o, obj in pairs(Input.keys) do
             if obj.in_key[key] ~= nil then
                 obj:press()

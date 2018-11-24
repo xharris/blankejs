@@ -92,7 +92,7 @@ function Boss1:update(dt)
 	self.run_blur.spawn_x = self.x 
 	self.run_blur.spawn_y = self.y 
 	
-	player = Player.instances[1]
+	player = Player.instances:get(1)
 	
 	self.onCollision["main"] = function(other, sep)
 		if other.tag == "ground" then

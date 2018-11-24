@@ -20,7 +20,7 @@ function _getGameObjects(fn)
 	end
 end
 
-function _addGameObject(obj_type, obj)
+function _prepareGameObject(obj_type, obj)
     obj.uuid = uuid()
     obj.type = obj_type
     obj.is_instance = true
@@ -29,6 +29,10 @@ function _addGameObject(obj_type, obj)
     obj._destroyed = ifndef(obj._destroyed, false)
     obj.net_object = ifndef(obj.net_object, false)
     obj._state_created = ifndef(StateManager.current(), {classname=""}).classname
+end
+
+function _addGameObject(obj_type, obj)
+	_prepareGameObject(obj_type, obj)
 
     if _G[obj.classname] and _G[obj.classname].instances then 
     	_G[obj.classname].instances:add(obj)
@@ -107,10 +111,12 @@ local modules = {'Group','Repeater','Map','Asset','Bezier','Camera','Canvas','Di
 for m, mod in ipairs(modules) do
 	--if not table.hasValue(not_require, mod) then
 		_G[mod] = blanke_require(mod)
-		if not mod == "Group" and not _G[mod].instances then _G[mod].instances = Group() end
-		if not _G[mod].classname then _G[mod].classname = mod end
-		if mod ~= "Group" and not _G[mod].instances then _G[mod].instances = Group() end
 	--end
+end
+-- loop separately to add other stuff
+for m, mod in ipairs(modules) do
+	if not _G[mod].classname then _G[mod].classname = mod end
+	if mod ~= "Group" and not _G[mod].instances then _G[mod].instances = Group() end
 end
 Physics = love.physics
 
