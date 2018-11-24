@@ -60,34 +60,34 @@ body:before, body:after {
 	position: absolute;
 	top: 0px;
 	right: 0px;
-	z-index: 100;
+	z-index: 1000;
 
 	button {
 		.win-nodrag();
-		width: 30px;
+		width: 35px;
 		height: 30px;
 		margin: 2px;
-		color: #9E9E9E;
+		color: #b0bec5;
+		font-size: 15px;
+		float: right;
+		transition: all ease-in-out 0.1s;
+
+		&#btn-close {
+			color: #b71c1c;
+		}
 
 		&:hover {
-			background-color: transparent;
+			color: #eeeeee;
+			background-color: rgba(0,0,0,0.4);
+
+			&#btn-close {
+				color: #f44336;
+			}
 		}
 
-		.mdi {
-			padding: 3px;
+		.mdi, svg {
+			pointer-events: none;
 		}
-
-		.blanke-icon {
-			opacity: .75;
-			transition: all ease-in-out 0.2s;
-		}
-		&:hover > .blanke-icon {
-			opacity: 1;
-		}
-	}
-
-	#btn-close {
-		color: #f44336;
 	}
 }
 
@@ -593,6 +593,7 @@ body:before, body:after {
 }
 
 #welcome {
+	position: relative;
 	width: 100%;
 	height: 100%;
 	margin: 0px;
@@ -665,6 +666,21 @@ body:before, body:after {
 				border-left-color: white;
 			}
 		}
+	}
+
+	.title {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		height: 34px;
+		line-height: 36px;
+		box-sizing: border-box;
+	    padding-left: 15px;
+	    border: none;
+	    outline: none;
+	    color: #757575;
+	    width: 125px;
+	    font-size: 16px;
 	}
 }
 
@@ -862,14 +878,14 @@ body:before, body:after {
 	
 	.form-label {
 		margin-top: 4px;
-		margin-bottom: 0px;
+		margin-bottom: 2px;
 	}
 
 	.form-text, .form-select {
 		background: rgba(255,255,255,0.3);
 		border: none;
 		padding: 3px;
-		font-size: 14px;
+		font-size: 16px;
 	}
 
 	.form-group[data-size="2"] .form-text, .form-group[data-type="number"] .form-text {
@@ -898,5 +914,16 @@ body:before, body:after {
 			outline: 1px solid @ide-green;
 	    	outline-offset: 1px;
     	}
+	}
+
+	&.dark {
+		.form-label {
+			color: #9e9e9e;
+		}
+
+		input {
+			color: white;
+			background: rgba(255, 255, 255, 0.3);
+		}
 	}
 }

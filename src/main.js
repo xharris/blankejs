@@ -120,6 +120,12 @@ var app = {
 		}, true);
 	},
 
+	win_title: '',
+	setWinTitle: function(title) {
+		app.win_title = title;
+		app.getElement("#search-input").placeholder = title;
+	},
+
 	closeProject: function() {
 		if (app.isProjectOpen()) {
 			// app.saveSettings();
@@ -132,6 +138,7 @@ var app = {
 			Editor.closeAll();
 			app.clearHistory();
 			app.showWelcomeScreen();
+			app.setWinTitle("BlankE");
 		}
 	},
 
@@ -156,6 +163,7 @@ var app = {
 				app.saveAppData();
 
 				app.getElement("#search-container").classList.remove("no-project");
+				app.setWinTitle(nwPATH.basename(app.project_path));
 				dispatchEvent("openProject", {path: path});
 			}
 		});
@@ -521,6 +529,21 @@ nwWIN.on('loaded', function() {
 		app.error_occured = e;
 	});
 
+	// changing searchbox placeholder between "Some title" and "Search..."
+	let el_search_input = app.getElement("#search-input");
+	el_search_input.addEventListener("mouseenter",function(e){
+		el_search_input.placeholder = "Search...";
+	});
+	el_search_input.addEventListener("focus",function(e){
+		el_search_input.placeholder = "Search...";
+	});
+
+	el_search_input.addEventListener("blur",function(e){
+		if (document.activeElement !== e.target) el_search_input.placeholder = app.win_title;
+	});
+	el_search_input.addEventListener("mouseleave",function(e){
+		if (document.activeElement !== e.target) el_search_input.placeholder = app.win_title;
+	});
 
 	app.loadAppData(function(){
 		// Welcome screen

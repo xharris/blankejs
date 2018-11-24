@@ -1429,26 +1429,6 @@
 .content[data-type="AssetManager"] .file-preview .form-container {
   display: inline-block;
 }
-.content[data-type="AssetManager"] .file-preview .form-container .form-group {
-  margin-bottom: 5px;
-}
-.content[data-type="AssetManager"] .file-preview .form-container .form-label {
-  display: inline-block;
-  margin: 0px;
-  font-size: 14px;
-}
-.content[data-type="AssetManager"] .file-preview .form-container .form-text {
-  border: none;
-  outline: 1px solid #424242;
-  background-color: #212121;
-  color: #e0e0e0;
-  padding: 3px;
-  font-size: 16px;
-  transition: all ease-in-out 0.1s;
-}
-.content[data-type="AssetManager"] .file-preview .form-container .form-text:focus {
-  background-color: #424242;
-}
 .content[data-type="Docview"] .editor-content {
   overflow-x: hidden;
 }
@@ -1526,6 +1506,9 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+.content[data-type="Exporter"] .form-container {
+  padding-top: 5px;
 }
 .content[data-type="SpritesheetPreview"] {
   background: rgba(127, 140, 161, 0.7);
@@ -1704,30 +1687,31 @@ body:after {
   position: absolute;
   top: 0px;
   right: 0px;
-  z-index: 100;
+  z-index: 1000;
 }
 #window-buttons button {
   -webkit-app-region: no-drag;
-  width: 30px;
+  width: 35px;
   height: 30px;
   margin: 2px;
-  color: #9E9E9E;
+  color: #b0bec5;
+  font-size: 15px;
+  float: right;
+  transition: all ease-in-out 0.1s;
+}
+#window-buttons button#btn-close {
+  color: #b71c1c;
 }
 #window-buttons button:hover {
-  background-color: transparent;
+  color: #eeeeee;
+  background-color: rgba(0, 0, 0, 0.4);
 }
-#window-buttons button .mdi {
-  padding: 3px;
-}
-#window-buttons button .blanke-icon {
-  opacity: .75;
-  transition: all ease-in-out 0.2s;
-}
-#window-buttons button:hover > .blanke-icon {
-  opacity: 1;
-}
-#window-buttons #btn-close {
+#window-buttons button:hover#btn-close {
   color: #f44336;
+}
+#window-buttons button .mdi,
+#window-buttons button svg {
+  pointer-events: none;
 }
 .tool-container {
   -webkit-touch-callout: none;
@@ -2255,6 +2239,7 @@ body:after {
   color: #212121;
 }
 #welcome {
+  position: relative;
   width: 100%;
   height: 100%;
   margin: 0px;
@@ -2327,6 +2312,20 @@ body:after {
 #welcome .recent-files .file:hover {
   border-left-width: 2px;
   border-left-color: white;
+}
+#welcome .title {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  height: 34px;
+  line-height: 36px;
+  box-sizing: border-box;
+  padding-left: 15px;
+  border: none;
+  outline: none;
+  color: #757575;
+  width: 125px;
+  font-size: 16px;
 }
 #history {
   -webkit-app-region: no-drag;
@@ -2505,14 +2504,14 @@ body:after {
 }
 .form-container .form-label {
   margin-top: 4px;
-  margin-bottom: 0px;
+  margin-bottom: 2px;
 }
 .form-container .form-text,
 .form-container .form-select {
   background: rgba(255, 255, 255, 0.3);
   border: none;
   padding: 3px;
-  font-size: 14px;
+  font-size: 16px;
 }
 .form-container .form-group[data-size="2"] .form-text,
 .form-container .form-group[data-type="number"] .form-text {
@@ -2538,4 +2537,10 @@ body:after {
   background: rgba(255, 255, 255, 0.6);
   outline: 1px solid #5ad9a4;
   outline-offset: 1px;
+}
+.form-container.dark .form-label {
+  color: white;
+}
+.form-container.dark input {
+  background: rgba(255, 255, 255, 0.3);
 }

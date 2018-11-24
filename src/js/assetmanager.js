@@ -111,6 +111,7 @@ class AssetManager extends Editor {
 			['filename', 'text'],
 			['folder', 'text']
 		]);
+		el_file_form.container.classList.add("dark");
 
 		let file_ext = nwPATH.extname(path);
 		let file_folder = nwPATH.dirname(app.getRelativePath(path)).replace(/assets[/\\]/,'');

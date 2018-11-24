@@ -7,8 +7,8 @@ class SpritesheetPreview extends Editor {
 		this.setupDragbox();
 		this.removeHistory();
 		this.hideMenuButton();
-		this.container.width = 400;
-		this.container.height = 276;
+		this.container.width = 416;
+		this.container.height = 288;
 
 		this.setTitle('Spritesheet Preview');
 
@@ -68,8 +68,12 @@ class SpritesheetPreview extends Editor {
 	}
 
 	_onCopyCode () {
-		blanke.toast("Animation code copied!");
-		if (this.onCopyCode) this.onCopyCode(this.getValues());
+		if (this.onCopyCode) {
+			blanke.toast("Animation code copied!");
+			this.onCopyCode(this.getValues());
+		} else {
+			blanke.toast("Can't copy any code right now.");
+		}
 	}
 
 	addImage (img_list) {

@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<script type="text/javascript">
-			var DEV_MODE = false;
+			var DEV_MODE = true;
 			if (DEV_MODE) require('nw.gui').Window.get().showDevTools();
 		</script>
 
@@ -52,7 +52,7 @@
 		<script src="js/code.js"></script>
 		<script src="js/mapeditor.js"></script>
 		<script src="js/sceneeditor.js"></script>
-		<script src="js/image.js"></script>
+		<script src="js/spritesheet.js"></script>
 		<script src="js/assetmanager.js"></script>
 
 		<link rel="stylesheet" type="text/css" href="main.css"/> 
@@ -81,12 +81,13 @@
 		</div>
 
 		<div id="window-buttons">
-			<button id="btn-minimize" class="ui-button-sphere" onclick="app.minimize()"><i class="mdi mdi-window-minimize"></i></button>
-			<button id="btn-maximze" class="ui-button-sphere" onclick="app.maximize()"><i class="mdi mdi-window-maximize"></i></button>	
-			<button id="btn-close" class="ui-button-sphere" onclick="app.close()"><i class="mdi mdi-window-close"></i></button>
+			<button id="btn-close" class="ui-button" onclick="app.close()"><i class="mdi mdi-window-close"></i></button>
+			<button id="btn-maximze" class="ui-button" onclick="app.maximize()"><i class="mdi mdi-window-maximize"></i></button>
+			<button id="btn-minimize" class="ui-button" onclick="app.minimize()"><i class="mdi mdi-window-minimize"></i></button>	
 		</div>
 
 		<div id="welcome" draggable="false">
+			<div class="title">BlankE</div>
 			<div class="left-container">
 				<div class="header-buttons">
 					<button class="new">Create new project</button></br>

@@ -20,6 +20,7 @@ class Exporter extends Editor {
 
 		var this_ref = this;
 
+		// diplay list of target platforms
 		this.platforms = ['windows','mac','linux','love'];
 
 		this.el_platforms = app.createElement("div","platforms");
@@ -42,6 +43,16 @@ class Exporter extends Editor {
 		});
 
 		this.appendChild(this.el_platforms);
+
+		// extra options
+
+		this.el_export_form = new BlankeForm([
+			['name', 'text', {'default':app.project_settings.export.name}]
+		]);
+		this.el_export_form.container.classList.add("dark");
+		this.el_export_form.onChange('name',(val) => app.project_settings.export.name = val);
+
+		this.appendChild(this.el_export_form.container);
 	}
 
 	createLove (dir, cb) {
@@ -74,6 +85,12 @@ class Exporter extends Editor {
 
 	doneToast (os) {
 		blanke.toast("Export done! <a href='#' onclick='Exporter.openDistFolder(\""+os+"\");'>View files</a>", 8000);
+
+		// save values used
+		app.project_settings.export = {
+			'name':this.el_export_form.getValue("name")
+		}
+		app.saveSettings();
 	}
 
 	export (target_os) {
