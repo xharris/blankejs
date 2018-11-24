@@ -560,8 +560,12 @@ nwWIN.on('loaded', function() {
 			app.openProjectDialog();
 		}
 
-		// add recent projects
+		// add recent projects (max 10)
 		var el_recent = app.getElement("#welcome .recent-files");
+		if (app.settings.recent_files.length > 10) 
+			app.settings.recent_files = app.settings.recent_files.slice(0,10);
+		
+
 		app.settings.recent_files.forEach(function(file){
 			// dont show recent project if it doesn't exist
 			var stat = nwFS.statSync(file);

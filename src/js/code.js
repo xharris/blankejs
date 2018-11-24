@@ -599,7 +599,7 @@ class Code extends Editor {
 		nwFS.unlink(path);
 
 		if (this.file == path) {
-			this.close();
+			this.close(true);
 		}
 	}
 
@@ -725,20 +725,46 @@ document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
 	Code.refreshCodeList(proj_path);
 
-	function key_addScript(content) {
+	function key_addScript(content,name) {
 		var script_dir = nwPATH.join(app.project_path,'scripts');
 		nwFS.stat(script_dir, function(err, stat) {
 			if (err) nwFS.mkdirSync(script_dir);
-			// overwrite the file if it exists. fuk it!!
+
 			nwFS.readdir(script_dir, function(err, files){
-				nwFS.writeFile(nwPATH.join(script_dir, 'script'+files.length+'.lua'), content, function(err){
-					if (!err) {
-						// edit the new script
-						(new Code(app)).edit(nwPATH.join(script_dir, 'script'+files.length+'.lua'));
-					}
-				});
+				let file_name = ifndef(name+'.lua', 'script'+files.length+'.lua');
+				content = content.replaceAll("<NAME>", name);
+
+				// the file already exists. open it
+				if (files.includes(file_name)) {
+					blanke.toast("Script already exists!");
+					(new Code(app)).edit(nwPATH.join(script_dir, file_name));
+				} else {
+					// no such script, go ahead and make one
+					nwFS.writeFile(nwPATH.join(script_dir, file_name), content, function(err){
+						if (!err) {
+							// edit the new script
+							(new Code(app)).edit(nwPATH.join(script_dir, file_name));
+						}
+					});
+				}
 
 			});
+		});
+	}
+
+	function key_newScriptModal(s_type, content) {
+		blanke.showModal(
+			"<label style='line-height:35px'>Name your new "+s_type+":</label></br>"+
+			"<input class='ui-input' id='new-script-name' style='width:100px;'/>",
+		{
+			"yes": function() {
+				let name = app.getElement("#new-script-name").value.trim();
+				if (name != '')
+					key_addScript(content, name);
+				else
+					blanke.toast("bad name for new "+s_type);
+			},
+			"no": function() {}
 		});
 	}
 
@@ -755,13 +781,13 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'Add a state',
 		onSelect: function() {
-			key_addScript("\
-BlankE.addState(\"MyNewState\");\n\n\
-function MyNewState:enter()\n\n\
+			key_newScriptModal("state","\
+BlankE.addState(\"<NAME>\");\n\n\
+function <NAME>:enter()\n\n\
 end\n\n\
-function MyNewState:update(dt)\n\n\
+function <NAME>:update(dt)\n\n\
 end\n\n\
-function MyNewState:draw()\n\n\
+function <NAME>:draw()\n\n\
 end\n");
 		},
 		tags: ['new']
@@ -769,11 +795,11 @@ end\n");
 	app.addSearchKey({
 		key: 'Add an entity',
 		onSelect: function() {
-			key_addScript("\
-BlankE.addEntity(\"MyNewEntity\");\n\n\
-function MyNewEntity:init()\n\n\
+			key_newScriptModal("entity","\
+BlankE.addEntity(\"<NAME>\");\n\n\
+function <NAME>:init()\n\n\
 end\n\n\
-function MyNewEntity:update(dt)\n\n\
+function <NAME>:update(dt)\n\n\
 end\n");
 		},
 		tags: ['new']
