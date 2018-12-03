@@ -5,7 +5,8 @@ local lvl, penguin, main_view
 function PlatformState:enter()
 	lvl = Scene("level1")
 	
-	penguin = Penguin()
+	Penguin()
+	penguin = Penguin.instances[1]
 	main_view = View(penguin)
 	
 	lvl:translate(game_width / 2, game_height / 2)
@@ -14,7 +15,8 @@ function PlatformState:enter()
 end
 
 function PlatformState:update(dt)
-	
+	lvl.angle = sinusoidal(-20,20,0.3)
+	penguin.sprite_angle = lvl.angle
 end
 
 function PlatformState:draw()

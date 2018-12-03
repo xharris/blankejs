@@ -3,12 +3,17 @@ Group = Class{
 		self.children = {}
     	self.uuid = uuid()
 
-		self.onPropGet["_number"] = function(o, i)
-			print("get",i,"from",o:size())
-			return o:get(i)
-		end
-
 		_prepareGameObject("group", self)
+	end,
+
+	__index = function(self, i)
+		if type(i) == "number" then
+			print("getting",i)
+			local children = rawget(self, "children")
+			if i < 0 then i = #children + (i + 1) end
+			return children[i]
+		end
+		return rawget(Group, i)
 	end,
 
 	add = function(self, obj)

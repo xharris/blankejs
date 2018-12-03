@@ -70,10 +70,10 @@ local function new(class)
 		include(class, other)
 	end
 
-	class.__index = class
-	class.init    = class.init    or class[1] or function() end
-	class.include = class.include or include
-	class.clone   = class.clone   or clone
+	class.__index = class.__index 	or class
+	class.init    = class.init    	or class[1] or function() end
+	class.include = class.include 	or include
+	class.clone   = class.clone   	or clone
 	class.onPropSet = {}
 	class.onPropGet = {}
 	class._hiddenProps = {}
