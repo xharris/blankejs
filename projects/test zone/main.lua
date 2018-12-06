@@ -12,9 +12,9 @@ function love.load()
 	Input.set("move_u","up","w")
 	Input.set("move_d","down","s")
 		
-	BlankE.init("PlatformState",{
+	BlankE.init("TestState",{
 		plugins={"Platformer"}	
 	})
 	
-	Draw.setBackgroundColor("black")
+	Draw.setBackgroundColor("white")
 end

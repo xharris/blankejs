@@ -4,79 +4,49 @@ completely working effects:
  - crt : lineSize(vec2) opacity, scanlines(bool), distortion, inputGamma, outputGamma
  - 
 ]]
-local _effects = {}
 Effect = Class{
     _mouse_offx = 0,
     _mouse_offy = 0,
-    init = function (self, name)
+
+    new = function(...) return EffectManager.new(...) end,
+
+    init = function(self, name)
         self._shader = nil
-        self.effect_data = nil
         self.name = name
-        self.canvas = Canvas(game_width, game_height)
-        self._canvas_sx = 1
-        self._canvas_sy = 1
-        self.params = {}
-        self._appliedParams = {}
+        self.canvas = Canvas()
 
-        -- load stored effect
-        assert(_effects[name]~=nil, "Effect '"..name.."' not found")
-        
-        if _effects[name] then
-            self.effect_data = _effects[name]
+        self.params = {}        -- current values of all params
+        self.appliedParams = {} -- keeps track of whether send() was used on a param
 
-            -- turn options into member variables
-            _effects[name].params = ifndef(_effects[name].params, {})
+        assert(EffectManager.effects[name]~=nil, "Effect '"..name.."' not found")
 
-            if not (_effects[name].params["textureSize"] or _effects[name].params["texSize"]) then
-                _effects[name].params["texSize"] = {game_width, game_height}
-            end
-
-            for p, default in pairs(_effects[name].params) do
-                self[p] = default
-                self.params[p] = default
-                if p == "textureSize" or p == "texSize" then
-                    self[p] = {game_width, game_height}
-                end
-            end 
-
-            -- setup shader
-            self._shader = love.graphics.newShader(_effects[name].string)
-        end 
-
-        if self.create then self:create() end
-        self.ready = true
-
+        self:reset()
         _addGameObject('effect',self)
     end,
 
-    update = function(self, dt)
-        -- compensates for when window is resized
-        Effect._mouse_offx = -((game_width/2) - (self.canvas.width/2))
-        Effect._mouse_offy = -((game_height/2) - (self.canvas.height/2))
+    reset = function(self)
+        local params = EffectManager.effects[self.name].params
 
-        if self.time then self.time = self.time + dt end
-        if self.dt then self.dt = self.dt + dt end
-        if self.screen_size then self.screen_size = {game_width, game_height} end
-        if self.inv_screen_size then self.inv_screen_size = {1/game_width, 1/game_height} end
-        return self
+        -- set the default parameter values
+        for key, val in pairs(params) do
+            self[key] = val
+            self.params[key] = val
+            self.appliedParams[key] = false
+        end
+
+        -- reset time and other values
+        self.time = 0
+        self.dt = 0
+        self.screen_size = {game_width, game_height}
+        self.inv_screen_size = {1/game_width, 1/game_height}
+        self._mouse_offx = -((game_width/2) - (self.canvas.width/2))
+        self._mouse_offy = -((game_height/2) - (self.canvas.height/2))
+
+        self._shader = love.graphics.newShader(EffectManager.effects[self.name].string)
     end,
 
     resizeCanvas = function(self, w, h)
         self.canvas:resize(game_width, game_height)
-    end,
-
-    applyCanvas = function(self, func, canvas)
-        --local curr_canvas = love.graphics.getCanvas()
-        local offx = -((game_width/2) - (canvas.width/2))
-        local offy = -((game_height/2) - (canvas.height/2))
-        canvas:drawTo(function()
-        --Draw.stack(function()
-            Draw.translate(offx, offy)
-            func()
-            Draw.translate(-offx, -offy)
-        end)
-        --end)
-        --love.graphics.setCanvas()
     end,
 
     applyShader = function(self, func, shader, canvas)
@@ -105,89 +75,89 @@ Effect = Class{
     end,
 
     applyParams = function(self)
-        -- send variables
-        for p, default in pairs(self.effect_data.params) do
-            local var_name = p
-            local var_value = default
+        local params = EffectManager.effects[self.name].params
+        for key, val in pairs(params) do
+            if not self.appliedParams[key] then
 
-            if self[p] ~= nil and self._appliedParams[var_name] == true then
-                var_value = self[p]
-                self:send(var_name, var_value)
+                local val
+                if self[key] then val = self[key] 
+                elseif self.params[key] then val = self.params[key] 
+                else val = params[key] end
+
+                self:send(key, val)
+
             end
-            self.params[var_name] = var_value
+            self.appliedParams[key] = false
         end
-        self._appliedParams = {}
-    end,
+    end, 
 
-    draw = function (self, func)
-        if self.pause then
-            Effect._mouse_offx = 0
-            Effect._mouse_offy = 0
-            func()
-        elseif not self.effect_data.extra_draw then
-            self:applyParams()
-
-            if func then
-                self:applyShader(func, self._shader, self.canvas)
-            end
-
-
-        -- call extra draw function
-        else
-            self:applyParams()
-            self.effect_data.extra_draw(self, func)
-        end
-        return self
-    end,
-
-    getParam = function(self, name)
-        if self[name] then
-            return self[name]
-        else
-            return self.params[name]
-        end
-    end,
-
-    send = function (self, name, value)
+    send = function(self, key, value) 
         if type(value) == 'boolean' then
-            if value then value = 1 
-            else value = 0 end
+            if value ~= 0 then value = 1 end
         end
-        self.params[name] = value
-        self._appliedParams[name] = true
-        self._shader:send(name, value)
+
+        self.params[key] = value
+        self.appliedParams[key] = true
+        self._shader:send(key, value)
+
         return self
-    end
-    --[[
-    -- bug: self is not passed
-    __newindex = function (self, key, value)
-        print_r(self)
-        print(key, value)
-        if self.effect_data.params[key] ~= nil then
-            print(key, value)
-            self.effect_data.params[key] = value
-        else return self[key] end
-    end
-    ]]
+    end,
+
+    update = function(self, dt)
+        self._mouse_offx = -((game_width/2) - (self.canvas.width/2))
+        self._mouse_offy = -((game_height/2) - (self.canvas.height/2))
+
+        self.time = self.time + dt
+        self.dt = self.dt + dt
+        self.screen_size = {game_width, game_height}
+        self.inv_screen_size = {1/game_width, 1/game_height}
+    end,
+
+    draw = function(self, fn)
+        if self.pause then
+            fn()
+
+        else
+            self:applyParams()
+
+            local extra_draw = EffectManager.effects[self.name].extra_draw
+            if extra_draw then
+                extra_draw(self, fn)
+            else
+                self:applyShader(fn, self._shader, self.canvas)
+            end
+
+        end
+        return self
+    end,
 }
 
-local _love_replacements = {
-    ["float"] = "number",
-    ["sampler2D"] = "Image",
-    ["uniform"] = "extern",
-    ["texture2D"] = "Texel",
-    ["gl_FragColor"] = "pixel",
-    ["gl_FragCoord"] = "screen_coords"
-}
 EffectManager = Class{
-    new = function (options)
+    effects = {},
+    love_replacements = {
+        ["float"] = "number",
+        ["sampler2D"] = "Image",
+        ["uniform"] = "extern",
+        ["texture2D"] = "Texel",
+        ["gl_FragColor"] = "pixel",
+        ["gl_FragCoord"] = "screen_coords"
+    },
+
+    new = function(options)
         local new_eff = {}
         new_eff.string = ifndef(options.shader,'')
         new_eff.params = ifndef(table.deepcopy(options.params), {})
         new_eff.extra_draw = options.draw
         new_eff.warp_effect = ifndef(options.warp_effect, false)
 
-        local var_filler = '' -- avoids error if var is not used in code
+        -- texSjze is mandatory
+        if not (new_eff.params["textureSize"] or new_eff.params["texSize"]) then
+            new_eff.params["texSize"] = {game_width, game_height}
+        end
+
+        local param_string = '' -- avoids error that appears if a variable is not used
+
+        -- if using a warp effect
         local pre_warp = ''
         local post_warp = ''
         if new_eff.warp_effect then
@@ -205,20 +175,16 @@ EffectManager = Class{
 ]]
         end
 
-        -- automatically include texSize as param
-        if not (new_eff.params["textureSize"] or new_eff.params["texSize"]) then
-            new_eff.params['texSize'] = {game_width, game_height}
-        end
-
-        -- add helper funcs
         if new_eff.string == '' then
-            for var_name, value in pairs(new_eff.params) do
-                var_filler = var_filler .. var_name .. ';'
-                if type(value) == 'table' then
-                    new_eff.string = new_eff.string .. "uniform vec"..tostring(#value).." "..var_name..";\n"
+            -- turn param list into code
+            for key, val in pairs(new_eff.params) do
+                param_string = param_string .. key .. ';'
+                
+                if type(val) == 'table' then
+                    new_eff.string = new_eff.string .. "uniform vec"..tostring(#val).." "..key..";\n"
                 end
-                if type(value) == 'number' then
-                    new_eff.string = new_eff.string .. "uniform float "..var_name..";\n"
+                if type(val) == 'number' then
+                    new_eff.string = new_eff.string .. "uniform float "..key..";\n"
                 end
             end
             new_eff.string = new_eff.string.. 
@@ -246,7 +212,7 @@ float random(vec2 scale, vec2 gl_FragCoord, float seed) {
     vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
         vec4 pixel = Texel(texture, texCoord);
 ]]
-..var_filler..'\n'
+..param_string..'\n'
 ..pre_warp
 ..ifndef(options.effect, '')
 ..post_warp
@@ -255,30 +221,15 @@ float random(vec2 scale, vec2 gl_FragCoord, float seed) {
     }
 #endif
 ]]
-            -- port non-LoVE keywords
+
+            -- replace all non-LoVE keywords
             local r
-            for old, new in pairs(_love_replacements) do
+            for old, new in pairs(EffectManager.love_replacements) do
                 new_eff.string, r = new_eff.string:gsub(old, new)
             end
+
+            EffectManager.effects[options.name] = new_eff
         end
-        if options.name == 'igloo_shader' then print(new_eff.string) end
-        _effects[options.name] = new_eff
-        --return Effect(options.name)
-    end,
-
-    -- doesn't seem to work
-    load = function(file_path)
-        love.filesystem.load(file_path)()
-    end,
-
-    _render_to_canvas = function(canvas, func)
-        local old_canvas = love.graphics.getCanvas()
-
-        love.graphics.setCanvas(canvas)
-        love.graphics.clear()
-        func()
-
-        love.graphics.setCanvas(old_canvas)
     end
 }
 

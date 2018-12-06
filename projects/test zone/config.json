@@ -94,7 +94,12 @@
                 16
             ],
             "frames": 1,
-            "selected frames": [],
+            "selected frames": [
+                1,
+                1,
+                1,
+                1
+            ],
             "columns": 1,
             "padding": [
                 0,
@@ -114,12 +119,7 @@
                 22
             ],
             "frames": 1,
-            "selected frames": [
-                1,
-                1,
-                1,
-                1
-            ],
+            "selected frames": [],
             "columns": 1,
             "padding": [
                 0,
@@ -135,12 +135,21 @@
             ],
             "speed": 0,
             "frame size": [
-                0,
-                0
+                32,
+                32
             ],
-            "frames": 0,
-            "selected frames": [],
-            "columns": 0,
+            "frames": 16,
+            "selected frames": [
+                "\"1-4\"",
+                1,
+                "\"1-4\"",
+                2,
+                "\"1-4\"",
+                3,
+                "\"1-4\"",
+                4
+            ],
+            "columns": 3,
             "padding": [
                 0,
                 0

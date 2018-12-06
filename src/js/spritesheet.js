@@ -167,7 +167,7 @@ class SpritesheetPreview extends Editor {
 
 			x += vals['frame size'][0] + vals.padding[0];
 			
-			if ( x > vals.offset[0] + (vals.columns * (vals['frame size'][0]+vals.padding[0])) ) {
+			if ( x > vals.offset[0] + ((vals.columns-1) * (vals['frame size'][0]+vals.padding[0])) ) {
 				x = vals.offset[0];
 				y += (vals['frame size'][1] + vals.padding[1]);
 			}

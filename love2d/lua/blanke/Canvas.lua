@@ -1,6 +1,9 @@
 Canvas = Class{
     last_active = nil,
     init = function(self, width, height)
+        width = ifndef(width, game_width)
+        height = ifndef(height, game_height)
+
         self.canvas = love.graphics.newCanvas(width, height)
         self.canvas:setFilter("nearest", "nearest")
         self.width = self.canvas:getWidth()
