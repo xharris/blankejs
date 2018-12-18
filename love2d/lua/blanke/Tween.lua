@@ -17,13 +17,13 @@ Tween = Class{
 	},
 
 	init = function(self, var, value, duration, func_type)
-		self.var = var
 		self.duration = ifndef(duration, 1)
 		self.type = ifndef(func_type, 'linear')
 		self.valid = true
 		self.running = false
 
-		self:setValue(value)
+		self:setStartValue(var)
+		self:setEndValue(value)
 
 		self:reset()
 		self._func = Tween.tween_func[self.type]
@@ -32,7 +32,11 @@ Tween = Class{
 		_addGameObject('tween', self)
 	end,
 
-	setValue = function(self, value)
+	setStartValue = function(self, val)
+		self.var = val
+	end,
+
+	setEndValue = function(self, value)
 		-- get whether an object is changing or single var
 		self.value = value
 		self._multival = false
@@ -66,12 +70,7 @@ Tween = Class{
 
 					-- finished?
 					if (start_value < value and self.var[key] < value) or (start_value > value and self.var[key] > value) then
-						local dir = math.sign(start_value - value)
-						if dir < 0 then -- increasing
-							self.var[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
-						elseif dir > 0 then -- decreasing
-							self.var[key] = (value-start_value) - self._func(value-start_value, start_value, self.duration*1000, self._dt*1000)
-						end
+						self.var[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
 					end
 				end
 

@@ -33,6 +33,11 @@ function PlayState:update(dt)
 end
 
 function PlayState:draw()
+	if Input("action").released then
+		main_camera:shake(0,10)	
+	end
+	main_camera.shake_speed = (mouse_x / game_width) * 50
+	
 	main_camera:draw(function()
 		Scene.instances:call('draw')
 		player:draw()

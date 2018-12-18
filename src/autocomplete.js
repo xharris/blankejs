@@ -28,7 +28,7 @@ module.exports.instance_regex = {
 		/\b(\w+)\s*=\s*<class_name>\.instances\[\d+\].*/g
 	],
 	'input': 	/\b(Input\([\'\"]\w+[\'\"]\))/g,
-	'image': 	/\b(\w+)\s*=\s*Image\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
+	'image': 	/\b(\w+)\s*=\s*Image\([\'\"].+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
 	'audio': 	/\b(\w+)\s*=\s*Audio\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
 	'view': 	/\b(\w+)\s*=\s*View\([\w\.\s]+\)\s+?/g,
@@ -257,8 +257,17 @@ module.exports.completions = {
 		{prop:"orig_height", info:"read-only"},
 		{prop:"width"},
 		{prop:"height"},
-		{fn:"draw"},
-		{fn:"crop",vars:{x:"",y:"",width:"",height:""}}
+		{fn:"draw",vars:{x:"opt. override",y:"opt. override"}},
+		{fn:"crop",vars:{x:"",y:"",width:"",height:""}},
+		{fn:"chop",vars:{piece_w:"",piece_h:""},info:"returns Group containing parts of the Image"},
+		{fn:"combine",vars:{other_image:""},info:"combines another image into this one"},
+		{fn:"setWidth",vars:{w:""}},
+		{fn:"setHeight",vars:{h:""}},
+		{fn:"setSize",vars:{w:"",h:""}},
+		{fn:"setScale",vars:{x:"",y:"optional"}},
+		{fn:"tileX",vars:{w:""}},
+		{fn:"tileY",vars:{h:""}},
+		{fn:"tile",vars:{w:"",h:""}}
 	],
 	"blanke-audio-instance":[
 		{prop:"pitch"},
@@ -311,12 +320,15 @@ module.exports.completions = {
 		{prop:"scale_y"},
 		{prop:"port_width"},
 		{prop:"port_height"},
+		{prop:"zoom"},
+		{fn:"shake",vars:{x:"",y:"optional"}},
+		{prop:"shake_speed"},
+		{prop:"shake_duration",info:"seconds"},
 		{prop:"top",info:"read only"},
 		{prop:"bottom",info:"read only"},
 		{prop:"left",info:"read only"},
 		{prop:"right",info:"read only"},
 		{fn:"follow",vars:{ entity_instance:'' }},
-		{fn:"zoom",vars:{ x:'', y:'' }},
 		{fn:"draw",vars:{ draw_fn:'' }}
 	],
 	"blanke-repeater-instance":[

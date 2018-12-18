@@ -2,7 +2,7 @@
 completely working effects:
  - chroma shift : angle(rad), radius
  - crt : lineSize(vec2) opacity, scanlines(bool), distortion, inputGamma, outputGamma
- - 
+ - outline : size
 ]]
 Effect = Class{
     _mouse_offx = 0,
@@ -54,24 +54,17 @@ Effect = Class{
         canvas = ifndef(canvas, self.canvas)
 
         local curr_shader = love.graphics.getShader()
-        local curr_color = {love.graphics.getColor()}
         local curr_blend = love.graphics.getBlendMode()
 
-        self.canvas:drawTo(function()
-            love.graphics.setBlendMode('alpha', 'premultiplied')
-            love.graphics.setShader(shader)
+        canvas:drawTo(function()    
             func()
-            love.graphics.setShader()
-            love.graphics.setBlendMode(curr_blend)
         end)
-        self.canvas:draw()
 
-        love.graphics.setBlendMode(curr_blend)
---[[
-        love.graphics.setColor(curr_color)
         love.graphics.setShader(shader)
-        love.graphics.setBlendMode('alpha', 'premultiplied')
-]]
+        love.graphics.setBlendMode('alpha', 'premultiplied')    
+        canvas:draw()
+        love.graphics.setBlendMode(curr_blend)
+        love.graphics.setShader(curr_shader)
     end,
 
     applyParams = function(self)
@@ -309,15 +302,12 @@ vec4 effect(vec4 color, Image tex, vec2 tc, vec2 sc)
 }
 
 EffectManager.new{
-    name = 'crt',
+    name = 'chroma shift',
     params = {['angle']=0,['radius']=50,['direction']={0,0}},--['strength'] = {1, 1}, ['size'] = {20, 20}},
     effect = [[
             pixel.r = Texel(texture, texCoord - direction).r; 
             pixel.b = Texel(texture, texCoord + direction).b; 
-            pixel.a = Texel(texture, texCoord).a;
-            
-            if (Texel(texture, texCoord - direction).a > 0 || Texel(texture, texCoord + direction).a > 0)
-                pixel.a = 1.0; 
+            pixel.a = Texel(texture, texCoord).a; 
     ]],
     draw = function(self, draw)
         local angle, radius = self.angle, self.radius
@@ -456,5 +446,29 @@ EffectManager.new{
     end
 }
 
+Effect.new{
+    name="outline",
+    params={size=1},
+    effect=[[
+        float incr = 1.0 / love_ScreenSize.x;
+        float max = size / love_ScreenSize.x;
+        
+        vec4 pixel_l, pixel_r, pixel_u, pixel_d, pixel_lu, pixel_ru, pixel_ld, pixel_rd;
+        for (float s = 0; s < max; s += incr) {
+            pixel_l = Texel(texture, vec2(texCoord.x-s, texCoord.y));
+            pixel_r = Texel(texture, vec2(texCoord.x+s, texCoord.y));
+            pixel_u = Texel(texture, vec2(texCoord.x, texCoord.y-s));
+            pixel_d = Texel(texture, vec2(texCoord.x, texCoord.y+s));
+    
+            pixel_lu = Texel(texture, vec2(texCoord.x-s, texCoord.y-s));
+            pixel_ru = Texel(texture, vec2(texCoord.x-s, texCoord.y+s));
+            pixel_ld = Texel(texture, vec2(texCoord.x+s, texCoord.y-s));
+            pixel_rd = Texel(texture, vec2(texCoord.x+s, texCoord.y+s));
+
+            if (pixel.a == 0 && (pixel_l.a > 0 || pixel_r.a > 0 || pixel_u.a > 0 || pixel_d.a > 0 || pixel_lu.a > 0 || pixel_ru.a > 0 || pixel_ld.a > 0 || pixel_rd.a > 0)) 
+                pixel = vec4(1,0,0,1);
+        }
+    ]]
+}
 
 return Effect

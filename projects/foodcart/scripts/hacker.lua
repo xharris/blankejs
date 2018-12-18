@@ -11,16 +11,16 @@ end
 function Hacker:update(dt)
 	-- movement
 	local dx, dy = 0, 0
-	if Input("move_l") > 0 then
+	if Input("move_l").pressed then
 		dx = dx - self.move_speed
 	end
-	if Input("move_r") > 0 then
+	if Input("move_r").pressed then
 		dx = dx + self.move_speed
 	end
-	if Input("move_u") > 0 then
+	if Input("move_u").pressed then
 		dy = dy - self.move_speed
 	end
-	if Input("move_d") > 0 then
+	if Input("move_d").pressed then
 		dy = dy + self.move_speed
 	end
 	

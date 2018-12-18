@@ -60,5 +60,5 @@ end
 function Penguin:draw()		
 	self:drawSprite('walk')
 	self:drawSprite('walk_fill')
-	--self:drawSprite("eyes")
+	self:drawSprite("eyes")
 end

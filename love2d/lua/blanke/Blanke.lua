@@ -4,7 +4,6 @@ function blanke_require(import)
 	return require(blanke_path..import)
 end
 
-love.graphics.setDefaultFilter("nearest","nearest")
 
 blanke_require('Globals')
 blanke_require('Util')
@@ -164,7 +163,8 @@ BlankE = {
 	init = function(first_state, in_options)
 		options = {
 			window_size = 3,
-			plugins={}
+			plugins={},
+			filter="linear"
 		}
 		table.update(options, in_options)
 
@@ -187,10 +187,18 @@ BlankE = {
 				BlankE.injectCallbacks()
 			end
 		end
+		
+		-- parsing all options
+		if type(options.filter) == "table" then
+			love.graphics.setDefaultFilter(unpack(options.filter))
+		else
+			love.graphics.setDefaultFilter(options.filter, options.filter)
+		end
 
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 
+		Window.setResolution(options.window_size, nil, true)
 		Asset.add('assets', nil, true)
 		Asset.add('scripts', nil, true)
 		Asset.add('scenes', nil, true)
@@ -207,8 +215,6 @@ BlankE = {
 			first_state = _G[first_state]
 		end
 		State.switch(first_state)  
-
-		Window.setResolution(options.window_size, nil, true)
 
 		BlankE._is_init = true
 	end,

@@ -1766,7 +1766,7 @@ body:after {
   background-color: rgba(0, 0, 0, 0.5);
 }
 .tool-container button .blanke-icon {
-  opacity: .75;
+  opacity: 0.75;
   pointer-events: none;
   transition: all ease-in-out 0.2s;
 }
@@ -2456,7 +2456,7 @@ body:after {
 }
 .crosshair .x,
 .crosshair .y {
-  animation-duration: .5s;
+  animation-duration: 0.5s;
   animation-name: crosshair-fade-out;
 }
 @keyframes crosshair-fade-out {

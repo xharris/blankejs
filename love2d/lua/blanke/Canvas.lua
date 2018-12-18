@@ -11,7 +11,7 @@ Canvas = Class{
         
         self.active = false
         self.auto_clear = true
-        self.clear_color = {1,1,1,0}
+        self.clear_color = nil
         self._prev_canvas = nil
         
         _addGameObject('canvas',self)

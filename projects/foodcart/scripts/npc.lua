@@ -1,7 +1,7 @@
 BlankE.addEntity("Npc")
 
 local NPC_TYPE = {NONE=1} -- has other virus names
-local eff_selected = Effect("crt")
+local eff_selected = Effect("chroma shift")
 
 function Npc:init()
 	self.penguin = Penguin()
@@ -65,16 +65,14 @@ function Npc:update(dt)
 end
 
 function Npc:draw()	
-	if false then
+	local dist = self.penguin:distancePoint(mouse_x, mouse_y)
+	
+	if true then --dist < 100 then
+		eff_selected.radius = dist / 20
 		eff_selected:draw(function()
 			self.penguin:draw()
 		end)
-	end
-		-- self.selected = false
-	self.penguin:draw()
-	
-	if UI.mouseInside(self.penguin.x - 16, self.penguin.y, 32, 32) then
-		Draw.setColor("black")
-		Draw.text(self.type)
+	else
+		self.penguin:draw()
 	end
 end
