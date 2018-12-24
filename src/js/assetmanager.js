@@ -12,9 +12,11 @@ class AssetManager extends Editor {
 		this.file_elements = {};
 		this.file_refresh_enabled = true;
 
+		this.el_search = app.createElement("input","search");
 		this.el_file_list = app.createElement("div","file-list");
 		this.el_file_preview = app.createElement("div","file-preview");
 
+		//this.appendChild(this.el_search);
 		this.appendChild(this.el_file_list);
 		this.appendChild(this.el_file_preview);
 
@@ -35,12 +37,22 @@ class AssetManager extends Editor {
 		app.clearElement(this.el_file_list);
 		let walker = nwWALK.walk(app.project_path);
 		this.file_paths = [];
+
+		// add files to the list
 		walker.on('file', function(path, stat, next){
 			if (!path.includes('\/dist\/') && stat.isFile()) {
 				let full_path = nwPATH.resolve(nwPATH.join(path, stat.name));
 				this_ref.addFile(full_path);
 			}
 			next();
+		});
+		// sort them alphabetically
+		walker.on('end', function(){
+			blanke.sortChildren(this_ref.el_file_list, function(a,b){
+				if (a.innerHTML.toLowerCase() < b.innerHTML.toLowerCase()) return -1;
+				if (a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase()) return 1;
+				return 0;
+			});
 		});
 	}
 
@@ -120,18 +132,21 @@ class AssetManager extends Editor {
 		el_file_form.setValue('filename', nwPATH.basename(path).replace(file_ext, ''));
 		el_file_form.setValue('folder', file_folder);
 		// TODO: does not work for scripts. come back to this later.
+		let old_path = path;
 		el_file_form.onChange('filename', function(value){
 			blanke.cooldownFn('file_rename', 2000, function(){
 				let new_path = nwPATH.resolve(nwPATH.join(app.project_path, 'assets', file_folder, value[0]+file_ext));
 
 				// rename element
-				this_ref.file_elements[path].innerHTML = value[0]+file_ext;
-				this_ref.file_elements[new_path] = this_ref.file_elements[path];
-				delete this_ref.file_elements[path];
+				this_ref.file_elements[new_path] = this_ref.file_elements[old_path];
+				this_ref.file_elements[new_path].innerHTML = value[0]+file_ext;
+				this_ref.file_elements[new_path].setAttribute('data-path',new_path);
+				delete this_ref.file_elements[old_path];
 
-				nwFS.rename(path, new_path);
-				path = new_path;
+				// rename file
+				nwFS.rename(old_path, new_path);
 
+				old_path = new_path;
 				blanke.toast("Renamed file to \'"+value[0]+file_ext+"\'");
 			});
 		});
@@ -161,7 +176,7 @@ class AssetManager extends Editor {
 					el_file_form.setValue('folder', file_folder);
 					this.file_refresh_enabled = true;
 				}
-			});
+			}, true);
 		});
 
 		this.el_file_preview.appendChild(el_preview_container);

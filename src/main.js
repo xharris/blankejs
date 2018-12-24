@@ -27,7 +27,6 @@ const { spawn, execFile, exec } = require('child_process')
 const { cwd, env, platform } = require('process')
 var nwNOOB = require('./js/server.js');
 var nwZIP = require('archiver');
-var nwRECURSIVE = require("recursive-readdir");
 
 var app = {
 	project_path: "",
@@ -365,15 +364,16 @@ var app = {
 		let extensions = app.allowed_extensions[f_type];
 		if (!extensions) return;
 		
-		function ignoreFiles (file, stats) {
-			return (
-				stats.isFile() &&
-				!extensions.includes(nwPATH.extname(file).slice(1))
-			);
-		}
-		nwRECURSIVE(app.project_path, [ignoreFiles],
-		function(err, files){
-			if (cb) cb(files);
+		let walker = nwWALK.walk(app.project_path);
+		let ret_files = [];
+		walker.on('file',function(path, stats, next){
+			// only add files that have an extension in allowed_extensions
+			if (stats.isFile() && extensions.includes(nwPATH.extname(path).slice(1)))
+				ret_files.append(path);
+			next();
+		});
+		walker.on('end',function(){
+			if (cb) cb(ret_files);
 		});
 	},
 	findAssetType: function(path) {
