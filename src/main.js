@@ -368,8 +368,9 @@ var app = {
 		let ret_files = [];
 		walker.on('file',function(path, stats, next){
 			// only add files that have an extension in allowed_extensions
-			if (stats.isFile() && extensions.includes(nwPATH.extname(path).slice(1)))
-				ret_files.append(path);
+			if (stats.isFile() && extensions.includes(nwPATH.extname(stats.name).slice(1))) {
+				ret_files.push(nwPATH.join(path, stats.name));
+			}
 			next();
 		});
 		walker.on('end',function(){
