@@ -650,8 +650,11 @@ nwWIN.on('loaded', function() {
 		// ENTER
 		if (keyCode == 13) {
 			if (selected_index >= 0) {
-				var hash_val = app.getElement("#search-results").children[selected_index].dataset.hashval;
-				selectSearchResult(hash_val);
+				var child = app.getElement("#search-results").children[selected_index];
+				if (child) {
+					var hash_val = child.dataset.hashval;
+					selectSearchResult(hash_val);
+				}
 			}
 		}
 	});

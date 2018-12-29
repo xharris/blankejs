@@ -9,8 +9,9 @@ function love.load()
 	Scene.tile_hitboxes = {"ground"}
 	Scene.hitboxes = {"ground"}
 
-  	BlankE.init('MenuState')
-	Window.setResolution(1)
+  	BlankE.init('PlayState',{
+		filter="nearest"
+	})
 
 	Input.set('menu_up', 'w', 'up')
 	Input.set('menu_down', 's', 'down')

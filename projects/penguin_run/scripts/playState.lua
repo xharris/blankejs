@@ -8,6 +8,7 @@ local tmr_spawn_wall = Timer(5)
 local main_penguin
 local levels
 local destruct_ready_x = 0
+local fragger = Fragger()
 
 -- Called every time when entering the state.
 function PlayState:enter(previous)
@@ -42,6 +43,13 @@ function PlayState:enter(previous)
 			end
 		end
 	end)
+	
+	if not Net.is_connected and play_mode == 'online' then
+		Net.join() --"206.189.202.40",80)
+	end
+
+	Tween(main_view, {zoom=1}, 1):play()
+	main_view:follow(main_penguin)
 end
 
 function PlayState:update(dt)
@@ -56,13 +64,13 @@ function PlayState:update(dt)
 		State.switch(playState)
 	end
 
-	-- enough players to start game
+	-- single player: start game
 	if play_mode == 'local' and destruct_ready_x ~= 0 and main_penguin.x > destruct_ready_x then
 		startDestruction()
 	end
-
+	
 	-- player wants to enter igloo
-	if main_penguin.x < penguin_spawn.x + 10 then
+	if not PlayState.in_transition and not wall:isStarted() and main_penguin.x < penguin_spawn.x + 10 then
 		Net.disconnect()
 
 		-- zoom in on igloo
@@ -70,19 +78,9 @@ function PlayState:update(dt)
 		main_view:moveTo(penguin_spawn.x, penguin_spawn.y)
 
 		-- transition to menu when zoomed in all the way
-		if wall.hspeed == 0 then
-			main_view:zoom(3, 3, function()
-				State.transition(MenuState, "circle-out")
-			end)
-		end
-
-	else
-		if not Net.is_connected and play_mode == 'online' then
-			Net.join() --"206.189.202.40",80)
-		end
-		
-		main_view:zoom(1)
-		main_view:follow(main_penguin)
+		Tween(main_view, {zoom=3}, 0.2, nil, function()
+			State.transition(MenuState, "circle-out")
+		end):play()
 	end
 	
 	-- load more levels!
@@ -114,16 +112,23 @@ function PlayState:draw()
 	bg_sky:tileX()
 
 	-- draw objects
-	main_view:draw(function()
-		if wall then wall:draw() end
-		FragImage.drawAll()
-
-		Net.draw('DestructionWall')
-
-		levels:call('draw','back')
-		Net.draw('Penguin')
-		if main_penguin then main_penguin:draw() end 
-		levels:call('draw','front')
+	main_view:draw(function()		
+		-- draw wall and fragged blocks
+		if true then --wall:isStarted() then
+				
+			Net.draw('Penguin')
+			if main_penguin then main_penguin:draw() end 
+				
+			fragger:draw()
+			--wall:draw()
+			--Net.draw('DestructionWall')
+		else
+		-- draw levels normally
+			levels:call('draw','back')
+			Net.draw('Penguin')
+			if main_penguin then main_penguin:draw() end 
+			levels:call('draw','front')
+		end
 	end)
 	
 	local ready = ''
@@ -159,13 +164,13 @@ function loadLevel(name)
 		x=lvl_scene.offset_x,
 		y=lvl_scene.offset_y
 	}
-	print_r(lvl_scene:getTiles())
 	
 	levels:add(lvl_scene)
+	fragger:add(lvl_scene)
 end
 
-function startDestruction()
-	if not wall then
+function startDestruction()	
+	if false then -- not wall:isStarted() then
 		Debug.log('start')
 		tmr_spawn_wall:reset()
 		wall:start()

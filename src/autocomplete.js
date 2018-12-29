@@ -6,7 +6,7 @@ let color_vars = {
 }
 let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
 
-module.exports.class_list = ['Net','Group','Draw','BlankE','Asset','Input','Image','Scene','Bezier','Window','math'];
+module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Asset','Input','Image','Scene','Bezier','Window','math'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -25,7 +25,8 @@ module.exports.class_regex = {
 module.exports.instance_regex = {
 	'entity': 	[
 		/\b(\w+)\s*=\s*<class_name>\(\).*/g,
-		/\b(\w+)\s*=\s*<class_name>\.instances\[\d+\].*/g
+		/\b(\w+)\s*=\s*<class_name>\.instances\[\d+\].*/g,
+		/\b(\w+)\s*=\s*<class_name>\.instances:get\(\d+\).*/g
 	],
 	'input': 	/\b(Input\([\'\"]\w+[\'\"]\))/g,
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"].+[\'\"]\)\s+?/g,
@@ -38,7 +39,8 @@ module.exports.instance_regex = {
 		/\b(\w+\.instances).*/g
 	],
 	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\d.,]*\)\s+?/g,
-	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g
+	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g,
+	'canvas': 	/\b(\w+)\s*=\s*Canvas\((?:\d*\,\d*)?\)\s+?/g
 }
 // old group/bezier regex: /\b(?:self.|self:)?(\w+)\s*=\s*Group\(\).*/g
 
@@ -172,6 +174,7 @@ module.exports.completions = {
 			name: "name of state to switch to"
 		}},
 		{fn:"transition"},
+		{prop:"in_transition",info:"read-only"},
 		{fn:"current"},
 		{fn:"enter", callback: true,
 		vars:{
@@ -351,5 +354,12 @@ module.exports.completions = {
 		{prop:"scale_mode", info:"scale, stretch, fit, center"},
 		{fn:"getResolution"},
 		{fn:"setResolution", vars:{ w:'', h:'' }, info:"uses predefined ratio if only 'w' is given"}
+	],
+	"blanke-canvas-instance":[
+		{prop:"width"},
+		{prop:"height"},
+		{fn:"drawTo", vars:{ draw_fn:'' }},
+		{fn:"draw"},
+		{fn:"resize", vars:{ w:'', h:'' }}
 	]
 }

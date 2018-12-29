@@ -16,9 +16,10 @@ Tween = Class{
 		["circular in"] = function(a, b, d, dt) dt=dt/d; return -b*(math.sqrt(1-(dt*dt))-1)+a end
 	},
 
-	init = function(self, var, value, duration, func_type)
+	init = function(self, var, value, duration, func_type, onFinish)
 		self.duration = ifndef(duration, 1)
 		self.type = ifndef(func_type, 'linear')
+		self.onFinish = onFinish
 		self.valid = true
 		self.running = false
 
@@ -102,11 +103,13 @@ Tween = Class{
 	play = function(self)
 		self._go = true
 		self.running = true
+		return self
 	end,
 
 	stop = function(self)
 		self._go = false
 		self.running = false
+		return self
 	end,
 
 	isRunning = function(self)

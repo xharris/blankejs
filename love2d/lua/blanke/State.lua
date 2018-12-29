@@ -25,7 +25,7 @@ end
 
 StateManager = {
 	_stack = {},
-	_in_transition = false,
+	in_transition = false,
 	_stray_objects = {},
 
 	iterateStateStack = function(func, ...)
@@ -248,11 +248,15 @@ StateManager = {
 				local exit_state = transition_obj.exit_state
 				resetTransitionObj()
 				StateManager.pop(exit_state.classname)
-				StateManager._in_transition = false
+
+				exit_state.in_transition = false
+				StateManager.in_transition = false
 			end
 
 			transition_obj.tween:play()
-			StateManager._in_transition = true
+			transition_obj.exit_state.in_transition = true
+			StateManager.in_transition = true
+
 			StateManager.push(transition_obj.enter_state)
 		end
 	end,

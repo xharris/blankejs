@@ -9,6 +9,9 @@
 function bringToFront(sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {         if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.push(sprite);}}
 function sendToBack(sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {          if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.splice(0,0,sprite);    }}
 
+PIXI.loader.add('ProggyScene','includes/proggy_scene.fnt');
+PIXI.loader.load();
+
 class SceneEditor extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -65,16 +68,10 @@ class SceneEditor extends Editor {
 		this.grid_graphics = new PIXI.Graphics();		// position wraps based on layer snap
 		this.origin_graphics = new PIXI.Graphics();
 		this.crosshair_graphics = new PIXI.Graphics();
-		this.coord_text_style = new PIXI.TextStyle({
-			fontSize: 16,
-			fill: 'white',
-			stroke: 'black',
-			strokeThickness: 2,
-			fontFamily: 'ProggySquare',
-			fontWeight: '100'
-		});
-		this.coord_text = new PIXI.Text('x 0 y 0', this.coord_text_style);
-		this.obj_info_text = new PIXI.Text('', this.coord_text_style);
+		this.coord_text_style = {font:{size:16, name:"proggy_scene"}};
+
+		this.coord_text = new PIXI.extras.BitmapText('x 0 y 0', this.coord_text_style);
+		this.obj_info_text = new PIXI.extras.BitmapText('', this.coord_text_style);
 		this.obj_info = {};
 
 		this.overlay_container.addChild(this.coord_text);
@@ -223,6 +220,7 @@ class SceneEditor extends Editor {
 					e.target.classList.add('selected');
 				}
 				if (e.buttons == 2) e.target.classList.remove('selected');
+
 				this_ref.refreshImageSelectionList();
 			}
 		}
@@ -1178,6 +1176,7 @@ class SceneEditor extends Editor {
 		let pixi_poly = this.drawPoly(curr_object, points);
 
 		pixi_poly.interactive = true;
+		pixi_poly.interactiveChildren = false;
 		pixi_poly.on('pointerup', function(e){
 			// add tag
 			let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);

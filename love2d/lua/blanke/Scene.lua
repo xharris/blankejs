@@ -224,6 +224,13 @@ local Scene = Class{
 
 		self.center_x = 0
 		self.center_y = 0
+
+		self.left = nil
+		self.top = nil
+		self.right = nil
+		self.bottom = nil
+		self.width = 0
+		self.height = 0
         
 		if asset_name then
 			local scene = Asset.scene(asset_name)
@@ -241,6 +248,16 @@ local Scene = Class{
 		self.onPropGet["angle"] = function() return 0 end
 
 		_addGameObject('scene', self)
+	end,
+
+	_addAnything = function(self, x, y, w, h)
+		if self.left == nil or x < self.left then self.left = x end
+		if self.top == nil or y < self.top then self.top = y end
+		if self.right == nil or x + w > self.right then self.right = x + w end
+		if self.bottom == nil or y + h > self.bottom then self.bottom = y + h end
+
+		self.width = self.right - self.left
+		self.height = self.bottom - self.top
 	end,
 
 	getLayer = function(self, name)
@@ -361,6 +378,10 @@ local Scene = Class{
 			end
 		end
 
+		self.left = self.left + x
+		self.top = self.top + y
+		self.right = self.left + self.width
+		self.bottom = self.top + self.height
 
 		return self
 	end,
@@ -433,6 +454,9 @@ local Scene = Class{
 	addTile = function(self, layer_name, info)
 		local layer = self:getLayer(layer_name)
 		layer:addTile(info)
+
+		self:_addAnything(info.x, info.y, info.crop.w, info.crop.h)
+
 		return self
 	end,
 
@@ -595,6 +619,12 @@ local Scene = Class{
 
 						layer:addEntity(new_entity)
 						instances:add(new_entity)
+
+						self:_addAnything(
+							new_entity.x + new_entity.sprite_xoffset,
+							new_entity.y + new_entity.sprite_yoffset,
+							new_entity.sprite_width, new_entity.sprite_height
+						)
 					end
 				end
 			end

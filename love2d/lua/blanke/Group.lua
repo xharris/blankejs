@@ -8,7 +8,6 @@ Group = Class{
 
 	__index = function(self, i)
 		if type(i) == "number" then
-			print("getting",i)
 			local children = rawget(self, "children")
 			if i < 0 then i = #children + (i + 1) end
 			return children[i]

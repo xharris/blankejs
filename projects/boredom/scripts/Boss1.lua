@@ -3,29 +3,30 @@ BlankE.addEntity("Boss1")
 local player
 
 function Boss1:init()
+	player = nil
 	self.stage = 0
 	
-	self.initial_speed = 200--70
-	self.incr_speed = 5
+	self.initial_speed = 70
+	self.incr_speed = 50
 	self.max_speed = 80 -- don't fall off until boss is at max speed
 	self.turn_dist = 100 -- distance between player/boss that causes turn around
-	self.move_dir = -1
+	self.min_turns = 0 -- 3
 	
-	self.turning = 0
+	self.move_dir = -1
+	self.turning = false
+	self.turn_count = 0
+	self.flying = false
+	
+	self.twn_turn = nil
+	
 	--[[ 
 	0 - asleep
 	1 - 4: NOT asleep (wow)
 	]]
 	
-	self:addAnimation{
-		name="sleep",
-		image="boss1_sleep"
-	}
-	self:addAnimation{
-		name="idle",
-		image="boss1_idle"
-	}
-	self:addAnimation{name="walk1", image="boss1_walk1", frames={"1-2",1}, frame_size={36,41}, speed=1, offset={0,0}}
+	self:addAnimation{name="sleep", image="boss1_sleep"}
+	self:addAnimation{name="idle", image="boss1_idle"}
+	self:addAnimation{name="walk1", image="boss1_walk1", frames={"1-2",1}, frame_size={36,41}, speed=0.4, offset={0,0}}
 	
 	self.x = self.scene_rect[1]
 	self.y = self.scene_rect[2]
@@ -33,14 +34,11 @@ function Boss1:init()
 	self.sprite_xoffset = -16
 	
 	self:addShape("main","rectangle",{
-			self.sprite_width, self.sprite_height+10,
+			0, self.sprite_height+10,
 			self.sprite_width, self.sprite_height-10
 	})			
 	self:setMainShape("main")
 	self.sprite_index = "sleep"
-	
-	self.main_timer = Timer(2)
-	self.speed_timer = Timer(2)
 	
 	-- stage 0 
 	self.z_canvas = Canvas(30, 30)
@@ -69,94 +67,111 @@ function Boss1:init()
 		color={1,0,0,1},
 		end_color={1,1,1,0}
 	})
-	
-	-- stage timer
-	self.main_timer:after(function()
-		if self.stage == 1 then
-			self.stage = 2	
-			self.speed_timer:start()
-		end
-	end)
-	
-	-- speed timer
-	self.speed_timer:after(function()
-		if not self.turning and math.abs(self.hspeed) < self.max_speed then
-			self.hspeed = self.hspeed + (self.move_dir * self.incr_speed)	
-		end
-	end)
-	
-	self.deccel_twn = Tween(self, {hspeed = 0}, 1)
 end
 
-function Boss1:update(dt)
-	self.run_blur.spawn_x = self.x 
-	self.run_blur.spawn_y = self.y 
-	
-	player = Player.instances:get(1)
+function Boss1:update(dt)	
+	if not player then
+		player = Player.instances[1]
+	end
 	
 	self.onCollision["main"] = function(other, sep)
 		if other.tag == "ground" then
 			self:collisionStopY()
+			-- landing after hitting spikes
+			if self.flying then
+				self.flying = false
+				self:walkTowardsPlayer()
+			end
 		end
-	end
-			
-	-- start turn around
-	if self.stage >= 2 and self.turning == 0 and (self.hspeed < 0 and player.x > self.x + self.turn_dist) or (self.hspeed > 0 and player.x < self.x - self.turn_dist) then
-		self.turning = 1 * math.sign(self.hspeed)
-		self.sprite_xscale = -self.sprite_xscale
-	end
-	
-	if self.turning ~= 0 and not self.deccel_twn.running then
-		-- turning around
-		self.deccel_twn.onFinish = function()
-			-- finish turning around
-			Debug.log("done turning")
-			self.turning = 0
-			self.move_dir = -self.move_dir
-			self.initial_speed = self.initial_speed + 10
-			self.hspeed = self.initial_speed
-		end
-		self.deccel_twn:play()
-	end
 		
-	if self.stage == 0 and player then
-		if self:distance(player) < 45 then
-			self.sprite_index = "idle"
-			self.stage = 1
+		-- barriers that keep boss from falling too early
+		if other.tag == "boss1_stopper" and self.turn_count < self.min_turns then
+			self:collisionStopX()
+			self:turn()
 		end
+		
+		-- hit spikes and fly upwards
+		if other.tag == "player_die" then
+			self:hitSpikes()
+		end
+	end	
+			
+	-- start out sleeping. wake up when player comes near
+	if self:distance(player) < 100 then
+		self:wakeUp()
+	end
 	
-	elseif self.stage == 1 and not self.main_timer.running then
-		self.main_timer:start()
+	-- turn around while chasing player
+	if self.stage > 1 and self:distance(player) > self.turn_dist then
+		self:turn()
 	end
 end
 
 function Boss1:draw()
 	-- self.run_blur:draw()
-	Draw.stack(function()
-		Draw.setColor("red")
-		Draw.rect("line",self.x - self.turn_dist,0,2*self.turn_dist,game_height)
-	end)
-	
-	-- stage 0: draw Z's
-	if self.stage == 0 then
-		self.sleep_z:draw()
-		
-	elseif self.stage == 1 then
-	-- stage 1: waking up
-		self.sleep_z:draw()
-		self.sleep_z:setTexture(self.y_canvas)
-		self.sprite_index = "idle"
-		
-	elseif self.stage == 2 then
-	-- stage 2: walking
-		self.sprite_index = "walk1"
-		self.sprite_speed = 0.4
-		self.hspeed = -self.initial_speed
-		
-	elseif self.stage == 3 then
-	-- stage 3: jogging
-		self.sprite_speed = 0.8
-	end
+	Draw.setColor("red")
+	Draw.rect("line",self.x - self.turn_dist,0,2*self.turn_dist,game_height)
+	Draw.reset("color")
 	
 	self:drawSprite()
+	self:debugCollision()
+end
+
+function Boss1:wakeUp()
+	if self.stage < 1 then
+		self.stage = 1
+		-- stand idly
+		self.sprite_index = "idle"
+		Timer(2):after(function()
+			self.stage = self.stage + 1
+			self:walkTowardsPlayer()	
+		end):start()
+	end
+end
+
+function Boss1:walkTowardsPlayer(direction_override, hspeed_override)
+	self.turning = false
+	-- which direction to go?
+	if direction_override then
+		self.move_dir = direction_override
+	else
+		if player.x < self.x then self.move_dir = -1
+		else self.move_dir = 1 end
+	end
+	-- start moving
+	self.hspeed = ifndef(hspeed_override, self.initial_speed + (self.incr_speed * self.turn_count)) * self.move_dir
+	self.sprite_index = "walk1"--..(self.stage - 1)
+	self.sprite_xscale = -self.move_dir
+end
+
+function Boss1:turn()
+	-- check if boss is facing away from player
+	if not self.turning and not self.flying and ((self.move_dir < 0 and player.x > self.x) or (self.move_dir > 0 and player.x < self.x)) then
+		self.sprite_xscale = self.move_dir
+		self.turning = true
+		self.twn_turn = Tween(self, {hspeed=0}, 0.5, nil, function()
+			self.turn_count = self.turn_count + 1
+			self:walkTowardsPlayer(-self.move_dir)	
+		end):play()
+	end
+end
+
+function Boss1:hitSpikes()
+	if not self.flying then
+		self.flying = true
+		if self.twn_turn then self.twn_turn:stop() end
+		
+		main_camera.shake_duration = 0.5
+		main_camera:shake(0,4)
+		
+		-- increase starting numbers a little
+		self.stage = self.stage + 1
+		self.initial_speed = self.initial_speed + (self.stage * 10)
+		
+		-- uses magic formula for determining how far to fly
+		self:walkTowardsPlayer(nil, math.max(self:distancePoint(player.x, self.y) * (1 + (self.stage / 10)) ), self.initial_speed)
+
+		-- fly in the air
+		self.vspeed = -(1200 + (self.stage * 50))
+	end
 end

@@ -146,20 +146,10 @@
                 "char": "E",
                 "color": "#ff8080",
                 "size": [
-                    16,
-                    32
-                ],
-                "uuid": "882bbb6a"
-            },
-            "adccfbb8": {
-                "name": "object0",
-                "char": "#",
-                "color": "#000000",
-                "size": [
                     32,
                     32
                 ],
-                "uuid": "adccfbb8"
+                "uuid": "882bbb6a"
             }
         }
     },
@@ -170,7 +160,7 @@
                 0,
                 0
             ],
-            "speed": 1,
+            "speed": 0.4,
             "frame size": [
                 36,
                 41

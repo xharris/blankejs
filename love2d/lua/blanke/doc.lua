@@ -751,7 +751,7 @@ size()						-- number of children
 Tween
 ]]
 
-Tween(var, value, duration, fn_type)
+Tween(var, value, [duration, fn_type, onFinish])
 -- var: the object that requires changing or initial value
 -- value: target object properties or value
 -- duration: seconds

@@ -1644,6 +1644,9 @@ body:after {
   height: 1px;
   z-index: 1000;
 }
+*:not(.no-custom-scroll)::-webkit-scrollbar-thumb {
+  background: rgba(127, 140, 161, 0.7) !important;
+}
 .blanke-icon {
   width: 16px;
   margin: auto;
@@ -2124,7 +2127,7 @@ body:after {
   right: 0px;
   margin: 3px;
   overflow: auto;
-  outline: 1px solid rgba(255, 255, 255, 0.1);
+  /* outline: 1px solid rgba(255,255,255,0.1); */
   /* opacity: 0.25; */
 }
 .fib-container.focused > .content,

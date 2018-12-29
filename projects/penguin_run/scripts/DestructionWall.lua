@@ -9,6 +9,10 @@ function DestructionWall:start()
 	self.hspeed = 150
 end
 
+function DestructionWall:isStarted()
+	return self.hspeed ~= 0
+end
+
 function DestructionWall:update(dt)
 
 end

@@ -163,7 +163,7 @@ Net = {
 
             -- send to all clients
             if data.event == 'broadcast' then
-                print('ALL:',data.info)
+                -- print('ALL:',data.info)
             end
         end
 
