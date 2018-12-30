@@ -68,6 +68,8 @@ function Boss1:init()
 		color={1,0,0,1},
 		end_color={1,1,1,0}
 	})
+	
+	self.eff_static = Effect("static")
 end
 
 function Boss1:update(dt)	
@@ -116,12 +118,15 @@ end
 
 function Boss1:draw()
 	-- self.run_blur:draw()
+				
 	Draw.setColor("red")
 	Draw.rect("line",self.x - self.turn_dist,0,2*self.turn_dist,game_height)
 	Draw.reset("color")
 	
-	self:drawSprite()
-	self:debugCollision()
+	self.eff_static.amount = {(mouse_x / game_width) * 10,0}
+	self.eff_static:draw(function()
+		self:drawSprite()
+	end)
 end
 
 function Boss1:wakeUp()

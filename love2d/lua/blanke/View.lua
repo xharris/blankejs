@@ -112,14 +112,21 @@ View = Class{
 		self.bottom = self.top + h
 	end,
 
+	_transform = love.math.newTransform(),
 	on = function(self)
 		local w,h = self:getSize()
 		self._half_w, self._half_h = math.floor(w/2), math.floor(h/2)
-		Draw.push('all')
-		Draw.translate(self._half_w, self._half_h)
-		Draw.scale(self.scale_x, self.scale_y)
-		Draw.rotate(self.angle)
-		Draw.translate(-self.x, -self.y)
+		Draw.push()
+
+		View._transform:reset()
+		View._transform:translate(self._half_w, self._half_h)
+		View._transform:scale(self.scale_x, self.scale_y)
+		View._transform:rotate(self.angle)
+		View._transform:translate(-self.x, -self.y)
+
+		if Canvas._applied == 1 then
+            love.graphics.replaceTransform(View._transform)
+		end
 	end,
 
 	off = function(self)

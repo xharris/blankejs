@@ -5,8 +5,7 @@ local lvl, penguin, main_view
 function PlatformState:enter()
 	lvl = Scene("level1")
 	
-	Penguin()
-	penguin = Penguin.instances[1]
+	penguin = Penguin()
 	main_view = View(penguin)
 	
 	lvl:translate(game_width / 2, game_height / 2)
@@ -20,7 +19,8 @@ function PlatformState:update(dt)
 end
 
 function PlatformState:draw()
-	main_view:draw(function()
+	main_view:draw(function()	
 		lvl:draw()
+		penguin:draw()
 	end)
 end

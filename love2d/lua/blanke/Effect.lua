@@ -3,6 +3,7 @@ completely working effects:
  - chroma shift : angle(rad), radius
  - crt : lineSize(vec2) opacity, scanlines(bool), distortion, inputGamma, outputGamma
  - outline : size
+ - static : amount(vec2)
 ]]
 Effect = Class{
     _mouse_offx = 0,
@@ -49,20 +50,17 @@ Effect = Class{
         self.canvas:resize(game_width, game_height)
     end,
 
-    applyShader = function(self, func, shader, canvas)
-        shader = ifndef(shader, self._shader)
-        canvas = ifndef(canvas, self.canvas)
-
+    applyShader = function(self, func)
         local curr_shader = love.graphics.getShader()
         local curr_blend = love.graphics.getBlendMode()
 
-        canvas:drawTo(function()    
+        self.canvas:drawTo(function()
             func()
-        end)
-
-        love.graphics.setShader(shader)
-        love.graphics.setBlendMode('alpha', 'premultiplied')    
-        canvas:draw()
+	    end)
+  	
+	    love.graphics.setBlendMode('alpha', 'premultiplied') 
+	    love.graphics.setShader(self._shader)
+        self.canvas:draw()
         love.graphics.setBlendMode(curr_blend)
         love.graphics.setShader(curr_shader)
     end,
@@ -82,6 +80,7 @@ Effect = Class{
             end
             self.appliedParams[key] = false
         end
+        self:send("time", self.time)
     end, 
 
     send = function(self, key, value) 
@@ -117,7 +116,7 @@ Effect = Class{
             if extra_draw then
                 extra_draw(self, fn)
             else
-                self:applyShader(fn, self._shader, self.canvas)
+                self:applyShader(fn)
             end
 
         end
@@ -142,6 +141,7 @@ EffectManager = Class{
         new_eff.params = ifndef(table.deepcopy(options.params), {})
         new_eff.extra_draw = options.draw
         new_eff.warp_effect = ifndef(options.warp_effect, false)
+        new_eff.use_canvas = ifndef(options.use_canvas, true)
 
         -- texSjze is mandatory
         if not (new_eff.params["textureSize"] or new_eff.params["texSize"]) then
@@ -169,6 +169,8 @@ EffectManager = Class{
         end
 
         if new_eff.string == '' then
+        	param_string = 'time;'
+        	new_eff.string = 'uniform float time;'
             -- turn param list into code
             for key, val in pairs(new_eff.params) do
                 param_string = param_string .. key .. ';'
@@ -183,14 +185,14 @@ EffectManager = Class{
             new_eff.string = new_eff.string.. 
 [[
 /* From glfx.js : https://github.com/evanw/glfx.js */
-float random(vec3 scale, vec2 gl_FragCoord, float seed) {
+float random(vec2 scale, vec2 pixelcoord, float seed) {
     /* use the fragment position for a different seed per-pixel */
-    return fract(sin(dot(vec3(gl_FragCoord.xy, 0.0) + seed, scale)) * 43758.5453 + seed);
+    return fract(sin(dot(pixelcoord + seed, scale)) * 43758.5453 + seed);
 }
 
-float random(vec2 scale, vec2 gl_FragCoord, float seed) {
-    return random(vec3(scale.xy, 0), gl_FragCoord, seed);
-}
+float getX(float amt) { return amt / love_ScreenSize.x; }
+
+float getY(float amt) { return amt / love_ScreenSize.y; }
 
 #ifdef VERTEX
     vec4 position(mat4 transform_projection, vec4 vertex_position) {
@@ -305,9 +307,11 @@ EffectManager.new{
     name = 'chroma shift',
     params = {['angle']=0,['radius']=50,['direction']={0,0}},--['strength'] = {1, 1}, ['size'] = {20, 20}},
     effect = [[
-            pixel.r = Texel(texture, texCoord - direction).r; 
-            pixel.b = Texel(texture, texCoord + direction).b; 
-            pixel.a = Texel(texture, texCoord).a; 
+            if ((pixel.r != pixel.b && pixel.b != pixel.g) && pixel.r != 1.0) {
+                pixel.r = Texel(texture, texCoord - direction).r; 
+                pixel.b = Texel(texture, texCoord + direction).b; 
+                pixel.a = Texel(texture, texCoord).a; 
+            }
     ]],
     draw = function(self, draw)
         local angle, radius = self.angle, self.radius
@@ -404,7 +408,7 @@ EffectManager.new{
     float total = 0.0;
     
     /* randomize the lookup values to hide the fixed number of samples */
-    float offset = random(vec3(12.9898, 78.233, 151.7182), gl_FragCoord, 0.0);
+    float offset = random(vec3(12.9898, 78.233, 151.7182), screen_coords, 0.0);
     
     vec2 normal = normalize(vec2(start.y - end.y, end.x - start.x));
     float radius = smoothstep(0.0, 1.0, abs(dot(texCoord * texSize - start, normal)) / distance) * strength;
@@ -469,6 +473,17 @@ Effect.new{
                 pixel = vec4(1,0,0,1);
         }
     ]]
+}
+
+EffectManager.new{
+	name="static",
+	params={amount={5,5}},
+	effect=[[
+		pixel = Texel(texture, vec2(
+			texCoord.x + getX(random(vec2(0, 2.0), screen_coords, time) - 1.0) * amount.x,
+			texCoord.y + getY(random(vec2(0, 2.0), screen_coords, time) - 1.0) * amount.y
+		));
+	]]
 }
 
 return Effect

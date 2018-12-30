@@ -37,7 +37,7 @@ function MainState:enter()
 	end
 end
 
-local eff = Effect("crt")
+local eff = Effect("chroma shift")
 function MainState:draw()
 	rptr.spawn_x = mouse_x
 	rptr.spawn_y = mouse_y

@@ -32,7 +32,7 @@ module.exports.instance_regex = {
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"].+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
 	'audio': 	/\b(\w+)\s*=\s*Audio\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
-	'view': 	/\b(\w+)\s*=\s*View\([\w\.\s]+\)\s+?/g,
+	'view': 	/\b(\w+)\s*=\s*View\([\w\.\s]*\)\s+?/g,
 	'repeater':	/\b(\w+)\s*=\s*Repeater\([\w\.\s\,\{\}\=]*\)?\s?/g,
 	'group': 	[
 		/\b(?:self\.)?(\w+)\s*=\s*Group\(\)\s+?/g,

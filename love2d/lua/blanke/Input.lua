@@ -195,7 +195,7 @@ Input = {
                         obj.in_key[input] = obj.in_key[input] - 1
 
                         -- only press if all keys are down
-                        if obj.in_key[input] == 0 then
+                        if obj.in_key[input] == input:count("-") then
                             obj:release()
                         end
                     end

@@ -14,12 +14,6 @@ end
 resetTransitionObj()
 
 local drawStateNormal = function(state)
-	local bg_color = ifndef(state.background_color, Draw.background_color)
-	if bg_color then
-		Draw.setColor(bg_color)
-		Draw.rect('fill', 0,0,game_width,game_height)
-		Draw.reset("color")
-	end
 	if state.draw then Draw.stack(function() state:draw() end) end
 end
 

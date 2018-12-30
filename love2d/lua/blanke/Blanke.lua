@@ -139,7 +139,7 @@ BlankE = {
 	_snap_mouse_y = 0,
 	_mouse_x = 0,
 	_mouse_y = 0,
-	game_canvas = Canvas(800, 600),
+	game_canvas = Canvas(800,600),
 	draw_debug = false,
 
 	-- window scaling
@@ -513,13 +513,13 @@ BlankE = {
 	end,
 
 	drawToScale = function(func)
-		Draw.push()
-		Draw.scale(BlankE.scale_x, BlankE.scale_y)
-		Draw.translate(BlankE._offset_x, BlankE._offset_y)	
+		Draw.stack(function()
+	    	Draw.translate(math.floor(BlankE._offset_x * BlankE.scale_x), math.floor(BlankE._offset_y * BlankE.scale_y))
+	    	Draw.scale(BlankE.scale_x, BlankE.scale_y)
 
-		func()
+			func()
 
-		love.graphics.pop()
+		end)
 	end,
 
 	reapplyScaling = function()
@@ -532,6 +532,10 @@ BlankE = {
 		Draw.stack(function()
 			--love.graphics.scale(BlankE.scale_x, BlankE.scale_y)
 			BlankE.drawOutsideWindow()
+			Draw.setColor(Draw.background_color)
+			BlankE.drawToScale(function()
+				Draw.rect('fill',0,0,game_width,game_height)
+			end)
 		end)
 
 		--Debug.log(BlankE.scale_x, BlankE.scale_y)
@@ -544,7 +548,9 @@ BlankE = {
 		Input.update()
 
     	love.graphics.setBlendMode('alpha', 'premultiplied')
-		BlankE.game_canvas:draw(math.floor(BlankE._offset_x * BlankE.scale_x), math.floor(BlankE._offset_y * BlankE.scale_y), 0, BlankE.scale_x, BlankE.scale_x)
+		BlankE.drawToScale(function()
+			BlankE.game_canvas:draw(true)
+		end)
 		love.graphics.setBlendMode('alpha')
 
 		if BlankE.draw_debug then Debug.draw() end

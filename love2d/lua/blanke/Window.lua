@@ -16,7 +16,11 @@ Window = {
 		if not h then
 			w, h = Window.getResolution(w)
 		end
-		if resize_canvas then BlankE.game_canvas:resize(w,h) end
+		if resize_canvas then
+			_iterateGameGroup('Canvas', function(obj)
+				canvas:resize(w,h)
+			end)
+		end
 		love.window.updateMode(w,h)
 		updateGlobals(0)
 	end,

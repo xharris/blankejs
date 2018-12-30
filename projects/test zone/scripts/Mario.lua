@@ -7,4 +7,9 @@ end
 
 function Mario:update(dt)
 
+	local s = 2
+	if Input("move_l").pressed then self.x = self.x - s end
+	if Input("move_r").pressed then self.x = self.x + s end
+	if Input("move_u").pressed then self.y = self.y - s end
+	if Input("move_d").pressed then self.y = self.y + s end
 end

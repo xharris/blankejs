@@ -132,13 +132,15 @@ Draw = Class{
 			Draw.setLineWidth(1)
 		end 
 		if only == "transform" or not only then
-			love.graphics.origin()
+			Draw.origin()
 		end
 		if (only == "crop" or not only) and Draw.crop_used then
     		Draw.crop_used = false
     		love.graphics.setStencilTest()
 		end
 	end,
+
+	origin = love.graphics.origin,
     
     callDrawFunc = function(shape, args)
 		--Draw.stack(function()

@@ -21,7 +21,7 @@ function Player:init()
 	self.gravity = 20
 	
 	self.move_speed = 280
-	self.max_jumps = 1
+	self.max_jumps = 1000--1
 	self.dead = false
 	self.jumps = self.max_jumps
 	

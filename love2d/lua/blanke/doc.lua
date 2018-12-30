@@ -514,6 +514,7 @@ EffectManager.new{name, params, effect, vertex, shader, warp_effect}
 		table (vec2, vec3, vec4)
 		number
 		boolean (converted to 1/0)
+	use_canvas: canvases seem best used when the shader affects everything on screen (as opposed to just one entity)
 	effect: string containing pixel shader code
 	vertex: string containing vertex shader code
 	shader: completely custom shader code (not wrapped in built-in code)

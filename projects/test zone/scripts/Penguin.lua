@@ -1,5 +1,6 @@
 BlankE.addEntity("Penguin");
 
+local my_eff
 function Penguin:init()
 	self:addAnimation{name="stand", image="Basic Bird", frames={1,1,1,1}, frame_size={23,22}, speed=1, offset={0,0}}
 
@@ -8,6 +9,8 @@ function Penguin:init()
 	
 	self:addPlatforming(0,0,self.sprite_width,self.sprite_height)
 	self.gravity = 20
+	
+	my_eff = Effect("static")
 end
 
 function Penguin:update(dt)
@@ -24,4 +27,10 @@ function Penguin:update(dt)
 	if Input("move_u").pressed then
 		self.vspeed = -500
 	end 
+end
+
+function Penguin:draw()
+	my_eff:draw(function()
+		self:drawSprite()
+	end)
 end

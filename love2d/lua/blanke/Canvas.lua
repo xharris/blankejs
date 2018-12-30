@@ -27,18 +27,35 @@ Canvas = Class{
         self.height = self.canvas:getHeight()
     end,
 
+    _applied = 0,
     drawTo = function(self, func)
         self._prev_canvas = love.graphics.getCanvas()
-        love.graphics.setCanvas{self.canvas, stencil=true}
-        if self.auto_clear then
-            love.graphics.clear(self.clear_color)
-        end
-        func()
+
+        Draw.stack(function()
+            love.graphics.setCanvas{self.canvas, stencil=true}
+            if self.auto_clear then
+                love.graphics.clear()
+            end
+            love.graphics.origin()
+            Canvas._applied = Canvas._applied + 1
+            if View._transform and Canvas._applied > 1 then
+                love.graphics.replaceTransform(View._transform)
+            end
+            func()
+        end)
         love.graphics.setCanvas(self._prev_canvas)
+        Canvas._applied = Canvas._applied - 1
     end,
     
-    draw = function(self, ...)
-        love.graphics.draw(self.canvas, ...)
+    draw = function(self, is_main_canvas)
+        if not is_main_canvas then
+            Draw.push()
+            love.graphics.origin()
+        end
+        love.graphics.draw(self.canvas)
+        if not is_main_canvas then
+            Draw.pop()
+        end
     end,
 }
 
