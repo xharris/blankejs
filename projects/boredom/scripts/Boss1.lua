@@ -16,6 +16,7 @@ function Boss1:init()
 	self.turning = false
 	self.turn_count = 0
 	self.flying = false
+	self.no_turning = false
 	
 	self.twn_turn = nil
 	
@@ -80,7 +81,8 @@ function Boss1:update(dt)
 			-- landing after hitting spikes
 			if self.flying then
 				self.flying = false
-				self:walkTowardsPlayer()
+				self.no_turning = false
+				self:walkTowardsPlayer(self.move_dir)
 			end
 		end
 		
@@ -88,6 +90,11 @@ function Boss1:update(dt)
 		if other.tag == "boss1_stopper" and self.turn_count < self.min_turns then
 			self:collisionStopX()
 			self:turn()
+		end
+		
+		-- prevent boss from turning while falling onto spikes
+		if other.tag == "boss1_stopper" and self.turn_count >= self.min_turns then
+			self.no_turning = true
 		end
 		
 		-- hit spikes and fly upwards
@@ -145,11 +152,12 @@ function Boss1:walkTowardsPlayer(direction_override, hspeed_override)
 end
 
 function Boss1:turn()
+	Debug.log(self.no_turning,self.turning,self.flying)
 	-- check if boss is facing away from player
-	if not self.turning and not self.flying and ((self.move_dir < 0 and player.x > self.x) or (self.move_dir > 0 and player.x < self.x)) then
+	if not self.no_turning and not self.turning and not self.flying and ((self.move_dir < 0 and player.x > self.x) or (self.move_dir > 0 and player.x < self.x)) then
 		self.sprite_xscale = self.move_dir
 		self.turning = true
-		self.twn_turn = Tween(self, {hspeed=0}, 0.5, nil, function()
+		self.twn_turn = Tween(self, {hspeed=0}, (self.stage / 10), nil, function()
 			self.turn_count = self.turn_count + 1
 			self:walkTowardsPlayer(-self.move_dir)	
 		end):play()
@@ -159,6 +167,9 @@ end
 function Boss1:hitSpikes()
 	if not self.flying then
 		self.flying = true
+		self.no_turning = false
+		self.turn_count = 0
+		
 		if self.twn_turn then self.twn_turn:stop() end
 		
 		main_camera.shake_duration = 0.5
@@ -172,6 +183,6 @@ function Boss1:hitSpikes()
 		self:walkTowardsPlayer(nil, math.max(self:distancePoint(player.x, self.y) * (1 + (self.stage / 10)) ), self.initial_speed)
 
 		-- fly in the air
-		self.vspeed = -(1200 + (self.stage * 50))
+		self.vspeed = -(1200 + (self.stage * 20))
 	end
 end

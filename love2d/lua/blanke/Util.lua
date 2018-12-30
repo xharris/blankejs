@@ -195,6 +195,9 @@ end
 function string:at(num)
 	return self:sub(num,num)
 end
+function string:count(str)
+	return select(2, string.gsub(self, str, ""))
+end
 
 --[[
 

@@ -204,6 +204,8 @@ BlankE = {
 		Asset.add('scenes', nil, true)
 		Asset.loadScripts()
 
+		Input.set("fullscreen-toggle","lalt-return")
+
 	    -- figure out the first state to run
 	    if BlankE.first_state and not first_state then
 	    	first_state = BlankE.first_state
@@ -491,6 +493,11 @@ BlankE = {
 	    updateGlobals(dt)
 	    UI.update()
 	    BlankE._mouse_updated = false
+
+	    -- default fullscreen toggle shortcut
+	    if Input("fullscreen-toggle").released then
+	    	Window.toggleFullscreen()
+	    end
 	    
 	    if not BlankE._is_init then return end
 	    Net.update(dt)

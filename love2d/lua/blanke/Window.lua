@@ -19,7 +19,13 @@ Window = {
 		if resize_canvas then BlankE.game_canvas:resize(w,h) end
 		love.window.updateMode(w,h)
 		updateGlobals(0)
-	end
+	end,
+
+	getFullscreen = love.window.getFullscreen,
+	setFullscreen = love.window.setFullscreen,
+	toggleFullscreen = function()
+		Window.setFullscreen(not Window.getFullscreen())
+	end,
 }
 
 --[[ -- auto detect aspect ratio

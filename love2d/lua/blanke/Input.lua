@@ -1,6 +1,8 @@
 _Input = Class{
 	init = function(self, ...)
         self.in_key = {}
+        self.multi_key = {}
+        self.is_multi_key = {}
         self.in_mouse = {}
         self.in_region = {}
 
@@ -33,8 +35,19 @@ _Input = Class{
             self:addRegion(...)
 
         else -- regular keyboard input
+            local multi_key = input:split("-")
+            if #multi_key > 1 then
+                -- key is only ON when all keys in this list are pressed
+                for i,key in ipairs(multi_key) do
+                    -- add a reference (key -> input_str)
+                    if not self.multi_key[key] then
+                        self.multi_key[key] = {}
+                    end
+                    self.multi_key[key][input] = true
+                end
+                self.is_multi_key[input] = true
+            end
             self.in_key[input] = 0 --cond(love.keyboard.isDown(ifndef(btn, input)), 1, 0)
-            
         end
         return self
 	end,
@@ -46,6 +59,7 @@ _Input = Class{
         
         else -- regular keyboard input
             self.in_key[input] = nil
+            self.is_multi_key[input] = false
             
         end
         return self
@@ -150,9 +164,23 @@ Input = {
     keypressed = function(key)
         Input.last_key = key
         for o, obj in pairs(Input.keys) do
-            if obj.in_key[key] ~= nil then
-                obj:press()
-                obj.in_key[key] = obj.in_key[key] + 1
+            if obj.in_key[key] ~= nil or obj.multi_key[key] then
+
+                if obj.multi_key[key] then
+                    for input,_ in pairs(obj.multi_key[key]) do
+                        obj.in_key[input] = obj.in_key[input] + 1
+
+                        -- only press if all keys are down
+                        if obj.in_key[input] == input:count("-")+1 then
+                            obj:press()
+                        end
+                    end
+                else
+                    -- single key press
+                    obj.in_key[key] = obj.in_key[key] + 1
+                    obj:press()
+                end
+
             end
         end
         return Input
@@ -160,9 +188,22 @@ Input = {
     
     keyreleased = function(key)
         for o, obj in pairs(Input.keys) do
-            if obj.in_key[key] ~= nil then
-                obj:release()
-                obj.in_key[key] = 0; obj.pressed = false
+            if obj.in_key[key] ~= nil or obj.multi_key[key] then
+
+                if obj.multi_key[key] then
+                    for input,_ in pairs(obj.multi_key[key]) do
+                        obj.in_key[input] = obj.in_key[input] - 1
+
+                        -- only press if all keys are down
+                        if obj.in_key[input] == 0 then
+                            obj:release()
+                        end
+                    end
+                else
+                    -- single key release
+                    obj.in_key[key] = 0;
+                    obj:release()
+                end
             end
         end
         return Input
@@ -170,11 +211,11 @@ Input = {
 
     update = function()
         for o, obj in pairs(Input.keys) do
-            for input_name, val in pairs(obj.in_mouse) do
-                if obj.in_mouse[input_name] > 0 then obj.in_mouse[input_name] = obj.in_mouse[input_name] + 1 end  
+            for input, val in pairs(obj.in_mouse) do
+                if obj.in_mouse[input] > 0 then obj.in_mouse[input] = obj.in_mouse[input] + 1 end  
             end
-            for input_name, val in pairs(obj.in_key) do
-                if obj.in_key[input_name] > 0 then obj.in_key[input_name] = obj.in_key[input_name] + 1 end
+            for input, val in pairs(obj.in_key) do
+                if not obj.is_multi_key[input] and obj.in_key[input] > 0 then obj.in_key[input] = obj.in_key[input] + 1 end
             end
         end
     end,

@@ -10,7 +10,7 @@ function love.load()
 	Input.set('action', 'space')
 	Input.set('jump', 'up','w')
 	Input.set('restart', 'r')
-	
+		
 	BlankE.loadPlugin("Platformer")
 	
 	BlankE.init("PlayState")

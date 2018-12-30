@@ -353,7 +353,10 @@ module.exports.completions = {
 		{prop:"aspect_ratio", info:"table. default: {4,3}"},
 		{prop:"scale_mode", info:"scale, stretch, fit, center"},
 		{fn:"getResolution"},
-		{fn:"setResolution", vars:{ w:'', h:'' }, info:"uses predefined ratio if only 'w' is given"}
+		{fn:"setResolution", vars:{ w:'', h:'' }, info:"uses predefined ratio if only 'w' is given"},
+		{fn:"setFullscreen", vars:{ value:'true = on, false = off' }},
+		{fn:"getFullscreen", info:"returns true if game is in fullscreen"},
+		{fn:"toggleFullscreen"}
 	],
 	"blanke-canvas-instance":[
 		{prop:"width"},
