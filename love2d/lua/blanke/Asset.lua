@@ -8,7 +8,7 @@ Asset = Class{
 		if Asset.info['script'] then
 			for a, asset in pairs(Asset.info['script']) do
 				if asset.category == 'script' then
-					result, chunk = pcall(asset.object)
+					result, chunk = xpcall(asset.object, debug.traceback)
 					if not result then
 						--print(chunk)
 						error(chunk)

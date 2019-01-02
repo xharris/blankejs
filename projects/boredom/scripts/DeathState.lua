@@ -1,7 +1,7 @@
 BlankE.addState("DeathState")
 
 function DeathState:enter()
-	self.background_color = "black"
+	Draw.setBackgroundColor("black")
 end
 
 function DeathState:draw()

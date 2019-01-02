@@ -1,4 +1,8 @@
 var re_duplicate = /(.*)(\(\d+\)?)/;
+var re_error = /Error:\s([\w\\\/\.]+)?:(\d+):\s(.+)\s*stack traceback:\s+(.*)/g;
+var re_load_error = /:\s(.*):(\d+):\s(.*)/g
+var re_shader_error = /.*pixel shader code:\s*([\s\S]*)stack/g
+var re_shader_message = /(?:Line\s(\d+):\sERROR:\s*(.*)\s*(?=Line|ERROR))/g
 
 class Console extends Editor {
 	constructor (...args) {
@@ -54,19 +58,52 @@ class Console extends Editor {
 	}
 
 	err (str) {
-		this.had_error = true;
-		var re_error = /(\w+\.\w+:\d+):\s*(.+)/g;
+		if (!this.had_error) {
+			this.had_error = true;
 
-		var error_parts = re_error.exec(str);
-		if (error_parts) {
-			str = "("+error_parts[1]+") "+error_parts[2]
+			let error_parts
+
+			// pixel shader error
+			if (str.includes("pixel shader code")) {
+				let match,
+				message = '',
+				header = 'Shader error<br>';
+
+				while (match = re_shader_message.exec(str)) {
+					if (!match[2].includes('terminated'))
+						message += "Line "+(match[1]-22)+": "+match[2]+"<br>";
+				}
+
+				str = header+message;
+			}
+
+			// regular error
+			else if (error_parts = re_error.exec(str)) {
+				let filename = nwPATH.basename(error_parts[1])
+				let line = error_parts[2]
+				let message = error_parts[3]
+				let traceback = error_parts[4]
+
+				if (filename.includes('Blanke.lua')) {
+					// error after game is loaded
+					let message_parts = re_load_error.exec(message)
+
+					if (message_parts) {
+						filename = message_parts[1]
+						line = message_parts[2]
+						message = message_parts[3]
+					}
+				}
+				// error during runtime
+				str = filename+" ("+line+"): "+message	
+			}
+
+			var el_line = app.createElement("p", "error");
+			el_line.innerHTML = str;
+			this.el_log.appendChild(el_line);
+			this.el_log.appendChild(app.createElement("br"));
+
+			this.el_log.scrollTop = this.el_log.scrollHeight
 		}
-
-		var el_line = app.createElement("p", "error");
-		el_line.innerHTML = str;
-		this.el_log.appendChild(el_line);
-		this.el_log.appendChild(app.createElement("br"));
-
-		this.el_log.scrollTop = this.el_log.scrollHeight
 	}
 }

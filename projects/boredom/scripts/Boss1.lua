@@ -124,6 +124,7 @@ function Boss1:draw()
 	Draw.reset("color")
 	
 	self.eff_static.amount = {(mouse_x / game_width) * 10,0}
+	
 	self.eff_static:draw(function()
 		self:drawSprite()
 	end)

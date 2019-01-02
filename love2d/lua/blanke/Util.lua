@@ -210,7 +210,7 @@ function table.find(t, value)
 			return v
 		end
 	end
-	return 0
+	return nil
 end	
 
 function table.hasValue(t, value)

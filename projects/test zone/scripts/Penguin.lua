@@ -10,10 +10,14 @@ function Penguin:init()
 	self:addPlatforming(0,0,self.sprite_width,self.sprite_height)
 	self.gravity = 20
 	
-	my_eff = Effect("static")
+	my_eff = Effect("bloom")
 end
 
 function Penguin:update(dt)
+	if game_time > 1 then
+		me > 23
+	end
+	
 	self.hspeed = 0
 	self:platformerCollide{tag="ground"}
 	  
@@ -30,6 +34,7 @@ function Penguin:update(dt)
 end
 
 function Penguin:draw()
+	
 	my_eff:draw(function()
 		self:drawSprite()
 	end)

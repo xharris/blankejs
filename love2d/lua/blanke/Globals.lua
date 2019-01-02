@@ -63,6 +63,9 @@ function updateGlobals(dt)
 	if Window.scale_mode == 'center' then
 		BlankE.scale_x = 1
 		BlankE.scale_y = 1
+		
+		BlankE._offset_x = math.abs( (window_width - game_width) / 2  )
+		BlankE._offset_y = math.abs( (window_height - game_height)/ 2  )
 	end
 
 	mouse_x, mouse_y = BlankE.scaledMouse(love.mouse.getX() + ifndef(Effect._mouse_offx, 0), love.mouse.getY() + ifndef(Effect._mouse_offy, 0))

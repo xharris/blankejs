@@ -100,8 +100,8 @@ anim8 	= blanke_require('extra.anim8')
 HC 		= blanke_require('extra.HC')
 SpatialHash = blanke_require('extra.HC.spatialhash')
 blanke_require('extra.noobhub')
-lurker	= blanke_require("extra.lurker")
-lurker.quiet = true
+--lurker	= blanke_require("extra.lurker")
+--lurker.quiet = true
 
 --grease 	= blanke_require('extra.grease')
 
@@ -162,9 +162,10 @@ BlankE = {
 	_class_type = {},
 	init = function(first_state, in_options)
 		options = {
-			window_size = 3,
+			resolution = Window.resolution,
 			plugins={},
-			filter="linear"
+			filter="linear",
+			scale_mode=Window.scale_mode
 		}
 		table.update(options, in_options)
 
@@ -198,7 +199,8 @@ BlankE = {
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 
-		Window.setResolution(options.window_size, nil, true)
+	    Window.scale_mode = options.scale_mode
+		Window.setResolution(options.resolution, nil, true)
 		Asset.add('assets', nil, true)
 		Asset.add('scripts', nil, true)
 		Asset.add('scenes', nil, true)
@@ -245,7 +247,7 @@ BlankE = {
 	try = function(func, ...) -- doesnt rly work
 		if func then
 			local result, chunk
-			result, chunk = pcall(func, ...)
+			result, chunk = xpcall(func, debug.traceback, ...)
 			if not result then error(chunk) end
 			return result, chunk
 		end

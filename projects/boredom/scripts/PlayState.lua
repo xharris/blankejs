@@ -3,7 +3,7 @@ BlankE.addState("PlayState");
 --local player
 main_camera = nil
 local player = nil
-
+local my_eff
 function PlayState:enter(prev)
 	Draw.setBackgroundColor('white')
 	
@@ -24,6 +24,8 @@ function PlayState:enter(prev)
 	--sc_level1:chain(sc_boss1, "lvl_end", "lvl_start")
 	player = sc_boss1:addEntity("player", Player, "bottom-center"):get(1)
 	main_camera = View(player)
+  
+  my_eff = Effect("bloom")
 end
 
 function PlayState:update(dt)
@@ -37,8 +39,10 @@ function PlayState:draw()
 		main_camera:shake(0,10)	
 	end
 	
-	main_camera:draw(function()
-		Scene.instances:call('draw')
-		player:draw()
-	end)
+  my_eff:draw(function()
+    main_camera:draw(function()
+      Scene.instances:call('draw')
+      player:draw()
+    end)
+  end)
 end

@@ -84,13 +84,15 @@ Effect = Class{
     end, 
 
     send = function(self, key, value) 
-        if type(value) == 'boolean' then
-            if value ~= 0 then value = 1 end
-        end
+        if self.params[key] ~= nil then
+            if type(value) == 'boolean' then
+                if value ~= 0 then value = 1 end
+            end
 
-        self.params[key] = value
-        self.appliedParams[key] = true
-        self._shader:send(key, value)
+            self.params[key] = value
+            self.appliedParams[key] = true
+            self._shader:send(key, value)
+        end
 
         return self
     end,
@@ -137,15 +139,28 @@ EffectManager = Class{
 
     new = function(options)
         local new_eff = {}
-        new_eff.string = ifndef(options.shader,'')
+
+        options.shader = ifndef(options.shader,'')
+        options.effect = ifndef(options.effect,'')
+        options.vertex = ifndef(options.vertex,'')
+
+        new_eff.string = options.shader
         new_eff.params = ifndef(table.deepcopy(options.params), {})
         new_eff.extra_draw = options.draw
         new_eff.warp_effect = ifndef(options.warp_effect, false)
         new_eff.use_canvas = ifndef(options.use_canvas, true)
+        new_eff.integers = ifndef(options.integers, {})
+
+        if new_eff.string ~= '' then
+            new_eff.params = {}
+        end
 
         -- texSjze is mandatory
         if not (new_eff.params["textureSize"] or new_eff.params["texSize"]) then
             new_eff.params["texSize"] = {game_width, game_height}
+        end
+        if not (new_eff.params["time"]) then
+            new_eff.params["time"] = 0
         end
 
         local param_string = '' -- avoids error that appears if a variable is not used
@@ -168,23 +183,36 @@ EffectManager = Class{
 ]]
         end
 
-        if new_eff.string == '' then
-        	param_string = 'time;'
-        	new_eff.string = 'uniform float time;'
-            -- turn param list into code
-            for key, val in pairs(new_eff.params) do
+        param_init = ''
+    	param_string = ''
+    	param_init = ''
+        -- turn param list into code
+        for key, val in pairs(new_eff.params) do
+            -- dont add parameter initialization if it's not used in the code
+            if options.shader:contains(key) or options.effect:contains(key) or options.vertex:contains(key) then
                 param_string = param_string .. key .. ';'
                 
                 if type(val) == 'table' then
-                    new_eff.string = new_eff.string .. "uniform vec"..tostring(#val).." "..key..";\n"
+                    param_init = param_init .. "uniform vec"..tostring(#val).." "..key..";\n"
                 end
                 if type(val) == 'number' then
-                    new_eff.string = new_eff.string .. "uniform float "..key..";\n"
+                    if table.find(new_eff.integers, key) then
+                        param_init = param_init .. "uniform int "..key..";\n"
+                    else
+                        param_init = param_init .. "uniform float "..key..";\n"
+                    end
                 end
+            else
+                -- prevents Effect:send from auto-sending unused parameters
+                new_eff.params[key] = nil
             end
+        end
+
+        new_eff.string = param_init..new_eff.string
+
+        if options.shader == '' then
             new_eff.string = new_eff.string.. 
-[[
-/* From glfx.js : https://github.com/evanw/glfx.js */
+[[/* From glfx.js : https://github.com/evanw/glfx.js */
 float random(vec2 scale, vec2 pixelcoord, float seed) {
     /* use the fragment position for a different seed per-pixel */
     return fract(sin(dot(pixelcoord + seed, scale)) * 43758.5453 + seed);
@@ -217,14 +245,14 @@ float getY(float amt) { return amt / love_ScreenSize.y; }
 #endif
 ]]
 
-            -- replace all non-LoVE keywords
-            local r
-            for old, new in pairs(EffectManager.love_replacements) do
-                new_eff.string, r = new_eff.string:gsub(old, new)
-            end
-
-            EffectManager.effects[options.name] = new_eff
         end
+        -- replace all non-LoVE keywords
+        local r
+        for old, new in pairs(EffectManager.love_replacements) do
+            new_eff.string, r = new_eff.string:gsub(old, new)
+        end
+
+        EffectManager.effects[options.name] = new_eff
     end
 }
 
@@ -274,32 +302,25 @@ number factor = (factor_x + factor_y)/2.0;
 
 EffectManager.new{
     name = 'bloom',
-    params = {['screen_size']={0,0}, ['samples']=5, ['quality']=1},
-    shader = [[
-// adapted from http://www.youtube.com/watch?v=qNM0k522R7o
-
-extern vec2 screen_size;
-extern int samples; // pixels per axis; higher = bigger glow, worse performance
-extern float quality; // lower = smaller glow, better quality
-
-vec4 effect(vec4 color, Image tex, vec2 tc, vec2 sc)
-{
-  vec4 source = Texel(tex, tc);
+    params = {['samples']=5, ['quality']=1},
+    integers = {'samples'},
+    effect = [[
+  vec4 source = Texel(texture, texCoord);
   vec4 sum = vec4(0);
   int diff = (samples - 1) / 2;
-  vec2 sizeFactor = vec2(1) / screen_size * quality;
+  vec2 sizeFactor = vec2(1) / love_ScreenSize.xy * quality;
   
   for (int x = -diff; x <= diff; x++)
   {
     for (int y = -diff; y <= diff; y++)
     {
       vec2 offset = vec2(x, y) * sizeFactor;
-      sum += Texel(tex, tc + offset);
+      sum += Texel(texture, texCoord + offset);
     }
   }
   
-  return ((sum / (samples * samples)) + source) * color;
-}
+  pixel = ((sum / (samples * samples)) + source);
+
     ]]
 }
 
