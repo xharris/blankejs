@@ -39,10 +39,10 @@ function PlayState:draw()
 		main_camera:shake(0,10)	
 	end
 	
-  my_eff:draw(function()
     main_camera:draw(function()
+		--my_eff:draw(function()
       Scene.instances:call('draw')
       player:draw()
+		--end)
     end)
-  end)
 end

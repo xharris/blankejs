@@ -4,17 +4,68 @@ completely working effects:
  - crt : lineSize(vec2) opacity, scanlines(bool), distortion, inputGamma, outputGamma
  - outline : size
  - static : amount(vec2)
+ - bloom : samples (int), quality (float)
 ]]
+
 Effect = Class{
+    new = function(...) return EffectManager.new(...) end,
+
+    init = function(self, ...)
+        self.shaders = {}
+        self.spare_canvas = Canvas()
+        self.canvas = Canvas()
+
+        local names = {...}
+        for n, name in ipairs(names) do
+            self:add(name)
+        end
+
+        _addGameObject('effect',self)
+    end,
+
+    add = function(self, name) 
+        table.insert(self.shaders, Shader(name))
+        self[name] = {}
+    end,
+
+    update = function(self, dt)
+        for s, shader in ipairs(self.shaders) do
+            shader:update(dt)         
+        end
+    end,
+
+    resizeCanvas = function(self, w, h)
+        self.canvas:resize(game_width, game_height)
+    end,
+
+    draw = function(self, fn)
+        self.spare_canvas:drawTo(fn)
+
+        for s, shader in ipairs(self.shaders) do
+            -- apply any params set
+            if self[shader.name] then
+                for param, val in pairs(self[shader.name]) do
+                    shader:send(param, val)
+                end
+            end
+
+            self.canvas:drawTo(function()
+                shader:apply(fn, self.spare_canvas)
+            end)
+            self.spare_canvas:drawTo(function() self.canvas:draw() end)
+        end
+
+        self.canvas:draw()
+    end
+}
+
+Shader = Class{
     _mouse_offx = 0,
     _mouse_offy = 0,
-
-    new = function(...) return EffectManager.new(...) end,
 
     init = function(self, name)
         self._shader = nil
         self.name = name
-        self.canvas = Canvas()
 
         self.params = {}        -- current values of all params
         self.appliedParams = {} -- keeps track of whether send() was used on a param
@@ -22,7 +73,6 @@ Effect = Class{
         assert(EffectManager.effects[name]~=nil, "Effect '"..name.."' not found")
 
         self:reset()
-        _addGameObject('effect',self)
     end,
 
     reset = function(self)
@@ -40,27 +90,25 @@ Effect = Class{
         self.dt = 0
         self.screen_size = {game_width, game_height}
         self.inv_screen_size = {1/game_width, 1/game_height}
-        self._mouse_offx = -((game_width/2) - (self.canvas.width/2))
-        self._mouse_offy = -((game_height/2) - (self.canvas.height/2))
+        --self._mouse_offx = -((game_width/2) - (self.canvas.width/2))
+        --self._mouse_offy = -((game_height/2) - (self.canvas.height/2))
 
         self._shader = love.graphics.newShader(EffectManager.effects[self.name].string)
     end,
 
     resizeCanvas = function(self, w, h)
-        self.canvas:resize(game_width, game_height)
+        --self.canvas:resize(game_width, game_height)
     end,
 
-    applyShader = function(self, func)
+    apply = function(self, func, canvas)
+        self:applyParams()
+
         local curr_shader = love.graphics.getShader()
         local curr_blend = love.graphics.getBlendMode()
 
-        self.canvas:drawTo(function()
-            func()
-	    end)
-  	
 	    love.graphics.setBlendMode('alpha', 'premultiplied') 
 	    love.graphics.setShader(self._shader)
-        self.canvas:draw()
+        canvas:draw()
         love.graphics.setBlendMode(curr_blend)
         love.graphics.setShader(curr_shader)
     end,
@@ -98,8 +146,8 @@ Effect = Class{
     end,
 
     update = function(self, dt)
-        self._mouse_offx = -((game_width/2) - (self.canvas.width/2))
-        self._mouse_offy = -((game_height/2) - (self.canvas.height/2))
+        --self._mouse_offx = -((game_width/2) - (self.canvas.width/2))
+        --self._mouse_offy = -((game_height/2) - (self.canvas.height/2))
 
         self.time = self.time + dt
         self.dt = self.dt + dt
@@ -112,13 +160,12 @@ Effect = Class{
             fn()
 
         else
-            self:applyParams()
 
             local extra_draw = EffectManager.effects[self.name].extra_draw
             if extra_draw then
                 extra_draw(self, fn)
             else
-                self:applyShader(fn)
+                self:apply(fn)
             end
 
         end
@@ -289,16 +336,6 @@ extern number myNum;
 #endif
     ]]
 }
-
---[[
-scale with screen position
-
-vec2 screenSize = love_ScreenSize.xy;        
-number factor_x = screen_coords.x/screenSize.x;
-number factor_y = screen_coords.y/screenSize.y;
-number factor = (factor_x + factor_y)/2.0;
-
-]]--
 
 EffectManager.new{
     name = 'bloom',

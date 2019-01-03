@@ -68,7 +68,9 @@ function updateGlobals(dt)
 		BlankE._offset_y = math.abs( (window_height - game_height)/ 2  )
 	end
 
-	mouse_x, mouse_y = BlankE.scaledMouse(love.mouse.getX() + ifndef(Effect._mouse_offx, 0), love.mouse.getY() + ifndef(Effect._mouse_offy, 0))
+	-- mouse_x, mouse_y = BlankE.scaledMouse(love.mouse.getX() + ifndef(Effect._mouse_offx, 0), love.mouse.getY() + ifndef(Effect._mouse_offy, 0))
+	mouse_x, mouse_y = BlankE.scaledMouse(love.mouse.getX(), love.mouse.getY())
+	
 	--game_width = new_width
 	--game_height = new_height
 	--window_width = width / BlankE.scale_x
