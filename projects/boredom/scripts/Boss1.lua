@@ -52,6 +52,7 @@ function Boss1:init()
 		Draw.setColor("black")
 		Draw.text("!",0,0)
 	end)
+	--[[
 	self.sleep_z = Repeater(self.z_canvas,{
 		x = self.x + 5,
 		y = self.y + 10,
@@ -59,13 +60,13 @@ function Boss1:init()
 		max_linear_accel_x = 10,
 		linear_accel_y = -10,
 		end_color = {1,1,1,0}
-	})
+	})]]
 	
 	self.run_blur = Repeater(self,{
 		rate = 50,
-		lifetime = .5,
+		lifetime = 2,
 		linear_accel_x = 20,
-		color={1,0,0,1},
+		color={0,0,0,.5},
 		end_color={1,1,1,0}
 	})
 	
@@ -117,7 +118,8 @@ function Boss1:update(dt)
 end
 
 function Boss1:draw()
-	-- self.run_blur:draw()
+	self.run_blur.spawn_x = self.x
+	self.run_blur.spawn_y = self.y
 				
 	Draw.setColor("red")
 	Draw.rect("line",self.x - self.turn_dist,0,2*self.turn_dist,game_height)
@@ -126,6 +128,7 @@ function Boss1:draw()
 	self.eff_boss1.static.amount = {8, 0}
 	self.eff_boss1.bloom.samples = 5
 	self.eff_boss1:draw(function()
+		self.run_blur:draw()
 		self:drawSprite()
 	end)
 end
@@ -158,7 +161,6 @@ function Boss1:walkTowardsPlayer(direction_override, hspeed_override)
 end
 
 function Boss1:turn()
-	Debug.log(self.no_turning,self.turning,self.flying)
 	-- check if boss is facing away from player
 	if not self.no_turning and not self.turning and not self.flying and ((self.move_dir < 0 and player.x > self.x) or (self.move_dir > 0 and player.x < self.x)) then
 		self.sprite_xscale = self.move_dir

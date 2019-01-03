@@ -11,7 +11,7 @@ Repeater = Class{
 			if self.system ~= nil then self.system[prop](self.system, ...) end
 		end
 
-		self.onPropSet["lifetime"] = function(self, v) set("setParticleLifetime",v) end
+		self.onPropSet["lifetime"] = function(self, v) Debug.log(v) set("setParticleLifetime",v) end
 		self.onPropSet["duration"] = function(self, v) set("setEmitterLifetime",v) end
 		self.onPropSet["rate"] = function(self, v) set("setEmissionRate",v) end
 		self.onPropSet["linear_accel_x"] = function(self, v) set("setLinearAcceleration",v,self.linear_accel_y) end
@@ -20,6 +20,7 @@ Repeater = Class{
 		self.onPropSet["linear_damp_y"] = function(self, v) set("setLinearDamping",self.linear_damp_x,v) end
 		self.onPropSet["spawn_x"] = function(self, v) set("setPosition",v,self.spawn_y) end
 		self.onPropSet["spawn_y"] = function(self, v) set("setPosition",self.spawn_x,v) end
+
 
 		local default_props = {"linear_accel_x","linear_accel_y","linear_damp_x","linear_damp_y","spawn_x","spawn_y"}
 		for p, prop in ipairs(default_props) do
@@ -112,9 +113,9 @@ Repeater = Class{
 			local systems = self.ent_systems[self.entity_tex.uuid]
 			for index, sys_props in pairs(systems) do
 				for id, info in pairs(sys_props.info_list) do
-					info.t = info.t + dt
-
 					local t = info.t
+					info.t = t + dt
+
 					if t > info.max_t then
 						-- kill image
 						systems[index].info_list[id] = nil
