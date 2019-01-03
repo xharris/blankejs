@@ -142,7 +142,7 @@ module.exports.completions = {
 		{fn:"shear", vars:{ x:'', y:'' }},
 		{fn:"rotate", vars:{ degrees:'' }},
 		{fn:"crop", vars:{ x:'', y:'', width:'', height:'' }},
-		{fn:"setBackgroundColor", vars:color_vars},
+		{fn:"setBackgroundColor", vars:color_vars, info:'[!!] use <StateName>.background_color instead'},
 		{fn:"randomColor", vars:{ alpha:'' }},
 		{fn:"setColor", vars:color_vars},
 		{prop:"colors", info:'list of available colors'},

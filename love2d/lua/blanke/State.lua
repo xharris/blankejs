@@ -14,7 +14,17 @@ end
 resetTransitionObj()
 
 local drawStateNormal = function(state)
-	if state.draw then Draw.stack(function() state:draw() end) end
+	if state.draw then
+		Draw.stack(function()
+			if state.background_color then
+				Draw.stack(function()
+					Draw.setColor(state.background_color)
+					Draw.rect('fill',0,0,game_width,game_height)
+				end)
+			end
+			state:draw()
+		end)
+	end
 end
 
 StateManager = {

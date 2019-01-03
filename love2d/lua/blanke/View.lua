@@ -121,7 +121,7 @@ View = Class{
 		View._transform:reset()
 		View._transform:translate(self._half_w, self._half_h)
 		View._transform:scale(self.scale_x, self.scale_y)
-		View._transform:rotate(self.angle)
+		View._transform:rotate(math.rad(self.angle))
 		View._transform:translate(-self.x, -self.y)
 
 		if Canvas._applied == 1 then

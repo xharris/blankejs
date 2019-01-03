@@ -5,7 +5,7 @@ main_camera = nil
 local player = nil
 local my_eff
 function PlayState:enter(prev)
-	Draw.setBackgroundColor('white')
+	PlayState.background_color = 'white'
 	
 	-- hitboxes
 	Scene.tile_hitboxes = {"ground"}
@@ -24,8 +24,6 @@ function PlayState:enter(prev)
 	--sc_level1:chain(sc_boss1, "lvl_end", "lvl_start")
 	player = sc_boss1:addEntity("player", Player, "bottom-center"):get(1)
 	main_camera = View(player)
-  
-  my_eff = Effect("bloom")
 end
 
 function PlayState:update(dt)
@@ -40,9 +38,7 @@ function PlayState:draw()
 	end
 	
     main_camera:draw(function()
-		--my_eff:draw(function()
       Scene.instances:call('draw')
       player:draw()
-		--end)
     end)
 end

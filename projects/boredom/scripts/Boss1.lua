@@ -69,7 +69,7 @@ function Boss1:init()
 		end_color={1,1,1,0}
 	})
 	
-	self.eff_static = Effect("static","bloom")
+	self.eff_boss1 = Effect("static","bloom")
 end
 
 function Boss1:update(dt)	
@@ -123,9 +123,9 @@ function Boss1:draw()
 	Draw.rect("line",self.x - self.turn_dist,0,2*self.turn_dist,game_height)
 	Draw.reset("color")
 	
-	self.eff_static.static.amount = {(mouse_x / game_width) * 10,0}
-	
-	self.eff_static:draw(function()
+	self.eff_boss1.static.amount = {8, 0}
+	self.eff_boss1.bloom.samples = 5
+	self.eff_boss1:draw(function()
 		self:drawSprite()
 	end)
 end
