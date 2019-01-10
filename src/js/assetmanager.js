@@ -190,6 +190,11 @@ document.addEventListener("openProject", function(e){
 		onSelect: function() {
 			if (!DragBox.focus("Assets"))
 				new AssetManager(app);
-		}
+		},
+		group: 'Assetmanager'
 	});
 });
+
+document.addEventListener("closeProject", function(e){	
+	app.removeSearchGroup("Assetmanager");
+})

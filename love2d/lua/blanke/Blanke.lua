@@ -27,7 +27,7 @@ function _prepareGameObject(obj_type, obj)
     obj.persistent = ifndef(obj.persistent, false)
     obj._destroyed = ifndef(obj._destroyed, false)
     obj.net_object = ifndef(obj.net_object, false)
-    obj._state_created = ifndef(StateManager.current(), {classname=""}).classname
+    obj._state_created = ifndef(StateManager.current(), {classname=""})
 end
 
 function _addGameObject(obj_type, obj)
@@ -164,7 +164,7 @@ BlankE = {
 		options = {
 			resolution = Window.resolution,
 			plugins={},
-			filter="linear",
+			filter="nearest",
 			scale_mode=Window.scale_mode
 		}
 		table.update(options, in_options)

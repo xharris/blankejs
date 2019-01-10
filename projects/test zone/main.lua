@@ -2,7 +2,7 @@
 BlankE = require('blanke.Blanke')
 
 function love.load()
-	Window.setResolution(2)
+	Window.setResolution(5)
 	BlankE.draw_debug = true
 	
 	Input.set("lclick","mouse.1")

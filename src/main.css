@@ -1595,6 +1595,118 @@
   background-color: #212121;
   color: #E0E0E0;
 }
+.content[data-type="Find"] .editor-content {
+  padding: 5px;
+  box-sizing: border-box;
+  background-color: #212121;
+}
+.content[data-type="Find"] .editor-content .form-container {
+  width: 100%;
+  position: absolute;
+  top: 3px;
+  left: 0px;
+  height: 17px;
+}
+.content[data-type="Find"] .form-group[data-name="search"] {
+  position: absolute;
+  top: 0px;
+  left: 3px;
+  right: 3px;
+  height: 17px;
+}
+.content[data-type="Find"] .form-group[data-name="search"] .form-inputs {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+}
+.content[data-type="Find"] .form-group[data-name="search"] .form-text {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 52px;
+  color: white;
+}
+.content[data-type="Find"] .form-group[data-name="submit"] {
+  position: absolute;
+  right: 3px;
+}
+.content[data-type="Find"] .form-group[data-name="submit"] .form-button {
+  margin: 0px;
+  height: 17px;
+  width: 48px;
+}
+.content[data-type="Find"] .result-container {
+  position: absolute;
+  bottom: 0px;
+  top: 23px;
+  left: 0px;
+  width: 100%;
+  overflow: auto;
+}
+.content[data-type="Find"] .result-container .result-group {
+  margin: 4px;
+  background-color: 212121;
+  color: white;
+  outline: 1px solid #424242;
+  padding-bottom: 2px;
+  overflow: hidden;
+  position: relative;
+  transition: 0.1s ease-in-out all;
+}
+.content[data-type="Find"] .result-container .result-group.collapsed {
+  height: 18px;
+}
+.content[data-type="Find"] .result-container .result-group:hover {
+  outline-color: #5ad9a4;
+}
+.content[data-type="Find"] .result-container .result-group .resize {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  height: 20px;
+  cursor: pointer;
+}
+.content[data-type="Find"] .result-container .result-group .filename {
+  margin: 0px;
+  padding: 5px 10px;
+  padding-bottom: 0px;
+  white-space: nowrap;
+}
+.content[data-type="Find"] .result-container .result-group .result {
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 5px 7px;
+  color: white;
+  padding: 3px;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 12px;
+  transition: 0.1s all ease-in-out;
+}
+.content[data-type="Find"] .result-container .result-group .result:hover {
+  font-size: 16px;
+}
+.content[data-type="Find"] .result-container .result-group .result .line > * {
+  margin: 0px;
+  display: inline-block;
+}
+.content[data-type="Find"] .result-container .result-group .result .text {
+  text-indent: 20px;
+  tab-size: 20px;
+}
+.content[data-type="Find"] .result-container .result-group .result .number {
+  color: #757575;
+  width: 0px;
+}
+.content[data-type="Find"] .result-container .result-group .result .match {
+  color: #5ad9a4;
+  font-style: normal;
+}
 @font-face {
   font-family: ProggySquare;
   src: url('includes/ProggySquareSZ.ttf') format('truetype');

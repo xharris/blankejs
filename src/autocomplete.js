@@ -39,7 +39,7 @@ module.exports.instance_regex = {
 		/\b(\w+\.instances).*/g
 	],
 	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\d.,]*\)\s+?/g,
-	'timer': 	/\b(\w+)\s*=\s*Timer\(\d+?\)\s+?/g,
+	'timer': 	/\b(\w+)\s*=\s*Timer\(\d*\)\s+?/g,
 	'canvas': 	/\b(\w+)\s*=\s*Canvas\((?:\d*\,\d*)?\)\s+?/g
 }
 // old group/bezier regex: /\b(?:self.|self:)?(\w+)\s*=\s*Group\(\).*/g
@@ -93,6 +93,7 @@ module.exports.completions = {
 		{fn:'modf'},
 		{fn:'tointeger'},
 		{fn:'type',vars:{n:''},info:"whether n is \'integer\',\'float\',nil (NaN)"},
+		{fn:'sign',vars:{n:''},info:"returns -1 or 1 depending on sign of n"},
 		{fn:'ult',vars:{m:'',n:''},info:"true IF abs(m) < abs(n) ELSE false"}
 	],
 	"blanke-net":[

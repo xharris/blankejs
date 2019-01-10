@@ -11,7 +11,7 @@ Repeater = Class{
 			if self.system ~= nil then self.system[prop](self.system, ...) end
 		end
 
-		self.onPropSet["lifetime"] = function(self, v) Debug.log(v) set("setParticleLifetime",v) end
+		self.onPropSet["lifetime"] = function(self, v) set("setParticleLifetime",v) end
 		self.onPropSet["duration"] = function(self, v) set("setEmitterLifetime",v) end
 		self.onPropSet["rate"] = function(self, v) set("setEmissionRate",v) end
 		self.onPropSet["linear_accel_x"] = function(self, v) set("setLinearAcceleration",v,self.linear_accel_y) end

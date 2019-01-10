@@ -1,11 +1,15 @@
 --[[
 completely working effects:
- - chroma shift : angle(rad), radius
+ - chroma shift : angle(deg), radius
  - crt : lineSize(vec2) opacity, scanlines(bool), distortion, inputGamma, outputGamma
  - outline : size
  - static : amount(vec2)
  - bloom : samples (int), quality (float)
 ]]
+
+local function cleanName(name)
+    return name:gsub(" ","_")
+end
 
 Effect = Class{
     new = function(...) return EffectManager.new(...) end,
@@ -15,9 +19,12 @@ Effect = Class{
         self.spare_canvas = Canvas()
         self.canvas = Canvas()
 
+        self.spare_canvas.clear_color = nil--{1,1,1,0}
+        self.canvas.clear_color = nil--{1,1,1,0}
+
         local names = {...}
         for n, name in ipairs(names) do
-            self:add(name)
+            self:add(cleanName(name))
         end
 
         _addGameObject('effect',self)
@@ -39,6 +46,7 @@ Effect = Class{
     end,
 
     draw = function(self, fn)
+        -- final result canvas
         self.spare_canvas:drawTo(fn)
 
         for s, shader in ipairs(self.shaders) do
@@ -65,7 +73,7 @@ Shader = Class{
 
     init = function(self, name)
         self._shader = nil
-        self.name = name
+        self.name = cleanName(name)
 
         self.params = {}        -- current values of all params
         self.appliedParams = {} -- keeps track of whether send() was used on a param
@@ -103,42 +111,52 @@ Shader = Class{
     apply = function(self, func, canvas)
         self:applyParams()
 
-        local curr_shader = love.graphics.getShader()
-        local curr_blend = love.graphics.getBlendMode()
+        local options = EffectManager.effects[self.name]
+        canvas.blend_mode = options.blend
 
-	    love.graphics.setBlendMode('alpha', 'premultiplied') 
+        local extra_draw = options.extra_draw
+        if extra_draw then
+            extra_draw(self)
+        end
+
+        local curr_shader = love.graphics.getShader()
+
 	    love.graphics.setShader(self._shader)
         canvas:draw()
-        love.graphics.setBlendMode(curr_blend)
         love.graphics.setShader(curr_shader)
     end,
 
     applyParams = function(self)
         local params = EffectManager.effects[self.name].params
         for key, val in pairs(params) do
-            if not self.appliedParams[key] then
+            if self.appliedParams[key] == false then
 
                 local val
-                if self[key] then val = self[key] 
+                if self[key] then val = self[key]; 
                 elseif self.params[key] then val = self.params[key] 
                 else val = params[key] end
 
+                self.params[key] = val 
                 self:send(key, val)
 
             end
             self.appliedParams[key] = false
         end
-        self:send("time", self.time)
+        self:send("time", self.time, true)
     end, 
 
+    -- _automatic: sent from Effect object
     send = function(self, key, value) 
-        if self.params[key] ~= nil then
+        self[key] = value
+        self.params[key] = value
+        self.appliedParams[key] = true
+
+        if self.params[key] ~= nil and not EffectManager.effects[self.name].unused_params[key] then
+
             if type(value) == 'boolean' then
                 if value ~= 0 then value = 1 end
             end
 
-            self.params[key] = value
-            self.appliedParams[key] = true
             self._shader:send(key, value)
         end
 
@@ -153,24 +171,7 @@ Shader = Class{
         self.dt = self.dt + dt
         self.screen_size = {game_width, game_height}
         self.inv_screen_size = {1/game_width, 1/game_height}
-    end,
-
-    draw = function(self, fn)
-        if self.pause then
-            fn()
-
-        else
-
-            local extra_draw = EffectManager.effects[self.name].extra_draw
-            if extra_draw then
-                extra_draw(self, fn)
-            else
-                self:apply(fn)
-            end
-
-        end
-        return self
-    end,
+    end
 }
 
 EffectManager = Class{
@@ -197,6 +198,8 @@ EffectManager = Class{
         new_eff.warp_effect = ifndef(options.warp_effect, false)
         new_eff.use_canvas = ifndef(options.use_canvas, true)
         new_eff.integers = ifndef(options.integers, {})
+        new_eff.unused_params = {}
+        new_eff.blend = ifndef(options.blend, {"alpha","premultiplied"})
 
         if new_eff.string ~= '' then
             new_eff.params = {}
@@ -249,9 +252,14 @@ EffectManager = Class{
                         param_init = param_init .. "uniform float "..key..";\n"
                     end
                 end
+                if type(val) == 'string' then
+                    if val == "Image" then
+                        param_init = param_init .. "uniform Image "..key..";\n"
+                    end
+                end
             else
                 -- prevents Effect:send from auto-sending unused parameters
-                new_eff.params[key] = nil
+                new_eff.unused_params[key] = true
             end
         end
 
@@ -299,7 +307,7 @@ float getY(float amt) { return amt / love_ScreenSize.y; }
             new_eff.string, r = new_eff.string:gsub(old, new)
         end
 
-        EffectManager.effects[options.name] = new_eff
+        EffectManager.effects[cleanName(options.name)] = new_eff
     end
 }
 
@@ -362,24 +370,33 @@ EffectManager.new{
 }
 
 EffectManager.new{
-    name = 'chroma shift',
-    params = {['angle']=0,['radius']=50,['direction']={0,0}},--['strength'] = {1, 1}, ['size'] = {20, 20}},
+    name = 'chroma_shift',
+    params = {['angle']=0,['radius']=2,['direction']={0,0}},--['strength'] = {1, 1}, ['size'] = {20, 20}},
+    blend = {"add","alphamultiply"}, --{"replace", "alphamultiply"},
     effect = [[
-            if ((pixel.r != pixel.b && pixel.b != pixel.g) && pixel.r != 1.0) {
-                pixel.r = Texel(texture, texCoord - direction).r; 
-                pixel.b = Texel(texture, texCoord + direction).b; 
-                pixel.a = Texel(texture, texCoord).a; 
-            }
+            vec4 px_minus = Texel(texture, texCoord - direction);
+            vec4 px_plus = Texel(texture, texCoord + direction);
+
+            pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);
+            if (px_minus.a > 0 || px_plus.a > 0)
+                pixel.a = 1.0;
+
+            // if (px_minus.a > 0 || px_plus.a > 0) {
+                // pixel.r = pixel.r * (1 - px_minus.a) + px_minus.r;
+                // pixel.b = pixel.b * (1 - px_plus.a) + px_plus.b;
+                // pixel.a = pixel.a * (1 - px_plus.a) + px_plus.a;
+            // } else {
+                // pixel.r = px_minus.r;
+                // pixel.b = px_plus.b;
+            // }
     ]],
-    draw = function(self, draw)
+    draw = function(self)
         local angle, radius = self.angle, self.radius
-        local dx = math.cos(math.rad(angle)) * radius / game_width
-        local dy = math.sin(math.rad(angle)) * radius / game_height
+        local dx = (math.cos(math.rad(angle)) * radius) / game_width
+        local dy = (math.sin(math.rad(angle)) * radius) / game_height
         
         self:send("direction", {dx,dy})
-        
-        self:applyShader(draw)
-    end,
+    end
 }
 
 --[[pixel = vec4(

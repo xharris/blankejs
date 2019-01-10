@@ -3,6 +3,16 @@
 	changed order in defineMode: instance > class_list
 */
 
+var CODE_ASSOCIATIONS = [
+	[
+		/BlankE\.addState\(\s*\"(\w+)\"\s*\)|BlankE\.addClassType\(\s*\"State\"\s*,\s*\"(\w+)\"\s*\)/g,
+		"state"
+	],[
+		/BlankE\.addEntity\(\s*\"(\w+)\"\s*\)|BlankE\.addClassType\(\s*\"Entity\"\s*,\s*\"(\w+)\"\s*\)/g,
+		"entity"
+	],
+];
+
 var font_size = 16;
 var object_list = {}
 var object_src = {};
@@ -686,22 +696,32 @@ function addScripts(folder_path) {
 				if (file_stat.isDirectory() && file != "dist") 
 					addScripts(full_path);
 
-				// add file to search pool
+				// is a script?
 				else if (file.endsWith('.lua')) {
 					nwFS.readFile(full_path, 'utf-8', function(err, data){
 						if (!err) {
 							refreshObjectList(full_path, data);
-						}
-					});
 
-					app.addSearchKey({
-						key: file,
-						onSelect: function(file_path){
-							openScript(file_path);
-						},
-						tags: ['script'],
-						args: [full_path],
-						group: 'Code'
+							// get what kind of script it is
+							let tags = ['script'];
+							for (let assoc of CODE_ASSOCIATIONS) {
+								let match = data.match(assoc[0]);
+								if (match) {
+									tags.push(assoc[1]);
+								}
+							}
+
+							// add file to search pool
+							app.addSearchKey({
+								key: file,
+								onSelect: function(file_path){
+									openScript(file_path);
+								},
+								tags: tags,
+								args: [full_path],
+								group: 'Code'
+							});
+						}
 					});
 				}
 			});
@@ -776,7 +796,8 @@ document.addEventListener("openProject", function(e){
 -- create a State: BlankE.addState(\"HouseState\");\
 				");
 		},
-		tags: ['new']
+		tags: ['new'],
+		group: 'Code'
 	});
 	app.addSearchKey({
 		key: 'Add a state',
@@ -790,7 +811,8 @@ end\n\n\
 function <NAME>:draw()\n\n\
 end\n");
 		},
-		tags: ['new']
+		tags: ['new'],
+		group: 'Code'
 	});
 	app.addSearchKey({
 		key: 'Add an entity',
@@ -802,6 +824,7 @@ end\n\n\
 function <NAME>:update(dt)\n\n\
 end\n");
 		},
-		tags: ['new']
+		tags: ['new'],
+		group: 'Code'
 	});
 });
