@@ -508,6 +508,8 @@ BlankE = {
 			StateManager.iterateStateStack('update', dt)
 		end
 
+		Input._releaseCheck()
+
 		if not BlankE._mouse_updated then
 			BlankE._mouse_x, BlankE._mouse_y = mouse_x, mouse_y
 		end

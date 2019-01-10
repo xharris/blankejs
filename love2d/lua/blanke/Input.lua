@@ -80,7 +80,6 @@ _Input = Class{
             end
             self._reset_wheel = false
         end
-        self.pressed = false
     end, 
     
     getRegion = function(self, x, y)
@@ -211,9 +210,6 @@ Input = {
 
     update = function()
         for o, obj in pairs(Input.keys) do
-            for input, val in pairs(obj.in_mouse) do
-                if obj.in_mouse[input] > 0 then obj.in_mouse[input] = obj.in_mouse[input] + 1 end  
-            end
             for input, val in pairs(obj.in_key) do
                 if not obj.is_multi_key[input] and obj.in_key[input] > 0 then obj.in_key[input] = obj.in_key[input] + 1 end
             end
@@ -225,7 +221,6 @@ Input = {
         for o, obj in pairs(Input.keys) do
             if obj.in_mouse[btn_string] ~= nil then
                 obj:press()
-                obj.in_mouse[btn_string] = obj.in_mouse[btn_string] + 1
             end
             
             local region = obj:getRegion(x, y)
@@ -241,14 +236,12 @@ Input = {
         for o, obj in pairs(Input.keys) do
             if obj.in_mouse[btn_string] ~= nil then
                 obj:release()
-                obj.in_mouse[btn_string] = 0
             end
             
             local region = obj:getRegion(x, y)
             if region ~= nil then
                 region = false
             end
-            obj.pressed = false
         end
         return Input
     end,
@@ -274,6 +267,12 @@ Input = {
         end
     end,
 
+    _releaseCheck = function()
+        for k, obj in pairs(Input.keys) do
+            obj:releaseCheck()
+        end
+    end,
+
     reset = function(key)
         Input.key[key]:reset()
         return Input
@@ -290,7 +289,6 @@ Input = {
             for a, arg in pairs(args) do
                 if Input.keys[arg] then
                     ret_val = Input.keys[arg]
-                    ret_val:releaseCheck()
                 end
             end
             assert(ret_val, 'Input not found: \"'..tostring(...)..'\"')

@@ -99,7 +99,7 @@ function DeckEditor:draw()
 	fnt_name:draw(current_deck_name,img_back_arrow.x + img_back_arrow.width + editor_margin, editor_margin)
 	
 	-- back button
-	if Input("primary") == 1 and UI.mouseInside(img_back_arrow.x - img_back_arrow.height,img_back_arrow.y,img_back_arrow.height,img_back_arrow.width) then
+	if Input("primary").released and UI.mouseInside(img_back_arrow.x - img_back_arrow.height,img_back_arrow.y,img_back_arrow.height,img_back_arrow.width) then
 		if self.prev_state then
 			State.switch(self.prev_state)
 		end
@@ -108,12 +108,12 @@ function DeckEditor:draw()
 	-- save button
 	fnt_name:draw("SAVE", deck.x, deck.y+deck.height+editor_margin)
 	Draw.setColor("red")
-	if Input("primary") == 1 and UI.mouseInside(deck.x, deck.y+deck.height+editor_margin, fnt_name:getWidth("SAVE"), fnt_name:getHeight()) then
+	if Input("primary").released and UI.mouseInside(deck.x, deck.y+deck.height+editor_margin, fnt_name:getWidth("SAVE"), fnt_name:getHeight()) then
 		saveDeck(current_deck_name)
 	end
 	
 	-- add previewed card to deck
-	if Input("secondary") == 1 and UI.mouseInside(card_preview.x, card_preview.y, card_preview.width, card_preview.height) then
+	if Input("secondary").released and UI.mouseInside(card_preview.x, card_preview.y, card_preview.width, card_preview.height) then
 		deck:addCard(card_preview:copy())
 	end
 	

@@ -67,7 +67,7 @@ function CardCatalog:draw()
 	end
 	self.img_button:draw()
 	
-	if card_primary == 1 and UI.mouseInside(self.img_button.x, self.img_button.y - self.img_button.height, self.img_button.width, self.img_button.height) then
+	if card_primary.released and UI.mouseInside(self.img_button.x, self.img_button.y - self.img_button.height, self.img_button.width, self.img_button.height) then
 		scrollUp()
 	end
 	
@@ -82,7 +82,7 @@ function CardCatalog:draw()
 	end
 	self.img_button:draw()
 	
-	if card_primary == 1 and UI.mouseInside(self.img_button.x, self.img_button.y, self.img_button.width, self.img_button.height) then
+	if card_primary.released and UI.mouseInside(self.img_button.x, self.img_button.y, self.img_button.width, self.img_button.height) then
 		scrollDown()
 	end
 	
@@ -100,11 +100,11 @@ function CardCatalog:draw()
 			if UI.mouseInside(card.x, card.y, card.width, card.height) then
 				hover_rect = {card.x, card.y, card.width, card.height}
 					
-				if card_primary == 1 and self.onCardSelect then
+				if card_primary.released and self.onCardSelect then
 					self:onCardSelect(card:getInfo(), c)
 				end
 					
-				if card_secondary == 1 and self.onCardAction then
+				if card_secondary.released and self.onCardAction then
 					self:onCardAction(card:getInfo(), c)	
 				end
 			end
