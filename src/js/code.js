@@ -669,7 +669,7 @@ class Code extends Editor {
 	}
 
 	static refreshCodeList(path) {
-		app.removeSearchGroup("Code");
+		app.removeSearchGroup("Scripts");
 		addScripts(ifndef(path, app.project_path));
 	}
 }
@@ -719,7 +719,7 @@ function addScripts(folder_path) {
 								},
 								tags: tags,
 								args: [full_path],
-								group: 'Code'
+								group: 'Scripts'
 							});
 						}
 					});
@@ -751,7 +751,7 @@ document.addEventListener("openProject", function(e){
 			if (err) nwFS.mkdirSync(script_dir);
 
 			nwFS.readdir(script_dir, function(err, files){
-				let file_name = ifndef(name+'.lua', 'script'+files.length+'.lua');
+				let file_name = ifndef(name,'script'+files.length)+'.lua';
 				content = content.replaceAll("<NAME>", name);
 
 				// the file already exists. open it

@@ -359,7 +359,7 @@
   position: absolute;
   top: 50%;
   left: 0px;
-  z-index: 20;
+  z-index: 1000;
   right: 0px;
   text-align: center;
   transform: translateY(-50%);

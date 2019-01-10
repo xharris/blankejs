@@ -769,7 +769,7 @@ document.addEventListener("openProject", function(e){
 	addMaps(proj_path);
 
 	app.addSearchKey({
-		key: 'Create map',
+		key: 'Add a map',
 		onSelect: function() {
 			var map_dir = nwPATH.join(app.project_path,'maps');
 			// overwrite the file if it exists. fuk it (again)!!
