@@ -495,12 +495,8 @@ BlankE = {
 	    updateGlobals(dt)
 	    UI.update()
 	    BlankE._mouse_updated = false
+        Input._releaseCheck()
 
-	    -- default fullscreen toggle shortcut
-	    if Input("fullscreen-toggle").released then
-	    	Window.toggleFullscreen()
-	    end
-	    
 	    if not BlankE._is_init then return end
 	    Net.update(dt)
 				
@@ -508,8 +504,10 @@ BlankE = {
 			StateManager.iterateStateStack('update', dt)
 		end
 
-		Input._releaseCheck()
-
+	    -- default fullscreen toggle shortcut
+	    if Input("fullscreen-toggle").released then
+	    	Window.toggleFullscreen()
+	    end
 		if not BlankE._mouse_updated then
 			BlankE._mouse_x, BlankE._mouse_y = mouse_x, mouse_y
 		end
