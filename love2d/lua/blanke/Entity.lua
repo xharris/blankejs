@@ -19,7 +19,7 @@ Entity = Class{
     	self._destroyed = false
 	    self._images = {}		
 		self._sprites = {} 			-- is actually the animations
-		self.show_debug = false
+		self.draw_debug = false
 		self.scene_show_debug = false
 
 		-- x and y coordinate of sprite
@@ -286,10 +286,16 @@ Entity = Class{
 	end,
 
 	debugSprite = function(self, sprite_index)
-		local info = self:getSpriteInfo(sprite_index)
+		local info = {
+			angle=0,
+			xoffset=0, yoffset=0,
+			xshear=0, yshear=0,
+			xscale=1, yscale=1
+		}
 
-		local sx = -info.xoffset
-		local sy = -info.yoffset
+		if sprite_index then
+			table.update(info, self:getSpriteInfo(sprite_index))
+		end
 
 		Draw.stack(function()
 			Draw.translate(self.x, self.y)
@@ -302,7 +308,7 @@ Entity = Class{
 			Draw.setLineWidth(1)
 			if self._sprites[sprite_index] then
 				local sprite_width, sprite_height = self:getSpriteDims(sprite_index)
-				love.graphics.rectangle("line", -sx, -sy, sprite_width, sprite_height)
+				love.graphics.rectangle("line", info.xoffset, info.yoffset, sprite_width, sprite_height)
 			end
 			-- draw origin point
 			Draw.setColor(0,0,0,2/3)
@@ -321,6 +327,11 @@ Entity = Class{
 			end
 		end)
 		return self
+	end,
+
+	drawDebug = function(self)
+		self:debugSprite()
+		self:debugCollision()
 	end,
 
 	getSpriteDims = function(self, sprite_index)
@@ -359,7 +370,7 @@ Entity = Class{
 		local sprite = self._sprites[sprite_index]
 		local info = self:getSpriteInfo(sprite_index)
 
-		if self.show_debug or self.scene_show_debug then self:debugCollision() end
+		if self.draw_debug or self.scene_show_debug then self:debugCollision() end
 
 		if info and sprite then
 			self._call_sprite_update[sprite_index] = true
@@ -397,7 +408,7 @@ Entity = Class{
 					end
 				end
 
-				if self.show_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
+				if self.draw_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
 			end)
 		end
 	end,

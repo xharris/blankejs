@@ -197,7 +197,7 @@ module.exports.completions = {
 	"blanke-entity-instance":[
 		{prop:"x"},
 		{prop:"y"},
-		{prop:"direction"},
+		{prop:"direction", info:"best used with 'speed'"},
 		{prop:"friction"},
 		{prop:"gravity"},
 		{prop:"gravity_direction", info:"in degrees. 0 = right, 90 = down, default = 90"},

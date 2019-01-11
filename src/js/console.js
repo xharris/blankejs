@@ -1,9 +1,3 @@
-var re_duplicate = /(.*)(\(\d+\)?)/;
-var re_error = /Error:\s([\w\\\/\.]+)?:(\d+):\s(.+)\s*stack traceback:\s+(.*)/g;
-var re_load_error = /:\s(.*):(\d+):\s(.*)/g
-var re_shader_error = /.*pixel shader code:\s*([\s\S]*)stack/g
-var re_shader_message = /(?:Line\s(\d+):\sERROR:\s*(.*)\s*(?=Line|ERROR))/g
-
 class Console extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -41,6 +35,8 @@ class Console extends Editor {
 	}
 
 	log (str) {
+		let re_duplicate = /(.*)(\(\d+\)?)/g;
+
 		str = JSON.stringify(str.trim()).slice(1,-1);
 		let lines = str.split("\\n").map(line => JSON.parse("{\"str\":\""+line+"\"}").str)
 
@@ -61,7 +57,12 @@ class Console extends Editor {
 		if (!this.had_error) {
 			this.had_error = true;
 
-			let error_parts
+			let re_error = /Error:\s.*[^\\\/Blanke\.lua]?[\w\\\/\.]+\/(\w+\.lua):(\d+):\s(.+)\s*stack traceback:\s+(.*)/g;
+			let re_load_error = /:\s(.*):(\d+):\s(.*)/g
+			let re_shader_error = /.*pixel shader code:\s*([\s\S]*)stack/g
+			let re_shader_message = /(?:Line\s(\d+):\sERROR:\s*(.*)\s*(?=Line|ERROR))/g
+
+			let error_parts;
 
 			// pixel shader error
 			if (str.includes("pixel shader code")) {

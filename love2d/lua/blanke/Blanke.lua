@@ -164,7 +164,7 @@ BlankE = {
 		options = {
 			resolution = Window.resolution,
 			plugins={},
-			filter="nearest",
+			filter="linear",
 			scale_mode=Window.scale_mode
 		}
 		table.update(options, in_options)

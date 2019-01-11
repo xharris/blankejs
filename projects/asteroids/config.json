@@ -1,0 +1,27 @@
+{
+    "spritesheet_prvw": {
+        "image\\asteroids.png": {
+            "name": "asteroid",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 0,
+            "frame size": [
+                68,
+                68
+            ],
+            "frames": 3,
+            "selected frames": [
+                "\"1-3\"",
+                1
+            ],
+            "columns": 3,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\asteroids.png"
+        }
+    }
+}

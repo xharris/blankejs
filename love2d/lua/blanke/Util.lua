@@ -63,8 +63,14 @@ function cond(condition, yes, no)
 end
 
 -- both inclusive
-function randRange(n1, n2)
-	return love.math.random(n1, n2)
+-- e1, e2 : exclusion range
+function randRange(...)
+	local ranges = {...}
+	local r = love.math.random(1,ranges.length) -- choose a range to use (if there are multiple)
+	if r % 2 == 0 then
+		r = r - 1
+	end
+	return love.math.random(ranges[r], ranges[r+1])
 end
 
 function sinusoidal(min, max, speed, start_offset)
@@ -79,7 +85,7 @@ function direction_x(angle, dist)
 end
 
 function direction_y(angle, dist)
-	return -math.sin(math.rad(angle)) * dist
+	return math.sin(math.rad(angle)) * dist
 end
 
 love.graphics.resetColor = function()
