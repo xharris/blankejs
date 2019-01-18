@@ -38,7 +38,7 @@ Canvas = Class{
         Draw.stack(function()
             love.graphics.setCanvas{self.canvas, stencil=true}
             if self.auto_clear then
-                love.graphics.clear(1,1,1,0)--self.clear_color)
+                love.graphics.clear(self.clear_color)
             end
             love.graphics.origin()
             Canvas._applied = Canvas._applied + 1

@@ -3,6 +3,8 @@ BlankE.addState("PlayState")
 local player, asteroids
 local tmr_spawn_roid
 
+local eff
+
 function PlayState:enter()
 	PlayState.background_color = "black"
 	

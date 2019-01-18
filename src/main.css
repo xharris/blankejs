@@ -510,6 +510,54 @@
   color: #C3E88D;
   /* lime green, same as cm-string. use something like #4fc3f7 when resolved */
 }
+.content[data-type="Code"] .fn-helper {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  padding: 4px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 50;
+  overflow: hidden;
+  opacity: 0.7;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="Code"] .fn-helper:hover {
+  opacity: 1;
+  height: auto;
+}
+.content[data-type="Code"] .fn-helper:hover .arg-info,
+.content[data-type="Code"] .fn-helper:hover .prop-info {
+  max-height: 300px;
+  overflow: hidden;
+  margin: 0px;
+  padding-left: 20px;
+  color: #e6ee9c;
+}
+.content[data-type="Code"] .fn-helper.hidden {
+  height: 0px;
+}
+.content[data-type="Code"] .fn-helper .grayed-out {
+  color: #757575;
+}
+.content[data-type="Code"] .fn-helper .arg-info,
+.content[data-type="Code"] .fn-helper .prop-info {
+  max-height: 0px;
+  overflow: hidden;
+  margin: 0px;
+  padding-left: 20px;
+  color: #C5E1A5;
+  transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.content[data-type="Code"] .fn-helper .item-type {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  margin: 4px;
+  margin-right: 3px;
+  color: rgba(255, 255, 255, 0.35);
+}
 .CodeMirror-hints {
   position: absolute;
   z-index: 30;

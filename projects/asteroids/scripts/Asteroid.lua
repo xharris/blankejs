@@ -11,14 +11,23 @@ function Asteroid:init()
 	
 	self.size = 1
 	
-	-- start outside of screen
-	self.entering = true
-	self.x = -self.sprite_width
-	self.y = randRange(0, game_height)
-	
 	-- random starting speed
-	if self.x < 0
-	self.move_speed = randRange(-50,-70,50,70)
+	self.move_speed = randRange(-60,-80,60,80)
 	self.hspeed = randRange(-self.move_speed,self.move_speed)
 	self.vspeed = randRange(-self.move_speed,self.move_speed)
+	
+	-- start outside of screen
+	self.x, self.y = unpack(table.random{
+		{-self.sprite_width, randRange(0, game_height)},
+		{game_width + self.sprite_width, randRange(0, game_height)},
+		{randRange(0, game_width), -self.sprite_height},
+		{randRange(0, game_width), game_height + self.sprite_height}			
+	})
+end
+
+function Asteroid:update(dt)
+	if self.x + self.sprite_width > game_width then self.x = -self.sprite_width end
+	if self.y + self.sprite_height > game_height then self.y = -self.sprite_height end
+	if self.x < -self.sprite_width then self.x = game_width + self.sprite_width end
+	if self.y < -self.sprite_height then self.y = game_height + self.sprite_height end
 end

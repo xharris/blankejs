@@ -173,6 +173,11 @@ class Code extends Editor {
 		this.edit_box.classList.add("code")
 		this.appendChild(this.edit_box)
 
+		// box to show last viewed function (until ')' is pressed?)
+		this.el_fn_helper = app.createElement('div','fn-helper');
+		this.appendChild(this.el_fn_helper);
+		this.fn_helper_timer = null;
+
 		var this_ref = this;
 		CodeMirror.defineMode("blanke", function(config, parserConfig) {
 		  var blankeOverlay = {
@@ -311,7 +316,7 @@ class Code extends Editor {
 						}
 						arg_str = arg_str.slice(0,-2);
 						line_text = line_text.replace(/(\s*)(\w+):addAnim.*/g,"$1$2:addAnimation{"+arg_str+"}");
-						console.log('string',line_text)
+						
 						this_ref.codemirror.replaceRange(line_text,
 							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
 					}
@@ -322,6 +327,8 @@ class Code extends Editor {
 		this.autocompleting = false;
 		this.last_word = '';
 		this.codemirror.on("keyup", function(){
+			this_ref.refreshFnHelperTimer();
+
 			let editor = this_ref.codemirror;
 			let cursor = editor.getCursor();
 
@@ -411,36 +418,25 @@ class Code extends Editor {
 					}
 				}
 
-				for (var o in hint_list) {
-					let hint_opts = hint_list[o];
-					let arg_info = "";
-
-					let text, render, add = false;
-
-					// get the item type
+				function getCompleteHTML(hint) {
 					let item_type = '';
-					if (hint_opts.fn) {
-						if (hint_opts.callback)
+					let text, render = '', arg_info = '';
+
+					if (hint.fn) {
+						if (hint.callback)
 							item_type = 'cb';
 						else
 							item_type = 'fn';
-					} else if (hint_opts.prop) {
+					} else if (hint.prop) {
 						item_type = 'var';
 					}
 
-					if (hint_opts.fn && 
-						(
-							(hint_opts.global && globalActivator()) || 
-							(activator == ':' && !hint_opts.global && (token_type.includes('instance') || hint_opts.callback)) || 
-							(activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))
-						) && containsTyped(hint_opts.fn)
-					) {
-						text = hint_opts.fn;
-						hint_types[text] = 'function1';
-						if (hint_opts.vars) {
-							for (var arg in hint_opts.vars) {
-								if (hint_opts.vars[arg] != "")
-   								arg_info += arg + " : " + hint_opts.vars[arg] + "<br/>";
+					if (item_type == 'cb' || item_type == 'fn') {
+						text = hint.fn;
+						if (hint.vars) {
+							for (var arg in hint.vars) {
+								if (hint.vars[arg] != "")
+									arg_info += arg + " : " + hint.vars[arg] + "<br/>";
 							}
 						}
 
@@ -449,29 +445,53 @@ class Code extends Editor {
 							return value;
 						}
 						let paren = ["(",")"];
-						if (hint_opts.named_args) {
+						if (hint.named_args) {
 							paren = ["{","}"];
-							hint_types[text] = 'function2';
 						}
-						render = hint_opts.fn + paren[0] + Object.keys(hint_opts.vars || {}).map(specialReplacements) + paren[1] +
-									"<p class='prop-info'>"+(hint_opts.info || '')+"</p>"+
+						render = hint.fn + paren[0] + Object.keys(hint.vars || {}).map(specialReplacements) + paren[1] +
+									"<p class='prop-info'>"+(hint.info || '')+"</p>"+
 									"<p class='arg-info'>"+arg_info+"</p>"+
 									"<p class='item-type'>"+item_type+"</p>";
+					}
+					else if (item_type == 'var') {
+						text = hint.prop;
+						render = hint.prop + "<p class='prop-info'>"+(hint.info || '')+"</p>"+
+								"<p class='item-type'>"+item_type+"</p>";
+					}
+
+					return render;
+				}
+
+				// iterate through hint suggestions
+				for (var o in hint_list) {
+					let hint_opts = hint_list[o];
+					let add = false;
+					let text = hint_opts.fn || hint_opts.prop;
+
+					if (hint_opts.fn && 
+						(
+							(hint_opts.global && globalActivator()) || 
+							(activator == ':' && !hint_opts.global && (token_type.includes('instance') || hint_opts.callback)) || 
+							(activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))
+						) && containsTyped(hint_opts.fn)
+					) {
+						hint_types[text] = 'function1';
+						if (hint_opts.named_args) {
+							hint_types[text] = 'function2';
+						}
 						add = true;
 					}
 					if (hint_opts.prop && 
 						((activator == '.' && !hint_opts.global) || (hint_opts.global && globalActivator())) && 
 						!hint_opts.callback && containsTyped(hint_opts.prop)) {
-						text = hint_opts.prop;
 						hint_types[text] = 'property';
-						render = hint_opts.prop + "<p class='prop-info'>"+(hint_opts.info || '')+"</p>"+
-									"<p class='item-type'>"+item_type+"</p>";
 						add = true;
 					}
 					if (add) {
 						list.push({
 							text:text,
-							render:function(el, editor, data) { el.innerHTML = render }
+							hint_opts:hint_opts,
+							render:function(el, editor, data) { el.innerHTML = getCompleteHTML(hint_opts); }
 						});
 					}
 				}
@@ -492,6 +512,8 @@ class Code extends Editor {
 									editor.replaceRange(completion.text+'(', comp_word.anchor, comp_word.head);
 								else if (hint_types[completion.text] == 'function2')
 									editor.replaceRange(completion.text+'{', comp_word.anchor, comp_word.head);
+
+								this_ref.setFnHelper(getCompleteHTML(completion.hint_opts));
 							});
 
 							return completions
@@ -550,6 +572,26 @@ class Code extends Editor {
 			this_ref.setFontSize(font_size);
 		}, this);
 		*/
+	}
+
+	setFnHelper (html) {
+		this.el_fn_helper.classList.remove("hidden");
+		this.el_fn_helper.innerHTML = html;
+		this.refreshFnHelperTimer();
+	}
+
+	clearFnHelper () {
+		this.el_fn_helper.innerHTML = '';
+		this.el_fn_helper.classList.add("hidden");
+	}
+
+	// when timer runs out, hide fn_helper
+	refreshFnHelperTimer () {
+		let this_ref = this;
+		clearTimeout(this.fn_helper_timer);
+		this.fn_helper_timer = setTimeout(function(){
+			this_ref.clearFnHelper();
+		},15000);
 	}
 
 	addAsterisk () {

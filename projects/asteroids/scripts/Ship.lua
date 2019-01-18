@@ -17,20 +17,23 @@ function Ship:init()
 	self.x = game_width / 2
 	self.y = game_height / 2
 	
-	self.turn_speed = 2
+	self.turn_speed = 3
 	self.move_angle = 0
-	self.move_speed = 150
-	self.accel = 2
+	self.move_speed = 200
+	self.accel = 4
 end
 
 function Ship:update(dt)
 	-- TURNING
+	self.friction = 0.005
 	if Input("left").pressed then
 		self.move_angle = self.move_angle - self.turn_speed
+		self.friction = 0
 	end
 	
 	if Input("right").pressed then
 		self.move_angle = self.move_angle + self.turn_speed
+		self.friction = 0
 	end
 	
 	self.img_ship.angle = self.move_angle + 90
