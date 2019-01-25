@@ -6,7 +6,10 @@ let color_vars = {
 }
 let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
 
-module.exports.keywords = ['local']
+module.exports.keywords = [
+	'and','break','do','else','elseif','end','false','for','function','if',
+	'in','local','nil','not','or','repeat','return','then','true','until','while'
+]
 
 // only vars starting with 'local'
 module.exports.user_words = {

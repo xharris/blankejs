@@ -83,14 +83,14 @@ function refreshObjectList (filename, content) {
 	}
 
 	// find words that the user made using 'local' or whatever
-	user_words = [];
+	user_words[filename] = [];
 	// variables
 	for (let r in re_user_words.var) {
 		let re = re_user_words.var[r];
 		let match;
 		while (match = re.exec(content)) {
 			if (!isReservedWord(match[1])) {
-				user_words.push({
+				user_words[filename].push({
 					prop:match[1],
 					global:true
 				});
@@ -103,15 +103,13 @@ function refreshObjectList (filename, content) {
 		let match;
 		while (match = re.exec(content)) {
 			if (!isReservedWord(match[1])) {
-				user_words.push({
+				user_words[filename].push({
 					fn:match[1],
 					global:true
 				});
 			}
 		}
 	}
-
-	console.log(user_words);
 
 	// clear src list
 	object_src[filename] = '';
@@ -458,8 +456,8 @@ class Code extends Editor {
 				}
 
 				// add user-made words
-				for (let u in user_words) {
-					hint_list.push(user_words[u]);
+				for (let u in user_words[this_ref.file]) {
+					hint_list.push(user_words[this_ref.file][u]);
 				}
 
 				// iterate through hint suggestions
