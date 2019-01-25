@@ -1,7 +1,8 @@
 BlankE.addEntity("Penguin");
 
 function Penguin:init()
-
+	self.board_x = 0
+	self.board_y = 0
 end
 
 function Penguin:update(dt)

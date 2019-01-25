@@ -1,4 +1,4 @@
-BlankE.addState("PlayState");
+BlankE.addState("PlayState")
 
 --local player
 main_camera = nil

@@ -47,6 +47,8 @@ function MainState:draw()
 	rptr:draw()
 	
 	mario:draw()
+	
+	dt_mod = (mouse_x / game_width) * 5
 	--[[ 
 	test_mask:draw(function()
 		Draw.setColor("white")

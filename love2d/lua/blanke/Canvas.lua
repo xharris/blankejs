@@ -5,7 +5,6 @@ Canvas = Class{
         height = ifndef(height, game_height)
 
         self.canvas = love.graphics.newCanvas(width, height)
-        --self.canvas:setFilter("nearest", "nearest")
         self.width = self.canvas:getWidth()
         self.height = self.canvas:getHeight()
         self.blend_mode = {"alpha","premultiplied"}

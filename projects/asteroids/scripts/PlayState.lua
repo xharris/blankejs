@@ -12,7 +12,9 @@ function PlayState:enter()
 	asteroids = Group()
 	
 	tmr_spawn_roid = Timer():every(function()
-		asteroids:add(Asteroid())
+		if Asteroid.instances:size() < 5 then
+			asteroids:add(Asteroid())
+		end
 	end, 1):start()
 end
 

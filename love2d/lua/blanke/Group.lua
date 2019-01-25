@@ -15,10 +15,14 @@ Group = Class{
 		return rawget(Group, i)
 	end,
 
-	add = function(self, obj)
-		obj._group = ifndef(obj._group, {})
-		obj._group[self.uuid] = self
-		table.insert(self.children, obj)
+	add = function(self, ...)
+		local objects = {...}
+		for _, obj in ipairs(objects) do
+			obj._group = ifndef(obj._group, {})
+			obj._group[self.uuid] = self
+			table.insert(self.children, obj)
+		end
+		return self
 	end,
 
 	get = function(self, i)
@@ -30,6 +34,24 @@ Group = Class{
 		end
 	end,
 
+	-- key : find element i where i == key
+	-- key, val : find element i where i[key] == val
+	find = function(self, key, val)
+		if val == nil then
+			-- regular table search
+			for i, v in ipairs(self.children) do
+				if v == key then return i end
+			end
+			return 0
+		else
+			-- object search
+			for i, v in ipairs(self.children) do
+				if v[key] == val then return v, i end
+			end
+			return nil, 0
+		end
+	end,
+
 	remove = function(self, o)
 		if (type(o) == "number") then
 			return table.remove(self.children, o)-- self.children[o] = nil
@@ -38,6 +60,7 @@ Group = Class{
 			while i <= #self.children do
 				if self.children[i] and self.children[i].uuid and self.children[i].uuid == o.uuid then
 					self:remove(i)
+					return true
 				end
 				i = i + 1
 			end

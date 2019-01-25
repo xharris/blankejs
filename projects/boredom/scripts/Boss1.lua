@@ -27,7 +27,7 @@ local STAGE_VALS = {
 		turn_dist = 100,
 		incr_speed = 10,
 		min_turns = 3,
-		turn_friction = 0.1
+		turn_friction = 0.5
 	},	
 	-- stage 3
 	{
@@ -37,7 +37,7 @@ local STAGE_VALS = {
 		turn_dist = 100,
 		incr_speed = 10,
 		min_turns = 3,
-		turn_friction = 0.1
+		turn_friction = 0.5
 	}
 }
 
@@ -74,11 +74,7 @@ function Boss1:init()
 	self.gravity = 20
 	self.sprite_xoffset = -16
 	
-	self:addShape("main","rectangle",{
-			0, self.sprite_height+10,
-			self.sprite_width, self.sprite_height-10
-	})			
-	self:setMainShape("main")
+	self:addPlatforming(0, self.sprite_height+10, self.sprite_width, self.sprite_height-10)			
 	self.sprite_index = "sleep"
 	
 	-- stage 0 
@@ -116,7 +112,6 @@ function Boss1:init()
 		if self.stage > 1 and not self.turning then
 			self.hspeed = self.hspeed + (math.sign(self.hspeed) * (self.charge_step + self.accel))
 			self.accel = self.accel + self.ACCEL
-			Debug.log(self.hspeed)
 		end
 	end, 1):start()
 	
@@ -125,21 +120,20 @@ function Boss1:init()
 	self.charge_step = 1		
 	self.charge_speed = 1.25		* self.scale
 	self.realise_dist = 80		-- 40
-	self.REALISE_DIST = 40		* self.scale
+	self.REALISE_DIST = 80		
 	self.ACCEL = .005			* self.scale
 	self.accel = 0
-	
 end
 
 function Boss1:update(dt)	
+	Debug.log(self.hspeed)
 	if not player then
 		player = Player.instances[1]
 	end
 	
-	self.onCollision["main"] = function(other, sep)
-		if other.tag == "ground" then
-			self:collisionStopY()
-			-- landing after hitting spikes
+	self:platformerCollide{
+		tag="ground",
+		floor=function(other, sep)
 			if self.flying then
 				self.flying = false
 				self.no_turning = false
@@ -147,24 +141,24 @@ function Boss1:update(dt)
 				self:updateStageVals()
 				self:walkTowardsPlayer(self.move_dir)
 			end
+		end,
+		all=function(other, sep)
+			-- barriers that keep boss from falling too early
+			if other.tag == "boss1_stopper" then
+				if self.turn_count < self.min_turns and not self.flying then
+					self:collisionStopX()
+					self:turn()
+				else
+					self.no_turning = true
+				end
+			end
+				
+			-- hit spikes and fly upwards
+			if other.tag == "player_die" then
+				self:hitSpikes()
+			end
 		end
-		
-		-- barriers that keep boss from falling too early
-		if other.tag == "boss1_stopper" and self.turn_count < self.min_turns and not self.flying then
-			self:collisionStopX()
-			self:turn()
-		end
-		
-		-- prevent boss from turning while falling onto spikes
-		if other.tag == "boss1_stopper" and self.turn_count >= self.min_turns then
-			self.no_turning = true
-		end
-		
-		-- hit spikes and fly upwards
-		if other.tag == "player_die" then
-			self:hitSpikes()
-		end
-	end	
+	}
 			
 	-- start out sleeping. wake up when player comes near
 	if self:distance(player) < self.realise_dist then
@@ -247,7 +241,7 @@ function Boss1:turn()
 	if not self.no_turning and not self.turning and not self.flying and ((self.move_dir < 0 and player.x > self.x) or (self.move_dir > 0 and player.x < self.x)) then
 		self.sprite_xscale = self.move_dir
 		self.turning = true
-		self.twn_turn = Tween(self, {hspeed=0}, clamp(self.turn_count / self.min_turns, 0, 1) * self.turn_friction, nil, function()
+		self.twn_turn = Tween(self, {hspeed=0}, clamp(self.turn_count / self.min_turns, .75, 1) * self.turn_friction, nil, function()
 			self.turn_count = self.turn_count + 1
 			self.initial_speed = math.abs(self.max_speed)
 			self.charge_step = self.charge_step + 1
@@ -277,13 +271,11 @@ function Boss1:hitSpikes()
 		-- uses magic formula for determining how far to fly
 		local next_init_speed = self.hspeed
 		if STAGE_VALS[self.stage+1] then next_init_speed = STAGE_VALS[self.stage+1].init_speed end
-		self:walkTowardsPlayer(nil, math.min(self:distancePoint(player.x, self.y) * (1 + (self.stage / 10)), next_init_speed))
-		Debug.log("new",self.hspeed)
-
+		self:walkTowardsPlayer(nil, 200)
+		
 		-- fly in the air
 		self.vspeed = -(1200 + (self.stage * 20))
 		
 		self.realise_dist = self.REALISE_DIST + (self.stage*15)
-		self:walkTowardsPlayer(nil, self:distancePoint(player.x + (player.sprite_width / 2), self.y) / 100)
 	end
 end

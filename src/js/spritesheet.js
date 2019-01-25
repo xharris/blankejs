@@ -7,7 +7,7 @@ class SpritesheetPreview extends Editor {
 		this.setupDragbox();
 		this.removeHistory();
 		this.hideMenuButton();
-		this.container.width = 416;
+		this.container.width = 448;
 		this.container.height = 288;
 
 		this.setTitle('Spritesheet Preview');
@@ -69,7 +69,7 @@ class SpritesheetPreview extends Editor {
 
 	_onCopyCode () {
 		if (this.onCopyCode) {
-			blanke.toast("Animation code copied!");
+			blanke.toast("Animation code copied! Don't forget to save.");
 			this.onCopyCode(this.getValues());
 		} else {
 			blanke.toast("Can't copy any code right now.");
@@ -226,12 +226,14 @@ class SpritesheetPreview extends Editor {
 			} 
 		}
 
+
 		this.duration = this_ref.el_sheet_form.getValue("speed")*1000;
 	}
 
 	_showNextFrame () {
 		let this_ref = this;
-		let ctx = this.ctx, frame_coords = this.frame_coords, frame = this.frame, duration = this.duration;
+		let ctx = this.ctx, frame_coords = this.frame_coords, frame = this.frame; 
+		let duration = this.duration;
 
 		if (!this.then) this.then = Date.now();
 
@@ -241,13 +243,14 @@ class SpritesheetPreview extends Editor {
 		this.then = now - (delta%duration);
 
 		if (frame_coords[frame]) {
+			console.log(frame, frame_coords[frame])
 			ctx.clearRect(0,0,this.el_preview.width,this.el_preview.height);
 			ctx.drawImage(this.el_image,
 				frame_coords[frame][0], frame_coords[frame][1], frame_coords[frame][2], frame_coords[frame][3],
 				0, 0, frame_coords[frame][2], frame_coords[frame][3]); 
 		}
 		this.frame += 1;
-		if (frame > frame_coords.length) this.frame = 0;
+		if (frame >= frame_coords.length) this.frame = 0;
 
 		window.requestAnimationFrame(this._showNextFrame.bind(this));
 	}

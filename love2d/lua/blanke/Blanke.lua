@@ -165,9 +165,11 @@ BlankE = {
 			resolution = Window.resolution,
 			plugins={},
 			filter="linear",
-			scale_mode=Window.scale_mode
+			scale_mode=Window.scale_mode,
+			auto_aspect_ratio=true
 		}
 		table.update(options, in_options)
+
 
 		-- load plugins
 		for p, plugin in ipairs(options.plugins) do
@@ -178,8 +180,6 @@ BlankE = {
 		if love.filesystem.getInfo("config.json") then
 			BlankE.settings = json.decode(love.filesystem.read('config.json'))
 		end
-
-		View.global_drag_enable = BlankE._ide_mode
 
 		if not BlankE._callbacks_replaced then
 			BlankE._callbacks_replaced = true
@@ -196,17 +196,21 @@ BlankE = {
 			love.graphics.setDefaultFilter(options.filter, options.filter)
 		end
 
+		-- game window size
+	    if options.auto_aspect_ratio then
+			Window.detectAspectRatio()
+		end
+
+	    Window.scale_mode = options.scale_mode
+		local new_w, new_h = Window.setResolution(options.resolution)
+		BlankE.game_canvas:resize(new_w,new_h)
+
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 
-	    Window.scale_mode = options.scale_mode
-		Window.setResolution(options.resolution, nil, true)
-		Asset.add('assets', nil, true)
-		Asset.add('scripts', nil, true)
-		Asset.add('scenes', nil, true)
-		Asset.loadScripts()
+		Asset.load()
 
-		Input.set("fullscreen-toggle","lalt-return")
+		Input.set("fullscreen-toggle","lalt-return","ralt-return")
 
 	    -- figure out the first state to run
 	    if BlankE.first_state and not first_state then
@@ -539,8 +543,6 @@ BlankE = {
 				Draw.rect('fill',0,0,game_width,game_height)
 			end)
 		end)
-
-		--Debug.log(BlankE.scale_x, BlankE.scale_y)
 
 		-- draw game
 		BlankE.game_canvas:drawTo(function()

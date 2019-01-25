@@ -376,8 +376,6 @@ Entity = Class{
 		local sprite = self._sprites[sprite_index]
 		local info = self:getSpriteInfo(sprite_index)
 
-		if self.draw_debug or self.scene_show_debug then self:debugCollision() end
-
 		if info and sprite then
 			self._call_sprite_update[sprite_index] = true
 
@@ -427,6 +425,7 @@ Entity = Class{
 		end
 
 		self:drawSprite()
+		if self.show_debug then self:debugCollision() end
 
 		if self.postDraw then
 			self:postDraw()

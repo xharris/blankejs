@@ -21,7 +21,6 @@ Image = Class{
 		assert(self.image, 'Image not found: \"'..tostring(name)..'\"')
 
 		self.image:setWrap("clampzero","clampzero")
-		--self.image:setFilter("nearest")
 
 		self.quad = nil
 		self.x = 0

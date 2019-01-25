@@ -17,8 +17,15 @@ var font_size = 16;
 var object_list = {}
 var object_src = {};
 var object_instances = {};
+var user_words = [];
+var keywords = [];
 
-var autocomplete, re_class, re_class_list, re_class_and_instance, hints, re_instance, callbacks;
+var autocomplete, callbacks, hints;
+var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words;
+
+function isReservedWord(word) {
+	return keywords.includes(word) || autocomplete.class_list.includes(word);
+}
 
 function reloadCompletions() {
 	delete require.cache[require.resolve(app.settings.autocomplete_path)];
@@ -30,6 +37,8 @@ function reloadCompletions() {
 		re_class_list = '('+autocomplete.class_list.join('|')+')';
 	hints = autocomplete.completions;
 	re_instance = autocomplete.instance_regex;
+	re_user_words = autocomplete.user_words;
+	keywords = autocomplete.keywords;
 
 	re_class_and_instance = Object.assign({}, re_class);
 	for (let c in re_instance) {
@@ -72,6 +81,37 @@ function refreshObjectList (filename, content) {
 			}
 		}
 	}
+
+	// find words that the user made using 'local' or whatever
+	user_words = [];
+	// variables
+	for (let r in re_user_words.var) {
+		let re = re_user_words.var[r];
+		let match;
+		while (match = re.exec(content)) {
+			if (!isReservedWord(match[1])) {
+				user_words.push({
+					prop:match[1],
+					global:true
+				});
+			}
+		}
+	}
+	// functions
+	for (let r in re_user_words.fn) {
+		let re = re_user_words.fn[r];
+		let match;
+		while (match = re.exec(content)) {
+			if (!isReservedWord(match[1])) {
+				user_words.push({
+					fn:match[1],
+					global:true
+				});
+			}
+		}
+	}
+
+	console.log(user_words);
 
 	// clear src list
 	object_src[filename] = '';
@@ -174,7 +214,7 @@ class Code extends Editor {
 		this.appendChild(this.edit_box)
 
 		// box to show last viewed function (until ')' is pressed?)
-		this.el_fn_helper = app.createElement('div','fn-helper');
+		this.el_fn_helper = app.createElement('div',['fn-helper','hidden']);
 		this.appendChild(this.el_fn_helper);
 		this.fn_helper_timer = null;
 
@@ -351,7 +391,7 @@ class Code extends Editor {
        		let token_type = editor.getTokenTypeAt(token_pos) || '';
 
 			//if ((comp_activators.includes(word_slice) || comp_activators.includes(before_word.slice(-1))) && !this_ref.autocompleting) {
-				this_ref.autocompleting = true;
+			this_ref.autocompleting = true;
 			//}
 
 			if (this_ref.autocompleting && this_ref.last_word != word) {
@@ -363,7 +403,7 @@ class Code extends Editor {
 				}
 
 				function globalActivator() {
-					return (word.trim() != '' && !comp_activators.includes(activator));
+					return (word.trim().length > 0 && !comp_activators.includes(activator));
 				}
 
 				let hint_list = [];
@@ -410,56 +450,16 @@ class Code extends Editor {
 				}
 
 				// add global hints
-				if (!hint_list && hints.global) {
-					hint_list = [];
+				if (hints.global) {
 					for (let h = 0; h < hints.global.length; h++) {
 						hints.global[h].global = true;
 						hint_list.push(hints.global[h]);
 					}
 				}
 
-				function getCompleteHTML(hint) {
-					let item_type = '';
-					let text, render = '', arg_info = '';
-
-					if (hint.fn) {
-						if (hint.callback)
-							item_type = 'cb';
-						else
-							item_type = 'fn';
-					} else if (hint.prop) {
-						item_type = 'var';
-					}
-
-					if (item_type == 'cb' || item_type == 'fn') {
-						text = hint.fn;
-						if (hint.vars) {
-							for (var arg in hint.vars) {
-								if (hint.vars[arg] != "")
-									arg_info += arg + " : " + hint.vars[arg] + "<br/>";
-							}
-						}
-
-						function specialReplacements(value, index, array) {
-							if (value == 'etc') return '<span class="grayed-out">...</span>';
-							return value;
-						}
-						let paren = ["(",")"];
-						if (hint.named_args) {
-							paren = ["{","}"];
-						}
-						render = hint.fn + paren[0] + Object.keys(hint.vars || {}).map(specialReplacements) + paren[1] +
-									"<p class='prop-info'>"+(hint.info || '')+"</p>"+
-									"<p class='arg-info'>"+arg_info+"</p>"+
-									"<p class='item-type'>"+item_type+"</p>";
-					}
-					else if (item_type == 'var') {
-						text = hint.prop;
-						render = hint.prop + "<p class='prop-info'>"+(hint.info || '')+"</p>"+
-								"<p class='item-type'>"+item_type+"</p>";
-					}
-
-					return render;
+				// add user-made words
+				for (let u in user_words) {
+					hint_list.push(user_words[u]);
 				}
 
 				// iterate through hint suggestions
@@ -491,10 +491,11 @@ class Code extends Editor {
 						list.push({
 							text:text,
 							hint_opts:hint_opts,
-							render:function(el, editor, data) { el.innerHTML = getCompleteHTML(hint_opts); }
+							render:function(el, editor, data) { el.innerHTML = this_ref.getCompleteHTML(hint_opts); }
 						});
 					}
 				}
+
 				blanke.cooldownFn("editor_show_hint", 250, function(){
 					editor.showHint({
 						hint: function(cm) {
@@ -513,7 +514,7 @@ class Code extends Editor {
 								else if (hint_types[completion.text] == 'function2')
 									editor.replaceRange(completion.text+'{', comp_word.anchor, comp_word.head);
 
-								this_ref.setFnHelper(getCompleteHTML(completion.hint_opts));
+								this_ref.setFnHelper(this_ref.getCompleteHTML(completion.hint_opts));
 							});
 
 							return completions
@@ -572,6 +573,50 @@ class Code extends Editor {
 			this_ref.setFontSize(font_size);
 		}, this);
 		*/
+	}
+
+	getCompleteHTML(hint) {
+		let item_type = '';
+		let text, render = '', arg_info = '';
+
+		if (hint.fn) {
+			if (hint.callback)
+				item_type = 'cb';
+			else
+				item_type = 'fn';
+		} else if (hint.prop) {
+			item_type = 'var';
+		}
+
+		if (item_type == 'cb' || item_type == 'fn') {
+			text = hint.fn;
+			if (hint.vars) {
+				for (var arg in hint.vars) {
+					if (hint.vars[arg] != "")
+						arg_info += arg + " : " + hint.vars[arg] + "<br/>";
+				}
+			}
+
+			function specialReplacements(value, index, array) {
+				if (value == 'etc') return '<span class="grayed-out">...</span>';
+				return value;
+			}
+			let paren = ["(",")"];
+			if (hint.named_args) {
+				paren = ["{","}"];
+			}
+			render = hint.fn + paren[0] + Object.keys(hint.vars || {}).map(specialReplacements) + paren[1] +
+						"<p class='prop-info'>"+(hint.info || '')+"</p>"+
+						"<p class='arg-info'>"+arg_info+"</p>"+
+						"<p class='item-type'>"+item_type+"</p>";
+		}
+		else if (item_type == 'var') {
+			text = hint.prop;
+			render = hint.prop + "<p class='prop-info'>"+(hint.info || '')+"</p>"+
+					"<p class='item-type'>"+item_type+"</p>";
+		}
+
+		return render;
 	}
 
 	setFnHelper (html) {
@@ -834,8 +879,8 @@ document.addEventListener("openProject", function(e){
 		key: 'Add a script',
 		onSelect: function() {
 			key_addScript("\
--- create an Entity: BlankE.addEntity(\"Player\");\n\n\
--- create a State: BlankE.addState(\"HouseState\");\
+-- create an Entity: BlankE.addEntity(\"Player\")\n\n\
+-- create a State: BlankE.addState(\"HouseState\")\
 				");
 		},
 		tags: ['new'],
@@ -845,7 +890,7 @@ document.addEventListener("openProject", function(e){
 		key: 'Add a state',
 		onSelect: function() {
 			key_newScriptModal("state","\
-BlankE.addState(\"<NAME>\");\n\n\
+BlankE.addState(\"<NAME>\")\n\n\
 function <NAME>:enter()\n\n\
 end\n\n\
 function <NAME>:update(dt)\n\n\
@@ -860,7 +905,7 @@ end\n");
 		key: 'Add an entity',
 		onSelect: function() {
 			key_newScriptModal("entity","\
-BlankE.addEntity(\"<NAME>\");\n\n\
+BlankE.addEntity(\"<NAME>\")\n\n\
 function <NAME>:init()\n\n\
 end\n\n\
 function <NAME>:update(dt)\n\n\

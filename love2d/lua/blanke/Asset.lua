@@ -4,6 +4,13 @@ Asset = Class{
 	info = {},
 	paths_used = {},
 
+	load = function()
+		Asset.add('assets', nil, true)
+		Asset.add('scenes', nil, true)
+		Asset.add('scripts', nil, true)
+		Asset.loadScripts()
+	end,
+
 	loadScripts = function()
 		if Asset.info['script'] then
 			for a, asset in pairs(Asset.info['script']) do

@@ -6,6 +6,19 @@ let color_vars = {
 }
 let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
 
+module.exports.keywords = ['local']
+
+// only vars starting with 'local'
+module.exports.user_words = {
+	'var':[
+		/(?:(?:local\s+)(?!\.)([a-zA-Z_]\w*),?\s*)[^\n\r\.\:]+?(?!=\s*function)(?==)/g
+	],
+	'fn':[
+		/(?:local\s+)(?!\.)([a-zA-Z_]\w*)\s*=\s*function\s*\(/g,
+		/function\s+(?!\.)([a-zA-Z_]\w*)\s*\(/g
+	]
+}
+
 module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Asset','Input','Image','Scene','Bezier','Window','math'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
@@ -52,7 +65,8 @@ module.exports.self_reference = {
 
 module.exports.completions = {
 	"global":[
-		{fn:"Image", vars:{ name:'images/ground.png -> Image(\"ground\")' }}
+		{fn:"Image", vars:{ name:'images/ground.png -> Image(\"ground\")' }},
+		{prop:"game_width"}
 	],
 	"blanke-blanke":[
 		{fn:"init", vars:{ first_state:'State the game should start in' }},
@@ -121,7 +135,8 @@ module.exports.completions = {
 		{fn:"closest_point", info:'Entity only. get Entity closest to point', vars:{ x:'', y:'' }},
 		{fn:"closest", info:'Entity only. get Entity closest to entity', vars:{ entity:'' }},
 		{fn:"size", info:'number of children'},
-		{fn:"sort", vars:{ attribute:'', descending:'default: false' }}
+		{fn:"sort", vars:{ attribute:'', descending:'default: false' }},
+		{fn:"find", vars:{ key:'', val:'' }, info:'given : what happens</br>key : return index of v where v == key</br>key, val : return (element, index) where group[index][key] == val'}
 	],
 	"blanke-bezier-instance":[
 		{fn:"addPoint", vars:{ x:'', y:'', i:'optional index. -1 = last' }},
@@ -233,6 +248,12 @@ module.exports.completions = {
 			frames:'{\'1-2\', 1} means columns 1-2 and row 1', 
 			frame_size:'{32,32} means each frame is 32 by 32', 
 			speed:'0.1 smaller = faster'
+		}},
+		{fn:"addShape", vars:{
+			name:'',
+			shape:'rectangle / polygon / circle / point',
+			shape_size: '{left,top,width,height} / {x1,y1,x2,y2,...} / {x,y,radius} / {x,y}',
+			tag:'optional'
 		}},
 		{fn:"drawSprite",vars:{ name:'calls default draw function for given animation name' }},
 

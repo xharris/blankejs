@@ -475,7 +475,7 @@
 }
 .content[data-type="Code"] .gutter-evt i {
   color: #537f7e;
-  transition: all ease-in-out 0.2s;
+  pointer-events: none;
 }
 .content[data-type="Code"] .gutter-evt:hover i {
   color: #c5d9d9;
@@ -512,7 +512,7 @@
 }
 .content[data-type="Code"] .fn-helper {
   position: absolute;
-  bottom: 0px;
+  bottom: 10px;
   left: 0px;
   right: 0px;
   padding: 4px;
@@ -537,6 +537,7 @@
 }
 .content[data-type="Code"] .fn-helper.hidden {
   height: 0px;
+  padding: 0px;
 }
 .content[data-type="Code"] .fn-helper .grayed-out {
   color: #757575;

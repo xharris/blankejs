@@ -1,9 +1,30 @@
-BlankE.addEntity("Ship")
-
 Input.set("left","left","a")
 Input.set("right","right","d")
 Input.set("thrust","up","w")
 Input.set("brake","down","s")
+Input.set("shoot","space")
+
+BlankE.addEntity("Bullet")
+
+function Bullet:init()
+	self.speed = 700
+	self:addShape("main","circle",{0,0,1})
+	Timer(1.5):after(function() self:destroy() end):start()
+end
+
+function Bullet:update(dt)
+	if self.x > game_width then self.x = 0 end
+	if self.x < 0 then self.x = game_width end
+	if self.y > game_height then self.y = 0 end
+	if self.y < 0 then self.y = game_height end
+end
+
+function Bullet:draw()
+	Draw.setColor("white")
+	Draw.circle("fill",self.x,self.y,1)
+end
+
+BlankE.addEntity("Ship")
 
 function Ship:init()
 	self.img_ship = Image("ship")
@@ -21,6 +42,9 @@ function Ship:init()
 	self.move_angle = 0
 	self.move_speed = 200
 	self.accel = 4
+	self.can_shoot = true
+	
+	self.bullets = Group()
 end
 
 function Ship:update(dt)
@@ -55,6 +79,19 @@ function Ship:update(dt)
 	if self.y > game_height then self.y = 0 end
 	if self.x < 0 then self.x = game_width end
 	if self.y < 0 then self.y = game_height end
+	
+	-- SHOOTING
+	if self.can_shoot and Input("shoot").released then
+		local new_bullet = Bullet()
+		new_bullet.x = self.x
+		new_bullet.y = self.y
+		new_bullet.direction = self.img_ship.angle - 90
+		self.bullets:add(new_bullet)
+		
+		-- put shooting on cooldown
+		self.can_shoot = false
+		Timer(0.05):after(function() self.can_shoot = true end):start()
+	end
 end
 
 function Ship:move(speed)
@@ -73,4 +110,5 @@ function Ship:draw()
 	self.img_thrust:draw(self.x, self.y)
 	
 	self:drawDebug()
+	self.bullets:call("draw")
 end

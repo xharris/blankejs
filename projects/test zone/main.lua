@@ -2,7 +2,6 @@
 BlankE = require('blanke.Blanke')
 
 function love.load()
-	Window.setResolution(5)
 	BlankE.draw_debug = true
 	
 	Input.set("lclick","mouse.1")
@@ -13,8 +12,8 @@ function love.load()
 	Input.set("move_u","up","w")
 	Input.set("move_d","down","s")
 		
-	BlankE.init("PlatformState",{
-		plugins={"Platformer"}	
+	BlankE.init("MainState",{
+		plugins={"Platformer"}
 	})
 	
 	Draw.setBackgroundColor("white")

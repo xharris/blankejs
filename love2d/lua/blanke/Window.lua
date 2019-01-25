@@ -2,33 +2,38 @@ Window = {
 	aspect_ratio = {4,3},
 	resolution = 3,
 	scale_mode = 'scale',
-
 	aspect_ratios = { {4,3},{5,4},{16,10},{16,9} },
 	resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 },--640, 800, 960, 1024, 1280, 1400, 1440, 1600, 1856, 1920, 2048 },
 	
+	detectAspectRatio = function()
+		-- detect aspect ratio
+		local w, h = love.window.getDesktopDimensions()
+		for r, ratio in ipairs(Window.aspect_ratios) do
+			if w * (ratio[2] / ratio[1]) == h then
+				Window.aspect_ratio = ratio
+			end
+		end
+	end,
+
 	getResolution = function(index)
 		Window.resolution = ifndef(index, Window.resolution)
 		local res = Window.resolutions[Window.resolution]
 		return res, res / Window.aspect_ratio[1] * Window.aspect_ratio[2]
 	end,
 
-	setResolution = function(w, h, resize_canvas)
+	setResolution = function(w, h)
 		if not h then
 			w, h = Window.getResolution(w)
 		end
-		if resize_canvas then
-			_iterateGameGroup('Canvas', function(obj)
-				canvas:resize(w,h)
-			end)
-		end
 		love.window.updateMode(w,h)
 		updateGlobals(0)
+		return w, h
 	end,
 
 	getFullscreen = love.window.getFullscreen,
 	setFullscreen = love.window.setFullscreen,
-	toggleFullscreen = function()
-		Window.setFullscreen(not Window.getFullscreen())
+	toggleFullscreen = function(type)
+		Window.setFullscreen(not Window.getFullscreen(),type)
 	end,
 }
 

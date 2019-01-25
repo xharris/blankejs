@@ -15,7 +15,7 @@ Debug = {
 
             love.graphics.push()
             local alpha = 255
-            local y = BlankE.top + (i_line-1)*fnt_height
+            local y = (i_line-1)*fnt_height
             if y > win_height/2 then
                 alpha = 255 - ((y-win_height/2)/(win_height/2)*255)
             end 
@@ -44,7 +44,7 @@ Debug = {
         local new_line = table.concat(table.toString({...}),'\t')        
         if Debug._last_line == new_line then
             Debug._duplicate_count = Debug._duplicate_count + 1
-            Debug.lines[#Debug.lines] = new_line .. '('..(Debug._duplicate_count+1)..')'
+            Debug.lines[1] = new_line .. '('..(Debug._duplicate_count+1)..')'
         else
             Debug._duplicate_count = 0
             
