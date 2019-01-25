@@ -401,7 +401,7 @@ class Code extends Editor {
 				}
 
 				function globalActivator() {
-					return (word.trim().length > 0 && !comp_activators.includes(activator));
+					return (word.trim() != '' && !comp_activators.includes(activator));
 				}
 
 				let hint_list = [];

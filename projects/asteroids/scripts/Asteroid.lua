@@ -43,7 +43,7 @@ function Asteroid:hit()
 		local a2 = Asteroid(self.size + 1)
 		a1.x, a1.y = self.x, self.y 
 		a2.x, a2.y = self.x, self.y
-		
+	
 		a1.direction = self.direction - 90
 		a1.parent = self
 		a2.direction = self.direction + 90

@@ -12,9 +12,12 @@ module.exports.keywords = [
 ]
 
 // only vars starting with 'local'
+// (?:(?:local\s+|,\s*)(?!\.)([a-zA-Z_]\w*)[,\n\r]?\s*)[^\n\r\.\:]+?(?:(?!=\s*function)(?==)|[\n\r])
 module.exports.user_words = {
 	'var':[
-		/(?:(?:local\s+)(?!\.)([a-zA-Z_]\w*),?\s*)[^\n\r\.\:]+?(?!=\s*function)(?==)/g
+		/local\s+([a-zA-Z_]\w*)(?!=\s*function)/g,
+		/local\s+(?:[a-zA-Z_]\w*,\s*)+([a-zA-Z_]\w*)(?!=\s*function)/g,
+		
 	],
 	'fn':[
 		/(?:local\s+)(?!\.)([a-zA-Z_]\w*)\s*=\s*function\s*\(/g,

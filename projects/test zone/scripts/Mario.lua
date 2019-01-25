@@ -13,3 +13,10 @@ function Mario:update(dt)
 	if Input("move_u").pressed then self.y = self.y - s end
 	if Input("move_d").pressed then self.y = self.y + s end
 end
+
+--[[
+local bob1 = Mario()
+local bob2, bob3 = Mario(), Mario()
+local bob4, bob5 = 1, 3
+local bob6, bob7
+]]
