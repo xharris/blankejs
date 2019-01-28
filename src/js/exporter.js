@@ -7,7 +7,8 @@ class Exporter extends Editor {
 		// setup default settings
 		if (!app.project_settings.export) app.project_settings.export = {};
 		ifndef_obj(app.project_settings.export, {
-			name: nwPATH.basename(app.project_path)
+			name: nwPATH.basename(app.project_path),
+			remove_unused: true
 		});
 
 		this.setupDragbox();
@@ -45,12 +46,13 @@ class Exporter extends Editor {
 		this.appendChild(this.el_platforms);
 
 		// extra options
-
 		this.el_export_form = new BlankeForm([
-			['name', 'text', {'default':app.project_settings.export.name}]
+			['name', 'text', {'default':app.project_settings.export.name}],
+			['remove_unused','checkbox',{'default':app.project_settings.export.remove_unused,label:"remove unused classes"}]
 		]);
 		this.el_export_form.container.classList.add("dark");
 		this.el_export_form.onChange('name',(val) => app.project_settings.export.name = val);
+		this.el_export_form.onChange('remove_unused',(val) => app.project_settings.export.remove_unused = val);
 
 		this.appendChild(this.el_export_form.container);
 	}
@@ -88,7 +90,8 @@ class Exporter extends Editor {
 
 		// save values used
 		app.project_settings.export = {
-			'name':this.el_export_form.getValue("name")
+			'name':this.el_export_form.getValue("name"),
+			'remove_unused':this.el_export_form.getValue("remove_unused")
 		}
 		app.saveSettings();
 	}

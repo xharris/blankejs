@@ -9,11 +9,14 @@ function Asteroid:init(size)
 	self.sprite_xoffset = -self.sprite_width / 2
 	self.sprite_yoffset = -self.sprite_height/ 2
 	
+	bob = Effect("chroma_shift","static")
+	
+	
 	size = ifndef(size, 1)
 	self.size = size
 	self.sprite_xscale = 1 / size
 	self.sprite_yscale = 1 / size
-	
+		
 	-- random starting speed
 	self.speed = randRange(-60,-80,60,80)
 	self.direction = randRange(0,360)

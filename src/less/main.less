@@ -882,9 +882,14 @@ body:before, body:after {
     	}
 	}
 	
+	.form-group {
+		margin-bottom: 5px;
+	}
+
 	.form-label {
 		margin-top: 4px;
 		margin-bottom: 2px;
+		.no-select();
 	}
 
 	.form-text, .form-select {
@@ -920,6 +925,86 @@ body:before, body:after {
 			outline: 1px solid @ide-green;
 	    	outline-offset: 1px;
     	}
+	}
+
+	.form-group[data-type="checkbox"] {
+		border: 1px solid gray;
+	    border-radius: 2px;
+	    display: inline-block;
+	    padding: 5px;
+	    cursor: pointer;
+
+		.form-label {
+			display: inline-block;
+			margin: 0px;
+			padding-left: 20px;
+		}
+
+		&:hover .form-label {
+			color: white;
+		}
+
+		.form-inputs {
+		    display: inline-block;
+			vertical-align: top;
+
+			position: relative;
+			cursor: pointer;
+			
+			.no-select();
+			.form-checkbox {
+				position: absolute;
+				opacity: 0;
+				cursor: pointer;
+				height: 0;
+				width: 0;
+			}
+
+			.checkmark {
+				position: absolute;
+			    left: 1px;
+				top: -1px;
+				height: 13px;
+				width: 13px;
+				background-color: rgba(255,255,255,0.3);
+			}
+
+			/* unchecked */
+			&:hover .form-checkbox ~ .checkmark {
+				background-color: @ide-green;
+				border-radius: 2px;
+    			overflow: hidden;
+			}
+
+			/* checked */
+			.form-checkbox:checked ~ .checkmark {
+				background-color: @ide-green;
+			}
+
+			.checkmark:after {
+				content: "";
+				position: absolute;
+				display: none;
+			}
+
+			/* show checkmark when checked */
+			.form-checkbox:checked ~ .checkmark:after {
+				display: block;
+			}
+
+			/* Style the checkmark/indicator */
+			.checkmark:after {
+			    left: 4px;
+			    top: 0px;
+			    width: 4px;
+			    height: 8px;
+			    border: solid white;
+			    border-width: 0 2px 2px 0;
+				-webkit-transform: rotate(45deg);
+				-ms-transform: rotate(45deg);
+				transform: rotate(45deg);
+			}
+		}
 	}
 
 	&.dark {

@@ -25,7 +25,7 @@ module.exports.user_words = {
 	]
 }
 
-module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Asset','Input','Image','Scene','Bezier','Window','math'];
+module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Debug','Asset','Input','Image','Scene','Bezier','Window','math'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -51,6 +51,8 @@ module.exports.instance_regex = {
 	'image': 	/\b(\w+)\s*=\s*Image\([\'\"].+[\'\"]\)\s+?/g,
 	'scene': 	/\b(\w+)\s*=\s*Scene\([\'\"]?[\w\.]+[\'\"]?\)\s+?/g,
 	'audio': 	/\b(\w+)\s*=\s*Audio\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
+	'dialog': 	/\b(\w+)\s*=\s*Dialog\((?:\d+,?){0,3}\)/g,
+	'effect': 	/\b(\w+)\s*=\s*Effect\((?:[\"\']\w+[\"\'],?)*\)/g,
 	'view': 	/\b(\w+)\s*=\s*View\([\w\.\s]*\)\s+?/g,
 	'repeater':	/\b(\w+)\s*=\s*Repeater\([\w\.\s\,\{\}\=]*\)?\s?/g,
 	'group': 	[
@@ -71,8 +73,37 @@ module.exports.self_reference = {
 
 module.exports.completions = {
 	"global":[
+		{prop:"mouse_x"},
+		{prop:"mouse_y"},
+		{prop:"game_width"},
+		{prop:"game_height"},
+		{prop:"window_width"},
+		{prop:"window_height"},
+		{prop:"game_time"},
+		{prop:"dt_mod",info:">1 speed up game, <1 slow down game"},
+
+		{prop:'Debug'},
+
+		{fn:"Audio", vars:{ name: 'audio/oof.mp3 -> Audio(\"oof\")' }},
+		{fn:"Bezier", vars:{ points: 'x1, y1, x2, y2, ...' }},
+		{fn:"Canvas", vars:{ width:'optional', height:'optional' }},
+		{fn:"Dialog", vars:{ x:'optional', y:'optional', width:'optional' }},
+		{fn:"Effect", vars:{ name1:'', name2:'', etc:'' }},
+		{fn:"Group"},
+		{fn:"Hitbox", vars:{ shape:'rectangle/circle/polygon/point', dimensions:'[x,y,w,h]/[x,y,r]/[x1,y1,...]/[x,y]', tag:'' }},
 		{fn:"Image", vars:{ name:'images/ground.png -> Image(\"ground\")' }},
-		{prop:"game_width"}
+		{prop:"Input"},
+		{fn:"Input", vars:{ name }, info:'can get info about an input'},
+		{prop:"Net"},
+		{fn:"Repeater", vars:{ texture:'Image/Canvas/Entity', options:'optional. see docs' }},
+		{prop:"Save"},
+		{fn:"Scene", vars:{ name:'' }},
+		{prop:"Signal"},
+		{prop:"Steam"},
+		{fn:"Timer", vars:{ duration:'optional' }},
+		{fn:"Tween", vars:{ var:'', value:'', duration:'optional', tween_type:'optional. linear/quad in/quad out/circ in', fn_onFinish:'optional'}},
+		{fn:"View", vars:{ entity:'optional' }},
+		{prop:"Window"}
 	],
 	"blanke-blanke":[
 		{fn:"init", vars:{ first_state:'State the game should start in' }},
@@ -84,6 +115,10 @@ module.exports.completions = {
 		{fn:"addEntity", vars:{ object_name:'Player / Powerup / ...' }},
 		{fn:"loadPlugin", vars:{ name:'' }},
 		{prop:"draw_debug"}
+	],
+	"blanke-debug":[
+		{fn:"log", vars:{ etc:'' }},
+		{fn:"clear"}
 	],
 	"blanke-math":[
 		{fn:'min',vars:{etc:''}},
@@ -153,6 +188,21 @@ module.exports.completions = {
 		{fn:"at", vars:{ t:'' }},
 		{fn:"draw"},
 		{fn:"drawPoints"}
+	],
+	"blanke-dialog-instance":[
+		{prop:"type",info:"normal, typewriter"},
+		{prop:"text_speed"},
+		{prop:"align",info:"left, center, right"},
+		{prop:"delay",info:"seconds between each text"},
+		{fn:"addText",vars:{text:''}},
+		{fn:"play",info:"plays all text"},
+		{fn:"step",info:"plays only the next text in queue"},
+		{fn:"setFont",vars:{font:''}},
+		{fn:"draw"}
+	],
+	"blanke-effect-instance":[
+		{fn:"add",vars:{shader_name:''}},
+		{fn:"draw",vars:{fn:''}}
 	],
 	"blanke-asset":[
 		{fn:"add", vars:{ path:'file or folder (ending with \'/\')' }},

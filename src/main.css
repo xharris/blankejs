@@ -516,8 +516,7 @@
   left: 0px;
   right: 0px;
   padding: 4px;
-  color: white;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: black;
   z-index: 50;
   overflow: hidden;
   opacity: 0.7;
@@ -539,11 +538,22 @@
   height: 0px;
   padding: 0px;
 }
-.content[data-type="Code"] .fn-helper .grayed-out {
+.CodeMirror-hint,
+.fn-helper {
+  color: white;
+}
+.CodeMirror-hint .grayed-out,
+.fn-helper .grayed-out {
   color: #757575;
 }
-.content[data-type="Code"] .fn-helper .arg-info,
-.content[data-type="Code"] .fn-helper .prop-info {
+.CodeMirror-hint .optional,
+.fn-helper .optional {
+  color: #b2dfdb;
+}
+.CodeMirror-hint .arg-info,
+.fn-helper .arg-info,
+.CodeMirror-hint .prop-info,
+.fn-helper .prop-info {
   max-height: 0px;
   overflow: hidden;
   margin: 0px;
@@ -551,7 +561,8 @@
   color: #C5E1A5;
   transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.content[data-type="Code"] .fn-helper .item-type {
+.CodeMirror-hint .item-type,
+.fn-helper .item-type {
   position: absolute;
   top: 0px;
   right: 0px;
@@ -578,36 +589,6 @@
   overflow-y: auto;
   line-height: 13px;
   min-width: 250px;
-}
-.CodeMirror-hints .CodeMirror-hint {
-  position: relative;
-  margin: 0;
-  padding: 0 4px;
-  border-radius: 2px;
-  /*white-space: pre;*/
-  color: white;
-  cursor: pointer;
-  padding-right: 20px;
-}
-.CodeMirror-hints .CodeMirror-hint .grayed-out {
-  color: #757575;
-}
-.CodeMirror-hints .CodeMirror-hint .arg-info,
-.CodeMirror-hints .CodeMirror-hint .prop-info {
-  max-height: 0px;
-  overflow: hidden;
-  margin: 0px;
-  padding-left: 20px;
-  color: #C5E1A5;
-  transition: all ease-in-out 0.1s;
-}
-.CodeMirror-hints .CodeMirror-hint .item-type {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  margin: 0px;
-  margin-right: 3px;
-  color: rgba(255, 255, 255, 0.35);
 }
 .CodeMirror-hints .CodeMirror-hint-active {
   background: #233e2e;
@@ -2645,9 +2626,25 @@ body:after {
   outline: 1px solid #5ad9a4;
   outline-offset: 1px;
 }
+.form-container .form-group {
+  margin-bottom: 5px;
+}
 .form-container .form-label {
   margin-top: 4px;
   margin-bottom: 2px;
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
 }
 .form-container .form-text,
 .form-container .form-select {
@@ -2680,6 +2677,86 @@ body:after {
   background: rgba(255, 255, 255, 0.6);
   outline: 1px solid #5ad9a4;
   outline-offset: 1px;
+}
+.form-container .form-group[data-type="checkbox"] {
+  border: 1px solid gray;
+  border-radius: 2px;
+  display: inline-block;
+  padding: 5px;
+  cursor: pointer;
+}
+.form-container .form-group[data-type="checkbox"] .form-label {
+  display: inline-block;
+  margin: 0px;
+  padding-left: 20px;
+}
+.form-container .form-group[data-type="checkbox"]:hover .form-label {
+  color: white;
+}
+.form-container .form-group[data-type="checkbox"] .form-inputs {
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  /* unchecked */
+  /* checked */
+  /* show checkmark when checked */
+  /* Style the checkmark/indicator */
+}
+.form-container .form-group[data-type="checkbox"] .form-inputs .form-checkbox {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+.form-container .form-group[data-type="checkbox"] .form-inputs .checkmark {
+  position: absolute;
+  left: 1px;
+  top: -1px;
+  height: 13px;
+  width: 13px;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+.form-container .form-group[data-type="checkbox"] .form-inputs:hover .form-checkbox ~ .checkmark {
+  background-color: #5ad9a4;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.form-container .form-group[data-type="checkbox"] .form-inputs .form-checkbox:checked ~ .checkmark {
+  background-color: #5ad9a4;
+}
+.form-container .form-group[data-type="checkbox"] .form-inputs .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+.form-container .form-group[data-type="checkbox"] .form-inputs .form-checkbox:checked ~ .checkmark:after {
+  display: block;
+}
+.form-container .form-group[data-type="checkbox"] .form-inputs .checkmark:after {
+  left: 4px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
 }
 .form-container.dark .form-label {
   color: #9e9e9e;

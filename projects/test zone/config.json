@@ -164,7 +164,8 @@
         }
     },
     "export": {
-        "name": "lebowski"
+        "name": "lebowski",
+        "remove_unused": true
     },
     "audio": {
         "audio\\m_hit.wav": {

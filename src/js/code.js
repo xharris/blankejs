@@ -213,6 +213,9 @@ class Code extends Editor {
 
 		// box to show last viewed function (until ')' is pressed?)
 		this.el_fn_helper = app.createElement('div',['fn-helper','hidden']);
+		this.el_fn_helper.addEventListener("mouseenter",function(){
+			this_ref.refreshFnHelperTimer();
+		});
 		this.appendChild(this.el_fn_helper);
 		this.fn_helper_timer = null;
 
@@ -576,6 +579,7 @@ class Code extends Editor {
 	getCompleteHTML(hint) {
 		let item_type = '';
 		let text, render = '', arg_info = '';
+		let re_optional = /\s*opt\w*\.?\s*/;
 
 		if (hint.fn) {
 			if (hint.callback)
@@ -590,15 +594,21 @@ class Code extends Editor {
 			text = hint.fn;
 			if (hint.vars) {
 				for (var arg in hint.vars) {
-					if (hint.vars[arg] != "")
-						arg_info += arg + " : " + hint.vars[arg] + "<br/>";
+					let new_description = hint.vars[arg].replace(re_optional, '');
+					if (new_description != "") 
+						arg_info += arg + " : " + new_description + "<br/>";
 				}
 			}
 
 			function specialReplacements(value, index, array) {
-				if (value == 'etc') return '<span class="grayed-out">...</span>';
+				if (value == 'etc')
+					return '<span class="grayed-out">...</span>';
+				// is arg optional?
+				if (re_optional.test(hint.vars[value])) 
+					return '<span class="optional">['+value+']</span>';
 				return value;
 			}
+			// named args or listed args
 			let paren = ["(",")"];
 			if (hint.named_args) {
 				paren = ["{","}"];

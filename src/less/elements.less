@@ -59,8 +59,7 @@
 	    left: 0px;
 	    right: 0px;
 	    padding: 4px;
-	    color: white;
-	    background-color: rgba(0,0,0,0.6);
+	    background-color: black;
 	    z-index: 50;
 	    overflow: hidden;
 	    opacity: 0.7;
@@ -84,29 +83,37 @@
 	    	height: 0px;
 	    	padding: 0px;
 	    }
+	}
+}
 
-	    .grayed-out {
-    		color: #757575;
-    	}
+.CodeMirror-hint, .fn-helper {
+	color: white;
 
-		.arg-info, .prop-info {
-			max-height: 0px;
-			overflow: hidden;
-			margin: 0px;
-			padding-left: 20px;
-			color: #C5E1A5;
-				
-			transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    	}
+	.grayed-out {
+		color: #757575;
+	}
 
-    	.item-type {
-		    position: absolute;
-		    top: 0px;
-		    right: 0px;
-		    margin: 4px;
-		    margin-right: 3px;
-		    color: rgba(255,255,255,0.35);
-    	}
+	.optional {
+		color: #b2dfdb;
+	}
+
+	.arg-info, .prop-info {
+		max-height: 0px;
+		overflow: hidden;
+		margin: 0px;
+		padding-left: 20px;
+		color: #C5E1A5;
+			
+		transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.item-type {
+	    position: absolute;
+	    top: 0px;
+	    right: 0px;
+	    margin: 4px;
+	    margin-right: 3px;
+	    color: rgba(255,255,255,0.35);
 	}
 }
 
@@ -133,40 +140,6 @@
 	overflow-y: auto;
 	line-height: 13px;
 	min-width: 250px;
-
-	.CodeMirror-hint {
-		position: relative;
-		margin: 0;
-		padding: 0 4px;
-		border-radius: 2px;
-		/*white-space: pre;*/
-		color: white;
-		cursor: pointer;
-    	padding-right: 20px;
-
-    	.grayed-out {
-    		color: #757575;
-    	}
-
-		.arg-info, .prop-info {
-			max-height: 0px;
-			overflow: hidden;
-			margin: 0px;
-			padding-left: 20px;
-			color: #C5E1A5;
-				
-			transition: all ease-in-out 0.1s;
-    	}
-
-    	.item-type {
-		    position: absolute;
-		    top: 0px;
-		    right: 0px;
-		    margin: 0px;
-		    margin-right: 3px;
-		    color: rgba(255,255,255,0.35);
-    	}
-	}
 
 	.CodeMirror-hint-active {
 		background: #233e2e; /* #558b2f; */

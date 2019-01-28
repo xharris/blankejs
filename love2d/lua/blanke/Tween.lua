@@ -5,15 +5,15 @@ Tween = Class{
 	-- t->dt, d->d, b->a, c->b
 	tween_func = {
 		["linear"] = function(a, b, d, dt) return b*dt/d+a end,
-		["quadratic in"] = function(a, b, d, dt) dt=dt/d; return b*dt*dt+a end,
-		["quadratic out"] = function(a, b, d, dt) dt=dt/d; return -b*dt*(dt-2)+a end,
-		["quadratic in/out"] = function(a, b, d, dt)
+		["quad in"] = function(a, b, d, dt) dt=dt/d; return b*dt*dt+a end,
+		["quad out"] = function(a, b, d, dt) dt=dt/d; return -b*dt*(dt-2)+a end,
+		["quad in/out"] = function(a, b, d, dt)
 			dt = dt / d/2
 			if (dt < 1) then return b/2*dt*dt+a end
 			dt=dt-1	
 			return -b/2*(dt*(dt-2)-1)+a
 		end,
-		["circular in"] = function(a, b, d, dt) dt=dt/d; return -b*(math.sqrt(1-(dt*dt))-1)+a end
+		["circ in"] = function(a, b, d, dt) dt=dt/d; return -b*(math.sqrt(1-(dt*dt))-1)+a end
 	},
 
 	init = function(self, var, value, duration, func_type, onFinish)

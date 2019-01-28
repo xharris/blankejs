@@ -1,14 +1,14 @@
 Dialog = Class{
 	init = function (self, x, y, width)
-        self.x = x
-        self.y = y
+        self.x = ifndef(x,0)
+        self.y = ifndef(y,0)
         self.width = ifndef(width, game_width - x)
         
         self.type = "normal" -- normal, typewriter
         self.font_size = 12
         self.text_speed = 20
         self.align = "left"
-        self.delay = 2000
+        self.delay = 2
         
         self.texts = {}
         self.text_char = 1
@@ -53,12 +53,12 @@ Dialog = Class{
 
         if isPlayAll and #self.texts > 0 then
             -- show next text after delay
-            self.timer:after(self.delay/1000, function()
+            self.timer:after(self.delay, function()
                 self:_normal("", isPlayAll)
             end)
         else
             -- set text to nothing
-            self.timer:after(self.delay/1000, function() self:reset() end)
+            self.timer:after(self.delay, function() self:reset() end)
         end
         return self
     end,
@@ -78,26 +78,26 @@ Dialog = Class{
 
             if isPlayAll and #self.texts > 0 then
                 -- show next text after delay
-                self.timer:after(self.delay/1000, function()
+                self.timer:after(self.delay, function()
                     self.text_char = 1
                     self:_typewriter("", isPlayAll)
                 end)
             else
                 -- set text to nothing
-                self.timer:after(self.delay/1000, function() self:reset() end)
+                self.timer:after(self.delay, function() self:reset() end)
             end
             
         end
         return self
     end,
     
-    play = function(self)
+    step = function(self)
         self:_resetPrintVars()
         self["_" .. self.type](self, "", false)
         return self
     end,
     
-    playAll = function(self)
+    play = function(self)
         self:_resetPrintVars()
         self["_" .. self.type](self, "", true)
         return self

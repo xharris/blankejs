@@ -33,6 +33,7 @@ Effect = Class{
     add = function(self, name) 
         table.insert(self.shaders, Shader(name))
         self[name] = {}
+        return self
     end,
 
     update = function(self, dt)
