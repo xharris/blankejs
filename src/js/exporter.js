@@ -1,3 +1,18 @@
+var removable = ["Bezier","Dialog","Effect","Map","Net","Repeater","Save","Steam","Timer","Tween","UI","View"];
+var remove_path = {
+	"Steam":[
+		'blanke/Steam.lua',
+		'blanke/extra/steamworks',
+		'blanke/extra/ffi',
+		'blanke/extra/steamworks/**/*',
+		'blanke/extra/ffi/**/*'
+	],
+	"View":[
+		'blanke/View.lua',
+		'blanke/Camera.lua'
+	]
+}; // overrides default path building
+
 class Exporter extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -61,24 +76,59 @@ class Exporter extends Editor {
 		let love_path = nwPATH.join(dir, app.project_settings.export.name+".love");
 		let engine_path = app.settings.engine_path;
 
-		let output = nwFS.createWriteStream(love_path);
-		let archive = nwZIP('zip',{
-			// zlib: { level: 9 }
-		});
+		function startZipping(eng_ignore) {
+			let output = nwFS.createWriteStream(love_path);
+			let archive = nwZIP('zip',{
+				// zlib: { level: 9 }
+			});
 
-		output.on('close', function(){
-			// done
-			if (cb) cb(love_path);
-		});
-		archive.pipe(output);
-		archive.glob("**/*",{
-			cwd: nwPATH.join(engine_path,"lua")
-		})
-		archive.glob("**/*",{
-			cwd: app.project_path,
-			ignore: ["dist","dist/**/*"]
-		});
-		archive.finalize();
+			output.on('close', function(){
+				// done
+				if (cb) cb(love_path);
+			});
+			archive.pipe(output);
+			archive.glob("**/*",{
+				cwd: nwPATH.join(engine_path,"lua"),
+				ignore: (eng_ignore || [])
+			})
+			archive.glob("**/*",{
+				cwd: app.project_path,
+				ignore: ["dist","dist/**/*"]
+			});
+			archive.finalize();
+		}
+
+		// remove uneccesary files
+		if (app.project_settings.export.remove_unused) {
+			blanke.toast('Removing unused classes');
+
+			app.getAssets('script',function(files){
+				// iterate all scripts in project
+				for (let fname of files) {
+					let data = nwFS.readFileSync(fname,'utf-8');
+					for (let r in removable) {
+						// check if it's used anywhere in this file
+						if (data.includes(removable[r])) {
+							removable.splice(r,1);
+						}
+					}
+				}
+				// zip without the removed classes
+				let new_removable = [];
+				for (let key of removable) {
+					if (remove_path[key])
+						new_removable = new_removable.concat(remove_path[key]);
+					else
+						new_removable.push(nwPATH.join('blanke',key+'.lua'));
+				}
+				console.log(new_removable)
+				startZipping(new_removable);
+			});
+		} else {
+			startZipping();
+		}
+
+
 	}
 
 	static openDistFolder(os) {
@@ -105,7 +155,6 @@ class Exporter extends Editor {
 		blanke.toast("Starting export for "+target_os, 1000);
 	
 		nwFS.emptyDir(os_dir, function(err){
-
 			// create a LOVE file
 			this_ref.createLove(os_dir, function(love_path){
 				if (target_os == "love") {

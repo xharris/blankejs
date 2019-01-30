@@ -14,9 +14,6 @@ function PlatformState:enter()
 	lvl:addTileHitbox("ground")
 	
 	Scene.dont_draw = {"spawn"}
-	
-	my_eff = Effect("static")
-	--Debug.log(EffectManager.effects["chroma_shift"].string)
 end
 
 function PlatformState:update(dt)
@@ -26,9 +23,7 @@ end
 
 function PlatformState:draw()
 	main_view:draw(function()
-		--my_eff:draw(function()
-			lvl:draw()
-		--end)
+		lvl:draw()
 		penguin:draw()
 	end)
 end

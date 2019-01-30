@@ -37,7 +37,6 @@ function MainState:enter()
 	end
 end
 
-local eff = Effect("chroma shift")
 function MainState:draw()
 	rptr.spawn_x = mouse_x
 	rptr.spawn_y = mouse_y
@@ -56,11 +55,6 @@ function MainState:draw()
 	end)
 	
 	img_mask.x = game_width / 2 --sinusoidal(game_width / 4, game_width - (game_width / 4), 0.5)
-	img_mask.y = game_height / 2
-	eff.radius = sinusoidal(0,100,1)
-	eff:draw(function()
-		img_mask:draw()
-	end)
 	
 	ui_element_list:setSize(grp_elements:size())
 	--ui_element_list:draw()

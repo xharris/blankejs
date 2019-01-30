@@ -502,7 +502,7 @@ BlankE = {
         Input._releaseCheck()
 
 	    if not BlankE._is_init then return end
-	    Net.update(dt)
+	    if not Net then Net.update(dt) end
 				
     	if not BlankE.pause then
 			StateManager.iterateStateStack('update', dt)
@@ -557,7 +557,7 @@ BlankE = {
 		end)
 		love.graphics.setBlendMode('alpha')
 
-		if BlankE.draw_debug then Debug.draw() end
+		if BlankE.draw_debug and Debug then Debug.draw() end
 
         -- disable any scenes that aren't being actively drawn
         local active_scenes = 0
@@ -624,7 +624,7 @@ BlankE = {
 	end,
 
 	quit = function()
-	    Net.disconnect()
+	    if Net then Net.disconnect() end
 	    State.switch()
 	    BlankE.clearObjects(true)
 	    BlankE.restoreCallbacks()

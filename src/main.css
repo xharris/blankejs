@@ -2629,6 +2629,9 @@ body:after {
 .form-container .form-group {
   margin-bottom: 5px;
 }
+.form-container .form-group :not([data-type="checkbox"]) {
+  margin-left: 1px;
+}
 .form-container .form-label {
   margin-top: 4px;
   margin-bottom: 2px;
@@ -2679,16 +2682,21 @@ body:after {
   outline-offset: 1px;
 }
 .form-container .form-group[data-type="checkbox"] {
-  border: 1px solid gray;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 2px;
   display: inline-block;
   padding: 5px;
   cursor: pointer;
+  transition: border-color 0.2s ease-in-out;
+}
+.form-container .form-group[data-type="checkbox"]:hover {
+  border-color: #5ad9a4;
 }
 .form-container .form-group[data-type="checkbox"] .form-label {
   display: inline-block;
   margin: 0px;
   padding-left: 20px;
+  transition: color 0.2s ease-in-out;
 }
 .form-container .form-group[data-type="checkbox"]:hover .form-label {
   color: white;

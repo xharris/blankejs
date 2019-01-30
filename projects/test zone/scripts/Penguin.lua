@@ -9,8 +9,6 @@ function Penguin:init()
 	
 	self:addPlatforming(0,0,self.sprite_width,self.sprite_height)
 	self.gravity = 20
-		
-	my_eff = Effect("chroma_shift")
 end
 
 function Penguin:update(dt)	
@@ -30,8 +28,5 @@ function Penguin:update(dt)
 end
 
 function Penguin:draw()
-	my_eff.chroma_shift.radius = (mouse_x / game_width) * 20
-	my_eff:draw(function()
-		self:drawSprite()
-	end)
+	
 end

@@ -266,7 +266,7 @@ Entity = Class{
 		if self.postUpdate then self:postUpdate(dt) end
 		self.hspeed, self.vspeed = old_hspd, old_vspd
 
-		self:netSync()
+		if self.netSync then self:netSync() end
 --[[
 		entity_spash[self.classname]:update(self,
 			self.xprevious, self.yprevious, self.xprevious, self.yprevious,

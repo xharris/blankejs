@@ -884,6 +884,10 @@ body:before, body:after {
 	
 	.form-group {
 		margin-bottom: 5px;
+
+		:not([data-type="checkbox"]) {
+			margin-left: 1px;
+		}
 	}
 
 	.form-label {
@@ -928,16 +932,23 @@ body:before, body:after {
 	}
 
 	.form-group[data-type="checkbox"] {
-		border: 1px solid gray;
+		border: 1px solid rgba(255,255,255,0.3);
 	    border-radius: 2px;
 	    display: inline-block;
 	    padding: 5px;
 	    cursor: pointer;
+	    transition: border-color 0.2s ease-in-out;
+
+	    &:hover {
+	    	border-color: @ide-green;
+	    }
 
 		.form-label {
 			display: inline-block;
 			margin: 0px;
 			padding-left: 20px;
+
+			transition: color 0.2s ease-in-out;
 		}
 
 		&:hover .form-label {
@@ -966,6 +977,7 @@ body:before, body:after {
 				top: -1px;
 				height: 13px;
 				width: 13px;
+				border-radius: 2px;
 				background-color: rgba(255,255,255,0.3);
 			}
 
