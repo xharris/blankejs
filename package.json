@@ -19,9 +19,9 @@
     ]
   },
   "scripts": {
-    "less": "lessc --strict-math=on src/less/main.less src/main.css",
+    "less": "lessc --math=strict src/less/main.less src/main.css",
     "nw": "nw .",
-    "setup-dev": "npm install nw@0.30.2-sdk",
+    "setup-dev": "npm i; npm i less -g; git submodule init; git submodule update",
     "dist": "build --tasks win-x86 --mirror https://dl.nwjs.io/ ."
   },
   "developer": {
