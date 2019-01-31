@@ -287,7 +287,7 @@ var app = {
 
 	settings: {},
 	getAppDataFolder: function(){
-		return env.APPDATA || (app.os == 'mac' ? nwPATH.join(env.HOME, 'Library/Preferences') : '/var/local');
+		return nw.App.dataPath || (app.os == 'mac' ? nwPATH.join('~','Library','Application Support','BlankE','Default') : '/var/local');
 	},
 	loadAppData: function(callback) {
 		var app_data_folder = app.getAppDataFolder();
@@ -296,12 +296,12 @@ var app = {
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
 			if (!err) {
 				app.settings = JSON.parse(data);
-				ifndef_obj(app.settings, {
-					recent_files:[],
-					engine_path:'love2d',
-					autocomplete_path:'./autocomplete.js'
-				});
 			}
+			ifndef_obj(app.settings, {
+				recent_files:[],
+				engine_path:'love2d',
+				autocomplete_path:'./autocomplete.js'
+			});
 			if (callback) callback();
 		});
 	},
@@ -309,6 +309,7 @@ var app = {
 	saveAppData: function() {
 		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
+		
 		nwFS.stat(app_data_folder, function(err, stat) {
 			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
 			nwFS.writeFile(app_data_path, JSON.stringify(app.settings));
@@ -324,8 +325,8 @@ var app = {
 						app.project_settings = JSON.parse(data);
 					} catch(e) {
 						app.project_settings = {};
-						app.saveSettings();
 					}
+					app.saveSettings();
 					if (callback) callback();
 				}
 			});
@@ -771,7 +772,12 @@ nwWIN.on('loaded', function() {
 	app.addSearchKey({key: 'New project', onSelect: function() {
 		app.newProjectDialog();
 	}});
-	if (DEV_MODE) app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
+
+	if (DEV_MODE) {
+		app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
+		app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
+	}
+
 	app.addSearchKey({key: 'Start Server', onSelect: app.runServer});
 	app.addSearchKey({key: 'Stop Server', onSelect: app.stopServer});
 
