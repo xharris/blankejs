@@ -197,5 +197,9 @@
             ],
             "image": "image\\player_walk.png"
         }
+    },
+    "export": {
+        "name": "boredom",
+        "remove_unused": true
     }
 }

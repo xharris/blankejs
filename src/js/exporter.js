@@ -73,7 +73,7 @@ class Exporter extends Editor {
 	}
 
 	createLove (dir, cb) {
-		let love_path = nwPATH.join(dir, app.project_settings.export.name+".love");
+		let love_path = nwPATH.join(dir, app.project_settings.export.name+".zip");
 		let engine_path = app.settings.engine_path;
 
 		function startZipping(eng_ignore) {
@@ -87,6 +87,7 @@ class Exporter extends Editor {
 				if (cb) cb(love_path);
 			});
 			archive.pipe(output);
+			console.log(nwPATH.join(engine_path,"lua"),eng_ignore)
 			archive.glob("**/*",{
 				cwd: nwPATH.join(engine_path,"lua"),
 				ignore: (eng_ignore || [])
@@ -121,8 +122,7 @@ class Exporter extends Editor {
 					else
 						new_removable.push(nwPATH.join('blanke',key+'.lua'));
 				}
-				console.log(new_removable)
-				startZipping(new_removable);
+				startZipping(new_removable.map(app.cleanPath));
 			});
 		} else {
 			startZipping();

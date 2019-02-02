@@ -860,7 +860,6 @@
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group .form-inputs .form-text {
   border: none;
-  outline: none;
   background-color: rgba(255, 255, 255, 0.5);
   padding: 4px;
   box-sizing: border-box;
@@ -2348,19 +2347,22 @@ body:after {
 #search-container #search-results {
   position: absolute;
   top: 100%;
+  min-width: 155px;
 }
 #search-container #search-results .result {
   cursor: default;
-  padding: 2px 15px;
+  padding: 3px 15px;
   transition: all ease-in-out 0.2s;
   outline: #000000;
-  background-color: #000000;
+  background-color: #1c2027;
   color: #f0f0f0;
 }
 #search-container #search-results .result.focused,
 #search-container #search-results .result:hover {
+  position: relative;
   background-color: #fafafa;
   color: #212121;
+  box-shadow: 0 0 5px 1px rgba(90, 217, 164, 0.5), inset 0 0 10px 1px rgba(0, 0, 0, 0.25);
 }
 #welcome {
   position: relative;
@@ -2619,18 +2621,19 @@ body:after {
 }
 .form-container input {
   outline: 1px solid rgba(90, 217, 164, 0);
-  outline-offset: 0px;
+  outline-offset: -1px;
   transition: all ease-in-out 0.1s;
 }
 .form-container input:focus {
   outline: 1px solid #5ad9a4;
-  outline-offset: 1px;
+  outline-offset: 0px;
+  box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 .form-container .form-group {
   margin-bottom: 5px;
 }
 .form-container .form-group :not([data-type="checkbox"]) {
-  margin-left: 1px;
+  /* margin-left: 1px; */
 }
 .form-container .form-label {
   margin-top: 4px;

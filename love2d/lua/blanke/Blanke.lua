@@ -1,7 +1,9 @@
 package.path = package.path .. ";./?/init.lua"
 blanke_path = (...):match("(.-)[^%.]+$")
 function blanke_require(import)
-	return require(blanke_path..import)
+	local status, mod = pcall(require, blanke_path..import)
+	if status then return mod end
+	return nil
 end
 
 
@@ -114,8 +116,10 @@ for m, mod in ipairs(modules) do
 end
 -- loop separately to add other stuff
 for m, mod in ipairs(modules) do
-	if not _G[mod].classname then _G[mod].classname = mod end
-	if mod ~= "Group" and not _G[mod].instances then _G[mod].instances = Group() end
+	if _G[mod] then 
+		if not _G[mod].classname then _G[mod].classname = mod end
+		if mod ~= "Group" and not _G[mod].instances then _G[mod].instances = Group() end
+	end
 end
 Physics = love.physics
 
@@ -502,7 +506,7 @@ BlankE = {
         Input._releaseCheck()
 
 	    if not BlankE._is_init then return end
-	    if not Net then Net.update(dt) end
+	    if Net then Net.update(dt) end
 				
     	if not BlankE.pause then
 			StateManager.iterateStateStack('update', dt)

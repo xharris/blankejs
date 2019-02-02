@@ -1853,8 +1853,13 @@ class SceneEditor extends Editor {
 		let re_img_path = /.*(assets\/.*)/g;
 		for (let obj of this.images) {
 			let orig_path = app.cleanPath(nwPATH.relative(app.project_path,obj.path))
-			let img_path = re_img_path.exec(orig_path)[1];
-			
+			let regex_result = re_img_path.exec(orig_path);
+			let img_path;
+			if (regex_result)
+				img_path = regex_result[1];
+			else
+				return;
+
 			let exp_img = {
 				path: img_path,
 				snap: obj.snap,
