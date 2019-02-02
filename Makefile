@@ -1,6 +1,12 @@
 do:
 	make -B blanke
 
+setup:
+	npm install
+	npm install less -g
+	git submodule init
+	git submodule update
+
 love:
 	love2d/love.exe projects/penguin
 
