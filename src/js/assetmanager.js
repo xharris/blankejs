@@ -135,11 +135,11 @@ class AssetManager extends Editor {
 		let old_path = path;
 		el_file_form.onChange('filename', function(value){
 			blanke.cooldownFn('file_rename', 2000, function(){
-				let new_path = nwPATH.resolve(nwPATH.join(app.project_path, 'assets', file_folder, value[0]+file_ext));
+				let new_path = nwPATH.resolve(nwPATH.join(app.project_path, 'assets', file_folder, value+file_ext));
 
 				// rename element
 				this_ref.file_elements[new_path] = this_ref.file_elements[old_path];
-				this_ref.file_elements[new_path].innerHTML = value[0]+file_ext;
+				this_ref.file_elements[new_path].innerHTML = value+file_ext;
 				this_ref.file_elements[new_path].setAttribute('data-path',new_path);
 				delete this_ref.file_elements[old_path];
 
@@ -147,13 +147,13 @@ class AssetManager extends Editor {
 				nwFS.rename(old_path, new_path);
 
 				old_path = new_path;
-				blanke.toast("Renamed file to \'"+value[0]+file_ext+"\'");
+				blanke.toast("Renamed file to \'"+value+file_ext+"\'");
 			});
 		});
 		el_file_form.onChange('folder', function(value){
 			blanke.cooldownFn('folder_rename', 2000, function(){
 				let old_path = nwPATH.resolve(nwPATH.join(app.project_path, 'assets', file_folder, nwPATH.basename(path)));
-				let new_path = nwPATH.resolve(nwPATH.join(app.project_path, 'assets', value[0], nwPATH.basename(path)));				
+				let new_path = nwPATH.resolve(nwPATH.join(app.project_path, 'assets', value, nwPATH.basename(path)));				
 
 				try {
 					nwFS.move(old_path, new_path, {overwrite:true},function(err){ // move file
@@ -168,7 +168,7 @@ class AssetManager extends Editor {
 
 							}
 						}
-						blanke.toast("File moved to \'"+nwPATH.join(app.project_path, 'assets', value[0], nwPATH.basename(path))+"\'");
+						blanke.toast("File moved to \'"+nwPATH.join(app.project_path, 'assets', value, nwPATH.basename(path))+"\'");
 						this.file_refresh_enabled = true;
 					});
 

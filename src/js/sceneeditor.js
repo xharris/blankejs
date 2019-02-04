@@ -235,11 +235,11 @@ class SceneEditor extends Editor {
 		// object name
 		this.el_object_form.onChange('name', function(value){
 			if (this_ref.curr_object) {
-				if (value[0] == '')
+				if (value == '')
 					return this_ref.curr_object.name;
 				else {
 					delete this_ref.obj_info[this_ref.curr_object.name];
-					this_ref.curr_object.name = value[0];
+					this_ref.curr_object.name = value;
 					this_ref.refreshObjectList();
 					this_ref.export();
 				}
@@ -249,7 +249,7 @@ class SceneEditor extends Editor {
 		// object color
 		this.el_object_form.onChange('color', function(value){
 			if (this_ref.curr_object) {
-				this_ref.curr_object.color = value[0];
+				this_ref.curr_object.color = value;
 				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
 					this_ref.drawPoly(this_ref.curr_object, obj.points, obj.poly);
 				});
@@ -361,8 +361,6 @@ class SceneEditor extends Editor {
 		});
 
 		this.el_layer_form.onChange('name', function(value){
-			value = value[0];
-
 			if (this_ref.curr_layer) {
 				if (value == '')
 					return [this_ref.curr_layer.name];

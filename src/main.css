@@ -2619,12 +2619,14 @@ body:after {
   display: inline-block;
   box-sizing: border-box;
 }
-.form-container input {
+.form-container input,
+.form-container select {
   outline: 1px solid rgba(90, 217, 164, 0);
   outline-offset: -1px;
   transition: all ease-in-out 0.1s;
 }
-.form-container input:focus {
+.form-container input:focus,
+.form-container select:focus {
   outline: 1px solid #5ad9a4;
   outline-offset: 0px;
   box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);

@@ -96,8 +96,8 @@ class SpritesheetPreview extends Editor {
 
 		// on image change event
 		this.el_sheet_form.onChange("image",function(val){
-			this_ref.selected_img = val[0];
-			let src = decodeURI(app.lengthenAsset(val[0]))
+			this_ref.selected_img = val;
+			let src = decodeURI(app.lengthenAsset(this_ref.selected_img))
 
 			this_ref.el_image.onload = function(){
 				this_ref.el_preview.innerHTML = "<img src='"+src+"'/>";
@@ -226,7 +226,6 @@ class SpritesheetPreview extends Editor {
 			} 
 		}
 
-
 		this.duration = this_ref.el_sheet_form.getValue("speed")*1000;
 	}
 
@@ -243,7 +242,6 @@ class SpritesheetPreview extends Editor {
 		this.then = now - (delta%duration);
 
 		if (frame_coords[frame]) {
-			console.log(frame, frame_coords[frame])
 			ctx.clearRect(0,0,this.el_preview.width,this.el_preview.height);
 			ctx.drawImage(this.el_image,
 				frame_coords[frame][0], frame_coords[frame][1], frame_coords[frame][2], frame_coords[frame][3],
