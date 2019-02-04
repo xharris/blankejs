@@ -11,8 +11,8 @@ function Asteroid:init(size)
 	
 	bob = Effect("chroma_shift","static")
 	
-	
 	size = ifndef(size, 1)
+
 	self.size = size
 	self.sprite_xscale = 1 / size
 	self.sprite_yscale = 1 / size
