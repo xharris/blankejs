@@ -1887,6 +1887,7 @@ body:after {
   padding: 0px;
   cursor: pointer;
   position: relative;
+  transition: transform ease-in-out 0.1s;
   margin: 0px;
   width: 23px;
   height: 23px;
@@ -1907,6 +1908,7 @@ body:after {
   border-radius: 100%;
 }
 .tool-container button:hover {
+  transform: scale(2);
   color: #f0f0f0;
   background-color: rgba(0, 0, 0, 0.5);
 }
@@ -1935,7 +1937,7 @@ body:after {
 }
 #workspace {
   background-color: transparent;
-  overflow: hidden;
+  overflow: visible;
   position: absolute;
   margin-bottom: 23px;
   margin-top: 34px;
@@ -2313,6 +2315,7 @@ body:after {
   height: 34px;
   z-index: 100;
   /* background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%); */
+  background: linear-gradient(to bottom, #39414e 30%, transparent);
 }
 #search-container * {
   -webkit-app-region: no-drag;
@@ -2564,12 +2567,14 @@ body:after {
 .blankejs-toasts {
   padding-right: 5px;
   padding-bottom: 25px;
+  text-align: right;
 }
 .blankejs-toasts .toast-container {
   background-color: white;
   border: 1px solid black;
   box-shadow: 1px 1px 5px 1px black;
   margin: 8px;
+  display: inline-block;
 }
 .blankejs-toasts .toast-container .content {
   margin: 0px;

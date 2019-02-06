@@ -113,8 +113,10 @@ body:before, body:after {
 		.ui-button-sphere();
 		cursor: pointer;
 		position: relative;
+		transition: transform ease-in-out 0.1s;
 
 		&:hover {
+			transform: scale(2);
 			color: @search-text-focus;
 			background-color: rgba(0, 0, 0, 0.5);
 		}
@@ -154,7 +156,7 @@ body:before, body:after {
 
 #workspace {
 	background-color: transparent;
-    overflow: hidden;
+    overflow: visible;
     position: absolute;
     margin-bottom: 23px;
     margin-top: 34px;
@@ -541,6 +543,7 @@ body:before, body:after {
     height: 34px;
     z-index: 100;
     /* background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%); */
+	background: linear-gradient(to bottom, #39414e 30%, transparent);
 
     * {
 		.win-nodrag();
@@ -813,16 +816,19 @@ body:before, body:after {
 .blankejs-toasts {
     padding-right: 5px;
     padding-bottom: 25px;
+    text-align: right;
     
 	.toast-container {
-	    background-color: white;
-	    border: 1px solid black;
-    	box-shadow: 1px 1px 5px 1px black;
-    	margin: 8px;
+	    background-color: transparent;
+	    /* border: 1px solid black; */
+	    box-shadow: 2px 2px 0px 1px rgba(0,0,0,0.5);
+	    margin: 4px;
+	    display: inline-block;
+	    border-radius: 4px;
+	    overflow: hidden;
 
 		.content {
-		    margin: 0px;
-		    border: 2px outset #424242;
+			margin: 0px;
 		    background-color: #424242;
 		    padding: 5px;
 		    color: #FAFAFA;

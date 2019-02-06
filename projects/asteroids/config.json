@@ -23,5 +23,9 @@
             ],
             "image": "image\\asteroids.png"
         }
+    },
+    "export": {
+        "name": "asteroids",
+        "remove_unused": true
     }
 }
