@@ -68,7 +68,8 @@
 
 			<div class="tool-container">
 				<button id="btn-play" onclick="app.play()" title="run game"><object class="blanke-icon" data="icons/run.svg" type="image/svg+xml"></object></button>
-				<button onclick="app.toggleWindowVis()" title="show/hide windows">
+				<button id="btn-export" onclick="new Exporter(app)" title="export game">E</button>
+				<button onclick="app.toggleWindowVis()" title="show/hide floating windows">
 					<object class="blanke-icon" data="icons/window_visibility.svg" type="image/svg+xml"></object>
 					<p id="dragbox-badge" class="btn-badge"></p>
 				</button>

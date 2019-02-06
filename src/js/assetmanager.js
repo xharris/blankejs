@@ -73,7 +73,7 @@ class AssetManager extends Editor {
 			el_file_row.setAttribute('data-type',file_type);
 			el_file_row.innerHTML = nwPATH.basename(path);
 			el_file_row.draggable = true;
-			el_file_row.ondragstart = defineDragData("text/plain", path);
+			el_file_row.ondragstart = defineDragData("text/plain", (path.match(/[\\\/\w]\/assets\/\w+\/(.*)\./,'')||['',path])[1] );
 
 			el_file_row.addEventListener('click',function(ev){
 				let el_files = app.getElements('.file-list > .file-row');
@@ -106,6 +106,8 @@ class AssetManager extends Editor {
 		let el_preview_container = app.createElement('div','preview-container');
 		if (file_type == 'image') {
 			let el_image = app.createElement('img');
+			el_image.setAttribute.draggable = true;
+			el_image.ondragstart = defineDragData("text/plain", path);
 			el_image.onload = function() { 
 				let el_image_size = app.createElement("span");
 				el_image_size.innerHTML = el_image.width + " x " + el_image.height;
@@ -127,7 +129,6 @@ class AssetManager extends Editor {
 
 		let file_ext = nwPATH.extname(path);
 		let file_folder = nwPATH.dirname(app.getRelativePath(path)).replace(/assets[/\\]/,'');
-		let el_file = 
 
 		el_file_form.setValue('filename', nwPATH.basename(path).replace(file_ext, ''));
 		el_file_form.setValue('folder', file_folder);

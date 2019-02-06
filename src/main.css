@@ -541,6 +541,7 @@
 .CodeMirror-hint,
 .fn-helper {
   color: white;
+  position: relative;
 }
 .CodeMirror-hint .grayed-out,
 .fn-helper .grayed-out {
@@ -564,10 +565,10 @@
 .CodeMirror-hint .item-type,
 .fn-helper .item-type {
   position: absolute;
-  top: 0px;
-  right: 0px;
-  margin: 4px;
-  margin-right: 3px;
+  bottom: 0px;
+  right: 5px;
+  line-height: 13px;
+  margin: 0px;
   color: rgba(255, 255, 255, 0.35);
 }
 .CodeMirror-hints {
