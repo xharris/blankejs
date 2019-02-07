@@ -1,3 +1,5 @@
+.PHONY: dist dist-mac
+
 do:
 	make -B blanke
 
@@ -6,6 +8,14 @@ setup:
 	npm install less -g
 	git submodule init
 	git submodule update
+
+dist:
+	npm run less
+	npm run dist
+
+dist-mac:
+	npm run less
+	npm run dist-mac
 
 love:
 	love2d/love.exe projects/penguin

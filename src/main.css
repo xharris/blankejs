@@ -1817,7 +1817,7 @@ body:after {
   -webkit-app-region: no-drag;
   width: 35px;
   height: 30px;
-  margin: 2px;
+  margin: 3px 2px;
   color: #b0bec5;
   font-size: 15px;
   float: right;
@@ -2570,15 +2570,16 @@ body:after {
   text-align: right;
 }
 .blankejs-toasts .toast-container {
-  background-color: white;
-  border: 1px solid black;
-  box-shadow: 1px 1px 5px 1px black;
-  margin: 8px;
+  background-color: transparent;
+  /* border: 1px solid black; */
+  box-shadow: 2px 2px 0px 1px rgba(0, 0, 0, 0.5);
+  margin: 4px;
   display: inline-block;
+  border-radius: 4px;
+  overflow: hidden;
 }
 .blankejs-toasts .toast-container .content {
   margin: 0px;
-  border: 2px outset #424242;
   background-color: #424242;
   padding: 5px;
   color: #FAFAFA;

@@ -501,7 +501,7 @@ BlankE = {
 		local g_x, g_y = 0,0
 
 	    updateGlobals(dt)
-	    UI.update()
+	    if UI then UI.update() end
 	    BlankE._mouse_updated = false
         Input._releaseCheck()
 

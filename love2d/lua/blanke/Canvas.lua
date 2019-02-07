@@ -41,7 +41,7 @@ Canvas = Class{
             end
             love.graphics.origin()
             Canvas._applied = Canvas._applied + 1
-            if View._transform and Canvas._applied > 1 then
+            if View and View._transform and Canvas._applied > 1 then
                 love.graphics.replaceTransform(View._transform)
             end
             love.graphics.setBlendMode("alpha")
