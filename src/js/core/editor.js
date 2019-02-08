@@ -1,5 +1,5 @@
 class Editor {
-	constructor (app) {
+	constructor () {
 		var workspace = app.getElement('#workspace');
 		this.app = app;
 		this.closed = false;

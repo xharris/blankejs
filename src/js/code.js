@@ -198,8 +198,8 @@ function refreshObjectList (filename, content) {
 }
 
 class Code extends Editor {
-	constructor (...args) {
-		super(...args);
+	constructor () {
+		super();
 		this.setupFibWindow();
 
 		var this_ref = this;
@@ -338,7 +338,12 @@ class Code extends Editor {
 			':addAnim':{
 				tooltip:'make a spritesheet animation',
 				fn:function(line_text, cm, cur){
-					let spr_prvw = new SpritesheetPreview(app);
+					// get currently used image name
+					let image_name = '';
+					if (image_name = line_text.match(/self:addAnimation{.*image\s*=\s*('|")([\\-\s\w]*)\1/)) 
+						image_name = image_name[2]
+
+					let spr_prvw = new SpritesheetPreview(image_name);
 					spr_prvw.onCopyCode = function(vals){
 						let rows = Math.floor(vals.frames/vals.columns);
 

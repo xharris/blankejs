@@ -1549,6 +1549,22 @@
   background: #5ad9a4;
   background: rgba(90, 217, 164, 0.9);
 }
+.content[data-type="SpritesheetPreview"] .image-size {
+  color: black;
+  font-size: 16px;
+  position: absolute;
+  right: 0px;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 1px;
+  margin-right: 22px;
+  bottom: 20px;
+  z-index: 10;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="SpritesheetPreview"] .image-size:hover {
+  background-color: #212121;
+  color: #E0E0E0;
+}
 .content[data-type="SpritesheetPreview"] .prvw-container {
   -webkit-touch-callout: none;
   /* iOS Safari */
@@ -1609,21 +1625,6 @@
 .content[data-type="SpritesheetPreview"] .prvw-container .frames-container .frame.ignore {
   outline-style: dashed;
   background: rgba(255, 0, 0, 0.5);
-}
-.content[data-type="SpritesheetPreview"] .prvw-container .image-size {
-  color: black;
-  font-size: 16px;
-  position: absolute;
-  bottom: 0px;
-  right: 0px;
-  margin: 2px 4px;
-  background-color: rgba(255, 255, 255, 0.7);
-  padding: 1px;
-  transition: all ease-in-out 0.2s;
-}
-.content[data-type="SpritesheetPreview"] .prvw-container .image-size:hover {
-  background-color: #212121;
-  color: #E0E0E0;
 }
 .content[data-type="Find"] .editor-content {
   padding: 5px;
@@ -2627,13 +2628,15 @@ body:after {
   box-sizing: border-box;
 }
 .form-container input,
-.form-container select {
+.form-container select,
+.form-container button {
   outline: 1px solid rgba(90, 217, 164, 0);
   outline-offset: -1px;
   transition: all ease-in-out 0.1s;
 }
 .form-container input:focus,
-.form-container select:focus {
+.form-container select:focus,
+.form-container button:hover {
   outline: 1px solid #5ad9a4;
   outline-offset: 0px;
   box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
@@ -2684,14 +2687,6 @@ body:after {
   outline: 1px solid rgba(0, 0, 0, 0.5);
   border-radius: 2px;
   transition: all ease-in-out 0.1s;
-}
-.form-container .form-button:hover {
-  outline: 1px solid #5ad9a4;
-}
-.form-container .form-button:active {
-  background: rgba(255, 255, 255, 0.6);
-  outline: 1px solid #5ad9a4;
-  outline-offset: 1px;
 }
 .form-container .form-group[data-type="checkbox"] {
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -2779,8 +2774,16 @@ body:after {
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
 }
-.form-container.dark .form-label {
-  color: #9e9e9e;
+.form-container.dark {
+  background: #212121;
+}
+.form-container.dark .form-label,
+.form-container.dark select,
+.form-container.dark button {
+  color: #eeeeee;
+}
+.form-container.dark select option {
+  background-color: #212121;
 }
 .form-container.dark input {
   color: white;

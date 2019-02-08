@@ -1,6 +1,12 @@
+function defineDragData(d_type, d_val) {
+	return function(ev) {
+		ev.dataTransfer.setData(d_type, d_val);
+	}
+}
+
 class AssetManager extends Editor {
-	constructor (...args) {
-		super(...args);
+	constructor () {
+		super();
 		var this_ref = this;
 
 		this.setupDragbox();
@@ -59,12 +65,6 @@ class AssetManager extends Editor {
 	addFile (path) {
 		let this_ref = this;
 		let file_type = app.findAssetType(path);
-
-		function defineDragData(d_type, d_val) {
-			return function(ev) {
-				ev.dataTransfer.setData(d_type, d_val);
-			}
-		}
 
 		if (file_type != 'other') {
 			let el_file_row = app.createElement("div", "file-row");

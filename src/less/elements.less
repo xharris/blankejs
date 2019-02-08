@@ -1168,6 +1168,26 @@
 	    }
 	}
 
+	.image-size { 
+	    color: black;
+	    font-size: 16px;
+	    position: absolute;
+	    right: 0px;
+	    background-color: rgba(255, 255, 255, 0.7);
+	    padding: 1px;
+	    transition: all ease-in-out 0.2s;
+	    margin-right: 22px;
+	    bottom: 20px;
+	    z-index: 10;
+
+	    transition: all ease-in-out 0.2s;
+
+	    &:hover {
+		    background-color: #212121;
+		    color: #E0E0E0;
+	    }
+	}
+
 	.prvw-container {
 		.no-select();
 		
@@ -1216,24 +1236,6 @@
 		    		outline-style: dashed;
 		    		background: rgba(255,0,0,0.5);
 		    	}
-		    }
-		}
-
-		.image-size { 
-			color: black;
-		    font-size: 16px;
-		    position: absolute;
-		    bottom: 0px;
-		    right: 0px;
-		    margin: 2px 4px;
-		    background-color: rgba(255,255,255,.7);
-		    padding: 1px;
-
-		    transition: all ease-in-out 0.2s;
-
-		    &:hover {
-			    background-color: #212121;
-			    color: #E0E0E0;
 		    }
 		}
 	}

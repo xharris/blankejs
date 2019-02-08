@@ -1,14 +1,14 @@
 class SpritesheetPreview extends Editor {
-	constructor (...args) {
-		super(...args);
+	constructor (img_name) {
+		super();
 		// TODO: add option to give default values for el_sheet_form
 		let this_ref = this;
 
 		this.setupDragbox();
 		this.removeHistory();
 		this.hideMenuButton();
-		this.container.width = 448;
-		this.container.height = 288;
+		this.container.width = 480;
+		this.container.height = 320;
 
 		this.setTitle('Spritesheet Preview');
 
@@ -23,6 +23,7 @@ class SpritesheetPreview extends Editor {
 			['frames','number',{'inputs':1}],
 			['columns','number',{'inputs':1}]
 		]);
+		this.el_sheet_form.container.classList.add("dark");
 		this.appendChild(this.el_sheet_form.container);
 
 		// add animation preview elements
@@ -45,7 +46,7 @@ class SpritesheetPreview extends Editor {
 		this.el_prvw_container.appendChild(this.el_image);
 		this.el_prvw_container.appendChild(this.el_preview);
 		this.el_prvw_container.appendChild(this.el_frames_container);
-		this.el_prvw_container.appendChild(this.el_image_size);
+		this.appendChild(this.el_image_size);
 		this.appendChild(this.el_btn_show_prvw);
 		this.appendChild(this.el_prvw_container);
 
@@ -60,7 +61,22 @@ class SpritesheetPreview extends Editor {
 		this._showNextFrame();
 
 		// scan images in project dir
-		app.getAssets("image", function(...args){ this_ref.addImage(...args); });
+		this.image_list = [];
+		app.getAssets("image", function(...args){ 
+			this_ref.addImage(...args);
+
+			// set default image if given
+			if (img_name && img_name != '') {
+				let match;
+				for (let i = 0; i < this_ref.image_list.length; i++) {
+					if (match = this_ref.image_list[i].match(/image\\([\\-\s\w]*)\./)) {
+						if (match[1] == img_name) {;
+							this_ref.setImage(this_ref.image_list[i]);
+						}
+					}
+				}
+			}
+		});
 
 		document.addEventListener("asset_added",function(){
 			app.getAssets("image", function(...args){ this_ref.addImage(...args); });
@@ -81,6 +97,7 @@ class SpritesheetPreview extends Editor {
 
 		for (let i in img_list)
 			img_list[i] = app.shortenAsset(img_list[i]);
+		this.image_list = img_list;
 
 		// image select
 		this.el_sheet_form.removeInput("image");
@@ -96,31 +113,39 @@ class SpritesheetPreview extends Editor {
 
 		// on image change event
 		this.el_sheet_form.onChange("image",function(val){
-			this_ref.selected_img = val;
-			let src = decodeURI(app.lengthenAsset(this_ref.selected_img))
-
-			this_ref.el_image.onload = function(){
-				this_ref.el_preview.innerHTML = "<img src='"+src+"'/>";
-				this_ref.el_preview.width = this_ref.el_image.width;
-				this_ref.el_preview.height = this_ref.el_image.height;
-
-				this_ref.el_image_size.innerHTML = this_ref.el_image.width + " x " + this_ref.el_image.height;
-
-				// use last used values
-				if (app.project_settings.spritesheet_prvw && app.project_settings.spritesheet_prvw[this_ref.selected_img]) {
-					this_ref.el_sheet_form.useValues(app.project_settings.spritesheet_prvw[this_ref.selected_img]);
-				}
-
-				this_ref.updateFrames();
-			}
-
-			this_ref.el_image.src = src;
+			this_ref.setImage(val);
 		});
 		for (let prop of ["name","offset","speed","frame size", "columns", "frames", "columns"]) {
 			this.el_sheet_form.onChange(prop, function(){ this_ref.updateFrames(); });
 		}
 
 		this.updateFrames();
+	}
+
+	setImage (name) {
+		let this_ref = this;
+
+		this.el_sheet_form.setValue("image", name);
+
+		this.selected_img = name;
+		let src = decodeURI(app.lengthenAsset(this.selected_img))
+
+		this.el_image.onload = function(){
+			this_ref.el_preview.innerHTML = "<img src='"+src+"'/>";
+			this_ref.el_preview.width = this_ref.el_image.width;
+			this_ref.el_preview.height = this_ref.el_image.height;
+
+			this_ref.el_image_size.innerHTML = this_ref.el_image.width + " x " + this_ref.el_image.height;
+
+			// use last used values
+			if (app.project_settings.spritesheet_prvw && app.project_settings.spritesheet_prvw[this_ref.selected_img]) {
+				this_ref.el_sheet_form.useValues(app.project_settings.spritesheet_prvw[this_ref.selected_img]);
+			}
+
+			this_ref.updateFrames();
+		}
+
+		this.el_image.src = src;
 	}
 
 	getValues () {
@@ -258,7 +283,7 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'Preview a spritesheet',
 		onSelect: function() {
-			new SpritesheetPreview(app);
+			new SpritesheetPreview();
 		},
 		tags: ['view']
 	});
