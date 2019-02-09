@@ -104,9 +104,11 @@ class Exporter extends Editor {
 			blanke.toast('Removing unused classes');
 
 			app.getAssets('script',function(files){
+				let all_data = '';
 				// iterate all scripts in project
 				for (let fname of files) {
 					let data = nwFS.readFileSync(fname,'utf-8');
+					all_data += data;
 					for (let r in removable) {
 						// check if it's used anywhere in this file
 						if (data.includes(removable[r])) {
@@ -114,7 +116,7 @@ class Exporter extends Editor {
 						}
 					}
 				}
-				// zip without the removed classes
+				// get a list of classes that shouldn't be in zip
 				let new_removable = [];
 				for (let key of removable) {
 					if (remove_path[key])
@@ -122,6 +124,19 @@ class Exporter extends Editor {
 					else
 						new_removable.push(nwPATH.join('blanke',key+'.lua'));
 				}
+				// iterate plugins too
+				let plugins = nwFS.readdirSync(nwPATH.join(app.settings.engine_path,'lua','blanke','plugins'));
+				let str_main = nwFS.readFileSync(nwPATH.join(app.project_path,"main.lua"));
+				for (let p of plugins) {
+					let name = nwPATH.parse(p).name;
+					let re_plugin = new RegExp(`\\s*\\(\\s*['"]${name}['"]\\s*\\)|BlankE\\.init\\s*\\(\\s*['"\\w\\s]+\\s*,\\s*{['"\\w\\s=,]+plugins[\\s={"'\\w,]*${name}[=}"'\\w,]*`, 'g');
+
+					if (!re_plugin.test(all_data)) 
+						new_removable.push(nwPATH.join('blanke','plugins', p));
+					
+				}
+				console.log(new_removable)
+
 				startZipping(new_removable.map(app.cleanPath));
 			});
 		} else {

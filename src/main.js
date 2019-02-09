@@ -16,7 +16,6 @@ T	sceneeditor: create new scene, remove premade layers, rename layer -> other la
 T 	sceneeditor: image search keys still remain after closing scene editor
 T	sceneeditor: re-opening opens 3 instances
 */
-
 var nwGUI = require('nw.gui');
 var nwFS = require('fs-extra');
 var nwWALK = require('walk');
@@ -299,6 +298,7 @@ var app = {
 			}
 			ifndef_obj(app.settings, {
 				recent_files:[],
+				plugin_path:'plugins',
 				engine_path:'love2d',
 				autocomplete_path:'./autocomplete.js'
 			});
