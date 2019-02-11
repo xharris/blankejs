@@ -1909,7 +1909,7 @@ body:after {
   border-radius: 100%;
 }
 .tool-container button:hover {
-  transform: scale(2);
+  transform: scale3d(2, 2, 2);
   color: #f0f0f0;
   background-color: rgba(0, 0, 0, 0.5);
 }
