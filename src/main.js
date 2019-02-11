@@ -526,6 +526,7 @@ var app = {
 nwWIN.on('loaded', function() {
 	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
 	app.os = os_names[nwOS.type()];
+	document.body.classList.add(app.os);
 
 	window.addEventListener("error", function(e){
 		app.error_occured = e;
