@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<script type="text/javascript">
-			var DEV_MODE = true;
+			var DEV_MODE = false;
 			if (DEV_MODE) require('nw.gui').Window.get().showDevTools();
 		</script>
 
@@ -41,11 +41,13 @@
 		<script src="includes/pixi-display.js"></script>
 		<script src="includes/pixi-tilemap.js"></script>
 
+		<!-- IDE core -->
 		<script src="js/core/tab.js"></script>
 		<script src="js/core/dragbox.js"></script>
 		<script src="js/core/fibwindow.js"></script>
 		<script src="js/core/editor.js"></script>
 
+		<!-- IDE features -->
 		<script src="js/plugin.js"></script>
 		<script src="js/docview.js"></script>
 		<script src="js/exporter.js"></script>
