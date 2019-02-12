@@ -349,7 +349,7 @@ class Code extends Editor {
 
 						let args = {
 							name:'\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\"',
-							image:'\"'+app.cleanPath(vals.image.replace(/.*\\(.*)\.\w+/g,"$1"))+'\"',
+							image:'\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"',
 							frames:"{"+vals['selected frames'].join(',')+"}",
 							frame_size:"{"+vals['frame size'].join(',')+"}",
 							speed:vals.speed,

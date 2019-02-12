@@ -1552,17 +1552,28 @@
   background: #5ad9a4;
   background: rgba(90, 217, 164, 0.9);
 }
-.content[data-type="SpritesheetPreview"] .zoom-in {
+.content[data-type="SpritesheetPreview"] .zoom-container {
+  position: absolute;
+  left: 50%;
+  bottom: 45px;
   margin-left: 11px;
+  width: 62px;
+  height: 20px;
+  opacity: 0.5;
+  z-index: 10;
+  transition: all ease-in-out 0.2s;
+}
+.content[data-type="SpritesheetPreview"] .zoom-in {
+  top: 0px;
+  left: 0px;
 }
 .content[data-type="SpritesheetPreview"] .zoom-out {
-  margin-left: 53px;
+  top: 0px;
+  right: 0px;
 }
 .content[data-type="SpritesheetPreview"] .zoom-in,
 .content[data-type="SpritesheetPreview"] .zoom-out {
   position: absolute;
-  left: 50%;
-  bottom: 45px;
   width: 20px;
   height: 20px;
   z-index: 10;
@@ -1572,7 +1583,6 @@
   font-size: 25px;
   padding: 0px;
   font-weight: 900;
-  opacity: 0.5;
   background: none;
   color: white;
   cursor: pointer;
@@ -1584,41 +1594,30 @@
 }
 .content[data-type="SpritesheetPreview"] .zoom-amt {
   position: absolute;
-  margin: 0px;
-  margin-left: 11px;
-  left: 50%;
-  bottom: 45px;
-  width: 62px;
-  height: 20px;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
   z-index: 9;
   border: none;
   outline: none;
   padding: 0px;
-  opacity: 0.5;
   border-radius: 30px;
   text-align: center;
   line-height: 20px;
   font-size: 14px;
+  margin: 0px;
   cursor: default;
   transition: all ease-in-out 0.2s;
 }
-.content[data-type="SpritesheetPreview"] .zoom-in:hover ~ .zoom-out,
-.content[data-type="SpritesheetPreview"] .zoom-out:hover ~ .zoom-in {
-  color: black;
+.content[data-type="SpritesheetPreview"] .zoom-container:hover {
   opacity: 1;
 }
-.content[data-type="SpritesheetPreview"] .zoom-in:hover,
-.content[data-type="SpritesheetPreview"] .zoom-out:hover,
-.content[data-type="SpritesheetPreview"] .zoom-amt:hover {
+.content[data-type="SpritesheetPreview"] .zoom-container:hover * {
   color: black;
-  opacity: 1;
 }
-.content[data-type="SpritesheetPreview"] .zoom-in:hover ~ .zoom-amt,
-.content[data-type="SpritesheetPreview"] .zoom-out:hover ~ .zoom-amt,
-.content[data-type="SpritesheetPreview"] .zoom-amt:hover ~ .zoom-amt {
+.content[data-type="SpritesheetPreview"] .zoom-container:hover .zoom-amt {
   background: white;
-  color: black;
-  opacity: 1;
 }
 .content[data-type="SpritesheetPreview"] .image-size {
   color: black;
@@ -2758,6 +2757,13 @@ body.mac .tool-container button:hover {
   padding: 3px;
   font-size: 16px;
   border-radius: 0px;
+}
+.form-container .form-select {
+  -webkit-border-radius: 0px;
+  -webkit-appearance: none;
+  background-image: url(icons/chevron_down.svg);
+  background-position: 100% 50%;
+  background-repeat: no-repeat;
 }
 .form-container .form-group[data-size="2"] .form-text,
 .form-container .form-group[data-type="number"] .form-text {

@@ -2,5 +2,30 @@
     "export": {
         "name": "test zone",
         "remove_unused": true
+    },
+    "spritesheet_prvw": {
+        "image/sprite-example.png": {
+            "name": "mario",
+            "offset": [
+                12,
+                8
+            ],
+            "speed": 1,
+            "frame size": [
+                29,
+                43
+            ],
+            "frames": 3,
+            "selected frames": [
+                "\"1-3\"",
+                1
+            ],
+            "columns": 3,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image/sprite-example.png"
+        }
     }
 }

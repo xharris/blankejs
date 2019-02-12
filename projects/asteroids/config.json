@@ -1,6 +1,6 @@
 {
     "spritesheet_prvw": {
-        "image\\asteroids.png": {
+        "image/asteroids.png": {
             "name": "asteroid",
             "offset": [
                 0,
@@ -21,9 +21,9 @@
                 0,
                 0
             ],
-            "image": "image\\asteroids.png"
+            "image": "image/asteroids.png"
         },
-        "image\\asteroids_small.png": {
+        "image/asteroids_small.png": {
             "name": "asteroid",
             "offset": [
                 0,
@@ -41,42 +41,22 @@
                 0,
                 0
             ],
-            "image": "image\\asteroids_small.png"
-        },
-        "image\\kidgil.jpg": {
-            "name": "asteroid",
-            "offset": [
-                0,
-                0
-            ],
-            "speed": 1,
-            "frame size": [
-                34,
-                34
-            ],
-            "frames": 3,
-            "selected frames": [],
-            "columns": 3,
-            "padding": [
-                0,
-                0
-            ],
-            "image": "image\\kidgil.jpg"
+            "image": "image/asteroids_small.png"
         },
         "image/kidgil.jpg": {
-            "name": "",
+            "name": "asteroid",
             "offset": [
                 0,
                 0
             ],
-            "speed": 0,
+            "speed": 1,
             "frame size": [
-                0,
-                0
+                34,
+                34
             ],
-            "frames": 0,
+            "frames": 3,
             "selected frames": [],
-            "columns": 0,
+            "columns": 3,
             "padding": [
                 0,
                 0

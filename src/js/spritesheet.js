@@ -26,7 +26,6 @@ class SpritesheetPreview extends Editor {
 			['columns','number',{'inputs':1}]
 		]);
 		this.el_sheet_form.onChange('speed',function(val){
-			console.log(val)
 			if (val == 0) return 1;
 		});
 		this.el_sheet_form.container.classList.add("dark");
@@ -50,6 +49,7 @@ class SpritesheetPreview extends Editor {
 			this_ref.el_prvw_container.classList.remove('enable-prvw');
 		});
 
+		this.el_zoom_container = blanke.createElement("div","zoom-container");
 		this.el_zoom_in = blanke.createElement("button","zoom-in");
 		this.el_zoom_in.innerHTML = "+";
 		this.el_zoom_out = blanke.createElement("button","zoom-out");
@@ -57,24 +57,23 @@ class SpritesheetPreview extends Editor {
 		this.el_zoom_amt = blanke.createElement("p","zoom-amt");
 		this.el_zoom_amt.innerHTML = "100";
 		this.el_zoom_in.addEventListener('click',function(e){
-			console.log('zoom in')
 			this_ref.setScale(this_ref.scale+0.1);
 		});
 		this.el_zoom_out.addEventListener('click',function(e){
-			console.log('zoom out')
 			this_ref.setScale(this_ref.scale-0.1);
 		});
+		this.el_zoom_container.appendChild(this.el_zoom_in);
+		this.el_zoom_container.appendChild(this.el_zoom_out);
+		this.el_zoom_container.appendChild(this.el_zoom_amt);
 
 		this.el_image_container.appendChild(this.el_image);
 		this.el_image_container.appendChild(this.el_frames_container);
 
 		this.el_prvw_container.appendChild(this.el_image_container);
 		this.el_prvw_container.appendChild(this.el_preview);
+		this.appendChild(this.el_zoom_container);
 		this.appendChild(this.el_image_size);
 		this.appendChild(this.el_btn_show_prvw);
-		this.appendChild(this.el_zoom_in);
-		this.appendChild(this.el_zoom_out);
-		this.appendChild(this.el_zoom_amt);
 		this.appendChild(this.el_prvw_container);
 
 		// start animation
@@ -96,8 +95,8 @@ class SpritesheetPreview extends Editor {
 			if (img_name && img_name != '') {
 				let match;
 				for (let i = 0; i < this_ref.image_list.length; i++) {
-					if (match = this_ref.image_list[i].match(/image\\([\\-\s\w]*)\./)) {
-						if (match[1] == img_name) {;
+					if (match = this_ref.image_list[i].match(/image[\\/]([/\\-\s\w]*)\./)) {
+						if (match[1] == img_name) {
 							this_ref.setImage(this_ref.image_list[i]);
 						}
 					}
@@ -168,7 +167,7 @@ class SpritesheetPreview extends Editor {
 		this.el_sheet_form.setValue("image", name);
 
 		this.selected_img = name;
-		let src = decodeURI(app.lengthenAsset(this.selected_img))
+		let src = "file://"+decodeURI(app.lengthenAsset(this.selected_img))
 		
 		this.el_image.onload = function(){
 			this_ref.el_preview.innerHTML = "<img src='"+src+"'/>";
@@ -178,14 +177,14 @@ class SpritesheetPreview extends Editor {
 			this_ref.el_image_size.innerHTML = this_ref.el_image.width + " x " + this_ref.el_image.height;
 
 			// use last used values
-			if (app.project_settings.spritesheet_prvw && app.project_settings.spritesheet_prvw[this_ref.selected_img]) {
-				this_ref.el_sheet_form.useValues(app.project_settings.spritesheet_prvw[this_ref.selected_img]);
+			if (app.project_settings.spritesheet_prvw && app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)]) {
+				this_ref.el_sheet_form.useValues(app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)]);
 			}
 
 			this_ref.updateFrames();
 		}
 
-		this.el_image.src = "file://"+src;
+		this.el_image.src = src;
 	}
 
 	getValues () {
@@ -211,7 +210,7 @@ class SpritesheetPreview extends Editor {
 		if (!app.project_settings.spritesheet_prvw)
 			app.project_settings.spritesheet_prvw = {};
 		if (this.selected_img)
-			app.project_settings.spritesheet_prvw[this.selected_img]=vals
+			app.project_settings.spritesheet_prvw[app.cleanPath(this.selected_img)]=vals
 		app.saveSettings();
 
 		// create the rectangles
@@ -252,15 +251,24 @@ class SpritesheetPreview extends Editor {
 		let vals = this.getValues();
 
 		this.frames = [];
-		let last_x = undefined, last_y = undefined, x_chain = [1,1], y_chain = [1,1];
+		this.frame_coords = [];
+		let last_x = undefined, last_y = undefined, last_ignored = false, x_chain = [1,1], y_chain = [1,1];
+
 		for (let f = 0; f < el_frames.length; f++) {
-			if (!el_frames[f].classList.contains("ignore")) {
+			let ignore_frame = false; // el_frames[f].classList.contains("ignore"); // TODO: add frame removal
+			// if (!el_frames[f].classList.contains("ignore")) {
 				let x = parseInt(el_frames[f].style.left);
 				let y = parseInt(el_frames[f].style.top);
 				this.frame_coords.push([
 					x, y,
 					parseInt(el_frames[f].style.width), parseInt(el_frames[f].style.height)
 				]);
+
+				function resetChain() {
+					let new_x = Math.floor((x-vals.offset[0]) / (vals['frame size'][0] + vals.padding[0])) + 1;
+					let new_y = Math.floor((y-vals.offset[1]) / (vals['frame size'][1] + vals.padding[1])) + 1;
+					x_chain = [new_x,new_x]; y_chain = [new_y,new_y];
+				}
 
 				function addChain() {
 					// turn x and y into a single string/int
@@ -271,24 +279,26 @@ class SpritesheetPreview extends Editor {
 					// add it to list of frames
 					this_ref.frames.push(x_chain, y_chain);
 					// find where the next chain begins
-					let new_x = Math.floor((x-vals.offset[0]) / (vals['frame size'][0] + vals.padding[0])) + 1;
-					let new_y = Math.floor((y-vals.offset[1]) / (vals['frame size'][1] + vals.padding[1])) + 1;
-					x_chain = [new_x,new_x]; y_chain = [new_y,new_y];
+					resetChain();
 				}
 
 				// add to frame list
 				if (f > 0 || el_frames.length == 1) {
-					if (last_y == y) x_chain[1]++;
-					if (last_x == x) y_chain[1]++;
-
-					if (last_x != x && last_y != y) 
-						addChain();
-					
-					if (f == el_frames.length-1)
+					if (!ignore_frame) {
+						if (last_y == y) x_chain[1]++;
+						if (last_x == x) y_chain[1]++;
+					}
+					if ((last_x != x && last_y != y) || f == el_frames.length-1 || ignore_frame)
 						addChain();
 				}
-				last_x = x; last_y = y;
-			} 
+				
+				if (!ignore_frame) {
+					last_x = x; last_y = y;
+					last_ignored = false;
+				} else {
+					last_ignored = true;
+				}
+			// } 
 		}
 
 		this.duration = this_ref.el_sheet_form.getValue("speed")*1000;
@@ -313,7 +323,7 @@ class SpritesheetPreview extends Editor {
 				0, 0, frame_coords[frame][2], frame_coords[frame][3]); 
 		}
 		this.frame += 1;
-		if (frame >= frame_coords.length) this.frame = 0;
+		if (frame >= frame_coords.length - 1) this.frame = 0;
 
 		window.requestAnimationFrame(this._showNextFrame.bind(this));
 	}
