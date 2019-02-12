@@ -13,7 +13,7 @@
   },
   "build": {
     "nwVersion": "0.30.2",
-    "nwFlavor": "sdk",
+    "nwFlavor": "normal",
     "files": [
       "./src/**/**"
     ]
@@ -22,7 +22,7 @@
     "less": "lessc --math=strict src/less/main.less src/main.css",
     "nw": "nw .",
     "dist": "build --tasks win-x86 --mirror https://dl.nwjs.io/ .",
-    "dist-mac": "build --tasks mac-x64 --mirror https://dl.nwjs.io/ .; cp -R blanke dist/BlankE-0.1.0-mac-x64/BlankE.app/Contents/Resources/app.nw/blanke; cp -R love2d dist/BlankE-0.1.0-mac-x64/BlankE.app/Contents/Resources/app.nw/love2d"
+    "dist-mac": "build --tasks mac-x64 --mirror https://dl.nwjs.io/ .; cp -R love2d dist/BlankE-0.1.0-mac-x64/BlankE.app/Contents/Resources/app.nw/love2d"
   },
   "developer": {
     "showDevToolsOnStartup": true
