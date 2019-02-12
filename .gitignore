@@ -60,3 +60,4 @@ typings/
 nwjs-build64/
 diff.txt
 dist
+.DS_Store
