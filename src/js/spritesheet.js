@@ -169,7 +169,7 @@ class SpritesheetPreview extends Editor {
 
 		this.selected_img = name;
 		let src = decodeURI(app.lengthenAsset(this.selected_img))
-
+		
 		this.el_image.onload = function(){
 			this_ref.el_preview.innerHTML = "<img src='"+src+"'/>";
 			this_ref.el_preview.width = this_ref.el_image.width;
@@ -185,7 +185,7 @@ class SpritesheetPreview extends Editor {
 			this_ref.updateFrames();
 		}
 
-		this.el_image.src = src;
+		this.el_image.src = "file://"+src;
 	}
 
 	getValues () {

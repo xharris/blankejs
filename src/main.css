@@ -2757,6 +2757,7 @@ body.mac .tool-container button:hover {
   border: none;
   padding: 3px;
   font-size: 16px;
+  border-radius: 0px;
 }
 .form-container .form-group[data-size="2"] .form-text,
 .form-container .form-group[data-type="number"] .form-text {

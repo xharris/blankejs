@@ -62,6 +62,26 @@
                 0
             ],
             "image": "image\\kidgil.jpg"
+        },
+        "image/kidgil.jpg": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 0,
+            "frame size": [
+                0,
+                0
+            ],
+            "frames": 0,
+            "selected frames": [],
+            "columns": 0,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image/kidgil.jpg"
         }
     },
     "export": {
