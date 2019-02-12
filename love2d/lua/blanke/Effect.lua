@@ -345,12 +345,13 @@ extern number myNum;
 #endif
     ]]
 }
-
+print("hi")
 EffectManager.new{
     name = 'bloom',
     params = {['samples']=5, ['quality']=1},
     integers = {'samples'},
     effect = [[
+        bop
   vec4 source = Texel(texture, texCoord);
   vec4 sum = vec4(0);
   int diff = (samples - 1) / 2;

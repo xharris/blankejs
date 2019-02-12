@@ -23,6 +23,9 @@ local ui_element_list = UI.list{
 
 local mario
 local rptr
+
+local my_eff = Effect("bloom")
+
 function MainState:enter()
 	mario = Mario()
 	rptr = Repeater(mario,{rate=100, lifetime=1})

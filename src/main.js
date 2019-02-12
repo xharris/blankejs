@@ -520,6 +520,17 @@ var app = {
 				})
 			}
 		})
+	},
+
+	enableDevMode() {
+		if (!DEV_MODE) {
+			DEV_MODE = true;
+			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
+			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
+			blanke.toast("Dev mode enabled");
+		} else {
+			blanke.toast("Dev mode already enabled!");
+		}
 	}
 }
 
@@ -710,6 +721,19 @@ nwWIN.on('loaded', function() {
 				app.play();
 			}
 		}));
+		// shortcut: enable dev mode
+		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+			key: "Ctrl+Shift+D",
+			active: function() {
+				app.enableDevMode();
+			}
+		}));
+		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+			key: "Command+Shift+D",
+			active: function() {
+				app.enableDevMode();
+			}
+		}));
 		// shortcut: shift window focus
 		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
 			key: "Ctrl+T",
@@ -774,8 +798,7 @@ nwWIN.on('loaded', function() {
 		}});
 
 		if (DEV_MODE) {
-			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
-			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
+			enableDevMode();
 		}
 
 		app.addSearchKey({key: 'Start Server', onSelect: app.runServer});
