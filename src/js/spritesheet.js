@@ -10,6 +10,8 @@ class SpritesheetPreview extends Editor {
 		this.container.width = 480;
 		this.container.height = 320;
 
+		this.scale = 1;
+
 		this.setTitle('Spritesheet Preview');
 
 		// setup form
@@ -18,17 +20,22 @@ class SpritesheetPreview extends Editor {
 			['name', 'text'],
 			['offset', 'number', {'inputs':2, 'separator':'x'}],
 			// border
-			['speed', 'number', {'inputs':1,'step':'0.1'}],
+			['speed', 'number', {'inputs':1,'step':'0.1','default':1}],
 			['frame size', 'number', {'inputs':2, 'separator':'x'}],
 			['frames','number',{'inputs':1}],
 			['columns','number',{'inputs':1}]
 		]);
+		this.el_sheet_form.onChange('speed',function(val){
+			console.log(val)
+			if (val == 0) return 1;
+		});
 		this.el_sheet_form.container.classList.add("dark");
 		this.appendChild(this.el_sheet_form.container);
 
 		// add animation preview elements
-		this.el_prvw_container = blanke.createElement("div", "prvw-container");
+		this.el_prvw_container = blanke.createElement("div", ["prvw-container", "no-custom-scroll"]);
 		this.el_image = blanke.createElement("img", "image");
+		this.el_image_container = blanke.createElement("div", "img-container");
 		this.el_preview = blanke.createElement("canvas", "prvw");
 		this.el_btn_show_prvw = blanke.createElement("button", "show-prvw");
 		this.el_frames_container = blanke.createElement("div", "frames-container");
@@ -43,11 +50,31 @@ class SpritesheetPreview extends Editor {
 			this_ref.el_prvw_container.classList.remove('enable-prvw');
 		});
 
-		this.el_prvw_container.appendChild(this.el_image);
+		this.el_zoom_in = blanke.createElement("button","zoom-in");
+		this.el_zoom_in.innerHTML = "+";
+		this.el_zoom_out = blanke.createElement("button","zoom-out");
+		this.el_zoom_out.innerHTML = "-";
+		this.el_zoom_amt = blanke.createElement("p","zoom-amt");
+		this.el_zoom_amt.innerHTML = "100";
+		this.el_zoom_in.addEventListener('click',function(e){
+			console.log('zoom in')
+			this_ref.setScale(this_ref.scale+0.1);
+		});
+		this.el_zoom_out.addEventListener('click',function(e){
+			console.log('zoom out')
+			this_ref.setScale(this_ref.scale-0.1);
+		});
+
+		this.el_image_container.appendChild(this.el_image);
+		this.el_image_container.appendChild(this.el_frames_container);
+
+		this.el_prvw_container.appendChild(this.el_image_container);
 		this.el_prvw_container.appendChild(this.el_preview);
-		this.el_prvw_container.appendChild(this.el_frames_container);
 		this.appendChild(this.el_image_size);
 		this.appendChild(this.el_btn_show_prvw);
+		this.appendChild(this.el_zoom_in);
+		this.appendChild(this.el_zoom_out);
+		this.appendChild(this.el_zoom_amt);
 		this.appendChild(this.el_prvw_container);
 
 		// start animation
@@ -81,6 +108,19 @@ class SpritesheetPreview extends Editor {
 		document.addEventListener("asset_added",function(){
 			app.getAssets("image", function(...args){ this_ref.addImage(...args); });
 		});
+	}
+
+	setScale(new_scale) {
+		this.scale = new_scale
+		
+		let element_names = ['el_image','el_frames_container','el_preview'];
+		for (let name of element_names) {
+			if (app.os == "win")
+				this[name].style.transform = "scale3d("+this.scale+","+this.scale+","+this.scale+")";
+			else
+				this[name].style.transform = "scale("+this.scale+")";
+		}
+		this.el_zoom_amt.innerHTML = parseInt(this.scale*100);
 	}
 
 	_onCopyCode () {

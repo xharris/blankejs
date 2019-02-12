@@ -1,21 +1,19 @@
 BlankE.addEntity("Asteroid")
 BlankE.addEntity("Bullet")
 
-function Asteroid:init(size)
-	self:addAnimation{name="asteroid", image="asteroids", frames={"1-3",1}, frame_size={68,68}, speed=1, offset={0,0}}
-	
+function Asteroid:init(small)
+	if not small then
+		self:addAnimation{name="asteroid", image="asteroids", frames={"1-3",1}, frame_size={68,68}, speed=1, offset={0,0}}
+	else
+		self:addAnimation{name="asteroid", image="asteroids_small", frames={"1-3",1}, frame_size={34,34}, speed=1, offset={0,0}}
+	end
+		
 	self.sprite_speed = 0
 	self.sprite_frame = randRange(1,3)
 	self.sprite_xoffset = -self.sprite_width / 2
 	self.sprite_yoffset = -self.sprite_height/ 2
-	
-	bob = Effect("chroma_shift","static")
-	
-	size = ifndef(size, 1)
-
-	self.size = size
-	self.sprite_xscale = 1 / size
-	self.sprite_yscale = 1 / size
+		
+	self.small = small
 		
 	-- random starting speed
 	self.speed = randRange(-60,-80,60,80)
@@ -41,9 +39,9 @@ function Asteroid:checkDie()
 end
 
 function Asteroid:hit()
-	if self.size < 2 and self.sprite_alpha > 0 then
-		local a1 = Asteroid(self.size + 1)
-		local a2 = Asteroid(self.size + 1)
+	if not self.small and self.sprite_alpha > 0 then
+		local a1 = Asteroid(true)
+		local a2 = Asteroid(true)
 		a1.x, a1.y = self.x, self.y 
 		a2.x, a2.y = self.x, self.y
 	
