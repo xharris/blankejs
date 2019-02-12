@@ -1870,6 +1870,11 @@ body:after {
   height: 1px;
   z-index: 1000;
 }
+.green-outline {
+  outline: 1px solid #5ad9a4;
+  outline-offset: 0px;
+  box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
 *:not(.no-custom-scroll)::-webkit-scrollbar-thumb {
   background: rgba(127, 140, 161, 0.7) !important;
 }

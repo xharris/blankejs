@@ -49,6 +49,12 @@ body:before, body:after {
     z-index: 1000;
 }
 
+.green-outline {
+	outline: 1px solid @ide-green;
+	outline-offset: 0px;
+	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
+
 *:not(.no-custom-scroll) {
     &::-webkit-scrollbar-thumb {
         background: @sub-window-background !important;

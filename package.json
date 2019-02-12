@@ -16,7 +16,13 @@
     "nwFlavor": "normal",
     "files": [
       "./src/**/**"
-    ]
+    ],
+    "mac": {
+      "icon":"./src/logo.icns"
+    },
+    "win": {
+      "icon":"./src/logo.ico"
+    }
   },
   "scripts": {
     "less": "lessc --math=strict src/less/main.less src/main.css",
