@@ -108,25 +108,28 @@ function Ship:update(dt)
 	-- DEAD SHIP PIECES
 	if self.dead then
 		self.pieces:forEach(function(p, piece)
-			local dt = game_time - self.dead_time 
-			local dx, dy = direction_x(piece.direction, piece.speed), direction_y(piece.direction, piece.speed)
-			piece.x = piece.x + (dx + direction_x(self.direction, self.speed)) * dt
-			piece.y = piece.y + (dy + direction_y(self.direction, self.speed)) * dt
+			local dt = (game_time - self.dead_time) / 500
+			piece.x = piece.x + piece.hspeed * dt
+			piece.y = piece.y + piece.vspeed * dt
 		end)
 	end
 end
 
 function Ship:die()
-	self.pieces = self.img_ship:chop(4,4)
-	self.pieces:forEach(function(p, piece)
-		piece.speed = randRange(20,50)/100
-		piece.x = piece.x + self.x 
-		piece.y = piece.y + self.y
-		piece.direction = randRange(0,360)
-	end)
-	
-	self.dead_time = game_time
-	self.dead = true
+	if not self.dead then
+		self.pieces = self.img_ship:chop(4,4)
+		local diff_spd = 100
+		self.pieces:forEach(function(p, piece)
+			piece.dead_time = game_time
+			piece.x = piece.x + self.x 
+			piece.y = piece.y + self.y
+			piece.hspeed = self.hspeed + randRange(-diff_spd,diff_spd)
+			piece.vspeed = self.vspeed + randRange(-diff_spd,diff_spd)
+		end)
+		self:removeShape()
+		self.dead_time = game_time
+		self.dead = true
+	end
 end
 
 function Ship:move(speed)

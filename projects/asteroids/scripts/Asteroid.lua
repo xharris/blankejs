@@ -89,5 +89,4 @@ end
 function Asteroid:draw()
 	self:drawSprite()
 	self.children:call('draw')
-	self:debugCollision()
 end

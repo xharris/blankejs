@@ -322,6 +322,7 @@ module.exports.completions = {
 			shape_size: '{left,top,width,height} / {x1,y1,x2,y2,...} / {x,y,radius} / {x,y}',
 			tag:'optional'
 		}},
+		{fn:"removeShape"},
 		{fn:"drawSprite",vars:{ name:'calls default draw function for given animation name' }},
 
 		{fn:"distance", vars:{ other:"Entity" }},

@@ -493,6 +493,7 @@ Entity = Class{
 	removeShape = function(self, name)
 		if self.shapes[name] ~= nil then
 			self.shapes[name]:disable()
+			self.shapes[name] = nil
 		end
 		return self
 	end,
