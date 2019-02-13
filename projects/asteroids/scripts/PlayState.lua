@@ -19,7 +19,7 @@ function PlayState:enter()
 	
 	-- player death effect
 	eff_death.chroma_shift.radius = 0
-	eff_death.static.amount = 0
+	eff_death.static.amount = {0,0}
 	Signal.on("player_die",function()
 		Tween(eff_death, {
 			chroma_shift={

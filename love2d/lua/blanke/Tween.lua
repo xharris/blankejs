@@ -53,14 +53,13 @@ Tween = Class{
 						assert(type(v)~='function', "cannot use function value in Tween")
 						if type(v) == "table" then
 							t_keys[k] = {type='table',children={}}
+							-- go deeper into table
 							checkKeys(t_keys[k].children, t_value[k])
-							if table.getn(t_keys[k].children) == 0 then
-								Debug.log("multi",k)
-								t_keys.type = "multi-val"
+
+							-- was this actually a nested table or just an array of numbers/strings
+							if table.len(t_keys[k].children) == 0 then
+								t_keys[k].type = "multi"
 							end
-						else
-							t_keys[k] = {type="normal"}
-							Debug.log('value',k,v)
 						end
 					end
 				end
@@ -91,11 +90,23 @@ Tween = Class{
 
 						-- its just a regular property
 						else
-							local start_value = t_start[key]
+							if t_keys[key].type == "multi" then
+								-- array of values
+								for i, start_value in ipairs(t_start[key]) do
+									-- finished?
+									Debug.log('1',start_value,'2',value)
+									if (start_value < value and t_value[key][i] < value) or (start_value > value and t_value[key][i] > value) then
+										t_value[key][i] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+									end
+								end
+							else
+								-- single value
+								local start_value = t_start[key]
 
-							-- finished?
-							if (start_value < value and t_value[key] < value) or (start_value > value and t_value[key] > value) then
-								t_value[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+								-- finished?
+								if (start_value < value and t_value[key] < value) or (start_value > value and t_value[key] > value) then
+									t_value[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+								end
 							end
 						end
 					end
