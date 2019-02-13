@@ -57,7 +57,8 @@ module.exports.instance_regex = {
 	'repeater':	/\b(\w+)\s*=\s*Repeater\([\w\.\s\,\{\}\=]*\)?\s?/g,
 	'group': 	[
 		/\b(?:self\.)?(\w+)\s*=\s*Group\(\)\s+?/g,
-		/\b(\w+\.instances).*/g
+		/\b(\w+\.instances).*/g,
+		/\b(\w+)\s*=\s*(?:(?:Image\(['"\w\/]+\):chop\(\d+,\d+\))|(?:[\w\.]+:chop\(\d+,\d+\)))\s+?/g
 	],
 	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\d.,]*\)\s+?/g,
 	'timer': 	/\b(\w+)\s*=\s*Timer\(\d*\)\s+?/g,
@@ -81,6 +82,16 @@ module.exports.completions = {
 		{prop:"window_height"},
 		{prop:"game_time"},
 		{prop:"dt_mod",info:">1 speed up game, <1 slow down game"},
+
+		{fn:"clamp",vars:{x:'',min:'',max:''}},
+		{fn:"lerp",vars:{a:'',b:'',percent:''}},
+		{fn:"cond",vars:{condition:'',yes:'',no:''},info:'returns (condition ? yes : no)'},
+		{fn:"randRange",vars:{x:'',y:'',etc:''},
+			info:'usage:</br> - randRange(1,3) -> 1,2,3</br> - randRange(1,3,7,9) -> 1,2,3,7,8,9'
+		},
+		{fn:"sinusoidal",vars:{min:'',max:'',speed:'higher = faster',start_offset:'optional'},info:'returns a number'},
+		{fn:"direction_x",vars:{angle:'degrees',dist:''}},
+		{fn:"direction_y",vars:{angle:'degrees',dist:''}},
 
 		{prop:'Debug'},
 
@@ -132,9 +143,9 @@ module.exports.completions = {
 		{fn:'rad',vars:{degrees:''}},
 		{fn:'pi'},
 
-		{fn:'sin',vars:{n:''},info:'returns radians'},
-		{fn:'cos',vars:{n:''},info:'returns radians'},
-		{fn:'tan',vars:{n:''},info:'returns radians'},
+		{fn:'sin',vars:{radians:''}},
+		{fn:'cos',vars:{radians:''}},
+		{fn:'tan',vars:{radians:''}},
 		{fn:'acos',vars:{n:''},info:'returns radians'},
 		{fn:'asin',vars:{n:''},info:'returns radians'},
 		{fn:'atan',vars:{y:'',x:'optional'},info:'returns radians'},

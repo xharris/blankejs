@@ -100,7 +100,11 @@ Asset = Class{
 		-- IMAGE
 		elseif table.hasValue(Asset.image_ext, asset_ext) then
 			local image = love.graphics.newImage(path)
-			if image then return acceptAsset("image", image) end
+			if image then 
+				local ret = acceptAsset("image", image) 
+				Asset.info["image"][asset_name].image_data = love.image.newImageData(path)
+				return ret
+			end
 
 		-- AUDIO
 		elseif table.hasValue(Asset.audio_ext, asset_ext) then

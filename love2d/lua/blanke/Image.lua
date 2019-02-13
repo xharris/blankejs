@@ -1,7 +1,10 @@
 local _images = {}
  
 Image = Class{
+	_canvas = nil,
 	init = function(self, name, img_data)
+		if not Image._canvas and Canvas then Image._canvas = Canvas() end
+
 		name = cleanPath(name)
 		self.name = name 
 
@@ -133,17 +136,28 @@ Image = Class{
 	end,
 
 	-- break up image into pieces
+	_copy_props = {'x','y','angle','xscale','yscale','color','alpha','int_position'},
 	chop = function(self, piece_w, piece_h)
 		piece_w = math.ceil(piece_w)
 		piece_h = math.ceil(piece_h)
 
 		local img_list = Group()
+		local new_x, new_y
 		for x=0, self.crop_rect[3], piece_w do
 			for y=0, self.crop_rect[4], piece_h do
 				if x < self.crop_rect[3] or y < self.crop_rect[4] then
-					local new_image = self:crop(x,y,piece_w,piece_h)
-					new_image.x = self.x + x
-					new_image.y = self.y + y
+
+					local new_image = self:crop(x,y,piece_w,piece_h)	
+					for i,k in ipairs(Image._copy_props) do
+						new_image[k] = self[k]
+					end
+
+					new_x = (x-self.xoffset)*math.cos(math.rad(self.angle)) - (y-self.yoffset)*math.sin(math.rad(self.angle))
+					new_y = (x-self.xoffset)*math.sin(math.rad(self.angle)) + (y-self.yoffset)*math.cos(math.rad(self.angle))
+
+					new_image.x = new_x + self.x 
+					new_image.y = new_y + self.y 
+
 					img_list:add(new_image)
 				end
 			end
@@ -152,25 +166,14 @@ Image = Class{
 	end,
 
 	crop = function(self, x, y, w, h)
-		local src_image_data = love.image.newImageData(Asset.getInfo('image', self.name).path)
-		local dest_image_data = love.image.newImageData(w,h)
-
-		local src_image_w, src_image_h = src_image_data:getWidth(), src_image_data:getHeight()
-
-		if x+w > self.crop_rect[3] then w = self.crop_rect[3] - x end
-		if y+h > self.crop_rect[4] then h = self.crop_rect[4] - y end
-
-		x, y = x + self.crop_rect[1], y + self.crop_rect[2]
-
-		dest_image_data:paste(src_image_data, 0, 0, x, y, w, h)
-		local new_img = Image(self.name, dest_image_data)
-		new_img.crop_rect = {x,y,w,h}
+		local new_img = Image(self.name)
+		new_img.quad = love.graphics.newQuad(x,y,w,h,self.orig_width,self.orig_height)
 		return new_img
 	end,
 
 	combine = function(self, other_image)
-		local src_image_data = love.image.newImageData(Asset.getInfo('image', other_image.name).path)
-		local dest_image_data = love.image.newImageData(Asset.getInfo('image', self.name).path)
+		local src_image_data = Asset.getInfo("image",other_image.name).image_data
+		local dest_image_data = Asset.getInfo("image",self.name).image_data -- love.image.newImageData(Asset.getInfo('image', self.name).path)
 		
 		local uncropped_dest_image_data = love.image.newImageData(Asset.getInfo('image', self.name).path)
 		local dest_image_data = love.image.newImageData(self.crop_rect[3], self.crop_rect[4])

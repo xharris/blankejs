@@ -4,8 +4,10 @@ BlankE.addEntity("Bullet")
 function Asteroid:init(small)
 	if not small then
 		self:addAnimation{name="asteroid", image="asteroids", frames={"1-3",1}, frame_size={68,68}, speed=1, offset={0,0}}
+		self:addShape("main","circle",{0,0,32})
 	else
 		self:addAnimation{name="asteroid", image="asteroids_small", frames={"1-3",1}, frame_size={34,34}, speed=1, offset={0,0}}
+		self:addShape("main","circle",{0,0,16})
 	end
 		
 	self.sprite_speed = 0
@@ -16,7 +18,7 @@ function Asteroid:init(small)
 	self.small = small
 		
 	-- random starting speed
-	self.speed = randRange(-60,-80,60,80)
+	self.speed = randRange(-70,-80,70,80)
 	self.direction = randRange(0,360)
 	
 	-- start outside of screen
@@ -27,7 +29,6 @@ function Asteroid:init(small)
 		{randRange(0, game_width), game_height + self.sprite_height}			
 	})	
 	
-	self:addShape("main","circle",{0,0,32})
 	self.children = Group()
 	self.show_debug = true
 end
@@ -38,19 +39,26 @@ function Asteroid:checkDie()
 	end
 end
 
-function Asteroid:hit()
+function Asteroid:hit(bullet)
 	if not self.small and self.sprite_alpha > 0 then
-		local a1 = Asteroid(true)
-		local a2 = Asteroid(true)
-		a1.x, a1.y = self.x, self.y 
-		a2.x, a2.y = self.x, self.y
-	
-		a1.direction = self.direction - 90
-		a1.parent = self
-		a2.direction = self.direction + 90
-		a2.parent = self
-		
-		self.children:add(a1, a2)
+		local split_count = randRange(2,4)
+		if split_count == 4 then split_count = 8 end
+				
+		local last_dir = 0
+		-- calculate direction based on collision direction (does this even work lol)
+		if bullet then 
+			last_dir = bullet.direction - ((split_count/2) * 45)
+		end
+		for a = 1, split_count do
+			local new_a = Asteroid(true)
+			new_a.x, new_a.y = self.x, self.y
+			new_a.speed = self.speed * (randRange(175, 225)/100)
+			last_dir = last_dir + randRange(10,45)
+			new_a.direction = last_dir
+			new_a.parent = self
+			
+			self.children:add(new_a)
+		end
 		
 		self:removeShape("main")
 		self.sprite_alpha = 0
@@ -58,18 +66,22 @@ function Asteroid:hit()
 		self.parent:checkDie()
 		self:destroy()	
 	end
+	
+	if bullet then bullet:destroy() end
 end
 
 function Asteroid:update(dt)
-	if self.x > game_width then self.x = 0 end
-	if self.y > game_height then self.y = 0 end
-	if self.x < 0 then self.x = game_width end
-	if self.y < 0 then self.y = game_height end
+	local sw = self.sprite_width
+	local sh = self.sprite_height
+	
+	if self.x > game_width + sw then self.x = -sw end
+	if self.y > game_height + sh then self.y = -sh end
+	if self.x < -sw then self.x = game_width + sw end
+	if self.y < -sh then self.y = game_height + sh end
 
 	self.onCollision["main"] = function(other, sep_vec)
 		if other.parent.classname == "Bullet" then
-			other.parent:destroy()
-			self:hit()
+			self:hit(other.parent)
 		end
 	end
 end

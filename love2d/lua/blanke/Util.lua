@@ -63,7 +63,6 @@ function cond(condition, yes, no)
 end
 
 -- both inclusive
--- e1, e2 : exclusion range
 function randRange(...)
 	local ranges = {...}
 	local r = love.math.random(1,ranges.length) -- choose a range to use (if there are multiple)

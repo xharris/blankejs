@@ -13,7 +13,8 @@ function love.load()
 	Input.set("move_d","down","s")
 		
 	BlankE.init("MainState",{
-		plugins={"Platformer"}
+		plugins={"Platformer"},
+		filter="nearest"
 	})
 	
 	Draw.setBackgroundColor("white")
