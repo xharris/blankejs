@@ -47,6 +47,24 @@ Tween = Class{
 				self._bezier = value
 			else
 				self._multival = true
+				self._table_keys = {} -- get keys in the table that lead to another table (nested)
+				function checkKeys(t_keys,t_value,t_start)
+					for k,v in pairs(t_value) do
+						assert(type(v)~='function', "cannot use function value in Tween")
+						if type(v) == "table" then
+							t_keys[k] = {type='table',children={}}
+							checkKeys(t_keys[k].children, t_value[k])
+							if table.getn(t_keys[k].children) == 0 then
+								Debug.log("multi",k)
+								t_keys.type = "multi-val"
+							end
+						else
+							t_keys[k] = {type="normal"}
+							Debug.log('value',k,v)
+						end
+					end
+				end
+				checkKeys(self._table_keys, value)
 			end
 		end
 	end,
@@ -65,15 +83,24 @@ Tween = Class{
 			self._dt = self._dt + dt
 
 			if self._multival then
-				for key, value in pairs(self.value) do
-					local start_value = self._start_val[key]
-					assert(type(start_value)~='function', "cannot use function value in Tween")
+				function updateKeys(t_keys, t_value, t_start)
+					for key, value in pairs(t_value) do
+						-- its a table, go deeper
+						if t_keys[key].type == "table" then
+							updateKeys(t_keys[key].children,t_value[key],t_start[key])
 
-					-- finished?
-					if (start_value < value and self.var[key] < value) or (start_value > value and self.var[key] > value) then
-						self.var[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+						-- its just a regular property
+						else
+							local start_value = t_start[key]
+
+							-- finished?
+							if (start_value < value and t_value[key] < value) or (start_value > value and t_value[key] > value) then
+								t_value[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+							end
+						end
 					end
 				end
+				updateKeys(self._table_keys, self.value, self._start_val)
 
 				if self._dt > self.duration then
 					self:_onFinish()

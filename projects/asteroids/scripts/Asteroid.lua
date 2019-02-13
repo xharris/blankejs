@@ -31,6 +31,8 @@ function Asteroid:init(small)
 	
 	self.children = Group()
 	self.show_debug = true
+	
+	self.shader = Effect("static")
 end
 
 function Asteroid:checkDie()

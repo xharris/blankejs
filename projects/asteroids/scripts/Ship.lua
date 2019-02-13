@@ -48,76 +48,81 @@ function Ship:init()
 	-- death
 	self.pieces = nil
 	self.dead = false
+	self.pieces_alpha = 1
 	
 	self.bullets = Group()
 end
 
 function Ship:update(dt)
-	self.onCollision["main"] = function(other, sep_vec)
-		if other.parent.classname == "Asteroid" then
-			other.parent:hit()
-			self:die()
+	if not self.dead then
+		self.onCollision["main"] = function(other, sep_vec)
+			if other.parent.classname == "Asteroid" then
+				other.parent:hit()
+				self:die()
+			end
 		end
-	end
+
+		-- TURNING
+		self.friction = 0.005
+		if Input("left").pressed then
+			self.move_angle = self.move_angle - self.turn_speed
+			self.friction = 0
+		end
+
+		if Input("right").pressed then
+			self.move_angle = self.move_angle + self.turn_speed
+			self.friction = 0
+		end
+
+		self.img_ship.angle = self.move_angle + 90
+		self.img_thrust.angle = self.img_ship.angle
+
+		-- MOVING FORWARD
+		self.img_thrust.alpha = 0
+		if Input("thrust").pressed then
+			self:move(self.accel)
+		end
+
+		-- BRAKING
+		if Input("brake").pressed then
+			self:move(-self.accel)
+		end
+
+		-- WRAP SCREEN
+		if self.x > game_width then self.x = 0 end
+		if self.y > game_height then self.y = 0 end
+		if self.x < 0 then self.x = game_width end
+		if self.y < 0 then self.y = game_height end
+
+		-- SHOOTING
+		if self.can_shoot and Input("shoot").released then
+			local new_bullet = Bullet()
+			new_bullet.x = self.x
+			new_bullet.y = self.y
+			new_bullet.direction = self.img_ship.angle - 90
+			self.bullets:add(new_bullet)
+
+			-- put shooting on cooldown
+			self.can_shoot = false
+			Timer(0.05):after(function() self.can_shoot = true end):start()
+		end
 	
-	-- TURNING
-	self.friction = 0.005
-	if Input("left").pressed then
-		self.move_angle = self.move_angle - self.turn_speed
-		self.friction = 0
-	end
-	
-	if Input("right").pressed then
-		self.move_angle = self.move_angle + self.turn_speed
-		self.friction = 0
-	end
-	
-	self.img_ship.angle = self.move_angle + 90
-	self.img_thrust.angle = self.img_ship.angle
-	
-	-- MOVING FORWARD
-	self.img_thrust.alpha = 0
-	if Input("thrust").pressed then
-		self:move(self.accel)
-	end
-	
-	-- BRAKING
-	if Input("brake").pressed then
-		self:move(-self.accel)
-	end
-	
-	-- WRAP SCREEN
-	if self.x > game_width then self.x = 0 end
-	if self.y > game_height then self.y = 0 end
-	if self.x < 0 then self.x = game_width end
-	if self.y < 0 then self.y = game_height end
-	
-	-- SHOOTING
-	if self.can_shoot and Input("shoot").released then
-		local new_bullet = Bullet()
-		new_bullet.x = self.x
-		new_bullet.y = self.y
-		new_bullet.direction = self.img_ship.angle - 90
-		self.bullets:add(new_bullet)
-		
-		-- put shooting on cooldown
-		self.can_shoot = false
-		Timer(0.05):after(function() self.can_shoot = true end):start()
-	end
-	
-	-- DEAD SHIP PIECES
-	if self.dead then
+	else
+		-- DEAD SHIP PIECES MOVEMENT
 		self.pieces:forEach(function(p, piece)
-			local dt = (game_time - self.dead_time) / 500
+			piece.hspeed = piece.hspeed * 0.99
+			piece.vspeed = piece.vspeed * 0.99
 			piece.x = piece.x + piece.hspeed * dt
 			piece.y = piece.y + piece.vspeed * dt
 		end)
 	end
+	
+	if Input("kill").released then self:die() end
 end
-
+Input.set("kill","k")
 function Ship:die()
 	if not self.dead then
-		self.pieces = self.img_ship:chop(4,4)
+		self.pieces = self.img_ship:chop(3,3)
 		local diff_spd = 100
 		self.pieces:forEach(function(p, piece)
 			piece.dead_time = game_time
@@ -126,9 +131,11 @@ function Ship:die()
 			piece.hspeed = self.hspeed + randRange(-diff_spd,diff_spd)
 			piece.vspeed = self.vspeed + randRange(-diff_spd,diff_spd)
 		end)
-		self:removeShape()
+		self:removeShape("main")
 		self.dead_time = game_time
 		self.dead = true
+		
+		Signal.emit("player_die")
 	end
 end
 
@@ -145,14 +152,14 @@ end
 
 function Ship:draw()
 	if self.dead then
-		Draw.stack(function()
+		if self.pieces_alpha > 0 then
+			self.pieces_alpha = self.pieces_alpha - 0.005
+			self.pieces:set('alpha',self.pieces_alpha)
 			self.pieces:call('draw')
-		end)
+		end
 	else
 		self.img_ship:draw(self.x, self.y)
 		self.img_thrust:draw(self.x, self.y)
-
-		self:drawDebug()
 	end
 	self.bullets:call("draw")
 end

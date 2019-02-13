@@ -25,7 +25,7 @@ module.exports.user_words = {
 	]
 }
 
-module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Debug','Asset','Input','Image','Scene','Bezier','Window','math'];
+module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Debug','Asset','Input','Image','Scene','Signal','Bezier','Window','math'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -228,6 +228,7 @@ module.exports.completions = {
 		{fn:"setBackgroundColor", vars:color_vars, info:'[!!] use <StateName>.background_color instead'},
 		{fn:"randomColor", vars:{ alpha:'' }},
 		{fn:"setColor", vars:color_vars},
+		{fn:"setAlpha", vars:{alpha:''}},
 		{prop:"colors", info:'list of available colors'},
 		{fn:"setLineWidth", vars:{ width:'' }},
 		{fn:"point", vars:{ x:'', y:'' }},
@@ -243,6 +244,12 @@ module.exports.completions = {
 		{prop:'red'},{prop:'pink'},{prop:'purple'},{prop:'indigo'},{prop:'baby_blue'},{prop:'blue'},{prop:'dark_blue'},{prop:'green'},
 		{prop:'yellow'},{prop:'orange'},{prop:'brown'},{prop:'gray'},{prop:'grey'},{prop:'black'},{prop:'white'},{prop:'black2'},
 		{prop:'white2'},
+	],
+	"blanke-signal":[
+		{fn:"emit",vars:{name:"",etc:""}},
+		{fn:"on",vars:{name:"",fn:"",destroy_on_call:"optional. removes the emitter after it happens"}},
+		{fn:"enable",vars:{name:""}},
+		{fn:"disable",vars:{name:""}}
 	],
 	"blanke-input":[
 		{fn:"set", vars:{ label:'', input1:'input to catch</br>- mouse: mouse.1, mouse.2, ...</br>- letters: w, a, s, d, ...', etc:'' }}
@@ -352,7 +359,7 @@ module.exports.completions = {
 		{prop:"height"},
 		{fn:"draw",vars:{x:"opt. override",y:"opt. override"}},
 		{fn:"crop",vars:{x:"",y:"",width:"",height:""}},
-		{fn:"chop",vars:{piece_w:"",piece_h:""},info:"returns Group containing parts of the Image"},
+		{fn:"chop",vars:{columns:"",rows:""},info:"returns Group containing pieces of the Image"},
 		{fn:"combine",vars:{other_image:""},info:"combines another image into this one"},
 		{fn:"setWidth",vars:{w:""}},
 		{fn:"setHeight",vars:{h:""}},

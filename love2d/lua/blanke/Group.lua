@@ -86,6 +86,12 @@ Group = Class{
 		end
 	end,
 
+	set = function(self, attr_name, value) 
+		self:forEach(function(c, child)
+			child[attr_name] = value
+		end)
+	end,
+
 	call = function(self, func_name, ...)
 		for i_c, c in ipairs(self.children) do
 			if c[func_name] then c[func_name](c, ...) end

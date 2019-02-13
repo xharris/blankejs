@@ -137,16 +137,15 @@ Image = Class{
 
 	-- break up image into pieces
 	_copy_props = {'x','y','angle','xscale','yscale','color','alpha','int_position'},
-	chop = function(self, piece_w, piece_h)
-		piece_w = math.ceil(piece_w)
-		piece_h = math.ceil(piece_h)
+	chop = function(self, columns, rows)
+		piece_w = math.ceil(self.width / columns)
+		piece_h = math.ceil(self.height / rows)
 
 		local img_list = Group()
 		local new_x, new_y
 		for x=0, self.crop_rect[3], piece_w do
 			for y=0, self.crop_rect[4], piece_h do
 				if x < self.crop_rect[3] or y < self.crop_rect[4] then
-
 					local new_image = self:crop(x,y,piece_w,piece_h)	
 					for i,k in ipairs(Image._copy_props) do
 						new_image[k] = self[k]
@@ -167,6 +166,7 @@ Image = Class{
 
 	crop = function(self, x, y, w, h)
 		local new_img = Image(self.name)
+		new_img.crop_rect = {x,y,w,h}
 		new_img.quad = love.graphics.newQuad(x,y,w,h,self.orig_width,self.orig_height)
 		return new_img
 	end,
