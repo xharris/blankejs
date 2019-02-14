@@ -48,11 +48,11 @@ Tween = Class{
 			else
 				self._multival = true
 				self._table_keys = {} -- get keys in the table that lead to another table (nested)
-				function checkKeys(t_keys,t_value,t_start)
+				function checkKeys(t_keys,t_value)
 					for k,v in pairs(t_value) do
 						assert(type(v)~='function', "cannot use function value in Tween")
+						t_keys[k] = {type='table',children={}}
 						if type(v) == "table" then
-							t_keys[k] = {type='table',children={}}
 							-- go deeper into table
 							checkKeys(t_keys[k].children, t_value[k])
 
@@ -60,6 +60,8 @@ Tween = Class{
 							if table.len(t_keys[k].children) == 0 then
 								t_keys[k].type = "multi"
 							end
+						else
+							t_keys[k] = nil
 						end
 					end
 				end
@@ -82,36 +84,29 @@ Tween = Class{
 			self._dt = self._dt + dt
 
 			if self._multival then
-				function updateKeys(t_keys, t_value, t_start)
-					for key, value in pairs(t_value) do
+				function updateKeys(t_keys, t_value, t_start, t_end)
+					for key, start_value in pairs(t_start) do
+						local value = t_value[key]
 						-- its a table, go deeper
 						if t_keys[key].type == "table" then
-							updateKeys(t_keys[key].children,t_value[key],t_start[key])
+							updateKeys(t_keys[key].children, t_value[key], t_start[key], t_end[key])
 
 						-- its just a regular property
-						else
-							if t_keys[key].type == "multi" then
-								-- array of values
-								for i, start_value in ipairs(t_start[key]) do
-									-- finished?
-									Debug.log('1',start_value,'2',value)
-									if (start_value < value and t_value[key][i] < value) or (start_value > value and t_value[key][i] > value) then
-										t_value[key][i] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
-									end
-								end
-							else
-								-- single value
-								local start_value = t_start[key]
-
+						elseif t_keys[key].type == "multi" then
+							-- array of values
+							for start_k, start_v in pairs(start_value) do
 								-- finished?
-								if (start_value < value and t_value[key] < value) or (start_value > value and t_value[key] > value) then
-									t_value[key] = self._func(start_value, value-start_value, self.duration*1000, self._dt*1000)
+								local curr_v = value[start_k]
+								local end_v = t_end[key][start_k]
+
+								if (start_v < end_v and curr_v < end_v) or (start_v > end_v and curr_v > end_v) then
+									t_value[key][start_k] = self._func(start_v, end_v-start_v, self.duration*1000, self._dt*1000)
 								end
 							end
 						end
 					end
 				end
-				updateKeys(self._table_keys, self.value, self._start_val)
+				updateKeys(self._table_keys, self.var, self._start_val, self.value)
 
 				if self._dt > self.duration then
 					self:_onFinish()

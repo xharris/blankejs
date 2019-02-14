@@ -33,7 +33,7 @@ function PlayState:enter()
 end
 
 function PlayState:update(dt)
-	-- Debug.log(eff_death.chroma_shift.radius, eff_death.static.amount)
+	-- Debug.log(eff_death.chroma_shift.radius, eff_death.static.amount[1], eff_death.static.amount[2])
 end
 
 function PlayState:draw()
