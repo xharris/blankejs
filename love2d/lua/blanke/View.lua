@@ -63,11 +63,12 @@ View = Class{
 	shake = function(self, x, y)
 		if self.shake_tween == nil then 
 			self.shake_x = x
-			self.shake_y = y
+			self.shake_y = ifndef(y, x)
 			self.shake_tween = Tween(self, {shake_x=0, shake_y=0}, self.shake_duration)
 			self.shake_tween.onFinish = function()
 				self.shake_tween:destroy()
 				self.shake_tween = nil
+				if self.onShakeFinish then self:onShakeFinish() end
 			end
 			self.shake_tween:play()
 		end

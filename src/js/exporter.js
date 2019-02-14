@@ -1,4 +1,4 @@
-var removable = ["Bezier","Dialog","Effect","Map","Net","Repeater","Save","Steam","Timer","Tween","UI","View"];
+var removable = ["Bezier","Dialog","Effect","Map","Net","Repeater","Save","Steam","UI","View"];
 var remove_path = {
 	"Steam":[
 		'blanke/Steam.lua',

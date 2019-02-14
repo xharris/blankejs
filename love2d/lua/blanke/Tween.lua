@@ -48,6 +48,7 @@ Tween = Class{
 			else
 				self._multival = true
 				self._table_keys = {} -- get keys in the table that lead to another table (nested)
+
 				function checkKeys(t_keys,t_value)
 					for k,v in pairs(t_value) do
 						assert(type(v)~='function', "cannot use function value in Tween")
@@ -86,18 +87,27 @@ Tween = Class{
 			if self._multival then
 				function updateKeys(t_keys, t_value, t_start, t_end)
 					for key, start_value in pairs(t_start) do
-						local value = t_value[key]
+
+						local curr_value = t_value[key]
+						local end_value = t_end[key]
+
+						-- scalar property
+						if not t_keys[key] then
+							if (start_value < end_value and curr_value < end_value) or (start_value > end_value and curr_value > end_value) then
+								t_value[key] = self._func(start_value, end_value-start_value, self.duration*1000, self._dt*1000)
+							end
+
 						-- its a table, go deeper
-						if t_keys[key].type == "table" then
+						elseif t_keys[key].type == "table" then
 							updateKeys(t_keys[key].children, t_value[key], t_start[key], t_end[key])
 
-						-- its just a regular property
+						-- array property
 						elseif t_keys[key].type == "multi" then
 							-- array of values
 							for start_k, start_v in pairs(start_value) do
 								-- finished?
-								local curr_v = value[start_k]
-								local end_v = t_end[key][start_k]
+								local curr_v = curr_value[start_k]
+								local end_v = end_value[start_k]
 
 								if (start_v < end_v and curr_v < end_v) or (start_v > end_v and curr_v > end_v) then
 									t_value[key][start_k] = self._func(start_v, end_v-start_v, self.duration*1000, self._dt*1000)
