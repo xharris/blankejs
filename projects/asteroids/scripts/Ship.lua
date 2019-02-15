@@ -4,27 +4,11 @@ Input.set("thrust","up","w")
 Input.set("brake","down","s")
 Input.set("shoot","space")
 
-BlankE.addEntity("Bullet")
-
-function Bullet:init()
-	self.speed = 800
-	self:addShape("main","circle",{0,0,1})
-	Timer(1.5):after(function() self:destroy() end):start()
-end
-
-function Bullet:update(dt)
-	if self.x > game_width then self.x = 0 end
-	if self.x < 0 then self.x = game_width end
-	if self.y > game_height then self.y = 0 end
-	if self.y < 0 then self.y = game_height end
-end
-
-function Bullet:draw()
-	Draw.setColor("white")
-	Draw.circle("fill",self.x,self.y,1)
-end
+Input.set("kill","k")
 
 BlankE.addEntity("Ship")
+
+Ship.net_sync_vars = {'x','y','move_angle','thrust_alpha','pieces_alpha'}
 
 function Ship:init()
 	self.img_ship = Image("ship")
@@ -35,32 +19,82 @@ function Ship:init()
 	self.img_thrust.xoffset = self.img_thrust.width/2
 	self.img_thrust.yoffset = self.img_thrust.height/2
 	
-	self:addShape("main","circle",{0,0,self.sprite_width/2})
-	
-	self.x = game_width / 2
-	self.y = game_height / 2
-	
+	self:addShape("main","circle",{0,0,self.img_ship.width/2})
+		
 	self.turn_speed = 3
 	self.move_angle = -90
 	self.move_speed = 200
 	self.accel = 4
-	self.can_shoot = true
-	-- death
-	self.pieces = nil
+	self.thrust_alpha = 0
 	self.dead = false
 	self.pieces_alpha = 1
 	
+	self.spawn_timer = nil
+	self:spawn()
+	
 	self.bullets = Group()
+	if not self.net_object then Net.addObject(self) end
+end
+
+function Ship:spawn(x,y)
+	self.x = ifndef(x, game_width / 2)
+	self.y = ifndef(y, game_height / 2)
+	
+	if not self.spawn_timer then
+		self.spawn_timer = Timer()
+		self.spawn_timer:every(function()
+			if self.net_object or not self:isNearRocks() then
+				self.can_shoot = true
+
+				-- death
+				self.pieces = nil
+				self.dead = false
+				self.pieces_alpha = 1
+					
+				self.spawn_timer:stop()
+				self.spawn_timer = nil
+					
+				if not self.net_object and self.onSpawn then self:onSpawn() end
+			end
+		end, 2)
+		self.spawn_timer:start()
+	end
+end
+
+function Ship:isNearRocks()
+	Asteroid.instances:forEach(function(a, asteroid)
+		if self:distance(asteroid) < asteroid.sprite_width + self.sprite_width then
+			return true
+		end
+	end)
+	return false
 end
 
 function Ship:update(dt)
-	if not self.dead then
-		self.onCollision["main"] = function(other, sep_vec)
-			if other.parent.classname == "Asteroid" then
-				other.parent:hit()
-				self:die()
-			end
+	
+	self.img_ship.angle = self.move_angle + 90
+	self.img_thrust.angle = self.img_ship.angle
+	
+	self.onCollision["main"] = function(other, sep_vec)
+		if other.parent.classname == "Asteroid" then
+			other.parent:hit()
+			self:die()
 		end
+	end
+	
+	if self.dead then
+		-- DEAD SHIP PIECES MOVEMENT
+		self.pieces:forEach(function(p, piece)
+			piece.hspeed = piece.hspeed * 0.99
+			piece.vspeed = piece.vspeed * 0.99
+			piece.x = piece.x + piece.hspeed * dt
+			piece.y = piece.y + piece.vspeed * dt
+		end)
+	end
+	
+	if self.net_object then return end
+	
+	if not self.dead then
 
 		-- TURNING
 		self.friction = 0.005
@@ -74,11 +108,9 @@ function Ship:update(dt)
 			self.friction = 0
 		end
 
-		self.img_ship.angle = self.move_angle + 90
-		self.img_thrust.angle = self.img_ship.angle
 
 		-- MOVING FORWARD
-		self.img_thrust.alpha = 0
+		self.thrust_alpha = 0
 		if Input("thrust").pressed then
 			self:move(self.accel)
 		end
@@ -106,20 +138,10 @@ function Ship:update(dt)
 			self.can_shoot = false
 			Timer(0.05):after(function() self.can_shoot = true end):start()
 		end
-	
-	else
-		-- DEAD SHIP PIECES MOVEMENT
-		self.pieces:forEach(function(p, piece)
-			piece.hspeed = piece.hspeed * 0.99
-			piece.vspeed = piece.vspeed * 0.99
-			piece.x = piece.x + piece.hspeed * dt
-			piece.y = piece.y + piece.vspeed * dt
-		end)
 	end
 	
 	if Input("kill").released then self:die() end
 end
-Input.set("kill","k")
 function Ship:die()
 	if not self.dead then
 		self.pieces = self.img_ship:chop(3,3)
@@ -135,7 +157,7 @@ function Ship:die()
 		self.dead_time = game_time
 		self.dead = true
 		
-		Signal.emit("player_die")
+		if not self.net_object then Signal.emit("player_die") end
 	end
 end
 
@@ -143,7 +165,7 @@ function Ship:move(speed)
 	self.hspeed = self.hspeed + direction_x(self.move_angle, speed)
 	self.vspeed = self.vspeed + direction_y(self.move_angle, speed)
 	
-	if speed > 0 then self.img_thrust.alpha = 1 end
+	if speed > 0 then self.thrust_alpha = 1 end
 	
 	-- LIMIT SPEED
 	self.hspeed = clamp(self.hspeed, -self.move_speed, self.move_speed)
@@ -152,14 +174,20 @@ end
 
 function Ship:draw()
 	if self.dead then
-		if self.pieces_alpha > 0 then
+		if self.pieces and self.pieces_alpha > 0 then
 			self.pieces_alpha = self.pieces_alpha - 0.005
 			self.pieces:set('alpha',self.pieces_alpha)
 			self.pieces:call('draw')
+		else
+			self:destroy()
+			if not self.net_object then Signal.emit("player_can_respawn") end
 		end
 	else
+		self.img_thrust.alpha = self.thrust_alpha
+		
 		self.img_ship:draw(self.x, self.y)
 		self.img_thrust:draw(self.x, self.y)
 	end
+	
 	self.bullets:call("draw")
 end

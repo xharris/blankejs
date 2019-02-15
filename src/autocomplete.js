@@ -412,6 +412,7 @@ module.exports.completions = {
 		{fn:"before", vars:{ func:'', delay:'optional' }},
 		{fn:"every", vars:{ func:'', delay:'optional' }},
 		{fn:"after", vars:{ func:'', delay:'optional' }},
+		{fn:"stop"},
 		{fn:"reset"}
 	],
 	"blanke-view-instance":[

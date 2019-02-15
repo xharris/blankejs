@@ -327,11 +327,9 @@ Entity = Class{
 
 	debugCollision = function(self)
 		-- draw collision shapes
-		Draw.stack(function()
-			for s, shape in pairs(self.shapes) do
-				shape:draw("line")
-			end
-		end)
+		for s, shape in pairs(self.shapes) do
+			shape:draw("line")
+		end
 		return self
 	end,
 

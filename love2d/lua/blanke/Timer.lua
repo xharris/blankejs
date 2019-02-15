@@ -120,6 +120,8 @@ Timer = Class{
 		end
 		return self
 	end,
+
+	stop = function(self) self:reset() end
 }
 
 return Timer

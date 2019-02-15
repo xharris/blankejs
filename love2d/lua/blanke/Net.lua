@@ -178,15 +178,22 @@ Net = {
 
             Net._objects[clientid] = ifndef(Net._objects[clientid], {})
             if not Net._objects[clientid][obj.net_uuid] then
+                _G[obj.classname]._init_properties = {
+                    net_uuid = obj.net_uuid,
+                    net_object = true
+                }
+
+                if obj.values then
+                    for var, val in pairs(obj.values) do
+                        _G[obj.classname]._init_properties[var] = val
+                    end
+                end
+
                 Net._objects[clientid][obj.net_uuid] = _G[obj.classname]()
                 local obj_ref = Net._objects[clientid][obj.net_uuid]
-
-                obj_ref.net_uuid = obj.net_uuid
-                obj_ref.net_object = true
                 
                 if obj.values then
                     for var, val in pairs(obj.values) do
-                        obj_ref[var] = val
                         if obj_ref.onNetUpdate and obj_ref.net_object then obj_ref:onNetUpdate(var, val) end
                     end
                 end
