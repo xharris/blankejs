@@ -72,6 +72,7 @@ Entity = Class{
 		self.onCollision = {["*"] = function() end}
 
 		self.onPropSet["sprite_index"] = function(self,v) self:refreshSpriteDims(v) end
+		self.onPropSet["sprite_color"] = function(self,v) return Draw._parseColorArgs(v) end
 		self.onPropSet["angle"] = function(self,v) self:rotateTo(v) end
 		self.onPropGet["angle"] = function() return 0 end
 

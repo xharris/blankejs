@@ -157,6 +157,8 @@ function Ship:die()
 		self.dead_time = game_time
 		self.dead = true
 		
+		self:netSync("die")
+		
 		if not self.net_object then Signal.emit("player_die") end
 	end
 end

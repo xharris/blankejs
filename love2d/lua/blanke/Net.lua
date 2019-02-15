@@ -1,3 +1,5 @@
+local TYPE_FUNCTION = '_type.function'
+
 Net = {
     obj_update_rate = 0, -- m/s
     
@@ -206,7 +208,13 @@ Net = {
                 local obj = Net._objects[data.clientid][data.info.net_uuid]
                 if obj then
                     for var, val in pairs(data.info.values) do
-                        obj[var] = val
+                        if var == '_functions' then
+                            for f, info in ipairs(val) do
+                                obj[info[1]](obj,unpack(info,2,#info))
+                            end
+                        else
+                            obj[var] = val
+                        end
                         if obj.onNetUpdate and obj.net_object then obj:onNetUpdate(var, val) end
                     end
                 end
@@ -310,6 +318,7 @@ Net = {
 
         obj.net_uuid = uuid()
         obj.net_var_old = {}
+        obj.net_functions = {}
         
         --notify the other server clients
         Net.send({
@@ -324,8 +333,15 @@ Net = {
         obj.netSync = function(self, ...)
             vars = {...}
 
-            update_values = {}
+            update_values = {_functions={}}
             if not self.net_object then
+                function isFunction(var_name)
+                    if self.net_functions[var_name] == nil then
+                        self.net_functions[var_name] = (type(self[var_name]) == 'function') 
+                    end
+                    return self.net_functions[var_name]
+                end
+
                 function hasVarChanged(var_name)
                     if self.net_var_old[var_name] ~= nil and
                        self.net_var_old[var_name] == self[var_name]
@@ -340,7 +356,9 @@ Net = {
                 for v, var in ipairs(vars) do
                     if var and self[var] ~= nil then
                         if Net.is_connected then
-                            if hasVarChanged(var) then
+                            if isFunction(var) then
+                                table.insert(update_values._functions,{...})
+                            elseif hasVarChanged(var) then
                                 update_values[var] = self[var]
                             end
                         end

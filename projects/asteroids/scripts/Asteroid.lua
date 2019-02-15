@@ -1,11 +1,11 @@
 BlankE.addEntity("Asteroid")
 BlankE.addEntity("Bullet")
 
-Asteroid.net_sync_vars = {'x','y','small','split_count'}
+Asteroid.net_sync_vars = {'x','y','small','split_count','sprite_frame'}
 
 function Asteroid:init(small)	
-	self:addAnimation{name="small", image="asteroids", frames={"1-3",1}, frame_size={68,68}, speed=1, offset={0,0}}
-	self:addAnimation{name="large", image="asteroids_small", frames={"1-3",1}, frame_size={34,34}, speed=1, offset={0,0}}
+	self:addAnimation{name="small", image="asteroids_small", frames={"1-3",1}, frame_size={34,34}, speed=1, offset={0,0}}
+	self:addAnimation{name="large", image="asteroids", frames={"1-3",1}, frame_size={68,68}, speed=1, offset={0,0}}
 
 	self.small = ifndef(small, false)
 	if self.small then
@@ -87,10 +87,10 @@ function Asteroid:update(dt)
 	-- SMALL/LARGE ASTEROID
 	if self.small then
 		self.sprite_index = "small"
-		self.sprite_color = "red"
 	else
 		self.sprite_index = "large"
 	end
+	
 	self.sprite_xoffset = -self.sprite_width / 2
 	self.sprite_yoffset = -self.sprite_height/ 2
 
