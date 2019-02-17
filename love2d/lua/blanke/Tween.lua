@@ -35,6 +35,7 @@ Tween = Class{
 
 	setStartValue = function(self, val)
 		self.var = val
+		self._start_val = val
 	end,
 
 	setEndValue = function(self, value)
@@ -80,43 +81,52 @@ Tween = Class{
 		self._func = Tween.tween_func[name]
 	end,
 
+	-- fn: returns what the property should be set to 
+	-- new_val = fn(start_val, end_val, key)
+	updateKeys = function(self, fn)
+		self:_updateKeys(self._table_keys, self.var, self._start_val, self.value, fn)
+	end,
+
+	_updateKeys = function(self, t_keys, t_var, t_start, t_end, fn) 
+		for key, start_value in pairs(t_start) do
+
+			local curr_value = t_var[key]
+			local end_value = t_end[key]
+
+			-- scalar property
+			if not t_keys[key] then
+				if (start_value < end_value and curr_value < end_value) or (start_value > end_value and curr_value > end_value) then
+					t_var[key] = fn(start_value, end_value, key)
+				end
+
+			-- its a table, go deeper
+			elseif t_keys[key].type == "table" then
+				self:_updateKeys(t_keys[key].children, curr_value, start_value, end_value, fn)
+
+			-- array property
+			elseif t_keys[key].type == "multi" then
+				-- array of values
+				for start_k, start_v in pairs(start_value) do
+					-- finished?
+					local curr_v = curr_value[start_k]
+					local end_v = end_value[start_k]
+
+					if (start_v < end_v and curr_v < end_v) or (start_v > end_v and curr_v > end_v) then
+						t_var[key][start_k] = fn(start_v, end_v, key)
+					end
+				end
+			end
+		end
+	end,
+
 	update = function(self, dt)
 		if self._go then
 			self._dt = self._dt + dt
 
 			if self._multival then
-				function updateKeys(t_keys, t_value, t_start, t_end)
-					for key, start_value in pairs(t_start) do
-
-						local curr_value = t_value[key]
-						local end_value = t_end[key]
-
-						-- scalar property
-						if not t_keys[key] then
-							if (start_value < end_value and curr_value < end_value) or (start_value > end_value and curr_value > end_value) then
-								t_value[key] = self._func(start_value, end_value-start_value, self.duration*1000, self._dt*1000)
-							end
-
-						-- its a table, go deeper
-						elseif t_keys[key].type == "table" then
-							updateKeys(t_keys[key].children, t_value[key], t_start[key], t_end[key])
-
-						-- array property
-						elseif t_keys[key].type == "multi" then
-							-- array of values
-							for start_k, start_v in pairs(start_value) do
-								-- finished?
-								local curr_v = curr_value[start_k]
-								local end_v = end_value[start_k]
-
-								if (start_v < end_v and curr_v < end_v) or (start_v > end_v and curr_v > end_v) then
-									t_value[key][start_k] = self._func(start_v, end_v-start_v, self.duration*1000, self._dt*1000)
-								end
-							end
-						end
-					end
-				end
-				updateKeys(self._table_keys, self.var, self._start_val, self.value)
+				self:updateKeys(function(start_value, end_value)
+					return self._func(start_value, end_value-start_value, self.duration*1000, self._dt*1000)
+				end)
 
 				if self._dt > self.duration then
 					self:_onFinish()
@@ -182,6 +192,9 @@ Tween = Class{
 
 	_onFinish = function(self) 
 		self:reset()
+		self:updateKeys(function(s,end_val,k)
+			return end_val
+		end)
 		if self.onFinish then self:onFinish() end
 	end
 }

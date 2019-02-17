@@ -61,7 +61,7 @@ module.exports.instance_regex = {
 		/\b(\w+)\s*=\s*(?:(?:Image\(['"\w\/]+\):chop\(\d+,\d+\))|(?:[\w\.]+:chop\(\d+,\d+\)))\s+?/g
 	],
 	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\d.,]*\)\s+?/g,
-	'timer': 	/\b(\w+)\s*=\s*Timer\(\d*\)\s+?/g,
+	'timer': 	/\b(\w+)\s*=\s*Timer\(\d*\)(?:\s+|:)?/g,
 	'canvas': 	/\b(\w+)\s*=\s*Canvas\((?:\d*\,\d*)?\)\s+?/g
 }
 // old group/bezier regex: /\b(?:self.|self:)?(\w+)\s*=\s*Group\(\).*/g

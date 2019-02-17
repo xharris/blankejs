@@ -1,6 +1,6 @@
 BlankE.addEntity("Bullet")
 
-Bullet.net_sync_vars = {'x','y'}
+Bullet.net_sync_vars = {'speed','direction'}
 
 function Bullet:init()
 	self.speed = 800
@@ -15,6 +15,13 @@ function Bullet:update(dt)
 	if self.x < 0 then self.x = game_width end
 	if self.y > game_height then self.y = 0 end
 	if self.y < 0 then self.y = game_height end
+	
+	self.onCollision["main"] = function(other, sep_vec)
+		if other.parent.classname == "Asteroid" then
+			other.parent:hit(other.parent.direction)
+			self:destroy()
+		end
+	end
 end
 
 function Bullet:draw()

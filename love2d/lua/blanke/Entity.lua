@@ -95,6 +95,7 @@ Entity = Class{
     	for s, shape in pairs(self.shapes) do
     		shape:destroy()
     	end
+    	if self.netSync then self:netSync('destroy') end
 
     	-- entity_spash[self.classname]:remove(self)
     	_destroyGameObject('entity', self)

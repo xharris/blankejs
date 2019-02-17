@@ -30,10 +30,12 @@ noobhub = {
 		function self:subscribe(params)
 				self.channel = params.channel or 'test-channel'
 				self.callback = params.callback or   function() end
+				self.cb_reconnect = params.cb_reconnect or function() return true end
 				self.sock, error_message = socket.connect(self.server,  self.port)
 				if (self.sock == nil) then
 					print("Noobhub connection error: "..error_message)
 					print "Problems with server..?"
+					self.cb_reconnect()
 					return false;
 				end
 				self.sock:setoption( 'tcp-nodelay', true ) -- disable Nagle's algorithm for the connection
@@ -52,9 +54,10 @@ noobhub = {
 		end
 
 		function self:reconnect()
-				if (not self.channel or not self.callback) then return false; end;
+				if not self.cb_reconnect() or not self.channel or not self.callback then return false; end;
 				print("Noobhub: attempt to reconnect...");
 				return self:subscribe({ channel = self.channel; callback = self.callback})
+				
 		end
 
 		function self:publish(message)

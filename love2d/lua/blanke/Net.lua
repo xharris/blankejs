@@ -5,6 +5,7 @@ Net = {
     
     is_init = false,
     is_leader = false,
+    current_leader = nil,   -- clientid of current leader
     wants_leader = false,
     client = nil,
     clients = {},           -- list of clients connected
@@ -17,7 +18,7 @@ Net = {
     port = 8080,
     room = 1,
 
-    _objects = {},          -- objects sync from other clients _objects = {'client12' = {object1, object2, ...}}
+    _objects = {_orphans={}},          -- objects sync from other clients _objects = {'client12' = {object1, object2, ...}}
     _local_objects = {},    -- objects added by this client
 
     id = nil,
@@ -55,10 +56,12 @@ Net = {
             Net.is_connected = true
             Net.client:subscribe({
                 channel = "room"..tostring(Net.room),
-                callback = Net._onReceive
+                callback = Net._onReceive,
+                cb_reconnect = function() return Net._onFail(address, port) end
             })
         else
             Debug.log("could not connect to "..Net.address..":"..Net.port)
+            Net._onFail(address, port)
         end
 
         return Net
@@ -79,13 +82,16 @@ Net = {
             event='client.disconnect',
             info=clientid
         })
+
+        Net.removeLocalObjects()
+
         Net.client:unsubscribe()
         Net.is_init = false
         Net.is_connected = false
         Net.client = nil
 
-        Net.removeLocalObjects()
         Net.removeClientObjects()
+
         Debug.log("disconnected")
 
         return Net
@@ -97,10 +103,16 @@ Net = {
             connect='_net.connect',
             disconnect='_net.disconnect',
             receive='_net.receive',
-            event='_net.event',
+            event='_net.event'
+        }
+        local special_names = {
+            fail='onFail'
         }
         if signal_names[callback] then
             Signal.on(signal_names[callback], fn)
+        end
+        if special_names[callback] then
+            Net[special_names[callback]] = fn
         end
     end,
 
@@ -121,6 +133,13 @@ Net = {
         })
     end,
     
+    _onFail = function(...)
+        if Net.onFail and Net.onFail() then
+            Net.join(...)
+        end
+        return false
+    end,
+
     _onConnect = function(clientid)
         --Debug.log('+ '..clientid)
         Net.clients[clientid] = true
@@ -145,11 +164,11 @@ Net = {
                 Net._onReady()
             end
 
-            if data.event == 'client.connect' and not data.clientid ~= Net.id then
+            if data.event == 'client.connect' and data.clientid == Net.id then
                 Net._onConnect(data.clientid)
             end
 
-            if data.event == 'client.disconnect' then
+            if data.event == 'client.disconnect' and data.clientid ~= Net.id  then
                 Net._onDisconnect(data.clientid)
             end
 
@@ -172,6 +191,14 @@ Net = {
         Signal.emit('_net.receive')
     end,
 
+    _objApplyValues = function(obj, values)
+        if values then
+            for var, val in pairs(values) do
+                obj[var] = val
+            end
+        end
+    end,
+
     _onEvent = function(data)
         -- new object added from diff client
         if data.event == 'object.add' and data.clientid ~= Net.id then
@@ -180,23 +207,26 @@ Net = {
 
             Net._objects[clientid] = ifndef(Net._objects[clientid], {})
             if not Net._objects[clientid][obj.net_uuid] then
+
                 _G[obj.classname]._init_properties = {
                     net_uuid = obj.net_uuid,
-                    net_object = true
+                    net_owner_id = clientid,
+                    net_object = true,
+                    reapply_values = true
                 }
 
-                if obj.values then
-                    for var, val in pairs(obj.values) do
-                        _G[obj.classname]._init_properties[var] = val
-                    end
-                end
+                Net._prepareNetObject(_G[obj.classname]._init_properties, true)
+                _G[obj.classname]._init_properties.net_owner_id = clientid
+                Net._objApplyValues(_G[obj.classname]._init_properties, obj.values)
 
                 Net._objects[clientid][obj.net_uuid] = _G[obj.classname]()
                 local obj_ref = Net._objects[clientid][obj.net_uuid]
+
+                if obj_ref.reapply_values then Net._objApplyValues(obj_ref, obj.values) end
                 
                 if obj.values then
                     for var, val in pairs(obj.values) do
-                        if obj_ref.onNetUpdate and obj_ref.net_object then obj_ref:onNetUpdate(var, val) end
+                        if obj_ref.onNetUpdate then obj_ref:onNetUpdate(var, val) end
                     end
                 end
             end
@@ -204,13 +234,23 @@ Net = {
 
         -- update net entity
         if data.event == 'object.update' and data.clientid ~= Net.id then
-            if Net._objects[data.clientid] then
-                local obj = Net._objects[data.clientid][data.info.net_uuid]
+            local obj_list
+            if data.info.net_owner_id == Net.id then
+                obj_list = Net._local_objects
+            else
+                obj_list = Net._objects[data.info.net_owner_id]
+            end
+
+            if obj_list then
+                local obj = obj_list[data.info.net_uuid]
                 if obj then
                     for var, val in pairs(data.info.values) do
                         if var == '_functions' then
                             for f, info in ipairs(val) do
-                                obj[info[1]](obj,unpack(info,2,#info))
+                                local fn_name = info[1]
+                                obj.net_fn_disabled[fn_name] = true
+                                obj[fn_name](obj,unpack(info,2,#info))
+                                obj.net_fn_disabled[fn_name] = false
                             end
                         else
                             obj[var] = val
@@ -228,10 +268,17 @@ Net = {
 
         -- a new leader has been selected
         if data.event == 'set.leader' then
-            if data.info == Net.id then
+            Net.current_leader = data.info
+            if Net.current_leader == Net.id then
                 Net.is_leader = true
             else
                 Net.is_leader = false
+                -- move any orphans into leader's array
+                for o, obj in ipairs(Net._objects._orphans) do
+                    Net._objects[Net.current_leader][obj.net_uuid] = obj
+                    obj.net_owner_id = Net.current_leader
+                end
+                Net._objects._orphans = {}
             end
         end
         
@@ -298,43 +345,53 @@ Net = {
 
         for id, objects in pairs(removable) do
             for uuid, obj in pairs(objects) do
-                if not obj.keep_on_disconnect then
+                if Net.is_connected and obj.keep_on_disconnect then
+                    -- transfer objects into current leaders array
+                    if Net.is_leader then
+                        obj.net_object = false
+                        Net.addObject(obj)
+                    elseif Net._objects[Net.current_leader] then
+                        table.insert(Net._objects[Net.current_leader], obj)
+                    else
+                        -- leader hasn't been chosen yet, make them orphans for now D:
+                        table.insert(Net._objects['_orphans'], obj)
+                        obj.net_owner_id = '_orphans'
+                    end
+                else
                     obj:destroy()
                 end
             end
-            Net._objects[id] = nil
+            if table.len(Net._objects[id]) == 0 then
+                Net._objects[id] = nil
+            end
         end
     end,
 
     removeLocalObjects = function()
-        for o, obj in ipairs(Net._local_objects) do
+        for net_uuid, obj in pairs(Net._local_objects) do
             obj:destroy()
         end
         Net._local_objects = {}
     end,
 
-    addObject = function(obj)
-        if obj.net_object then return end
+    -- old: object transfered from a disconnected client
+    _prepareNetObject = function(obj, old)
+        if not old then obj.net_uuid = uuid() end
 
-        obj.net_uuid = uuid()
         obj.net_var_old = {}
         obj.net_functions = {}
-        
-        --notify the other server clients
-        Net.send({
-            type='netevent',
-            event='object.add',
-            info={
-                object = {net_uuid=obj.net_uuid, classname=obj.classname}
-            }
-        })
-        table.insert(Net._local_objects, obj)
+        obj.net_fn_disabled = {}
+
+        if not old and not obj.net_object then
+            obj.net_owner_id = Net.id
+        end
 
         obj.netSync = function(self, ...)
+            if not Net.is_connected then return end
             vars = {...}
 
             update_values = {_functions={}}
-            if not self.net_object then
+            if Net.is_connected then
                 function isFunction(var_name)
                     if self.net_functions[var_name] == nil then
                         self.net_functions[var_name] = (type(self[var_name]) == 'function') 
@@ -355,12 +412,12 @@ Net = {
                 -- update specific vars
                 for v, var in ipairs(vars) do
                     if var and self[var] ~= nil then
-                        if Net.is_connected then
-                            if isFunction(var) then
+                        if isFunction(var) then
+                            if not self.net_fn_disabled[var] then
                                 table.insert(update_values._functions,{...})
-                            elseif hasVarChanged(var) then
-                                update_values[var] = self[var]
                             end
+                        elseif hasVarChanged(var) then
+                            update_values[var] = self[var]
                         end
                     end
                 end
@@ -379,22 +436,45 @@ Net = {
                         event="object.update",
                         info={
                             net_uuid=self.net_uuid,
+                            net_owner_id=self.net_owner_id,
                             values=update_values
                         }
                     }
                 end
             end
         end
+    end,
+
+    -- old: object transfered from a disconnected client
+    addObject = function(obj, old)
+        Net._prepareNetObject(obj, old)
+        if obj.net_object then return end
+
+        --notify the other server clients
+        if not old then
+            Net.send({
+                type='netevent',
+                event='object.add',
+                info={
+                    object = {net_owner_id=Net.id, net_uuid=obj.net_uuid, classname=obj.classname}
+                }
+            })
+        end
+        Net._local_objects[obj.net_uuid] = obj    
 
         obj:netSync()
-
-        if obj.onNetAdd then obj:onNetAdd() end
+        if obj.onNetAdd and not old then obj:onNetAdd() end
 
         return Net
     end,
 
+    once = function(fn)
+        if Net.is_leader then fn() end
+        return Net
+    end,
+
     sendSyncObjects = function()
-        for o, obj in ipairs(Net._local_objects) do
+        for net_uuid, obj in pairs(Net._local_objects) do
             Net.send({
                 type='netevent',
                 event='object.add',
@@ -408,7 +488,7 @@ Net = {
     end,
 
     updateObjects = function()
-        for o, obj in ipairs(Net._local_objects) do
+        for net_uuid, obj in pairs(Net._local_objects) do
             obj:netSync()
             if obj.onNetSyncTimer then
                 obj:onNetSyncTimer()
@@ -424,7 +504,7 @@ Net = {
         if room then
             -- get population from different room
         else
-            return table.len(Net._objects) + 1          -- plus one for self
+            return table.len(Net._objects) -- doesn't need a +1 (for self) since there's the _orphans table
         end
     end,
 

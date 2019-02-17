@@ -19,6 +19,12 @@ function Ship:init()
 	self.img_thrust.xoffset = self.img_thrust.width/2
 	self.img_thrust.yoffset = self.img_thrust.height/2
 	
+	self.snd_thrust = Audio("thrust")
+	self.snd_thrust.looping = true
+	
+	self.snd_fire = Audio("fire")
+	self.snd_die = Audio("bangLarge")
+	
 	self:addShape("main","circle",{0,0,self.img_ship.width/2})
 		
 	self.turn_speed = 3
@@ -29,36 +35,22 @@ function Ship:init()
 	self.dead = false
 	self.pieces_alpha = 1
 	
-	self.spawn_timer = nil
 	self:spawn()
 	
 	self.bullets = Group()
-	if not self.net_object then Net.addObject(self) end
+	Net.addObject(self)
 end
 
 function Ship:spawn(x,y)
 	self.x = ifndef(x, game_width / 2)
 	self.y = ifndef(y, game_height / 2)
 	
-	if not self.spawn_timer then
-		self.spawn_timer = Timer()
-		self.spawn_timer:every(function()
-			if self.net_object or not self:isNearRocks() then
-				self.can_shoot = true
+	self.can_shoot = true
 
-				-- death
-				self.pieces = nil
-				self.dead = false
-				self.pieces_alpha = 1
-					
-				self.spawn_timer:stop()
-				self.spawn_timer = nil
-					
-				if not self.net_object and self.onSpawn then self:onSpawn() end
-			end
-		end, 2)
-		self.spawn_timer:start()
-	end
+	-- death
+	self.pieces = nil
+	self.dead = false
+	self.pieces_alpha = 1
 end
 
 function Ship:isNearRocks()
@@ -71,16 +63,8 @@ function Ship:isNearRocks()
 end
 
 function Ship:update(dt)
-	
 	self.img_ship.angle = self.move_angle + 90
 	self.img_thrust.angle = self.img_ship.angle
-	
-	self.onCollision["main"] = function(other, sep_vec)
-		if other.parent.classname == "Asteroid" then
-			other.parent:hit()
-			self:die()
-		end
-	end
 	
 	if self.dead then
 		-- DEAD SHIP PIECES MOVEMENT
@@ -95,7 +79,13 @@ function Ship:update(dt)
 	if self.net_object then return end
 	
 	if not self.dead then
-
+		self.onCollision["main"] = function(other, sep_vec)
+			if not self.net_object and other.parent.classname == "Asteroid" then
+				other.parent:hit(self.move_angle)
+				self:die()
+			end
+		end
+		
 		-- TURNING
 		self.friction = 0.005
 		if Input("left").pressed then
@@ -113,11 +103,16 @@ function Ship:update(dt)
 		self.thrust_alpha = 0
 		if Input("thrust").pressed then
 			self:move(self.accel)
+			self.snd_thrust:play()
 		end
 
 		-- BRAKING
 		if Input("brake").pressed then
 			self:move(-self.accel)
+			self.snd_thrust:play()
+		end
+		if Input("brake").released or Input("thrust").released then
+			self.snd_thrust:stop()
 		end
 
 		-- WRAP SCREEN
@@ -132,16 +127,20 @@ function Ship:update(dt)
 			new_bullet.x = self.x
 			new_bullet.y = self.y
 			new_bullet.direction = self.img_ship.angle - 90
+			new_bullet:netSync('x','y','direction')
 			self.bullets:add(new_bullet)
 
 			-- put shooting on cooldown
 			self.can_shoot = false
 			Timer(0.05):after(function() self.can_shoot = true end):start()
+			
+			self.snd_fire:play()
 		end
 	end
 	
 	if Input("kill").released then self:die() end
 end
+
 function Ship:die()
 	if not self.dead then
 		self.pieces = self.img_ship:chop(3,3)
@@ -153,6 +152,8 @@ function Ship:die()
 			piece.hspeed = self.hspeed + randRange(-diff_spd,diff_spd)
 			piece.vspeed = self.vspeed + randRange(-diff_spd,diff_spd)
 		end)
+		
+		self.snd_die:play()
 		self:removeShape("main")
 		self.dead_time = game_time
 		self.dead = true
