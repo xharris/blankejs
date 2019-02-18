@@ -1,21 +1,24 @@
 -- engine
 BlankE = require('blanke.Blanke')
 
-function love.load()
-	BlankE.draw_debug = true
-	
-	Input.set("lclick","mouse.1")
-	Input.set("rclick","mouse.2")
-	
-	Input.set("move_l","left","a")
-	Input.set("move_r","right","d")
-	Input.set("move_u","up","w")
-	Input.set("move_d","down","s")
-		
-	BlankE.init("MainState",{
+function BlankE.load()
+	BlankE.options = {
+		state="MainState",
 		plugins={"Platformer"},
-		filter="nearest"
-	})
+		filter="nearest",
+		debug={
+			log=true
+		},
+		inputs={
+			{"lclick","mouse.1"},
+			{"rclick","mouse.2"},
+			
+			{"move_l","left","a"},
+			{"move_r","right","d"},
+			{"move_u","up","w"},
+			{"move_d","down","s"}
+		}
+	}
 	
 	Draw.setBackgroundColor("white")
 end

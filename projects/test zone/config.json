@@ -1,6 +1,6 @@
 {
     "export": {
-        "name": "test zone",
+        "name": "test_zone",
         "remove_unused": true
     },
     "spritesheet_prvw": {

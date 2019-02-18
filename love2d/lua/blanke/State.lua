@@ -147,6 +147,8 @@ StateManager = {
 	end,
 
 	switch = function(name)
+		if type(name) == "string" then name = _G[name] end
+
 		local current_state = StateManager.current_state
         if name ~= nil and name ~= '' then
 			-- add to state stack

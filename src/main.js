@@ -174,13 +174,14 @@ var app = {
 		}, true);
 	},
 
-	play: function() { 
+	play: function(options) { 
 		if (app.isProjectOpen()) {
 			let love_path = {
 				'win': nwPATH.join(app.settings.engine_path,'love.exe'),
 				'mac': nwPATH.resolve(nwPATH.join(app.settings.engine_path,'love.app','Contents','MacOS','love'))
 			};
-			let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)], {
+
+			let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)].concat(options || []), {
 				cwd: nwPATH.join(app.settings.engine_path, 'lua')
 			});
 			let console_window = new Console(app, child);

@@ -130,6 +130,15 @@ local max_fps = 120
 local min_dt = 1/max_fps
 local next_time = love.timer.getTime()
 
+-- inject code into load function
+love.load = function(args, unfilteredArgs)
+	if BlankE.load then BlankE.load(args, unfilteredArgs) end
+
+	BlankE.options.debug.use_last_inputs = table.hasValue("reuse-inputs")
+
+	BlankE.init()
+end
+
 BlankE = {
 	_is_init = false,
 	_ide_mode = false,
@@ -162,18 +171,34 @@ BlankE = {
 	_callbacks_replaced = false,
 	old_love = {},
 	pause = false,
-	first_state = '',
 	_class_type = {},
-	init = function(first_state, in_options)
-		options = {
+	options = {},
+
+	init = function(in_options)
+		if BlankE._is_init then return end
+
+		local options = {
 			resolution = Window.resolution,
 			plugins={},
 			filter="linear",
 			scale_mode=Window.scale_mode,
-			auto_aspect_ratio=true
+			auto_aspect_ratio=true,
+			state='_empty_state',
+			inputs={},
+			debug={
+				use_last_inputs=false,
+				log=false
+			}
 		}
+		table.update(options, BlankE.options)
 		table.update(options, in_options)
 
+		BlankE.draw_debug = options.debug.log
+
+		-- set inputs
+		for i, input in ipairs(options.inputs) do
+			Input.set(unpack(input))
+		end
 
 		-- load plugins
 		for p, plugin in ipairs(options.plugins) do
@@ -215,18 +240,7 @@ BlankE = {
 		Asset.load()
 
 		Input.set("fullscreen-toggle","lalt-return","ralt-return")
-
-	    -- figure out the first state to run
-	    if BlankE.first_state and not first_state then
-	    	first_state = BlankE.first_state
-	    end
-		if first_state == nil or first_state == '' then
-			first_state = _empty_state
-		end
-		if type(first_state) == 'string' then
-			first_state = _G[first_state]
-		end
-		State.switch(first_state)  
+		State.switch(options.state)  
 
 		BlankE._is_init = true
 	end,
@@ -732,5 +746,6 @@ function _empty_state:draw()
 end	
 
 --error = BlankE.errorhandler
+
 
 return BlankE

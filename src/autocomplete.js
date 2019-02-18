@@ -125,7 +125,19 @@ module.exports.completions = {
 		{fn:"addState", vars:{ object_name:'MenuState / PlayState / ...' }},
 		{fn:"addEntity", vars:{ object_name:'Player / Powerup / ...' }},
 		{fn:"loadPlugin", vars:{ name:'' }},
-		{prop:"draw_debug"}
+		{prop:"options", info:`{</br>
+			&emsp;resolution,</br>
+			&emsp;plugins={'plugin1', 'plugin2', ...}</br>
+			&emsp;filter="linear"/"nearest",</br>
+			&emsp;scale_mode="scale"/"stretch"/"fit"/"center",</br>
+			&emsp;auto_aspect_ratio=true, (automatically figures out monitor ratio)</br>
+			&emsp;state="stateName", (first state to use on load)</br>
+			&emsp;inputs={{name,input1,input2}} (same as Input.set(name,input1,input2))</br>
+			&emsp;debug={</br>
+			&emsp;&emsp;use_last_inputs=false, (repeats all inputs given during the last game run)</br>
+			&emsp;&emsp;log=false, (whether or not to draw Debug.log)</br>
+			&emsp;}</br>
+		}`}
 	],
 	"blanke-debug":[
 		{fn:"log", vars:{ etc:'' }},

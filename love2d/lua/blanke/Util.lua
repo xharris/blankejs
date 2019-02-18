@@ -335,7 +335,11 @@ end
 function table.update(old, new)
 	if type(new) == "table" then
 		for k, v in pairs(new) do
-			old[k] = v
+			if type(v) == "table" then
+				table.update(old[k], new[k])
+			else
+				old[k] = v
+			end
 		end
 	end
 end

@@ -1,7 +1,7 @@
 Window = {
 	aspect_ratio = {4,3},
 	resolution = 3,
-	scale_mode = 'scale',
+	scale_mode = 'scale', -- scale, stretch, fit, center
 	aspect_ratios = { {4,3},{5,4},{16,10},{16,9} },
 	resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 },--640, 800, 960, 1024, 1280, 1400, 1440, 1600, 1856, 1920, 2048 },
 	
