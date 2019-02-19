@@ -87,17 +87,21 @@ _Input = Class{
     end,
 
     -- a mouse/keyboard input has been pressed
-    press = function(self)
+    press = function(self, name)
         self.pressed = true
         self.released = false
         self._release_checked = false
+
+        if Debug._input then Debug._input("press",name)
     end,
 
     -- a mouse/keyboard input has been released
-    release = function(self)
+    release = function(self, name)
         self.pressed = false
         self.released = true
         self._release_checked = false
+
+        if Debug._input then Debug._input("release",name)
     end,
 
     -- check if .release value should be reset
@@ -171,13 +175,13 @@ Input = {
 
                         -- only press if all keys are down
                         if obj.in_key[input] == input:count("-")+1 then
-                            obj:press()
+                            obj:press(input)
                         end
                     end
                 else
                     -- single key press
                     obj.in_key[key] = obj.in_key[key] + 1
-                    obj:press()
+                    obj:press(key)
                 end
 
             end
@@ -195,13 +199,13 @@ Input = {
 
                         -- only press if all keys are down
                         if obj.in_key[input] == input:count("-") then
-                            obj:release()
+                            obj:release(input)
                         end
                     end
                 else
                     -- single key release
                     obj.in_key[key] = 0;
-                    obj:release()
+                    obj:release(key)
                 end
             end
         end

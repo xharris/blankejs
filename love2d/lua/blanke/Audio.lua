@@ -1,5 +1,8 @@
 Audio = Class{
 	_sources = {},
+	setVolume = function(vol) love.audio.setVolume(vol) end,
+	getVolume = function() love.audio.getVolume() end,
+
 	init = function(self, name)
 		name = cleanPath(name)
 		self.name = name 

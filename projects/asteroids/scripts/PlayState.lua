@@ -24,7 +24,7 @@ function PlayState:enter()
 		startGame()	
 	end)
 	
-	Net.join('bob',8080)
+	Net.join('localhost',8080)
 end
 
 function startGame()

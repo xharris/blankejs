@@ -108,3 +108,13 @@ class Console extends Editor {
 		}
 	}
 }
+
+document.addEventListener("openProject", function(e){
+	app.removeSearchGroup("Debug");
+	app.addSearchKey({key: 'Re-run', group: 'Debug', onSelect: function() {
+		app.play('--record');
+	}});
+	app.addSearchKey({key: 'Run', group: 'Debug', onSelect: function() {
+		app.play();
+	}});
+});

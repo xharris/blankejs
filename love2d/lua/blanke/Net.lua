@@ -3,6 +3,7 @@ local TYPE_FUNCTION = '_type.function'
 Net = {
     obj_update_rate = 0, -- m/s
     
+    logging = false,
     is_init = false,
     is_leader = false,
     current_leader = nil,   -- clientid of current leader
@@ -50,7 +51,7 @@ Net = {
             Net.init(address, port)
         end
 
-        Debug.log("connecting to",Net.address,Net.port)
+        Net.log("connecting to",Net.address,Net.port)
         Net.client = noobhub.new({ server=Net.address; port=Net.port; })
         if Net.client then
             Net.is_connected = true
@@ -60,7 +61,7 @@ Net = {
                 cb_reconnect = function() return Net._onFail(address, port) end
             })
         else
-            Debug.log("could not connect to "..Net.address..":"..Net.port)
+            Net.log("could not connect to "..Net.address..":"..Net.port)
             Net._onFail(address, port)
         end
 
@@ -92,9 +93,13 @@ Net = {
 
         Net.removeClientObjects()
 
-        Debug.log("disconnected")
+        Net.log("disconnected")
 
         return Net
+    end,
+
+    log = function(...)
+        if Net.logging then Debug.log(...) end
     end,
 
     on = function(callback, fn)
@@ -141,13 +146,13 @@ Net = {
     end,
 
     _onConnect = function(clientid)
-        --Debug.log('+ '..clientid)
+        --Net.log('+ '..clientid)
         Net.clients[clientid] = true
         Signal.emit('_net.connect', clientid)
     end,
     
     _onDisconnect = function(clientid) 
-        --Debug.log('- '..clientid)
+        --Net.log('- '..clientid)
         Net.clients[clientid] = nil
         Signal.emit('_net.disconnect', clientid)
         Net.removeClientObjects(clientid) 
@@ -155,12 +160,12 @@ Net = {
     
     _onReceive = function(data)
         if data.type and data.type == 'netevent' then
-            --Debug.log(data.event)
+            --Net.log(data.event)
             -- get assigned client id
             if data.event == 'getID' then
                 Net.id = data.info.id
                 Net.is_leader = data.info.is_leader
-                Debug.log('connected to '..Net.address..':'..Net.port..' as '..Net.id..'!')
+                Net.log('connected to '..Net.address..':'..Net.port..' as '..Net.id..'!')
                 Net._onReady()
             end
 

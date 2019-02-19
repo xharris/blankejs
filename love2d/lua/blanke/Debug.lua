@@ -4,7 +4,17 @@ Debug = {
     margin = 15,
     _duplicate_count = 0,
     _last_line = '',
+
+    -- records the current seed and all inputs, saves for later
+    _recording = true,
+    _record = {},
+    recordGame = function()
     
+    end,
+    _input = function(in_type, name)
+
+    end,
+
     draw = function()
         local fnt_height = Debug._font:getHeight()
         local win_height = love.graphics:getHeight()

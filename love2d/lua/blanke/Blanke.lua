@@ -134,7 +134,7 @@ local next_time = love.timer.getTime()
 love.load = function(args, unfilteredArgs)
 	if BlankE.load then BlankE.load(args, unfilteredArgs) end
 
-	BlankE.options.debug.use_last_inputs = table.hasValue("reuse-inputs")
+	BlankE.options.debug.record = table.hasValue(args, "--record")
 
 	BlankE.init()
 end
@@ -186,7 +186,7 @@ BlankE = {
 			state='_empty_state',
 			inputs={},
 			debug={
-				use_last_inputs=false,
+				record=false,
 				log=false
 			}
 		}

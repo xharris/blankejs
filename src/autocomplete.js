@@ -25,7 +25,7 @@ module.exports.user_words = {
 	]
 }
 
-module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Debug','Asset','Input','Image','Scene','Signal','Bezier','Window','math'];
+module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Debug','Asset','Input','Image','Scene','Signal','Bezier','Window','math','Audio'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -474,5 +474,9 @@ module.exports.completions = {
 		{fn:"drawTo", vars:{ draw_fn:'' }},
 		{fn:"draw"},
 		{fn:"resize", vars:{ w:'', h:'' }}
+	],
+	"blanke-audio":[
+		{fn:"setVolume",vars:{ volume:'' }},
+		{fn:"getVolume"}
 	]
 }
