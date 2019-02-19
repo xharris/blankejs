@@ -220,9 +220,14 @@ class Exporter extends Editor {
 					nwFS.readFile(nwPATH.join(app_path,"Contents","Info.plist"), {encoding:'utf-8'}, function(err, data){
 						if (err) { console.error(err); return; }
 
-						data = data.replace("org.love2d.love", "com.XHH."+project_name);
-						data = data.replace(/L\u00D6VE/g, project_name);
-						data = data.replace(/<key>UTExportedTypeDeclarations<\/key>\s*<array>[\s\S]+<\/array>/g, "");
+						data = data.replaceAll("org.love2d.love", "com.XHH."+project_name);
+						data = data.replaceAll(/L\u00D6VE/g, project_name);
+						data = data.replaceAll(/<key>UTExportedTypeDeclarations<\/key>\s*<array>[\s\S]+<\/array>/g, "");
+
+						// change icon
+						nwFS.copySync(app.project_settings.icns, nwPATH.join(app_path,"Contents","Resources","GameIcon.icns"));
+						nwFS.copySync(app.project_settings.icns, nwPATH.join(app_path,"Contents","Resources","OS X AppIcon.icns"));
+						// nwFS.copySync(app.project_settings.icns, nwPATH.join(app_path,"Contents","Resources","Document.icns"));
 
 						nwFS.writeFile(nwPATH.join(app_path,"Contents","Info.plist"), data, function(err){
 							if (err) { console.error(err); return; }

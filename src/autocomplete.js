@@ -25,7 +25,7 @@ module.exports.user_words = {
 	]
 }
 
-module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Debug','Asset','Input','Image','Scene','Signal','Bezier','Window','math','Audio'];
+module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Debug','Asset','Input','Image','Scene','Signal','Bezier','Window','math','Audio','string','table'];
 
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
@@ -83,6 +83,9 @@ module.exports.completions = {
 		{prop:"game_time"},
 		{prop:"dt_mod",info:">1 speed up game, <1 slow down game"},
 
+		{fn:"hex2rgb",vars:{hex:'"#fff"/"#ffffff"/"fff"'}},
+		{fn:"hsv2rgb",vars:{hsv:''}},
+
 		{fn:"clamp",vars:{x:'',min:'',max:''}},
 		{fn:"lerp",vars:{a:'',b:'',percent:''}},
 		{fn:"cond",vars:{condition:'',yes:'',no:''},info:'returns (condition ? yes : no)'},
@@ -92,6 +95,16 @@ module.exports.completions = {
 		{fn:"sinusoidal",vars:{min:'',max:'',speed:'higher = faster',start_offset:'optional'},info:'returns a number'},
 		{fn:"direction_x",vars:{angle:'degrees',dist:''}},
 		{fn:"direction_y",vars:{angle:'degrees',dist:''}},
+
+		{fn:"basename",vars:{path:''}},
+		{fn:"dirname",vars:{path:''}},
+		{fn:"extname",vars:{path:''}},
+
+		{fn:"bitmask4",vars:{tile_map:'2D array of values',tile_value:'value of tile in array',x:'',y:''}},
+		{fn:"bitmask8",vars:{tile_map:'2D array of values',tile_value:'value of tile in array',x:'',y:''}},
+
+		{fn:"map2Dindex",vars:{x:'',y:'',columns:''}},
+		{fn:"map2Dcoords",vars:{i:'',columns:''}},
 
 		{prop:'Debug'},
 
@@ -173,6 +186,29 @@ module.exports.completions = {
 		{fn:'type',vars:{n:''},info:"whether n is \'integer\',\'float\',nil (NaN)"},
 		{fn:'sign',vars:{n:''},info:"returns -1 or 1 depending on sign of n"},
 		{fn:'ult',vars:{m:'',n:''},info:"true IF abs(m) < abs(n) ELSE false"}
+	],
+	"blanke-string":[
+		{fn:"replaceAt", vars:{str:"", position:"", new_str:""}},
+		{fn:"startsWith",vars:{str:"", start_str:""}},
+		{fn:"endsWith",vars:{str:"", end_str:""}},
+		{fn:"split",vars:{str:"", sep:""}},
+		{fn:"contains",vars:{str:"", sub_str:""}},
+		{fn:"trim",vars:{str:""}},
+		{fn:"count",vars:{str:"", sub_str:""}}
+	],
+	"blanke-table":[
+		{fn:"find",vars:{t:"",value:""},info:"returns the index of the value or nil"},
+		{fn:"hasValue",vars:{t:"",value:""},info:"returns true or false"},
+		{fn:"copy",vars:{t:""}},
+		{fn:"deepcopy",vars:{t:""}},
+		{fn:"toNumber",vars:{t:""},info:"converts all values in t to a number"},
+		{fn:"toString",vars:{t:""},info:"converts all values in t to a string"},
+		{fn:"forEach",vars:{t:"",fn:"function(i,value) end"}},
+		{fn:"random",vars:{t:""}},
+		{fn:"keys",vars:{t:""}},
+		{fn:"len",vars:{t:""}},
+		{fn:"merge",vars:{t:"",etc:''}},
+		{fn:"update",vars:{old_t:"", new_t:""}, info:"recursive. if new_t and old_t share a key, updates old_t with the value in new_t"}
 	],
 	"blanke-net":[
 		{prop:"id", info:"unique clientid assigned upon connecting to a network"},
@@ -397,16 +433,22 @@ module.exports.completions = {
 		{fn:"pauseAll",info:"stop all Audio that use the same asset"}
 	],
 	"blanke-scene":[
-		{prop:"tile_hitboxes"},
-		{prop:"hitboxes"},
-		{prop:"entities"},
-		{prop:"dont_draw"},
-		{prop:"draw_order"}
+		{prop:"tile_hitboxes",info:'list of tile names that should be given a hitbox'},
+		{prop:"hitboxes",info:'list of entites in scene that should be turned into a hitbox'},
+		{prop:"entities",info:'Ex. {{"player",PlayerClass}, {"enemy",EnemyClass}}'},
+		{prop:"dont_draw",info:'list of entities in scene that should not be automatically drawn'},
+		{prop:"draw_order",info:'list emphasizing the order classes/tiles should be drawn'}
 	],
 	"blanke-scene-instance":[
 		{prop:"angle",info:"rotate all tiles and hitboxes (not entities)"},
 		{prop:"center_x",info:"center used when rotating with .angle"},
 		{prop:"center_y",info:"center used when rotating with .angle"},
+		{prop:"left",info:'read only'},
+		{prop:"top",info:'read only'},
+		{prop:"right",info:'read only'},
+		{prop:"bottom",info:'read only'},
+		{prop:"width",info:'read only'},
+		{prop:"height",info:'read only'},
 		{prop:"draw_hitboxes"},
 		{fn:"addHitbox",vars:{ object_name:"", etc:"" }},
 		{fn:"addTileHitbox",vars:{ image_name:"", etc:"" }},
@@ -478,5 +520,12 @@ module.exports.completions = {
 	"blanke-audio":[
 		{fn:"setVolume",vars:{ volume:'' }},
 		{fn:"getVolume"}
+	],
+	"blanke-save":[
+		{fn:"open",vars:{filename:''}},
+		{fn:"write",vars:{key:'',value:''}},
+		{fn:"read",vars:{key:''}},
+		{fn:"save"},
+		{fn:"hasKey",vars:{key:''}}
 	]
 }

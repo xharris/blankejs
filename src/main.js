@@ -324,11 +324,13 @@ var app = {
 		if (app.isProjectOpen()) {	
 			nwFS.readFile(nwPATH.join(app.project_path,"config.json"), 'utf-8', function(err, data){
 				if (!err) {
-					try {
+					if (!err) {
 						app.project_settings = JSON.parse(data);
-					} catch(e) {
-						app.project_settings = {};
 					}
+					ifndef_obj(app.project_settings, {
+						ico:nwPATH.join('src','logo.ico'),
+						icns:nwPATH.join('src','logo.icns'),
+					});
 					app.saveSettings();
 					if (callback) callback();
 				}

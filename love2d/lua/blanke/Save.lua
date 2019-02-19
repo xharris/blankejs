@@ -32,14 +32,15 @@ end
 
 -- saves the currently loaded file
 Save.save = function()
-    local json_data = json.encode(Save.file_data)
-    local success = love.filesystem.write(Save.file_path, json_data)
-
+    if Save.file_path ~= '' then
+        local json_data = json.encode(Save.file_data)
+        local success = love.filesystem.write(Save.file_path, json_data)
+    end
     return Save
 end
 
 -- check if a key exists (usually before reading)
-Save.has_key = function(key)
+Save.hasKey = function(key)
     return (Save.file_data[key] ~= nil)
 end
 

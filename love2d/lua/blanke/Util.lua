@@ -185,6 +185,7 @@ string.startsWith = string.starts
 function string:ends(End)
 	return string.sub(self,-string.len(End))==End
 end
+string.endsWith = string.ends
 function string:split(sep)
 	if sep == nil or sep == '' then
 		local t = {}

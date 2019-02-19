@@ -133,9 +133,7 @@ local next_time = love.timer.getTime()
 -- inject code into load function
 love.load = function(args, unfilteredArgs)
 	if BlankE.load then BlankE.load(args, unfilteredArgs) end
-
-	print(unpack(args))
-
+	
 	local ide = table.hasValue(args, "--ide")
 	local record = table.hasValue(args, "--record")
 	local play_record = table.hasValue(args, "--play-record")

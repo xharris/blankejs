@@ -27,5 +27,7 @@
             ],
             "image": "image/sprite-example.png"
         }
-    }
+    },
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns"
 }
