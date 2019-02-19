@@ -112,9 +112,34 @@ class Console extends Editor {
 document.addEventListener("openProject", function(e){
 	app.removeSearchGroup("Debug");
 	app.addSearchKey({key: 'Re-run', group: 'Debug', onSelect: function() {
-		app.play('--record');
+		app.play('--play-record');
 	}});
 	app.addSearchKey({key: 'Run', group: 'Debug', onSelect: function() {
 		app.play();
 	}});
+
+
+	// shortcut: run game
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Ctrl+B", active: function() {
+			app.play();
+		}
+	}));
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Command+B", active: function() {
+			app.play();
+		}
+	}));
+
+	// shortcut: run recording
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Ctrl+Shift+B", active: function() {
+			app.play('--play-record');
+		}
+	}));
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Command+Shift+B", active: function() {
+			app.play('--play-record');
+		}
+	}));
 });

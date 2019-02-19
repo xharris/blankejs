@@ -73,7 +73,6 @@ View = Class{
 				if self.onShakeFinish then
 					self:onShakeFinish()
 				end
-				Debug.log(self.shake_x, self.shake_y)
 			end
 			self.shake_tween:play()
 		end

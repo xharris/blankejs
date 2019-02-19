@@ -91,8 +91,6 @@ _Input = Class{
         self.pressed = true
         self.released = false
         self._release_checked = false
-
-        if Debug._input then Debug._input("press",name)
     end,
 
     -- a mouse/keyboard input has been released
@@ -100,8 +98,6 @@ _Input = Class{
         self.pressed = false
         self.released = true
         self._release_checked = false
-
-        if Debug._input then Debug._input("release",name)
     end,
 
     -- check if .release value should be reset
@@ -162,10 +158,19 @@ Input = {
         new_input.persistent = true
         Input.keys[name] = new_input
         return Input
-    end,    
+    end,
+
+    simulateKeyPress = function(key)
+        Input.keypressed(key)
+    end,
+
+    simulateKeyRelease = function(key)
+        Input.keyreleased(key)
+    end,
     
     keypressed = function(key)
         Input.last_key = key
+        Signal.emit('keypress',key)
         for o, obj in pairs(Input.keys) do
             if obj.in_key[key] ~= nil or obj.multi_key[key] then
 
@@ -190,6 +195,7 @@ Input = {
     end,
     
     keyreleased = function(key)
+        Signal.emit('keyrelease',key)
         for o, obj in pairs(Input.keys) do
             if obj.in_key[key] ~= nil or obj.multi_key[key] then
 

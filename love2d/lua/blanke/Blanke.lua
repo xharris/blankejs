@@ -134,9 +134,20 @@ local next_time = love.timer.getTime()
 love.load = function(args, unfilteredArgs)
 	if BlankE.load then BlankE.load(args, unfilteredArgs) end
 
-	BlankE.options.debug.record = table.hasValue(args, "--record")
+	print(unpack(args))
+
+	local ide = table.hasValue(args, "--ide")
+	local record = table.hasValue(args, "--record")
+	local play_record = table.hasValue(args, "--play-record")
+
+	BlankE.options.debug.play_record = play_record
+	BlankE.options.debug.record = ((record or ide) and not play_record)
 
 	BlankE.init()
+end
+
+love.quit = function()
+	return BlankE._quit()
 end
 
 BlankE = {
@@ -186,14 +197,13 @@ BlankE = {
 			state='_empty_state',
 			inputs={},
 			debug={
+				play_record=false,
 				record=false,
 				log=false
 			}
 		}
 		table.update(options, BlankE.options)
 		table.update(options, in_options)
-
-		BlankE.draw_debug = options.debug.log
 
 		-- set inputs
 		for i, input in ipairs(options.inputs) do
@@ -240,7 +250,19 @@ BlankE = {
 		Asset.load()
 
 		Input.set("fullscreen-toggle","lalt-return","ralt-return")
-		State.switch(options.state)  
+		
+		-- debugging 
+		BlankE.draw_debug = options.debug.log
+		
+		if BlankE.options.debug.play_record then
+			Debug.playRecording()
+		end
+		
+		State.switch(options.state)
+
+		if BlankE.options.debug.record then
+			Debug.recordGame()
+		end
 
 		BlankE._is_init = true
 	end,
@@ -525,6 +547,7 @@ BlankE = {
     	if not BlankE.pause then
 			StateManager.iterateStateStack('update', dt)
 		end
+		if Debug then Debug.update(dt) end
 
 	    -- default fullscreen toggle shortcut
 	    if Input("fullscreen-toggle").released then
@@ -641,17 +664,22 @@ BlankE = {
 	    Input.wheelmoved(x, y)		
 	end,
 
-	quit = function()
+	_quit = function()
+		if BlankE.quit and BlankE.quit() then return true end
+
 	    if Net then Net.disconnect() end
 	    State.switch()
 	    BlankE.clearObjects(true)
-	    BlankE.restoreCallbacks()
+		BlankE.restoreCallbacks()
+		if Debug then Debug.quit() end
 
 	    -- remove globals
 	    local globals = {}--'BlankE'}
 	    for g, global in ipairs(globals) do
 	    	if _G[global] then _G[global] = nil end
-	    end
+		end
+		
+		return false
 	end,
 
 	errorhandler = function(msg)

@@ -181,7 +181,7 @@ var app = {
 				'mac': nwPATH.resolve(nwPATH.join(app.settings.engine_path,'love.app','Contents','MacOS','love'))
 			};
 
-			let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path)].concat(options || []), {
+			let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path),'--ide'].concat(options || []), {
 				cwd: nwPATH.join(app.settings.engine_path, 'lua')
 			});
 			let console_window = new Console(app, child);
@@ -530,6 +530,7 @@ var app = {
 			DEV_MODE = true;
 			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
+			nwGUI.Window.get().showDevTools();
 			blanke.toast("Dev mode enabled");
 		} else {
 			blanke.toast("Dev mode already enabled!");
@@ -709,19 +710,6 @@ nwWIN.on('loaded', function() {
 			key: "Ctrl+R",
 			active: function() {
 				app.getElement("#search-input").focus();
-			}
-		}));
-		// shortcut: run game
-		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-			key: "Ctrl+B",
-			active: function() {
-				app.play();
-			}
-		}));
-		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-			key: "Command+B",
-			active: function() {
-				app.play();
 			}
 		}));
 		// shortcut: enable dev mode

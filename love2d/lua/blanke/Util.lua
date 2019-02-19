@@ -72,6 +72,12 @@ function randRange(...)
 	return love.math.random(ranges[r], ranges[r+1])
 end
 
+-- gets or sets random seed
+function randSeed(seed_low, seed_high)
+	if seed_low ~= nil then love.math.setRandomSeed(seed_low, seed_high) else
+	return love.math.getRandomSeed() end
+end
+
 function sinusoidal(min, max, speed, start_offset)
 	local dist = (max - min)/2
 	local offset = (min + max)/2
