@@ -87,14 +87,14 @@ _Input = Class{
     end,
 
     -- a mouse/keyboard input has been pressed
-    press = function(self, name)
+    press = function(self)
         self.pressed = true
         self.released = false
         self._release_checked = false
     end,
 
     -- a mouse/keyboard input has been released
-    release = function(self, name)
+    release = function(self)
         self.pressed = false
         self.released = true
         self._release_checked = false
@@ -160,14 +160,11 @@ Input = {
         return Input
     end,
 
-    simulateKeyPress = function(key)
-        Input.keypressed(key)
-    end,
+    simulateKeyPress = function(key) Input.keypressed(key) end,
+    simulateKeyRelease = function(key) Input.keyreleased(key) end,
+    simulateMousePress = function(x,y,button) Input.mousereleased(x,y,button) end,
+    simulateMouseRelease = function(x,y,button) Input.mousepressed(x,y,button) end,
 
-    simulateKeyRelease = function(key)
-        Input.keyreleased(key)
-    end,
-    
     keypressed = function(key)
         Input.last_key = key
         Signal.emit('keypress',key)
@@ -180,13 +177,13 @@ Input = {
 
                         -- only press if all keys are down
                         if obj.in_key[input] == input:count("-")+1 then
-                            obj:press(input)
+                            obj:press()
                         end
                     end
                 else
                     -- single key press
                     obj.in_key[key] = obj.in_key[key] + 1
-                    obj:press(key)
+                    obj:press()
                 end
 
             end
@@ -205,13 +202,13 @@ Input = {
 
                         -- only press if all keys are down
                         if obj.in_key[input] == input:count("-") then
-                            obj:release(input)
+                            obj:release()
                         end
                     end
                 else
                     -- single key release
                     obj.in_key[key] = 0;
-                    obj:release(key)
+                    obj:release()
                 end
             end
         end
@@ -227,6 +224,7 @@ Input = {
     end,
     
     mousepressed = function(x, y, button)
+        Signal.emit('mousepress',x,y,button)
         local btn_string = "mouse." .. button
         for o, obj in pairs(Input.keys) do
             if obj.in_mouse[btn_string] ~= nil then
@@ -242,6 +240,7 @@ Input = {
     end,
     
     mousereleased = function(x, y, button)
+        Signal.emit('mouserelease',x,y,button)
         local btn_string = "mouse." .. button
         for o, obj in pairs(Input.keys) do
             if obj.in_mouse[btn_string] ~= nil then

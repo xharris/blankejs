@@ -14,15 +14,22 @@ Debug = {
         local low, high = randSeed()
         Debug._record.seed = {low,high}
         Debug._record.inputs = {}
+
+        local function addInput(...)
+            table.insert(Debug._record.inputs, table.merge({game_time},{...}))
+        end
+
         Signal.on('keypress',function(key)
-            table.insert(Debug._record.inputs, {
-                game_time,key,'press'
-            })
+            addInput(key,'press')
         end)
         Signal.on('keyrelease',function(key)
-            table.insert(Debug._record.inputs, {
-                game_time,key,'release'
-            })
+            addInput(key,'release')
+        end)
+        Signal.on('mousepress',function(x,y,button)
+            addInput(x,y,button,'mpress')
+        end)
+        Signal.on('mouserelease',function(x,y,button)
+            addInput(x,y,button,'mrelease')
         end)
     end,
     playRecording = function(filename)
@@ -64,6 +71,12 @@ Debug = {
                 end
                 if input_info[3] == "release" then
                     Input.simulateKeyRelease(input_info[2])
+                end
+                if input_info[5] == "mpress" then
+                    Input.simulateMousePress(input_info[2],input_info[3],input_info[4])
+                end
+                if input_info[5] == "mrelease" then
+                    Input.simulateMouseRelease(input_info[2],input_info[3],input_info[4])
                 end
                 -- wait for next input event
                 Debug._play_index = Debug._play_index + 1
