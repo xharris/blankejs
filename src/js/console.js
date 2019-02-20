@@ -9,6 +9,8 @@ class Console extends Editor {
 
 		var this_ref = this;
 
+		this.pin = false;
+
 		this.process = [...args][1];
 		this.process.stdout.on('data', function(data){
 			data = data.toString();
@@ -25,12 +27,19 @@ class Console extends Editor {
 		this.el_log = app.createElement("div", "log");
 		this.appendChild(this.el_log);
 		this.el_log.focus();
-		
-		this.hideMenuButton();
+	}
+
+	onMenuClick (e) {
+		var this_ref = this;
+		app.contextMenu(e.x, e.y, [{
+			label:'pin',
+			checked: this_ref.pin,
+			click:function(){ this_ref.pin = !this_ref.pin; }
+		}]);
 	}
 
 	processClosed () {
-		if (!this.had_error)
+		if (!this.had_error && !this.pin)
 			this.close();
 	}
 

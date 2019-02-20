@@ -73,7 +73,7 @@ class Exporter extends Editor {
 	}
 
 	createLove (dir, cb) {
-		let love_path = nwPATH.join(dir, app.project_settings.export.name+".zip");
+		let love_path = nwPATH.join(dir, app.project_settings.export.name+".love");
 		let engine_path = app.settings.engine_path;
 
 		function startZipping(eng_ignore) {

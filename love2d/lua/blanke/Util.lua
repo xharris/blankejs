@@ -316,7 +316,7 @@ function table.remove(t, value)
 end]]
 
 -- from https://stackoverflow.com/a/33296534
--- still unsure if this works
+--[[ still unsure if this works
 function table.merge(...)
 	local concat_2tables = function(table1, table2)
 	    len = #table1
@@ -334,8 +334,15 @@ function table.merge(...)
     else
         table1 = tableList[1]
         restTableList = {unpack(tableList, 2)}
-        return concat_2tables(table1, concatenateTables(restTableList))
+        return concat_2tables(table1, table.merge(restTableList))
     end
+end]]
+
+function table.merge(t1,t2)
+    for i=1,#t2 do
+        t1[#t1+1] = t2[i]
+    end
+    return t1
 end
 
 -- puts all keys/values from new into old

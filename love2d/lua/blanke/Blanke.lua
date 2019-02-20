@@ -148,6 +148,7 @@ love.quit = function()
 	return BlankE._quit()
 end
 
+
 BlankE = {
 	_is_init = false,
 	_ide_mode = false,

@@ -20,16 +20,16 @@ Debug = {
         end
 
         Signal.on('keypress',function(key)
-            addInput(key,'press')
+            addInput('kpress',key)
         end)
         Signal.on('keyrelease',function(key)
-            addInput(key,'release')
+            addInput('krelease',key)
         end)
         Signal.on('mousepress',function(x,y,button)
-            addInput(x,y,button,'mpress')
+            addInput('mpress',x,y,button)
         end)
         Signal.on('mouserelease',function(x,y,button)
-            addInput(x,y,button,'mrelease')
+            addInput('mrelease',x,y,button)
         end)
     end,
     playRecording = function(filename)
@@ -66,17 +66,17 @@ Debug = {
             if game_time >= Debug._next_evt_time and Debug._play_index <= Debug._event_count then
                 -- simulate this input
                 local input_info = Debug._record.inputs[Debug._play_index]
-                if input_info[3] == "press" then
-                    Input.simulateKeyPress(input_info[2])
+                if input_info[2] == "kpress" then
+                    Input.simulateKeyPress(input_info[3])
                 end
-                if input_info[3] == "release" then
-                    Input.simulateKeyRelease(input_info[2])
+                if input_info[2] == "krelease" then
+                    Input.simulateKeyRelease(input_info[3])
                 end
-                if input_info[5] == "mpress" then
-                    Input.simulateMousePress(input_info[2],input_info[3],input_info[4])
+                if input_info[2] == "mpress" then
+                    Input.simulateMousePress(input_info[3],input_info[4],input_info[5])
                 end
-                if input_info[5] == "mrelease" then
-                    Input.simulateMouseRelease(input_info[2],input_info[3],input_info[4])
+                if input_info[2] == "mrelease" then
+                    Input.simulateMouseRelease(input_info[3],input_info[4],input_info[5])
                 end
                 -- wait for next input event
                 Debug._play_index = Debug._play_index + 1
