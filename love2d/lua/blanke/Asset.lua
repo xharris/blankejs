@@ -113,6 +113,7 @@ Asset = Class{
 				audio_type = BlankE.settings.audio[path].type
 			end
 			local audio = love.audio.newSource(path,audio_type)
+			if audio:getDuration() > 10 then audio = love.audio.newSource(path,"stream") end
 			if audio then return acceptAsset("audio",audio) end
 
 		-- MAP

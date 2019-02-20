@@ -46,7 +46,7 @@ class AssetManager extends Editor {
 
 		// add files to the list
 		walker.on('file', function(path, stat, next){
-			if (!path.includes('\/dist\/') && stat.isFile()) {
+			if (!path.includes('\/?dist\/') && stat.isFile()) {
 				let full_path = nwPATH.resolve(nwPATH.join(path, stat.name));
 				this_ref.addFile(full_path);
 			}

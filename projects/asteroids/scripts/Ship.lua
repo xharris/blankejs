@@ -23,14 +23,20 @@ function Ship:init()
 	self.snd_thrust.looping = true
 	
 	self.snd_fire = Audio("fire")
+	self.snd_fire.volume = 0.5
+	
 	self.snd_die = Audio("bangLarge")
+	
+	self.snd_beat1 = Audio("beat1")
+	self.snd_beat2 = Audio("beat2")
+	self.beat = 1
 	
 	self:addShape("main","circle",{0,0,self.img_ship.width/2})
 		
 	self.turn_speed = 3
 	self.move_angle = -90
-	self.move_speed = 200
-	self.accel = 4
+	self.move_speed = 300
+	self.accel = 6
 	self.thrust_alpha = 0
 	self.dead = false
 	self.pieces_alpha = 1
@@ -46,6 +52,21 @@ function Ship:spawn(x,y)
 	self.y = ifndef(y, game_height / 2)
 	
 	self.can_shoot = true
+	
+	Net.once(function()
+		self.tmr_beat = Timer(1)
+		self.tmr_beat:after(function()
+			if self.beat == 1 then
+				self.snd_beat1:play()
+				self.beat = 2
+			elseif self.beat == 2 then
+				self.snd_beat2:play()
+				self.beat = 1
+			end
+			self.tmr_beat:start()
+		end)	
+		self.tmr_beat:start()
+	end)
 
 	-- death
 	self.pieces = nil
@@ -63,6 +84,9 @@ function Ship:isNearRocks()
 end
 
 function Ship:update(dt)
+	local snd_x = lerp(-1,1,self.x/game_width)
+	Audio.setPosition(snd_x,0,0)
+	
 	self.img_ship.angle = self.move_angle + 90
 	self.img_thrust.angle = self.img_ship.angle
 	
@@ -153,7 +177,12 @@ function Ship:die()
 			piece.vspeed = self.vspeed + randRange(-diff_spd,diff_spd)
 		end)
 		
+		self.snd_thrust:stop()
 		self.snd_die:play()
+		Net.once(function()
+			self.tmr_beat:stop()
+		end)
+		
 		self:removeShape("main")
 		self.dead_time = game_time
 		self.dead = true

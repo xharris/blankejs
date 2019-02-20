@@ -9,14 +9,16 @@ function Asteroid:init(small)
 	self:addAnimation{name="small", image="asteroids_small", frames={"1-3",1}, frame_size={34,34}, speed=1, offset={0,0}}
 	self:addAnimation{name="large", image="asteroids", frames={"1-3",1}, frame_size={68,68}, speed=1, offset={0,0}}
 
-	self.snd_hit = Audio("bangMedium")
 	
 	self.small = ifndef(small, false)
 	if self.small then
+		self.snd_hit = Audio("bangSmall")
 		self:addShape("main","circle",{0,0,16})
 	else
+		self.snd_hit = Audio("bangMedium")
 		self:addShape("main","circle",{0,0,32})
 	end
+	-- self.snd_hit.positional = true
 			
 	self.sprite_speed = 0
 	self.sprite_frame = randRange(1,3)
@@ -52,6 +54,10 @@ end
 
 function Asteroid:hit(direction)
 	self:netSync("hit",direction)
+	
+	self.snd_hit.x = lerp(-1,1,self.x/game_width)
+	self.snd_hit:play()
+	
 	if not self.small and self.children:size() == 0 then
 		Net.once(function()
 			local last_dir = 0
@@ -72,7 +78,6 @@ function Asteroid:hit(direction)
 			end
 		end)
 		
-		self.snd_hit:play()
 		self:removeShape("main")
 		self.x = 0
 		self.y = 0

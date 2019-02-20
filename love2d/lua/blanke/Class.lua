@@ -113,8 +113,8 @@ local function new(class)
 
 			-- get default values for onPropSet variables
 			for var, fn in pairs(o.onPropSet) do
-				if o.onPropGet[var] and not o._hiddenProps[var] then
-					o._hiddenProps[var] = o.onPropGet[var](o)
+				if o.onPropGet[var] then
+					o._hiddenProps[var] = o.onPropGet[var]()
 				end
 			end
 
