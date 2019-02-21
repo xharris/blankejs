@@ -1444,9 +1444,10 @@
   overflow-x: hidden;
 }
 .content[data-type="Docview"] .section {
-  background-color: #212121;
+  background-color: #7f8ca1;
   color: #E0E0E0;
   margin: 3px;
+  padding: 3px;
 }
 .content[data-type="Docview"] .section .header {
   -webkit-touch-callout: none;
@@ -1465,7 +1466,7 @@
   margin: 0;
   padding: 10px;
   color: #E0E0E0;
-  background-color: #212121;
+  background-color: #596578;
   transition: all ease-in-out 0.2s;
   cursor: pointer;
 }
@@ -1473,13 +1474,68 @@
   color: #212121;
   background-color: #E0E0E0;
 }
+.content[data-type="Docview"] .section .header:hover + .body {
+  border: 1px solid #E0E0E0;
+}
 .content[data-type="Docview"] .section .body {
   white-space: pre;
   overflow: auto;
   transition: all ease-out 0.2s;
+  border: 1px solid #596578;
+  padding: 2px 5px;
 }
 .content[data-type="Docview"] .section .body.hidden {
   height: 0px;
+  padding: 0px;
+  border: 0;
+}
+.content[data-type="Docview"] .subsection {
+  background: #596578;
+  border-radius: 3px;
+  margin: 4px 0px;
+  transition: box-shadow ease-in-out 0.1s;
+}
+.content[data-type="Docview"] .subsection:hover {
+  /* outline: 1px solid @ide-green;
+	outline-offset: 0px;
+	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
+  box-shadow: 0 0 0pt 1pt #5ad9a4, 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+  background: #414a58;
+}
+.content[data-type="Docview"] .subsection:hover .subbody {
+  background: linear-gradient(to bottom, #414a58 0%, #212121 50%);
+}
+.content[data-type="Docview"] .subsection .subheader {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  margin: 5px;
+  font-style: italic;
+  cursor: pointer;
+  padding: 5px 0px;
+  padding-left: 5px;
+}
+.content[data-type="Docview"] .subsection .subbody {
+  overflow-x: auto;
+  background: linear-gradient(to bottom, #596578 0%, #212121 50%);
+  padding: 5px;
+  border-radius: 3px;
+  transition: all ease-in-out 0.1s;
+}
+.content[data-type="Docview"] .subsection .subbody.hidden {
+  height: 0px;
+  padding: 0px;
+  overflow: hidden;
 }
 .content[data-type="Exporter"] .editor-content {
   box-sizing: border-box;
@@ -1871,9 +1927,10 @@ body:after {
   z-index: 1000;
 }
 .green-outline {
-  outline: 1px solid #5ad9a4;
-  outline-offset: 0px;
-  box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+  /* outline: 1px solid @ide-green;
+	outline-offset: 0px;
+	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
+  box-shadow: 0 0 0pt 1pt #5ad9a4, 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 *:not(.no-custom-scroll)::-webkit-scrollbar-thumb {
   background: rgba(127, 140, 161, 0.7) !important;

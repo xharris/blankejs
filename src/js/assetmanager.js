@@ -37,6 +37,7 @@ class AssetManager extends Editor {
 
 	refreshFileList () {
 		if (!this.file_refresh_enabled) return;
+		this.file_refresh_enabled = false;
 
 		let this_ref = this;
 
@@ -45,8 +46,10 @@ class AssetManager extends Editor {
 		this.file_paths = [];
 
 		// add files to the list
+		let re_dist = /[\/\\]?dist[\/\\]/g;
 		walker.on('file', function(path, stat, next){
-			if (!path.includes('\/?dist\/') && stat.isFile()) {
+			if (!path.match(re_dist) && stat.isFile()) {
+				console.log(path, stat.name)
 				let full_path = nwPATH.resolve(nwPATH.join(path, stat.name));
 				this_ref.addFile(full_path);
 			}
@@ -59,6 +62,7 @@ class AssetManager extends Editor {
 				if (a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase()) return 1;
 				return 0;
 			});
+			this.file_refresh_enabled = true;
 		});
 	}
 

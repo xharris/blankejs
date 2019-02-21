@@ -1,6 +1,7 @@
 @import "../blanke-kit/blanke-ui.less";
 @import "variables";
 @import "elements";
+@import "markdown";
 
 @font-face {
 	font-family: ProggySquare;
@@ -50,9 +51,10 @@ body:before, body:after {
 }
 
 .green-outline {
-	outline: 1px solid @ide-green;
+	/* outline: 1px solid @ide-green;
 	outline-offset: 0px;
-	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
+	box-shadow: 0 0 0pt 1pt rgba(90, 217, 164, 1), 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 
 *:not(.no-custom-scroll) {

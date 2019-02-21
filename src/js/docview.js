@@ -1,3 +1,5 @@
+let markdown = require('markdown').markdown;
+
 class Docview extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -14,43 +16,53 @@ class Docview extends Editor {
 
 		var this_ref = this;
 
+		this.doc_data = {};
 		this.doc_container = app.createElement("div","doc-container");
 
-		let re = /--\[\[\s*#\s*[#\s]+(\w+)([^\]\[]+?)\]\]/g;
-		let sections = [];
-		nwFS.readFile(nwPATH.join(app.settings.engine_path,'lua','blanke','doc.lua'), 'utf-8', function(err, data){
+		let doc_path = nwPATH.join(app.settings.engine_path,'lua','blanke','docs');
+		nwFS.readFile(nwPATH.join(doc_path,'docs.json'), 'utf-8', function(err, data){
 			if (!err) {
-				let matches = [];
-				let doc_data = [];
-
-				// get the headers
-				do {
-					matches = re.exec(data);
-					if (matches) {
-						sections.push([matches[1], matches[2], re.lastIndex - matches[0].length, re.lastIndex-1]);
-					}
-				} while (matches && matches.length);
-
-				// get the content
-				for (let s in sections) {
-					let next_s = parseInt(s)+1
-					if (sections[next_s]) {
-						doc_data.push( [sections[s][0], sections[s][1], data.substring(sections[s][3]+1, sections[next_s][2])] );
-					} else {
-						doc_data.push( [sections[s][0], sections[s][1], data.substring(sections[s][3]+1)] );
-					}
-				}
+				this_ref.doc_sections = JSON.parse(data);
 
 				// put the divs together
-				for (let sec of doc_data) {
+				for (let category in this_ref.doc_sections) {
+					// CATEGORY
 					let el_section = app.createElement("div","section");
 					let el_header = app.createElement("p","header");
 					let el_body = app.createElement("div",["body","hidden"]);
 
-					el_header.innerHTML = sec[0];
-					el_header.title = sec[1].trim();
-					el_body.innerHTML = sec[2];
+					for (let subsection in this_ref.doc_sections[category]) {
+						// SUBSECTION
+						let info = this_ref.doc_sections[category][subsection];
 
+						let el_subsection = app.createElement("div","subsection");
+						let el_subheader = app.createElement("p","subheader");
+						let el_subbody = app.createElement("div",["subbody","hidden"]);
+
+						let md_path = nwPATH.join(doc_path,info.file);
+						el_subsection._tags = info.tags;
+						el_subheader.innerHTML = info.title;
+						
+						el_subheader.addEventListener('click',function(){
+							// get .md content
+							nwFS.readFile(md_path,'utf-8',function(err,data){
+								if (!err) {
+									el_subbody.innerHTML = markdown.toHTML(data);
+									if (el_subbody.innerHTML.trim() == "")
+										el_subbody.innerHTML = "No information on this topic found";
+									el_subbody.classList.toggle('hidden');
+								}
+							});	
+						});
+
+						el_subsection.appendChild(el_subheader);
+						el_subsection.appendChild(el_subbody);
+
+						el_body.appendChild(el_subsection);
+					}
+
+					el_header.innerHTML = category;
+					el_header.title = category;
 					el_header.addEventListener('click',function(){
 						el_body.classList.toggle('hidden');
 					});

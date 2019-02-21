@@ -1056,9 +1056,10 @@
 
 	}
 	.section {
-		background-color: #212121;
+		background-color: rgb(127, 140, 161);
 		color: #E0E0E0;
 		margin: 3px;
+		padding: 3px;
 
 		.header {
 			.no-select();
@@ -1066,22 +1067,69 @@
 			margin: 0;
 			padding: 10px;
 			color: #E0E0E0;
-			background-color: #212121;
+			background-color: #596578;
 			transition: all ease-in-out 0.2s;
 			cursor: pointer;
+		}
+		.header:hover {
+			color: #212121;
+			background-color: #E0E0E0;
 
-			&:hover{
-				color: #212121;
-				background-color: #E0E0E0;
+			& + .body{
+				border: 1px solid #E0E0E0;
 			}
 		}
 		.body {
 			white-space: pre;
 			overflow: auto;
 			transition: all ease-out 0.2s;
+			border: 1px solid #596578;
+			padding: 2px 5px;
 
 			&.hidden {
 				height: 0px;
+				padding: 0px;
+				border: 0;
+			}
+		}
+	}
+	.subsection {
+		background: #596578;
+		border-radius: 3px;
+		margin: 4px 0px;
+		transition: box-shadow ease-in-out 0.1s;
+
+		&:hover {
+			.green-outline();
+			background: #414a58;
+
+			& .subbody {
+				background: linear-gradient(to bottom,#414a58 0%,#212121 50%);
+			}
+		}
+
+		.subheader {
+			.no-select();
+
+			margin: 5px;
+			font-style: italic;
+			cursor: pointer;
+			padding: 5px 0px;
+			padding-left: 5px;
+		}
+
+		.subbody {
+			overflow-x: auto;
+			background: linear-gradient(to bottom,#596578 0%,#212121 50%);
+			padding: 5px;
+			border-radius: 3px;
+
+			transition: all ease-in-out 0.1s;
+
+			&.hidden {
+				height: 0px;
+				padding: 0px;
+				overflow: hidden;
 			}
 		}
 	}

@@ -1,0 +1,8 @@
+{
+    "BlankE":[
+        {"title":"Props/Methods","file":"blanke.md"},
+        {"title":"Setting options","file":"blanke_options.md"},
+        {"title":"Initializing the engine","tags":"new project, getting started","file":"blanke_init.md"},
+        {"title":"Test section","file":"blanke_test.md"}
+    ]
+}
