@@ -11,7 +11,7 @@ class Docview extends Editor {
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 400;
+		this.container.width = 640;
 		this.container.height = 350;
 
 		var this_ref = this;
@@ -37,7 +37,7 @@ class Docview extends Editor {
 
 						let el_subsection = app.createElement("div","subsection");
 						let el_subheader = app.createElement("p","subheader");
-						let el_subbody = app.createElement("div",["subbody","hidden"]);
+						let el_subbody = app.createElement("div",["subbody","hidden","markdown"]);
 
 						let md_path = nwPATH.join(doc_path,info.file);
 						el_subsection._tags = info.tags;

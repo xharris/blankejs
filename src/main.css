@@ -1478,7 +1478,6 @@
   border: 1px solid #E0E0E0;
 }
 .content[data-type="Docview"] .section .body {
-  white-space: pre;
   overflow: auto;
   transition: all ease-out 0.2s;
   border: 1px solid #596578;
@@ -1487,7 +1486,7 @@
 .content[data-type="Docview"] .section .body.hidden {
   height: 0px;
   padding: 0px;
-  border: 0;
+  border-width: 0px;
 }
 .content[data-type="Docview"] .subsection {
   background: #596578;
@@ -1522,8 +1521,7 @@
   margin: 5px;
   font-style: italic;
   cursor: pointer;
-  padding: 5px 0px;
-  padding-left: 5px;
+  padding: 5px 0px 0px 5px;
 }
 .content[data-type="Docview"] .subsection .subbody {
   overflow-x: auto;
@@ -1876,6 +1874,64 @@
 .content[data-type="Find"] .result-container .result-group .result .match {
   color: #5ad9a4;
   font-style: normal;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  text-decoration: underline;
+  margin: 0px;
+  text-transform: uppercase;
+}
+.markdown h1 {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+.markdown h2 {
+  font-size: 16px;
+  margin: 0px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  border-left: 1px solid #5ad9a4;
+  padding-left: 5px;
+  line-height: 15px;
+  padding-top: 2px;
+}
+.markdown a {
+  color: #5ad9a4;
+}
+.markdown strong {
+  color: #E57373;
+}
+.markdown p {
+  margin: 0px;
+  line-height: 16px;
+  white-space: pre;
+}
+.markdown code {
+  background-color: #f0f0f0;
+  box-shadow: 0 0 2px 1px #010101 inset;
+  color: #000;
+  border-radius: 3px;
+  padding: 4px 6px;
+  display: inline-block;
+}
+.markdown pre {
+  margin: 0px;
+}
+.markdown blockquote {
+  border-left: 2px solid #5ad9a4;
+  padding-left: 6px;
+  margin: 0px;
+  margin-left: 6px;
+}
+.markdown ul,
+.markdown ol {
+  margin: 8px;
+  padding: 0px;
+  padding-left: 24px;
+}
+.markdown li {
+  line-height: 14px;
 }
 @font-face {
   font-family: ProggySquare;
