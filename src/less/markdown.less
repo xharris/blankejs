@@ -4,9 +4,22 @@
         margin: 0px;
         text-transform: uppercase;
     }
-    h1 {
-        font-size: 22px;
+    h1 {   
+        font-size: 24px;
         margin-bottom: 12px;
+        text-decoration: none;
+        width: 100%;
+        background-color: gray;
+        padding: 5px;
+        box-sizing: border-box;
+        border-radius: 3px;
+        text-shadow: 2px 2px #39414e;
+
+        transition: all ease-in-out 0.3s;
+
+        &:hover {
+            text-shadow: 3px 3px black;
+        }
     }
     h2 {
         font-size: 16px;
@@ -23,24 +36,29 @@
         color: rgba(90, 217, 164, 1);
     }
     strong {
-        color: #E57373;
+        color: #88c0d0;
     }
     p {
         margin: 5px 0px;
-        line-height: 16px;
-        white-space: pre;
+        line-height: 12px;
+        word-spacing: -2px;
     }
     code {
         /* background-color: #f0f0f0;
         color: #000;
         box-shadow: 0 0 2px 1px rgba(1, 1, 1, 1) inset; */
         border-radius: 3px;
-        padding: 4px 6px;
+        padding: 2px 4px;
         display: inline-block;
         vertical-align: middle;
+        margin: 2px;
 
         &:hover {
             .green-outline();
+        }
+
+        .hljs-comment {
+            color: #6b7994;
         }
     }
     pre {

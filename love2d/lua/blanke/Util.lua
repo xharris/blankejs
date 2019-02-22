@@ -347,7 +347,7 @@ end
 
 -- puts all keys/values from new into old
 function table.update(old, new)
-	if type(new) == "table" then
+	if type(old) == "table" and type(new) == "table" then
 		for k, v in pairs(new) do
 			if type(v) == "table" then
 				table.update(old[k], new[k])

@@ -68,6 +68,13 @@ class Docview extends Editor {
 										block.className = 'lua';
 										hljs.highlightBlock(block);
 									});
+									// links
+									document.querySelectorAll('a').forEach(block => {
+										block.onclick = function(){
+											nwGUI.Shell.openExternal(this.href);
+											return false;
+										}
+									});
 								}
 							});	
 						});

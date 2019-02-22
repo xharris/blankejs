@@ -182,36 +182,33 @@ BlankE = {
 	old_love = {},
 	pause = false,
 	_class_type = {},
-	options = {},
-
+	options = {
+		resolution = Window.resolution,
+		plugins={},
+		filter="linear",
+		scale_mode=Window.scale_mode,
+		auto_aspect_ratio=true,
+		state='_empty_state',
+		inputs={},
+		debug={
+			play_record=false,
+			record=false,
+			log=false
+		}
+	},
 	init = function(in_options)
 		if BlankE._is_init then return end
 
-		local options = {
-			resolution = Window.resolution,
-			plugins={},
-			filter="linear",
-			scale_mode=Window.scale_mode,
-			auto_aspect_ratio=true,
-			state='_empty_state',
-			inputs={},
-			debug={
-				play_record=false,
-				record=false,
-				log=false
-			}
-		}
-		table.update(options, BlankE.options)
-		table.update(options, in_options)
-
-		-- set inputs
-		for i, input in ipairs(options.inputs) do
-			Input.set(unpack(input))
-		end
+		local options = BlankE.options or in_options
 
 		-- load plugins
 		for p, plugin in ipairs(options.plugins) do
 			BlankE.loadPlugin(plugin)
+		end
+
+		-- set inputs
+		for i, input in ipairs(options.inputs) do
+			Input.set(unpack(input))
 		end
 
 		-- load config file

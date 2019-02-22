@@ -1880,8 +1880,19 @@
   text-transform: uppercase;
 }
 .markdown h1 {
-  font-size: 22px;
+  font-size: 24px;
   margin-bottom: 12px;
+  text-decoration: none;
+  width: 100%;
+  background-color: gray;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 3px;
+  text-shadow: 2px 2px #39414e;
+  transition: all ease-in-out 0.3s;
+}
+.markdown h1:hover {
+  text-shadow: 3px 3px black;
 }
 .markdown h2 {
   font-size: 16px;
@@ -1898,27 +1909,31 @@
   color: #5ad9a4;
 }
 .markdown strong {
-  color: #E57373;
+  color: #88c0d0;
 }
 .markdown p {
   margin: 5px 0px;
-  line-height: 16px;
-  white-space: pre;
+  line-height: 12px;
+  word-spacing: -2px;
 }
 .markdown code {
   /* background-color: #f0f0f0;
         color: #000;
         box-shadow: 0 0 2px 1px rgba(1, 1, 1, 1) inset; */
   border-radius: 3px;
-  padding: 4px 6px;
+  padding: 2px 4px;
   display: inline-block;
   vertical-align: middle;
+  margin: 2px;
 }
 .markdown code:hover {
   /* outline: 1px solid @ide-green;
 	outline-offset: 0px;
 	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
   box-shadow: 0 0 0pt 1pt #5ad9a4, 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
+.markdown code .hljs-comment {
+  color: #6b7994;
 }
 .markdown pre {
   margin: 0px;

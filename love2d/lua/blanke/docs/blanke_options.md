@@ -1,4 +1,4 @@
-#BlankE.options." ... "
+# BlankE.options." ... "
 `filter` linear, nearest
 
 `scale_mode` scale, stretch, fit, center
