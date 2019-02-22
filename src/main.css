@@ -1,3 +1,4 @@
+@import "../../node_modules/highlight.js/styles/nord.css";
 .no-select {
   -webkit-touch-callout: none;
   /* iOS Safari */
@@ -1494,15 +1495,12 @@
   margin: 4px 0px;
   transition: box-shadow ease-in-out 0.1s;
 }
-.content[data-type="Docview"] .subsection:hover {
+.content[data-type="Docview"] .subsection:hover:not(.expanded) {
   /* outline: 1px solid @ide-green;
 	outline-offset: 0px;
 	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
   box-shadow: 0 0 0pt 1pt #5ad9a4, 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
   background: #414a58;
-}
-.content[data-type="Docview"] .subsection:hover .subbody {
-  background: linear-gradient(to bottom, #414a58 0%, #212121 50%);
 }
 .content[data-type="Docview"] .subsection .subheader {
   -webkit-touch-callout: none;
@@ -1525,7 +1523,7 @@
 }
 .content[data-type="Docview"] .subsection .subbody {
   overflow-x: auto;
-  background: linear-gradient(to bottom, #596578 0%, #212121 50%);
+  background: #212121;
   padding: 5px;
   border-radius: 3px;
   transition: all ease-in-out 0.1s;
@@ -1875,6 +1873,9 @@
   color: #5ad9a4;
   font-style: normal;
 }
+/*
+    monokai-sublime
+*/
 .markdown h1,
 .markdown h2,
 .markdown h3 {
@@ -1890,11 +1891,12 @@
   font-size: 16px;
   margin: 0px;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: 5px;
   border-left: 1px solid #5ad9a4;
   padding-left: 5px;
   line-height: 15px;
   padding-top: 2px;
+  margin-top: 15px;
 }
 .markdown a {
   color: #5ad9a4;
@@ -1903,17 +1905,24 @@
   color: #E57373;
 }
 .markdown p {
-  margin: 0px;
+  margin: 5px 0px;
   line-height: 16px;
   white-space: pre;
 }
 .markdown code {
-  background-color: #f0f0f0;
-  box-shadow: 0 0 2px 1px #010101 inset;
-  color: #000;
+  /* background-color: #f0f0f0;
+        color: #000;
+        box-shadow: 0 0 2px 1px rgba(1, 1, 1, 1) inset; */
   border-radius: 3px;
   padding: 4px 6px;
   display: inline-block;
+  vertical-align: middle;
+}
+.markdown code:hover {
+  /* outline: 1px solid @ide-green;
+	outline-offset: 0px;
+	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
+  box-shadow: 0 0 0pt 1pt #5ad9a4, 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 .markdown pre {
   margin: 0px;

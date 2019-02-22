@@ -1,4 +1,8 @@
-let markdown = require('markdown').markdown;
+let commonmark = require('commonmark');
+let md_parser = new commonmark.Parser();
+let md_writer = new commonmark.HtmlRenderer();
+
+let hljs = require('highlight.js');
 
 class Docview extends Editor {
 	constructor (...args) {
@@ -47,10 +51,21 @@ class Docview extends Editor {
 							// get .md content
 							nwFS.readFile(md_path,'utf-8',function(err,data){
 								if (!err) {
-									el_subbody.innerHTML = markdown.toHTML(data);
+
+									// el_subbody.innerHTML = markdown.toHTML(data);
+									let md_data = md_parser.parse(data);
+									el_subbody.innerHTML = md_writer.render(md_data);
+
 									if (el_subbody.innerHTML.trim() == "")
 										el_subbody.innerHTML = "No information on this topic found";
 									el_subbody.classList.toggle('hidden');
+									el_subsection.classList.toggle('expanded');
+
+									// syntax highlighting
+									el_subbody.querySelectorAll('code').forEach(block => {
+										block.className = 'lua';
+										hljs.highlightBlock(block);
+									});
 								}
 							});	
 						});

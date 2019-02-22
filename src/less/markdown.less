@@ -1,3 +1,8 @@
+@import "../../node_modules/highlight.js/styles/nord.css";
+/*
+    monokai-sublime
+*/
+
 .markdown {
     h1, h2, h3 {
         text-decoration: underline;
@@ -12,11 +17,12 @@
         font-size: 16px;
         margin: 0px;
         text-transform: uppercase;
-        margin-bottom: 2px;
+        margin-bottom: 5px;
         border-left: 1px solid rgba(90, 217, 164, 1);
         padding-left: 5px;
         line-height: 15px;
         padding-top: 2px;
+        margin-top: 15px;
     }
     a {
         color: rgba(90, 217, 164, 1);
@@ -25,17 +31,22 @@
         color: #E57373;
     }
     p {
-        margin: 0px;
+        margin: 5px 0px;
         line-height: 16px;
         white-space: pre;
     }
     code {
-        background-color: #f0f0f0;
-        box-shadow: 0 0 2px 1px rgba(1, 1, 1, 1) inset;
+        /* background-color: #f0f0f0;
         color: #000;
+        box-shadow: 0 0 2px 1px rgba(1, 1, 1, 1) inset; */
         border-radius: 3px;
         padding: 4px 6px;
         display: inline-block;
+        vertical-align: middle;
+
+        &:hover {
+            .green-outline();
+        }
     }
     pre {
         margin: 0px;

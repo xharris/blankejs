@@ -1,8 +1,8 @@
 {
     "BlankE":[
         {"title":"Props/Methods","file":"blanke.md"},
-        {"title":"Setting options","file":"blanke_options.md"},
-        {"title":"Initializing the engine","tags":"new project, getting started","file":"blanke_init.md"}
+        {"title":"What to put in main.lua","file":"blanke_main.md"},
+        {"title":"Setting options","file":"blanke_options.md"}
     ],
     "Entity":[
         {"title":"Props/Methods","file":"entity.md"}

@@ -1,12 +1,29 @@
 # Props
 ## Debugging
-draw_debug = false
+```draw_debug = false
 left = 0
 top = 0
 right = 0
 bottom = 0
-
+options = {
+	resolution = 3,
+	plugins = {},
+	filter = "linear",
+	scale_mode = 'scale',
+	auto_aspect_ratio = true,
+	state = nil,
+	inputs = {},			
+	debug = {
+		play_record=false,		
+		record=false,			
+		log=false					
+	}
+}
+```
 ## Methods
+`BlankE.init([options])`
+
+* `options` overrides BlankE.options
 
 --- INITIALIZE BLANKE ENGINE
 

@@ -1098,13 +1098,9 @@
 		margin: 4px 0px;
 		transition: box-shadow ease-in-out 0.1s;
 
-		&:hover {
+		&:hover:not(.expanded) {
 			.green-outline();
 			background: #414a58;
-
-			& .subbody {
-				background: linear-gradient(to bottom,#414a58 0%,#212121 50%);
-			}
 		}
 
 		.subheader {
@@ -1118,7 +1114,7 @@
 
 		.subbody {
 			overflow-x: auto;
-			background: linear-gradient(to bottom,#596578 0%,#212121 50%);
+			background: #212121;
 			padding: 5px;
 			border-radius: 3px;
 
