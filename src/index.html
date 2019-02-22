@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<script type="text/javascript">
-			var DEV_MODE = true;
+			var DEV_MODE = false;
 			if (DEV_MODE) require('nw.gui').Window.get().showDevTools();
 		</script>
 
@@ -14,6 +14,10 @@
 
 		<!-- BlankE kit -->
 		<script src="blanke-kit/blanke.js"></script>
+
+		<!-- Highlight.js -->
+		<link rel="stylesheet" href="includes/highlight/styles/nord.css">
+		<script src="includes/highlight/highlight.pack.js"></script>
 
 		<!-- CodeMirror -->
 		<script src="includes/codemirror/lib/codemirror.js"></script>

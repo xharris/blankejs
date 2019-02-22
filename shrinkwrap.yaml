@@ -2,7 +2,6 @@ dependencies:
   archiver: 2.1.1
   commonmark: 0.28.1
   fs-extra: 5.0.0
-  highlight.js: 9.14.2
   lodash: 4.17.11
   walk: 2.3.14
 devDependencies:
@@ -469,10 +468,6 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-sNvOCzEQNr/qrvJgc3UG/kD4QtlHycrzwS+6mfTrrSq97BvaYcPZZI1ZSqGSPR73Cxn4LKTD4PttRwfU7jWq5g==
-  /highlight.js/9.14.2:
-    dev: false
-    resolution:
-      integrity: sha512-Nc6YNECYpxyJABGYJAyw7dBAYbXEuIzwzkqoJnwbc1nIpCiN+3ioYf0XrBnLiyyG0JLuJhpPtt2iTSbXiKLoyA==
   /hosted-git-info/2.7.1:
     dev: true
     resolution:
@@ -1178,7 +1173,6 @@ specifiers:
   archiver: ^2.1.1
   commonmark: ^0.28.1
   fs-extra: ^5.0.0
-  highlight.js: ^9.14.2
   lodash: ^4.17.11
   nwjs-builder-phoenix: ^1.14.8
   walk: ^2.3.13

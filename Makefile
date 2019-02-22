@@ -17,8 +17,8 @@ clean:
 	make -B setup
 
 dist:
-	pnpm run less
-	pnpm run dist
+	npm run less
+	npm run dist
 
 dist-mac:
 	pnpm run less

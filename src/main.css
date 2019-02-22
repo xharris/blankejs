@@ -1,4 +1,3 @@
-@import "../../node_modules/highlight.js/styles/nord.css";
 .no-select {
   -webkit-touch-callout: none;
   /* iOS Safari */
@@ -1873,9 +1872,6 @@
   color: #5ad9a4;
   font-style: normal;
 }
-/*
-    monokai-sublime
-*/
 .markdown h1,
 .markdown h2,
 .markdown h3 {

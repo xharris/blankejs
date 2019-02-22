@@ -1,8 +1,10 @@
-let commonmark = require('commonmark');
-let md_parser = new commonmark.Parser();
-let md_writer = new commonmark.HtmlRenderer();
+const commonmark = require('commonmark');
+const md_parser = new commonmark.Parser();
+const md_writer = new commonmark.HtmlRenderer();
 
-let hljs = require('highlight.js');
+/*
+    monokai-sublime
+*/
 
 class Docview extends Editor {
 	constructor (...args) {
@@ -62,7 +64,7 @@ class Docview extends Editor {
 									el_subsection.classList.toggle('expanded');
 
 									// syntax highlighting
-									el_subbody.querySelectorAll('code').forEach(block => {
+									document.querySelectorAll('code').forEach(block => {
 										block.className = 'lua';
 										hljs.highlightBlock(block);
 									});
