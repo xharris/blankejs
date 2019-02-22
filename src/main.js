@@ -527,8 +527,8 @@ var app = {
 		})
 	},
 
-	enableDevMode() {
-		if (!DEV_MODE) {
+	enableDevMode(force_search_keys) {
+		if (!DEV_MODE || force_search_keys) {
 			DEV_MODE = true;
 			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
@@ -748,7 +748,7 @@ nwWIN.on('loaded', function() {
 	}});
 
 	if (DEV_MODE) {
-		app.enableDevMode();
+		app.enableDevMode(true);
 	}
 
 	app.addSearchKey({key: 'Start Server', onSelect: app.runServer});

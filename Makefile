@@ -4,25 +4,32 @@ do:
 	make -B blanke
 
 setup:
-	npm install
-	npm install less -g
+	npm install -g pnpm
+	pnpm install
+	pnpm install -g less
+	pnpm install -g nw@^0.36.2-sdk
 	git submodule init
 	git submodule update
 
+clean:
+	rm -rf node_modules
+	npm uninstall -g nw
+	make -B setup
+
 dist:
-	npm run less
-	npm run dist
+	pnpm run less
+	pnpm run dist
 
 dist-mac:
-	npm run less
-	npm run dist-mac
+	pnpm run less
+	pnpm run dist-mac
 
 love:
 	love2d/love.exe projects/penguin
 
 blanke:
-	npm run less
-	npm run nw
+	pnpm run less
+	pnpm run nw
 	
 engine:
 	cp -r love2d dist/BlankE-0.1.0-win-x86/love2d

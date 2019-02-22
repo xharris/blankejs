@@ -41,7 +41,6 @@
     "walk": "^2.3.13"
   },
   "devDependencies": {
-    "nw": "^0.36.2-sdk",
     "nwjs-builder-phoenix": "^1.14.8"
   }
 }
