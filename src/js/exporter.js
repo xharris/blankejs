@@ -245,8 +245,8 @@ class Exporter extends Editor {
 }
 
 document.addEventListener("openProject", function(e){
-	app.removeSearchGroup("exporter");
-	app.addSearchKey({key: 'Export game', onSelect: function() {
+	app.removeSearchGroup("Exporter");
+	app.addSearchKey({key: 'Export game', group:"Exporter", onSelect: function() {
 		new Exporter(app);
 	}});
 });

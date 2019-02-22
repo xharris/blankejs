@@ -2324,6 +2324,7 @@ body.mac .tool-container button:hover {
 .drag-container .editor-content {
   width: 100%;
   height: 100%;
+  background-color: #212121;
 }
 .drag-container .asset-list {
   position: absolute;

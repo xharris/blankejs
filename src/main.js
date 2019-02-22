@@ -565,21 +565,207 @@ nwWIN.on('loaded', function() {
 		if (document.activeElement !== e.target) el_search_input.placeholder = app.win_title;
 	});
 
+	// Welcome screen
+
+	// new project
+	var el_new_proj = app.getElement("#welcome .new");
+	el_new_proj.onclick = function(){ 
+		app.newProjectDialog();
+	}
+
+	// open project
+	var el_open_proj = app.getElement("#welcome .open");
+	el_open_proj.onclick = function(){ 
+		app.openProjectDialog();
+	}
+
+	// prepare search box
+	app.getElement("#search-input").addEventListener('input', function(e){
+		var input_str = e.target.value;
+		var el_result_container = app.getElement("#search-results");
+		if (input_str.length > 0) {
+			var results = app.search_hashvals.filter(val => val.toLowerCase().includes(input_str.toLowerCase()));
+			app.clearElement(el_result_container);
+
+			// add results to div
+			for (var r = 0; r < results.length; r++) {
+				var result = app.unhashSearchVal(results[r]);
+				var el_result = app.createElement("div", "result");
+				el_result.innerHTML = result.key;
+				el_result.dataset.hashval = results[r];
+				el_result.dataset.func = app.search_funcs[results[r]];
+				el_result_container.append(el_result);
+			}
+		} else {
+			var el_result_container = app.getElement("#search-results");
+			app.clearElement(el_result_container);
+		}
+	})
+	function selectSearchResult(hash_val) {
+		app.search_funcs[hash_val].apply(this, app.search_args[hash_val]);
+		var el_search = app.getElement("#search-input")
+		el_search.value = "";
+		el_search.blur();
+		app.clearElement(app.getElement("#search-results"));
+
+		// move found value up in list
+		app.search_hashvals = app.search_hashvals.filter(e => e != hash_val);
+		app.search_hashvals.unshift(hash_val);
+		selected_index = -1;
+	}
+
+	app.getElement("#search-results").addEventListener('click', function(e){
+		if (e.target && e.target.classList.contains('result')) {
+			selectSearchResult(e.target.dataset.hashval);
+		}
+	});
+
+	// moving through/selecting options
+	var selected_index = -1;
+	app.getElement("#search-input").addEventListener('keyup', function(e){
+		var keyCode = e.keyCode || e.which;
+
+		// ENTER
+		if (keyCode == 13) {
+			if (selected_index >= 0) {
+				var child = app.getElement("#search-results").children[selected_index];
+				if (child) {
+					var hash_val = child.dataset.hashval;
+					selectSearchResult(hash_val);
+				}
+			}
+		}
+	});
+
+	app.getElement("#search-input").addEventListener('keydown', function(e){
+		var keyCode = e.keyCode || e.which;
+
+		// TAB
+		if (keyCode == 9) {
+			e.preventDefault();
+
+			var el_result_container = app.getElement("#search-results");
+			var num_results = el_result_container.children.length;
+
+			if (num_results > 0) {
+				if (e.shiftKey)
+					selected_index -= 1;
+				else
+					selected_index += 1;
+
+				if (selected_index < 0) 			selected_index = num_results - 1;
+				if (selected_index >= num_results) 	selected_index = 0;
+
+				// highlight selected result
+				Array.from(el_result_container.children).forEach(function(e){
+					e.classList.remove('focused');
+				});
+				el_result_container.children[selected_index].classList.add('focused');
+			} else {
+				selected_index = -1;
+			}
+		}
+	});
+
+	// shortcut: focus search box
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Ctrl+R",
+		active: function() {
+			app.getElement("#search-input").focus();
+		}
+	}));
+	// shortcut: enable dev mode
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Ctrl+Shift+D",
+		active: function() {
+			app.enableDevMode();
+		}
+	}));
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Command+Shift+D",
+		active: function() {
+			app.enableDevMode();
+		}
+	}));
+	// shortcut: shift window focus
+	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+		key: "Ctrl+T",
+		active: function() {
+			var windows = app.getElements(".drag-container");
+			if (windows.length > 1) {
+				var index = 0;
+				for (index = 0; index < windows.length; index++) {
+					if (windows[index].classList.contains('focused')) {
+						break;
+					}
+				}
+				index += 1;
+				if (index >= windows.length) index = 0;
+				windows[index].click();
+			}
+		}
+	}));
+
+	nwWIN.on('close',function(){
+		this.hide();
+		app.closeProject();
+		this.close(true);
+	});
+
+	// file drop zone
+	window.addEventListener('dragover', function(e) {
+		e.preventDefault();
+		if (app.isProjectOpen())
+			app.getElement("#drop-zone").classList.add("active");
+		return false;
+	});
+	window.addEventListener('drop', function(e) {
+		e.preventDefault();
+
+		if (app.isProjectOpen()) {
+			let files = e.dataTransfer.files;
+			for (let f of files) {
+				blanke.toast("adding file \'"+f.name+"\'");
+				app.addAsset(app.findAssetType(f.path),f.path);
+			}
+			app.getElement("#drop-zone").classList.remove("active");
+		}
+
+		return false;
+	});
+	window.addEventListener('dragleave', function(e) {
+		e.preventDefault();
+		if (app.isProjectOpen())
+			app.getElement("#drop-zone").classList.remove("active");
+		return false;
+	});
+
+	app.addSearchKey({key: 'Open project', onSelect: function() {
+		app.openProjectDialog();
+	}});
+	app.addSearchKey({key: 'New project', onSelect: function() {
+		app.newProjectDialog();
+	}});
+
+	if (DEV_MODE) {
+		app.enableDevMode();
+	}
+
+	app.addSearchKey({key: 'Start Server', onSelect: app.runServer});
+	app.addSearchKey({key: 'Stop Server', onSelect: app.stopServer});
+
+	document.addEventListener("openProject",function(){
+		app.hideWelcomeScreen();
+
+		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
+			nwGUI.Shell.openItem(app.project_path);
+		}});
+		app.addSearchKey({key: 'Close project', onSelect: function() {
+			app.closeProject();
+		}});
+	});
+
 	app.loadAppData(function(){
-		// Welcome screen
-
-		// new project
-		var el_new_proj = app.getElement("#welcome .new");
-		el_new_proj.onclick = function(){ 
-			app.newProjectDialog();
-		}
-
-		// open project
-		var el_open_proj = app.getElement("#welcome .open");
-		el_open_proj.onclick = function(){ 
-			app.openProjectDialog();
-		}
-
 		// add recent projects (max 10)
 		var el_recent = app.getElement("#welcome .recent-files");
 		if (app.settings.recent_files.length > 10) 
@@ -619,194 +805,8 @@ nwWIN.on('loaded', function() {
 			}
 		}
 
-		// prepare search box
-		app.getElement("#search-input").addEventListener('input', function(e){
-			var input_str = e.target.value;
-			var el_result_container = app.getElement("#search-results");
-			if (input_str.length > 0) {
-				var results = app.search_hashvals.filter(val => val.toLowerCase().includes(input_str.toLowerCase()));
-				app.clearElement(el_result_container);
-
-				// add results to div
-				for (var r = 0; r < results.length; r++) {
-					var result = app.unhashSearchVal(results[r]);
-					var el_result = app.createElement("div", "result");
-					el_result.innerHTML = result.key;
-					el_result.dataset.hashval = results[r];
-					el_result.dataset.func = app.search_funcs[results[r]];
-					el_result_container.append(el_result);
-				}
-			} else {
-				var el_result_container = app.getElement("#search-results");
-				app.clearElement(el_result_container);
-			}
-		})
-		function selectSearchResult(hash_val) {
-			app.search_funcs[hash_val].apply(this, app.search_args[hash_val]);
-			var el_search = app.getElement("#search-input")
-			el_search.value = "";
-			el_search.blur();
-			app.clearElement(app.getElement("#search-results"));
-
-			// move found value up in list
-			app.search_hashvals = app.search_hashvals.filter(e => e != hash_val);
-			app.search_hashvals.unshift(hash_val);
-			selected_index = -1;
-		}
-
-		app.getElement("#search-results").addEventListener('click', function(e){
-			if (e.target && e.target.classList.contains('result')) {
-				selectSearchResult(e.target.dataset.hashval);
-			}
-		});
-
-		// moving through/selecting options
-		var selected_index = -1;
-		app.getElement("#search-input").addEventListener('keyup', function(e){
-			var keyCode = e.keyCode || e.which;
-
-			// ENTER
-			if (keyCode == 13) {
-				if (selected_index >= 0) {
-					var child = app.getElement("#search-results").children[selected_index];
-					if (child) {
-						var hash_val = child.dataset.hashval;
-						selectSearchResult(hash_val);
-					}
-				}
-			}
-		});
-
-		app.getElement("#search-input").addEventListener('keydown', function(e){
-			var keyCode = e.keyCode || e.which;
-
-			// TAB
-			if (keyCode == 9) {
-				e.preventDefault();
-
-				var el_result_container = app.getElement("#search-results");
-				var num_results = el_result_container.children.length;
-
-				if (num_results > 0) {
-					if (e.shiftKey)
-						selected_index -= 1;
-					else
-						selected_index += 1;
-
-					if (selected_index < 0) 			selected_index = num_results - 1;
-					if (selected_index >= num_results) 	selected_index = 0;
-
-					// highlight selected result
-					Array.from(el_result_container.children).forEach(function(e){
-						e.classList.remove('focused');
-					});
-					el_result_container.children[selected_index].classList.add('focused');
-				} else {
-					selected_index = -1;
-				}
-			}
-		});
-
-		// shortcut: focus search box
-		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-			key: "Ctrl+R",
-			active: function() {
-				app.getElement("#search-input").focus();
-			}
-		}));
-		// shortcut: enable dev mode
-		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-			key: "Ctrl+Shift+D",
-			active: function() {
-				app.enableDevMode();
-			}
-		}));
-		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-			key: "Command+Shift+D",
-			active: function() {
-				app.enableDevMode();
-			}
-		}));
-		// shortcut: shift window focus
-		nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-			key: "Ctrl+T",
-			active: function() {
-				var windows = app.getElements(".drag-container");
-				if (windows.length > 1) {
-					var index = 0;
-					for (index = 0; index < windows.length; index++) {
-						if (windows[index].classList.contains('focused')) {
-							break;
-						}
-					}
-					index += 1;
-					if (index >= windows.length) index = 0;
-					windows[index].click();
-				}
-			}
-		}));
-
-		nwWIN.on('close',function(){
-			this.hide();
-			app.closeProject();
-			this.close(true);
-		});
-
-		// file drop zone
-		window.addEventListener('dragover', function(e) {
-			e.preventDefault();
-			if (app.isProjectOpen())
-				app.getElement("#drop-zone").classList.add("active");
-			return false;
-		});
-		window.addEventListener('drop', function(e) {
-			e.preventDefault();
-
-			if (app.isProjectOpen()) {
-				let files = e.dataTransfer.files;
-				for (let f of files) {
-					blanke.toast("adding file \'"+f.name+"\'");
-					app.addAsset(app.findAssetType(f.path),f.path);
-				}
-				app.getElement("#drop-zone").classList.remove("active");
-			}
-
-			return false;
-		});
-		window.addEventListener('dragleave', function(e) {
-			e.preventDefault();
-			if (app.isProjectOpen())
-				app.getElement("#drop-zone").classList.remove("active");
-			return false;
-		});
-
 		dispatchEvent("ideReady");
 		app.showWelcomeScreen();
-
-		app.addSearchKey({key: 'Open project', onSelect: function() {
-			app.openProjectDialog();
-		}});
-		app.addSearchKey({key: 'New project', onSelect: function() {
-			app.newProjectDialog();
-		}});
-
-		if (DEV_MODE) {
-			enableDevMode();
-		}
-
-		app.addSearchKey({key: 'Start Server', onSelect: app.runServer});
-		app.addSearchKey({key: 'Stop Server', onSelect: app.stopServer});
-
-		document.addEventListener("openProject",function(){
-			app.hideWelcomeScreen();
-
-			app.addSearchKey({key: 'View project in explorer', onSelect: function() {
-				nwGUI.Shell.openItem(app.project_path);
-			}});
-			app.addSearchKey({key: 'Close project', onSelect: function() {
-				app.closeProject();
-			}});
-		});
 	});
 
 	// app.openProject('projects/boredom');
