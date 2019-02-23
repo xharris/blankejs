@@ -51,6 +51,12 @@ function MainState:draw()
 	mario:draw()
 	
 	dt_mod = (mouse_x / game_width) * 5
+	--[[
+	Draw.setColor("blue")
+	Draw.grid(3, 3, 5, 5, function(x, y, row, column)
+		Draw.circle("line", x, y)
+		Draw.text("row: "..row.." col: "..column)
+	end)]]
 	--[[ 
 	test_mask:draw(function()
 		Draw.setColor("white")

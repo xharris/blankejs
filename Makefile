@@ -12,7 +12,8 @@ setup:
 	git submodule update
 
 clean:
-	rm -rf node_modules
+	-rm -rf node_modules
+	-rd -r -fo "node_modules"
 	npm uninstall -g nw
 	make -B setup
 

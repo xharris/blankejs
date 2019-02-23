@@ -12,7 +12,6 @@ function BlankE.load()
 		inputs={
 			{"lclick","mouse.1"},
 			{"rclick","mouse.2"},
-			
 			{"move_l","left","a"},
 			{"move_r","right","d"},
 			{"move_u","up","w"},

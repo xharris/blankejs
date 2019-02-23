@@ -182,7 +182,8 @@ BlankE = {
 	old_love = {},
 	pause = false,
 	_class_type = {},
-	options = {
+	options = {},
+	_options = {
 		resolution = Window.resolution,
 		plugins={},
 		filter="linear",
@@ -199,16 +200,13 @@ BlankE = {
 	init = function(in_options)
 		if BlankE._is_init then return end
 
-		local options = BlankE.options or in_options
+		table.update(BlankE._options, BlankE.options)
+		local options = BlankE._options
+		print_r(options)
 
 		-- load plugins
 		for p, plugin in ipairs(options.plugins) do
 			BlankE.loadPlugin(plugin)
-		end
-
-		-- set inputs
-		for i, input in ipairs(options.inputs) do
-			Input.set(unpack(input))
 		end
 
 		-- load config file
@@ -245,6 +243,10 @@ BlankE = {
 
 		Asset.load()
 
+		-- set inputs
+		for i, input in ipairs(options.inputs) do
+			Input.set(unpack(input))
+		end
 		Input.set("fullscreen-toggle","lalt-return","ralt-return")
 		
 		-- debugging 

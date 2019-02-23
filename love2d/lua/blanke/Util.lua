@@ -349,7 +349,8 @@ end
 function table.update(old, new)
 	if type(old) == "table" and type(new) == "table" then
 		for k, v in pairs(new) do
-			if type(v) == "table" then
+			if type(k) ~= "string" and type(v) == "table" then
+				-- Debug.log(k,v)
 				table.update(old[k], new[k])
 			else
 				old[k] = v

@@ -115,7 +115,7 @@ Draw = Class{
 	rotate = function(deg)
 		love.graphics.rotate(math.rad(deg))
 	end,
-
+--[[
 	crop_used = false,
 	crop = function(x,y,w,h)
 		local function stencilFn()
@@ -125,7 +125,7 @@ Draw = Class{
 		love.graphics.setStencilTest("greater",0)
 		Draw.crop_used = true
 	end,	
-
+]]
 	reset = function(only)
     	if only == "color" or not only then 
 			Draw.setColor("white")
@@ -191,9 +191,9 @@ Draw = Class{
     rect 	= function(...) return Draw.callDrawFunc('rectangle', {...}) end,
     circle 	= function(...) return Draw.callDrawFunc('circle', {...}) end,
     polygon = function(...) return Draw.callDrawFunc('polygon', {...}) end,
-    text 	= function(text, x, y, ...) 
+    text 	= function(text, x, y, deg, ...) 
     	if Draw.font then
-			return Draw.font:draw(text, x, y, ...)--love.graphics.setFont(Draw.font)
+			return Draw.font:draw(text, x, y, math.rad(deg), ...)--love.graphics.setFont(Draw.font)
 		else
 			return Draw.callDrawFunc('print', {text, x, y, ...})
 		end
