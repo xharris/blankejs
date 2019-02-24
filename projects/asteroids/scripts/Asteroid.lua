@@ -40,7 +40,8 @@ function Asteroid:init(small)
 		{randRange(0, game_width), -self.wrap_h},
 		{randRange(0, game_width), game_height + self.wrap_h}			
 	})
-		
+	
+	self.points = 100
 	self.children = Group()
 	
 	Net.once(function() Net.addObject(self) end)
@@ -68,7 +69,10 @@ function Asteroid:hit(direction)
 			for a = 1, self.split_count do
 				local new_a = Asteroid(true)
 				new_a.x, new_a.y = self.x, self.y
-				new_a:netSync('x','y')
+				new_a.points = 50
+				if self.split_count >= 4 then new_a.points = 20 end
+					
+				new_a:netSync('x','y','points')
 				new_a.speed = self.speed * (randRange(175, 225)/100)
 				last_dir = last_dir + randRange(10,45)
 				new_a.direction = last_dir

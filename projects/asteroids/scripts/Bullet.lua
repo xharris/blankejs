@@ -18,6 +18,10 @@ function Bullet:update(dt)
 	
 	self.onCollision["main"] = function(other, sep_vec)
 		if other.parent.classname == "Asteroid" then
+			if not self.net_object then
+				Signal.emit('score',other.parent.points)
+			end
+			
 			other.parent:hit(other.parent.direction)
 			self:destroy()
 		end

@@ -1,45 +1,37 @@
 Font = Class{
-	_current_font = '',
+	_fonts = {},
+
 	init = function(self, options)
 		self.options = {
-			name = "console.ttf",
+			name = "console",
 			image = '',
 			size = 12,
 			align = "left",
 			limit = -1
 		}
-		if options then
-			for key, val in pairs(options) do self.options[key] = val end
-		end
+		if options then table.update(self.options, options) end
 
 		self:_makeFontObj()
+
+		_addGameObject("font",self)
 	end,
 
 	_makeFontObj = function(self)
+		-- store the font for repeated uses
+		local key = self.options.name..'-'..self.options.image..'-'..self.options.size
+		
+		print(Asset.font(self.options.name))
 		if self.options.image == '' then
-			self.font = love.graphics.newFont(self.options.name, self.options.size)
+			Font._fonts[key] = love.graphics.newFont(Asset.font(self.options.name), self.options.size)
 		else
-			self.font = love.graphics.newImageFont(Asset.getInfo('image',self.options.image).path, self.options.characters)
+			Font._fonts[key] = love.graphics.newImageFont(Asset.font(self.options.name), self.options.characters)
 		end
+		self.font = Font._fonts[key]
+		return self
 	end,
 
-	_getOpt = function(self, key, override_opts)
-		if override_opts and override_opts[key] then
-			return override_opts[key]
-		else
-			return self.options[key]
-		end
-	end,
-
-	set = function(self, key, val)
-		self.options[key] = val
-		if key == 'size' then
-			self:_makeFontObj()	
-		end
-	end,
-
-	get = function(self, key)
-		if self.options[key] ~= nil then return self.options[key] end
+	use = function(self)
+		love.graphics.setFont(self.font)
 	end,
 
 	getWidth = function(self, text)
@@ -48,17 +40,6 @@ Font = Class{
 
 	getHeight = function(self)
 		return self.font:getHeight()
-	end,
-
-	draw = function(self, text, x, y, options) -- options can override font options
-		local get = function(key) return self:_getOpt(key, options) end -- because im lazy
-
-		local limit = get('limit')
-		if limit <= 0 then limit = game_width - x end
- 
-		love.graphics.setFont(self.font)
-		love.graphics.printf(ifndef(text, "nil"), x, y, limit, get('align'))
-	end,
+	end
 }
-
 return Font

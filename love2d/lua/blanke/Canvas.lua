@@ -35,16 +35,16 @@ Canvas = Class{
         self._prev_canvas = love.graphics.getCanvas()
 
         Draw.stack(function()
+            love.graphics.setBlendMode("alpha")
             love.graphics.setCanvas{self.canvas, stencil=true}
             if self.auto_clear then
-                love.graphics.clear(self.clear_color)
+                love.graphics.clear()
             end
             love.graphics.origin()
             Canvas._applied = Canvas._applied + 1
             if View and View._transform and Canvas._applied > 1 then
                 love.graphics.replaceTransform(View._transform)
             end
-            love.graphics.setBlendMode("alpha")
             func()
         end)
         love.graphics.setCanvas(self._prev_canvas)

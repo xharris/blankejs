@@ -6,10 +6,15 @@ local tmr_spawn_roid
 local tmr_respawn
 local can_respawn = false
 
+local fnt_asteroids = Font{name="Hyperspace", size=24}
+
 local eff_death = Effect("static","chroma shift")
 local main_view = View()
 main_view.x = game_width / 2
 main_view.y = game_height / 2
+
+local score = 0
+local lives = 3
 
 Input.set("respawn", "r")
 
@@ -49,7 +54,9 @@ function startGame()
 			can_respawn = true
 		end):start()
 	end)
-	
+	Signal.on("score",function(points)
+		score = score + points	
+	end)
 	player = Ship()
 end
 
@@ -62,6 +69,8 @@ function PlayState:update(dt)
 end
 
 function PlayState:draw()
+	Draw.setFont(fnt_asteroids)
+	
 	local function drawStuff()
 		Net.draw("Bullet")
 		if player then player:draw() end
@@ -88,4 +97,11 @@ function PlayState:draw()
 			Draw.text("Can respawn in "..tostring(tmr_respawn.countdown).."s..." , 30, 30)
 		end
 	end)
+	
+	-- draw score
+	Draw.setColor("white")
+	Draw.text(score, 50, 50)
+	
+	-- draw lives left
+	
 end

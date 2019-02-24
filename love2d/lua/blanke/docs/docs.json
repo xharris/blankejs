@@ -8,6 +8,11 @@
     "Draw":[
         {"title":"Props/Methods","file":"draw.md"}
     ],
+    "Effect":[
+        {"title":"Instance Methods","file":"effect.md"},
+        {"title":"How to use shaders","file":"effect_usage.md"},
+        {"title":"How to create shaders","file":"effect_create.md"}
+    ],
     "Entity":[
         {"title":"Props/Methods","file":"entity.md"},
         {"title":"Callbacks","file":"entity_callbacks.md"},

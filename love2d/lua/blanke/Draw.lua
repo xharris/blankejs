@@ -1,9 +1,6 @@
 Draw = Class{
 	font = nil,
-	--[[Font{
-		size=20,
-		align="center"
-	},]]
+
 	background_color = {0,0,0,1},
 	color = {0,0,0,255},
 	reset_color = {255,255,255,255},
@@ -174,11 +171,15 @@ Draw = Class{
 
     setFont = function(new_font)
     	if type(new_font) == "string" and Asset.has('font', new_font) then
-    		Draw.font = Asset.get('font', new_font)
+    		Draw.font = Font{name=new_font}
     	elseif type(new_font) == 'table' then
-    		Draw.font = new_font
+    		if new_font.classname == "Font" then
+    			Draw.font = new_font
+    		else
+    			Draw.font = Font(new_font)
+    		end
     	else
-    		Draw.font = new_font
+    		error("Incorrect Font: '"..tostring(new_font).."'")
     	end 
     end,
 
@@ -191,20 +192,14 @@ Draw = Class{
     rect 	= function(...) return Draw.callDrawFunc('rectangle', {...}) end,
     circle 	= function(...) return Draw.callDrawFunc('circle', {...}) end,
     polygon = function(...) return Draw.callDrawFunc('polygon', {...}) end,
-    text 	= function(text, x, y, deg, ...) 
+    text 	= function(text, x, y, options) 
+    	local opt = options or {}
     	if Draw.font then
-			return Draw.font:draw(text, x, y, math.rad(deg), ...)--love.graphics.setFont(Draw.font)
-		else
-			return Draw.callDrawFunc('print', {text, x, y, ...})
-		end
-    end,
-    textf 	= function(text, x, y, ...)
-    	if Draw.font then
-			return Draw.font:draw(text, x, y, ...)--love.graphics.setFont(Draw.font)
-		else
-			return Draw.callDrawFunc('printf', {text, x, y, ...})
-		end
-    end,
+    		Draw.font:use()
+		end 
+		return Draw.callDrawFunc('printf', {text, x or 0, y or 0, opt.max_x or 1000000, opt.align or "left", math.rad(opt.angle or 0), 
+			opt.scale_x or 1, opt.scale_y or 1, opt.offset_x or 0, opt.offset_y or 0, opt.shear_x or 0, opt.shear_y or 0})
+    end
 }
 
 --love.graphics.setLineStyle("rough")

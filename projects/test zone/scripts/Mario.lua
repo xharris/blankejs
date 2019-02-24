@@ -9,16 +9,12 @@ function Mario:init()
 	self.real_mario.yoffset = self.real_mario.height / 2
 	self.real_mario.x = game_width /2
 	self.real_mario.y = game_height /2
-	self.real_mario.angle = 45
 	
-	self.pieces = self.real_mario:chop(4,4)
+	self.effect = Effect("chroma shift")
+	--self.effect = Effect("static")
 end
 
-function Mario:update(dt)
-	self.pieces:forEach(function(p,piece)
-		piece.angle = 90 * (mouse_x / game_width)
-	end)
-	
+function Mario:update(dt)	
 	local s = 2
 	if Input("move_l").pressed then self.x = self.x - s end
 	if Input("move_r").pressed then self.x = self.x + s end
@@ -27,21 +23,13 @@ function Mario:update(dt)
 end
 
 function Mario:draw()
-	--self.real_mario:draw()
-	self.pieces:call("draw")
-	
-	Draw.setColor("green")
-	local x, y = 100, 100
-	local angle = math.rad(360*(mouse_x/game_width))
-	local cx, cy = game_width/2, game_height/2
-	x, y = x - cx, y - cy
-	local newx = x * math.cos(angle) - y * math.sin(angle)
-	local newy = x * math.sin(angle) + y * math.cos(angle)
-	--Draw.circle("line",self.real_mario.x,self.real_mario.y,5)
-	Draw.circle("line",newx+cx,newy+cy,10)
-	Draw.setColor("red")
-	--Draw.circle("line",self.real_mario.x + self.real_mario.xoffset,self.real_mario.y + self.real_mario.yoffset,5)
-	Draw.reset("color")
+	self.effect:draw(function()
+		Draw.setColor("black")
+		Draw.rect("fill",0,0,game_width/2,game_height)
+		Draw.reset("color")
+			
+		self.real_mario:draw()
+	end)
 end
 
 --[[

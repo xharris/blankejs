@@ -1894,6 +1894,9 @@
 .markdown h1:hover {
   text-shadow: 3px 3px black;
 }
+.markdown h1:not(:first-child) {
+  margin-top: 15px;
+}
 .markdown h2 {
   font-size: 16px;
   margin: 0px;
@@ -1902,7 +1905,6 @@
   border-left: 1px solid #5ad9a4;
   padding-left: 5px;
   line-height: 15px;
-  padding-top: 2px;
   margin-top: 15px;
 }
 .markdown a {
@@ -1925,6 +1927,7 @@
   display: inline-block;
   vertical-align: middle;
   margin: 2px;
+  tab-size: 4;
 }
 .markdown code:hover {
   /* outline: 1px solid @ide-green;

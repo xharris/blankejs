@@ -20,6 +20,10 @@
         &:hover {
             text-shadow: 3px 3px black;
         }
+
+        &:not(:first-child) {
+            margin-top: 15px;
+        }
     }
     h2 {
         font-size: 16px;
@@ -29,7 +33,6 @@
         border-left: 1px solid rgba(90, 217, 164, 1);
         padding-left: 5px;
         line-height: 15px;
-        padding-top: 2px;
         margin-top: 15px;
     }
     a {
@@ -52,6 +55,7 @@
         display: inline-block;
         vertical-align: middle;
         margin: 2px;
+        tab-size: 4;
 
         &:hover {
             .green-outline();

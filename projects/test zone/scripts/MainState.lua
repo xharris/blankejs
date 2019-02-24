@@ -6,6 +6,8 @@ local test_mask = Mask()
 test_mask:setup("inside")
 local offset = 0
 
+local effect = Effect("crt")
+
 local grp_elements = Group()
 local ui_element_list = UI.list{
 	x = 100, y = 100,
@@ -24,9 +26,8 @@ local ui_element_list = UI.list{
 local mario
 local rptr
 
-local my_eff = Effect("bloom")
-
 function MainState:enter()
+	MainState.background_color = "white"
 	mario = Mario()
 	rptr = Repeater(mario,{rate=100, lifetime=1})
 	
@@ -48,15 +49,23 @@ function MainState:draw()
 
 	rptr:draw()
 	
-	mario:draw()
+	img_mask.x = mouse_x
+	img_mask.y = mouse_y
 	
-	dt_mod = (mouse_x / game_width) * 5
-	--[[
+	mario:draw()
+	--effect.chroma_shift.radius = lerp(0,10,mouse_x/game_width)
+	effect:draw(function()
+		img_mask:draw()
+	end)
+	
+	-- dt_mod = (mouse_x / game_width) * 5
+
+	Draw.translate(game_width/2, game_height/2)
 	Draw.setColor("blue")
-	Draw.grid(3, 3, 5, 5, function(x, y, row, column)
-		Draw.circle("line", x, y)
-		Draw.text("row: "..row.." col: "..column)
-	end)]]
+	Draw.grid(3, 3, 50, 50, function(x, y, row, column)
+		Draw.circle("line", x, y, 3)
+		Draw.text("("..row..", "..column..")", x, y)
+	end)
 	--[[ 
 	test_mask:draw(function()
 		Draw.setColor("white")

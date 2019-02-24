@@ -64,12 +64,13 @@ Calls `fn()` for each cell in an imaginary grid. Good for drawing a chessboard o
 
 >Example:
 >```
-Draw.setColor("blue")
-Draw.grid(3, 3, 5, 5, function(x, y, row, column)
-	Draw.circle("line", x, y)
-	Draw.text("row: "..row.." col: "..column)
-end)
-```
+>Draw.translate(game_width/2, game_height/2)
+>Draw.setColor("blue")
+>Draw.grid(3, 3, 50, 50, function(x, y, row, column)
+>		Draw.circle("line", x, y, 3)
+>		Draw.text("("..row..", "..column..")", x, y)
+>end)
+>```
 
 `reset([x])` **x** can be 'color'/'transform'. No value resets everything.
 

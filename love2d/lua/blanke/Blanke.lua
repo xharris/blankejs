@@ -6,7 +6,6 @@ function blanke_require(import)
 	return nil
 end
 
-
 blanke_require('Globals')
 blanke_require('Util')
 blanke_require('Debug')
@@ -202,7 +201,6 @@ BlankE = {
 
 		table.update(BlankE._options, BlankE.options)
 		local options = BlankE._options
-		print_r(options)
 
 		-- load plugins
 		for p, plugin in ipairs(options.plugins) do
@@ -240,6 +238,8 @@ BlankE = {
 
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
+	    Asset.add("console.ttf")
+	    Draw.setFont("console")
 
 		Asset.load()
 

@@ -17,10 +17,13 @@ local drawStateNormal = function(state)
 	if state.draw then
 		Draw.stack(function()
 			if state.background_color then
+				State.background_color = state.background_color
 				Draw.stack(function()
 					Draw.setColor(state.background_color)
 					Draw.rect('fill',0,0,game_width,game_height)
 				end)
+			else
+				State.background_color = nil
 			end
 			state:draw()
 		end)
@@ -275,6 +278,7 @@ StateManager = {
 
 State = Class{
 	game = {},
+	background_color = nil,
 	transition = function(...)
 		StateManager.transition(...)
 	end,

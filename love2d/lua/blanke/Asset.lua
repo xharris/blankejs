@@ -1,6 +1,7 @@
 Asset = Class{
 	image_ext = {'tif','tiff','gif','jpeg','jpg','jif','jiff','jp2','jpx','j2k','j2c','fpx','png','pcd','pdf'},
 	audio_ext = {'pcm','wav','aiff','mp3','aac','ogg','wma','flac','alac','wma'},
+	font_ext = {'ttf','ttc','cff','woff','otf','otc','pfa','pfb','fnt','bdf','pfr'},
 	info = {},
 	paths_used = {},
 
@@ -125,6 +126,11 @@ Asset = Class{
 			local scene_data = json.decode(love.filesystem.read(path))
 			if scene_data then return acceptAsset("scene", scene_data ) end
 
+		-- FONT
+		elseif table.hasValue(Asset.font_ext, asset_ext) then
+			return acceptAsset("font", path)
+
+
 		-- FILE (etc)
 		else
 			return acceptAsset("file", love.filesystem.read(path))
@@ -165,6 +171,7 @@ Asset = Class{
 	script = function(name) return Asset.get('script', name) end,
 	map = function(name) return Asset.get('map', name) end,
 	scene = function(name) return Asset.get('scene', name) end,
+	font = function(name) return Asset.get('font', name) end,
 	file = function(name) return Asset.get('file', name) end
 }
 

@@ -354,8 +354,12 @@ var app = {
 	},
 
 	addAsset: function(res_type, path) {
-		nwFS.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
-		dispatchEvent("asset_added",{type: res_type, path: app.project_path});
+		blanke.toast("adding file \'"+nwPATH.basename(path)+"\'");
+		nwFS.ensureDir(nwPATH.join(app.project_path, 'assets', res_type), (err) => {
+			if (err) console.error(err);
+			nwFS.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
+			dispatchEvent("asset_added",{type: res_type, path: app.project_path});
+		});
 	},
 
 	// determine an assets type based on file extension
@@ -364,6 +368,7 @@ var app = {
 		'image':['png','jpg','jpeg'],
 		'audio':['mp3','ogg','wav'],
 		'scene':['scene'],
+		'font':['ttf','ttc','cff','woff','otf','otc','pfa','pfb','fnt','bdf','pfr'],
 		'script':['lua']
 	},
 	getAssets: function(f_type, cb) {
@@ -725,8 +730,12 @@ nwWIN.on('loaded', function() {
 		if (app.isProjectOpen()) {
 			let files = e.dataTransfer.files;
 			for (let f of files) {
-				blanke.toast("adding file \'"+f.name+"\'");
-				app.addAsset(app.findAssetType(f.path),f.path);
+				nwFS.stat(f.path, (err, stats) => {
+					if (err || !stats.isFile())
+						blanke.toast(`Could not add file ${f.path}`);
+					else 
+						app.addAsset(app.findAssetType(f.path),f.path);
+				});
 			}
 			app.getElement("#drop-zone").classList.remove("active");
 		}

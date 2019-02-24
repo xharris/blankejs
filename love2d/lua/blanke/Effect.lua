@@ -1,7 +1,6 @@
 --[[
 completely working effects:
  - chroma shift : angle(deg), radius
- - crt : lineSize(vec2) opacity, scanlines(bool), distortion, inputGamma, outputGamma
  - outline : size
  - static : amount(vec2)
  - bloom : samples (int), quality (float)
@@ -16,11 +15,11 @@ Effect = Class{
 
     init = function(self, ...)
         self.shaders = {}
+        -- 'temporary' canvas used to draw each effect to once
         self.spare_canvas = Canvas()
+        -- canvas that is a combination of all shaders used
         self.canvas = Canvas()
 
-        self.spare_canvas.clear_color = nil--{1,1,1,0}
-        self.canvas.clear_color = nil--{1,1,1,0}
 
         local names = {...}
         for n, name in ipairs(names) do
@@ -47,6 +46,9 @@ Effect = Class{
     end,
 
     draw = function(self, fn)
+        -- self.spare_canvas.clear_color = {0,0,0,1}--State.background_color
+        -- self.canvas.clear_color = {0,0,0,1}
+
         -- final result canvas
         self.spare_canvas:drawTo(fn)
 
@@ -373,23 +375,16 @@ EffectManager.new{
 EffectManager.new{
     name = 'chroma_shift',
     params = {['angle']=0,['radius']=2,['direction']={0,0}},--['strength'] = {1, 1}, ['size'] = {20, 20}},
-    blend = {"add","alphamultiply"}, --{"replace", "alphamultiply"},
+    --blend = {"alpha","premultiplied"}, --{"replace", "alphamultiply"},
     effect = [[
             vec4 px_minus = Texel(texture, texCoord - direction);
             vec4 px_plus = Texel(texture, texCoord + direction);
 
             pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);
-            if (px_minus.a > 0 || px_plus.a > 0)
+            if ((px_minus.a == 0 || px_plus.a == 0) && pixel.a > 0) {
+                
                 pixel.a = 1.0;
-
-            // if (px_minus.a > 0 || px_plus.a > 0) {
-                // pixel.r = pixel.r * (1 - px_minus.a) + px_minus.r;
-                // pixel.b = pixel.b * (1 - px_plus.a) + px_plus.b;
-                // pixel.a = pixel.a * (1 - px_plus.a) + px_plus.a;
-            // } else {
-                // pixel.r = px_minus.r;
-                // pixel.b = px_plus.b;
-            // }
+            }
     ]],
     draw = function(self)
         local angle, radius = self.angle, self.radius
@@ -444,9 +439,10 @@ EffectManager.new{
     params = {
     ['radius']=50, ['strength']=2, ['center']={0, 0}
     },
-    warp_effect=true,
     effect =
 [[
+        vec2 coord =  texCoord * texSize;
+
         coord -= center;
         float distance = length(coord);
         if (distance < radius) {
@@ -458,6 +454,12 @@ EffectManager.new{
             }
         }
         coord += center;
+
+        gl_FragColor = texture2D(texture, coord / texSize);
+        vec2 clampedCoord = clamp(coord, vec2(0.0), texSize);
+        if (coord != clampedCoord) {
+            gl_FragColor.a *= max(0.0, 1.0 - length(coord - clampedCoord));
+        }
 ]]
 }
 
