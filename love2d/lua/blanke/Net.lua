@@ -84,14 +84,15 @@ Net = {
             info=clientid
         })
 
-        Net.removeLocalObjects()
+        --Net.removeLocalObjects()
 
         Net.client:unsubscribe()
         Net.is_init = false
-        Net.is_connected = false
         Net.client = nil
 
-        Net.removeClientObjects()
+        Net.removeNetObject()
+
+        Net.is_connected = false
 
         Net.log("disconnected")
 
@@ -155,7 +156,7 @@ Net = {
         --Net.log('- '..clientid)
         Net.clients[clientid] = nil
         Signal.emit('_net.disconnect', clientid)
-        Net.removeClientObjects(clientid) 
+        Net.removeNetObject(clientid) 
     end,
     
     _onReceive = function(data)
@@ -184,7 +185,7 @@ Net = {
 
             -- another entity changed their room
             if data.event == 'room.change' and data.clientid ~= Net.id and data.room ~= Net.room then
-                Net.removeClientObjects(data.clientid) 
+                Net.removeNetObject(data.clientid) 
             end
 
             -- send to all clients
@@ -322,7 +323,7 @@ Net = {
             type='netevent',
             event='room.change'
         })
-        Net.removeClientObjects()
+        Net.removeNetObject()
     end,
 
     getObjects = function(classname, id)
@@ -340,7 +341,7 @@ Net = {
         return ret_objects
     end,
 
-    removeClientObjects = function(clientid) 
+    removeNetObject = function(clientid) 
         local removable = {}
         if not clientid then
             removable = Net._objects
@@ -389,6 +390,10 @@ Net = {
 
         if not old and not obj.net_object then
             obj.net_owner_id = Net.id
+        end
+
+        obj.localOnly = function(self, fn)
+            if not self.net_ojbect then fn() end
         end
 
         obj.netSync = function(self, ...)
@@ -480,15 +485,17 @@ Net = {
 
     sendSyncObjects = function()
         for net_uuid, obj in pairs(Net._local_objects) do
-            Net.send({
-                type='netevent',
-                event='object.add',
-                info={
-                    object = {net_uuid=obj.net_uuid, classname=obj.classname, values=obj.net_var_old}
-                }
-            })
-            obj:netSync()
-            if obj.onNetAdd then obj:onNetAdd() end
+            if not obj._destroyed then
+                Net.send({
+                    type='netevent',
+                    event='object.add',
+                    info={
+                        object = {net_uuid=obj.net_uuid, classname=obj.classname, values=obj.net_var_old}
+                    }
+                })
+                obj:netSync()
+                if obj.onNetAdd then obj:onNetAdd() end
+            end
         end
     end,
 

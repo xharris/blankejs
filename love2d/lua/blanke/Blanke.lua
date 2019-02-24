@@ -28,6 +28,7 @@ function _prepareGameObject(obj_type, obj)
     obj.persistent = ifndef(obj.persistent, false)
     obj._destroyed = ifndef(obj._destroyed, false)
     obj.net_object = ifndef(obj.net_object, false)
+    obj.localOnly = ifndef(obj.localOnly, function(self, fn) fn() end)
     obj._state_created = ifndef(StateManager.current(), {classname=""})
 end
 

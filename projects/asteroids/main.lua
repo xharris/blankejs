@@ -12,5 +12,5 @@ function BlankE.load()
 		}
 	}
 
-	-- Audio.setVolume(0)
+	Audio.setVolume(0)
 end

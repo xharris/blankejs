@@ -19,8 +19,6 @@ Font = Class{
 	_makeFontObj = function(self)
 		-- store the font for repeated uses
 		local key = self.options.name..'-'..self.options.image..'-'..self.options.size
-		
-		print(Asset.font(self.options.name))
 		if self.options.image == '' then
 			Font._fonts[key] = love.graphics.newFont(Asset.font(self.options.name), self.options.size)
 		else

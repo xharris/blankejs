@@ -53,7 +53,7 @@ function Ship:spawn(x,y)
 	
 	self.can_shoot = true
 	
-	Net.once(function()
+	self:localOnly(function()
 		self.tmr_beat = Timer(1)
 		self.tmr_beat:after(function()
 			if self.beat == 1 then
@@ -179,7 +179,7 @@ function Ship:die()
 		
 		self.snd_thrust:stop()
 		self.snd_die:play()
-		Net.once(function()
+		self:localOnly(function()
 			self.tmr_beat:stop()
 		end)
 		
