@@ -345,7 +345,68 @@ class Code extends Editor {
 
 		this.autocompleting = false;
 		this.last_word = '';
-		this.codemirror.on("keyup", function(cm, e){
+
+		this.addCallback('onResize', function(w, h) {
+			// move split view around if there is one
+			let content_area = this_ref.getContent();
+			content_area.classList.remove("horizontal","vertical");
+			if (w > h) content_area.classList.add("horizontal");
+			if (h > w) content_area.classList.add("vertical");
+
+			this_ref.codemirror.refresh();
+		});
+		this.codemirror.refresh();
+
+		// prevents user from saving a million times by holding the button down
+		/*document.addEventListener('keyup', function(e){
+			if (e.key == "s" && e.ctrlKey) {
+				this_ref.save();
+        		this_ref.removeAsterisk();
+			}
+		});*/
+
+		/* tab click
+		this.setOnClick(function(self){
+			(new Code(app)).edit(self.file);
+			this_ref.setFontSize(font_size);
+		}, this);
+		*/
+	}
+
+	setupEditor(el_container) {
+		let this_ref = this;
+
+		let new_editor = CodeMirror(el_container, {
+			mode: "blanke",
+			theme: "material",
+            smartIndent : true,
+            lineNumbers : true,
+            gutters:["CodeMirror-linenumbers","gutter-event"],
+            lineWrapping : false,
+            indentUnit : 4,
+            tabSize : 4,
+            indentWithTabs : true,
+            highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
+            matchBrackets: true,
+            completeSingle: false,
+            extraKeys: {
+            	"Cmd-S": function(cm) {
+            		this_ref.save();
+            	},
+            	"Ctrl-S": function(cm) {
+            		this_ref.save();
+            	},
+            	"Ctrl-=": function(cm) { this_ref.fontSizeUp(); },
+            	"Ctrl--": function(cm) { this_ref.fontSizeDown(); },
+            	"Cmd-=": function(cm) { this_ref.fontSizeUp(); },
+            	"Cmd--": function(cm) { this_ref.fontSizeDown(); },
+            	"Shift-Tab": "indentLess",
+            	"Ctrl-F": "findPersistent",
+            	"Ctrl-Space": "autocomplete"
+            }
+		});
+		
+		new_editor.on("keyup", function(cm, e){
 			this_ref.refreshFnHelperTimer();
 
 			let editor = cm;
@@ -504,6 +565,7 @@ class Code extends Editor {
 			}
 		});
 
+		// set up events
 		//this.codemirror.setSize("100%", "100%");
 		function checkGutterEvents(cm, obj) {
 			let cur = cm.getCursor();
@@ -522,74 +584,15 @@ class Code extends Editor {
 				}
 			}
 		}
-		this.codemirror.on('cursorActivity',function(cm){
+		new_editor.on('cursorActivity',function(cm){
 			checkGutterEvents(cm);
 		})
-		this.codemirror.on('change', function(cm, obj){
+		new_editor.on('change', function(cm, obj){
 			this_ref.addAsterisk();
 		});
-		this.codemirror.on('click', function(cm, obj){
+		new_editor.on('click', function(cm, obj){
 
 			this_ref.focus();
-		});
-		this.codemirror.refresh();
-		this.addCallback('onResize', function(w, h) {
-			// move split view around if there is one
-			let content_area = this_ref.getContent();
-			content_area.classList.remove("horizontal","vertical");
-			if (w > h) content_area.classList.add("horizontal");
-			if (h > w) content_area.classList.add("vertical");
-
-			this_ref.codemirror.refresh();
-		});
-
-		// prevents user from saving a million times by holding the button down
-		/*document.addEventListener('keyup', function(e){
-			if (e.key == "s" && e.ctrlKey) {
-				this_ref.save();
-        		this_ref.removeAsterisk();
-			}
-		});*/
-
-		/* tab click
-		this.setOnClick(function(self){
-			(new Code(app)).edit(self.file);
-			this_ref.setFontSize(font_size);
-		}, this);
-		*/
-	}
-
-	setupEditor(el_container) {
-		let this_ref = this;
-
-		let new_editor = CodeMirror(el_container, {
-			mode: "blanke",
-			theme: "material",
-            smartIndent : true,
-            lineNumbers : true,
-            gutters:["CodeMirror-linenumbers","gutter-event"],
-            lineWrapping : false,
-            indentUnit : 4,
-            tabSize : 4,
-            indentWithTabs : true,
-            highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
-            matchBrackets: true,
-            completeSingle: false,
-            extraKeys: {
-            	"Cmd-S": function(cm) {
-            		this_ref.save();
-            	},
-            	"Ctrl-S": function(cm) {
-            		this_ref.save();
-            	},
-            	"Ctrl-=": function(cm) { this_ref.fontSizeUp(); },
-            	"Ctrl--": function(cm) { this_ref.fontSizeDown(); },
-            	"Cmd-=": function(cm) { this_ref.fontSizeUp(); },
-            	"Cmd--": function(cm) { this_ref.fontSizeDown(); },
-            	"Shift-Tab": "indentLess",
-            	"Ctrl-F": "findPersistent",
-            	"Ctrl-Space": "autocomplete"
-            }
 		});
 
 		if (this.codemirror == undefined) this.codemirror = new_editor;
