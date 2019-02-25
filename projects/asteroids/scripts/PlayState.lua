@@ -13,8 +13,11 @@ local main_view = View()
 main_view.x = game_width / 2
 main_view.y = game_height / 2
 
+local img_ship = Image("ship")
+
 local score = 0
-local lives = 3
+local lives = 0 --2
+local game_over = false
 
 Input.set("respawn", "r")
 
@@ -22,23 +25,21 @@ function PlayState:enter()
 	PlayState.background_color = "black"
 	
 	Net.on('ready',function()
+		setupGame()
 		startGame()	
 	end)
 	Net.on('fail',function() -- doesn't work yet
 		Debug.log("failed")
+		setupGame()
 		startGame()	
 	end)
 	
 	Net.join('localhost',8080)
 end
 
-function startGame()
+function setupGame()
 	tmr_spawn_roid = Timer():every(function()
 		Net.once(function()
-			if Asteroid.instances:size() < 6 then
-				local new_asteroid = Asteroid()
-				asteroids:add(new_asteroid)
-			end
 		end)
 	end, 1):start()
 	
@@ -47,8 +48,15 @@ function startGame()
 	eff_death.static.amount = {0,0}
 	Signal.on("player_die",function()
 		main_view:shake(10, 0)
+			
+		-- no more lives
+		if lives == 0 then
+			game_over = true
+		end
+			
+		lives = lives - 1	
 	end)
-	Signal.on("player_can_respawn",function()
+	Signal.on("death_animation_finish",function()
 		player = nil
 		tmr_respawn = Timer(3):after(function()
 			can_respawn = true
@@ -57,13 +65,38 @@ function startGame()
 	Signal.on("score",function(points)
 		score = score + points	
 	end)
+end
+
+function restartGame()
+	lives = 0
+	score = 0
+	game_over = false
+	Asteroid.instances:call("destroy")
+	
+	Timer(1):after(function()
+		startGame()
+	end):start()
+end
+
+function startGame()
+	game_over = false
+	for i = 0, 6 do
+		asteroids:add(Asteroid())
+	end
 	player = Ship()
 end
 
 function PlayState:update(dt) 
 	-- RESPAWN
-	if not player and can_respawn and Input("respawn").released then 
+	if not player and not game_over and can_respawn and Input("respawn").released then 
 		player = Ship()
+		can_respawn = false
+	end
+	
+	-- NEW GAME
+	-- TODO: will be buggy for netplay
+	if game_over and (not Net.is_connected or Ship.instances:size() == 0) and can_respawn and Input("respawn").released then
+		restartGame()
 		can_respawn = false
 	end
 end
@@ -77,6 +110,14 @@ function PlayState:draw()
 		Net.draw("Ship")
 		asteroids:call("draw")
 		Net.draw("Asteroid")
+		
+		if game_over then
+			if can_respawn then
+				Draw.text("game over\npress r to retry", 0, game_height/2 - 50, {align="center"})
+			else
+				Draw.text("game over", 0, game_height/2 - 50, {align="center"})
+			end
+		end
 	end
 	
 	main_view:draw(function()
@@ -92,9 +133,9 @@ function PlayState:draw()
 		end
 			
 		-- respawn timer
-		if tmr_respawn and tmr_respawn.countdown > 0 then
+		if tmr_respawn and tmr_respawn.countdown > 0 and not game_over then
 			Draw.setColor("white")
-			Draw.text("Can respawn in "..tostring(tmr_respawn.countdown).."s..." , 30, 30)
+			Draw.text("Can respawn in "..tostring(tmr_respawn.countdown).."s..." , 0, game_height/2 - Draw.font:getHeight()/2, {align="center"})
 		end
 	end)
 	
@@ -103,5 +144,7 @@ function PlayState:draw()
 	Draw.text(score, 50, 50)
 	
 	-- draw lives left
-	
+	for l = 0, lives do
+		img_ship:draw(50 + (l * (img_ship.width+2)), 50 + Draw.font:getHeight() + 5)
+	end
 end

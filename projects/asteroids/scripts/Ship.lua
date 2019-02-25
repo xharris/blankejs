@@ -212,7 +212,7 @@ function Ship:draw()
 			self.pieces:call('draw')
 		else
 			self:destroy()
-			if not self.net_object then Signal.emit("player_can_respawn") end
+			if not self.net_object then Signal.emit("death_animation_finish") end
 		end
 	else
 		self.img_thrust.alpha = self.thrust_alpha

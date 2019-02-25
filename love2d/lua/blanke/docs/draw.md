@@ -1,4 +1,4 @@
-# Color arg
+# **Color** arg
 
 For any function using the arg **color**, the following values types are acceptable:
 
@@ -11,6 +11,7 @@ For any function using the arg **color**, the following values types are accepta
 ```
 color = {r, g, b, a}				-- used for ALL Draw operations
 reset_color = {1,1,1,1}				-- used for resetColor()
+font 								-- current Font object in use
 ```
 
 ## Colors
@@ -48,10 +49,20 @@ line(x1, y1, x2, y2)
 rect(mode, x, y, width, height)
 circle(mode, x, y, radius)
 polygon(mode, x1, y2, x2, y2, ...)
-text(text, x, y, degrees, scale_x, scale_y, offset_x, offset_y)
-textf(text, x, y, limit, align)		-- align = "left/right/center"
+text(text, x, y, options)
 ```
 **mode** = 'line' or 'fill'
+
+text **options** = {
+
+* `max_x` maximum width of text block. Also affects where text is drawn when modifying 'align'.
+* `align` 'left'/'center'/'right'/'justify'
+* `angle` degrees
+* `scale_x`, `scale_y`
+* `offset_x`, `offset_y`
+* `shear_x`, `shear_y`
+
+}
 
 ## Other 
 ```

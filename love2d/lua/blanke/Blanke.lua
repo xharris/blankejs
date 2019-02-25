@@ -6,7 +6,7 @@ function blanke_require(import)
 	return nil
 end
 
-blanke_require('Globals')
+blanke_require('Globals') 
 blanke_require('Util')
 blanke_require('Debug')
 blanke_require('Window')
@@ -118,7 +118,9 @@ end
 for m, mod in ipairs(modules) do
 	if _G[mod] then 
 		if not _G[mod].classname then _G[mod].classname = mod end
-		if mod ~= "Group" and not _G[mod].instances then _G[mod].instances = Group() end
+		if mod ~= "Group" and not _G[mod].instances then
+			_G[mod].instances = Group()
+		end
 	end
 end
 Physics = love.physics

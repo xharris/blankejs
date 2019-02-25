@@ -170,7 +170,9 @@ Draw = Class{
     end,
 
     setFont = function(new_font)
-    	if type(new_font) == "string" and Asset.has('font', new_font) then
+    	if type(new_font) == "number" or new_font == nil then
+    		Draw.font = Font{name="console",size=(new_font or 12)}
+    	elseif type(new_font) == "string" and Asset.has('font', new_font) then
     		Draw.font = Font{name=new_font}
     	elseif type(new_font) == 'table' then
     		if new_font.classname == "Font" then
@@ -197,7 +199,8 @@ Draw = Class{
     	if Draw.font then
     		Draw.font:use()
 		end 
-		return Draw.callDrawFunc('printf', {text, x or 0, y or 0, opt.max_x or 1000000, opt.align or "left", math.rad(opt.angle or 0), 
+
+		return Draw.callDrawFunc('printf', {text, x or 0, y or 0, opt.max_x or game_width, opt.align or "left", math.rad(opt.angle or 0), 
 			opt.scale_x or 1, opt.scale_y or 1, opt.offset_x or 0, opt.offset_y or 0, opt.shear_x or 0, opt.shear_y or 0})
     end
 }

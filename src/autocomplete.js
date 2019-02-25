@@ -213,9 +213,11 @@ module.exports.completions = {
 	"blanke-net":[
 		{prop:"id", info:"unique clientid assigned upon connecting to a network"},
 		{prop:"is_leader", info:"check this value if you only want to run a Net action once on a server"},
+		{prop:"is_connected"},
 		{fn:"join", vars:{ address:"localhost", port:"8080" }},
 		{fn:"disconnect"},
 		{fn:"send", vars:{ data:"{type (netevent), event, info}" }},
+		{fn:"once", vars:{ fn:"" }},
         {fn:"event", vars:{ name:"", data:"" }},
         {fn:"sendPersistent", vars:{ data:'' }, info:"same as send, but sends to new clients that join later"},
 		{fn:"getPopulation"},

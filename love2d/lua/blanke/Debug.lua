@@ -1,6 +1,6 @@
 Debug = {
     lines = {},
-    _font = love.graphics.newFont(12),
+    _font = nil,
     margin = 15,
     _duplicate_count = 0,
     _last_line = '',
@@ -88,7 +88,7 @@ Debug = {
     end,
 
     draw = function()
-        local fnt_height = Debug._font:getHeight()
+        local fnt_height = Draw.font:getHeight()
         local win_height = love.graphics:getHeight()
         local lines = math.min(game_height / fnt_height, #Debug.lines)
 
@@ -102,9 +102,9 @@ Debug = {
                 alpha = 255 - ((y-win_height/2)/(win_height/2)*255)
             end 
             Draw.reset("color")
-            Draw.setFont()
+
             Draw.setColor(1,0,0,alpha)
-            love.graphics.setFont(Debug._font)
+            Draw.setFont(Debug._font)
             Draw.text(line, BlankE.left + Debug.margin, y+Debug.margin)
             love.graphics.pop()
         end
@@ -113,7 +113,7 @@ Debug = {
     end,
 
     setFontSize = function(new_size)
-        Debug._font = love.graphics.newFont(new_size)
+        Debug._font = Font{name="console",size=new_size}
         return Debug
     end,
 
@@ -131,7 +131,7 @@ Debug = {
             Debug._duplicate_count = 0
             
             table.insert(Debug.lines, 1, new_line)
-            if #Debug.lines > (game_height / Debug._font:getHeight()) then
+            if #Debug.lines > (game_height / Draw.font:getHeight()) then
                 table.remove(Debug.lines, #Debug.lines)
             end
         end
