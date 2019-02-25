@@ -1,7 +1,8 @@
 .content[data-type="Code"] {
     /* TAB only
     padding-top: 33px;
-    padding-bottom: 22px;*/
+	padding-bottom: 22px;*/
+	overflow: hidden;
 
     .gutter-event {
     	width: 10px;
@@ -17,7 +18,27 @@
 	    &:hover i {
     		color: lighten(rgb(83,127,126), 40%);
     	}
-    }
+	}
+	
+	.code {
+		width: 100%;
+		height: 100%;
+
+		&.split-v {
+		}
+	}
+
+	.editor-content {
+		&.horizontal .code.split {
+			width: 50%;
+			display: inline-block;
+		}
+		
+		&.vertical .code.split {
+			height: 50%;
+			display: inline-block;
+		}
+	}
 
 	.CodeMirror {
 		font-size: 16px;

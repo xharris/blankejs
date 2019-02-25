@@ -479,10 +479,10 @@ class SceneEditor extends Editor {
 				}
 			}
 		});
-		this.container.getContent().addEventListener('mouseenter', function(e){
+		this.getContent().addEventListener('mouseenter', function(e){
 			this_ref.can_drag = true;
 		});
-		this.container.getContent().addEventListener('mouseout', function(e){
+		this.getContent().addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
 		

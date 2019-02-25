@@ -13,7 +13,6 @@ var CODE_ASSOCIATIONS = [
 	],
 ];
 
-var font_size = 16;
 var object_list = {}
 var object_src = {};
 var object_instances = {};
@@ -206,10 +205,16 @@ class Code extends Editor {
 		this.file = '';
 		this.script_folder = "/scripts";
 
+		if (!app.settings.code) app.settings.code = {};
+		ifndef_obj(app.settings.code, {
+			font_size:16
+		});
+
+		this.editors = [];
+
 		// create codemirror editor
-		this.edit_box = document.createElement("textarea");
-		this.edit_box.classList.add("code")
-		this.appendChild(this.edit_box)
+		this.edit_box = app.createElement("div","code");
+		this.appendChild(this.edit_box);
 
 		// box to show last viewed function (until ')' is pressed?)
 		this.el_fn_helper = app.createElement('div',['fn-helper','hidden']);
@@ -300,39 +305,7 @@ class Code extends Editor {
 		  return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "lua"), blankeOverlay);
 		});
 
-		this.codemirror = CodeMirror.fromTextArea(this.edit_box, {
-			mode: "blanke",
-			theme: "material",
-            smartIndent : true,
-            lineNumbers : true,
-            gutters:["CodeMirror-linenumbers","gutter-event"],
-            lineWrapping : false,
-            indentUnit : 4,
-            tabSize : 4,
-            indentWithTabs : true,
-            highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
-            matchBrackets: true,
-            completeSingle: false,
-            extraKeys: {
-            	"Cmd-S": function(cm) {
-            		this_ref.save();
-            	},
-            	"Ctrl-S": function(cm) {
-            		this_ref.save();
-            	},
-            	"Ctrl-=": function(cm) {
-            		font_size += 1;
-            		this_ref.setFontSize(font_size);
-            	},
-            	"Ctrl--": function(cm) {
-            		font_size -= 1;
-            		this_ref.setFontSize(font_size);
-            	},
-            	"Shift-Tab": "indentLess",
-            	"Ctrl-F": "findPersistent",
-            	"Ctrl-Space": "autocomplete"
-            }
-		});
+		this.setupEditor(this.edit_box);
 
 		this.gutterEvents = {
 			':addAnim':{
@@ -372,10 +345,10 @@ class Code extends Editor {
 
 		this.autocompleting = false;
 		this.last_word = '';
-		this.codemirror.on("keyup", function(){
+		this.codemirror.on("keyup", function(cm, e){
 			this_ref.refreshFnHelperTimer();
 
-			let editor = this_ref.codemirror;
+			let editor = cm;
 			let cursor = editor.getCursor();
 
 			let word_pos = editor.findWordAt(cursor);
@@ -531,7 +504,6 @@ class Code extends Editor {
 			}
 		});
 
-		this.setFontSize(font_size);
 		//this.codemirror.setSize("100%", "100%");
 		function checkGutterEvents(cm, obj) {
 			let cur = cm.getCursor();
@@ -562,6 +534,12 @@ class Code extends Editor {
 		});
 		this.codemirror.refresh();
 		this.addCallback('onResize', function(w, h) {
+			// move split view around if there is one
+			let content_area = this_ref.getContent();
+			content_area.classList.remove("horizontal","vertical");
+			if (w > h) content_area.classList.add("horizontal");
+			if (h > w) content_area.classList.add("vertical");
+
 			this_ref.codemirror.refresh();
 		});
 
@@ -579,6 +557,46 @@ class Code extends Editor {
 			this_ref.setFontSize(font_size);
 		}, this);
 		*/
+	}
+
+	setupEditor(el_container) {
+		let this_ref = this;
+
+		let new_editor = CodeMirror(el_container, {
+			mode: "blanke",
+			theme: "material",
+            smartIndent : true,
+            lineNumbers : true,
+            gutters:["CodeMirror-linenumbers","gutter-event"],
+            lineWrapping : false,
+            indentUnit : 4,
+            tabSize : 4,
+            indentWithTabs : true,
+            highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
+            matchBrackets: true,
+            completeSingle: false,
+            extraKeys: {
+            	"Cmd-S": function(cm) {
+            		this_ref.save();
+            	},
+            	"Ctrl-S": function(cm) {
+            		this_ref.save();
+            	},
+            	"Ctrl-=": function(cm) { this_ref.fontSizeUp(); },
+            	"Ctrl--": function(cm) { this_ref.fontSizeDown(); },
+            	"Cmd-=": function(cm) { this_ref.fontSizeUp(); },
+            	"Cmd--": function(cm) { this_ref.fontSizeDown(); },
+            	"Shift-Tab": "indentLess",
+            	"Ctrl-F": "findPersistent",
+            	"Ctrl-Space": "autocomplete"
+            }
+		});
+
+		if (this.codemirror == undefined) this.codemirror = new_editor;
+		this.editors.push(new_editor);
+		this.setFontSize(app.settings.code.font_size);
+
+		return new_editor;
 	}
 
 	getCompleteHTML(hint) {
@@ -660,16 +678,56 @@ class Code extends Editor {
 		this.setSubtitle();
 	}
 
+	fontSizeUp () {
+		app.settings.code.font_size += 1;
+		this.setFontSize(app.settings.code.font_size);
+	}
+
+	fontSizeDown () {
+		app.settings.code.font_size -= 1;
+		this.setFontSize(app.settings.code.font_size);
+	}
+
 	setFontSize (num) {
-		font_size = num;
-		this.codemirror.display.wrapper.style['line-height'] = (font_size-2).toString()+"px";
-		this.codemirror.display.wrapper.style.fontSize = font_size.toString()+"px";
+		for (let editor of this.editors) {
+			editor.display.wrapper.style['line-height'] = (num-2).toString()+"px";
+			editor.display.wrapper.style.fontSize = num.toString()+"px";
+			editor.refresh();
+		}
+
+		app.settings.code.font_size = num;
+		app.saveAppData();
+	}
+
+	splitView () {
+		if (this.edit_box2) return;
+
+		this.edit_box.classList.add("split");
+		this.edit_box2 = app.createElement("div", ["code","split"]);
+		this.appendChild(this.edit_box2);
+
+		let new_editor = this.setupEditor(this.edit_box2);
+		new_editor.swapDoc(this.codemirror.getDoc().linkedDoc({sharedHist:true}));
 		this.codemirror.refresh();
+	}
+
+	unsplitView () {
+		if (!this.edit_box2) return;
+
+		blanke.destroyElement(this.edit_box2);
+		this.edit_box2 = null;
+		this.edit_box.classList.remove("split");
 	}
 
 	onMenuClick (e) {
 		var this_ref = this;
+
+		let split = {label:'split', click:function(){this_ref.splitView()}};
+		if (this.edit_box2)
+			split = {label:'unsplit', click:function(){this_ref.unsplitView()}};
+
 		app.contextMenu(e.x, e.y, [
+			split,
 			{label:'rename', click:function(){this_ref.renameModal()}},
 			{label:'delete', click:function(){this_ref.deleteModal()}}
 		]);

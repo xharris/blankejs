@@ -465,7 +465,8 @@
 .content[data-type="Code"] {
   /* TAB only
     padding-top: 33px;
-    padding-bottom: 22px;*/
+	padding-bottom: 22px;*/
+  overflow: hidden;
 }
 .content[data-type="Code"] .gutter-event {
   width: 10px;
@@ -479,6 +480,18 @@
 }
 .content[data-type="Code"] .gutter-evt:hover i {
   color: #c5d9d9;
+}
+.content[data-type="Code"] .code {
+  width: 100%;
+  height: 100%;
+}
+.content[data-type="Code"] .editor-content.horizontal .code.split {
+  width: 50%;
+  display: inline-block;
+}
+.content[data-type="Code"] .editor-content.vertical .code.split {
+  height: 50%;
+  display: inline-block;
 }
 .content[data-type="Code"] .CodeMirror {
   font-size: 16px;
@@ -1359,13 +1372,13 @@
   font-size: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 2px;
+  white-space: pre;
 }
 .content[data-type="Console"] .log .line {
   color: white;
 }
 .content[data-type="Console"] .log .error {
   color: #ef9a9a;
-  white-space: normal;
 }
 .content[data-type="AssetManager"] .editor-content {
   color: #eeeeee;

@@ -38,7 +38,6 @@ class Editor {
 		// create tab
 		this.container = new Tab(this.constructor.name);
 		this.container.appendChild(this.content_area);
-		
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
@@ -101,6 +100,10 @@ class Editor {
 	hideMenuButton () {
 		if (this.container.btn_menu)
 			this.container.btn_menu.style.display = 'none';
+	}
+
+	getContent() {
+		return this.content_area;
 	}
 
 	appendChild (el) {

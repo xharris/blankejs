@@ -76,10 +76,6 @@ class FibWindow {
 		return this.fib_container.offsetHeight;
 	}
 
-	getContent () {
-		return this.fib_container;
-	}
-
 	focus () {
 		FibWindow.focus(this.title);
 	}	

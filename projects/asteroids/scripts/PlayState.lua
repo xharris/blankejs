@@ -58,9 +58,13 @@ function setupGame()
 	end)
 	Signal.on("death_animation_finish",function()
 		player = nil
-		tmr_respawn = Timer(3):after(function()
+		if game_over then
 			can_respawn = true
-		end):start()
+		else
+			tmr_respawn = Timer(3):after(function()
+				can_respawn = true
+			end):start()
+		end
 	end)
 	Signal.on("score",function(points)
 		score = score + points	

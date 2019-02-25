@@ -266,14 +266,14 @@ class MapEditor extends Editor {
 				this_ref.snap_on = true;
 			}
 		});
-		this.container.getContent().addEventListener('mouseenter', function(e){
+		this.getContent().addEventListener('mouseenter', function(e){
 			this_ref.can_drag = true;
 		});
-		this.container.getContent().addEventListener('mouseout', function(e){
+		this.getContent().addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
 		// 
-		this.container.getContent().addEventListener('mousedown', function(e){
+		this.getContent().addEventListener('mousedown', function(e){
 			let x = this_ref.pixi.renderer.plugins.interaction.mouse.global.x;
 			let y = this_ref.pixi.renderer.plugins.interaction.mouse.global.y;
 			let btn = e.button;
