@@ -33,9 +33,9 @@ function MainState:enter()
 	rptr = Repeater(mario)
 	rptr.x = 50
 	rptr.y = 100
-	rptr.x2 = 60
-	rptr:emit()
-	Debug.log(rptr.x, rptr.x2)
+	rptr.duration = 1
+	rptr.speed = 0.2
+	rptr.rate = 1
 	
 	test_mask.fn = function()
 		test_mask:useImageAlphaMask(img_mask)

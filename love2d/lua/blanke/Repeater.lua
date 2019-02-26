@@ -1,18 +1,25 @@
 Repeater = Class{
 	init = function(self, texture, options)
-		self:setTexture(texture)
-		self.particles = {} -- list of particles and their info
-
 		local val = function(x) return {x,x,'linear'} end
 		-- vvv Things that each particle will inherit vvv
 		self.options = {
 			-- starting value
 			x = val(0), y = val(0),
+			duration = val(3), -- seconds
 			-- movement
-			direction = val(0), speed = val(0)
+			direction = val(0), speed = val(0),
+			-- position
+			offset_x = val(0), offset_y = val(0)
 		}
 		self.tween_ref = {}
 		--- END
+
+		self.current_t = 0
+		self.rate = 0
+		self.rate_dt = 0
+		self:setTexture(texture)
+		self.particles = {} -- list of particles and their info
+
 		-- values that can have a min/max
 		self.minmax_options = {'direction','speed'}
 		table.update(self.options, options or {})
@@ -47,6 +54,39 @@ Repeater = Class{
 	end,
 
 	update = function(self, dt)
+		self.current_t = self.current_t + dt 	
+		for p, part in ipairs(self.particles) do 
+			local sprite_batch = self.real_texture
+			if part.spr_index ~= nil then 
+				sprite_batch = self.texture_list[part.spr_index]
+			end 
+
+			-- end of particle lifetime
+			if (self.current_t - part.start_t) > part.duration[1] then 
+				sprite_batch:set(part.id,0,0,0,0,0)
+				self.particles[p] = nil
+			
+			else 
+				-- update position
+				part.x[1], part.y[1] = part.x[1] + direction_x(part.direction[1], part.speed[1]), part.y[1] + direction_y(part.direction[1], part.speed[1])
+			
+				if part.quad ~= nil then
+					part.spritebatch:set(part.id, part.quad, part.x[1], part.y[1])
+				else 
+					part.spritebatch:set(part.id, part.x[1], part.y[1])
+				end
+			
+			end
+		end
+
+		-- rate ~= 0, spawn a new particle
+		if self.rate ~= 0 then self.rate_dt = self.rate_dt - dt end
+		if self.rate ~= 0 and self.rate_dt == 0 then 
+			self.rate_dt = self.rate
+
+			self:emit()
+		end
+
 		self:updateEntityTexture()
 	end,
 
@@ -55,7 +95,11 @@ Repeater = Class{
 
 		local spr_index = self.texture.sprite_index
 		self.real_texture = self.texture_list[spr_index]
-		self.quad = self.texture._sprites[spr_index].frames[self.texture.sprite_frame]
+		self.quad = self.texture._sprites[spr_index].frames[self.texture.sprite_frame+1]
+
+		-- all new particles will inherit these values
+		self.options.spritebatch = self.real_texture
+		self.options.quad = self.quad
 	end,
 
 	setTexture = function(self, texture)
@@ -90,12 +134,12 @@ Repeater = Class{
 
 			new_p = table.deepcopy(self.options)
 			
-			if self.quad ~= nil then
-				Debug.log("quad")
-				new_p.id = self.real_texture:add(self.quad, new_p.x[1], new_p.y[1])
+			if new_p.quad ~= nil then
+				new_p.id = new_p.spritebatch:add(new_p.quad, new_p.x[1], new_p.y[1])
 			else 
-				new_p.id = self.real_texture:add(new_p.x[1], new_p.y[1])
+				new_p.id = new_p.spritebatch:add(new_p.x[1], new_p.y[1])
 			end
+			new_p.start_t = self.current_t 
 
 			self.particles[#self.particles+1] = new_p
 		end
