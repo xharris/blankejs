@@ -75,26 +75,36 @@ Group = Class{
 	end,
 
 	forEach = function(self, func)
-		for i_c, c in ipairs(self.children) do
-			if func(i_c, c) then break end
+		local size = self:size()
+		for i = 0, size do
+			if self.children[i] and func(i, self.children[i]) then break end
 		end
 	end,
 
 	setProperty = function(self, attr, value)
-		for i_c, c in ipairs(self.children) do
-			if c[attr] then c[attr] = value end
-		end
+		self:forEach(function(o, obj)
+			if obj[attr] then obj[attr] = value end
+		end)
 	end,
 
 	set = function(self, attr_name, value) 
-		self:forEach(function(c, child)
-			child[attr_name] = value
+		self:forEach(function(o, obj)
+			obj[attr_name] = value
 		end)
 	end,
 
 	call = function(self, func_name, ...)
-		for i_c, c in ipairs(self.children) do
-			if c[func_name] then c[func_name](c, ...) end
+		if func_name == "destroy" then
+			local i = 1
+			local child
+			while self:size() > 0 do
+				child = self.children[i]
+				child[func_name](child, ...)
+			end
+		else
+			for i_c, c in ipairs(self.children) do
+				if c[func_name] then c[func_name](c, ...) end
+			end
 		end
 	end,
 

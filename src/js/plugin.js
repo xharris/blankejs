@@ -36,7 +36,9 @@ document.addEventListener("openProject",function(e){
 
 
 document.addEventListener("ideReady",function(e){
-	let plugin_watch = nwFS.watch(app.settings.plugin_path, function(evt_type, file) {
-		refreshPluginList();
+	nwFS.ensureDir(app.settings.plugin_path, (err) => {
+		let plugin_watch = nwFS.watch(app.settings.plugin_path, function(evt_type, file) {
+			refreshPluginList();
+		});
 	});
 });

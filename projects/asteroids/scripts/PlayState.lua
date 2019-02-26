@@ -14,6 +14,7 @@ main_view.x = game_width / 2
 main_view.y = game_height / 2
 
 local img_ship = Image("ship")
+local grp_explosions = Group()
 
 local score = 0
 local lives = 0 --2
@@ -78,7 +79,7 @@ function restartGame()
 	Asteroid.instances:call("destroy")
 	
 	Timer(1):after(function()
-		startGame()
+		--startGame()
 	end):start()
 end
 

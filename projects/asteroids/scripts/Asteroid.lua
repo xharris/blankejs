@@ -61,6 +61,8 @@ function Asteroid:hit(direction)
 	
 	if not self.small and self.children:size() == 0 then
 		Net.once(function()
+			Signal.emit("explosion")
+				
 			local last_dir = 0
 			-- calculate direction based on collision direction (does this even work lol)
 			if direction then 
