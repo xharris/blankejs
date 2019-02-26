@@ -20,6 +20,8 @@ Repeater = Class{
 		self.onPropSet["linear_damp_y"] = function(self, v) set("setLinearDamping",self.linear_damp_x,v) end
 		self.onPropSet["spawn_x"] = function(self, v) set("setPosition",v,self.spawn_y) end
 		self.onPropSet["spawn_y"] = function(self, v) set("setPosition",self.spawn_x,v) end
+		self.onPropSet["speed"] = function(self, v) set("setSpeed",v) end
+		self.onPropSet["direction"] = function(self, v) set("setDirection",math.rad(v)) end
 
 
 		local default_props = {"linear_accel_x","linear_accel_y","linear_damp_x","linear_damp_y","spawn_x","spawn_y"}
@@ -55,6 +57,10 @@ Repeater = Class{
 		else
 			self.system:update(dt)
 		end
+	end,
+
+	emit = function(self)
+		if not self.entity_text then self.system:emit() end
 	end,
 
 	updateEntityTexture = function(self, dt)

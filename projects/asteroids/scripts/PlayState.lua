@@ -14,7 +14,6 @@ main_view.x = game_width / 2
 main_view.y = game_height / 2
 
 local img_ship = Image("ship")
-local grp_explosions = Group()
 
 local score = 0
 local lives = 0 --2
@@ -73,17 +72,16 @@ function setupGame()
 end
 
 function restartGame()
-	lives = 0
-	score = 0
-	game_over = false
 	Asteroid.instances:call("destroy")
 	
 	Timer(1):after(function()
-		--startGame()
+		startGame()
 	end):start()
 end
 
 function startGame()
+	lives = 3
+	score = 0
 	game_over = false
 	for i = 0, 6 do
 		asteroids:add(Asteroid())
@@ -91,7 +89,26 @@ function startGame()
 	player = Ship()
 end
 
+local canv_explosion = Canvas(1,1)
+canv_explosion:drawTo(function()
+	Draw.setColor("white")
+	Draw.point(0,0)
+end)
+local rpt_explosion = Repeater(canv_explosion, {
+	direction=0,
+	max_direction=360,
+	speed = 1
+})
+
+Signal.on("explosion", function(x,y)
+	rpt_explosion:emit()
+end)
+
 function PlayState:update(dt) 
+	if Input("respawn").released then
+		Signal.emit("explosion",mouse_x,mouse_y)
+	end
+	
 	-- RESPAWN
 	if not player and not game_over and can_respawn and Input("respawn").released then 
 		player = Ship()
@@ -115,6 +132,7 @@ function PlayState:draw()
 		Net.draw("Ship")
 		asteroids:call("draw")
 		Net.draw("Asteroid")
+		grp_explosions:call("draw")
 		
 		if game_over then
 			if can_respawn then

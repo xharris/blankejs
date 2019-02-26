@@ -9,7 +9,6 @@ function Asteroid:init(small)
 	self:addAnimation{name="small", image="asteroids_small", frames={"1-3",1}, frame_size={34,34}, speed=1, offset={0,0}}
 	self:addAnimation{name="large", image="asteroids", frames={"1-3",1}, frame_size={68,68}, speed=1, offset={0,0}}
 
-	
 	self.small = ifndef(small, false)
 	if self.small then
 		self.snd_hit = Audio("bangSmall")
@@ -61,7 +60,7 @@ function Asteroid:hit(direction)
 	
 	if not self.small and self.children:size() == 0 then
 		Net.once(function()
-			Signal.emit("explosion")
+			Signal.emit("explosion", self.x, self.y)
 				
 			local last_dir = 0
 			-- calculate direction based on collision direction (does this even work lol)
