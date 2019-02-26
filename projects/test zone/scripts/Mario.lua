@@ -23,13 +23,15 @@ function Mario:update(dt)
 end
 
 function Mario:draw()
+	self:drawSprite()
+	--[[
 	self.effect:draw(function()
 		Draw.setColor("black")
 		Draw.rect("fill",0,0,game_width/2,game_height)
 		Draw.reset("color")
 			
 		self.real_mario:draw()
-	end)
+	end)]]
 end
 
 --[[

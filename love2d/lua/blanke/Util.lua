@@ -69,7 +69,11 @@ function randRange(...)
 	if r % 2 == 0 then
 		r = r - 1
 	end
-	return love.math.random(ranges[r], ranges[r+1])
+	if ranges[r] < ranges[r+1] then
+		return love.math.random(ranges[r], ranges[r+1])
+	else 
+		return love.math.random(ranges[r+1], ranges[r])
+	end
 end
 
 -- gets or sets random seed

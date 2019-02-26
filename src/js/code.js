@@ -412,6 +412,7 @@ class Code extends Editor {
 			let cur = cm.getCursor();
 			let line_text = cm.getLine(cur.line);
 			cm.clearGutter('gutter-event');
+			
 			for (let txt in this_ref.gutterEvents) {
 				if (line_text.includes(txt)) {
 					let el_gutter = blanke.createElement('div','gutter-evt');
@@ -427,12 +428,13 @@ class Code extends Editor {
 		}
 
 		new_editor.on("change", function(cm, e){
-			checkGutterEvents(cm);
+			let editor = cm;
+
+			checkGutterEvents(editor);
 			this_ref.addAsterisk();
 
 			this_ref.refreshFnHelperTimer();
 
-			let editor = cm;
 			let cursor = editor.getCursor();
 
 			let word_pos = editor.findWordAt(cursor);
@@ -590,6 +592,7 @@ class Code extends Editor {
 
 		
 		new_editor.on('cursorActivity',function(cm){
+			checkGutterEvents(cm);
 		})
 		new_editor.on('click', function(cm, obj){
 
