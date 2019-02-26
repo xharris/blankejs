@@ -12,8 +12,8 @@
     "icon": "src/logo.png"
   },
   "build": {
-    "nwVersion": "0.30.2",
-    "nwFlavor": "normal",
+    "nwVersion": "0.36.2",
+    "nwFlavor": "sdk",
     "files": [
       "./src/**/**"
     ],

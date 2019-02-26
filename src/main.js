@@ -294,11 +294,11 @@ var app = {
 	loadAppData: function(callback) {
 		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
-		
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
-			if (!err) {
+			if (!err) 
 				app.settings = JSON.parse(data);
-			}
+			else
+				app.settings = {};
 			ifndef_obj(app.settings, {
 				recent_files:[],
 				plugin_path:'plugins',
@@ -312,6 +312,7 @@ var app = {
 	saveAppData: function() {
 		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
+		console.log(app_data_path)
 		
 		nwFS.stat(app_data_folder, function(err, stat) {
 			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
@@ -814,8 +815,8 @@ nwWIN.on('loaded', function() {
 			}
 		}
 
-		dispatchEvent("ideReady");
 		app.showWelcomeScreen();
+		dispatchEvent("ideReady");
 	});
 
 	// app.openProject('projects/boredom');

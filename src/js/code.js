@@ -406,7 +406,30 @@ class Code extends Editor {
             }
 		});
 		
-		new_editor.on("keyup", function(cm, e){
+		// set up events
+		//this.codemirror.setSize("100%", "100%");
+		function checkGutterEvents(cm, obj) {
+			let cur = cm.getCursor();
+			let line_text = cm.getLine(cur.line);
+			cm.clearGutter('gutter-event');
+			for (let txt in this_ref.gutterEvents) {
+				if (line_text.includes(txt)) {
+					let el_gutter = blanke.createElement('div','gutter-evt');
+					el_gutter.innerHTML="<i class='mdi mdi-flash'></i>";
+					if (this_ref.gutterEvents[txt].tooltip)
+						el_gutter.title = this_ref.gutterEvents[txt].tooltip;
+					el_gutter.addEventListener('click',function(){
+						this_ref.gutterEvents[txt].fn(line_text, cm, cur);
+					});
+					cm.setGutterMarker(cur.line, 'gutter-event', el_gutter);
+				}
+			}
+		}
+
+		new_editor.on("change", function(cm, e){
+			checkGutterEvents(cm);
+			this_ref.addAsterisk();
+
 			this_ref.refreshFnHelperTimer();
 
 			let editor = cm;
@@ -565,31 +588,9 @@ class Code extends Editor {
 			}
 		});
 
-		// set up events
-		//this.codemirror.setSize("100%", "100%");
-		function checkGutterEvents(cm, obj) {
-			let cur = cm.getCursor();
-			let line_text = cm.getLine(cur.line);
-			cm.clearGutter('gutter-event');
-			for (let txt in this_ref.gutterEvents) {
-				if (line_text.includes(txt)) {
-					let el_gutter = blanke.createElement('div','gutter-evt');
-					el_gutter.innerHTML="<i class='mdi mdi-flash'></i>";
-					if (this_ref.gutterEvents[txt].tooltip)
-						el_gutter.title = this_ref.gutterEvents[txt].tooltip;
-					el_gutter.addEventListener('click',function(){
-						this_ref.gutterEvents[txt].fn(line_text, cm, cur);
-					});
-					cm.setGutterMarker(cur.line, 'gutter-event', el_gutter);
-				}
-			}
-		}
+		
 		new_editor.on('cursorActivity',function(cm){
-			checkGutterEvents(cm);
 		})
-		new_editor.on('change', function(cm, obj){
-			this_ref.addAsterisk();
-		});
 		new_editor.on('click', function(cm, obj){
 
 			this_ref.focus();
