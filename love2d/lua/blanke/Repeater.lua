@@ -54,8 +54,8 @@ Repeater = Class{
 			end
 
 			-- determine random range
-			if not self.options.is_random[name] then self.options.is_random[name] = {} end
-			if type(value) == "table" and #value == 2 then
+			if not self.options.is_random[name] then self.options.is_random[name] = {false,false} end
+			if val_type == "table" and #value == 2 then
 				self.options.is_random[name][index] = true
 			else 
 				self.options.is_random[name][index] = false
@@ -191,8 +191,18 @@ Repeater = Class{
 			new_p = table.deepcopy(self.options, function(k, v)
 				local v1, v2, opt, new_v = v[1], v[2], self.options, {v[1],v[2],v[3]}
 				if opt.is_random[k] then
-					if opt.is_random[k][1] then new_v[1] = randRange(unpack(new_v[1])) end 
-					if opt.is_random[k][2] then new_v[2] = randRange(unpack(new_v[2])) end 
+					if opt.is_random[k][1] then
+						new_v[1] = randRange(unpack(new_v[1]))
+						if not opt.is_random[k][2] then 
+							new_v[2] = new_v[1]
+						end
+					end 
+					if opt.is_random[k][2] then
+						new_v[2] = randRange(unpack(new_v[2]))
+						if not opt.is_random[k][1] then 
+							new_v[1] = new_v[2]
+						end
+					end 
 					return new_v
 				end
 			end)
