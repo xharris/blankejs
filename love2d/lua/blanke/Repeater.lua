@@ -1,17 +1,28 @@
+local calcProp = function(particle, t, attribute)
+	local attr = particle[attribute]
+	if not particle.is_tweened[attribute] then return attr[1] end 
+	-- store starting value
+	if attr[4] == nil then particle[attribute][4] = attr[1] end
+	return Tween.tween_func[attr[3]](attr[1], attr[2] - attr[4], particle.duration[1]*1000, t*1000)
+end
+
 Repeater = Class{
 	init = function(self, texture, options)
 		local val = function(x) return {x,x,'linear'} end
 		-- vvv Things that each particle will inherit vvv
 		self.options = {
+			is_tweened = {},
+			is_random = {},
 			-- starting value
 			x = val(0), y = val(0),
 			duration = val(3), -- seconds
 			-- movement
 			direction = val(0), speed = val(0),
 			-- position
-			offset_x = val(0), offset_y = val(0)
+			offset_x = val(0), offset_y = val(0),
+			-- color
+			r = val(1), g = val(1), b = val(1), a = val(1)
 		}
-		self.tween_ref = {}
 		--- END
 
 		self.current_t = 0
@@ -21,12 +32,19 @@ Repeater = Class{
 		self.particles = {} -- list of particles and their info
 
 		-- values that can have a min/max
-		self.minmax_options = {'direction','speed'}
+		self.minmax_options = {'direction','speed','offset_x','offset_y','r','g','b','a'}
 		table.update(self.options, options or {})
 
 		for name, value in pairs(self.options) do
 			-- create Setter
 			self.onPropSet[name] = function(self, v)
+				-- determine random range
+				if not self.options.is_random[name] then self.options.is_random[name] = {} end
+				if type(v) == "table" then
+					self.options.is_random[name][1] = true
+				else 
+					self.options.is_random[name][1] = false
+				end
 				self.options[name][1] = v
 			end
 			-- create Getter
@@ -36,10 +54,23 @@ Repeater = Class{
 			if table.hasValue(self.minmax_options, name) then
 				-- create Setter for max value
 				self.onPropSet[name..'2'] = function(self, v)
+					-- determine random range
+					if not self.options.is_random[name] then self.options.is_random[name] = {} end
+					if type(v) == "table" then
+						self.options.is_random[name][2] = true
+					else 
+						self.options.is_random[name][2] = false
+					end
+
 					if not self.options[name] then 
 						self.options[name] = {v,v,'linear'}
 					else 
 						self.options[name][2] = v 
+						if v ~= self.options[name][1] then
+							self.options.is_tweened[name] = true 
+						else 
+							self.options.is_tweened[name] = false 
+						end
 					end
 				end
 				self.onPropGet[name..'2'] = function()
@@ -57,6 +88,8 @@ Repeater = Class{
 		self:updateEntityTexture()
 		self.current_t = self.current_t + dt
 
+		local dir_x,dir_y, off_x,off_y
+
 		for p, part in ipairs(self.particles) do
 			local part = self.particles[p]
 			if part then
@@ -65,6 +98,8 @@ Repeater = Class{
 					sprite_batch = self.texture_list[part.spr_index]
 				end 
 
+				local prop = function(p) return calcProp(part, self.current_t - part.start_t, p) end
+
 				-- end of particle lifetime
 				if (self.current_t - part.start_t) > part.duration[1] then 
 					sprite_batch:set(part.id,0,0,0,0,0)
@@ -72,9 +107,13 @@ Repeater = Class{
 					self.count = self.count - 1
 				else 
 					-- update position
-					part.x[1] = part.x[1] + direction_x(part.direction[1], part.speed[1]) * dt
-					part.y[1] = part.y[1] + direction_y(part.direction[1], part.speed[1]) * dt
+					dir_x, dir_y = direction_x(prop('direction'), prop('speed')), direction_y(prop('direction'), prop('speed'))
+					off_x, off_y = prop('offset_x'), prop('offset_y')
+
+					part.x[1] = part.x[1] + dir_x + off_x * dt
+					part.y[1] = part.y[1] + dir_y + off_y * dt
 				
+					part.spritebatch:setColor(prop('r'), prop('g'), prop('b'), prop('a'))
 					if part.quad ~= nil then
 						part.spritebatch:set(part.id, part.quad, part.x[1], part.y[1])
 					else 
@@ -138,7 +177,15 @@ Repeater = Class{
 		count = count or 1
 		local new_particle
 		for i = 1, count do
-			new_p = table.deepcopy(self.options)
+			new_p = table.deepcopy(self.options, function(k, v)
+				local v1, v2, opt, new_v = v[1], v[2], self.options, {v[1],v[2],v[3]}
+				--print(k,opt.is_random[k])
+				if opt.is_random[k] then
+					if opt.is_random[k][1] then new_v[1] = randRange(unpack(new_v[1])) end 
+					if opt.is_random[k][2] then new_v[2] = randRange(unpack(new_v[2])) end 
+					return new_v
+				end
+			end)
 			
 			if new_p.quad ~= nil then
 				new_p.id = new_p.spritebatch:add(new_p.quad, new_p.x[1], new_p.y[1])

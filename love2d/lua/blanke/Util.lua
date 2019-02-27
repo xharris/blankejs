@@ -240,14 +240,24 @@ function table.copy(t)
 	return {unpack(t)}
 end
 
-function table.deepcopy(t)
+function table.deepcopy(t, fn_key)
 	if type(t) ~= "table" then return t end
     local meta = getmetatable(t)
     local target = {}
+    local ret
     for k, v in pairs(t) do
         if type(v) == "table" then
-            target[k] = table.deepcopy(v)
+        	if fn_key then
+        		ret = fn_key(k, v)
+        		if ret ~= nil then target[k] = ret else target[k] = table.deepcopy(v) end
+        	else
+            	target[k] = table.deepcopy(v)
+        	end
         else
+        	if fn_key then
+        		ret = fn_key(k, v)
+        		if ret ~= nil then v = ret end
+        	end
             target[k] = v
         end
     end

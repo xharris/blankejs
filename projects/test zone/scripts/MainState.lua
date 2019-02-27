@@ -30,12 +30,15 @@ function MainState:enter()
 	MainState.background_color = "white"
 	
 	mario = Mario()
-	rptr = Repeater(img_mask)
+	rptr = Repeater(mario)
 	rptr.x = 50
 	rptr.y = 100
-	rptr.duration = 10
-	rptr.speed = 50
+	rptr.duration = 0.5
+	rptr.speed = 2
+	--rptr.speed2 = 0
+	rptr.direction = {0,360}
 	rptr.rate = 0.001
+	rptr.a2 = 0
 	
 	test_mask.fn = function()
 		test_mask:useImageAlphaMask(img_mask)
