@@ -89,26 +89,32 @@ function startGame()
 	player = Ship()
 end
 
-local canv_explosion = Canvas(1,1)
+local canv_explosion = Canvas(3,3)
 canv_explosion:drawTo(function()
 	Draw.setColor("white")
+	Draw.setPointSize(3)
 	Draw.point(0,0)
 end)
 local rpt_explosion = Repeater(canv_explosion, {
-	direction=0,
-	max_direction=360,
-	speed = 1
+	direction={0,360},
+	speed = 2,
+	duration={1,1.5},
+	a2=0
 })
 
-Signal.on("explosion", function(x,y)
-	rpt_explosion:emit()
+Signal.on("explosion", function(x,y,small)
+	rpt_explosion.x = x
+	rpt_explosion.y = y
+	if small then 
+		rpt_explosion.speed = 1
+		rpt_explosion:emit(10)
+	else
+		rpt_explosion.speed = 2
+		rpt_explosion:emit(20)
+	end
 end)
 
-function PlayState:update(dt) 
-	if Input("respawn").released then
-		Signal.emit("explosion",mouse_x,mouse_y)
-	end
-	
+function PlayState:update(dt) 	
 	-- RESPAWN
 	if not player and not game_over and can_respawn and Input("respawn").released then 
 		player = Ship()
@@ -132,7 +138,7 @@ function PlayState:draw()
 		Net.draw("Ship")
 		asteroids:call("draw")
 		Net.draw("Asteroid")
-		grp_explosions:call("draw")
+		rpt_explosion:draw()
 		
 		if game_over then
 			if can_respawn then

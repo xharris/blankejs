@@ -31,8 +31,6 @@ function MainState:enter()
 	
 	mario = Mario()
 	rptr = Repeater(mario)
-	rptr.x = 50
-	rptr.y = 100
 	rptr.duration = 0.5
 	rptr.speed = 2
 	--rptr.speed2 = 0

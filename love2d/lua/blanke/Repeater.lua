@@ -1,8 +1,9 @@
 local calcProp = function(particle, t, attribute)
 	local attr = particle[attribute]
-	if not particle.is_tweened[attribute] then return attr[1] end 
 	-- store starting value
 	if attr[4] == nil then particle[attribute][4] = attr[1] end
+	-- start == end. don't tween
+	if attr[4] == attr[2] then return attr[1] end
 	return Tween.tween_func[attr[3]](attr[1], attr[2] - attr[4], particle.duration[1]*1000, t*1000)
 end
 
@@ -11,7 +12,6 @@ Repeater = Class{
 		local val = function(x) return {x,x,'linear'} end
 		-- vvv Things that each particle will inherit vvv
 		self.options = {
-			is_tweened = {},
 			is_random = {},
 			-- starting value
 			x = val(0), y = val(0),
@@ -32,46 +32,57 @@ Repeater = Class{
 		self.particles = {} -- list of particles and their info
 
 		-- values that can have a min/max
-		self.minmax_options = {'direction','speed','offset_x','offset_y','r','g','b','a'}
+		self.tweenable_options = {'direction','speed','offset_x','offset_y','r','g','b','a'}
 		table.update(self.options, options or {})
 
+		local checkPropType = function(name, value, index)
+			index = 1
+			if name == "is_random" then return end
+
+			if name:endsWith('2') then
+				name = string.sub(name, 1,-2)
+				index = 2
+			end
+
+			local opt_type = type(self.options[name])
+			if opt_type ~= "table" or (opt_type == "table" and #self.options[name] == 2) then
+				self.options[name] = {value,value,'linear'}
+			end
+			local val_type = type(value)
+			if val_type ~= "table" or (val_type == "table" and #self.options[name] == 2) then
+				self.options[name][index] = value
+			end
+
+			-- determine random range
+			if not self.options.is_random[name] then self.options.is_random[name] = {} end
+			if type(value) == "table" and #value == 2 then
+				self.options.is_random[name][index] = true
+			else 
+				self.options.is_random[name][index] = false
+			end
+
+			if index == 2 then
+				self.options[name..'2'] = nil
+			end
+		end
+
 		for name, value in pairs(self.options) do
+			checkPropType(name, value)
+
 			-- create Setter
 			self.onPropSet[name] = function(self, v)
-				-- determine random range
-				if not self.options.is_random[name] then self.options.is_random[name] = {} end
-				if type(v) == "table" then
-					self.options.is_random[name][1] = true
-				else 
-					self.options.is_random[name][1] = false
-				end
+				checkPropType(name, v)
 				self.options[name][1] = v
 			end
 			-- create Getter
 			self.onPropGet[name] = function()
 				return self.options[name][1]
 			end
-			if table.hasValue(self.minmax_options, name) then
+			if table.hasValue(self.tweenable_options, name) then
 				-- create Setter for max value
 				self.onPropSet[name..'2'] = function(self, v)
-					-- determine random range
-					if not self.options.is_random[name] then self.options.is_random[name] = {} end
-					if type(v) == "table" then
-						self.options.is_random[name][2] = true
-					else 
-						self.options.is_random[name][2] = false
-					end
-
-					if not self.options[name] then 
-						self.options[name] = {v,v,'linear'}
-					else 
-						self.options[name][2] = v 
-						if v ~= self.options[name][1] then
-							self.options.is_tweened[name] = true 
-						else 
-							self.options.is_tweened[name] = false 
-						end
-					end
+					checkPropType(name..'2', v, 2)
+					self.options[name][2] = v
 				end
 				self.onPropGet[name..'2'] = function()
 					return self.options[name][2]
@@ -116,7 +127,7 @@ Repeater = Class{
 					part.spritebatch:setColor(prop('r'), prop('g'), prop('b'), prop('a'))
 					if part.quad ~= nil then
 						part.spritebatch:set(part.id, part.quad, part.x[1], part.y[1])
-					else 
+					else
 						part.spritebatch:set(part.id, part.x[1], part.y[1])
 					end
 				end
@@ -179,7 +190,6 @@ Repeater = Class{
 		for i = 1, count do
 			new_p = table.deepcopy(self.options, function(k, v)
 				local v1, v2, opt, new_v = v[1], v[2], self.options, {v[1],v[2],v[3]}
-				--print(k,opt.is_random[k])
 				if opt.is_random[k] then
 					if opt.is_random[k][1] then new_v[1] = randRange(unpack(new_v[1])) end 
 					if opt.is_random[k][2] then new_v[2] = randRange(unpack(new_v[2])) end 

@@ -58,10 +58,10 @@ function Asteroid:hit(direction)
 	self.snd_hit.x = lerp(-1,1,self.x/game_width)
 	self.snd_hit:play()
 	
+	Signal.emit("explosion", self.x, self.y, self.small)
+	
 	if not self.small and self.children:size() == 0 then
-		Net.once(function()
-			Signal.emit("explosion", self.x, self.y)
-				
+		Net.once(function()				
 			local last_dir = 0
 			-- calculate direction based on collision direction (does this even work lol)
 			if direction then 
