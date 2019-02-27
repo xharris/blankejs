@@ -24,6 +24,8 @@ end
 
 # Included effects & their options
 
+**NOTE** any `color` properties are a vector4 with the value {r, g, b, a}. All values range from 0 to 1. Ex: red would be {1,0,0,1}
+
 ## chroma shift
 
 * angle (degrees)
@@ -31,6 +33,7 @@ end
 
 ## outline
 
+* color
 * size
 
 ## static

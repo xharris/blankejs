@@ -530,7 +530,7 @@ EffectManager.new{
 
 Effect.new{
     name="outline",
-    params={size=1},
+    params={size=1, color={1,0,0,1}},
     effect=[[
         float incr = 1.0 / love_ScreenSize.x;
         float max = size / love_ScreenSize.x;
@@ -548,7 +548,7 @@ Effect.new{
             pixel_rd = Texel(texture, vec2(texCoord.x+s, texCoord.y+s));
 
             if (pixel.a == 0 && (pixel_l.a > 0 || pixel_r.a > 0 || pixel_u.a > 0 || pixel_d.a > 0 || pixel_lu.a > 0 || pixel_ru.a > 0 || pixel_ld.a > 0 || pixel_rd.a > 0)) 
-                pixel = vec4(1,0,0,1);
+                pixel = color;
         }
     ]]
 }

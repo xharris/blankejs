@@ -4,24 +4,24 @@ __What is an Entity?__ a game object that can have hitboxes/collisions and sprit
 ```
 num x, y position
 num xprevious, yprevious	-- location during last update loop
-num xstart, ystart		-- location when object is first created. not always 0,0
+num xstart, ystart			-- location when object is first created. not always 0,0
 ```
 
 ## Movement
 ```
-num direction		-- in degrees
+num direction			-- in degrees
 num friction
 num gravity
 num gravity_direction	-- in degrees. 0 = right, 90 = down, default = 90
 num hspeed, vspeed
-num speed 		-- best used with 'direction'
+num speed 				-- best used with 'direction'
 ```
 
 ## Animation
 ```
 str sprite_index
 num sprite_width, sprite_height
-num sprite_angle			-- in degrees
+num sprite_angle					-- in degrees
 num sprite_xscale, sprite_yscale	-- 1 = normal scaling, -1 = flip
 num sprite_xoffset, sprite_yoffset
 num sprite_xshear, sprite_yshear
@@ -38,7 +38,7 @@ num sprite_frame
 ```	
 distancePoint(x ,y)				-- entity origin distance from point
 distance(other_entity)
-moveTowardsPoint(x, y, speed)		-- sets direction and speed vars
+moveTowardsPoint(x, y, speed)	-- sets direction and speed vars
 containsPoint(x, y)				-- checks if a point is inside the sprite (not hitboxes)
 ```
 

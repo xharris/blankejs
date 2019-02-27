@@ -1,6 +1,6 @@
 {
     "BlankE":[
-        {"title":"Instance Props/Methods","file":"blanke.md"},
+        {"title":"Props/Methods","file":"blanke.md"},
         {"title":"What to put in main.lua","file":"blanke_main.md"},
         {"title":"Setting options","file":"blanke_options.md"},
         {"title":"Tips: Things to watch out for with BlankE","file":"blanke_tips.md"}
@@ -14,7 +14,7 @@
         {"title":"How to create shaders","file":"effect_create.md"}
     ],
     "Entity":[
-        {"title":"Props/Methods","file":"entity.md"},
+        {"title":"Instance Props/Methods","file":"entity.md"},
         {"title":"Callbacks","file":"entity_callbacks.md"},
         {"title":"How to make one an Entity","file":"entity_creation.md"},
         {"title":"Collision detection","file":"entity_collision.md"}

@@ -54,17 +54,16 @@ noobhub = {
 		end
 
 		function self:reconnect()
-				if not self.cb_reconnect() or not self.channel or not self.callback then return false; end;
-				print("Noobhub: attempt to reconnect...");
-				return self:subscribe({ channel = self.channel; callback = self.callback})
-				
+			if not self.cb_reconnect() or not self.channel or not self.callback then return false; end;
+			print("Noobhub: attempt to reconnect...");
+			return self:subscribe({ channel = self.channel; callback = self.callback})
 		end
 
 		function self:publish(message)
 				-- TODO: add retries
 				if (self.sock == nil) then
 					print "NoobHub: Attempt to publish without valid subscription (bad socket)"
-					self:reconnect()
+					--self:reconnect() 
 					return false;
 				end
 				local send_result, message, num_bytes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__")

@@ -10,7 +10,9 @@ Net = {
     wants_leader = false,
     client = nil,
     clients = {},           -- list of clients connected
-    
+    max_reconnects = 3,
+    _reconnects = 0,
+
     onReceive = nil,    
     onConnect = nil,    
     onDisconnect = nil, 
@@ -58,11 +60,11 @@ Net = {
             Net.client:subscribe({
                 channel = "room"..tostring(Net.room),
                 callback = Net._onReceive,
-                cb_reconnect = function() return Net._onFail(address, port) end
+                cb_reconnect = function() return Net._onFail() end
             })
         else
             Net.log("could not connect to "..Net.address..":"..Net.port)
-            Net._onFail(address, port)
+            Net._onFail()
         end
 
         return Net
@@ -132,10 +134,19 @@ Net = {
     end,
     
     _onFail = function(...)
-        if Net.onFail and Net.onFail() then
-            Net.join(...)
+        if Net.onFail then
+            Net.is_connected = false
+            Net.client = nil
+            if Net.onFail() == true then
+                if Net._reconnects >= Net.max_reconnects then
+                    Net._reconnects = 0
+                    Net.log("Max reconnects reached!")
+                else
+                    Net._reconnects = Net._reconnects + 1
+                    Net.join(...)
+                end
+            end
         end
-        return false
     end,
 
     _onConnect = function(clientid)
@@ -146,7 +157,6 @@ Net = {
     
     _onDisconnect = function(clientid) 
         --Net.log('- '..clientid)
-        Debug.log("bye",clientid)
         Net.clients[clientid] = nil
         Signal.emit('_net.disconnect', clientid)
         Net.removeNetObject(clientid) 
@@ -160,6 +170,7 @@ Net = {
                 Net.id = data.info.id
                 Net.is_leader = data.info.is_leader
                 Net.log('connected to '..Net.address..':'..Net.port..' as '..Net.id..'!')
+                Net._reconnects = 0
                 Net._onReady()
             end
 
@@ -477,7 +488,7 @@ Net = {
     end,
 
     once = function(fn)
-        if Net.is_leader then fn() end
+        if Net.is_leader or not Net.is_connected then fn() end
         return Net
     end,
 

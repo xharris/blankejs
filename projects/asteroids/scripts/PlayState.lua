@@ -28,13 +28,12 @@ function PlayState:enter()
 		setupGame()
 		startGame()	
 	end)
-	Net.on('fail',function() -- doesn't work yet
-		Debug.log("failed")
+	Net.on('fail',function()
 		setupGame()
 		startGame()	
 	end)
 	
-	Net.join('localhost',8080)
+	Net.join('bob',8080)
 end
 
 function setupGame()	
