@@ -157,12 +157,27 @@ var _destroySocket = function (socket) {
 	sockets[socket.channel][socket.connectionId].buffer = null
 	delete sockets[socket.channel][socket.connectionId].buffer
 	delete sockets[socket.channel][socket.connectionId]
+
+	// notify other clients that someone left
 	_log('- ' + socket.connectionId + ' (' + socket.channel + ')')
+	let members = Object.keys(sockets[socket.channel]);
+	let channel = sockets[socket.channel];
+	for (var i = 0, l = members.length; i < l; i++) {
+		if (members[i] != socket.connectionId) {
+			channel[ members[i] ].isConnected && channel[ members[i] ].write(jsonFormat({
+				type:'netevent',
+				event:'client.disconnect',
+				clientid:socket.connectionId
+			}))
+		}
+	}
+
 	if (leaders[socket.channel] == socket.connectionId) {
 		let keys = Object.keys(sockets[socket.channel]);
 
 		if (keys.length > 0) {
 			let random_id = keys[Math.floor(Math.random()*keys.length)];
+
 
 			sockets[socket.channel][random_id].write(jsonFormat({
 				type:'netevent',
@@ -171,7 +186,7 @@ var _destroySocket = function (socket) {
 			}));
 			leaders[socket.channel] = random_id;
 		} else {
-			// no one left :'(
+			// no one left in the room :'(
 			delete leaders[socket.channel];
 			delete saved_messages[socket.channel];
 			_log(socket.channel,"is empty");

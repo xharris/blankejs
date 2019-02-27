@@ -78,21 +78,13 @@ Net = {
     disconnect = function()
         if not Net.client or not Net.is_connected then return end
 
-        Net.send({
-            type='netevent',
-            event='client.disconnect',
-            info=clientid
-        })
-
-        --Net.removeLocalObjects()
-
         Net.client:unsubscribe()
         Net.is_init = false
         Net.client = nil
-
-        Net.removeNetObject()
-
         Net.is_connected = false
+
+        Net.removeLocalObjects()
+        Net.removeNetObject()
 
         Net.log("disconnected")
 
@@ -154,6 +146,7 @@ Net = {
     
     _onDisconnect = function(clientid) 
         --Net.log('- '..clientid)
+        Debug.log("bye",clientid)
         Net.clients[clientid] = nil
         Signal.emit('_net.disconnect', clientid)
         Net.removeNetObject(clientid) 
@@ -277,6 +270,11 @@ Net = {
             Net.current_leader = data.info
             if Net.current_leader == Net.id then
                 Net.is_leader = true
+                -- adopt any orphans :>
+                for o, obj in ipairs(Net._objects._orphans) do
+                    obj.net_object = false
+                    Net.addObject(obj)
+                end
             else
                 Net.is_leader = false
                 -- move any orphans into leader's array

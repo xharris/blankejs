@@ -37,12 +37,7 @@ function PlayState:enter()
 	Net.join('localhost',8080)
 end
 
-function setupGame()
-	tmr_spawn_roid = Timer():every(function()
-		Net.once(function()
-		end)
-	end, 1):start()
-	
+function setupGame()	
 	-- player death effect
 	eff_death.chroma_shift.radius = 0
 	eff_death.static.amount = {0,0}
@@ -83,9 +78,11 @@ function startGame()
 	lives = 3
 	score = 0
 	game_over = false
-	for i = 0, 6 do
-		asteroids:add(Asteroid())
-	end
+	Net.once(function()
+		for i = 0, 6 do
+			asteroids:add(Asteroid())
+		end
+	end)
 	player = Ship()
 end
 
