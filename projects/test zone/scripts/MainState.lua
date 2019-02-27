@@ -30,12 +30,12 @@ function MainState:enter()
 	MainState.background_color = "white"
 	
 	mario = Mario()
-	rptr = Repeater(mario)
+	rptr = Repeater(img_mask)
 	rptr.x = 50
 	rptr.y = 100
-	rptr.duration = 1
-	rptr.speed = 0.2
-	rptr.rate = 1
+	rptr.duration = 10
+	rptr.speed = 50
+	rptr.rate = 0.001
 	
 	test_mask.fn = function()
 		test_mask:useImageAlphaMask(img_mask)
@@ -52,6 +52,12 @@ function MainState:draw()
 	rptr.y = mouse_y
 	
 	rptr:draw()
+	mario.x = mouse_x
+	mario.y = mouse_y
+	mario:draw()
+	
+	Draw.setColor("black")
+	Draw.text(rptr.count,10,10)
 	--[[ effect.chroma_shift.radius = lerp(0,10,mouse_x/game_width)
 	effect:draw(function()
 		img_mask:draw()

@@ -92,22 +92,21 @@ Debug = {
         local win_height = love.graphics:getHeight()
         local lines = math.min(game_height / fnt_height, #Debug.lines)
 
+        Draw.push()
+        Draw.setFont(Debug._font)
         for i_line = 1, lines do
             line = Debug.lines[i_line]
 
-            love.graphics.push()
             local alpha = 255
             local y = (i_line-1)*fnt_height
             if y > win_height/2 then
                 alpha = 255 - ((y-win_height/2)/(win_height/2)*255)
             end 
-            Draw.reset("color")
 
             Draw.setColor(1,0,0,alpha)
-            Draw.setFont(Debug._font)
             Draw.text(line, BlankE.left + Debug.margin, y+Debug.margin)
-            love.graphics.pop()
         end
+        Draw.pop()
         love.graphics.setColor(255,255,255,255)
         return Debug
     end,
@@ -132,7 +131,7 @@ Debug = {
             
             table.insert(Debug.lines, 1, new_line)
             if #Debug.lines > (game_height / Draw.font:getHeight()) then
-                table.remove(Debug.lines, #Debug.lines)
+                Debug.lines[#Debug.lines] = nil
             end
         end
         Debug._last_line = new_line
