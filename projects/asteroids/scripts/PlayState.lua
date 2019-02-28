@@ -16,7 +16,8 @@ main_view.y = game_height / 2
 local img_ship = Image("ship")
 
 local score = 0
-local lives = 0 --2
+local lives = 2
+local level = 1
 local game_over = false
 
 Input.set("respawn", "r")
@@ -33,7 +34,7 @@ function PlayState:enter()
 		startGame()	
 	end)
 	
-	Net.join('bob',8080)
+	Net.join('localhost',8080)
 end
 
 function setupGame()	
@@ -77,12 +78,22 @@ function startGame()
 	lives = 3
 	score = 0
 	game_over = false
+	makeField()
+end
+
+local starting = false
+function makeField()
 	Net.once(function()
-		for i = 0, 6 do
-			asteroids:add(Asteroid())
-		end
+		starting = true
+		Timer(2):after(function()
+			starting = false
+			local count = 6 + math.floor(2^(level/1.5)-1)
+			for i = 0, count do
+				asteroids:add(Asteroid())
+			end		
+			if not player and lives == 3 then player = Ship() end
+		end):start()
 	end)
-	player = Ship()
 end
 
 local canv_explosion = Canvas(3,3)
@@ -108,6 +119,11 @@ Signal.on("explosion", function(x,y,small)
 		rpt_explosion.speed = 2
 		rpt_explosion:emit(20)
 	end
+		
+	-- no more asteroids, spawn more
+	if Asteroid.instances:size() == 0 then
+		makeField()
+	end
 end)
 
 function PlayState:update(dt) 	
@@ -116,7 +132,7 @@ function PlayState:update(dt)
 		player = Ship()
 		can_respawn = false
 	end
-	
+		
 	-- NEW GAME
 	-- TODO: will be buggy for netplay
 	if game_over and (not Net.is_connected or Ship.instances:size() == 0) and can_respawn and Input("respawn").released then
@@ -155,6 +171,11 @@ function PlayState:draw()
 			end)
 		else
 			drawStuff()
+		end
+			
+		if starting then 
+			Draw.setColor("white")
+			Draw.text("get ready", 0, game_height/2 - Draw.font:getHeight()/2, {align="center"})
 		end
 			
 		-- respawn timer

@@ -5,6 +5,9 @@
         {"title":"Setting options","file":"blanke_options.md"},
         {"title":"Tips: Things to watch out for with BlankE","file":"blanke_tips.md"}
     ],
+    "Asset":[
+        {"title":"What they are and how to add them","file":"asset.md"}
+    ],
     "Draw":[
         {"title":"Props/Methods","file":"draw.md"}
     ],
@@ -20,7 +23,7 @@
         {"title":"Collision detection","file":"entity_collision.md"}
     ],
     "Font":[
-        
+        {"title":"Using a font","file":"font.md"}
     ],
     "Group":[],
     "Plugins":[

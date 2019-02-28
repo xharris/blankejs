@@ -1478,7 +1478,7 @@
   /* Non-prefixed version, currently
     not supported by any browser */
   margin: 0;
-  padding: 10px;
+  padding: 6px;
   color: #E0E0E0;
   background-color: #596578;
   transition: all ease-in-out 0.2s;

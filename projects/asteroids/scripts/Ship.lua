@@ -90,6 +90,11 @@ function Ship:update(dt)
 	self.img_ship.angle = self.move_angle + 90
 	self.img_thrust.angle = self.img_ship.angle
 	
+	-- BEAT SPEED
+	if self.tmr_beat and Asteroid.instances:size() <= 6 then
+		self.tmr_beat.duration = lerp(0.3,1,Asteroid.instances:size()/6)
+	end
+	
 	if self.dead then
 		-- DEAD SHIP PIECES MOVEMENT
 		self.pieces:forEach(function(p, piece)
@@ -156,7 +161,7 @@ function Ship:update(dt)
 
 			-- put shooting on cooldown
 			self.can_shoot = false
-			Timer(0.05):after(function() self.can_shoot = true end):start()
+			Timer(0.1):after(function() self.can_shoot = true end):start()
 			
 			self.snd_fire:play()
 		end
