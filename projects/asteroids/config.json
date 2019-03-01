@@ -12,16 +12,13 @@
                 68
             ],
             "frames": 3,
-            "selected frames": [
-                "\"1-3\"",
-                1
-            ],
+            "selected frames": [],
             "columns": 3,
             "padding": [
                 0,
                 0
             ],
-            "image": "image/asteroids.png"
+            "image": "image\\asteroids.png"
         },
         "image/asteroids_small.png": {
             "name": "asteroid",
@@ -62,6 +59,52 @@
                 0
             ],
             "image": "image/kidgil.jpg"
+        },
+        "image/ship_thrust.png": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame size": [
+                0,
+                0
+            ],
+            "frames": 0,
+            "selected frames": [
+                "\"1-3\"",
+                1
+            ],
+            "columns": 0,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\ship_thrust.png"
+        },
+        "image/ship.png": {
+            "name": "asteroid",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame size": [
+                68,
+                68
+            ],
+            "frames": 3,
+            "selected frames": [
+                "\"1-3\"",
+                1
+            ],
+            "columns": 3,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\ship.png"
         }
     },
     "export": {

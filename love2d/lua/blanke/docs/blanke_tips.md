@@ -25,8 +25,8 @@ function state0:enter()
 end
 ```
 
-2. Destroying an object does not remove references to it
+2. Just destroying an object does not remove references to it
 
 `my_entity:destroy()` the object will no longer be updated
 
-`my_entity = nil` GOOD: no longer any reference to it. It will eventually be freed up in memory
+`my_entity = nil` <font color="limegreen">GOOD</font> no longer any reference to it. It will eventually be freed up in memory

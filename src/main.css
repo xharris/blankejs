@@ -1399,6 +1399,45 @@
 .content[data-type="AssetManager"] .file-list {
   box-sizing: border-box;
 }
+.content[data-type="AssetManager"] .file-list .category {
+  margin-bottom: 5px;
+}
+.content[data-type="AssetManager"] .file-list .category .cat-handle {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  background-color: #485358;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.content[data-type="AssetManager"] .file-list .category .cat-handle * {
+  display: inline-block;
+}
+.content[data-type="AssetManager"] .file-list .category .cat-handle .cat-title {
+  text-transform: capitalize;
+}
+.content[data-type="AssetManager"] .file-list .category .cat-handle .cat-count {
+  float: right;
+  color: #212121;
+}
+.content[data-type="AssetManager"] .file-list .category .cat-files {
+  height: auto;
+  overflow: hidden;
+}
+.content[data-type="AssetManager"] .file-list .category .cat-files.hidden {
+  height: 0px;
+}
 .content[data-type="AssetManager"] .file-list .file-row {
   -webkit-touch-callout: none;
   /* iOS Safari */
@@ -1427,7 +1466,6 @@
 }
 .content[data-type="AssetManager"] .file-preview .preview-container {
   padding: 5px;
-  background: url("includes/grid.png");
   border-radius: 2px;
   margin-bottom: 5px;
   overflow: auto;
@@ -1643,7 +1681,7 @@
   position: absolute;
   width: 20px;
   height: 20px;
-  z-index: 10;
+  z-index: 15;
   border-radius: 100%;
   border: 1px solid rgba(90, 217, 164, 0.9);
   outline: none;
@@ -1673,6 +1711,7 @@
   text-align: center;
   line-height: 20px;
   font-size: 14px;
+  color: white;
   margin: 0px;
   cursor: default;
   transition: all ease-in-out 0.2s;
@@ -1722,7 +1761,7 @@
   overflow: hidden;
   height: 100%;
   position: relative;
-  background: url("includes/grid.png");
+  /* background: url("includes/grid.png"); */
   transform-origin: 0 0;
 }
 .content[data-type="SpritesheetPreview"] .prvw-container::-webkit-scrollbar {

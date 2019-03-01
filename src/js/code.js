@@ -835,9 +835,15 @@ class Code extends Editor {
 
 	static refreshCodeList(path) {
 		app.removeSearchGroup("Scripts");
+		Code.scripts = {};
+		for (let assoc of CODE_ASSOCIATIONS) {
+			Code.scripts[assoc[1]] = [];
+		}
 		addScripts(ifndef(path, app.project_path));
 	}
 }
+
+Code.scripts = {};
 
 document.addEventListener('fileChange', function(e){
 	// if (e.detail.type == 'change') {
@@ -869,10 +875,14 @@ function addScripts(folder_path) {
 
 							// get what kind of script it is
 							let tags = ['script'];
+							let s_type = ['script'];
 							for (let assoc of CODE_ASSOCIATIONS) {
 								let match = data.match(assoc[0]);
 								if (match) {
 									tags.push(assoc[1]);
+									if (!Code.scripts[assoc[1]].includes(full_path)) {
+										Code.scripts[assoc[1]].push(full_path);
+									}
 								}
 							}
 

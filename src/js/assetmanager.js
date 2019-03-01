@@ -14,6 +14,7 @@ class AssetManager extends Editor {
 		this.container.width = 400;
 		this.container.height = 250;
 
+		this.categories = {};
 		this.file_paths = {};
 		this.file_elements = {};
 		this.file_refresh_enabled = true;
@@ -49,7 +50,6 @@ class AssetManager extends Editor {
 		let re_dist = /[\/\\]?dist[\/\\]/g;
 		walker.on('file', function(path, stat, next){
 			if (!path.match(re_dist) && stat.isFile()) {
-				console.log(path, stat.name)
 				let full_path = nwPATH.resolve(nwPATH.join(path, stat.name));
 				this_ref.addFile(full_path);
 			}
@@ -66,6 +66,38 @@ class AssetManager extends Editor {
 		});
 	}
 
+	addCategory (name) {
+		if (this.categories[name]) {
+			let el_category = this.categories[name];
+			el_category.el_count.innerHTML = el_category.el_files.childElementCount;
+			return;
+		}
+
+		let el_category = app.createElement("div",["category",name]);
+		let el_cat_handle = app.createElement("div","cat-handle");
+		let el_cat_title = app.createElement("div","cat-title");
+		let el_cat_count = app.createElement("div","cat-count");
+		let el_cat_files = app.createElement("div",["cat-files","hidden"]);
+
+		el_cat_title.innerHTML = name;
+		el_cat_count.innerHTML = 0;
+
+		el_cat_handle.addEventListener('click',(e) => {
+			el_cat_files.classList.toggle('hidden');
+		});
+
+		el_category.el_count = el_cat_count;
+		el_category.el_files = el_cat_files;
+
+		el_cat_handle.appendChild(el_cat_title);
+		el_cat_handle.appendChild(el_cat_count);
+		el_category.appendChild(el_cat_handle);
+		el_category.appendChild(el_cat_files);
+
+		this.categories[name] = el_category;
+		this.el_file_list.appendChild(el_category);
+	}
+
 	addFile (path) {
 		let this_ref = this;
 		let file_type = app.findAssetType(path);
@@ -80,7 +112,7 @@ class AssetManager extends Editor {
 			el_file_row.ondragstart = defineDragData("text/plain", (path.match(/[\\\/\w]\/assets\/\w+\/(.*)\./,'')||['',path])[1] );
 
 			el_file_row.addEventListener('click',function(ev){
-				let el_files = app.getElements('.file-list > .file-row');
+				let el_files = app.getElements('.cat-files > .file-row');
 				for (let e = 0; e < el_files.length; e++) {
 					el_files[e].classList.remove('selected');
 				}
@@ -90,7 +122,9 @@ class AssetManager extends Editor {
 			});
 
 			this.file_elements[path] = el_file_row;
-			this.el_file_list.appendChild(el_file_row);
+			let asset_type = app.findAssetType(path);
+			this.addCategory(asset_type);
+			this.categories[asset_type].el_files.appendChild(el_file_row);
 		}
 
 		if (!this.file_paths[file_type])
