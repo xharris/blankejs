@@ -142,6 +142,7 @@ love.load = function(args, unfilteredArgs)
 
 	BlankE.options.debug.play_record = play_record
 	BlankE.options.debug.record = ((record or ide) and not play_record)
+	if not ide then BlankE.options.debug.log = false end
 
 	BlankE.init()
 end

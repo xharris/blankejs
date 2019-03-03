@@ -11,13 +11,12 @@ class AssetManager extends Editor {
 
 		this.setupDragbox();
 		this.removeHistory();
-		this.container.width = 400;
-		this.container.height = 250;
+		this.container.width = 600;
+		this.container.height = 320;
 
 		this.categories = {};
 		this.file_paths = {};
 		this.file_elements = {};
-		this.file_refresh_enabled = true;
 
 		this.el_search = app.createElement("input","search");
 		this.el_file_list = app.createElement("div","file-list");
@@ -37,39 +36,39 @@ class AssetManager extends Editor {
 	}
 
 	refreshFileList () {
-		if (!this.file_refresh_enabled) return;
-		this.file_refresh_enabled = false;
-
 		let this_ref = this;
-
-		app.clearElement(this.el_file_list);
-		let walker = nwWALK.walk(app.project_path);
-		this.file_paths = [];
-
-		// add files to the list
-		let re_dist = /[\/\\]?dist[\/\\]/g;
-		walker.on('file', function(path, stat, next){
-			if (!path.match(re_dist) && stat.isFile()) {
-				let full_path = nwPATH.resolve(nwPATH.join(path, stat.name));
-				this_ref.addFile(full_path);
+	    blanke.cooldownFn("asset-list-refresh",500,function(){
+			let walker = nwWALK.walk(app.project_path);
+			this_ref.file_paths = [];
+			for (let cat in this_ref.categories) {
+				let el_cat = this_ref.categories[cat];
+				app.clearElement(el_cat.el_files);
+				el_cat.el_count.innerHTML = 0;
 			}
-			next();
-		});
-		// sort them alphabetically
-		walker.on('end', function(){
-			blanke.sortChildren(this_ref.el_file_list, function(a,b){
-				if (a.innerHTML.toLowerCase() < b.innerHTML.toLowerCase()) return -1;
-				if (a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase()) return 1;
-				return 0;
-			});
-			this.file_refresh_enabled = true;
-		});
+
+			// add files to the list
+			let re_dist = /[\/\\]?dist[\/\\]/g;
+			walker.on('file', function(path, stat, next){
+				if (!path.match(re_dist) && stat.isFile()) {
+					let full_path = nwPATH.resolve(nwPATH.join(path, stat.name));
+					this_ref.addFile(full_path);
+				}
+				next();
+			}); 
+    	});
 	}
 
 	addCategory (name) {
 		if (this.categories[name]) {
 			let el_category = this.categories[name];
 			el_category.el_count.innerHTML = el_category.el_files.childElementCount;
+
+			blanke.sortChildren(el_category.el_files, function(a,b){
+				if (a.innerHTML.toLowerCase() < b.innerHTML.toLowerCase()) return -1;
+				if (a.innerHTML.toLowerCase() > b.innerHTML.toLowerCase()) return 1;
+				return 0;
+			});
+
 			return;
 		}
 
@@ -134,7 +133,6 @@ class AssetManager extends Editor {
 
 	previewFile (path) {
 		let this_ref = this;
-		this.file_refresh_enabled = false;
 
 		let file_type = app.findAssetType(path);
 
@@ -208,18 +206,33 @@ class AssetManager extends Editor {
 							}
 						}
 						blanke.toast("File moved to \'"+nwPATH.join(app.project_path, 'assets', value, nwPATH.basename(path))+"\'");
-						this.file_refresh_enabled = true;
 					});
 
 				} catch (e) {
 					el_file_form.setValue('folder', file_folder);
-					this.file_refresh_enabled = true;
 				}
 			}, true);
 		});
 
+		// delete button
+		let el_delete = app.createElement("button","ui-button-sphere");
+		el_delete.innerHTML = `<object class="blanke-icon mdi-svg" data="icons/trash.svg" type="image/svg+xml"></object>`;
+		el_delete.addEventListener("click",function(){
+			blanke.showModal(
+				"delete \'"+nwPATH.basename(old_path)+"\'?",
+			{
+				"yes": function() {
+					nwFS.remove(old_path);
+					app.clearElement(this_ref.el_file_preview);
+					this_ref.refreshFileList();
+				},
+				"no": function() {}
+			});
+		});
+
 		this.el_file_preview.appendChild(el_preview_container);
 		this.el_file_preview.appendChild(el_file_form.container);
+		this.el_file_preview.appendChild(el_delete);
 	}
 }
 

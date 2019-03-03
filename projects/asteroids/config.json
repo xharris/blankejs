@@ -109,7 +109,7 @@
     },
     "export": {
         "name": "Asteroids",
-        "remove_unused": false
+        "remove_unused": true
     },
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns"

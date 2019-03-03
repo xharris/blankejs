@@ -5,12 +5,12 @@ function BlankE.load()
 	BlankE.options = {
 		state="PlayState",
 		filter="nearest",
-		resolution=4,
+		resolution=5,
 		debug={
 			log=true,
 			record=true
 		}
 	}
 
-	-- Audio.setVolume(0)
+	Audio.setVolume(0)
 end

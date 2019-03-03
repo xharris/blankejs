@@ -91,8 +91,12 @@ function Ship:update(dt)
 	self.img_thrust.angle = self.img_ship.angle
 	
 	-- BEAT SPEED
-	if self.tmr_beat and Asteroid.instances:size() <= 6 then
-		self.tmr_beat.duration = lerp(0.3,1,Asteroid.instances:size()/6)
+	if self.tmr_beat then
+		if Asteroid.instances:size() <= 6 then
+			self.tmr_beat.duration = lerp(0.3,1,Asteroid.instances:size()/6)
+		else 
+			self.tmr_beat.duration = 1
+		end
 	end
 	
 	if self.dead then
@@ -166,8 +170,6 @@ function Ship:update(dt)
 			self.snd_fire:play()
 		end
 	end
-	
-	if Input("kill").released then self:die() end
 end
 
 function Ship:die()

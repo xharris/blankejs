@@ -33,12 +33,19 @@ function Asteroid:init(small)
 	self.wrap_h = -self.sprite_height/2
 	
 	-- start outside of screen
-	self.x, self.y = unpack(table.random{
-		{-self.wrap_w, randRange(0, game_height)},
-		{game_width + self.wrap_w, randRange(0, game_height)},
-		{randRange(0, game_width), -self.wrap_h},
-		{randRange(0, game_width), game_height + self.wrap_h}			
-	})
+	local x, y = unpack{randRange(-self.wrap_w,game_width+self.wrap_w), randRange(-self.wrap_h,game_height+self.wrap_h)}
+	local bad_spot = false
+	repeat
+		bad_spot = false
+		Ship.instances:forEach(function(s, ship)
+			if ship:distancePoint(x,y) < 90 then
+				bad_spot = true
+				x, y = unpack{randRange(-self.wrap_w,game_width+self.wrap_w), randRange(-self.wrap_h,game_height+self.wrap_h)}
+			end
+		end)
+	until not bad_spot
+		
+	self.x, self.y = x, y
 	
 	self.points = 100
 	self.children = Group()

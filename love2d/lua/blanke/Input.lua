@@ -1,3 +1,21 @@
+--[[
+
+GameCube
+1 - Y
+2 - A 
+3 - B 
+4 - X
+5 - L
+6 - R
+8 - Z
+10 - Start
+13 - D Up
+14 - D Right
+15 - D Down
+16 - D Left
+
+]]--
+
 _Input = Class{
 	init = function(self, ...)
         self.in_key = {}

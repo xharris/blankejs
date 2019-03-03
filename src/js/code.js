@@ -789,7 +789,7 @@ class Code extends Editor {
 		} else {
 			var this_ref = this;
 			blanke.showModal(
-				"delete \'"+name+"\'",
+				"delete \'"+name+"\'?",
 			{
 				"yes": function() { this_ref.delete(name); },
 				"no": function() {}

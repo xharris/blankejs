@@ -1,7 +1,9 @@
 Group = Class{
 	init = function (self)
+
 		self.children = {}
     	self.uuid = uuid()
+		self.count = 0
 
 		_prepareGameObject("group", self)
 	end,
@@ -21,6 +23,7 @@ Group = Class{
 			obj._group = ifndef(obj._group, {})
 			obj._group[self.uuid] = self
 			table.insert(self.children, obj)
+			self.count = self.count + 1
 		end
 		return self
 	end,
@@ -60,6 +63,7 @@ Group = Class{
 			while i <= #self.children do
 				if self.children[i] and self.children[i].uuid and self.children[i].uuid == o.uuid then
 					self:remove(i)
+					self.count = self.count - 1
 					return true
 				end
 				i = i + 1
@@ -72,6 +76,7 @@ Group = Class{
 		for i = 1, size do
 			self:remove(i)
 		end
+		self.count = 0
 	end,
 
 	forEach = function(self, func)
@@ -101,6 +106,7 @@ Group = Class{
 				child = self.children[i]
 				child[func_name](child, ...)
 			end
+			self.count = 0
 		else
 			for i_c, c in ipairs(self.children) do
 				if c[func_name] then c[func_name](c, ...) end
@@ -113,6 +119,7 @@ Group = Class{
 		self:forEach(function(o, obj)
 			obj._group[self.uuid] = nil
 			if obj.destroy then obj:destroy() end
+			self.count = self.count - 1
 		end)
 		self.children = {}
 	end,
@@ -138,7 +145,7 @@ Group = Class{
 	end,
 
 	size = function(self)
-		return #self.children
+		return self.count
 	end,
 
 	sort = function(self, attr, descending)

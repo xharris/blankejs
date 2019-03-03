@@ -67,7 +67,7 @@ function setupGame()
 end
 
 function restartGame()
-	Asteroid.instances:call("destroy")
+	asteroids:call("destroy")
 	
 	Timer(1):after(function()
 		startGame()
@@ -82,16 +82,19 @@ function startGame()
 end
 
 local starting = false
+local tmr_field
 function makeField()
 	Net.once(function()
 		starting = true
-		Timer(2):after(function()
+		tmr_field = Timer(2):after(function()
 			starting = false
-			local count = 6 + math.floor(2^(level/1.5)-1)
+			local count = 6 + math.floor(2^(level/2)-1)
 			for i = 0, count do
 				asteroids:add(Asteroid())
 			end		
 			if not player and lives == 3 then player = Ship() end
+			level = level + 1
+			tmr_field = nil
 		end):start()
 	end)
 end
@@ -119,14 +122,18 @@ Signal.on("explosion", function(x,y,small)
 		rpt_explosion.speed = 2
 		rpt_explosion:emit(20)
 	end
-		
-	-- no more asteroids, spawn more
-	if Asteroid.instances:size() == 0 then
-		makeField()
-	end
 end)
 
-function PlayState:update(dt) 	
+function PlayState:update(dt)
+	if Input("kill").released then
+		asteroids:call("destroy")
+	end
+	
+	-- no more asteroids, spawn more
+	if not tmr_field and asteroids:size() == 0 then
+		makeField()
+	end
+	
 	-- RESPAWN
 	if not player and not game_over and can_respawn and Input("respawn").released then 
 		player = Ship()
@@ -193,4 +200,8 @@ function PlayState:draw()
 	for l = 0, lives do
 		img_ship:draw(50 + (l * (img_ship.width+2)), 50 + Draw.font:getHeight() + 5)
 	end
+end
+
+function love.gamepadpressed(joystick, button)
+	Debug.log(joystick, button)
 end
