@@ -34,6 +34,7 @@
     "showDevToolsOnStartup": true
   },
   "dependencies": {
+    "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
     "commonmark": "^0.28.1",
     "fs-extra": "^5.0.0",

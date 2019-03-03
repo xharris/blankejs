@@ -26,9 +26,7 @@
         {"title":"Using a font","file":"font.md"}
     ],
     "Group":[],
-    "Plugins":[
-        {"title":"Platformer","file":"plugin_platformer.md"}
-    ],
+    "Plugins":[],
     "Other":[
         {"title":"Credits","file":"credits.md"}
     ]

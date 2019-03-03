@@ -26,6 +26,7 @@ const { spawn, execFile, exec } = require('child_process')
 const { cwd, env, platform } = require('process')
 var nwNOOB = require('./js/server.js');
 var nwZIP = require('archiver');
+var nwZIP2 = require('adm-zip');
 
 var app = {
 	project_path: "",

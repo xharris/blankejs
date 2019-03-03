@@ -10,3 +10,19 @@
 `debug.record` record this playthrough
 
 `debug.log` draw Debug.log to screen
+
+## Example 
+
+```
+BlankE.options = {
+	filter = 'nearest',
+	inputs = {
+		{'move_left','a','left'},
+		{'move_right','d','right'},
+		{'jump','space','up','w'}
+	},
+	debug = {
+		log = true
+	}
+}
+```

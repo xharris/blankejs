@@ -5,6 +5,7 @@ Font = Class{
 		self.options = {
 			name = "console",
 			image = '',
+			characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
 			size = 12,
 			align = "left",
 			limit = -1

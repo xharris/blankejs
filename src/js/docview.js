@@ -2,6 +2,8 @@ const commonmark = require('commonmark');
 const md_parser = new commonmark.Parser();
 const md_writer = new commonmark.HtmlRenderer();
 
+let plugin_md_list = [];
+
 /*
     monokai-sublime
 */
@@ -29,6 +31,7 @@ class Docview extends Editor {
 		nwFS.readFile(nwPATH.join(doc_path,'docs.json'), 'utf-8', function(err, data){
 			if (!err) {
 				this_ref.doc_sections = JSON.parse(data);
+				this_ref.doc_sections.Plugins = plugin_md_list;
 
 				// put the divs together
 				for (let category in this_ref.doc_sections) {
@@ -100,5 +103,19 @@ class Docview extends Editor {
 				this_ref.appendChild(this_ref.doc_container);
 			}
 		});
+	}
+
+	static addPlugin(title, file) {
+		let found = false;
+		file = nwPATH.relative(nwPATH.join(app.settings.engine_path,'lua','blanke','docs'), file);
+		plugin_md_list.map((obj) => {
+			if ((obj.title) == title) {
+				obj.file = file;
+				found = true;
+			}
+		});
+		if (!found)
+			plugin_md_list.push({"title":title, "file":file});
+		console.log(plugin_md_list);
 	}
 }
