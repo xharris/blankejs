@@ -33,10 +33,3 @@ function Mario:draw()
 		self.real_mario:draw()
 	end)]]
 end
-
---[[
-local bob1 = Mario()
-local bob2, bob3 = Mario(), Mario()
-local bob4, bob5 = 1, 3
-local bob6, bob7
-]]

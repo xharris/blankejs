@@ -112,5 +112,39 @@
         "remove_unused": true
     },
     "ico": "src\\logo.ico",
-    "icns": "src\\logo.icns"
+    "icns": "src\\logo.icns",
+    "scene": {
+        "objects": {
+            "80d4bd4d": {
+                "name": "player",
+                "char": "H",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "80d4bd4d"
+            },
+            "c956d5ff": {
+                "name": "alien",
+                "char": "P",
+                "color": "#00ff00",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "c956d5ff"
+            },
+            "4c608774": {
+                "name": "asteroid",
+                "char": "X",
+                "color": "#804000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "4c608774"
+            }
+        }
+    }
 }

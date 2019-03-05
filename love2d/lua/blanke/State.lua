@@ -80,7 +80,7 @@ StateManager = {
 						drawStateNormal(state)
 					end
 				else
-					if state[func] then state[func](...) end
+					if state[func] then state[func](state,...) end
 				end
 			end
 		end

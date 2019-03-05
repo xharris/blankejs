@@ -724,6 +724,7 @@ class Code extends Editor {
 		blanke.destroyElement(this.edit_box2);
 		this.edit_box2 = null;
 		this.edit_box.classList.remove("split");
+		this.codemirror.refresh();
 	}
 
 	onMenuClick (e) {

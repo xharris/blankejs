@@ -19,7 +19,7 @@ clean:
 
 dist:
 	npm run less
-	npm run dist
+	pnpm run dist
 
 dist-mac:
 	pnpm run less

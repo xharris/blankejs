@@ -72,7 +72,8 @@ document.addEventListener("openProject",function(e){
 document.addEventListener("ideReady",function(e){
 	pathJoin = nwPATH.join;
 	nwFS.ensureDir(app.settings.plugin_path, (err) => {
-		let plugin_watch = nwFS.watch(app.settings.plugin_path, function(evt_type, file) {
+		let plugin_watch = nwWATCH(app.settings.plugin_path, {recursive: true}, function(evt_type, file) {
+			console.log(evt_type,file)
 			refreshPluginList();
 		});
 	});

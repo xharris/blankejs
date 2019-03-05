@@ -116,6 +116,5 @@ class Docview extends Editor {
 		});
 		if (!found)
 			plugin_md_list.push({"title":title, "file":file});
-		console.log(plugin_md_list);
 	}
 }

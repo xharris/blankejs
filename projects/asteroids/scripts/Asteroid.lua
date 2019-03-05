@@ -5,7 +5,7 @@ Asteroid.net_sync_vars = {'x','y','speed','direction','small','split_count','spr
 
 function Asteroid:init(small)	
 	self.keep_on_disconnect = true
-	
+		
 	self:addAnimation{name="small", image="asteroids_small", frames={"1-3",1}, frame_size={34,34}, speed=1, offset={0,0}}
 	self:addAnimation{name="large", image="asteroids", frames={"1-3",1}, frame_size={68,68}, speed=1, offset={0,0}}
 

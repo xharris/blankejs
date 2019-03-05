@@ -94,6 +94,7 @@ Debug = {
 
         Draw.push()
         Draw.setFont(Debug._font)
+        Draw.setColor(1,0,0,1)
         for i_line = 1, lines do
             line = Debug.lines[i_line]
 
@@ -103,7 +104,7 @@ Debug = {
                 alpha = 255 - ((y-win_height/2)/(win_height/2)*255)
             end 
 
-            Draw.setColor(1,0,0,alpha)
+            Draw.setAlpha(alpha)
             Draw.text(line, BlankE.left + Debug.margin, y+Debug.margin)
         end
         Draw.pop()
@@ -122,6 +123,9 @@ Debug = {
     end,
     
     log = function(...)
+        local line_height = 16 
+        if Draw.font then line_height = Draw.font:getHeight() end
+
         local new_line = table.concat(table.toString({...}),'\t')        
         if Debug._last_line == new_line then
             Debug._duplicate_count = Debug._duplicate_count + 1
@@ -130,7 +134,7 @@ Debug = {
             Debug._duplicate_count = 0
             
             table.insert(Debug.lines, 1, new_line)
-            if #Debug.lines > (game_height / Draw.font:getHeight()) then
+            if #Debug.lines > (game_height / line_height) then
                 Debug.lines[#Debug.lines] = nil
             end
         end

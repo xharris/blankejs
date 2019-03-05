@@ -2,7 +2,7 @@ package.path = package.path .. ";./?/init.lua"
 blanke_path = (...):match("(.-)[^%.]+$")
 function blanke_require(import)
 	local status, mod = pcall(require, blanke_path..import)
-	if status then return mod end
+	if status then return mod else error(mod) end
 	return nil
 end
 

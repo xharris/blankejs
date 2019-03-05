@@ -82,11 +82,15 @@ function randSeed(seed_low, seed_high)
 	return love.math.getRandomSeed() end
 end
 
+-- start_offset : percentage
 function sinusoidal(min, max, speed, start_offset)
+	local radius = (max - min)/2
+	return min + -math.cos(lerp(0,math.pi/2,start_offset) + game_time * speed) * radius + (radius)
+	--[[
 	local dist = (max - min)/2
 	local offset = (min + max)/2
-	local start = ifndef(start_offset, min) * (2*math.pi)
-	return (100*math.sin(game_time * speed * math.pi + start)/100) * dist + offset;
+	local start = min + (start_offset or 0) * (2*math.pi)
+	return math.sin(game_time * speed * math.pi + start) * dist + offset;]]
 end
 
 function direction_x(angle, dist)

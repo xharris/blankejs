@@ -31,6 +31,7 @@ class AssetManager extends Editor {
 		this.setTitle("Assets");
 
 		document.addEventListener("fileChange", function(e){
+			console.log(e.detail);
 			this_ref.refreshFileList();
 		});
 	}

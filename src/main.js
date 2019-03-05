@@ -27,6 +27,7 @@ const { cwd, env, platform } = require('process')
 var nwNOOB = require('./js/server.js');
 var nwZIP = require('archiver');
 var nwZIP2 = require('adm-zip');
+var nwWATCH = require('node-watch');
 
 var app = {
 	project_path: "",
@@ -152,7 +153,7 @@ var app = {
 				app.loadSettings();
 
 				// watch for file changes
-				app.watch = nwFS.watch(app.project_path, function(evt_type, file) {
+				app.watch = nwWATCH(app.project_path, {recursive: true}, function(evt_type, file) {
 					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
 				});
 

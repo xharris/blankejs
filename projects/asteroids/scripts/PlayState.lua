@@ -24,7 +24,7 @@ Input.set("respawn", "r")
 
 function PlayState:enter()
 	PlayState.background_color = "black"
-	
+		
 	Net.on('ready',function()
 		setupGame()
 		startGame()	
@@ -150,6 +150,7 @@ end
 
 function PlayState:draw()
 	Draw.setFont(fnt_asteroids)
+	
 	
 	local function drawStuff()
 		Net.draw("Bullet")
