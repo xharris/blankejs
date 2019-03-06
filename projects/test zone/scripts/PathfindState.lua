@@ -1,5 +1,6 @@
 BlankE.addState("PathfindState")
 
+local pathing = Pathfinder('space')
 local sc_field, asteroids, player, alien
 local off = 100
 
@@ -15,13 +16,16 @@ function PathfindState:enter()
 		aster.ix = aster.x
 		aster.iy = aster.y
 		aster.rand = randRange(0,100)/100
+		
+		pathing:addObstacle{'aster'..a, aster.x - 20, aster.y - 20, 40, 40}
 	end
 end
 
 function PathfindState:update(dt)
 	if asteroids then
 		for a, aster in ipairs(asteroids) do
-			aster.x = sinusoidal(aster.ix, aster.ix + off, 1.5, aster.rand)
+			--aster.x = sinusoidal(aster.ix, aster.ix + off, 1.5, aster.rand)
+			--pathing:updateObstacle{'aster'..a, aster.x - 20, aster.y - 20, 40, 40}
 			--aster.y = sinusoidal(aster.iy - off, aster.iy + off, 0.5, aster.iy + aster.rand)
 		end
 	end
@@ -36,9 +40,8 @@ function PathfindState:draw()
 	
 	for a, aster in ipairs(asteroids) do
 		Draw.setColor("red")
-		Draw.circle("fill", aster.x, aster.y, 20)
-		Draw.setColor("white")
-		Draw.text(aster.rand,aster.x, aster.y)
+		Draw.circle("line", aster.x, aster.y, 20)
 	end
 	
+	pathing:draw()
 end
