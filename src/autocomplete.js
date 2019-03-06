@@ -60,7 +60,7 @@ module.exports.instance_regex = {
 		/\b(\w+\.instances).*/g,
 		/\b(\w+)\s*=\s*(?:(?:Image\(['"\w\/]+\):chop\(\d+,\d+\))|(?:[\w\.]+:chop\(\d+,\d+\)))\s+?/g
 	],
-	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\d.,]*\)\s+?/g,
+	'bezier': 	/\b(\w+)\s*=\s*Bezier\([\w.,(){}:\s]*\)\s+?/g,
 	'timer': 	/\b(\w+)\s*=\s*Timer\(\d*\)(?:\s+|:)?/g,
 	'canvas': 	/\b(\w+)\s*=\s*Canvas\((?:\d*\,\d*)?\)\s+?/g
 }
@@ -242,6 +242,7 @@ module.exports.completions = {
 	],
 	"blanke-bezier-instance":[
 		{fn:"addPoint", vars:{ x:'', y:'', i:'optional index. -1 = last' }},
+		{fn:"addPoints", vars:{ x:'', y:'', etc:'' }},
 		{fn:"removePoint", vars:{ i:'' }},
 		{fn:"getPoint", vars:{ i:'' }},
 		{fn:"pointCount"},

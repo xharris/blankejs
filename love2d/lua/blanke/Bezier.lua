@@ -1,14 +1,16 @@
 Bezier = Class{
 	init = function(self, ...)
 		self._bezier = love.math.newBezierCurve()
+		self:addPoints(...)
+		self.persistent = true
+		_addGameObject('bezier', self)
+	end,
 
+	addPoints = function(self, ...)
 		local points = {...}
 		for p = 1,#points,2 do
 			self:addPoint(points[p], points[p+1])
 		end
-
-		self.persistent = true
-		_addGameObject('bezier', self)
 	end,
 
 	addPoint = function(self, x, y, i)

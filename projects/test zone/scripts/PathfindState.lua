@@ -3,6 +3,8 @@ BlankE.addState("PathfindState")
 local pathing = Pathfinder('space')
 local sc_field, asteroids, player, alien
 local off = 100
+local path = Bezier()
+	
 
 function PathfindState:enter()
 	PathfindState.background_color = "black"
@@ -42,6 +44,12 @@ function PathfindState:draw()
 		Draw.setColor("red")
 		Draw.circle("line", aster.x, aster.y, 20)
 	end
+
+	path:clear()
+	local points = pathing:getPath(alien.x,alien.y,player.x,player.y)
+	path:addPoints(unpack(points))
+	Draw.setColor("green")
+	path:draw()
 	
 	pathing:draw()
 end

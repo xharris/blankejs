@@ -103,9 +103,6 @@
   background-color: transparent;
   cursor: default;
 }
-.ui-button * {
-  pointer-events: none;
-}
 .ui-button .mdi-svg {
   vertical-align: top;
   text-align: center;
@@ -143,9 +140,6 @@
 .ui-button-sphere:hover:disabled {
   background-color: transparent;
   cursor: default;
-}
-.ui-button-sphere * {
-  pointer-events: none;
 }
 .ui-button-sphere .mdi-svg {
   vertical-align: top;
@@ -186,9 +180,6 @@
 .ui-button-rect:hover:disabled {
   background-color: transparent;
   cursor: default;
-}
-.ui-button-rect * {
-  pointer-events: none;
 }
 .ui-button-rect .mdi-svg {
   vertical-align: top;
@@ -2189,9 +2180,6 @@ body:after {
 .tool-container button:hover:disabled {
   background-color: transparent;
   cursor: default;
-}
-.tool-container button * {
-  pointer-events: none;
 }
 .tool-container button .mdi-svg {
   vertical-align: top;

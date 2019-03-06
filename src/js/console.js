@@ -65,6 +65,7 @@ class Console extends Editor {
 	err (str) {
 		if (!this.had_error) {
 			this.had_error = true;
+			console.log(str);
 
 			let re_error = /Error:\s.*[^\\\/Blanke\.lua]?[\w\\\/\.]+\/(\w+\.lua):(\d+):\s(.+)\s*stack traceback:\s+(.*)/g;
 			let re_load_error = /:\s(.*):(\d+):\s(.*)/g

@@ -782,41 +782,24 @@ nwWIN.on('loaded', function() {
 		var el_recent = app.getElement("#welcome .recent-files");
 		if (app.settings.recent_files.length > 10) 
 			app.settings.recent_files = app.settings.recent_files.slice(0,10);
-		
-
-		app.settings.recent_files.forEach(function(file){
-			// dont show recent project if it doesn't exist
-			var stat = nwFS.statSync(file);
-			if (stat.isDirectory()) {
-				var el_file = app.createElement("button", "file");
-				el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
+			
+		// setup welcome screen
+		let el_br = app.createElement("br");
+		app.settings.recent_files.forEach((file) => {
+			if (nwFS.pathExistsSync(file) && nwFS.statSync(file).isDirectory()) {
+				let el_file = app.createElement("button", "file");
+				el_file.innerHTML = nwPATH.basename(file);
 				el_file.title = file;
-				el_file.onclick = function(){
+				el_file.addEventListener('click',function(){
 					app.hideWelcomeScreen();
 					app.openProject(file);
-				};
-
-				var el_br = app.createElement("br");
+				});
 
 				el_recent.appendChild(el_file);
-				el_recent.appendChild(el_br);
-			} 
-		});
-
-		// setup welcome screen
-		var el_recent = app.getElement("#welcome > .recent-files");
-		if (el_recent) {
-			for (var p = 0; p < app.settings.recent_files.length; p++) {
-				var el_file = app.createElement("a", "file");
-				var file = app.settings.recent_files[p];
-				
-				el_file.innerHTML = nwPATH.basename(file, nwPATH.extname(file));
-				el_file.title = file;
-				el_file.href = "#";
-				el_recent.appendChild(el_file);
+				el_recent.appendChild(el_br)
 			}
-		}
-
+		})
+		
 		app.showWelcomeScreen();
 		dispatchEvent("ideReady");
 	});
