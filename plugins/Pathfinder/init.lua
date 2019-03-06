@@ -65,15 +65,19 @@ Pathfinder = Class{
 	end,
 
 	getPath = function(self, start_x, start_y, end_x, end_y)
-		local path = {}
+		local path = {start_x,start_y}
+		local _
+		_, start_x, start_y = self:_compressInfo{nil,start_x,start_y,0,0}
+		_, end_x, end_y = self:_compressInfo{nil,end_x,end_y,0,0}
+		
 		local grid_vals = {}
 		local map = Pathfinder.map[self.name]
 
 		-- g : cost from current node to next node
 		-- h : distance from node to goal
-		function cost(x,y)  
+		function cost(x,y)
 			local c = 0
-			for id, val in pairs(map[x][y]) do c = c + val end 
+			if map[x] and map[x][y] then for id, val in pairs(map[x][y]) do c = c + val end end
 			return c 
 		end
 		function h(from_x, from_y) return math.sqrt((from_x-end_x)^2 + (from_y-end_y)^2) end
@@ -107,18 +111,25 @@ Pathfinder = Class{
 		--     put the starting node on the open list (you can leave its f at zero)
 		setOpen(start_x, start_y, 'f', 0)
 		-- 3.  while the open list is not empty
-		local done = true
+		local done = false
 		while not done do
-			done = open_n > 0
+			done = (open_n < 1)
 		--     a) find the node with the least f on the open list, call it "q"
-			table.sort(open, function(a,b) return a.f > b.f end) -- SORTS GREATEST TO LEAST
-			local q = open[open_n]
+			local q = nil
+			for n, node in pairs(open) do
+				if q == nil then
+					q = node
+				elseif node.f < q.f then
+					q = node
+				end 
+			end
 		--     c) generate q's 8 successors and set their 
 		--        parents to q
 			local neighbor
 			local temp_g, temp_h, temp_f
 			for x = q.x - 1, q.x + 1 do 
 				for y = q.y - 1, q.y + 1 do 
+				
 		--     d) for each successor
 		--         i) if successor is the goal, stop search
 		--           successor.g = q.g + distance between 
@@ -144,10 +155,10 @@ Pathfinder = Class{
 		--             a lower f than successor, skip this successor
 		--             otherwise, add  the node to the open list
 						neighbor = getClosed(x,y)
-						if neighbor and neighbor.f >= temp_f then 
-							table.insert(path, neighbor.x * self.cell_size)
-							table.insert(path, neighbor.y * self.cell_size)
-							setOpen(neighbor.x, neighbor.y, 'f', temp_f)
+						if not neighbor or (neighbor and neighbor.f >= temp_f) then 
+							table.insert(path, x * self.cell_size)
+							table.insert(path, y * self.cell_size)
+							setOpen(x, y, 'f', temp_f)
 						end 
 					end
 				end
@@ -155,6 +166,8 @@ Pathfinder = Class{
 		--     e) push q on the closed list
 			setClosed(q.x, q.y)
 		end
+		table.insert(path, end_x * self.cell_size)
+		table.insert(path, end_y * self.cell_size)
 		return path
 	end, 
 

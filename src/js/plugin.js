@@ -32,13 +32,12 @@ function installPlugins() {
 	// move lua files to <engine_path>/lua/blanke/plugins/
 	let eng_plugin_dir = pathJoin(app.settings.engine_path,'lua','blanke','plugins');
 	function inspectFolder(folder) {
-		nwFS.readdir(folder, (err, files) => {
-			for (let f of files) {
-				if (f.endsWith('.md')) {
-					Docview.addPlugin(f.split('.')[0], pathJoin(eng_plugin_dir,f.split('.')[0], f));
-				}
+		let files = nwFS.readdirSync(folder);
+		for (let f of files) {
+			if (f.endsWith('.md')) {
+				Docview.addPlugin(f.split('.')[0], pathJoin(eng_plugin_dir,f.split('.')[0], f));
 			}
-		});
+		}
 	}
 
 	nwFS.emptyDir(eng_plugin_dir, err => {
@@ -58,6 +57,8 @@ function installPlugins() {
 			nwFS.copySync(pathJoin(app.settings.plugin_path,d), pathJoin(eng_plugin_dir,d))
 			inspectFolder(pathJoin(eng_plugin_dir,d))
 		}
+
+		blanke.toast("Plugins loaded!")
 	});
 
 	// add .js files to ide somehow
@@ -75,7 +76,6 @@ document.addEventListener("ideReady",function(e){
 	nwFS.ensureDir(app.settings.plugin_path, (err) => {
 		console.log('WATCHING')
 		let plugin_watch = nwWATCH(app.settings.plugin_path, {recursive: true}, function(evt_type, file) {
-			console.log(evt_type,file)
 			refreshPluginList();
 		});
 	});

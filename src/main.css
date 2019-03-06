@@ -2721,6 +2721,7 @@ body.mac .tool-container button:hover {
   margin-top: 20px;
 }
 #welcome .recent-files .file {
+  display: block;
   font-size: 16px;
   line-height: 20px;
   width: 100%;
