@@ -5,8 +5,8 @@ function BlankE.load()
 	BlankE.options = {
 		state="PathfindState",
 		plugins={"Pathfinder"},
-		resolution=1,
-		filter="nearest",
+		resolution=2,
+		--filter="nearest",
 		debug={
 			log=true
 		},

@@ -5,7 +5,7 @@ Pathfinder = Class{
 			Pathfinder.map[name] = {}
 		end
 		self.name = name
-		self.cell_size = cell_size or 5
+		self.cell_size = cell_size or 20
 
 		_addGameObject('pathing',self)
 	end,
@@ -17,11 +17,12 @@ Pathfinder = Class{
 			w = obj.sprite_width
 			h = obj.sprite_height]]
 		else
-			return obj[1], --id
+				   -- id
+			return obj[1], 
 				   -- x, y
 				   math.floor(obj[2] / self.cell_size) or 0, math.floor(obj[3] / self.cell_size) or 0,
 				   -- w, h
-				   math.floor(obj[4] / self.cell_size) or 0, math.floor(obj[5] / self.cell_size) or 0
+				   math.ceil(obj[4] / self.cell_size) or 0, math.ceil(obj[5] / self.cell_size) or 0
 		end
 	end,
 
@@ -65,7 +66,7 @@ Pathfinder = Class{
 	end,
 
 	getPath = function(self, start_x, start_y, end_x, end_y)
-		local path = {start_x,start_y}
+		local path = {}
 		local _
 		_, start_x, start_y = self:_compressInfo{nil,start_x,start_y,0,0}
 		_, end_x, end_y = self:_compressInfo{nil,end_x,end_y,0,0}
@@ -106,6 +107,16 @@ Pathfinder = Class{
 		end
 		function getOpen(x, y) return open[x..'.'..y] end 
 		function getClosed(x, y) return closed[x..'.'..y] end 
+		local added = {}
+		function addPoint(x, y)
+			local new_x, new_y = x * self.cell_size, y * self.cell_size
+			if not added[x..'.'..y] then
+				table.insert(path, new_x)
+				table.insert(path, new_y)
+				added[x..'.'..y] = true
+			end
+		end
+
 		local current_x, curent_y = 0,0
 
 		--     put the starting node on the open list (you can leave its f at zero)
@@ -123,8 +134,6 @@ Pathfinder = Class{
 					q = node
 				end 
 			end
-			print('got')
-			print_r(q)
 		--     c) generate q's 8 successors and set their 
 		--        parents to q
 			local neighbor
@@ -138,7 +147,8 @@ Pathfinder = Class{
 		--                               successor and q
 		--           successor.h = distance from goal to successor 
 		--           successor.f = successor.g + successor.h
-					if x == end_x and y == end_y then 
+					if x == end_x and y == end_y then
+						addPoint(x, y)
 						done = true
 					end 
 					temp_g = q.g + cost(x,y)
@@ -157,9 +167,8 @@ Pathfinder = Class{
 		--             a lower f than successor, skip this successor
 		--             otherwise, add  the node to the open list
 						neighbor = getClosed(x,y)
-						if not neighbor or (neighbor and neighbor.f >= temp_f) then 
-							table.insert(path, x * self.cell_size)
-							table.insert(path, y * self.cell_size)
+						if not neighbor or (neighbor and neighbor.f >= temp_f) then
+							addPoint(q.x, q.y)
 							setOpen(x, y, 'f', temp_f)
 						end 
 					end
@@ -168,14 +177,15 @@ Pathfinder = Class{
 		--     e) push q on the closed list
 			setClosed(q.x, q.y)
 		end
-		table.insert(path, end_x * self.cell_size)
-		table.insert(path, end_y * self.cell_size)
+		-- table.insert(path, end_x * self.cell_size)
+		-- table.insert(path, end_y * self.cell_size)
 		return path
 	end, 
 
 	draw = function(self)
 		local map = Pathfinder.map[self.name]
 		local cell_size = self.cell_size
+		local half_cell = self.cell_size /2
 		Draw.setColor("red")
 		for x, column in pairs(map) do
 			for y, obstacles in pairs(column) do

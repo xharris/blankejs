@@ -597,10 +597,9 @@ BlankE = {
     	love.graphics.setBlendMode('alpha', 'premultiplied')
 		BlankE.drawToScale(function()
 			BlankE.game_canvas:draw(true)
+			love.graphics.setBlendMode('alpha')
+			if BlankE.draw_debug and Debug then Debug.draw() end
 		end)
-		love.graphics.setBlendMode('alpha')
-
-		if BlankE.draw_debug and Debug then Debug.draw() end
 
         -- disable any scenes that aren't being actively drawn
         local active_scenes = 0

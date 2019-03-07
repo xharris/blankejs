@@ -1,9 +1,8 @@
 BlankE.addState("PathfindState")
 
-local pathing = Pathfinder('space')
+local pathing = Pathfinder('space',15)
 local sc_field, asteroids, player, alien
 local off = 100
-local path = Bezier()
 local points = {}
 
 function PathfindState:enter()
@@ -21,6 +20,10 @@ function PathfindState:enter()
 		
 		pathing:addObstacle{'aster'..a, aster.x - 20, aster.y - 20, 40, 40}
 	end
+	
+	for p = 1, #points, 2 do
+		Debug.log(p/2 + .5,points[p],points[p+1])
+	end
 end
 
 function PathfindState:update(dt)
@@ -28,6 +31,7 @@ function PathfindState:update(dt)
 		for a, aster in ipairs(asteroids) do
 			aster.x = sinusoidal(aster.ix, aster.ix + off, 1.5, aster.rand)
 			pathing:updateObstacle{'aster'..a, aster.x - 20, aster.y - 20, 40, 40}
+			points = pathing:getPath(alien.x,alien.y,player.x,player.y)
 			--aster.y = sinusoidal(aster.iy - off, aster.iy + off, 0.5, aster.iy + aster.rand)
 		end
 	end
@@ -46,12 +50,11 @@ function PathfindState:draw()
 	end
 	Draw.setColor("orange")
 	
-	path:clear()
-	points = pathing:getPath(alien.x,alien.y,player.x,player.y)
-	path:addPoints(unpack(points))
-	path:draw()
-	Draw.setPointSize(1)
-	--Draw.point(points)
+	--Draw.setPointSize(1)
+	Draw.line(unpack(points))
+	for p = 1, #points/2 do
+		Draw.text(p,points[2*p-1],points[2*p])
+	end
 	
-	--pathing:draw()
+	pathing:draw()
 end
