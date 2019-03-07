@@ -58,6 +58,9 @@ class SceneEditor extends Editor {
 
 		this.pixi.stage.interactive = true;
 		this.pixi.stage.hitArea = this.pixi.screen;
+		this.pixi.view.addEventListener('contextmenu', (e) => {
+			e.preventDefault();
+		});
 
 		// create map container
 		this.overlay_container = new PIXI.Container();	// displayed above everything
@@ -510,7 +513,6 @@ class SceneEditor extends Editor {
 
         this.pointer_down = -1;
 		this.pixi.stage.on('pointerdown',function(e){
-			
 			let x = this_ref.mouse[0];
 			let y = this_ref.mouse[1];
 			let btn = e.data.originalEvent.button;

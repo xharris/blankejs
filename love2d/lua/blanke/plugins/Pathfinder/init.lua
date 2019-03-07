@@ -81,7 +81,10 @@ Pathfinder = Class{
 			if map[x] and map[x][y] then for id, val in pairs(map[x][y]) do c = c + val end end
 			return c 
 		end
-		function h(from_x, from_y) return math.sqrt((from_x-end_x)^2 + (from_y-end_y)^2) end
+		function h(from_x, from_y) return
+			--math.max(math.abs(from_x - end_x), math.abs(from_y - end_y))
+			math.sqrt((from_x-end_x)^2 + (from_y-end_y)^2)
+		end
 
 		-- 1.  Initialize the open list
 		-- 2.  Initialize the closed list
@@ -117,14 +120,27 @@ Pathfinder = Class{
 			end
 		end
 
+		function getSuccessors(qx, qy, qg)
+			local successors = {}
+			for x = qx - 1, qx + 1 do 
+				for y = qy - 1, qy + 1 do 
+					table.insert(successors, {x=x, y=y, f=(qg + cost(x,y)) + h(x,y)})
+				end
+			end
+			return successors
+		end
+
 		local current_x, curent_y = 0,0
 
 		--     put the starting node on the open list (you can leave its f at zero)
 		setOpen(start_x, start_y, 'f', 0)
 		-- 3.  while the open list is not empty
 		local done = false
+		local i = 0
+		local max_i = (game_width * game_height) / self.cell_size
 		while not done do
-			done = (open_n < 1)
+			i = i + 1
+			done = (open_n < 1) or (i > max_i)
 		--     a) find the node with the least f on the open list, call it "q"
 			local q = nil
 			for n, node in pairs(open) do
@@ -136,42 +152,36 @@ Pathfinder = Class{
 			end
 		--     c) generate q's 8 successors and set their 
 		--        parents to q
-			local neighbor
 			local temp_g, temp_h, temp_f
-			for x = q.x - 1, q.x + 1 do 
-				for y = q.y - 1, q.y + 1 do 
-				
-		--     d) for each successor
-		--         i) if successor is the goal, stop search
-		--           successor.g = q.g + distance between 
-		--                               successor and q
-		--           successor.h = distance from goal to successor 
-		--           successor.f = successor.g + successor.h
-					if x == end_x and y == end_y then
-						addPoint(x, y)
-						done = true
-					end 
-					temp_g = q.g + cost(x,y)
-					temp_h = h(x,y)
-					temp_f = temp_g + temp_h
+			local successors = getSuccessors(q.x, q.y, q.g)
+			for s, cessor in ipairs(successors) do
+	--     d) for each successor
+	--         i) if successor is the goal, stop search
+	--           successor.g = q.g + distance between 
+	--                               successor and q
+	--           successor.h = distance from goal to successor 
+	--           successor.f = successor.g + successor.h
+				if cessor.x == end_x and cessor.y == end_y then
+					addPoint(cessor.x, cessor.y)
+					done = true
+				end 
 
-		--         ii) if a node with the same position as 
-		--             successor is in the OPEN list which has a 
-		--            lower f than successor, skip this successor
-					neighbor = getOpen(x,y)
-					if neighbor and neighbor.f < temp_f then 
-						
-					else 
-		--         iii) if a node with the same position as 
-		--             successor  is in the CLOSED list which has
-		--             a lower f than successor, skip this successor
-		--             otherwise, add  the node to the open list
-						neighbor = getClosed(x,y)
-						if not neighbor or (neighbor and neighbor.f >= temp_f) then
-							addPoint(q.x, q.y)
-							setOpen(x, y, 'f', temp_f)
-						end 
-					end
+	--         ii) if a node with the same position as 
+	--             successor is in the OPEN list which has a 
+	--            lower f than successor, skip this successor
+				neighbor = getOpen(cessor.x,cessor.y)
+				if neighbor and neighbor.f < cessor.f then 
+					
+				else 
+	--         iii) if a node with the same position as 
+	--             successor  is in the CLOSED list which has
+	--             a lower f than successor, skip this successor
+	--             otherwise, add  the node to the open list
+					neighbor = getClosed(cessor.x,cessor.y)
+					if not neighbor or (neighbor and neighbor.f >= cessor.f) then
+						addPoint(q.x, q.y)
+						setOpen(cessor.x, cessor.y, 'f', cessor.f)
+					end 
 				end
 			end
 		--     e) push q on the closed list
