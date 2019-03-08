@@ -18,10 +18,8 @@ local drawStateNormal = function(state)
 		Draw.stack(function()
 			if state.background_color then
 				State.background_color = state.background_color
-				Draw.stack(function()
 					Draw.setColor(state.background_color)
 					Draw.rect('fill',0,0,game_width,game_height)
-				end)
 			else
 				State.background_color = nil
 			end

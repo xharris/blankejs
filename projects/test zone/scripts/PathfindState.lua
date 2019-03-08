@@ -1,9 +1,19 @@
 BlankE.addState("PathfindState")
 
-local pathing = Pathfinder('space',15)
+local pathing = Pathfinder('space',5)
 local sc_field, asteroids, player, alien
 local off = 100
 local points = {}
+
+function refreshPath()
+	if asteroids then
+		for a, aster in ipairs(asteroids) do
+			pathing:updateObstacle{'aster'..a, aster.x - 20, aster.y - 20, 40, 40}
+			--aster.y = sinusoidal(aster.iy - off, aster.iy + off, 0.5, aster.iy + aster.rand)
+		end
+	end
+	points = pathing:getPath(alien.x,alien.y,player.x,player.y)		
+end
 
 function PathfindState:enter()
 	PathfindState.background_color = "black"
@@ -21,6 +31,11 @@ function PathfindState:enter()
 		pathing:addObstacle{'aster'..a, aster.x - 20, aster.y - 20, 40, 40}
 	end
 	
+	refreshPath()
+	Timer():every(function()
+		refreshPath()
+	end, 1):start()
+	
 	for p = 1, #points, 2 do
 		Debug.log(p/2 + .5,points[p],points[p+1])
 	end
@@ -29,12 +44,13 @@ end
 function PathfindState:update(dt)
 	if asteroids then
 		for a, aster in ipairs(asteroids) do
-			aster.x = sinusoidal(aster.ix, aster.ix + off, 1.5, aster.rand)
-			pathing:updateObstacle{'aster'..a, aster.x - 20, aster.y - 20, 40, 40}
-			points = pathing:getPath(alien.x,alien.y,player.x,player.y)
+			--aster.x = sinusoidal(aster.ix, aster.ix + off, 1.5, aster.rand)
 			--aster.y = sinusoidal(aster.iy - off, aster.iy + off, 0.5, aster.iy + aster.rand)
 		end
 	end
+	
+	alien.x, alien.y = mouse_x, mouse_y
+	--points = pathing:getPath(alien.x,alien.y,player.x,player.y)
 end
 
 function PathfindState:draw()
@@ -51,10 +67,6 @@ function PathfindState:draw()
 	Draw.setColor("orange")
 	
 	--Draw.setPointSize(1)
-	Draw.line(unpack(points))
-	for p = 1, #points/2 do
-		Draw.text(p,points[2*p-1],points[2*p])
-	end
-	
+	Draw.line(unpack(points))	
 	pathing:draw()
 end

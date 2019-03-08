@@ -133,7 +133,9 @@ local min_dt = 1/max_fps
 local next_time = love.timer.getTime()
 
 -- inject code into load function
+ProFi = blanke_require('plugins.ProFi')
 love.load = function(args, unfilteredArgs)
+ProFi:start()
 	if BlankE.load then BlankE.load(args, unfilteredArgs) end
 	
 	local ide = table.hasValue(args, "--ide")
@@ -148,7 +150,10 @@ love.load = function(args, unfilteredArgs)
 end
 
 love.quit = function()
-	return BlankE._quit()
+	local ret_val = BlankE._quit()
+	ProFi:stop()
+	ProFi:writeReport("profile.txt")
+	return ret_val
 end
 
 

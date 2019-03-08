@@ -1,0 +1,323 @@
+###############################################################################################################
+#####  ProFi, a lua profiler. This profile was generated on: 03/08/19 02:29:57
+#####  ProFi is created by Luke Perkin 2012 under the MIT Licence, www.locofilm.co.uk
+#####  Version 1.3. Get the most recent version at this gist: https://gist.github.com/2838755
+###############################################################################################################
+
+| TOTAL TIME = 24.849000
+| FILE                                              : FUNCTION                                : LINE                : TIME        : RELATIVE    : CALLED      |
+| .\blanke\Draw.lua                                 : stack                                   :  149                : 27.280      : 109.78%     :    2150     |
+| [string "boot.lua"]                               : anonymous                               :  493                : 24.266      : 97.65%      :     431     |
+| .\blanke\State.lua                                : iterateStateStack                       :   36                : 15.812      : 63.63%      :     860     |
+| .\blanke\Blanke.lua                               : draw                                    :  584                : 14.980      : 60.28%      :     430     |
+| .\blanke\Canvas.lua                               : drawTo                                  :   34                : 12.728      : 51.22%      :     430     |
+| .\blanke\Canvas.lua                               : fn                                      :   37                : 12.657      : 50.94%      :     430     |
+| .\blanke\Blanke.lua                               : func                                    :  596                : 12.578      : 50.62%      :     430     |
+| .\blanke\State.lua                                : drawStateNormal                         :   16                : 12.568      : 50.58%      :     430     |
+| .\blanke\State.lua                                : fn                                      :   18                : 12.543      : 50.48%      :     430     |
+| scripts/PathfindState.lua                         : draw                                    :   56                : 12.462      : 50.15%      :     430     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: draw                                    :  367                : 11.148      : 44.86%      :     430     |
+| .\blanke\Draw.lua                                 : rect                                    :  142                : 5.960       : 23.98%      :  523740     |
+| .\blanke\Blanke.lua                               : update                                  :  533                : 3.261       : 13.12%      :     430     |
+| .\blanke\Blanke.lua                               : drawToScale                             :  569                : 2.039       : 8.21%       :     860     |
+| .\blanke\Blanke.lua                               : fn                                      :  570                : 1.982       : 7.98%       :     860     |
+| .\blanke\Blanke.lua                               : func                                    :  603                : 1.938       : 7.80%       :     430     |
+| .\blanke\Debug.lua                                : draw                                    :   90                : 1.897       : 7.63%       :     430     |
+| scripts/PathfindState.lua                         : refreshPath                             :    8                : 1.316       : 5.30%       :      25     |
+| .\blanke\Draw.lua                                 : setColor                                :   73                : 1.304       : 5.25%       :    9890     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: getPath                                 :  137                : 1.299       : 5.23%       :      25     |
+| .\blanke\Timer.lua                                : update                                  :   52                : 1.223       : 4.92%       :     430     |
+| scripts/PathfindState.lua                         : func                                    :   35                : 1.213       : 4.88%       :      24     |
+| .\blanke\Draw.lua                                 : _parseColorArgs                         :   29                : 1.129       : 4.54%       :   19781     |
+| .\blanke\Draw.lua                                 : setFont                                 :  172                : 0.870       : 3.50%       :     431     |
+| .\blanke\Class.lua                                : Font                                    :   97                : 0.861       : 3.46%       :     431     |
+| .\blanke\Font.lua                                 : init                                    :    4                : 0.842       : 3.39%       :     431     |
+| [string "boot.lua"]                               : anonymous                               :  487                : 0.495       : 1.99%       :       0     |
+| .\blanke\Blanke.lua                               : load                                    :  137                : 0.495       : 1.99%       :       0     |
+| .\blanke\Blanke.lua                               : init                                    :  208                : 0.494       : 1.99%       :       1     |
+| .\blanke\Draw.lua                                 : text                                    :  142                : 0.443       : 1.78%       :   11610     |
+| .\blanke\Blanke.lua                               : _addGameObject                          :   35                : 0.412       : 1.66%       :     441     |
+| .\blanke\Font.lua                                 : _makeFontObj                            :   20                : 0.405       : 1.63%       :     431     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: addNode                                 :  221                : 0.372       : 1.50%       :    2059     |
+| .\blanke\Blanke.lua                               : _prepareGameObject                      :   23                : 0.326       : 1.31%       :     442     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: setOpen                                 :  155                : 0.260       : 1.05%       :   13701     |
+| .\blanke\Window.lua                               : setResolution                           :   24                : 0.242       : 0.97%       :       1     |
+| .\blanke\Util.lua                                 : startsWith                              :  188                : 0.224       : 0.90%       :   18061     |
+| .\blanke\extra\uuid.lua                           : uuid                                    :   95                : 0.210       : 0.85%       :     443     |
+| .\blanke\Draw.lua                                 : setAlpha                                :   85                : 0.194       : 0.78%       :   11610     |
+| .\blanke\Blanke.lua                               : fn                                      :  586                : 0.190       : 0.76%       :     430     |
+| .\blanke\extra\uuid.lua                           : INT2HEX                                 :   64                : 0.152       : 0.61%       :    7088     |
+| .\blanke\Draw.lua                                 : circle                                  :  142                : 0.124       : 0.50%       :    7310     |
+| .\blanke\State.lua                                : push                                    :  100                : 0.122       : 0.49%       :       1     |
+| .\blanke\State.lua                                : switch                                  :  284                : 0.122       : 0.49%       :       2     |
+| .\blanke\State.lua                                : switch                                  :  150                : 0.122       : 0.49%       :       2     |
+| scripts/PathfindState.lua                         : enter                                   :   18                : 0.121       : 0.49%       :       1     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: getOpen                                 :  171                : 0.120       : 0.48%       :   20259     |
+| .\blanke\Draw.lua                                 : pop                                     :  159                : 0.119       : 0.48%       :    2580     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: getClosed                               :  172                : 0.101       : 0.41%       :   20259     |
+| .\blanke\extra\json.lua                           : parse                                   :  319                : 0.100       : 0.40%       :      50     |
+| .\blanke\Font.lua                                 : use                                     :   32                : 0.096       : 0.39%       :   11610     |
+| .\blanke\Asset.lua                                : load                                    :    8                : 0.095       : 0.38%       :       1     |
+| .\blanke\Blanke.lua                               : drawOutsideWindow                       :  627                : 0.077       : 0.31%       :     430     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: setClosed                               :  163                : 0.068       : 0.27%       :    2251     |
+| .\blanke\extra\json.lua                           : decode                                  :  387                : 0.067       : 0.27%       :       8     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: getCost                                 :  182                : 0.065       : 0.26%       :   20259     |
+| .\blanke\Util.lua                                 : clamp                                   :   44                : 0.051       : 0.21%       :   11610     |
+| .\blanke\Class.lua                                : __newindex                              :   87                : 0.043       : 0.17%       :    6724     |
+| .\blanke\Draw.lua                                 : reset                                   :  126                : 0.039       : 0.16%       :    2580     |
+| scripts/PathfindState.lua                         : anonymous                               :   44                : 0.030       : 0.12%       :     430     |
+| .\blanke\Blanke.lua                               : _getGameObjects                         :   14                : 0.027       : 0.11%       :     872     |
+| .\blanke\Util.lua                                 : ifndef                                  :   54                : 0.027       : 0.11%       :    5283     |
+| .\blanke\extra\json.lua                           : parse                                   :  292                : 0.026       : 0.10%       :     117     |
+| .\blanke\Group.lua                                : add                                     :   20                : 0.025       : 0.10%       :     433     |
+| .\blanke\extra\json.lua                           : next_char                               :  165                : 0.024       : 0.10%       :    2019     |
+| .\blanke\Draw.lua                                 : push                                    :  155                : 0.021       : 0.08%       :    2580     |
+| .\blanke\Input.lua                                : update                                  :  236                : 0.021       : 0.08%       :     430     |
+| .\blanke\Asset.lua                                : add                                     :   53                : 0.021       : 0.08%       :      22     |
+| .\blanke\extra\json.lua                           : parse                                   :  218                : 0.021       : 0.08%       :     262     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: getLowestOpen                           :  173                : 0.020       : 0.08%       :    2276     |
+| .\blanke\Blanke.lua                               : _iterateGameGroup                       :   66                : 0.019       : 0.08%       :     431     |
+| .\blanke\Draw.lua                                 : line                                    :  142                : 0.018       : 0.07%       :     430     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: updateObstacle                          :   41                : 0.016       : 0.06%       :     390     |
+| .\blanke\Blanke.lua                               : func                                    :  590                : 0.014       : 0.06%       :     430     |
+| .\blanke\Debug.lua                                : log                                     :  125                : 0.013       : 0.05%       :     203     |
+| .\blanke\extra\json.lua                           : parse                                   :  271                : 0.012       : 0.05%       :     347     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: _compressInfo                           :   14                : 0.012       : 0.05%       :     440     |
+| .\blanke\Util.lua                                 : update                                  :  367                : 0.012       : 0.05%       :     432     |
+| .\blanke\Draw.lua                                 : scale                                   :  103                : 0.011       : 0.04%       :     860     |
+| .\blanke\Input.lua                                : Input                                   :  313                : 0.010       : 0.04%       :     860     |
+| .\blanke\Canvas.lua                               : draw                                    :   54                : 0.008       : 0.03%       :     430     |
+| .\blanke\Util.lua                                 : toString                                :  279                : 0.008       : 0.03%       :     203     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: removeOpen                              :  153                : 0.008       : 0.03%       :    3242     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: removeClosed                            :  154                : 0.007       : 0.03%       :    1339     |
+| .\blanke\Blanke.lua                               : fn                                      :   56                : 0.006       : 0.02%       :     441     |
+| .\blanke\Blanke.lua                               : fn                                      :   67                : 0.006       : 0.02%       :     431     |
+| .\blanke\Input.lua                                : init                                    :   20                : 0.005       : 0.02%       :       7     |
+| .\blanke\Class.lua                                : _Input                                  :   97                : 0.005       : 0.02%       :       7     |
+| .\blanke\Input.lua                                : set                                     :  174                : 0.005       : 0.02%       :       7     |
+| .\blanke\Blanke.lua                               : _quit                                   :  673                : 0.005       : 0.02%       :       1     |
+| .\blanke\Asset.lua                                : font                                    :  150                : 0.005       : 0.02%       :     431     |
+| .\blanke\Blanke.lua                               : addClassType                            :  324                : 0.004       : 0.02%       :       3     |
+| .\blanke\Asset.lua                                : loadScripts                             :   15                : 0.004       : 0.02%       :       1     |
+| .\blanke\Debug.lua                                : quit                                    :   52                : 0.004       : 0.02%       :       1     |
+| .\blanke\State.lua                                : current                                 :  272                : 0.003       : 0.01%       :    1314     |
+| .\blanke\Draw.lua                                 : translate                               :   99                : 0.003       : 0.01%       :     860     |
+| .\blanke\extra\uuid.lua                           : BITWISE                                 :   52                : 0.003       : 0.01%       :     455     |
+| .\blanke\Input.lua                                : _releaseCheck                           :  297                : 0.003       : 0.01%       :     430     |
+| .\blanke\Asset.lua                                : has                                     :  140                : 0.002       : 0.01%       :     450     |
+| .\blanke\Util.lua                                 : round                                   :  393                : 0.002       : 0.01%       :     430     |
+| scripts/Mario.lua                                 : anonymous                               :    0                : 0.002       : 0.01%       :       1     |
+| .\blanke\Blanke.lua                               : loadPlugin                              :  317                : 0.002       : 0.01%       :       1     |
+| .\blanke\Blanke.lua                               : addEntity                               :  351                : 0.002       : 0.01%       :       1     |
+| .\blanke\Blanke.lua                               : blanke_require                          :    3                : 0.002       : 0.01%       :       1     |
+| .\blanke\Blanke.lua                               : addState                                :  352                : 0.002       : 0.01%       :       2     |
+| .\blanke\Class.lua                                : include                                 :   27                : 0.002       : 0.01%       :       3     |
+| .\blanke\Input.lua                                : releaseCheck                            :  122                : 0.002       : 0.01%       :    3440     |
+| .\blanke\UI.lua                                   : update                                  :  136                : 0.001       : 0.00%       :     430     |
+| .\blanke\Debug.lua                                : update                                  :   64                : 0.001       : 0.00%       :     430     |
+| .\blanke\Timer.lua                                : init                                    :    2                : 0.001       : 0.00%       :       1     |
+| .\blanke\Class.lua                                : Timer                                   :   97                : 0.001       : 0.00%       :       1     |
+| .\blanke\Class.lua                                : Group                                   :   97                : 0.001       : 0.00%       :       1     |
+| .\blanke\Group.lua                                : init                                    :    2                : 0.001       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : init                                    :  213                : 0.001       : 0.00%       :       1     |
+| .\blanke\Util.lua                                 : split                                   :  197                : 0.001       : 0.00%       :      16     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: addObstacle                             :   35                : 0.001       : 0.00%       :      15     |
+| .\blanke\plugins\ProFi.lua                        : start                                   :   67                : 0.001       : 0.00%       :       0     |
+| scripts/PlatformState.lua                         : anonymous                               :    0                : 0.001       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : getObjects                              :  395                : 0.001       : 0.00%       :       3     |
+| .\blanke\Class.lua                                : Scene                                   :   97                : 0.001       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : load                                    :  280                : 0.001       : 0.00%       :       1     |
+| .\blanke\plugins\ProFi.lua                        : resetReports                            :  337                : 0.001       : 0.00%       :       0     |
+| .\blanke\Blanke.lua                               : injectCallbacks                         :  277                : 0.001       : 0.00%       :       1     |
+| .\blanke\Blanke.lua                               : try                                     :  298                : 0.001       : 0.00%       :       3     |
+| .\blanke\Util.lua                                 : basename                                :  109                : 0.001       : 0.00%       :      17     |
+| .\blanke\extra\json.lua                           : parse                                   :  282                : 0.001       : 0.00%       :      36     |
+| .\blanke\Util.lua                                 : hasValue                                :  236                : 0.001       : 0.00%       :      28     |
+| .\blanke\Class.lua                                : include_helper                          :   27                : 0.001       : 0.00%       :     224     |
+| scripts/PathfindState.lua                         : anonymous                               :    0                : 0.001       : 0.00%       :       1     |
+| .\blanke\Font.lua                                 : getHeight                               :   40                : 0.000       : 0.00%       :     633     |
+| [C]                                               : translate                               :   -1                : 0.000       : 0.00%       :     860     |
+| .\blanke\extra\json.lua                           : encode                                  :  134                : 0.000       : 0.00%       :       1     |
+| .\blanke\Timer.lua                                : reset                                   :  111                : 0.000       : 0.00%       :       1     |
+| [C]                                               : concat                                  :   -1                : 0.000       : 0.00%       :     206     |
+| [C]                                               : print                                   :   -1                : 0.000       : 0.00%       :     203     |
+| [C]                                               : present                                 :   -1                : 0.000       : 0.00%       :     430     |
+| .\blanke\Timer.lua                                : start                                   :  100                : 0.000       : 0.00%       :       1     |
+| .\blanke\Signal.lua                               : on                                      :   24                : 0.000       : 0.00%       :       4     |
+| [C]                                               : step                                    :   -1                : 0.000       : 0.00%       :     431     |
+| .\blanke\Debug.lua                                : recordGame                              :   12                : 0.000       : 0.00%       :       1     |
+| [C]                                               : randSeed                                :   -1                : 0.000       : 0.00%       :       1     |
+| .\blanke\Util.lua                                 : randSeed                                :   80                : 0.000       : 0.00%       :       1     |
+| [string "wrap_Math.lua"]                          : randSeed                                :   49                : 0.000       : 0.00%       :       1     |
+| .\blanke\Util.lua                                 : decimal_places                          :  398                : 0.000       : 0.00%       :       1     |
+| [C]                                               : scale                                   :   -1                : 0.000       : 0.00%       :     860     |
+| [string "boot.lua"]                               : anonymous                               :  639                : 0.000       : 0.00%       :       0     |
+| [C]                                               : setFont                                 :   -1                : 0.000       : 0.00%       :   11610     |
+| .\blanke\plugins\ProFi.lua                        : stop                                    :   85                : 0.000       : 0.00%       :       1     |
+| .\blanke\Draw.lua                                 : circle                                  :  195                : 0.000       : 0.00%       :    7310     |
+| [C]                                               : draw                                    :   -1                : 0.000       : 0.00%       :     430     |
+| .\blanke\Draw.lua                                 : line                                    :  193                : 0.000       : 0.00%       :     430     |
+| .\blanke\Timer.lua                                : every                                   :   31                : 0.000       : 0.00%       :       1     |
+| [C]                                               : rad                                     :   -1                : 0.000       : 0.00%       :   11610     |
+| [C]                                               : encode                                  :   -1                : 0.000       : 0.00%       :       2     |
+| [C]                                               : pop                                     :   -1                : 0.000       : 0.00%       :    2580     |
+| [C]                                               : write                                   :   -1                : 0.000       : 0.00%       :       1     |
+| [C]                                               : getCanvas                               :   -1                : 0.000       : 0.00%       :     430     |
+| [C]                                               : setCanvas                               :   -1                : 0.000       : 0.00%       :     860     |
+| [C]                                               : setBlendMode                            :   -1                : 0.000       : 0.00%       :    1720     |
+| [C]                                               : yield                                   :   -1                : 0.000       : 0.00%       :     431     |
+| [C]                                               : pump                                    :   -1                : 0.000       : 0.00%       :     431     |
+| .\blanke\Draw.lua                                 : text                                    :  197                : 0.000       : 0.00%       :   11610     |
+| [C]                                               : push                                    :   -1                : 0.000       : 0.00%       :    2580     |
+| .\blanke\Net.lua                                  : disconnect                              :   80                : 0.000       : 0.00%       :       1     |
+| .\blanke\Blanke.lua                               : clearObjects                            :  373                : 0.000       : 0.00%       :       1     |
+| .\blanke\Blanke.lua                               : quit                                    :  152                : 0.000       : 0.00%       :       1     |
+| .\blanke\Blanke.lua                               : _getSnap                                :  412                : 0.000       : 0.00%       :     430     |
+| .\blanke\Blanke.lua                               : anonymous                               :  644                : 0.000       : 0.00%       :       1     |
+| [C]                                               : setColor                                :   -1                : 0.000       : 0.00%       :   21930     |
+| .\blanke\Blanke.lua                               : restoreCallbacks                        :  307                : 0.000       : 0.00%       :       1     |
+| [C]                                               : clear                                   :   -1                : 0.000       : 0.00%       :     860     |
+| [C]                                               : isActive                                :   -1                : 0.000       : 0.00%       :     430     |
+| .\blanke\Blanke.lua                               : draw                                    :  284                : 0.000       : 0.00%       :     430     |
+| [C]                                               : origin                                  :   -1                : 0.000       : 0.00%       :     860     |
+| [C]                                               : getBackgroundColor                      :   -1                : 0.000       : 0.00%       :     430     |
+| .\blanke\Net.lua                                  : update                                  :   73                : 0.000       : 0.00%       :     430     |
+| .\blanke\extra\json.lua                           : encode                                  :  106                : 0.000       : 0.00%       :       2     |
+| .\blanke\extra\json.lua                           : encode                                  :  124                : 0.000       : 0.00%       :       7     |
+| .\blanke\Draw.lua                                 : rect                                    :  194                : 0.000       : 0.00%       :  523740     |
+| [string "boot.lua"]                               : anonymous                               :  155                : 0.000       : 0.00%       :       4     |
+| [string "boot.lua"]                               : anonymous                               :  158                : 0.000       : 0.00%       :     128     |
+| [string "boot.lua"]                               : anonymous                               :  212                : 0.000       : 0.00%       :       1     |
+| [string "boot.lua"]                               : anonymous                               :  200                : 0.000       : 0.00%       :       4     |
+| [string "wrap_Event.lua"]                         : poll                                    :   25                : 0.000       : 0.00%       :     431     |
+| [C]                                               : sleep                                   :   -1                : 0.000       : 0.00%       :     430     |
+| .\blanke\Blanke.lua                               : update                                  :  284                : 0.000       : 0.00%       :     430     |
+| [string "boot.lua"]                               : anonymous                               :  221                : 0.000       : 0.00%       :       1     |
+| .\blanke\extra\json.lua                           : encode                                  :  101                : 0.000       : 0.00%       :       2     |
+| .\blanke\extra\json.lua                           : encode                                  :   59                : 0.000       : 0.00%       :       3     |
+| .\blanke\Blanke.lua                               : anonymous                               :  284                : 0.000       : 0.00%       :       1     |
+| [string "boot.lua"]                               : anonymous                               :  209                : 0.000       : 0.00%       :       6     |
+| [string "boot.lua"]                               : anonymous                               :  206                : 0.000       : 0.00%       :       1     |
+| [C]                                               : next                                    :   -1                : 0.000       : 0.00%       :       2     |
+| .\blanke\plugins\ProFi.lua                        : startHooks                              :  234                : 0.000       : 0.00%       :       1     |
+| .\blanke\Class.lua                                : SceneLayer                              :   97                : 0.000       : 0.00%       :       1     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: h                                       :  144                : 0.000       : 0.00%       :   11695     |
+| [C]                                               : getX                                    :   -1                : 0.000       : 0.00%       :     432     |
+| [C]                                               : abs                                     :   -1                : 0.000       : 0.00%       :    1296     |
+| [C]                                               : getY                                    :   -1                : 0.000       : 0.00%       :     432     |
+| .\blanke\Canvas.lua                               : resize                                  :   27                : 0.000       : 0.00%       :       1     |
+| .\blanke\Blanke.lua                               : scaledMouse                             :  632                : 0.000       : 0.00%       :     432     |
+| [C]                                               : newCanvas                               :   -1                : 0.000       : 0.00%       :       1     |
+| [C]                                               : min                                     :   -1                : 0.000       : 0.00%       :    1292     |
+| [C]                                               : getDimensions                           :   -1                : 0.000       : 0.00%       :     432     |
+| [C]                                               : getDesktopDimensions                    :   -1                : 0.000       : 0.00%       :       1     |
+| [C]                                               : fromPixels                              :   -1                : 0.000       : 0.00%       :     432     |
+| .\blanke\Window.lua                               : getResolution                           :   18                : 0.000       : 0.00%       :       1     |
+| .\blanke\Globals.lua                              : updateGlobals                           :   10                : 0.000       : 0.00%       :     432     |
+| [C]                                               : updateMode                              :   -1                : 0.000       : 0.00%       :       1     |
+| .\blanke\Window.lua                               : detectAspectRatio                       :    8                : 0.000       : 0.00%       :       1     |
+| [C]                                               : getWidth                                :   -1                : 0.000       : 0.00%       :       1     |
+| .\blanke\extra\uuid.lua                           : randomseed                              :  168                : 0.000       : 0.00%       :       1     |
+| [C]                                               : match                                   :   -1                : 0.000       : 0.00%       :      17     |
+| .\blanke\Util.lua                                 : extname                                 :  121                : 0.000       : 0.00%       :      17     |
+| [C]                                               : extname                                 :   -1                : 0.000       : 0.00%       :      17     |
+| .\blanke\Asset.lua                                : add                                     :   86                : 0.000       : 0.00%       :      13     |
+| [C]                                               : gsub                                    :   -1                : 0.000       : 0.00%       :      52     |
+| [C]                                               : getHeight                               :   -1                : 0.000       : 0.00%       :    1064     |
+| .\blanke\Util.lua                                 : ends                                    :  193                : 0.000       : 0.00%       :      55     |
+| .\blanke\Util.lua                                 : cleanPath                               :  128                : 0.000       : 0.00%       :      22     |
+| [C]                                               : math_abs                                :   -1                : 0.000       : 0.00%       :       1     |
+| [C]                                               : cleanPath                               :   -1                : 0.000       : 0.00%       :      22     |
+| [C]                                               : math_floor                              :   -1                : 0.000       : 0.00%       :   13823     |
+| [C]                                               : randomseed                              :   -1                : 0.000       : 0.00%       :       1     |
+| .\blanke\Asset.lua                                : add                                     :  150                : 0.000       : 0.00%       :      13     |
+| [C]                                               : setDefaultFilter                        :   -1                : 0.000       : 0.00%       :       1     |
+| [C]                                               : byte                                    :   -1                : 0.000       : 0.00%       :    1982     |
+| [C]                                               : ipairs                                  :   -1                : 0.000       : 0.00%       :   25436     |
+| [C]                                               : pairs                                   :   -1                : 0.000       : 0.00%       :  516174     |
+| [C]                                               : (for generator)                         :   -1                : 0.000       : 0.00%       :  218945     |
+| main.lua                                          : load                                    :    6                : 0.000       : 0.00%       :       1     |
+| [C]                                               : sethook                                 :   -1                : 0.000       : 0.00%       :       2     |
+| .\blanke\Draw.lua                                 : setBackgroundColor                      :   58                : 0.000       : 0.00%       :       1     |
+| [string "boot.lua"]                               : getLow                                  :   78                : 0.000       : 0.00%       :       0     |
+| [C]                                               : xpcall                                  :   -1                : 0.000       : 0.00%       :     437     |
+| [C]                                               : getTime                                 :   -1                : 0.000       : 0.00%       :    1294     |
+| [string "boot.lua"]                               : parseGameArguments                      :  131                : 0.000       : 0.00%       :       0     |
+| main.lua                                          : anonymous                               :    0                : 0.000       : 0.00%       :       0     |
+| [string "boot.lua"]                               : anonymous                               :  311                : 0.000       : 0.00%       :       0     |
+| [C]                                               : tonumber                                :   -1                : 0.000       : 0.00%       :     377     |
+| [C]                                               : type                                    :   -1                : 0.000       : 0.00%       :   82109     |
+| [C]                                               : sub                                     :   -1                : 0.000       : 0.00%       :   24997     |
+| [C]                                               : Class                                   :   -1                : 0.000       : 0.00%       :       4     |
+| [C]                                               : getmetatable                            :   -1                : 0.000       : 0.00%       :       4     |
+| [C]                                               : getInfo                                 :   -1                : 0.000       : 0.00%       :      23     |
+| .\blanke\extra\json.lua                           : parse                                   :  377                : 0.000       : 0.00%       :     812     |
+| [C]                                               : read                                    :   -1                : 0.000       : 0.00%       :       8     |
+| [C]                                               : len                                     :   -1                : 0.000       : 0.00%       :   18138     |
+| .\blanke\Class.lua                                : Class                                   :   60                : 0.000       : 0.00%       :       4     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: anonymous                               :    0                : 0.000       : 0.00%       :       1     |
+| [C]                                               : setBackgroundColor                      :   -1                : 0.000       : 0.00%       :       1     |
+| .\blanke\Class.lua                                : Class                                   :  157                : 0.000       : 0.00%       :       4     |
+| [C]                                               : pcall                                   :   -1                : 0.000       : 0.00%       :       1     |
+| [C]                                               : anonymous                               :   -1                : 0.000       : 0.00%       :  543534     |
+| [C]                                               : h                                       :   -1                : 0.000       : 0.00%       :   11695     |
+| [C]                                               : setmetatable                            :   -1                : 0.000       : 0.00%       :     444     |
+| [C]                                               : rawget                                  :   -1                : 0.000       : 0.00%       :  213136     |
+| [C]                                               : sort                                    :   -1                : 0.000       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : sortLayers                              :  275                : 0.000       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : getLayerByUUID                          :  269                : 0.000       : 0.00%       :       3     |
+| .\blanke\Scene.lua                                : addHitbox                               :  470                : 0.000       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : addTileHitbox                           :  509                : 0.000       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : anonymous                               :  248                : 0.000       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : init                                    :    3                : 0.000       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : init                                    :   51                : 0.000       : 0.00%       :       1     |
+| [C]                                               : tostring                                :   -1                : 0.000       : 0.00%       :    1471     |
+| .\blanke\Class.lua                                : Scenetable                              :   97                : 0.000       : 0.00%       :       1     |
+| [C]                                               : assert                                  :   -1                : 0.000       : 0.00%       :     861     |
+| .\blanke\plugins\ProFi.lua                        : shouldReturn                            :  199                : 0.000       : 0.00%       :       1     |
+| .\blanke\Asset.lua                                : scene                                   :  150                : 0.000       : 0.00%       :       1     |
+| .\blanke\Scene.lua                                : _splitNameTag                           :  390                : 0.000       : 0.00%       :       3     |
+| .\blanke\Util.lua                                 : randRange                               :   66                : 0.000       : 0.00%       :      15     |
+| [string "wrap_RandomGenerator.lua"]               : randRange                               :   33                : 0.000       : 0.00%       :      15     |
+| [string "wrap_RandomGenerator.lua"]               : randRange                               :   75                : 0.000       : 0.00%       :      15     |
+| [C]                                               : ceil                                    :   -1                : 0.000       : 0.00%       :     880     |
+| [C]                                               : g                                       :   -1                : 0.000       : 0.00%       :   46036     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: g                                       :  147                : 0.000       : 0.00%       :   46036     |
+| [C]                                               : _splitNameTag                           :   -1                : 0.000       : 0.00%       :       3     |
+| [string "wrap_Math.lua"]                          : randRange                               :   37                : 0.000       : 0.00%       :      15     |
+| [string "wrap_RandomGenerator.lua"]               : random                                  :   33                : 0.000       : 0.00%       :      15     |
+| [string "wrap_Math.lua"]                          : random                                  :   37                : 0.000       : 0.00%       :      15     |
+| [C]                                               : floor                                   :   -1                : 0.000       : 0.00%       :    3060     |
+| [string "wrap_RandomGenerator.lua"]               : random                                  :   75                : 0.000       : 0.00%       :      15     |
+| [C]                                               : random                                  :   -1                : 0.000       : 0.00%       :      30     |
+| .\blanke\Class.lua                                : __index                                 :  130                : 0.000       : 0.00%       :  106568     |
+| .\blanke\Asset.lua                                : scene                                   :  173                : 0.000       : 0.00%       :       1     |
+| .\blanke\State.lua                                : clearStack                              :   91                : 0.000       : 0.00%       :       1     |
+| .\blanke\Group.lua                                : __index                                 :   11                : 0.000       : 0.00%       :     454     |
+| [C]                                               : string_sub                              :   -1                : 0.000       : 0.00%       :   13822     |
+| [C]                                               : insert                                  :   -1                : 0.000       : 0.00%       :    5226     |
+| .\blanke\Asset.lua                                : isPathAdded                             :   45                : 0.000       : 0.00%       :       3     |
+| .\blanke\State.lua                                : current                                 :  288                : 0.000       : 0.00%       :     872     |
+| [C]                                               : getDirectoryItems                       :   -1                : 0.000       : 0.00%       :       5     |
+| [C]                                               : math_random                             :   -1                : 0.000       : 0.00%       :    7088     |
+| [C]                                               : newFont                                 :   -1                : 0.000       : 0.00%       :     431     |
+| [C]                                               : __index                                 :   -1                : 0.000       : 0.00%       :  107052     |
+| .\blanke\extra\uuid.lua                           : uuid                                    :  205                : 0.000       : 0.00%       :     443     |
+| [C]                                               : rawset                                  :   -1                : 0.000       : 0.00%       :    6724     |
+| .\blanke\Asset.lua                                : font                                    :  174                : 0.000       : 0.00%       :     431     |
+| .\blanke\State.lua                                : verifyState                             :  140                : 0.000       : 0.00%       :       1     |
+| [C]                                               : newSource                               :   -1                : 0.000       : 0.00%       :       3     |
+| [C]                                               : newImage                                :   -1                : 0.000       : 0.00%       :       4     |
+| .\blanke\Input.lua                                : add                                     :   48                : 0.000       : 0.00%       :      12     |
+| [C]                                               : unpack                                  :   -1                : 0.000       : 0.00%       :  544818     |
+| .\blanke\Util.lua                                 : starts                                  :  188                : 0.000       : 0.00%       :      22     |
+| .\blanke\Util.lua                                 : anonymous                               :  205                : 0.000       : 0.00%       :      20     |
+| [C]                                               : format                                  :   -1                : 0.000       : 0.00%       :      16     |
+| [C]                                               : getDuration                             :   -1                : 0.000       : 0.00%       :       2     |
+| ...S\blankejs\love2d\lua\blanke\plugins\Pathfinder: init                                    :    3                : 0.000       : 0.00%       :       1     |
+| .\blanke\Class.lua                                : include                                 :   51                : 0.000       : 0.00%       :       3     |
+| .\blanke\Asset.lua                                : acceptAsset                             :   86                : 0.000       : 0.00%       :       4     |
+| .\blanke\Class.lua                                : Pathfinder                              :   97                : 0.000       : 0.00%       :       1     |
+| .\blanke\Asset.lua                                : acceptAsset                             :  150                : 0.000       : 0.00%       :       4     |
+| [C]                                               : newImageData                            :   -1                : 0.000       : 0.00%       :       4     |
+| .\blanke\plugins\ProFi.lua                        : stopHooks                               :  238                : 0.000       : 0.00%       :       1     |

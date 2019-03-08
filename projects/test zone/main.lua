@@ -1,5 +1,7 @@
 -- engine
 BlankE = require('blanke.Blanke')
+ProFi = blanke_require('plugins.ProFi')
+ProFi:start()
 
 function BlankE.load()
 	BlankE.options = {
