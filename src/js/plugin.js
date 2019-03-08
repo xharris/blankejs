@@ -7,24 +7,26 @@ let pathJoin;
 
 // get a list of .lua and .js files
 function refreshPluginList() {
-	nwFS.readdir(app.settings.plugin_path, (err, files) => {
-		let full_path;
-		for (let f of files) {
-			full_path = pathJoin(app.settings.plugin_path, f);
-			if (f.endsWith('.lua')) {
-				lua_plugins.push(f);
+	blanke.cooldownFn('refreshPlugin',500,function(){
+		nwFS.readdir(app.settings.plugin_path, (err, files) => {
+			let full_path;
+			for (let f of files) {
+				full_path = pathJoin(app.settings.plugin_path, f);
+				if (f.endsWith('.lua')) {
+					lua_plugins.push(f);
+				}
+				if (f.endsWith('.js')) {
+					js_plugins.push(f);
+				}
+				if (f.endsWith('.blex') || f.endsWith('.zip') || f.endsWith('.rar')) {
+					zip_plugins.push(f);
+				}
+				if (nwFS.statSync(full_path).isDirectory()) {
+					dir_plugins.push(full_path);
+				}
 			}
-			if (f.endsWith('.js')) {
-				js_plugins.push(f);
-			}
-			if (f.endsWith('.blex') || f.endsWith('.zip') || f.endsWith('.rar')) {
-				zip_plugins.push(f);
-			}
-			if (nwFS.statSync(full_path).isDirectory()) {
-				dir_plugins.push(full_path);
-			}
-		}
-		installPlugins();
+			installPlugins();
+		});
 	});
 }
 

@@ -1,6 +1,6 @@
 BlankE.addState("PathfindState")
 
-local pathing = Pathfinder('space',5)
+local pathing = Pathfinder('space',30)
 local sc_field, asteroids, player, alien
 local off = 100
 local points = {}
@@ -49,7 +49,7 @@ function PathfindState:update(dt)
 		end
 	end
 	
-	alien.x, alien.y = mouse_x, mouse_y
+	--alien.x, alien.y = mouse_x, mouse_y
 	--points = pathing:getPath(alien.x,alien.y,player.x,player.y)
 end
 
@@ -67,6 +67,6 @@ function PathfindState:draw()
 	Draw.setColor("orange")
 	
 	--Draw.setPointSize(1)
-	Draw.line(unpack(points))	
-	pathing:draw()
+	Draw.point(unpack(points))	
+	--pathing:draw()
 end
