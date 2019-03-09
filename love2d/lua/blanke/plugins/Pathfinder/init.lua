@@ -156,7 +156,13 @@ Pathfinder = Class{
 		local latest_open
 		function setOpen(x, y, key, val)
 			if not open[x..'.'..y] then open_n = open_n + 1; open[x..'.'..y] = {x=x, y=y, g=0, h=h(x,y)} end 
-			if closed[x..'.'..y] then closed_n = closed_n - 1; closed[x..'.'..y] = nil end
+			if closed[id] then
+				closed_n = closed_n - 1;
+				open[id].g = closed[id].g;
+				open[id].h = closed[id].h;
+				open[id].f = closed[id].f;
+				closed[id] = nil;
+			end
 
 			local cell = open[x..'.'..y]
 			latest_open = x..'.'..y
@@ -164,10 +170,17 @@ Pathfinder = Class{
 			if key ~= 'f' then cell.f = cell.g + cell.h end
 		end
 		function setClosed(x, y, key, val)
-			if not closed[x..'.'..y] then closed_n = closed_n + 1; closed[x..'.'..y] = {x=x, y=y, g=0, h=h(x,y)} end 
-			if open[x..'.'..y] then open_n = open_n - 1; open[x..'.'..y] = nil end
+			local id = x..'.'..y
+			if not closed[id] then closed_n = closed_n + 1; closed[id] = {x=x, y=y, g=0, h=h(x,y)} end 
+			if open[id] then
+				open_n = open_n - 1;
+				closed[id].g = open[id].g;
+				closed[id].h = open[id].h;
+				closed[id].f = open[id].f;
+				open[id] = nil;
+			end
 
-			local cell = closed[x..'.'..y]
+			local cell = closed[id]
 			if key then cell[key] = val end
 			if key ~= 'f' then cell.f = cell.g + cell.h end
 		end
@@ -181,7 +194,7 @@ Pathfinder = Class{
 					if cell.f < lowest then same = false; cell.f = lowest; low_cell = cell end 
 				end
 			end
-			if same and latest_open then return latest_open end 
+			if same and latest_open then return open[latest_open] end 
 			return low_cell
 		end
 		function getCost(x ,y)
@@ -194,45 +207,77 @@ Pathfinder = Class{
 		local curr_x, curr_y, curr_g = lowestOpen.x, lowestOpen.y, 0
 		local neigh_f, neighbor
 		local cells = {}
-		cells[end_x..'.'..end_y]={child=nil,x=end_x,y=end_y}
+
+		function updateNext(x,y,cx,cy)
+			if not cells[x..'.'..y] then 
+				cells[x..'.'..y] = {next=nil,x=x,y=y}
+			end
+			if cx ~= nil and cy ~= nil then cells[x..'.'..y].next = cx..'.'..cy end
+		end
+		function getNext(x,y)
+			if cells[x..'.'..y] then return cells[cells[x..'.'..y].next] end
+			return nil
+		end
+		function addPoint(x,y)
+			table.insert(ret_path, x * self.cell_size)
+			table.insert(ret_path, y * self.cell_size)
+		end
 
 		local iterations = 1000
-		while open_n > 0 and curr_x ~= end_x and curr_y ~= end_y and iterations > 0 do
-		iterations = iterations -1
+		local last_id
+		local done = false
+		while not done do
+			done = open_n > 0 and curr_x ~= end_x and curr_y ~= end_y and iterations > 0 
+			--iterations = iterations -1
 			setClosed(curr_x, curr_y)
-			local lowest_f, lowest_x, lowest_y, lowest_g
+			-- local lowest_f, lowest_x, lowest_y, lowest_g
 			for nx = curr_x - 1, curr_x + 1 do
 				for ny = curr_y - 1, curr_y + 1 do
-					if not getClosed(nx, ny) then
-						local neigh_g = curr_g + getCost(nx, ny)
-						local neigh_h = h(nx, ny)
-						local neigh_f = neigh_g + neigh_h
+					--updateNext(nx,ny)
+					local cost = g(curr_x, curr_y) + getCost(nx, ny) + 1
 
-						if getOpen(nx, ny) then
-							table.insert(ret_path, nx*self.cell_size)
-							table.insert(ret_path, ny*self.cell_size)
-						end
-						setOpen(nx, ny, 'g', neigh_g)
-						setOpen(nx, ny, 'h', neigh_h)
+					if nx == curr_x and ny == curr_y then 
+						addPoint(nx, ny)
+						done = true
+					end
+
+					neighbor = getOpen(nx, ny)
+					if neighbor and cost < neighbor.g then
+						setClosed(nx, ny)
+					end
+					neighbor = getClosed(nx, ny)
+					if neighbor and cost < neighbor.g then
+						removeClosed(nx, ny)
+					end
+
+					if not getClosed(nx, ny) and not getOpen(nx, ny) then
+						setOpen(nx, ny, 'g', cost)
+						setOpen(nx, ny, 'h', h(nx, ny))
+						addPoint(nx, ny)
 					end 
 				end
 			end
 
 			if open_n > 0 then
 				lowestOpen = getLowestOpen()
-				--if lowestOpen then
+				if lowestOpen then
 					curr_x,	curr_y, curr_g = lowestOpen.x, lowestOpen.y, lowestOpen.g
-				--end
+				end
 			end
 		end
---[[
+		--[[
+		updateNext(end_x,end_y,last_id[1],last_id[2])
+
 		function addNode(cell)
 			table.insert(ret_path, cell.x * self.cell_size)
 			table.insert(ret_path, cell.y * self.cell_size)
-			if cell.child then print(cell.x..'.'..cell.y,'>',cell.child) addNode(cells[cell.child]) end
+			local nextNode = getNext(cell.x, cell.y)
+			if nextNode then addNode(nextNode) end
 		end
-		print('start',start_x..'.'..start_y,'end',end_x..'.'..end_y)
-		addNode(cells[start_x..'.'..start_y])]]
+		--print_r(cells)
+		print('end',end_x..'.'..end_y,'start',start_x..'.'..start_y)
+		print('last',last_id[1],last_id[2])
+		addNode(cells[end_x..'.'..end_y])]]
 		return ret_path
 	end,
 
@@ -298,7 +343,7 @@ Pathfinder = Class{
 			local successors = {}
 			for x = qx - 1, qx + 1 do 
 				for y = qy - 1, qy + 1 do 
-					if x ~= qx and y ~= qy and not getClosed(x, y) then
+					if x ~= qx and y ~= qy and not getClosed(x, y) then -- and cost(x,y) == 0 then
 						table.insert(successors, {x=x, y=y, g=g, f=cost(x,y) + h(x,y)})
 					end
 				end

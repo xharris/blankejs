@@ -9,7 +9,7 @@
     "transparent": true,
     "width": 800,
     "height": 600,
-    "icon": "src/logo.png"
+    "icon": "src/logo.ico"
   },
   "build": {
     "nwVersion": "0.36.2",

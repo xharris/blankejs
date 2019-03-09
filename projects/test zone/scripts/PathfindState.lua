@@ -1,6 +1,6 @@
 BlankE.addState("PathfindState")
 
-local pathing = Pathfinder('space',30)
+local pathing = Pathfinder('space',20)
 local sc_field, asteroids, player, alien
 local off = 100
 local points = {}
@@ -33,11 +33,11 @@ function PathfindState:enter()
 	
 	refreshPath()
 	Timer():every(function()
-		refreshPath()
+		--refreshPath()
 	end, 1):start()
 	
 	for p = 1, #points, 2 do
-		Debug.log(p/2 + .5,points[p],points[p+1])
+		-- Debug.log(p/2 + .5,points[p],points[p+1])
 	end
 end
 
@@ -68,5 +68,5 @@ function PathfindState:draw()
 	
 	--Draw.setPointSize(1)
 	Draw.point(unpack(points))	
-	--pathing:draw()
+	pathing:draw()
 end

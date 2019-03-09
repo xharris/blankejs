@@ -546,6 +546,25 @@ var app = {
 			blanke.toast("Dev mode already enabled!");
 		}
 	}
+
+	checkForUpdates() {
+		// check latest version
+		// ...
+		// ask if it can be installed now
+		// ...
+		// YES: update()
+	}
+
+	update() {
+		// download new version
+		// ...
+		// delete old files
+		// ...
+		// unpack updated files
+		// ...
+		// restart app
+		// ...
+	}
 }
 
 nwWIN.on('loaded', function() {
