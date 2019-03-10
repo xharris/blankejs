@@ -549,7 +549,7 @@ var app = {
 	},
 
 	curr_version: '',
-	checkForUpdates() {
+	checkForUpdates(silent) {
 		let curr_version_list = JSON.parse(nwFS.readFileSync(nwPATH.join('src','version.json')));
 		app.curr_version = Object.keys(curr_version_list)[0];
 		// check latest version
@@ -575,6 +575,8 @@ var app = {
 							"no":function(){}
 						});
 					});
+				} else {
+					if (!silent) blanke.toast('Already up to date! ('+app.curr_version+')');
 				}
 			}
 		});
@@ -875,7 +877,7 @@ nwWIN.on('loaded', function() {
 		})
 		
 		app.showWelcomeScreen();
-		app.checkForUpdates();
+		app.checkForUpdates(true);
 		dispatchEvent("ideReady");
 	});
 
