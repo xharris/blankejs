@@ -583,7 +583,6 @@ var app = {
 	},
 
 	update(ver) {
-		let console_window = new Console();
 		// download new version
 		blanke.toast('Downloading update');
 		nwREQ(`https://github.com/xharris/blankejs/archive/${ver}.zip`)
