@@ -570,7 +570,7 @@ var app = {
 
 					// ask if it can be installed now
 					app.getElement('#btn-update').addEventListener('click',(e)=>{
-						blanke.showModal(`<div class="update-title">Download and install the update?</div><div class='info'>${update_string}</div>`,{
+						blanke.showModal(`<div class="update-title">Download, Install, and Restart?</div><div class='info'>${update_string}</div>`,{
 							"yes":function(){ app.update(latest_version); },
 							"no":function(){}
 						});
@@ -610,6 +610,7 @@ var app = {
 				nwFS.removeSync('update.zip');
 				blanke.toast('Done updating. Restarting...');
 				// restart app
+				chrome.runtime.reload();
 			})
 			.on('error',(err)=>{
 				app.error('Could not download update',err);
