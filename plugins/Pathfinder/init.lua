@@ -9,7 +9,7 @@ Pathfinder = Class{
 		self.path = {}
 
 		_addGameObject('pathing',self)
-	end,
+	end, 
 
 	_compressInfo = function(self, obj) 
 		if obj.type == "entity" then

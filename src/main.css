@@ -2111,7 +2111,12 @@ body:after {
   color: #b0bec5;
   font-size: 15px;
   float: right;
+  opacity: 1;
   transition: all ease-in-out 0.1s;
+}
+#window-buttons button.hidden {
+  pointer-events: none;
+  opacity: 0;
 }
 #window-buttons button#btn-close {
   color: #b71c1c;
@@ -2736,7 +2741,6 @@ body.mac .tool-container button:hover {
   display: block;
   font-size: 16px;
   line-height: 20px;
-  width: 100%;
   text-align: left;
 }
 #welcome .recent-files .file:hover {
@@ -3097,7 +3101,8 @@ body.mac .tool-container button:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 .ui-modal {
-  background: #CFD8DC;
+  background: #212121;
+  color: white;
 }
 .ui-modal input {
   outline: 1px solid rgba(90, 217, 164, 0);
@@ -3111,4 +3116,34 @@ body.mac .tool-container button:hover {
 .ui-modal input:focus {
   outline: 1px solid #5ad9a4;
   outline-offset: 1px;
+}
+.ui-modal .ui-button-sphere {
+  color: white;
+  border: 1px solid #485358;
+}
+.ui-modal .ui-button-sphere:hover {
+  border-color: transparent;
+}
+.version-container .number {
+  text-align: left;
+  font-size: 18px;
+  color: #78909c;
+}
+.version-container .notes {
+  text-align: left;
+  margin-bottom: 15px;
+  white-space: pre;
+}
+.ui-modal .update-title {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+.ui-modal .info {
+  max-height: 150px;
+  overflow: auto;
+  border: 1px solid #485358;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 3px;
 }

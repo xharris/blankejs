@@ -9,7 +9,7 @@
     "transparent": true,
     "width": 800,
     "height": 600,
-    "icon": "src/logo.ico"
+    "icon": "src/logo.png"
   },
   "build": {
     "nwVersion": "0.36.2",
@@ -40,6 +40,7 @@
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.11",
     "node-watch": "^0.6.0",
+    "request": "^2.88.0",
     "walk": "^2.3.13"
   },
   "devDependencies": {

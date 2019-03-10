@@ -6,7 +6,7 @@ let zip_plugins = [];
 let pathJoin;
 
 // get a list of .lua and .js files
-function refreshPluginList() {
+function refreshPluginList(silent) {
 	blanke.cooldownFn('refreshPlugin',500,function(){
 		nwFS.readdir(app.settings.plugin_path, (err, files) => {
 			let full_path;
@@ -25,12 +25,12 @@ function refreshPluginList() {
 					dir_plugins.push(full_path);
 				}
 			}
-			installPlugins();
+			installPlugins(silent);
 		});
 	});
 }
 
-function installPlugins() {
+function installPlugins(silent) {
 	// move lua files to <engine_path>/lua/blanke/plugins/
 	let eng_plugin_dir = pathJoin(app.settings.engine_path,'lua','blanke','plugins');
 	function inspectFolder(folder) {
@@ -60,7 +60,7 @@ function installPlugins() {
 			inspectFolder(pathJoin(eng_plugin_dir,d))
 		}
 
-		blanke.toast("Plugins loaded!")
+		if (!silent) blanke.toast("Plugins loaded!")
 	});
 
 	// add .js files to ide somehow
@@ -68,7 +68,7 @@ function installPlugins() {
 }
 
 document.addEventListener("openProject",function(e){
-	refreshPluginList();
+	refreshPluginList(true);
 });
 
 

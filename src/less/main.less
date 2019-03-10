@@ -84,7 +84,13 @@ body:before, body:after {
 		color: #b0bec5;
 		font-size: 15px;
 		float: right;
+		opacity: 1;
 		transition: all ease-in-out 0.1s;
+
+		&.hidden {
+			pointer-events: none;
+			opacity: 0;
+		}
 
 		&#btn-close {
 			color: #b71c1c;
@@ -688,7 +694,6 @@ body:before, body:after {
 			display: block;
 			font-size: 16px;
 			line-height: 20px;
-			width: 100%;
 		 	text-align: left;
 
 			&:hover {
@@ -1066,7 +1071,8 @@ body:before, body:after {
 }
 
 .ui-modal {
-	background: #CFD8DC;
+	background: rgba(33,33,33 ,1);
+	color: white;
 
 	input {
 		outline: 1px solid fade(@ide-green, 0%);
@@ -1081,5 +1087,44 @@ body:before, body:after {
 			outline: 1px solid @ide-green;
 	    	outline-offset: 1px;
     	}
+	}
+
+	.ui-button-sphere {
+		color: white;
+		border: 1px solid #485358;
+
+		&:hover {
+			border-color: transparent;
+		}
+	}
+}
+
+.version-container {
+	.number {
+	    text-align: left;
+	    font-size: 18px;
+	    color: #78909c;
+	}
+
+	.notes {
+	    text-align: left;
+	    margin-bottom: 15px;
+    	white-space: pre;
+	}
+}
+
+.ui-modal {
+	.update-title {
+		font-size: 24px;
+	    font-weight: 900;
+	    margin-bottom: 10px;
+	}
+	.info {
+	    max-height: 150px;
+	    overflow: auto;
+	    border: 1px solid #485358;
+	    padding: 5px;
+	    box-sizing: border-box;
+	    border-radius: 3px;
 	}
 }

@@ -11,18 +11,20 @@ class Console extends Editor {
 
 		this.pin = false;
 
-		this.process = [...args][1];
-		this.process.stdout.on('data', function(data){
-			data = data.toString();
+		this.process = [...args][0];
+		if (this.process) {
+			this.process.stdout.on('data', function(data){
+				data = data.toString();
 
-			if (!data.includes("attempt to call global") && !data.includes("attempt to call a string value")) {
-				if (data.includes("error") || data.includes("Error"))  {
-					this_ref.err(data);
-				} else {
-					this_ref.log(data);
+				if (!data.includes("attempt to call global") && !data.includes("attempt to call a string value")) {
+					if (data.includes("error") || data.includes("Error"))  {
+						this_ref.err(data);
+					} else {
+						this_ref.log(data);
+					}
 				}
-			}
-		});
+			});
+		}
 
 		this.el_log = app.createElement("div", "log");
 		this.appendChild(this.el_log);

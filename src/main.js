@@ -28,6 +28,7 @@ var nwNOOB = require('./js/server.js');
 var nwZIP = require('archiver');
 var nwZIP2 = require('adm-zip');
 var nwWATCH = require('node-watch');
+var nwREQ = require('request');
 
 var app = {
 	project_path: "",
@@ -186,7 +187,7 @@ var app = {
 			let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path),'--ide'].concat(options || []), {
 				cwd: nwPATH.join(app.settings.engine_path, 'lua')
 			});
-			let console_window = new Console(app, child);
+			let console_window = new Console(child);
 			child.on('close', function(){
 				console_window.processClosed()
 			})
@@ -545,25 +546,79 @@ var app = {
 		} else {
 			blanke.toast("Dev mode already enabled!");
 		}
-	}
+	},
 
+	curr_version: '',
 	checkForUpdates() {
+		let curr_version_list = JSON.parse(nwFS.readFileSync(nwPATH.join('src','version.json')));
+		app.curr_version = Object.keys(curr_version_list)[0];
 		// check latest version
-		// ...
-		// ask if it can be installed now
-		// ...
-		// YES: update()
-	}
+		nwREQ.get('https://raw.githubusercontent.com/xharris/blankejs/master/src/version.json', (err, res, body)=>{
+			if (!err && res.statusCode == 200) {
+				let updates = JSON.parse(body);
+				let update_string = '';
+				let keys = Object.keys(updates);
+				for (let k = 0; k < keys.length; k++) {
+					if (!curr_version_list[keys[k]]) {
+						update_string += `<div class='version-container'><div class='number'>${keys[k]}</div><div class='notes'>${updates[keys[k]].join('\n')}</div></div>`;
+					}
+				}
+				if (update_string != '') {
+					let latest_version = keys[0];
+					blanke.toast('An update is available! ('+latest_version+')');
+					app.getElement('#btn-update').classList.remove('hidden');
 
-	update() {
+					// ask if it can be installed now
+					app.getElement('#btn-update').addEventListener('click',(e)=>{
+						blanke.showModal(`<div class="update-title">Download and install the update?</div><div class='info'>${update_string}</div>`,{
+							"yes":function(){ app.update(latest_version); },
+							"no":function(){}
+						});
+					});
+				}
+			}
+		});
+	},
+
+	update(ver) {
+		let console_window = new Console();
 		// download new version
-		// ...
-		// delete old files
-		// ...
-		// unpack updated files
-		// ...
-		// restart app
-		// ...
+		blanke.toast('Downloading update');
+		nwREQ(`https://github.com/xharris/blankejs/archive/${ver}.zip`)
+			.pipe(nwFS.createWriteStream('update.zip'))
+			.on('close',function(){
+				blanke.toast('Installing update');
+				let update_zip = nwZIP2('update.zip');//.extractEntryTo('blankejs-'+ver,cwd(),false,true)
+				let file_paths = update_zip.getEntries();
+				let limit = 3;
+				let entryName;
+				let actual_src = [/love2d[\/\\]/,/src[\/\\]/,'package.json'];
+				// unpack new files
+				for (let f = 0; f < file_paths.length; f++) {
+					entryName = file_paths[f].entryName;
+					for (let src of actual_src) {
+						if (entryName.match(src) && !entryName.endsWith('\/') && !nwPATH.basename(entryName).startsWith('.')){
+							update_zip.extractEntryTo(entryName, nwPATH.dirname(nwPATH.join(cwd(), entryName.replace(/^[^\/\\]*[\/\\]/,''))), false, true);
+						} 
+					}
+					if (entryName.match(/dist_files[\/\\]/)) {
+						update_zip.extractEntryTo(entryName, nwPATH.dirname(nwPATH.join(cwd(), nwPATH.basename(entryName))), false, true);
+					}
+				}
+				nwFS.removeSync('update.zip');
+				blanke.toast('Done updating. Restarting...');
+				// restart app
+			})
+			.on('error',(err)=>{
+				app.error('Could not download update',err);
+
+			});
+	},
+
+	error () {
+		nwFS.appendFile('error.txt','[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
+			blanke.toast(`Error! See <a href="#" onclick="nwGUI.Shell.showItemInFolder(nwPATH.join(cwd(),'error.txt'));">error.txt</a> for more info`);
+		});
 	}
 }
 
@@ -781,9 +836,9 @@ nwWIN.on('loaded', function() {
 	if (DEV_MODE) {
 		app.enableDevMode(true);
 	}
-
 	app.addSearchKey({key: 'Start Server', onSelect: app.runServer});
 	app.addSearchKey({key: 'Stop Server', onSelect: app.stopServer});
+	app.addSearchKey({key: 'Check for updates', onSelect: app.checkForUpdates});
 
 	document.addEventListener("openProject",function(){
 		app.hideWelcomeScreen();
@@ -820,6 +875,7 @@ nwWIN.on('loaded', function() {
 		})
 		
 		app.showWelcomeScreen();
+		app.checkForUpdates();
 		dispatchEvent("ideReady");
 	});
 
