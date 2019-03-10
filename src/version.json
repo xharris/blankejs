@@ -1,4 +1,4 @@
 {
-	"0.0.1":["receive a message when there are no updates available"],
+	"0.0.1":["receive a message when there are no updates available","restart after update"],
 	"0.0":["initial release"]
 }
