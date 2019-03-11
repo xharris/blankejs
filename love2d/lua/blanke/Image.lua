@@ -24,8 +24,8 @@ Image = Class{
 		assert(self.image, 'Image not found: \"'..tostring(name)..'\"')
 
 		self.image:setWrap("clampzero","clampzero")
-
 		self.quad = nil
+
 		self.x = 0
 		self.y = 0
 		self.angle = 0

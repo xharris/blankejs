@@ -1,9 +1,9 @@
 {
-    "BlankE":[
-        {"title":"Props/Methods","file":"blanke.md"},
+    "General":[
+        {"title":"BlankE Props/Methods","file":"blanke.md"},
         {"title":"What to put in main.lua","file":"blanke_main.md"},
         {"title":"Setting options","file":"blanke_options.md"},
-        {"title":"Tips: Things to watch out for with BlankE","file":"blanke_tips.md"}
+        {"title":"Coding tips","file":"blanke_tips.md"}
     ],
     "Asset":[
         {"title":"What they are and how to add them","file":"asset.md"}
@@ -25,7 +25,15 @@
     "Font":[
         {"title":"Using a font","file":"font.md"}
     ],
-    "Group":[],
+    "Group":[
+        {"title":"Instance Props/Methods","file":"group.md"}
+    ],
+    "Image":[
+        {"title":"Instance Props/Methods","file":"image.md"}
+    ],
+    "Input":[
+        {"title":"How to create/use inputs","file":"input.md"}
+    ],
     "Plugins":[],
     "Other":[
         {"title":"Credits","file":"credits.md"}

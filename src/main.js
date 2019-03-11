@@ -67,13 +67,13 @@ var app = {
 		}
 	},
 
-    contextMenu: function(x, y, items) {
-        var menu = new nwGUI.Menu();
-        for (var i = 0; i < items.length; i++) {
-            var menuitem = menu.append(new nwGUI.MenuItem(items[i]));
-        }
-        menu.popup(x, y);
-    },
+	contextMenu: function(x, y, items) {
+		var menu = new nwGUI.Menu();
+		for (var i = 0; i < items.length; i++) {
+			var menuitem = menu.append(new nwGUI.MenuItem(items[i]));
+		}
+		menu.popup(x, y);
+	},
 
 	close: function() {
 		nwWIN.close();
