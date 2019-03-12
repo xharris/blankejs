@@ -1,0 +1,467 @@
+.no-select {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+}
+.win-drag {
+  -webkit-app-region: drag;
+}
+.win-nodrag {
+  -webkit-app-region: no-drag;
+}
+/* parent must be relative */
+.centered {
+  left: 50%;
+  transform: translateX(-50%);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.centered-h {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.centered-v {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+*:not(.no-custom-scroll)::-webkit-scrollbar-track {
+  /* border: 1px solid #BDBDBD; */
+  background-color: #E0E0E0;
+}
+*:not(.no-custom-scroll)::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+*:not(.no-custom-scroll)::-webkit-scrollbar * {
+  background: transparent;
+}
+*:not(.no-custom-scroll)::-webkit-scrollbar-thumb {
+  background: #90a4ae !important;
+}
+*:not(.no-custom-scroll)::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, 0);
+}
+/*
+    HEADER
+*/
+.ui-header {
+  font-weight: 900;
+  font-size: 20px;
+  margin: 10px 0px;
+}
+/*
+    BUTTONS
+*/
+/* 4px is practically a random number */
+.ui-btn-group {
+  cursor: default;
+  background-color: rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+}
+.ui-button {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  margin: 3px;
+  border: none !important;
+  outline: none;
+  background-color: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  vertical-align: top;
+  transition: all ease-in-out 0.4s;
+}
+.ui-button:hover {
+  background-color: #e0e0e0;
+}
+.ui-button:hover:disabled {
+  background-color: transparent;
+  cursor: default;
+}
+.ui-button .mdi-svg {
+  vertical-align: top;
+  text-align: center;
+}
+.ui-button-sphere {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  margin: 3px;
+  border: none !important;
+  outline: none;
+  background-color: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  vertical-align: top;
+  transition: all ease-in-out 0.4s;
+  height: 26px;
+  width: 26px;
+  padding: 0px;
+}
+.ui-button-sphere:hover {
+  background-color: #e0e0e0;
+}
+.ui-button-sphere:hover:disabled {
+  background-color: transparent;
+  cursor: default;
+}
+.ui-button-sphere .mdi-svg {
+  vertical-align: top;
+  text-align: center;
+}
+.ui-button-sphere:hover {
+  border-radius: 100%;
+}
+.ui-button-rect {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  margin: 3px;
+  border: none !important;
+  background-color: transparent;
+  font-size: 12px;
+  vertical-align: top;
+  padding: 5px 10px;
+  background-color: white;
+  border: none;
+  outline: none;
+  border-radius: 0px;
+  cursor: pointer;
+  transition: all ease-in-out 0.4s;
+}
+.ui-button-rect:hover {
+  background-color: #e0e0e0;
+}
+.ui-button-rect:hover:disabled {
+  background-color: transparent;
+  cursor: default;
+}
+.ui-button-rect .mdi-svg {
+  vertical-align: top;
+  text-align: center;
+}
+.ui-button-rect:hover {
+  border-radius: 4px;
+  background-color: #e0e0e0;
+}
+.ui-select {
+  padding: 3px;
+  border-radius: 5px;
+  outline: none;
+  border-color: black;
+  border-width: 2px;
+}
+.ui-input {
+  -webkit-app-region: no-drag;
+  border: 20px solid transparent;
+  border-image: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, transparent 90%, transparent 100%);
+  border-image-slice: 1;
+  border-width: 0px;
+  padding: 3px;
+  border-bottom-width: 1px;
+  outline: none;
+  margin-left: 10px;
+  width: 60px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+}
+.ui-checkbox {
+  -webkit-app-region: no-drag;
+  width: 26px;
+  height: 26px;
+  margin: 3px;
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+}
+.ui-checkbox label {
+  margin-left: 40px;
+  vertical-align: top;
+  line-height: 30px;
+}
+.ui-checkbox input {
+  height: 100%;
+  width: 100%;
+  margin: 0px;
+  opacity: 0;
+  border-style: solid;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+.ui-checkbox input + .mdi,
+.ui-checkbox input + .mdi-svg {
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  text-align: center;
+}
+.ui-checkbox input:not(:checked) + .mdi,
+.ui-checkbox input:not(:checked) + .mdi-svg {
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: dashed;
+}
+.ui-checkbox input:checked + .mdi,
+.ui-checkbox input:checked + .mdi-svg {
+  border-color: black;
+  border-style: solid;
+  background-color: #e0e0e0;
+}
+.ui-checkbox .mdi,
+.ui-checkbox .mdi-svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  pointer-events: none;
+  border: 1px solid black;
+  border-radius: 2px;
+  margin: 0px;
+  width: 26px;
+  height: 26px;
+  padding: 2px;
+  background-color: transparent;
+  box-sizing: border-box;
+  transition: all ease-in-out 0.2s;
+}
+.ui-checkbox .mdi-svg {
+  vertical-align: top;
+  text-align: center;
+}
+.ui-checkbox:hover .mdi,
+.ui-checkbox:hover .mdi-svg {
+  background-color: #e0e0e0;
+}
+.ui-checkbox-label {
+  -webkit-app-region: no-drag;
+  width: 26px;
+  height: 26px;
+  margin: 3px;
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  width: auto;
+}
+.ui-checkbox-label label {
+  margin-left: 40px;
+  vertical-align: top;
+  line-height: 30px;
+}
+.ui-checkbox-label input {
+  height: 100%;
+  width: 100%;
+  margin: 0px;
+  opacity: 0;
+  border-style: solid;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+.ui-checkbox-label input + .mdi,
+.ui-checkbox-label input + .mdi-svg {
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  text-align: center;
+}
+.ui-checkbox-label input:not(:checked) + .mdi,
+.ui-checkbox-label input:not(:checked) + .mdi-svg {
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: dashed;
+}
+.ui-checkbox-label input:checked + .mdi,
+.ui-checkbox-label input:checked + .mdi-svg {
+  border-color: black;
+  border-style: solid;
+  background-color: #e0e0e0;
+}
+.ui-checkbox-label .mdi,
+.ui-checkbox-label .mdi-svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  pointer-events: none;
+  border: 1px solid black;
+  border-radius: 2px;
+  margin: 0px;
+  width: 26px;
+  height: 26px;
+  padding: 2px;
+  background-color: transparent;
+  box-sizing: border-box;
+  transition: all ease-in-out 0.2s;
+}
+.ui-checkbox-label .mdi-svg {
+  vertical-align: top;
+  text-align: center;
+}
+.ui-checkbox-label:hover .mdi,
+.ui-checkbox-label:hover .mdi-svg {
+  background-color: #e0e0e0;
+}
+.ui-file > input {
+  margin-left: 10px;
+  border: 1px solid gray;
+  border-radius: 4px;
+  outline: none;
+}
+.ui-file > label {
+  margin-left: 10px;
+}
+.ui-input-group label {
+  margin-right: 20px;
+}
+.ui-input-group input {
+  margin: 5px;
+}
+.ui-input-group .ui-input {
+  margin: 5px;
+}
+.ui-text > input {
+  -webkit-app-region: no-drag;
+  border: 20px solid transparent;
+  border-image: linear-gradient(to right, rgba(0, 0, 0, 0.5) 0%, transparent 90%, transparent 100%);
+  border-image-slice: 1;
+  border-width: 0px;
+  padding: 3px;
+  border-bottom-width: 1px;
+  outline: none;
+  width: 60px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+  margin-left: 10px;
+}
+.ui-modal {
+  position: absolute;
+  top: 50%;
+  left: 0px;
+  z-index: 20;
+  right: 0px;
+  text-align: center;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+}
+.ui-modal > .modal-body {
+  margin: 10px;
+}
+.ui-modal button:hover[data-action='yes'] {
+  background-color: #4caf50;
+  color: white;
+}
+.ui-modal button:hover[data-action='no'] {
+  background-color: #f44336;
+  color: white;
+}
+.ui-color {
+  border: none;
+  padding: 0px;
+  outline: 1px solid black;
+  outline-offset: -4px;
+  width: 25px;
+  height: 25px;
+  vertical-align: middle;
+  border-radius: 100%;
+  background: none;
+}
+/* Window CSS */
+.blanke-window {
+  display: none;
+  z-index: 100;
+  min-width: 100px;
+  min-height: 100px;
+  position: absolute;
+  border-radius: 2px;
+  border-width: 2px;
+  border-style: solid;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
+.blanke-window > .title-bar {
+  cursor: default;
+  background-color: black;
+  height: 14px;
+  overflow: hidden;
+}
+.blanke-window > .title-bar > * {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  font-size: 12px;
+}
+.blanke-window > .title-bar > .title {
+  pointer-events: none;
+  color: white;
+  line-height: 14px;
+  padding-left: 2px;
+}
+.blanke-window > .title-bar > .btn-close {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  color: white;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+.blanke-window > .content {
+  margin-bottom: 0px;
+  overflow: hidden;
+  position: absolute;
+  top: 14px;
+  bottom: 0px;
+  right: 0px;
+  left: 0px;
+}

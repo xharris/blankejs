@@ -1,0 +1,390 @@
+@card-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+
+.no-select {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;           /* Non-prefixed version, currently
+    not supported by any browser */
+}
+
+.win-drag{
+    -webkit-app-region: drag;
+}
+
+.win-nodrag{
+    -webkit-app-region: no-drag;
+}
+
+/* parent must be relative */
+.centered {
+    .centered-h();
+    .centered-v();
+    transform: translate(-50%,-50%);
+}
+
+.centered-h {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.centered-v {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+*:not(.no-custom-scroll) {
+    &::-webkit-scrollbar-track {
+        /* border: 1px solid #BDBDBD; */
+        background-color: rgba(224, 224, 224, .1);
+    }
+
+    &::-webkit-scrollbar {
+        height: 10px;
+        width: 10px;
+    }
+
+    &::-webkit-scrollbar *{ 
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #757575 !important;
+    }
+
+    &::-webkit-scrollbar-corner {
+        background: rgba(0,0,0,0);
+    }
+}
+
+/*
+    HEADER
+*/
+.ui-header {
+    font-weight: 900;
+    font-size: 20px;
+    margin: 10px 0px;
+}
+
+/*
+    BUTTONS
+*/
+@button-transition-speed: 0.4s;
+@button-size: 26px;
+@button-icon-padding: 4px; /* 4px is practically a random number */
+
+.ui-btn-group {
+    cursor: default;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+}
+
+.ui-button {
+    .no-select();
+    
+    margin: 3px;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 14px;
+    cursor: pointer;
+    vertical-align: top;
+    border-radius: 2px;
+
+    transition: all ease-in-out @button-transition-speed;
+
+    &:hover {
+        background-color: rgba(224,224,224,0.3);
+    
+        &:disabled {
+            background-color: transparent;
+            cursor: default;
+        }
+    }
+
+    * {
+        pointer-events: none;
+    }
+
+    .mdi-svg {
+        vertical-align: top;
+        text-align: center;
+    }
+}
+
+.ui-button-sphere {
+    .ui-button();
+    
+    height: @button-size;
+    width: @button-size;
+    padding: 0px;
+
+    &:hover {
+        border-radius: 100%;
+    }
+}
+
+.ui-button-rect {
+    .ui-button();
+    
+    padding: 5px 10px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    border-radius: 0px;
+    cursor: pointer;
+
+    transition: all ease-in-out @button-transition-speed;
+
+    &:hover {
+        border-radius: 4px;
+        background-color: #e0e0e0;
+    }
+}
+
+.ui-select {
+    padding: 3px;
+    border-radius: 5px;
+    outline: none;
+    border-color: black;
+    border-width: 2px;
+}
+
+.ui-input {
+    .win-nodrag();
+}
+
+.ui-checkbox {
+    .win-nodrag();
+
+    width: @button-size;
+    height: @button-size;
+    margin: 3px;
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+
+    label {
+        margin-left: 40px;
+        vertical-align: top;
+        line-height: 30px;
+    }
+
+    input {
+        height: 100%;
+        width: 100%;
+        margin: 0px;
+        opacity: 0;
+        border-style: solid;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+
+        & + .mdi,& + .mdi-svg {
+            width: @button-size;
+            height: @button-size;
+            padding: @button-icon-padding;
+            text-align: center;
+        }
+
+        &:not(:checked) + .mdi, &:not(:checked) + .mdi-svg {
+            border-color: rgba(0,0,0,0.2);
+            border-style: dashed;
+        }
+
+        &:checked + .mdi, &:checked + .mdi-svg {
+            border-color: black;
+            border-style: solid;
+            background-color: #e0e0e0;
+        }
+    }
+
+    .mdi, .mdi-svg {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        pointer-events: none;
+        border: 1px solid black;
+        border-radius: 2px;
+        margin: 0px;
+        width: @button-size;
+        height: @button-size;
+        padding: 2px;
+        background-color: transparent;
+        box-sizing: border-box;
+
+        transition: all ease-in-out 0.2s;
+    }
+
+    .mdi-svg {
+        vertical-align: top;
+        text-align: center;
+    }
+
+    &:hover {
+        .mdi, .mdi-svg {
+            background-color: #e0e0e0;
+        }
+    }
+}
+
+.ui-checkbox-label {
+    .ui-checkbox();
+
+    width: auto;
+}
+
+.ui-file {
+    > input {
+        margin-left: 10px;
+        border: 1px solid gray;
+        border-radius: 4px;
+        outline: none;
+    }
+
+    > label {
+        margin-left: 10px;
+    }
+}
+
+.ui-input-group {
+    label {
+        margin-right: 20px;
+    }
+
+    input {
+        .ui-input();
+    }
+
+    .ui-input {
+        margin: 5px;
+    }
+}
+
+.ui-text {
+    > input {
+        .ui-input();
+
+        margin-left: 10px;
+    }
+
+    > label {
+
+    }
+}
+
+.ui-modal {
+    .win-nodrag();
+
+    position: absolute;
+    top: 50%;
+    left: 0px;
+    z-index: 1000;
+    right: 0px;
+    text-align: center;
+    transform: translateY(-50%);
+    background-color: rgba(255,255,255,0.95);
+    padding: 40px;
+
+    > .modal-body {
+        margin: 10px;
+    }    
+
+    button:hover {
+        &[data-action='yes']  {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        &[data-action='no']  {
+            background-color: #f44336;
+            color: white;
+        }
+    }
+}
+
+.ui-color {
+    border: none;
+    padding: 0px;
+    outline: 1px solid black;
+    outline-offset: -4px;
+    width: 25px;
+    height: 25px;
+    vertical-align: middle;
+    border-radius: 100%;
+    background: none;
+}
+
+/* Window CSS */
+@title-bar-height: 14px;
+.blanke-window {
+    display: none;
+    z-index: 100;
+    min-width: 100px;
+    min-height: 100px;
+    position: absolute;
+    border-radius: 2px;
+    border-width: 2px;
+    border-style: solid;
+    box-shadow: @card-shadow;
+
+    >.title-bar {
+        cursor: default;
+        background-color: black;
+        height: @title-bar-height;
+        overflow: hidden;
+
+        >* {
+            .no-select();
+            font-size: 12px;
+        }
+
+        >.title {
+            pointer-events: none;
+            color: white;
+            line-height: @title-bar-height;
+            padding-left: 2px;
+        }
+
+        >.btn-close {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            color: white;
+            background: none;
+            border: none;
+            outline: none; 
+            cursor: pointer;
+        }
+    }
+
+    >.content {
+        margin-bottom: 0px;
+        overflow: hidden;
+        position: absolute;
+        top: @title-bar-height;
+        bottom: 0px;
+        right: 0px;
+        left: 0px;
+    }
+}
+
+.blankejs-toasts {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    z-index: 1000;
+
+    .toast-container {
+        background-color: white;
+        border: 1px solid black;
+        margin: 2px;
+
+        .content {
+            margin: 0px;
+        }
+    }
+}
