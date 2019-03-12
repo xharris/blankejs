@@ -239,10 +239,6 @@ body:before, body:after {
 	transition: background-color ease-in-out 0.2s;
 	transition: opacity ease-in-out 0.2s;
 
-	* {
-	    transition: opacity ease-in-out 0.2s;
-	}
-
 	&.invisible {
 		opacity: 0;
 		pointer-events: none;
@@ -1095,6 +1091,119 @@ body:before, body:after {
 
 		&:hover {
 			border-color: transparent;
+		}
+	}
+}
+
+.list-view-container {
+	display: inline-block;
+	width: 100%;
+
+	.list-title {
+		margin: 2px;
+		text-transform: uppercase;
+	}
+
+	.actions-container {
+		margin: 2px;
+		height: 18px;
+    	display: inline-block;
+
+		button {
+			margin: 0px;
+			border-radius: 0px;
+			border-width: 0px;
+			border-top: 1px solid rgba(224, 224, 224, 0.3);
+			border-bottom: 1px solid rgba(224, 224, 224, 0.3);
+			color: rgba(224, 224, 224, 0.5);
+		    height: 100%;
+			border-color: rgba(224, 224, 224, 0.3);
+			border-style: solid;
+
+			&:hover {
+				color: black;
+			}
+
+			&:first-child {
+				border-top-left-radius: 2px;
+				border-bottom-left-radius: 2px;
+				border-left-width: 1px;
+			}
+			&:last-child {
+				border-top-right-radius: 2px;
+				border-bottom-right-radius: 2px;
+				border-right-width: 1px;
+			}
+
+			&.add {
+				border-color: fade(@ide-green, 30%);
+				color: @ide-green;
+
+				&:hover {
+					color: white;
+					background-color: @ide-green;
+				}
+			}
+		}
+	}
+
+	.items-container {
+		display: inline-block;
+   		padding: 0px 3px;
+   		width: -webkit-fill-available;
+
+   		.list-title {
+   			margin: 2px;
+   			text-transform: uppercase;
+   		}
+
+		.item {
+		    color: #bdbdbd;
+		    padding: 0px;
+		    padding-left: 3px;
+		    border-left: 1px solid rgba(90, 217, 164, 1);
+		    cursor: pointer;
+			outline-offset: -1px;
+			outline: 1px solid transparent;
+			height: 16px;
+		    transition: all ease-in-out 0.1s;
+
+		    &:hover {
+		    	border-left-width: 2px;
+		    }
+
+			&.selected {
+				border-left-width: 3px;
+			    outline: 1px solid rgba(90, 217, 164, 1);
+    			color: white;
+			}
+
+			.item-text {
+				vertical-align: middle;
+				line-height: 100%;
+			}
+
+			.item-actions {
+				display: inline-block;
+				height: 100%;
+				float: right;
+
+				> button {
+					margin: 0px;
+					width: 18px;
+					height: 100%;
+					vertical-align: middle;
+    				line-height: 12px;
+
+    				> i {
+    					line-height: 16px;
+    				}
+
+    				&:hover {
+    					border-radius: 2px;
+    				}
+				}
+			}
 		}
 	}
 }

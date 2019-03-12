@@ -32,7 +32,11 @@
         {"title":"Instance Props/Methods","file":"image.md"}
     ],
     "Input":[
-        {"title":"How to create/use inputs","file":"input.md"}
+        {"title":"How to create/use inputs","file":"input.md"},
+        {"title":"List of input constants","file":"input_constants.md"}
+    ],
+    "Net":[
+        {"title":"Props/Methods","file":"net.md"}
     ],
     "Plugins":[],
     "Other":[

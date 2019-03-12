@@ -1,25 +1,28 @@
+# Properties
 
--- class properties
-num id 								-- unique clientid 
+```
+num id 								-- unique client id assigned to the player 
 bool is_leader						-- only true for one person on server and moves to another if that person leaves
+```
 
--- class methods
+# Methods
+
+```
 join([address], [port])				-- address = "localhost", port = 12345
 disconnect()
-send(data)
---[[ to send an event
-	Net.send({
-		type="netevent",
-		event="object.sploosh",
-		info={
-			bob = {1,2,"oatmeal"}
-		}
-	})
-]]
+
+send(data) send object to other clients 
 sendPersistent(data) 				-- send data. saved server side and sent to new players that join later
+
 getPopulation()						-- get number of clients connected (including self)
 draw([classname])					-- draw objects synced through network, or just a certain class
 addObject(obj)						-- add an object to be synced with other clients
+```
+
+## Event types
+
+These are called automatically by
+
 
 -- vvv objects added with 'addObject' are given the follow properties and methods vvv
 -- optional obj properties

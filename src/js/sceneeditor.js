@@ -49,7 +49,7 @@ class SceneEditor extends Editor {
 		this.game_height = window.innerHeight;
 
 		this.pixi = new PIXI.Application(this.game_width, this.game_height, {
-			backgroundColor: 0x666666,// 0x424242,
+			backgroundColor: 0x354048,// 0x424242,
 			antialias: false,
 			autoResize: true,
 		});
@@ -323,6 +323,13 @@ class SceneEditor extends Editor {
 		});
 
 		// add object button
+		this.el_obj_list = new BlankeListView({new_item:"object"});
+		this.el_obj_list.onItemAction = function(icon, text) {
+			if (icon == "delete") {
+				
+			}
+		}
+
 		this.el_btn_add_object.title = "add object";
 		this.el_btn_add_object.innerHTML = "+";
 		this.el_btn_add_object.addEventListener('click', function(e){

@@ -879,8 +879,8 @@ nwWIN.on('loaded', function() {
 		app.showWelcomeScreen();
 		app.checkForUpdates(true);
 		dispatchEvent("ideReady");
-	});
 
-	// app.openProject('projects/boredom');
-	// app.hideWelcomeScreen();
+		// app.openProject('projects/boredom');
+		// app.hideWelcomeScreen();
+	});
 });

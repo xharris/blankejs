@@ -103,6 +103,9 @@
   background-color: transparent;
   cursor: default;
 }
+.ui-button * {
+  pointer-events: none;
+}
 .ui-button .mdi-svg {
   vertical-align: top;
   text-align: center;
@@ -140,6 +143,9 @@
 .ui-button-sphere:hover:disabled {
   background-color: transparent;
   cursor: default;
+}
+.ui-button-sphere * {
+  pointer-events: none;
 }
 .ui-button-sphere .mdi-svg {
   vertical-align: top;
@@ -180,6 +186,9 @@
 .ui-button-rect:hover:disabled {
   background-color: transparent;
   cursor: default;
+}
+.ui-button-rect * {
+  pointer-events: none;
 }
 .ui-button-rect .mdi-svg {
   vertical-align: top;
@@ -652,6 +661,122 @@
   /*}*/
   /*&:hover{*/
   /*}*/
+  /*
+		.list-view-container {
+    		white-space: nowrap;
+    		padding-bottom: 1px;
+    		position: relative;
+
+			.list-title {
+				margin: 0px;
+			    text-transform: uppercase;
+			    height: 20px;
+			    line-height: 20px;
+			    padding-left: 12px;
+			}
+
+			.actions-container {
+			    position: absolute;
+			    top: 0px;
+			    left: 0px;
+			    height: 20px;
+
+				button {
+				    position: absolute;
+				    padding: 0px 2.8px;
+				    margin: 0px;
+				    border: none;
+				    outline: none;
+				    width: 15px;
+				    height: 15px;
+				    top: 2px;
+				    left: -7.5px;
+				    border-radius: 100%;
+				    font-size: 21px;
+				    font-weight: 500;
+				    background-color: rgba(176,190,197 ,1);
+				    transition: all ease-in-out 0.2s;
+				    text-align: left;
+				    line-height: 14px;
+
+				    &:hover {	
+					    background-color: rgba(139,195,74,1);
+					    color: white;
+				    }
+
+				    i {
+				    	font-size: 10px;
+				    }
+				}
+			}
+
+			.items-container {
+				color: black;
+
+				&:hover {
+					.item {
+
+					}
+
+					.item-text {
+						text-align: left;
+					}
+				}
+
+				.item {
+					position: relative;
+					height: 18px;
+					margin: 0px 1px;
+					background-color: transparent;
+					outline: 0px dotted rgba(176, 190, 197, 0);
+
+					&:hover {
+						background-color: #CFD8DC;
+
+						> .item-actions {
+							opacity: 1;
+						}
+					}
+
+					&.selected {
+						background-color: #b0bec5;
+						outline: 1px solid #b0bec5;
+						z-index: 10;
+					}
+
+					.item-text {
+						.no-select();
+
+						left:0px;
+					    height: 100%;
+   	 					line-height: 18px;
+   	 					padding: 0px 10px;
+   	 					box-sizing: border-box;
+
+   	 					width: 100%;
+   	 					text-align: left;
+					}
+
+					.item-actions {
+						right: 0px;
+						opacity: 0;
+
+						transition: all ease-in-out 0.1s;
+
+						> button {
+							margin: 0px;
+						    height: 18px;
+						    border-radius: 2px;
+						    width: 18px;
+						}
+					}
+				}
+
+				.item > * {
+					position: absolute;
+				}
+			}
+		}*/
   /* OBJECT */
   /* LAYER */
   /* IMAGE */
@@ -678,8 +803,7 @@
   -webkit-appearance: none;
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-object,
-.content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-layer,
-.content[data-type="SceneEditor"] .sidebar:not(:hover) .actions-container > .add {
+.content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-layer {
   opacity: 0;
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) .input-letter,
@@ -724,113 +848,6 @@
 }
 .content[data-type="SceneEditor"] .sidebar .form-container {
   padding: 5px;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container {
-  white-space: nowrap;
-  padding-bottom: 1px;
-  position: relative;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .list-title {
-  margin: 0px;
-  text-transform: uppercase;
-  height: 20px;
-  line-height: 20px;
-  padding-left: 12px;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  height: 20px;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container button {
-  position: absolute;
-  padding: 0px 2.8px;
-  margin: 0px;
-  border: none;
-  outline: none;
-  width: 15px;
-  height: 15px;
-  top: 2px;
-  left: -7.5px;
-  border-radius: 100%;
-  font-size: 21px;
-  font-weight: 500;
-  background-color: #b0bec5;
-  transition: all ease-in-out 0.2s;
-  text-align: left;
-  line-height: 14px;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container button:hover {
-  background-color: #8bc34a;
-  color: white;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .actions-container button i {
-  font-size: 10px;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container {
-  color: black;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item {
-  /* outline: 1px solid #CFD8DC; */
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container:hover .item-text {
-  text-align: left;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item {
-  position: relative;
-  height: 18px;
-  margin: 0px 1px;
-  background-color: transparent;
-  outline: 0px dotted rgba(176, 190, 197, 0);
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item:hover {
-  background-color: #CFD8DC;
-  /* outline: 1px dashed rgb(176, 190, 197); */
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item:hover > .item-actions {
-  opacity: 1;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item.selected {
-  background-color: #b0bec5;
-  outline: 1px solid #b0bec5;
-  z-index: 10;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item .item-text {
-  -webkit-touch-callout: none;
-  /* iOS Safari */
-  -webkit-user-select: none;
-  /* Chrome/Safari/Opera */
-  -khtml-user-select: none;
-  /* Konqueror */
-  -moz-user-select: none;
-  /* Firefox */
-  -ms-user-select: none;
-  /* Internet Explorer/Edge */
-  user-select: none;
-  /* Non-prefixed version, currently
-    not supported by any browser */
-  left: 0px;
-  height: 100%;
-  line-height: 18px;
-  padding: 0px 10px;
-  box-sizing: border-box;
-  width: 100%;
-  text-align: left;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item .item-actions {
-  right: 0px;
-  opacity: 0;
-  transition: all ease-in-out 0.1s;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item .item-actions > button {
-  margin: 0px;
-  height: 18px;
-  border-radius: 2px;
-  width: 18px;
-}
-.content[data-type="SceneEditor"] .sidebar .list-view-container .items-container .item > * {
-  position: absolute;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container {
   width: 100%;
@@ -2186,6 +2203,9 @@ body:after {
   background-color: transparent;
   cursor: default;
 }
+.tool-container button * {
+  pointer-events: none;
+}
 .tool-container button .mdi-svg {
   vertical-align: top;
   text-align: center;
@@ -2284,9 +2304,6 @@ body.mac .tool-container button:hover {
   left: 0px;
   border-radius: 4px;
   transition: background-color ease-in-out 0.2s;
-  transition: opacity ease-in-out 0.2s;
-}
-.drag-container * {
   transition: opacity ease-in-out 0.2s;
 }
 .drag-container.invisible {
@@ -3111,6 +3128,101 @@ body.mac .tool-container button:hover {
 }
 .ui-modal .ui-button-sphere:hover {
   border-color: transparent;
+}
+.list-view-container {
+  display: inline-block;
+  width: 100%;
+}
+.list-view-container .list-title {
+  margin: 2px;
+  text-transform: uppercase;
+}
+.list-view-container .actions-container {
+  margin: 2px;
+  height: 18px;
+  display: inline-block;
+}
+.list-view-container .actions-container button {
+  margin: 0px;
+  border-radius: 0px;
+  border-width: 0px;
+  border-top: 1px solid rgba(224, 224, 224, 0.3);
+  border-bottom: 1px solid rgba(224, 224, 224, 0.3);
+  color: rgba(224, 224, 224, 0.5);
+  height: 100%;
+  border-color: rgba(224, 224, 224, 0.3);
+  border-style: solid;
+}
+.list-view-container .actions-container button:hover {
+  color: black;
+}
+.list-view-container .actions-container button:first-child {
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+  border-left-width: 1px;
+}
+.list-view-container .actions-container button:last-child {
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  border-right-width: 1px;
+}
+.list-view-container .actions-container button.add {
+  border-color: rgba(90, 217, 164, 0.3);
+  color: #5ad9a4;
+}
+.list-view-container .actions-container button.add:hover {
+  color: white;
+  background-color: #5ad9a4;
+}
+.list-view-container .items-container {
+  display: inline-block;
+  padding: 0px 3px;
+  width: -webkit-fill-available;
+}
+.list-view-container .items-container .list-title {
+  margin: 2px;
+  text-transform: uppercase;
+}
+.list-view-container .items-container .item {
+  color: #bdbdbd;
+  padding: 0px;
+  padding-left: 3px;
+  border-left: 1px solid #5ad9a4;
+  cursor: pointer;
+  outline-offset: -1px;
+  outline: 1px solid transparent;
+  height: 16px;
+  transition: all ease-in-out 0.1s;
+}
+.list-view-container .items-container .item:hover {
+  border-left-width: 2px;
+}
+.list-view-container .items-container .item.selected {
+  border-left-width: 3px;
+  outline: 1px solid #5ad9a4;
+  color: white;
+}
+.list-view-container .items-container .item .item-text {
+  vertical-align: middle;
+  line-height: 100%;
+}
+.list-view-container .items-container .item .item-actions {
+  display: inline-block;
+  height: 100%;
+  float: right;
+}
+.list-view-container .items-container .item .item-actions > button {
+  margin: 0px;
+  width: 18px;
+  height: 100%;
+  vertical-align: middle;
+  line-height: 12px;
+}
+.list-view-container .items-container .item .item-actions > button > i {
+  line-height: 16px;
+}
+.list-view-container .items-container .item .item-actions > button:hover {
+  border-radius: 2px;
 }
 .version-container .number {
   text-align: left;
