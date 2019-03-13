@@ -281,31 +281,21 @@ class SceneEditor extends Editor {
 		// object deletion
 		this.el_object_form.onChange('delete', function(){
 			if (this_ref.curr_object) {
-				for (var l = 0; l < this_ref.objects.length; l++) {
-					if (this_ref.objects[l].uuid == this_ref.curr_object.uuid) {
-
+				for (let uuid in this_ref.objects) { 
+					if (uuid == this_ref.curr_object.uuid) {
+						let obj = this_ref.objects[uuid];
 						blanke.showModal(
-							"<label>remove '"+this_ref.objects[l].name+"'?? </label>",
+							"<label>remove '"+obj.name+"'?? </label>",
 						{
 						"yes": function() {
 							// remove instances
-							this_ref.iterObject(this_ref.objects[l].name, function(obj) {
+							this_ref.iterObject(obj.name, function(obj) {
 								obj.poly.destroy()
 							});
 
 							// remove the object
-							this_ref.objects.splice(l, 1);
-							this_ref.removeItem(this_ref.objects[l].name);
-
-							// select the instance before it (if there is one)
-							if (l == 0)
-								l++;
-							if (l > this_ref.objects.length)
-								l = this_ref.objects.length - 1;
-							if (l > 0)
-								this_ref.setObject(this_ref.objects[l-1].name);
-							else
-								this_ref.setObject();
+							this_ref.setObject(this_ref.el_obj_list.removeItem(obj.name, true));
+							delete this_ref.objects[uuid];
 				 		},
 							"no": function() {}
 						});
@@ -1860,7 +1850,7 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
-		if (this.deleted || app.error_occured) return;
+		if (this.deleted) return;
 
 		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
 			camera:this.camera,
@@ -1961,6 +1951,9 @@ class SceneEditor extends Editor {
 		if (!app.error_occured) {
 			app.saveSettings();
 			nwFS.writeFileSync(this.file, JSON.stringify(export_data));
+		} else {
+			console.log(this.file+' not saved cause of error',app.error_occured)
+			blanke.toast(this.file+' not saved!');
 		}
 	}
 

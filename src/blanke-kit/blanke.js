@@ -247,8 +247,9 @@ class BlankeListView {
         }
     }
 
-    removeItem (text) {
+    removeItem (text, reselect_prev) {
         let children = this.el_items_container.children;
+        let del_c = -1;
         for (let c = 0; c < children.length; c++) {
             if (children[c].el_text.innerHTML == text) {
                 if (this.selected_text == text) {
@@ -256,6 +257,18 @@ class BlankeListView {
                     this.el_selected = undefined;
                 }
                 blanke.destroyElement(children[c]);
+                del_c = c;
+            }
+        }
+
+        if (reselect_prev) {
+            if (del_c == 0) del_c++;
+            if (del_c > children.length) del_c = children.length - 1;
+            if (del_c >= 0) {
+                this.selectItem(children[del_c-1].el_text.innerHTML);
+                return children[del_c-1].el_text.innerHTML;
+            } else {
+                return false;
             }
         }
     }

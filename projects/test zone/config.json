@@ -68,6 +68,36 @@
                     32
                 ],
                 "uuid": "64c7bf9d"
+            },
+            "08713791": {
+                "name": "object3",
+                "char": "#",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "08713791"
+            },
+            "2014fcbc": {
+                "name": "object4",
+                "char": "F",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "2014fcbc"
+            },
+            "aeda767d": {
+                "name": "object4",
+                "char": "H",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "aeda767d"
             }
         }
     }
