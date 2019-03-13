@@ -15,5 +15,5 @@ class TestView extends Editor {
 }
 
 document.addEventListener('openProject',()=>{
-	new TestView();
+	// new TestView();
 });

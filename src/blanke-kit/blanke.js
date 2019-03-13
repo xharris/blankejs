@@ -113,7 +113,7 @@ class BlankeListView {
 
         this.container = blanke.createElement("div","list-view-container");
 
-        this.selected_item = '';
+        this.selected_text = '';
         this.el_selected;
 
         // add title
@@ -135,7 +135,7 @@ class BlankeListView {
 
                     let text = this_ref.options.object_type+(count)
                     let ret_text = this_ref.onItemAdd(text);
-                    this_ref.addItem(ret_text || text);
+                    if (ret_text !== false) this_ref.addItem(ret_text || text);
             }],
             "move-up":[
                 "chevron-up","",
@@ -143,6 +143,7 @@ class BlankeListView {
                     if (this_ref.el_selected && this_ref.el_selected.previousElementSibling) {
                         let el_other = this_ref.el_selected.previousElementSibling;
                         el_other.parentNode.insertBefore(this_ref.el_selected, el_other);
+                        this_ref.onItemSwap(this_ref.el_selected.el_text.innerHTML, el_other.el_text.innerHTML);
                     }
             }],
             "move-down":[
@@ -151,6 +152,7 @@ class BlankeListView {
                     if (this_ref.el_selected && this_ref.el_selected.nextElementSibling) {
                         let el_other = this_ref.el_selected.nextElementSibling;
                         el_other.parentNode.insertBefore(this_ref.el_selected, el_other.nextSibling);
+                        this_ref.onItemSwap(this_ref.el_selected.el_text.innerHTML, el_other.el_text.innerHTML);
                     }
             }]
         };
@@ -267,6 +269,16 @@ class BlankeListView {
         }
     }
 
+    setItemColor (text, color) {
+        let children = this.el_items_container.children;
+        for (let c = 0; c < children.length; c++) {
+            if (children[c].el_text.innerHTML == text) {
+                children[c].style.outlineColor = color;
+                children[c].style.borderColor = color;
+            }
+        }
+    }
+
     getItems () {
         let ret_list = [];
         let children = this.el_items_container.children;
@@ -281,6 +293,9 @@ class BlankeListView {
     onItemAction (item_icon, item_text) { }
 
     onItemSelect (item_text) { }
+
+    // for move-up and move-down
+    onItemSwap (item1_text, item2_text) {}
 }
 
 class BlankeForm {

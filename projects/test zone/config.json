@@ -58,6 +58,16 @@
                     32
                 ],
                 "uuid": "4c608774"
+            },
+            "64c7bf9d": {
+                "name": "object3",
+                "char": "M",
+                "color": "#ffffff",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "64c7bf9d"
             }
         }
     }
