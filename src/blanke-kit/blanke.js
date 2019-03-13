@@ -1,3 +1,4 @@
+
 // requires jQuery Color Picker (http://www.laktek.com/2008/10/27/really-simple-color-picker-in-jquery/)
 
 function ifndef(val, def) {
