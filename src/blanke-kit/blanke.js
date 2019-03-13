@@ -212,6 +212,7 @@ class BlankeListView {
 
         // add item click event
         el_item_container.el_text = el_item_text;
+        el_item_container.title = el_item_text;
         el_item_container.addEventListener('click', function(){
             this_ref.selectItem(this.el_text.innerHTML);
             this_ref.onItemSelect(this.el_text.innerHTML);
@@ -265,6 +266,7 @@ class BlankeListView {
             if (children[c].el_text.innerHTML == text) {
                 if (this.selected_text == text) this.selected_text = text;
                 children[c].el_text.innerHTML = new_text;
+                children[c].title = new_text;
             }
         }
     }

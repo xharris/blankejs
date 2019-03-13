@@ -800,7 +800,7 @@
   /* width: 50px;*/
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) select {
-  -webkit-appearance: none;
+  /* -webkit-appearance: none; */
 }
 .content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-object,
 .content[data-type="SceneEditor"] .sidebar:not(:hover) .btn-add-layer {
@@ -832,7 +832,7 @@
   width: 100%;
 }
 .content[data-type="SceneEditor"] .sidebar > div:not(:last-child) {
-  padding-bottom: 15px;
+  /* padding-bottom: 15px; */
 }
 .content[data-type="SceneEditor"] .sidebar > div.hidden {
   display: none;
@@ -3146,11 +3146,11 @@ body.mac .tool-container button:hover {
   margin: 0px;
   border-radius: 0px;
   border-width: 0px;
-  border-top: 1px solid rgba(224, 224, 224, 0.3);
-  border-bottom: 1px solid rgba(224, 224, 224, 0.3);
+  border-top: 1px solid rgba(224, 224, 224, 0.5);
+  border-bottom: 1px solid rgba(224, 224, 224, 0.5);
   color: rgba(224, 224, 224, 0.5);
   height: 100%;
-  border-color: rgba(224, 224, 224, 0.3);
+  border-color: rgba(224, 224, 224, 0.5);
   border-style: solid;
 }
 .list-view-container .actions-container button:hover {
@@ -3167,7 +3167,7 @@ body.mac .tool-container button:hover {
   border-right-width: 1px;
 }
 .list-view-container .actions-container button.add {
-  border-color: rgba(90, 217, 164, 0.3);
+  border-color: rgba(90, 217, 164, 0.5);
   color: #5ad9a4;
 }
 .list-view-container .actions-container button.add:hover {
@@ -3176,7 +3176,9 @@ body.mac .tool-container button:hover {
 }
 .list-view-container .items-container {
   display: inline-block;
-  padding: 0px 3px;
+  padding: 0px;
+  max-height: 100px;
+  overflow: auto;
   width: -webkit-fill-available;
 }
 .list-view-container .items-container .list-title {
@@ -3185,7 +3187,7 @@ body.mac .tool-container button:hover {
 }
 .list-view-container .items-container .item {
   color: #bdbdbd;
-  padding: 0px;
+  padding: 2px 0px;
   padding-left: 3px;
   border-left: 1px solid #5ad9a4;
   cursor: pointer;

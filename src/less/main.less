@@ -1113,11 +1113,11 @@ body:before, body:after {
 			margin: 0px;
 			border-radius: 0px;
 			border-width: 0px;
-			border-top: 1px solid rgba(224, 224, 224, 0.3);
-			border-bottom: 1px solid rgba(224, 224, 224, 0.3);
+			border-top: 1px solid rgba(224, 224, 224, 0.5);
+			border-bottom: 1px solid rgba(224, 224, 224, 0.5);
 			color: rgba(224, 224, 224, 0.5);
 		    height: 100%;
-			border-color: rgba(224, 224, 224, 0.3);
+			border-color: rgba(224, 224, 224, 0.5);
 			border-style: solid;
 
 			&:hover {
@@ -1136,7 +1136,7 @@ body:before, body:after {
 			}
 
 			&.add {
-				border-color: fade(@ide-green, 30%);
+				border-color: fade(@ide-green, 50%);
 				color: @ide-green;
 
 				&:hover {
@@ -1149,7 +1149,9 @@ body:before, body:after {
 
 	.items-container {
 		display: inline-block;
-   		padding: 0px 3px;
+   		padding: 0px;
+   		max-height: 100px;
+    	overflow: auto;
    		width: -webkit-fill-available;
 
    		.list-title {
@@ -1159,7 +1161,7 @@ body:before, body:after {
 
 		.item {
 		    color: #bdbdbd;
-		    padding: 0px;
+    		padding: 2px 0px;
 		    padding-left: 3px;
 		    border-left: 1px solid rgba(90, 217, 164, 1);
 		    cursor: pointer;

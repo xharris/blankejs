@@ -131,16 +131,6 @@
                 ],
                 "uuid": "da04e1b6"
             },
-            "41ea8fda": {
-                "name": "ground",
-                "char": "M",
-                "color": "#ffff00",
-                "size": [
-                    32,
-                    32
-                ],
-                "uuid": "41ea8fda"
-            },
             "882bbb6a": {
                 "name": "boss1_stopper",
                 "char": "E",
@@ -201,5 +191,7 @@
     "export": {
         "name": "boredom",
         "remove_unused": true
-    }
+    },
+    "ico": "src\\logo.ico",
+    "icns": "src\\logo.icns"
 }
