@@ -403,7 +403,7 @@
 
 	   		 	&[data-size="2"] {
 	   		 		.form-inputs .form-text {
-		   		 		width: 40%;
+		   		 		width: 20%;
 
 						&[data-index="0"] {
 							text-align: right;	
@@ -423,12 +423,15 @@
 
 	   		 	.form-label {
 	   		 		margin: 0px;
-				    margin-top: 5px;
+					margin-right: 4px;
+				    margin-top: 2px;
 				    text-transform: uppercase;
+					display: inline-block;
 				}
 
 				.form-inputs {
-					height: 100%;
+					display: initial;
+					margin: 0px;
 
 					.form-button {
 		   		 		border: none;
@@ -451,9 +454,9 @@
 				    	background-color: rgba(255,255,255,0.5);
 				    	padding: 4px;
 				    	box-sizing: border-box;
-				    	width: 100%;
 				    	height: 100%;
 				    	font-size: 16px;
+						width: -webkit-fill-available;
 
 				    	&::-webkit-outer-spin-button,
 						&::-webkit-inner-spin-button {
@@ -465,7 +468,7 @@
 
 					.form-separator {
 						margin: 0px;
-						width: 20%;
+						width: 10%;
 						display: inline-block;
 						text-align: center;
 					    line-height: 20px;
@@ -477,7 +480,6 @@
 					    padding: 5px;
 					    text-align: center;
 					    background-color: rgba(176,190,197 ,1);
-					    width: 100%;
 					    height: 20px;
 					}
 

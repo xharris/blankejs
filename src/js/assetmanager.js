@@ -31,7 +31,10 @@ class AssetManager extends Editor {
 		this.setTitle("Assets");
 
 		document.addEventListener("fileChange", function(e){
-			console.log(e.detail);
+			let ignore = ['config.json','dist\/'];
+			for (let f of file) { 
+				if (e.detail.file.includes(f)) return;
+			}
 			this_ref.refreshFileList();
 		});
 	}

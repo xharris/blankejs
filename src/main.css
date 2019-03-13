@@ -858,7 +858,7 @@
   width: 100%;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-size="2"] .form-inputs .form-text {
-  width: 40%;
+  width: 20%;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group[data-size="2"] .form-inputs .form-text[data-index="0"] {
   text-align: right;
@@ -872,11 +872,14 @@
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group .form-label {
   margin: 0px;
-  margin-top: 5px;
+  margin-right: 4px;
+  margin-top: 2px;
   text-transform: uppercase;
+  display: inline-block;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group .form-inputs {
-  height: 100%;
+  display: initial;
+  margin: 0px;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group .form-inputs .form-button {
   border: none;
@@ -897,9 +900,9 @@
   background-color: rgba(255, 255, 255, 0.5);
   padding: 4px;
   box-sizing: border-box;
-  width: 100%;
   height: 100%;
   font-size: 16px;
+  width: -webkit-fill-available;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group .form-inputs .form-text::-webkit-outer-spin-button,
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group .form-inputs .form-text::-webkit-inner-spin-button {
@@ -910,7 +913,7 @@
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group .form-inputs .form-separator {
   margin: 0px;
-  width: 20%;
+  width: 10%;
   display: inline-block;
   text-align: center;
   line-height: 20px;
@@ -921,7 +924,6 @@
   padding: 5px;
   text-align: center;
   background-color: #b0bec5;
-  width: 100%;
   height: 20px;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container .form-group .form-inputs .form-color {
@@ -3176,7 +3178,7 @@ body.mac .tool-container button:hover {
 }
 .list-view-container .items-container {
   display: inline-block;
-  padding: 0px;
+  padding: 4px 0px;
   max-height: 100px;
   overflow: auto;
   width: -webkit-fill-available;
