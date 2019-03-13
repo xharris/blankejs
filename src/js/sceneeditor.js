@@ -281,8 +281,6 @@ class SceneEditor extends Editor {
 		// object deletion
 		this.el_object_form.onChange('delete', function(){
 			if (this_ref.curr_object) {
-				console.log('hi')
-
 				for (var l = 0; l < this_ref.objects.length; l++) {
 					if (this_ref.objects[l].uuid == this_ref.curr_object.uuid) {
 
