@@ -224,9 +224,11 @@ class SceneEditor extends Editor {
 
 				this_ref.refreshImageSelectionList();
 			}
+			e.preventDefault();
 		}
 		this.el_image_grid.addEventListener('mousemove',selectImageTiles);
 		this.el_image_grid.addEventListener('mousedown',selectImageTiles);
+		this.el_image_grid.addEventListener("contextmenu", (e) => { e.preventDefault(); });
 
 		// OBJECT elements
 

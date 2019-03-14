@@ -141,7 +141,23 @@
                 ],
                 "uuid": "882bbb6a"
             }
-        }
+        },
+        "object_order": [
+            "dd7918ee",
+            "7398c5bc",
+            "1c77eb2b",
+            "784fb058",
+            "6684c80c",
+            "4d96c227",
+            "f148287c",
+            "a8816ff5",
+            "208e7bca",
+            "dac2318c",
+            "1704d412",
+            "f965a2fa",
+            "da04e1b6",
+            "882bbb6a"
+        ]
     },
     "spritesheet_prvw": {
         "image\\boss1_walk1.png": {
