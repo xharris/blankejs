@@ -1,5 +1,5 @@
 {
-    "General":[
+    "General / BlankE":[
         {"title":"BlankE Props/Methods","file":"blanke.md"},
         {"title":"What to put in main.lua","file":"blanke_main.md"},
         {"title":"Setting options","file":"blanke_options.md"},
