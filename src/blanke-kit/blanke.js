@@ -131,11 +131,10 @@ class BlankeListView {
             "add":[
                 "plus", "add a"+('aeiouy'.includes(this.options.object_type.charAt(0)) ? 'n' : '')+" "+this.options.object_type,
                 function(e){ 
-                    let count = this_ref.el_items_container.children.length;
-
-                    let text = this_ref.options.object_type+(count)
-                    let ret_text = this_ref.onItemAdd(text);
-                    if (ret_text !== false) this_ref.addItem(ret_text || text);
+                    let new_item = this_ref._getNewItemName();
+                    let ret = this_ref.onItemAdd(new_item);
+                    if (ret !== false)
+                        this_ref.addItem(ret || new_item);
             }],
             "move-up":[
                 "chevron-up","",
@@ -183,8 +182,29 @@ class BlankeListView {
         blanke.clearElement(this.el_items_container);
     }
 
+    hasItem (text) {
+        let children = this.el_items_container.children;
+        for (let c = 0; c < children.length; c++) {
+            if (children[c].el_text.innerHTML == text) return true;
+        }
+        return false;
+    }
+
+    _getNewItemName () {
+        let item_list = this.getItems();
+        let count = item_list.length;
+        let text = this.options.object_type+count;
+        while (item_list.includes(text)) {
+            count++;
+            text = this.options.object_type+count;
+        }
+        return text;
+    }
+
     addItem (text) {
         let this_ref = this;
+        if (this.hasItem(text)) return;
+        if (!text) text = this._getNewItemName();
 
         let el_item_container = blanke.createElement("div","item");
         let el_item_text = blanke.createElement("span","item-text");
@@ -226,6 +246,8 @@ class BlankeListView {
         // was the list cleared and it was already a selection?
         if (this.selected_text == text)
             this.selectItem(text);
+
+        return 
     }
 
     // highlight it, but dont trigger the event
@@ -298,7 +320,7 @@ class BlankeListView {
         let ret_list = [];
         let children = this.el_items_container.children;
         for (let c = 0; c < children.length; c++) {
-            ret_list.append(children[c].el_text.innerHTML)
+            ret_list.push(children[c].el_text.innerHTML)
         }
         return ret_list;
     }

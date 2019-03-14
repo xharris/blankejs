@@ -285,7 +285,7 @@ class SceneEditor extends Editor {
 					if (uuid == this_ref.curr_object.uuid) {
 						let obj = this_ref.objects[uuid];
 						blanke.showModal(
-							"<label>remove '"+obj.name+"'?? </label>",
+							"<label>Remove '"+obj.name+"'?<br/>Objects are global and it will be removed from all scenes.</label>",
 						{
 						"yes": function() {
 							// remove instances
@@ -295,7 +295,7 @@ class SceneEditor extends Editor {
 
 							// remove the object
 							this_ref.setObject(this_ref.el_obj_list.removeItem(obj.name, true));
-							delete this_ref.objects[uuid];
+							this_ref.deleteObject(uuid);
 				 		},
 							"no": function() {}
 						});
@@ -307,51 +307,12 @@ class SceneEditor extends Editor {
 		});
 
 		// add object button
-		this.el_obj_list = new BlankeListView({new_item:"object"});
-		this.el_obj_list.onItemAction = function(icon, text) {
-			if (icon == "delete") {
-				if (this_ref.curr_object) {
-
-					for (var l = 0; l < this_ref.objects.length; l++) {
-						if (this_ref.objects[l].uuid == this_ref.curr_object.uuid) {
-
-							blanke.showModal(
-								"<label>remove '"+this_ref.objects[l].name+"'?? </label>",
-							{
-							"yes": function() {
-								// remove instances
-								this_ref.iterObject(this_ref.objects[l].name, function(obj) {
-									obj.poly.destroy()
-								});
-
-								// remove the object
-								this_ref.objects.splice(l, 1);
-								this_ref.el_obj_list.removeItem(text);
-
-								// select the instance before it (if there is one)
-								if (l == 0)
-									l++;
-								if (l > this_ref.objects.length)
-									l = this_ref.objects.length - 1;
-								if (l > 0)
-									this_ref.setObject(this_ref.objects[l-1].name);
-								else
-									this_ref.setObject();
-					 		},
-								"no": function() {}
-							});
-
-							break;
-						}
-					}
-				}
-			}
-		}
+		this.el_obj_list = new BlankeListView({object_type:"object"});
 		this.el_obj_list.onItemSelect = function(text) {
 			this_ref.setObject(text);	
 		}
 		this.el_obj_list.onItemAdd = function(text) {
-			this_ref.addObject();
+			this_ref.addObject({name:text});
 			this_ref.export();
 			return false;
 		}
@@ -361,10 +322,12 @@ class SceneEditor extends Editor {
 				if (this_ref.objects[uuid].name == text1) obj1 = uuid;
 				if (this_ref.objects[uuid].name == text2) obj2 = uuid;
 			}
-
-			let obj_temp = this_ref.objects[obj2];
-			this_ref.objects[obj2] = this_ref.objects[obj1];
-			this_ref.objects[obj1] = obj_temp;
+			let new_list = {};
+			Object.keys(this_ref.objects).map(key => (key == obj1) ? obj2 : (key == obj2) ? obj1 : key)
+				.forEach(function(key){
+					new_list[key] = this_ref.objects[key];
+				});
+			this_ref.objects = new_list;
 			this_ref.export();
 		}
 
@@ -596,6 +559,8 @@ class SceneEditor extends Editor {
                     }
 				}
 
+				if (this_ref.obj_type) 
+					this_ref.export();
 			}
 		});
 
@@ -648,6 +613,8 @@ class SceneEditor extends Editor {
 								if (checkY) iy += Math.sign(y_diff)*y_incr;
 							} while (checkX || checkY);
 						}
+
+						this_ref.export();
 					}
 				}
 			}
@@ -736,11 +703,6 @@ class SceneEditor extends Editor {
 		document.addEventListener('mouseup', function(e) {
 			if (e.button == 1 || (e.button == 0 && this_ref.dragging)) {
 				dragStop();
-			}
-
-
-			if (e.button == 0) {
-				this_ref.export();
 			}
 		});
         
@@ -1026,32 +988,6 @@ class SceneEditor extends Editor {
 
 	// refreshes object list items
 	refreshObjectList () {
-
-		/*
-		app.clearElement(this.el_sel_name);
-
-		var placeholder = app.createElement("option");
-		placeholder.disabled = true;
-		this.el_sel_name.appendChild(placeholder);
-
-		let object_count = Object.keys(this.objects).length;
-
-		if (object_count == 0) {
-			placeholder.selected = true;
-			placeholder.innerHTML = "<< add an object";
-		}
-		this.el_sel_name.setAttribute("size", Math.min(4, object_count));
-
-		for (let uuid in this.objects) {
-			let obj = this.objects[uuid];
-
-			var new_option = app.createElement("option");
-			new_option.value = obj.name;
-			new_option.style.color = obj.color;
-			new_option.innerHTML = obj.name;
-			this.el_sel_name.appendChild(new_option);
-		}*/
-
 		if (!this.curr_object) {
 			// don't show properties if no object selected
 			this.el_object_form.container.style.display = "none";	
@@ -1567,11 +1503,10 @@ class SceneEditor extends Editor {
 	// https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 	addObject (info) {
 		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%<>?&+=";
-		var obj_name = 'object'+Object.keys(this.objects).length;
 
 		info = info || {};
 		ifndef_obj(info, {
-			name: obj_name,
+			name: null,
 			char: possible.charAt(Math.floor(Math.random() * possible.length)),
 			color: "#000000",
 			size: [this.curr_layer.snap[0], this.curr_layer.snap[1]],
@@ -1584,7 +1519,7 @@ class SceneEditor extends Editor {
 		this.setObject(info.name);
 		this.drawDotPreview();
 
-		return info.name;
+		return info.uuid;
 	}
 
 	drawDotPreview () {
@@ -1617,11 +1552,14 @@ class SceneEditor extends Editor {
 				last_obj_name = this.curr_object.name;
 			
 			this.objects = [];
-
-			for (let uuid in app.project_settings.scene.objects) {
+			let obj_ids = app.project_settings.scene.object_order;
+			if (!obj_ids || obj_ids.length == 0) obj_ids = Object.keys(app.project_settings.scene.objects);
+			
+			for (let uuid of obj_ids) {
 				let obj = app.project_settings.scene.objects[uuid];
-				this.addObject(obj);
+				if (!obj) continue;
 
+				this.addObject(obj);
 				this.iterObject(obj.name, function(obj_poly) {
 					this_ref.drawPoly(obj, obj_poly.points, obj_poly.poly);
 				});
@@ -1653,6 +1591,13 @@ class SceneEditor extends Editor {
 			// no object of that name found
 			this.el_object_form.container.style.display = "none";	
 		}
+	}
+
+	deleteObject (uuid) {
+		delete app.project_settings.scene.objects[uuid];
+		app.project_settings.scene.object_order.splice(app.project_settings.scene.object_order.indexOf(uuid),1);
+		delete this.objects[uuid];
+		this.export();
 	}
 
 	getImage (path) {
@@ -1880,6 +1825,7 @@ class SceneEditor extends Editor {
 		if (!app.project_settings.scene.objects)
 			app.project_settings.scene.objects = {};
 
+		app.project_settings.scene.object_order = Object.keys(this.objects);
 		for (let obj_uuid in this.objects) {
 			let obj = this.objects[obj_uuid];
 

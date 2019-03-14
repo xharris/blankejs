@@ -69,36 +69,21 @@
                 ],
                 "uuid": "64c7bf9d"
             },
-            "08713791": {
-                "name": "object3",
-                "char": "#",
+            "02238062": {
+                "name": "object5",
+                "char": "$",
                 "color": "#000000",
                 "size": [
                     32,
                     32
                 ],
-                "uuid": "08713791"
-            },
-            "2014fcbc": {
-                "name": "object4",
-                "char": "F",
-                "color": "#000000",
-                "size": [
-                    32,
-                    32
-                ],
-                "uuid": "2014fcbc"
-            },
-            "aeda767d": {
-                "name": "object4",
-                "char": "H",
-                "color": "#000000",
-                "size": [
-                    32,
-                    32
-                ],
-                "uuid": "aeda767d"
+                "uuid": "02238062"
             }
-        }
+        },
+        "object_order": [
+            "80d4bd4d",
+            "c956d5ff",
+            "4c608774"
+        ]
     }
 }
