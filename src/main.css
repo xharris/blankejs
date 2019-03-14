@@ -2677,7 +2677,7 @@ body.mac .tool-container button:hover {
   position: relative;
   background-color: #fafafa;
   color: #212121;
-  box-shadow: 0 0 5px 1px rgba(90, 217, 164, 0.5), inset 0 0 10px 1px rgba(0, 0, 0, 0.25);
+  transform: scale(1.1);
 }
 #welcome {
   position: relative;

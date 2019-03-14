@@ -137,7 +137,7 @@ class BlankeListView {
                         this_ref.addItem(ret || new_item);
             }],
             "move-up":[
-                "chevron-up","",
+                "chevron-up",`move ${this.options.object_type} up`,
                 function(e){
                     if (this_ref.el_selected && this_ref.el_selected.previousElementSibling) {
                         let el_other = this_ref.el_selected.previousElementSibling;
@@ -146,7 +146,7 @@ class BlankeListView {
                     }
             }],
             "move-down":[
-                "chevron-down","",
+                "chevron-down",`move ${this.options.object_type} down`,
                 function(e){
                     if (this_ref.el_selected && this_ref.el_selected.nextElementSibling) {
                         let el_other = this_ref.el_selected.nextElementSibling;
@@ -219,7 +219,7 @@ class BlankeListView {
                 let el_action = blanke.createElement("button","ui-button-sphere");
                 let el_icon = blanke.createElement("i",["mdi","mdi-"+opt]);
 
-                el_action.title = this.options.actions[opt];
+                el_action.title = opt;
                 el_action.addEventListener('click', function(e){
                     e.stopPropagation();
                     this_ref.onItemAction(opt, text);
@@ -232,7 +232,7 @@ class BlankeListView {
 
         // add item click event
         el_item_container.el_text = el_item_text;
-        el_item_container.title = el_item_text;
+        el_item_container.title = text;
         el_item_container.addEventListener('click', function(){
             this_ref.selectItem(this.el_text.innerHTML);
             this_ref.onItemSelect(this.el_text.innerHTML);
@@ -269,7 +269,7 @@ class BlankeListView {
         }
     }
 
-    removeItem (text, reselect_prev) {
+    removeItem (text, reselect_another) {
         let children = this.el_items_container.children;
         let del_c = -1;
         for (let c = 0; c < children.length; c++) {
@@ -283,7 +283,7 @@ class BlankeListView {
             }
         }
 
-        if (reselect_prev) {
+        if (reselect_another) {
             if (del_c == 0) del_c++;
             if (del_c > children.length) del_c = children.length - 1;
             if (del_c >= 0) {

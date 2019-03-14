@@ -381,15 +381,15 @@ class SceneEditor extends Editor {
 			}
 		});
 
-		this.el_layer_control = new BlankeListView({
+		this.el_layer_list = new BlankeListView({
 			title:'layers',
-			buttons:['add'],
-			new_item:'layer',
+			options:['add'],
+			object_type:'layer',
 			actions:{
 				"delete":"remove layer"
 			}
 		});
-		this.el_layer_control.onItemAction = function(icon, text) {
+		this.el_layer_list.onItemAction = function(icon, text) {
 			if (icon == "delete") {
 				blanke.showModal(
 					"delete \'"+text+"\'?",
@@ -401,15 +401,15 @@ class SceneEditor extends Editor {
 				
 			}
 		}
-		this.el_layer_control.onItemSelect = function(text) {
+		this.el_layer_list.onItemSelect = function(text) {
 			this_ref.setLayer(text);
 		}
-		this.el_layer_control.onItemAdd = function(text) {
-			let layer_name = this_ref.addLayer();
+		this.el_layer_list.onItemAdd = function(text) {
+			this_ref.addLayer({name:text});
 			this_ref.export();
-			return layer_name;
+			return false;
 		}
-		this.el_layer_control.onItemSwap = function(text1, text2) {
+		this.el_layer_list.onItemSwap = function(text1, text2) {
 			let lay1, lay2;
 			for (var l = 0; l < this_ref.layers.length; l++) {
 				if (this_ref.layers[l].name == text1) lay1 = l;
@@ -418,7 +418,7 @@ class SceneEditor extends Editor {
 			let temp_lay = this_ref.layers[lay1];
 			this_ref.layers[lay1] = this_ref.layers[lay2];
 			this_ref.layers[lay2] = temp_lay;
-			this_ref.setLayer(this_ref.curr_layer.name);
+			this_ref.export();
 		}
 
 		// hide/show scene menu
@@ -436,7 +436,7 @@ class SceneEditor extends Editor {
 		this.el_tag_form.container.classList.add("tag-container");
 
 		// LAYER
-		this.el_layer_container.appendChild(this.el_layer_control.container);
+		this.el_layer_container.appendChild(this.el_layer_list.container);
 		this.el_layer_container.appendChild(this.el_layer_form.container);
 
 		// OBJECT
@@ -983,9 +983,9 @@ class SceneEditor extends Editor {
 			this.addLayer();
 
 		let layer_list = this.layers.map(layer => layer.name);
-		this.el_layer_control.setItems(layer_list);
+		this.el_layer_list.setItems(layer_list);
 		if (this.curr_layer)
-			this.el_layer_control.selectItem(this.curr_layer.name);
+			this.el_layer_list.selectItem(this.curr_layer.name);
 	}
 
 	// refreshes object list items
@@ -1678,6 +1678,7 @@ class SceneEditor extends Editor {
 		info.container = new PIXI.Container();
 		this.map_container.addChild(info.container);
 		this.layers.push(info);
+		this.el_layer_list.addItem(info.name);
 		this.setLayer(info.name);
 
 		return info.name;
@@ -1689,7 +1690,7 @@ class SceneEditor extends Editor {
 				this.layers.splice(l,1);
 			}
 		}
-		this.el_layer_control.removeItem(name);
+		this.el_layer_list.removeItem(name,true);
 		this.refreshLayerList();
 	}
 
@@ -1711,7 +1712,7 @@ class SceneEditor extends Editor {
 				this.layers[l].container.alpha = 1;
 				this.map_container.setChildIndex(this.layers[l].container, this.map_container.children.length-1);
 				
-				this.el_layer_control.selectItem(name);
+				this.el_layer_list.selectItem(name);
 
 			} else {
 				// make other layers transparent
