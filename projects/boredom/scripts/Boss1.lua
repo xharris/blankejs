@@ -126,7 +126,7 @@ function Boss1:init()
 end
 
 function Boss1:update(dt)	
-	Debug.log(self.hspeed)
+	--Debug.log(self.hspeed)
 	if not player then
 		player = Player.instances[1]
 	end

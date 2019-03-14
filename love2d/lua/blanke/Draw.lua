@@ -112,7 +112,7 @@ Draw = Class{
 	rotate = function(deg)
 		love.graphics.rotate(math.rad(deg))
 	end,
---[[
+
 	crop_used = false,
 	crop = function(x,y,w,h)
 		local function stencilFn()
@@ -122,7 +122,7 @@ Draw = Class{
 		love.graphics.setStencilTest("greater",0)
 		Draw.crop_used = true
 	end,	
-]]
+
 	reset = function(only)
     	if only == "color" or not only then 
 			Draw.setColor("white")

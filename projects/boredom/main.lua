@@ -2,7 +2,7 @@
 
 BlankE = require('blanke.Blanke')
 
-function love.load()
+function BlankE.load()
 	
 	Input.set('move_left', 'left','a')
 	Input.set('move_right', 'right','d')
@@ -12,9 +12,12 @@ function love.load()
 		
 	BlankE.loadPlugin("Platformer")
 	
-	BlankE.init("PlayState",{
-		resolution = 3
-	})
-	
-	BlankE.draw_debug = true
+	BlankE.options = {
+		state="PlayState",
+		resolution = 3,
+		filter="nearest",
+		debug = {
+			log = true
+		}
+	}
 end

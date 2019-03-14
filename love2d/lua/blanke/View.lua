@@ -123,10 +123,10 @@ View = Class{
 		Draw.push()
 
 		View._transform:reset()
-		View._transform:translate(self._half_w, self._half_h)
+		View._transform:translate(math.floor(self._half_w), math.floor(self._half_h))
 		View._transform:scale(self.scale_x, self.scale_y)
 		View._transform:rotate(math.rad(self.angle))
-		View._transform:translate(-self.x + self._dx, -self.y + self._dy)
+		View._transform:translate(-math.floor(self.x + self._dx), -math.floor(self.y + self._dy))
 
 		if Canvas._applied == 1 then
             love.graphics.replaceTransform(View._transform)

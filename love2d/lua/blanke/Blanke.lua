@@ -1,8 +1,8 @@
 package.path = package.path .. ";./?/init.lua"
 blanke_path = (...):match("(.-)[^%.]+$")
-function blanke_require(import)
+function blanke_require(import, ignore_errors)
 	local status, mod = pcall(require, blanke_path..import)
-	if status then return mod else error(mod) end
+	if status then return mod elseif not ignore_errors then error(mod) end
 	return nil
 end
 
@@ -110,9 +110,7 @@ blanke_require('extra.noobhub')
 local modules = {'Group','Repeater','Map','Audio','Asset','Bezier','Camera','Canvas','Dialog','Font','Draw','Effect','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 -- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
-	--if not table.hasValue(not_require, mod) then
-		_G[mod] = blanke_require(mod)
-	--end
+	_G[mod] = blanke_require(mod, true)
 end
 -- loop separately to add other stuff
 for m, mod in ipairs(modules) do
@@ -133,9 +131,7 @@ local min_dt = 1/max_fps
 local next_time = love.timer.getTime()
 
 -- inject code into load function
-ProFi = blanke_require('plugins.ProFi')
 love.load = function(args, unfilteredArgs)
-ProFi:start()
 	if BlankE.load then BlankE.load(args, unfilteredArgs) end
 	
 	local ide = table.hasValue(args, "--ide")
@@ -151,8 +147,6 @@ end
 
 love.quit = function()
 	local ret_val = BlankE._quit()
-	ProFi:stop()
-	ProFi:writeReport("profile.txt")
 	return ret_val
 end
 
