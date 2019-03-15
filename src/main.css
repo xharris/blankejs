@@ -646,6 +646,9 @@
   right: 5px;
   margin-top: 8px;
 }
+.content[data-type="SceneEditor"] #toggle-scene-sidebar i {
+  text-shadow: 0px 0px 3px black;
+}
 .content[data-type="SceneEditor"] .sidebar {
   position: absolute;
   right: 5px;
@@ -655,6 +658,8 @@
   transition: all ease-in-out 0.2s;
   margin-top: 38px;
   z-index: 5;
+  border-radius: 4px;
+  overflow: hidden;
   /*&:hover {*/
   width: 150px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
