@@ -36,7 +36,15 @@
         {"title":"List of input constants","file":"input_constants.md"}
     ],
     "Net":[
-        {"title":"Props/Methods","file":"net.md"}
+        {"title":"Props/Methods","file":"net.md"},
+        {"title":"Adding Entities to network","file":"net_entity.md"}
+    ],
+    "Repeater":[
+        {"title":"Using a Repeater","file":"repeater_usage.md"},
+        {"title":"Instance Props/Methods","file":"repeater.md"}
+    ],
+    "Scene":[
+        {"title":"Instance Props/Methods","file":"scene.md"}
     ],
     "Plugins":[],
     "Other":[

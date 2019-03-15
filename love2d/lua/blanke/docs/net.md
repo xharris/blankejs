@@ -1,8 +1,14 @@
+**Net** allows for communication with a server and other clients connected to that server. It's important to note that when using multiplayer functions, it is not necessary to use all the functions available here. 
+
+
 # Properties
 
 ```
+str address							'localhost' / 'xxx.xxx.xxx.xxx' / 'http://...'
+num port							8000
 num id 								-- unique client id assigned to the player 
 bool is_leader						-- only true for one person on server and moves to another if that person leaves
+bool is_connected
 ```
 
 # Methods
@@ -19,39 +25,40 @@ draw([classname])					-- draw objects synced through network, or just a certain 
 addObject(obj)						-- add an object to be synced with other clients
 ```
 
+# Events and Callbacks
+
+## Net.on('callback', fn)
+
+Callbacks
+
+```
+ready					-- current player sucessfully connects to the server
+connect					-- another player has connected
+disconnect				-- another player has disconnected
+receive(data)			-- received object 'data'
+event('name', data)		-- received net event with 'data'
+```
+
 ## Event types
+```
+client.connect
+client.disconnect
+broadcast
+object.add			-- another client used Net.addObject()
+object.update
+object.sync			
+set.leader			-- info = clientid of current leader
+room.change			-- *not ready yet*
+```
 
-These are called automatically by
+## Structure of 'data' object
 
-
--- vvv objects added with 'addObject' are given the follow properties and methods vvv
--- optional obj properties
-	ObjClass.net_sync_vars = {}		-- table containing the names of properties to sync ('x','hspeed','walk_speed','sprite_xcsale')
-
--- this method adds the netSync method to the object
-	obj:netSync("x","y","sprite_color") 	-- used to manually sync an object (use wisely)
--- when the object is added to the network an optional function is called
-	obj:onNetAdd()
--- every time a variable is updated, this is called. Only called for net_objects, not the client objects
-	obj:onNetUpdate(var_name, value)
-
-
--- callback methods
-Net.on('<callback>', function(...))
-ready()
-connect(clientid) 		-- different client connects
-disconnect(clientid)
-receive(data)
-event(data)		 		-- called if data.type=='netevent'					
---[[ data will always have the properties:
-		clientid: the id of the client that sent the data
-		room
-
-	built-in 'netevent':
-	- client.connect : info=clientid
-	- client.disconnect : info=clientid
-	- object.add : another client calls addObject()
-	- object.update : getting info about updating an object from anoher client
-	- object.sync : sending syncable objects is requested
-	- set.leader : a new leader is set
-]]
+```
+{
+	clientid = who sent the data
+	room = id of room client is in
+	type = 'netevent' or nothing
+	event = string if this is a netevent
+	info = {...}
+}
+```

@@ -198,7 +198,7 @@ Net = {
             end
         end
 
-        Signal.emit('_net.receive')
+        Signal.emit('_net.receive',data)
     end,
 
     _objApplyValues = function(obj, values)
@@ -402,7 +402,7 @@ Net = {
         end
 
         obj.localOnly = function(self, fn)
-            if not self.net_ojbect then fn() end
+            if not self.net_object then fn() end
         end
 
         obj.netSync = function(self, ...)
@@ -442,6 +442,7 @@ Net = {
                 end
                 -- update all
                 if #vars == 0 then
+                    if not self.net_sync_vars then self.net_sync_vars = {} end
                     for v, var in ipairs(self.net_sync_vars) do
                         if hasVarChanged(var) then 
                             update_values[var] = self[var]

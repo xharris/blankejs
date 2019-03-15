@@ -1,13 +1,11 @@
 -- engine
 BlankE = require('blanke.Blanke')
-ProFi = blanke_require('plugins.ProFi')
-ProFi:start()
 
 function BlankE.load()
 	BlankE.options = {
-		state="PathfindState",
+		state="RepeaterState",
 		plugins={"Pathfinder"},
-		resolution=2,
+		resolution=1,
 		--filter="nearest",
 		debug={
 			log=true
