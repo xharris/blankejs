@@ -40,13 +40,13 @@ function Player:update(dt)
 		all=function(other, sep)
 			if other.tag:contains("die") and not self.dead then
 				self.dead = true
-				local transition_timer = Timer(1)
-				transition_timer:after(function()
+				--local transition_timer = Timer(1)
+				--transition_timer:after(function()
 					State.transition(DeathState, 'fade', 'black')	
-				end)
-				local death_tween = Tween(main_camera,{angle=30, scale_x=3, scale_y=3},2,'quadratic out')
-				death_tween:play()
-				transition_timer:start()
+				--end)
+				--local death_tween = Tween(main_camera,{angle=30, scale_x=3, scale_y=3},2,'quad out')
+				--death_tween:play()
+				--transition_timer:start()
 			end
 		end,
 		floor=function(other, sep)

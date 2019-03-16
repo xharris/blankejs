@@ -1892,6 +1892,10 @@
   width: 100%;
   overflow: auto;
 }
+.content[data-type="Find"] .result-container .no-result {
+  text-align: center;
+  color: white;
+}
 .content[data-type="Find"] .result-container .result-group {
   margin: 4px;
   background-color: 212121;
@@ -1930,6 +1934,7 @@
   box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;
+  position: relative;
   font-size: 12px;
   transition: 0.1s all ease-in-out;
 }
@@ -1951,6 +1956,21 @@
 .content[data-type="Find"] .result-container .result-group .result .match {
   color: #5ad9a4;
   font-style: normal;
+}
+.content[data-type="Find"] .result-container .result-group .result .btn-open-file {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid #212121;
+  border-radius: 2px;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  padding: 0px;
+  color: #757575;
+  outline: none;
 }
 .markdown h1,
 .markdown h2,

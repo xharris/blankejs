@@ -47,9 +47,7 @@ Tween = Class{
 			if value.type and value.type == 'bezier' then
 				self._bezier = value
 			else
-				self._multival = true
 				self._table_keys = {} -- get keys in the table that lead to another table (nested)
-
 				function checkKeys(t_keys,t_value)
 					for k,v in pairs(t_value) do
 						assert(type(v)~='function', "cannot use function value in Tween")
@@ -68,6 +66,7 @@ Tween = Class{
 					end
 				end
 				checkKeys(self._table_keys, value)
+				self._multival = true
 			end
 		end
 	end,
@@ -84,12 +83,12 @@ Tween = Class{
 	-- fn: returns what the property should be set to 
 	-- new_val = fn(start_val, end_val, key)
 	updateKeys = function(self, fn)
+		if not self._multival then return end
 		self:_updateKeys(self._table_keys, self.var, self._start_val, self.value, fn)
 	end,
 
 	_updateKeys = function(self, t_keys, t_var, t_start, t_end, fn) 
 		for key, start_value in pairs(t_start) do
-
 			local curr_value = t_var[key]
 			local end_value = t_end[key]
 

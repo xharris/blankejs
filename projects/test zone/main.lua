@@ -1,9 +1,9 @@
--- engine
+--engine
 BlankE = require('blanke.Blanke')
 
 function BlankE.load()
 	BlankE.options = {
-		state="RepeaterState",
+		state="TweenState",
 		plugins={"Pathfinder"},
 		resolution=1,
 		--filter="nearest",
@@ -20,5 +20,38 @@ function BlankE.load()
 		}
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	--engine
 	Draw.setBackgroundColor("white")
 end

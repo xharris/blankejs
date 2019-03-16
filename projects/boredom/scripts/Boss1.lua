@@ -105,6 +105,7 @@ function Boss1:init()
 		color={0,0,0,.5},
 		end_color={1,1,1,0}
 	})
+	self.run_blur.rate = 50
 	
 	self.eff_boss1 = Effect("static","bloom")
 	-- add extra speed

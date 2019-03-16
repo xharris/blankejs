@@ -104,8 +104,8 @@ View = Class{
 		self.x = follow_x
 		self.y = follow_y
 
-		self._dx = math.floor(self.offset_x + shake_x)
-		self._dy = math.floor(self.offset_y + shake_y)
+		self._dx = self.offset_x + shake_x
+		self._dy = self.offset_y + shake_y
 
 		self.top = self.y - self._half_h
 		self.left = self.x - self._half_w

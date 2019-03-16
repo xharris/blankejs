@@ -2,6 +2,7 @@
 	re_class_list: removed ^ at beginning
 	changed order in defineMode: instance > class_list
 */
+var code_instances = {};
 
 var CODE_ASSOCIATIONS = [
 	[
@@ -367,7 +368,7 @@ class Code extends Editor {
 
 		/* tab click
 		this.setOnClick(function(self){
-			(new Code(app)).edit(self.file);
+			Code.openScript(self.file);
 			this_ref.setFontSize(font_size);
 		}, this);
 		*/
@@ -606,6 +607,16 @@ class Code extends Editor {
 		return new_editor;
 	}
 
+	onClose () {
+		delete code_instances[this.file];
+
+
+	}
+
+	goToLine(line) {
+		this.codemirror.scrollIntoView({line:(line || 0),ch:0});
+	}
+
 	getCompleteHTML(hint) {
 		let item_type = '';
 		let text, render = '', arg_info = '';
@@ -745,6 +756,7 @@ class Code extends Editor {
 		var this_ref = this;
 
 		this.file = file_path;
+		code_instances[this.file] = this;
 
 		var text = nwFS.readFileSync(file_path, 'utf-8');
 
@@ -756,10 +768,11 @@ class Code extends Editor {
 		refreshObjectList(this.file, this.codemirror.getValue());
 
 		this.setOnClick(function(){
-			openScript(this_ref.file);
+			Code.openScript(this_ref.file);
 		});
 
 		this.codemirror.refresh();
+		return this;
 	}
 
 	save () {
@@ -842,6 +855,16 @@ class Code extends Editor {
 		}
 		addScripts(ifndef(path, app.project_path));
 	}
+
+	static openScript(file_path, line) {
+		let editor = code_instances[file_path];
+		if (!(FibWindow.focus(nwPATH.basename(file_path)) || FibWindow.focus(nwPATH.basename(file_path)+"*"))) {
+			editor = new Code(app)
+			editor.edit(file_path);
+		}
+		if (line != null) 
+			editor.goToLine(line);
+	}
 }
 
 Code.scripts = {};
@@ -851,11 +874,6 @@ document.addEventListener('fileChange', function(e){
 		Code.refreshCodeList();
 	// }
 });
-
-function openScript(file_path) {
-	if (!(FibWindow.focus(nwPATH.basename(file_path)) || FibWindow.focus(nwPATH.basename(file_path)+"*")))
-		(new Code(app)).edit(file_path);
-}
 
 function addScripts(folder_path) {
 	var file_list = [];
@@ -891,7 +909,7 @@ function addScripts(folder_path) {
 							app.addSearchKey({
 								key: file,
 								onSelect: function(file_path){
-									openScript(file_path);
+									Code.openScript(file_path);
 								},
 								tags: tags,
 								args: [full_path],
@@ -933,13 +951,13 @@ document.addEventListener("openProject", function(e){
 				// the file already exists. open it
 				if (files.includes(file_name)) {
 					blanke.toast("Script already exists!");
-					(new Code(app)).edit(nwPATH.join(script_dir, file_name));
+					Code.openScript(nwPATH.join(script_dir, file_name))
 				} else {
 					// no such script, go ahead and make one
 					nwFS.writeFile(nwPATH.join(script_dir, file_name), content, function(err){
 						if (!err) {
 							// edit the new script
-							(new Code(app)).edit(nwPATH.join(script_dir, file_name));
+							Code.openScript(nwPATH.join(script_dir, file_name));
 						}
 					});
 				}
