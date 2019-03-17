@@ -13,6 +13,7 @@ Repeater = Class{
 	init = function(self, texture, options)
 		local val = function(x) return {x,x,'linear'} end
 		-- vvv Things that each particle will inherit vvv
+		self.changed = {}
 		self.options = {
 			is_random = {},
 			-- starting value
@@ -83,6 +84,7 @@ Repeater = Class{
 			-- create Setter
 			self.onPropSet[name] = function(self, v)
 				self.options[name][1] = checkPropType(name, v)
+				self.changed[name] = true
 			end
 			-- create Getter
 			self.onPropGet[name] = function()
@@ -92,6 +94,7 @@ Repeater = Class{
 				-- create Setter for max value
 				self.onPropSet[name..'2'] = function(self, v)
 					self.options[name][2] = checkPropType(name..'2', v, 2)
+					self.changed[name] = true
 				end
 				self.onPropGet[name..'2'] = function()
 					return self.options[name][2]
@@ -163,6 +166,9 @@ Repeater = Class{
 		if not self.sprite_texture then return end
 
 		local f = cond(self.spr_frame == 0, self.texture.sprite_frame, floor(self.spr_frame))
+		if not self.changed['duration'] then
+			self.duration = self.texture.duration
+		end
 
 		self.quad = self.texture.anim.frames[f]
 		self.options.quad = self.quad
@@ -237,18 +243,18 @@ Repeater = Class{
 			end)
 
 			if self.sprite_texture then
-				if new_p.spr_frame[1] == 0 then
-					new_p.spr_frame[1] = self.texture.sprite_frame
-				end
-				if new_p.spr_frame[2] == 0 then 
-					new_p.spr_frame[2] = self.texture.frame_count+new_p.spr_frame[1]+1
-				end
-				-- non-negative sprite duration
-				if new_p.duration[1] < 0 then new_p.duration[1] = self.texture.duration end
-				if new_p.duration[2] < 0 then new_p.duration[2] = self.texture.duration end
-				-- non-negative sprite speed
-				if new_p.spr_speed[1] < 0 then new_p.spr_speed[1] = 1 end --self.texture.sprite_speed end
-				if new_p.spr_speed[2] < 0 then new_p.spr_speed[2] = 1 end --self.texture.sprite_speed end		
+				for i = 1, 2 do
+					-- non-negative sprite speed
+					if new_p.spr_speed[i] < 0 then new_p.spr_speed[i] = self.texture.sprite_speed end
+					-- non-negative sprite duration
+					if new_p.duration[i] < 0 then new_p.duration[i] = self.texture.duration end
+
+					--new_p.duration[i] = self.texture.duration / self.texture.sprite_speed * new_p.spr_speed[i]
+					--new_p.spr_speed[i] = new_p.duration[i] / self.texture.duration * self.texture.sprite_speed
+				end	
+
+				if new_p.spr_frame[1] == 0 then new_p.spr_frame[1] = self.texture.sprite_frame end
+				if new_p.spr_frame[2] == 0 then new_p.spr_frame[2] = self.texture.frame_count+1 end--*(new_p.duration[1] / self.texture.duration)+1 end
 			end
 			
 			if new_p.quad ~= nil then

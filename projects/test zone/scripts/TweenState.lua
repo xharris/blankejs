@@ -6,9 +6,8 @@ function TweenState:enter()
 	rpt_bob = Repeater(bob)
 	rpt_bob.rate = 0.1
 	rpt_bob.spr_frame = 1
-	rpt_bob.emit_count = 10
-	Debug.log(bob.duration)
-	--rpt_bob.duration = 3
+	--rpt_bob.emit_count = 10
+	--rpt_bob.spr_speed = .1
 	--rpt_bob.offset_x = {-10,10}
 	--rpt_bob.offset_y = {-10,10}
 end
