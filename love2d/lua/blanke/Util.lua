@@ -70,9 +70,9 @@ function randRange(...)
 		r = r - 1
 	end
 	if ranges[r] < ranges[r+1] then
-		return love.math.random(ranges[r], ranges[r+1])
+		return love.math.random(ranges[r]*100, ranges[r+1]*100)/100
 	else 
-		return love.math.random(ranges[r+1], ranges[r])
+		return love.math.random(ranges[r+1]*100, ranges[r]*100)/100
 	end
 end
 
@@ -86,11 +86,6 @@ end
 function sinusoidal(min, max, speed, start_offset)
 	local radius = (max - min)/2
 	return min + -math.cos(lerp(0,math.pi/2,start_offset) + game_time * speed) * radius + (radius)
-	--[[
-	local dist = (max - min)/2
-	local offset = (min + max)/2
-	local start = min + (start_offset or 0) * (2*math.pi)
-	return math.sin(game_time * speed * math.pi + start) * dist + offset;]]
 end
 
 function direction_x(angle, dist)
@@ -99,6 +94,14 @@ end
 
 function direction_y(angle, dist)
 	return math.sin(math.rad(angle)) * dist
+end
+
+function distance(x1,y1,x2,y2)
+	return math.sqrt((x2-x1)^2+(y2-y1)^2)
+end
+
+function direction(x1,y1,x2,y2)
+	return math.deg(math.atan2(y2-y1,x2-x1))
 end
 
 love.graphics.resetColor = function()

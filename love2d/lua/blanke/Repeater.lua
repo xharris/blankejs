@@ -1,10 +1,12 @@
-local calcProp = function(particle, t, attribute)
+local floor = math.floor
+
+local calcProp = function(particle, t, attribute, spd)
 	local attr = particle[attribute]
 	-- store starting value
 	if attr[4] == nil then particle[attribute][4] = attr[1] end
 	-- start == end. don't tween
 	if attr[4] == attr[2] then return attr[1] end
-	return Tween.tween_func[attr[3]](attr[1], attr[2] - attr[4], particle.duration[1]*1000, t*1000)
+	return Tween.tween_func[attr[3]](attr[1], attr[2] - attr[4], particle.duration[1] * (spd or 1)*1000, (t)*1000)
 end
 
 Repeater = Class{
@@ -21,23 +23,27 @@ Repeater = Class{
 			-- position
 			offset_x = val(0), offset_y = val(0),
 			-- color
-			r = val(1), g = val(1), b = val(1), a = val(1)
+			r = val(1), g = val(1), b = val(1), a = val(1),
+			-- Sprite only
+			spr_frame = val(0), spr_speed = val(-1)
 		}
 		--- END
 
 		self.current_t = 0
 		self.rate = 0
+		self.emit_count = 1
 		self.rate_dt = 0
 		self.count = 0
 		self.particles = {} -- list of particles and their info
 
 		-- values that can have a min/max
-		self.tweenable_options = {'direction','speed','offset_x','offset_y','r','g','b','a'}
+		self.tweenable_options = {'direction','speed','offset_x','offset_y','r','g','b','a','spr_frame'}
 		table.update(self.options, options or {})
 
 		local checkPropType = function(name, value, index)
+			local ret = value
 			index = 1
-			if name == "is_random" then return end
+			if name == "is_random" then return ret end
 
 			if name:endsWith('2') then
 				name = string.sub(name, 1,-2)
@@ -50,7 +56,11 @@ Repeater = Class{
 			end
 			local val_type = type(value)
 			if val_type ~= "table" or (val_type == "table" and #self.options[name] == 2) then
-				self.options[name][index] = value
+				ret = value
+				-- sprite_frame will end at last frame, and won't be seen at all without this
+				if index == 2 and name == "spr_frame" then
+					ret = value + 1
+				end
 			end
 
 			-- determine random range
@@ -64,6 +74,7 @@ Repeater = Class{
 			if index == 2 then
 				self.options[name..'2'] = nil
 			end
+			return ret
 		end
 
 		for name, value in pairs(self.options) do
@@ -71,8 +82,7 @@ Repeater = Class{
 
 			-- create Setter
 			self.onPropSet[name] = function(self, v)
-				checkPropType(name, v)
-				self.options[name][1] = v
+				self.options[name][1] = checkPropType(name, v)
 			end
 			-- create Getter
 			self.onPropGet[name] = function()
@@ -81,8 +91,7 @@ Repeater = Class{
 			if table.hasValue(self.tweenable_options, name) then
 				-- create Setter for max value
 				self.onPropSet[name..'2'] = function(self, v)
-					checkPropType(name..'2', v, 2)
-					self.options[name][2] = v
+					self.options[name][2] = checkPropType(name..'2', v, 2)
 				end
 				self.onPropGet[name..'2'] = function()
 					return self.options[name][2]
@@ -96,6 +105,7 @@ Repeater = Class{
 	end,
 
 	update = function(self, dt)
+		self:updateSpriteTexture()
 		self:updateEntityTexture()
 		self.current_t = self.current_t + dt
 
@@ -109,7 +119,7 @@ Repeater = Class{
 					sprite_batch = self.texture_list[part.spr_index]
 				end 
 
-				local prop = function(p) return calcProp(part, self.current_t - part.start_t, p) end
+				local prop = function(p, spd) return calcProp(part, self.current_t - part.start_t, p, spd) end
 
 				-- end of particle lifetime
 				if (self.current_t - part.start_t) > part.duration[1] then 
@@ -125,6 +135,12 @@ Repeater = Class{
 					part.y[1] = part.y[1] + dir_y + off_y * dt
 				
 					part.spritebatch:setColor(prop('r'), prop('g'), prop('b'), prop('a'))
+					if self.sprite_texture then
+						-- NOTE : atm, the duration of the particle depends on the 'duration' property. it will speed up if the duration is lower. change or naw?
+						local frame = floor(prop('spr_frame',prop('spr_speed')))
+						part.quad = self.texture.anim.frames[(frame-1) % self.texture.frame_count +1]
+					end
+
 					if part.quad ~= nil then
 						part.spritebatch:set(part.id, part.quad, part.x[1], part.y[1])
 					else
@@ -143,12 +159,20 @@ Repeater = Class{
 		end
 	end,
 
+	updateSpriteTexture = function(self)
+		if not self.sprite_texture then return end
+
+		local f = cond(self.spr_frame == 0, self.texture.sprite_frame, floor(self.spr_frame))
+
+		self.quad = self.texture.anim.frames[f]
+		self.options.quad = self.quad
+	end,
+
 	updateEntityTexture = function(self)
 		if not self.entity_texture then return end 
 
 		local spr_index = self.texture.sprite_index
 		self.real_texture = self.texture_list[spr_index]
-		self.quad = self.texture._sprites[spr_index].frames[self.texture.sprite_frame]
 
 		-- all new particles will inherit these values
 		self.options.spritebatch = self.real_texture
@@ -160,6 +184,7 @@ Repeater = Class{
 		self.real_texture = nil
 		self.quad = nil
 		self.entity_texture = false
+		self.sprite_texture = false
 
 		if type(texture) == "table" and texture.classname then
 			if texture.classname == "Image" then
@@ -178,6 +203,10 @@ Repeater = Class{
 				self.real_texture = love.graphics.newSpriteBatch(texture.canvas)
 				self.options.spritebatch = self.real_texture
 
+			elseif texture.classname == "Sprite" then
+				self.sprite_texture = true
+				self.real_texture = love.graphics.newSpriteBatch(texture.image())
+				self.options.spritebatch = self.real_texture
 			end
 		end
 	end,
@@ -185,7 +214,7 @@ Repeater = Class{
 	emit = function(self, count)
 		if self.entity_texture and not self.quad then return end
 
-		count = count or 1
+		count = count or self.emit_count
 		local new_particle
 		for i = 1, count do
 			new_p = table.deepcopy(self.options, function(k, v)
@@ -206,6 +235,21 @@ Repeater = Class{
 					return new_v
 				end
 			end)
+
+			if self.sprite_texture then
+				if new_p.spr_frame[1] == 0 then
+					new_p.spr_frame[1] = self.texture.sprite_frame
+				end
+				if new_p.spr_frame[2] == 0 then 
+					new_p.spr_frame[2] = self.texture.frame_count+new_p.spr_frame[1]+1
+				end
+				-- non-negative sprite duration
+				if new_p.duration[1] < 0 then new_p.duration[1] = self.texture.duration end
+				if new_p.duration[2] < 0 then new_p.duration[2] = self.texture.duration end
+				-- non-negative sprite speed
+				if new_p.spr_speed[1] < 0 then new_p.spr_speed[1] = 1 end --self.texture.sprite_speed end
+				if new_p.spr_speed[2] < 0 then new_p.spr_speed[2] = 1 end --self.texture.sprite_speed end		
+			end
 			
 			if new_p.quad ~= nil then
 				new_p.id = new_p.spritebatch:add(new_p.quad, new_p.x[1], new_p.y[1])

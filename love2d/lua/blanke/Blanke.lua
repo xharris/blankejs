@@ -107,7 +107,7 @@ blanke_require('extra.noobhub')
 
 --grease 	= blanke_require('extra.grease')
 
-local modules = {'Group','Repeater','Map','Audio','Asset','Bezier','Camera','Canvas','Dialog','Font','Draw','Effect','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
+local modules = {'Group','Repeater','Map','Audio','Asset','Bezier','Camera','Canvas','Dialog','Font','Draw','Effect','Sprite','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 -- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
 	_G[mod] = blanke_require(mod, true)
@@ -138,9 +138,11 @@ love.load = function(args, unfilteredArgs)
 	local record = table.hasValue(args, "--record")
 	local play_record = table.hasValue(args, "--play-record")
 
-	BlankE.options.debug.play_record = play_record
-	BlankE.options.debug.record = ((record or ide) and not play_record)
-	if not ide then BlankE.options.debug.log = false end
+	if BlankE.options.debug then
+		BlankE.options.debug.play_record = play_record
+		BlankE.options.debug.record = ((record or ide) and not play_record)
+		if not ide then BlankE.options.debug.log = false end
+	end
 
 	BlankE.init()
 end
@@ -191,7 +193,7 @@ BlankE = {
 		filter="linear",
 		scale_mode=Window.scale_mode,
 		auto_aspect_ratio=true,
-		state='_empty_state',
+		state='',
 		inputs={},
 		debug={
 			play_record=false,
@@ -255,13 +257,13 @@ BlankE = {
 		-- debugging 
 		BlankE.draw_debug = options.debug.log
 		
-		if BlankE.options.debug.play_record then
+		if options.debug.play_record then
 			Debug.playRecording()
 		end
 		
 		State.switch(options.state)
 
-		if BlankE.options.debug.record then
+		if options.debug.record then
 			Debug.recordGame()
 		end
 
@@ -738,39 +740,6 @@ function _err_state:draw()
 	love.graphics.printf(_err_state.error_msg,posx,posy,game_width,align)
 
 	love.graphics.pop('all')
-end	
-
-BlankE.addClassType('_empty_state', 'State')
-
--- Called once, and only once, before entering the state the first time.
-function _empty_state:init() end
-function _empty_state:leave() end 
-
--- Called every time when entering the state.
-function _empty_state:enter(previous)
-
-end
-
-function _empty_state:update(dt)
-
-end
-
-local _offset=0
-function _empty_state:draw()
-	local _max_size = math.max(game_width, game_height)
-	_offset = _offset + 1
-	if _offset >= _max_size then _offset = 0 end
-
-	love.graphics.push('all')
-	for _c = 0,_max_size*2,10 do
-		local _new_radius = _c-_offset
-		local opacity = (_new_radius/_max_size)*300
-		love.graphics.setColor(0,(_new_radius)/_max_size,0,opacity)
-		love.graphics.circle("line", game_width/2, game_height/2, _new_radius)
-	end
-	love.graphics.setColor(1,1,1,sinusoidal(150,255,0.5)/255)
-	love.graphics.printf("NO GAME",0,game_height/2,game_width,"center")
-	love.graphics.pop()
 end	
 
 --error = BlankE.errorhandler

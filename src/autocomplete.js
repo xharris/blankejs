@@ -95,6 +95,7 @@ module.exports.completions = {
 		{fn:"sinusoidal",vars:{min:'',max:'',speed:'higher = faster',start_offset:'optional'},info:'returns a number'},
 		{fn:"direction_x",vars:{angle:'degrees',dist:''}},
 		{fn:"direction_y",vars:{angle:'degrees',dist:''}},
+		{fn:"distance",vars:{x1:'',x2:'',y1:'',y2:''}},
 
 		{fn:"basename",vars:{path:''}},
 		{fn:"dirname",vars:{path:''}},
@@ -173,7 +174,8 @@ module.exports.completions = {
 		{fn:'tan',vars:{radians:''}},
 		{fn:'acos',vars:{n:''},info:'returns radians'},
 		{fn:'asin',vars:{n:''},info:'returns radians'},
-		{fn:'atan',vars:{y:'',x:'optional'},info:'returns radians'},
+		{fn:'atan',vars:{y:''},info:'returns radians'},
+		{fn:'atan',vars:{y:'',x:''},info:'returns radians'},
 
 		{fn:'exp',vars:{n:''},info:'e^n (natural log)'},
 		{fn:'log',vars:{n:''},info:'inverse of math.exp'},

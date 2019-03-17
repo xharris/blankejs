@@ -22,7 +22,7 @@
                 0,
                 0
             ],
-            "image": "image/sprite-example.png"
+            "image": "image\\sprite-example.png"
         }
     },
     "ico": "src/logo.ico",

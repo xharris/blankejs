@@ -5,8 +5,8 @@ function BlankE.load()
 	BlankE.options = {
 		state="TweenState",
 		plugins={"Pathfinder"},
-		resolution=1,
-		--filter="nearest",
+		resolution=4,
+		filter="nearest",
 		debug={
 			log=true
 		},

@@ -341,6 +341,38 @@ class Code extends Editor {
 							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
 					}
 				}
+			},
+			'Sprite':{
+				tooltip:'make a spritesheet animation',
+				fn:function(line_text, cm, cur){
+					// get currently used image name
+					let image_name = '';
+					if (image_name = line_text.match(/Sprite{.*image\s*=\s*('|")([\\-\s\w]*)\1/)) 
+						image_name = image_name[2]
+
+					let spr_prvw = new SpritesheetPreview(image_name);
+					spr_prvw.onCopyCode = function(vals){
+						let rows = Math.floor(vals.frames/vals.columns);
+
+						let args = {
+							image:'\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"',
+							frames:"{"+vals['selected frames'].join(',')+"}",
+							frame_size:"{"+vals['frame size'].join(',')+"}",
+							speed:vals.speed,
+							offset:"{"+[vals.offset[0],vals.offset[1]].join(',')+"}"
+							// TODO: border (padding)
+						}
+						let arg_str = "";
+						for (let key in args) {
+							arg_str += (key+"="+args[key]+", ");
+						}
+						arg_str = arg_str.slice(0,-2);
+						line_text = line_text.replace(/Sprite.*/g,"Sprite{"+arg_str+"}");
+						
+						this_ref.codemirror.replaceRange(line_text,
+							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
+					}
+				}
 			}
 		}
 
