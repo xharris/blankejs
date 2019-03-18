@@ -1,0 +1,176 @@
+{
+    "export": {
+        "name": "test_zone",
+        "remove_unused": false
+    },
+    "spritesheet_prvw": {
+        "image/sprite-example.png": {
+            "name": "mario",
+            "offset": [
+                12,
+                8
+            ],
+            "speed": 1,
+            "frame size": [
+                29,
+                43
+            ],
+            "frames": 3,
+            "selected frames": [],
+            "columns": 3,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\sprite-example.png"
+        },
+        "image/quick_explosion.png": {
+            "name": "explosion",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 5,
+            "frame size": [
+                171,
+                192
+            ],
+            "frames": 165,
+            "selected frames": [
+                "\"1-5\"",
+                1,
+                "\"1-5\"",
+                2,
+                "\"1-5\"",
+                3,
+                "\"1-5\"",
+                4,
+                "\"1-5\"",
+                5,
+                "\"1-5\"",
+                6,
+                "\"1-5\"",
+                7,
+                "\"1-5\"",
+                8,
+                "\"1-5\"",
+                9,
+                "\"1-5\"",
+                10,
+                "\"1-5\"",
+                11,
+                "\"1-5\"",
+                12,
+                "\"1-5\"",
+                13,
+                "\"1-5\"",
+                14,
+                "\"1-5\"",
+                15,
+                "\"1-5\"",
+                16,
+                "\"1-5\"",
+                17,
+                "\"1-5\"",
+                18,
+                "\"1-5\"",
+                19,
+                "\"1-5\"",
+                20,
+                "\"1-5\"",
+                21,
+                "\"1-5\"",
+                22,
+                "\"1-5\"",
+                23,
+                "\"1-5\"",
+                24,
+                "\"1-5\"",
+                25,
+                "\"1-5\"",
+                26,
+                "\"1-5\"",
+                27,
+                "\"1-5\"",
+                28,
+                "\"1-5\"",
+                29,
+                "\"1-5\"",
+                30,
+                "\"1-5\"",
+                31,
+                "\"1-5\"",
+                32,
+                "\"1-5\"",
+                33
+            ],
+            "columns": 5,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image\\quick_explosion.png"
+        }
+    },
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns",
+    "scene": {
+        "objects": {
+            "80d4bd4d": {
+                "name": "player",
+                "char": "H",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "80d4bd4d"
+            },
+            "c956d5ff": {
+                "name": "alien",
+                "char": "P",
+                "color": "#00ff00",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "c956d5ff"
+            },
+            "4c608774": {
+                "name": "asteroid",
+                "char": "X",
+                "color": "#805d45",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "4c608774"
+            },
+            "64c7bf9d": {
+                "name": "object3",
+                "char": "M",
+                "color": "#ffffff",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "64c7bf9d"
+            },
+            "02238062": {
+                "name": "object5",
+                "char": "$",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "02238062"
+            }
+        },
+        "object_order": [
+            "80d4bd4d",
+            "c956d5ff",
+            "4c608774"
+        ]
+    }
+}

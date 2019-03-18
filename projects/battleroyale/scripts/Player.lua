@@ -43,6 +43,7 @@ function Player:draw()
 	Draw.setColor("blue")
 	local radius = 20
 	Draw.rect("fill",self.x-radius, self.y-radius, radius, radius)
+	Draw.reset('color')
 	self.spec:draw()
 end
 

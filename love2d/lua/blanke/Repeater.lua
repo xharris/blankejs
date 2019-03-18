@@ -134,20 +134,27 @@ Repeater = Class{
 					dir_x, dir_y = direction_x(prop('direction'), prop('speed')), direction_y(prop('direction'), prop('speed'))
 					off_x, off_y = prop('offset_x'), prop('offset_y')
 
-					part.x[1] = part.x[1] + dir_x + off_x * dt
-					part.y[1] = part.y[1] + dir_y + off_y * dt
-				
-					part.spritebatch:setColor(prop('r'), prop('g'), prop('b'), prop('a'))
 					if self.sprite_texture then
 						-- NOTE : atm, the duration of the particle depends on the 'duration' property. it will speed up if the duration is lower. change or naw?
 						local frame = floor(prop('spr_frame',prop('spr_speed')))
 						part.quad = self.texture.anim.frames[(frame-1) % self.texture.frame_count +1]
 					end
 
-					if part.quad ~= nil then
-						part.spritebatch:set(part.id, part.quad, part.x[1], part.y[1])
+					local x = prop('x') + off_x + dir_x * dt
+					local y = prop('y') + off_y + dir_y * dt
+				
+					part.spritebatch:setColor(prop('r'), prop('g'), prop('b'), prop('a'))
+
+					if self.sprite_texture then
+						part.spritebatch:set(part.id, part.quad, x, y, 0,
+							self.texture.xscale,self.texture.yscale,
+							-self.texture.xoffset,-self.texture.yoffset)
+					elseif self.entity_texture then
+						part.spritebatch:set(part.id, x, y, 0,
+							self.texture.sprite_xscale,self.texture.sprite_yscale,
+							self.texture.sprite_xoffset,self.texture.sprite_yoffset)
 					else
-						part.spritebatch:set(part.id, part.x[1], part.y[1])
+						part.spritebatch:set(part.id, x, y)
 					end
 				end
 			end
@@ -165,7 +172,7 @@ Repeater = Class{
 	updateSpriteTexture = function(self)
 		if not self.sprite_texture then return end
 
-		local f = cond(self.spr_frame == 0, self.texture.sprite_frame, floor(self.spr_frame))
+		local f = cond(self.spr_frame == 0, self.texture.frame, floor(self.spr_frame))
 		if not self.changed['duration'] then
 			self.duration = self.texture.duration
 		end
@@ -245,7 +252,7 @@ Repeater = Class{
 			if self.sprite_texture then
 				for i = 1, 2 do
 					-- non-negative sprite speed
-					if new_p.spr_speed[i] < 0 then new_p.spr_speed[i] = self.texture.sprite_speed end
+					if new_p.spr_speed[i] < 0 then new_p.spr_speed[i] = self.texture.speed end
 					-- non-negative sprite duration
 					if new_p.duration[i] < 0 then new_p.duration[i] = self.texture.duration end
 
@@ -253,7 +260,7 @@ Repeater = Class{
 					--new_p.spr_speed[i] = new_p.duration[i] / self.texture.duration * self.texture.sprite_speed
 				end	
 
-				if new_p.spr_frame[1] == 0 then new_p.spr_frame[1] = self.texture.sprite_frame end
+				if new_p.spr_frame[1] == 0 then new_p.spr_frame[1] = 1 end
 				if new_p.spr_frame[2] == 0 then new_p.spr_frame[2] = self.texture.frame_count+1 end--*(new_p.duration[1] / self.texture.duration)+1 end
 			end
 			
@@ -274,7 +281,7 @@ Repeater = Class{
 			for t, texture in pairs(self.texture_list) do 
 				love.graphics.draw(texture)
 			end 
-		else 
+		else
 			love.graphics.draw(self.real_texture)
 		end 
 	end

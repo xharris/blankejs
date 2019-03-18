@@ -1,19 +1,19 @@
 Sprite = Class{
 	init = function(self, args)
 		self.x, self.y = 0, 0
-		self.sprite_angle = 0		
-		self.sprite_xscale = 1
-		self.sprite_yscale = 1
-		self.sprite_xoffset = 0
-		self.sprite_yoffset = 0
-		self.sprite_xshear = 0
-		self.sprite_yshear = 0
-		self.sprite_color = {255,255,255}
-		self.sprite_alpha = 255
-		self.sprite_speed = 1
-		self.sprite_frame = 0
-		self.sprite_width = 0
-		self.sprite_height = 0
+		self.angle = 0		
+		self.xscale = 1
+		self.yscale = 1
+		self.xoffset = 0
+		self.yoffset = 0
+		self.xshear = 0
+		self.yshear = 0
+		self.color = {255,255,255}
+		self.alpha = 255
+		self.speed = 1
+		self.frame = 0
+		self.width = 0
+		self.height = 0
 
 		-- main args
 		local name = args.image
@@ -36,29 +36,29 @@ Sprite = Class{
 			self:refreshSpriteDims()
 		end
 
-		self.onPropSet["sprite_frame"] = function(self, v) self.anim:gotoFrame(v) end
+		--self.onPropSet["frame"] = function(v) self.anim:gotoFrame(v) end
 
 		_addGameObject("sprite",self)
 	end,
 
 	refreshSpriteDims = function(self)
 		local anim_w, anim_h = self.anim:getDimensions()
-		self.sprite_width, self.sprite_height = ifndef(anim_w, 0), ifndef(anim_h, 0)
+		self.width, self.height = ifndef(anim_w, 0), ifndef(anim_h, 0)
 	end,
 
 	update = function(self, dt)
-		self.anim:update(self.sprite_speed*dt)
-		self.sprite_frame = self.anim.position
+		self.anim:update(self.speed*dt)
+		self.frame = self.anim.position
 	end,
 
 	draw = function(self,x,y)
 		Draw.stack(function()
-			local c = self.sprite_color
-			Draw.setColor(c[1], c[2], c[3], ifndef(c[4], self.sprite_alpha))
+			local c = self.color
+			Draw.setColor(c[1], c[2], c[3], ifndef(c[4], self.alpha))
 
-			self.anim:draw(self.image(), math.floor(x or self.x), math.floor(y or self.y), math.rad(self.sprite_angle), 
-				self.sprite_xscale, self.sprite_yscale, -math.floor(self.sprite_xoffset), -math.floor(self.sprite_yoffset), 
-				self.sprite_xshear, self.sprite_yshear)
+			self.anim:draw(self.image(), math.floor(x or self.x), math.floor(y or self.y), math.rad(self.angle), 
+				self.xscale, self.yscale, -math.floor(self.xoffset), -math.floor(self.yoffset), 
+				self.xshear, self.yshear)
 		end)
 	end
 }
