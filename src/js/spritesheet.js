@@ -123,6 +123,7 @@ class SpritesheetPreview extends Editor {
 	}
 
 	_onCopyCode () {
+		this.getValues()
 		if (this.onCopyCode) {
 			blanke.toast("Animation code copied! Don't forget to save.");
 			this.onCopyCode(this.getValues());
@@ -195,7 +196,6 @@ class SpritesheetPreview extends Editor {
 		let frames = this.el_sheet_form.getValue("frames");
 		let columns = this.el_sheet_form.getValue("columns");
 		let padding = [0,0]; // TODO: add later
-
 		return {
 			'name':name,'offset':offset,'speed':speed,'frame size':frame_dims,
 			'frames':frames,'selected frames':this.frames,'columns':columns,'padding':padding,'image':this.selected_img
@@ -252,7 +252,7 @@ class SpritesheetPreview extends Editor {
 
 		this.frames = [];
 		this.frame_coords = [];
-		let last_x = undefined, last_y = undefined, last_ignored = false, x_chain = [1,1], y_chain = [1,1];
+		let last_chain_couple = undefined, last_x = undefined, last_y = undefined, last_ignored = false, x_chain = [1,1], y_chain = [1,1];
 
 		for (let f = 0; f < el_frames.length; f++) {
 			let ignore_frame = false; // el_frames[f].classList.contains("ignore"); // TODO: add frame removal
@@ -270,14 +270,21 @@ class SpritesheetPreview extends Editor {
 					x_chain = [new_x,new_x]; y_chain = [new_y,new_y];
 				}
 
+				function getChainCouple() {
+					let xc, yc;
+					// turn x and y into a single string/int
+					if (x_chain[0] == x_chain[1]) xc = x_chain[0];
+					else xc = '\"'+x_chain[0]+"-"+x_chain[1]+"\"";
+					if (y_chain[0] == y_chain[1]) yc = y_chain[0];
+					else yc = '\"'+y_chain[0]+"-"+y_chain[1]+"\"";
+					return [xc, yc];
+				}
+
 				function addChain() {
 					// turn x and y into a single string/int
-					if (x_chain[0] == x_chain[1]) x_chain = x_chain[0];
-					else x_chain = '\"'+x_chain[0]+"-"+x_chain[1]+"\"";
-					if (y_chain[0] == y_chain[1]) y_chain = y_chain[0];
-					else y_chain = '\"'+y_chain[0]+"-"+y_chain[1]+"\"";
+					let chains = getChainCouple();
 					// add it to list of frames
-					this_ref.frames.push(x_chain, y_chain);
+					this_ref.frames.push(chains[0], chains[1]);
 					// find where the next chain begins
 					resetChain();
 				}
@@ -285,10 +292,20 @@ class SpritesheetPreview extends Editor {
 				// add to frame list
 				if (f > 0 || el_frames.length == 1) {
 					if (!ignore_frame) {
-						if (last_y == y) x_chain[1]++;
-						if (last_x == x) y_chain[1]++;
+						if (last_x != x) x_chain[1]++;
+						if (last_y != y) {
+							y_chain[1]++;
+							
+							let curr_chain = getChainCouple();
+							if (!last_chain_couple) last_chain_couple == [curr_chain[0], curr_chain[1]];
+							else {
+								if (curr_chain[0] == last_chain_couple[0] && (curr_chain[1] - last_chain_couple[1]) > 1)
+									addChain();
+							}
+							x_chain[1] = x_chain[0];
+						}
 					}
-					if ((last_x != x && last_y != y) || f == el_frames.length-1 || ignore_frame)
+					if ( f >= el_frames.length-1 || ignore_frame) //(last_x != x && last_y != y) ||
 						addChain();
 				}
 				
