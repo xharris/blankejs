@@ -51,12 +51,13 @@ end
 BlankE.addEntity("Explosion")
 function Explosion:init(x,y)
 	self.x, self.y = x, y
+	local offset = 30
 	self.rpt_explosion = Repeater(spr_explosion,{
 		x = self.x, y = self.y,
-		offset_x = {-50,50}, offset_y = {-50,50},
-		duration = 0.5
+		offset_x = {-offset,offset}, offset_y = {-offset,offset},
+		duration = {0.5,1.5}
 	})
-	self.rpt_explosion:emit(5)
+	self.rpt_explosion:emit(10)
 	grp_explosions:add(self)
 end
 function Explosion:draw()
