@@ -26,7 +26,7 @@ class SpritesheetPreview extends Editor {
 			['columns','number',{'inputs':1}]
 		]);
 		this.el_sheet_form.onChange('speed',function(val){
-			if (val == 0) return 1;
+			if (val < 0) return 1;
 		});
 		this.el_sheet_form.container.classList.add("dark");
 		this.appendChild(this.el_sheet_form.container);
