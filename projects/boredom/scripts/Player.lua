@@ -5,7 +5,7 @@ function Player:init()
 		name = "stand",
 		image = "player_stand"
 	}
-	self:addAnimation{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.2, offset={0,0}}
+	self:addAnimation{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.1, offset={0,0}}
 	self.sprite["walk"].yoffset = -1
 	
 	self:addAnimation{
