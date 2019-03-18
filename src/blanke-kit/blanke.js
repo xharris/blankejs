@@ -405,12 +405,16 @@ class BlankeForm {
             for (var i = 0; i < input_count; i++) {
                 let el_text = blanke.createElement("input","form-text");
                 // set starting val
-                el_text.value = ifndef(extra_args.default, input_type == "text" ? "" : 0);
+                el_text.value = ifndef(extra_args.default, input_type == "text" ? "" : "0");
                 // set input type
                 el_text.type = input_type;
-                // number: step
-                if (input_type == "number" && extra_args.step != undefined)
-                    el_text.step = extra_args.step;
+
+                // NUMBER only
+                if (input_type == "number") {
+                    for (let attr of ['step','min','max']) {
+                        if (extra_args[attr] != null) el_text[attr] = extra_args[attr];
+                    }
+                }
 
                 this.prepareInput(el_text, input_name);
 

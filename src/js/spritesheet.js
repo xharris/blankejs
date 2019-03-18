@@ -20,7 +20,7 @@ class SpritesheetPreview extends Editor {
 			['name', 'text'],
 			['offset', 'number', {'inputs':2, 'separator':'x'}],
 			// border
-			['speed', 'number', {'inputs':1,'step':'0.1','default':1}],
+			['speed', 'number', {'inputs':1,'step':'0.1','min':'0','default':"1.0"}],
 			['frame size', 'number', {'inputs':2, 'separator':'x'}],
 			['frames','number',{'inputs':1}],
 			['columns','number',{'inputs':1}]
@@ -308,9 +308,11 @@ class SpritesheetPreview extends Editor {
 		}
 		curr_chain = getChainCouple();
 		// if the number of columns never changed, then addChain does not get called in the for loop
-		if (this.frames.length == 0 && last_chain_couple) addChain(last_chain_couple);
+		if (this.frames.length == 0)
+			if (last_chain_couple) addChain(last_chain_couple);
+			else addChain(curr_chain);
 		// if the number of columns changed in the last row, add that row
-		if (last_chain_couple[0] != curr_chain[0] && last_chain_couple[1] != curr_chain[1]) addChain(curr_chain);
+		if (last_chain_couple && last_chain_couple[0] != curr_chain[0] && last_chain_couple[1] != curr_chain[1]) addChain(curr_chain);
 
 		this.duration = this_ref.el_sheet_form.getValue("speed")*1000;
 	}
