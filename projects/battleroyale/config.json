@@ -37,6 +37,8 @@
             ],
             "frames": 165,
             "selected frames": [
+                "\"1-5\"",
+                "\"1-32\"",
                 "\"1-4\"",
                 "\"1-33\""
             ],
@@ -45,7 +47,7 @@
                 0,
                 0
             ],
-            "image": "image\\quick_explosion.png"
+            "image": "image/quick_explosion.png"
         }
     },
     "ico": "src/logo.ico",
