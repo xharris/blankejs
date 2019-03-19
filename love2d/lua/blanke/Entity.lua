@@ -61,7 +61,7 @@ Entity = Class{
 
 		-- collision
 		self.shapes = {}
-		self._main_shape = ''
+		self._main_shape = nil
 		self.collisions = {}
 		self.collisionStop = nil
 		self.collisionStopX = nil
@@ -218,7 +218,7 @@ Entity = Class{
 								for name, shape in pairs(self.shapes) do
 									shape:move(sep_vec.x, 0)
 								end
-					            --self.hspeed = 0
+					            self.hspeed = 0
 					            dx = 0
 							end
 
@@ -226,23 +226,25 @@ Entity = Class{
 								for name, shape in pairs(self.shapes) do
 									shape:move(0, sep_vec.y)
 								end
-					            --self.vspeed = 0
+					            self.vspeed = 0
 					            dy = 0
 							end
 							
 							self.collisionStop = function(self)
-								self:collisionStopX()
-								self:collisionStopY()
+								for name, shape in pairs(self.shapes) do
+									shape:move(cx*2, cy*2)
+								end
+								dx, dy = 0, 0
 							end
 
 							self.collisionBounce = function(self)
 								for name, shape in pairs(self.shapes) do
-									shape:move(cx, cy)
+									shape:move(cx*2, cy*2)
 								end
-								local mag = math.sqrt((sep_vec.x^2)+(sep_vec.y^2))
-								local dot = (self.hspeed * (sep_vec.x/mag)) + (self.vspeed * (sep_vec.y/mag))
-								self.hspeed = self.hspeed - (2 * dot * (sep_vec.x/mag))
-								self.vspeed = self.vspeed - (2 * dot * (sep_vec.y/mag))
+								local mag = math.sqrt((cx^2)+(cy^2))
+								local dot = (self.hspeed * (cx/mag)) + (self.vspeed * (cy/mag))
+								self.hspeed = self.hspeed - (2 * dot * (cx/mag))
+								self.vspeed = self.vspeed - (2 * dot * (cy/mag))
 							end
 
 							-- call users collision callback if it exists
@@ -253,22 +255,21 @@ Entity = Class{
 			end
 
 			-- set position of sprite
-			if self.shapes[self._main_shape] ~= nil and self.shapes[self._main_shape]._enabled then
-				self.x, self.y = self.shapes[self._main_shape]:center()
-				--Debug.log(self.x, self.y)
+			if _main_shape and _main_shape._enabled then
+				self.x, self.y = _main_shape:center()
 			else
 				self.x = self.x + dx*dt
 				self.y = self.y + dy*dt
 			end
 			self.xprevious = self.x
 			self.yprevious = self.y
-		end
 
-		local old_hspd, old_vspd = self.hspeed, self.vspeed
-		self.hspeed = dx * dt
-		self.vspeed = dy * dt
-		if self.postUpdate then self:postUpdate(dt) end
-		self.hspeed, self.vspeed = old_hspd, old_vspd
+			local old_hspd, old_vspd = self.hspeed, self.vspeed
+			self.hspeed = dx * dt
+			self.vspeed = dy * dt
+			if self.postUpdate then self:postUpdate(dt) end
+			self.hspeed, self.vspeed = old_hspd, old_vspd
+		end
 
 		if self.netSync then self:netSync() end
 --[[

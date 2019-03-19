@@ -34,16 +34,14 @@ function Grenade:init()
 	self.timer = Timer(3):after(function()
 		self:explode()	
 	end):start()
-	self:addShape("main","rectangle",{0,0,10,10})
+	self:addShape("main","circle",{0,0,5})
 	self.point = nil
 end
 
 function Grenade:update(dt)
 	self.onCollision["main"] = function(other, sep)
 		if other.tag == "ground" then
-			-- rvec = ivec - (2 * dot(normal, ivec) * normal)
 			self:collisionBounce()
-			
 		end
 	end
 end

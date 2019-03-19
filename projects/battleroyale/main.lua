@@ -4,6 +4,7 @@ BlankE = require('blanke.Blanke')
 function BlankE.load()
 	BlankE.options = {
 		state="PlayState",
+		resolution=1,
 		inputs={
 			{"moveL","a"},
 			{"moveR","d"},
