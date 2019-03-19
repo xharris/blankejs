@@ -631,6 +631,7 @@ nwWIN.on('loaded', function() {
 
 	window.addEventListener("error", function(e){
 		app.error_occured = e;
+		app.error(e.error.stack);
 	});
 
 	// changing searchbox placeholder between "Some title" and "Search..."

@@ -55,7 +55,7 @@
     "scene": {
         "objects": {
             "80d4bd4d": {
-                "name": "player",
+                "name": "player_spawn",
                 "char": "H",
                 "color": "#000000",
                 "size": [
@@ -63,26 +63,6 @@
                     32
                 ],
                 "uuid": "80d4bd4d"
-            },
-            "c956d5ff": {
-                "name": "alien",
-                "char": "P",
-                "color": "#00ff00",
-                "size": [
-                    32,
-                    32
-                ],
-                "uuid": "c956d5ff"
-            },
-            "4c608774": {
-                "name": "asteroid",
-                "char": "X",
-                "color": "#805d45",
-                "size": [
-                    32,
-                    32
-                ],
-                "uuid": "4c608774"
             },
             "64c7bf9d": {
                 "name": "object3",
@@ -106,9 +86,7 @@
             }
         },
         "object_order": [
-            "80d4bd4d",
-            "c956d5ff",
-            "4c608774"
+            "80d4bd4d"
         ]
     }
 }

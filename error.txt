@@ -1,0 +1,56 @@
+[[ 1552953018642 ]]
+ReferenceError: file is not defined
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/assetmanager.js:35:18)
+    at dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:101:14)
+    at Watcher.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:158:18)
+    at Watcher.emit (events.js:197:13)
+    at D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:277:19
+    at D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:40:7
+    at D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:275:7
+    at D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:82:10
+    at Array.forEach (<anonymous>)
+    at Timeout.handle [as _onTimeout] (D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:77:24)
+
+[[ 1552953018643 ]]
+ReferenceError: file is not defined
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/assetmanager.js:35:18)
+    at dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:101:14)
+    at Watcher.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:158:18)
+    at Watcher.emit (events.js:197:13)
+    at D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:277:19
+    at D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:40:7
+    at D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:275:7
+    at D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:82:10
+    at Array.forEach (<anonymous>)
+    at Timeout.handle [as _onTimeout] (D:\Documents\PROJECTS\blankejs\node_modules\.registry.npmjs.org\node-watch\0.6.0\node_modules\node-watch\lib\watch.js:77:24)
+
+[[ 1552953299623 ]]
+TypeError: Cannot read property 'name' of undefined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:242:54
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:543:31)
+
+[[ 1552953299887 ]]
+TypeError: Cannot read property 'name' of undefined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:242:54
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:543:31)
+
+[[ 1552953300032 ]]
+TypeError: Cannot read property 'name' of undefined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:242:54
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:543:31)
+
+[[ 1552953300127 ]]
+TypeError: Cannot read property 'name' of undefined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:242:54
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:543:31)
+
+[[ 1552953300200 ]]
+TypeError: Cannot read property 'name' of undefined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:242:54
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:543:31)
+
+[[ 1552953300232 ]]
+TypeError: Cannot read property 'name' of undefined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:242:54
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:543:31)
+

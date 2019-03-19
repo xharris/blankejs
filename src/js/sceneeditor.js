@@ -239,7 +239,7 @@ class SceneEditor extends Editor {
 					return this_ref.curr_object.name;
 				else {
 					delete this_ref.obj_info[this_ref.curr_object.name];
-					this_ref.el_obj_list.renameItem(this_ref.object.name, value);
+					this_ref.el_obj_list.renameItem(this_ref.curr_object.name, value);
 					this_ref.curr_object.name = value;
 					this_ref.export();
 				}

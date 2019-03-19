@@ -32,8 +32,8 @@ class AssetManager extends Editor {
 
 		document.addEventListener("fileChange", function(e){
 			let ignore = ['config.json','dist\/'];
-			for (let f of file) { 
-				if (e.detail.file.includes(f)) return;
+			for (let i of ignore) { 
+				if (e.detail.file.match(i)) return;
 			}
 			this_ref.refreshFileList();
 		});
