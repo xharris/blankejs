@@ -169,7 +169,7 @@ Entity = Class{
 			if self.xprevious ~= self.x or self.yprevious ~= self.y then
 				for s, shape in pairs(self.shapes) do
 					-- account for x/y offset?
-					shape:moveTo(self.x, self.y)
+					shape:moveTo(self.x or 0, self.y or 0)
 				end
 			end
         
@@ -204,8 +204,11 @@ Entity = Class{
 		                	bh = bh - by
 		                	if cx < 0 then sep_vec.point_y = by; sep_vec.point_x = (bw + cx) end
 		                	if cx > 0 then sep_vec.point_y = by; sep_vec.point_x = cx end
-		                	if dy < 0 then sep_vec.point_x = bx; sep_vec.point_y = (bh + dy) end
-		                	if dy > 0 then sep_vec.point_x = bx; sep_vec.point_y = dy end
+		                	if cy < 0 then sep_vec.point_x = bx; sep_vec.point_y = (bh + cy) end
+		                	if cy > 0 then sep_vec.point_x = bx; sep_vec.point_y = cy end
+
+		                	local ox, oy = obj_shape:center()
+		                	sep_vec.point_x, sep_vec.point_y = sep_vec.point_x + ox, sep_vec.point_y + oy
 
 		                	self.collisions[name] = ifndef(self.collisions[name], {})
 					    	self.collisions[name][other.tag] = sep_vec
@@ -215,7 +218,7 @@ Entity = Class{
 								for name, shape in pairs(self.shapes) do
 									shape:move(sep_vec.x, 0)
 								end
-					            self.hspeed = 0
+					            --self.hspeed = 0
 					            dx = 0
 							end
 
@@ -223,13 +226,23 @@ Entity = Class{
 								for name, shape in pairs(self.shapes) do
 									shape:move(0, sep_vec.y)
 								end
-					            self.vspeed = 0
+					            --self.vspeed = 0
 					            dy = 0
 							end
 							
 							self.collisionStop = function(self)
 								self:collisionStopX()
 								self:collisionStopY()
+							end
+
+							self.collisionBounce = function(self)
+								for name, shape in pairs(self.shapes) do
+									shape:move(cx, cy)
+								end
+								local mag = math.sqrt((sep_vec.x^2)+(sep_vec.y^2))
+								local dot = (self.hspeed * (sep_vec.x/mag)) + (self.vspeed * (sep_vec.y/mag))
+								self.hspeed = self.hspeed - (2 * dot * (sep_vec.x/mag))
+								self.vspeed = self.vspeed - (2 * dot * (sep_vec.y/mag))
 							end
 
 							-- call users collision callback if it exists

@@ -670,8 +670,8 @@ BlankE = {
 		if BlankE.quit and BlankE.quit() then return true end
 
 	    if Net then Net.disconnect() end
-	    State.switch()
-	    BlankE.clearObjects(true)
+	    --State.switch()
+	    --BlankE.clearObjects(true)
 		BlankE.restoreCallbacks()
 		if Debug then Debug.quit() end
 

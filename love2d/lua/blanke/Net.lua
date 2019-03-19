@@ -357,6 +357,7 @@ Net = {
         else
             removable[clientid] = Net._objects[clientid]
         end
+        Debug.log("removing",table.len(removable))
 
         for id, objects in pairs(removable) do
             for uuid, obj in pairs(objects) do
@@ -383,6 +384,7 @@ Net = {
     end,
 
     removeLocalObjects = function()
+        Debug.log("removing",table.len(Net._local_objects))
         for net_uuid, obj in pairs(Net._local_objects) do
             obj:destroy()
         end

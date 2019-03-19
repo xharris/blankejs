@@ -34,16 +34,16 @@ function Grenade:init()
 	self.timer = Timer(3):after(function()
 		self:explode()	
 	end):start()
-	self:addShape("main","circle",{0,0,5})
-	
-	self.line = nil
+	self:addShape("main","rectangle",{0,0,10,10})
+	self.point = nil
 end
 
 function Grenade:update(dt)
 	self.onCollision["main"] = function(other, sep)
 		if other.tag == "ground" then
-			self:collisionStop()
-			self.line = {sep.point_x, sep.point_y, sep.point_x+(sep.x*20), sep.point_y+(sep.y*20)}
+			-- rvec = ivec - (2 * dot(normal, ivec) * normal)
+			self:collisionBounce()
+			
 		end
 	end
 end
@@ -57,6 +57,7 @@ function Grenade:draw()
 	Draw.setColor("gray")
 	Draw.circle("fill",self.x,self.y,5)
 	Draw.reset('color')
+	self:debugCollision()
 end
 
 BlankE.addEntity("Explosion")
@@ -72,13 +73,8 @@ function Explosion:init(x,y)
 	grp_explosions:add(self)
 end
 function Explosion:draw()
-	self.rpt_explosion:draw()
+	--self.rpt_explosion:draw()
 	if self.rpt_explosion.count == 0 then
 		self:destroy()
-	end
-	
-	if self.line then
-		Draw.setColor("red")
-		Draw.line(unpack(self.line))
 	end
 end
