@@ -216,17 +216,15 @@ Entity = Class{
 							-- collision action functions
 							self.collisionStopX = function(self)
 								for name, shape in pairs(self.shapes) do
-									shape:move(sep_vec.x, 0)
+									shape:move(cx*2, 0)
 								end
-					            self.hspeed = 0
 					            dx = 0
 							end
 
 							self.collisionStopY = function(self)
 								for name, shape in pairs(self.shapes) do
-									shape:move(0, sep_vec.y)
+									shape:move(0, cy*2)
 								end
-					            self.vspeed = 0
 					            dy = 0
 							end
 							
