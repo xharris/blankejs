@@ -85,7 +85,7 @@ end
 -- start_offset : percentage
 function sinusoidal(min, max, speed, start_offset)
 	local radius = (max - min)/2
-	return min + -math.cos(lerp(0,math.pi/2,start_offset) + game_time * speed) * radius + (radius)
+	return min + -math.cos(lerp(0,math.pi/2,start_offset or 0) + game_time * speed) * radius + (radius)
 end
 
 function direction_x(angle, dist)

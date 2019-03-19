@@ -3,12 +3,15 @@ BlankE.addState("PlayState")
 local player, sc_map, vw_main
 
 Scene.tile_hitboxes = {"ground"}
+Scene.hitboxes = {"ground"}
+Scene.draw_order = {"ground","Player"}
 
 function PlayState:enter()
 	self.background_color = "white"
-	
+
 	sc_map = Scene("MapPlain")
-	vw_main = View()
+	sc_map.draw_hitboxes = true
+	vw_main = View("main")
 		
 	player = Player()
 	player.x = game_width / 2

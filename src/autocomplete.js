@@ -53,7 +53,7 @@ module.exports.instance_regex = {
 	'audio': 	/\b(\w+)\s*=\s*Audio\([\'\"][\w\.\s]+[\'\"]\)\s+?/g,
 	'dialog': 	/\b(\w+)\s*=\s*Dialog\((?:\d+,?){0,3}\)/g,
 	'effect': 	/\b(\w+)\s*=\s*Effect\((?:[\"\']\w+[\"\'],?)*\)/g,
-	'view': 	/\b(\w+)\s*=\s*View\([\w\.\s]*\)\s+?/g,
+	'view': 	/\b(\w+)\s*=\s*View\([\"\']\w+[\"\']*\)\s+?/g,
 	'repeater':	/\b(\w+)\s*=\s*Repeater\([\w\.\s\,\{\}\=]*\)?\s?/g,
 	'group': 	[
 		/\b(?:self\.)?(\w+)\s*=\s*Group\(\)\s+?/g,

@@ -23,6 +23,7 @@ function BlankE.load()
 			{"action1","1"},
 			{"action2","2"},
 			{"action3","3"}
-		}
+		},
+		debug={log=true}
 	}
 end

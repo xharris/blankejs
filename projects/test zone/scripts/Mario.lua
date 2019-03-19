@@ -12,14 +12,17 @@ function Mario:init()
 	
 	self.effect = Effect("chroma shift")
 	--self.effect = Effect("static")
+	self.direction = 0
 end
 
 function Mario:update(dt)	
 	local s = 2
-	if Input("move_l").pressed then self.x = self.x - s end
-	if Input("move_r").pressed then self.x = self.x + s end
-	if Input("move_u").pressed then self.y = self.y - s end
-	if Input("move_d").pressed then self.y = self.y + s end
+	if Input("move_l").pressed then self.direction = self.direction - s end
+	if Input("move_r").pressed then self.direction = self.direction + s end
+	if Input("move_u").pressed then self:moveDirection(self.direction, 50) end
+	if Input("move_d").pressed then self:moveDirection(self.direction, -50) end
+	self.sprite_angle = self.direction
+	Debug.log(self.direction, self.hspeed, self.vspeed)
 end
 
 function Mario:draw()

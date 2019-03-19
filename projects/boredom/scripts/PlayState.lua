@@ -1,7 +1,7 @@
 BlankE.addState("PlayState")
 
 --local player
-main_camera = nil
+local main_camera = nil
 local player = nil
 local my_eff
 function PlayState:enter(prev)
@@ -23,7 +23,8 @@ function PlayState:enter(prev)
 	sc_boss1 = Scene("boss1")
 	--sc_level1:chain(sc_boss1, "lvl_end", "lvl_start")
 	player = sc_boss1:addEntity("player", Player, "bottom-center"):get(1)
-	main_camera = View(player)
+	main_camera = View("main")
+	main_camera:follow(player)
 end
 
 function PlayState:update(dt)

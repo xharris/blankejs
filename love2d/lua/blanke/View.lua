@@ -1,5 +1,7 @@
-View = Class{
-	init = function(self, follow_entity)
+local floor = function(v) return math.floor(v+0.5) end
+
+local _View = Class{
+	init = function(self)
 		-- the final draw position
 		self.x = 0
 		self.y = 0
@@ -9,6 +11,8 @@ View = Class{
 		self.left = 0
 		self.bottom = 0
 		self.right = 0
+		self.mouse_x = 0
+		self.mouse_y = 0
 
 		self._port_w = game_width
 		self._port_h = game_height
@@ -16,7 +20,7 @@ View = Class{
 		self.port_width = -1
 		self.port_height = -1
 
-        self.follow_entity = follow_entity
+        self.follow_entity = nil
         self.offset_x = 0
         self.offset_y = 0
 
@@ -38,7 +42,7 @@ View = Class{
         self.scale_x = 1
         self.scale_y = 1
 
-        self._half_w, self._half_h = math.floor(w/2), math.floor(h/2)
+        self._half_w, self._half_h = floor(w/2), floor(h/2)
 
         self.onPropSet['zoom'] = function(self, v)
         	self.scale_x = v
@@ -110,23 +114,25 @@ View = Class{
 		self.top = self.y - self._half_h
 		self.left = self.x - self._half_w
 
+		self.mouse_x = mouse_x + self.left
+		self.mouse_y = mouse_y + self.top
+
 		local w,h = self:getSize()
 
 		self.right = self.left + w
 		self.bottom = self.top + h
 	end,
 
-	_transform = love.math.newTransform(),
 	on = function(self)
 		local w,h = self:getSize()
-		self._half_w, self._half_h = math.floor(w/2), math.floor(h/2)
+		self._half_w, self._half_h = floor(w/2), floor(h/2)
 		Draw.push()
 
 		View._transform:reset()
-		View._transform:translate(math.floor(self._half_w), math.floor(self._half_h))
+		View._transform:translate(floor(self._half_w), floor(self._half_h))
 		View._transform:scale(self.scale_x, self.scale_y)
 		View._transform:rotate(math.rad(self.angle))
-		View._transform:translate(-math.floor(self.x + self._dx), -math.floor(self.y + self._dy))
+		View._transform:translate(-floor(self.x + self._dx), -floor(self.y + self._dy))
 
 		if Canvas._applied == 1 then
             love.graphics.replaceTransform(View._transform)
@@ -143,5 +149,19 @@ View = Class{
 		self:off()
 	end
 }
+
+View = {
+	views = {},
+	_transform = love.math.newTransform(),
+	mt = {
+		__call = function(index)
+			if not View.views[index] then
+				View.views[index] = _View()
+			end
+			return View.views[index]
+		end
+	}
+}
+setmetatable(View, View.mt)
 
 return View

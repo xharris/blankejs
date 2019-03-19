@@ -95,7 +95,8 @@ class SpritesheetPreview extends Editor {
 			if (img_name && img_name != '') {
 				let match;
 				for (let i = 0; i < this_ref.image_list.length; i++) {
-					if (match = this_ref.image_list[i].match(/image[\\/]([/\\-\s\w]*)\./)) {
+					console.log(this_ref.image_list[i])
+					if (match = this_ref.image_list[i].match(/image[\\/]+([/\\-\s\w]*)\./)) {
 						if (match[1] == img_name) {
 							this_ref.setImage(this_ref.image_list[i]);
 						}
@@ -167,7 +168,7 @@ class SpritesheetPreview extends Editor {
 
 		this.el_sheet_form.setValue("image", name);
 
-		this.selected_img = name;
+		this.selected_img = app.cleanPath(name);
 		let src = "file://"+decodeURI(app.lengthenAsset(this.selected_img))
 		
 		this.el_image.onload = function(){
@@ -209,7 +210,7 @@ class SpritesheetPreview extends Editor {
 		// save last used values for this image
 		if (!app.project_settings.spritesheet_prvw)
 			app.project_settings.spritesheet_prvw = {};
-		if (this.selected_img)
+		if (this.selected_img) 
 			app.project_settings.spritesheet_prvw[app.cleanPath(this.selected_img)]=vals
 		app.saveSettings();
 

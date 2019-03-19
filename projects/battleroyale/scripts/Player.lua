@@ -1,10 +1,11 @@
 BlankE.addEntity("Player")
 
-local SPEED = 150
+local SPEED = 200
 
 function Player:init()
 	self.friction = 0.2
 	self.aim_direction = 0
+	self:addShape("main","rectangle",{0,0,20,20})
 end
 
 function Player:update(dt)
@@ -36,7 +37,14 @@ function Player:update(dt)
 	end
 	
 	-- AIM
-	self.aim_direction = direction(self.x,self.y,mouse_x,mouse_y)
+	local vw_main = View("main")
+	self.aim_direction = direction(self.x,self.y,vw_main.mouse_x,vw_main.mouse_y)
+	
+	self.onCollision["main"] = function(other, sep)
+		if other.tag == "ground" then
+			self:collisionStop()
+		end
+	end
 end
 
 function Player:draw()
@@ -45,6 +53,7 @@ function Player:draw()
 	Draw.rect("fill",self.x-radius, self.y-radius, radius*2, radius*2)
 	Draw.reset('color')
 	self.spec:draw()
+	self:debugCollision()
 end
 
 function Player:setSpecialty(spec)

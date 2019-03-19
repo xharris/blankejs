@@ -5,7 +5,7 @@ function Player:init()
 		name = "stand",
 		image = "player_stand"
 	}
-	self:addAnimation{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.1, offset={0,0}}
+	self:addAnimation{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.25, offset={0,0}}
 	self.sprite["walk"].yoffset = -1
 	
 	self:addAnimation{
@@ -44,7 +44,7 @@ function Player:update(dt)
 				--transition_timer:after(function()
 					State.transition(DeathState, 'fade', 'black')	
 				--end)
-				--local death_tween = Tween(main_camera,{angle=30, scale_x=3, scale_y=3},2,'quad out')
+				--local death_tween = Tween(View("main"),{angle=30, scale_x=3, scale_y=3},2,'quad out')
 				--death_tween:play()
 				--transition_timer:start()
 			end

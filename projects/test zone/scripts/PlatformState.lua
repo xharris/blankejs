@@ -6,8 +6,9 @@ function PlatformState:enter()
 	PlatformState.background_color = "white"
 	lvl = Scene("level1")
 	
-	penguin = Penguin()
-	main_view = View(penguin)
+	penguin = Mario()
+	main_view = View("main")
+	main_view:follow(penguin)
 	
 	lvl:translate(game_width / 2, game_height / 2)
 	lvl:addEntity("spawn",penguin)

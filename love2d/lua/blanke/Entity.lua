@@ -49,13 +49,11 @@ Entity = Class{
 		self.sprite_height = 0
 
 		-- movement variables
-		self.direction = 0
 		self.friction = 0
 		self.gravity = 0
 		self.gravity_direction = 90
 		self.hspeed = 0
 		self.vspeed = 0
-		self.speed = 0
 		self.xprevious = 0
 		self.yprevious = 0
 		self.xstart = self.x
@@ -70,6 +68,9 @@ Entity = Class{
 		self.collisionStopY = nil	
 
 		self.onCollision = {["*"] = function() end}
+
+		self.onPropGet["direction"] = function() return direction(0,0,self.hspeed,self.vspeed) end
+		self.onPropGet["speed"] = function() return distance(0,0,self.hspeed,self.vspeed) end
 
 		self.onPropSet["sprite_index"] = function(self,v) self:refreshSpriteDims(v) end
 		self.onPropSet["sprite_color"] = function(self,v) return Draw._parseColorArgs(v) end
@@ -110,13 +111,13 @@ Entity = Class{
 
     	-- subtract friction
     	if self.hspeed ~= 0 then 
-    		self.hspeed = self.hspeed + -(self.hspeed * self.friction)
+    		self.hspeed = self.hspeed - (self.hspeed * self.friction) * dt
     		if self.friction < 1 and self.friction > 0 and math.abs(self.hspeed) <= 1 then
     			self.hspeed = 0
     		end
     	end
     	if self.vspeed ~= 0 and self.gravity == 0 then 
-    		self.vspeed = self.vspeed + -(self.vspeed * self.friction)
+    		self.vspeed = self.vspeed - (self.vspeed * self.friction) * dt
     		if self.friction < 1 and self.friction > 0 and math.abs(self.vspeed) <= 1 then
     			self.vspeed = 0
     		end
@@ -153,13 +154,6 @@ Entity = Class{
 		-- check for collisions
 		local dx, dy = 0, 0
 		if not self.pause then
-			-- calculate speed/direction
-			local speedx, speedy = 0,0
-			if speed ~= 0 then
-				speedx = self.speed * cos(rad(self.direction))
-				speedy = self.speed * sin(rad(self.direction))
-			end
-
 			-- calculate gravity/gravity_direction
 			local gravx, gravy = 0,0
 			if self.gravity ~= 0 then
@@ -182,8 +176,8 @@ Entity = Class{
 			self.xprevious = self.x
 			self.yprevious = self.y
 
-			dx = self.hspeed + speedx
-			dy = self.vspeed + speedy
+			dx = self.hspeed
+			dy = self.vspeed
 
 			-- move all shapes
 			for s, shape in pairs(self.shapes) do
@@ -200,16 +194,16 @@ Entity = Class{
 
 					local collisions = HC.neighbors(obj_shape)
 					for other in pairs(collisions) do
-					    local collides, dx, dy = obj_shape:collidesWith(other)
+					    local collides, cx, cy = obj_shape:collidesWith(other)
 					    if collides and not other.tag:contains(self.classname) then
-		                	local sep_vec = {x=dx, y=dy, point_x=0, point_y=0}
+		                	local sep_vec = {x=cx, y=cy, point_x=0, point_y=0}
 
 		                	-- calculate location of collision
 		                	local bx, by, bw, bh = unpack(obj_shape.box)
 		                	bw = bw - bx
 		                	bh = bh - by
-		                	if dx < 0 then sep_vec.point_y = by; sep_vec.point_x = (bw + dx) end
-		                	if dx > 0 then sep_vec.point_y = by; sep_vec.point_x = dx end
+		                	if cx < 0 then sep_vec.point_y = by; sep_vec.point_x = (bw + cx) end
+		                	if cx > 0 then sep_vec.point_y = by; sep_vec.point_x = cx end
 		                	if dy < 0 then sep_vec.point_x = bx; sep_vec.point_y = (bh + dy) end
 		                	if dy > 0 then sep_vec.point_x = bx; sep_vec.point_y = dy end
 
@@ -222,7 +216,6 @@ Entity = Class{
 									shape:move(sep_vec.x, 0)
 								end
 					            self.hspeed = 0
-					            speedx = 0
 					            dx = 0
 							end
 
@@ -231,7 +224,6 @@ Entity = Class{
 									shape:move(0, sep_vec.y)
 								end
 					            self.vspeed = 0
-					            speedy = 0
 					            dy = 0
 							end
 							
@@ -250,16 +242,13 @@ Entity = Class{
 			-- set position of sprite
 			if self.shapes[self._main_shape] ~= nil and self.shapes[self._main_shape]._enabled then
 				self.x, self.y = self.shapes[self._main_shape]:center()
+				--Debug.log(self.x, self.y)
 			else
 				self.x = self.x + dx*dt
 				self.y = self.y + dy*dt
 			end
 			self.xprevious = self.x
 			self.yprevious = self.y
-
-			if self.speed > 0 then
-				self.speed = self.speed - (self.speed * self.friction)*dt
-			end
 		end
 
 		local old_hspd, old_vspd = self.hspeed, self.vspeed
@@ -404,7 +393,7 @@ Entity = Class{
 				
 				-- is it an Animation or an Image
 				if img then
-					local draw_x, draw_y = math.floor(self.x), math.floor(self.y)
+					local draw_x, draw_y = math.floor(self.x + 0.5), math.floor(self.y + 0.5)
 					if sprite.update ~= nil then
 						sprite:draw(img(), draw_x, draw_y, math.rad(info.angle), info.xscale, info.yscale, -math.floor(info.xoffset), -math.floor(info.yoffset), info.xshear, info.yshear)
 					else
@@ -527,8 +516,13 @@ Entity = Class{
 	-- self direction and speed will be set towards the given point
 	-- this method will not set the speed back to 0 
 	moveTowardsPoint = function(self, x, y, speed)
-		self.direction = math.deg(math.atan2(y - self.y, x - self.x))
-		self.speed = speed
+		self:moveDirection(math.deg(math.atan2(y - self.y, x - self.x)), speed)
+		return self
+	end,
+
+	moveDirection = function(self, angle, speed)
+		self.hspeed = cos(rad(angle)) * speed
+		self.vspeed = sin(rad(angle)) * speed
 		return self
 	end,
     

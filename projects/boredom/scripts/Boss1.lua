@@ -264,6 +264,7 @@ function Boss1:hitSpikes()
 		
 		if self.twn_turn then self.twn_turn:stop() end
 		
+		local main_camera = View("main")
 		main_camera.shake_duration = 0.5
 		main_camera:shake(0,4)
 		
