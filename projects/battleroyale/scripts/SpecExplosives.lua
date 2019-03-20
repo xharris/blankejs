@@ -59,18 +59,20 @@ end
 
 BlankE.addEntity("Explosion")
 function Explosion:init(x,y,duration)
+	duration = duration or 2
+	
 	self.x, self.y = x, y
 	local offset = 30
 	self.rpt_explosion = Repeater(spr_explosion,{
 		x = self.x, y = self.y,
 		offset_x = {-offset,offset}, offset_y = {-offset,offset},
-		duration = {0.5,1.5}
+		duration = {0.5,math.min(1.5,duration)}
 	})
-	self.rpt_explosion.rate = 0.2
+	self.rpt_explosion.rate = 0.1
 	self.rpt_explosion.emit_count = 10
-	--self.rpt_explosion:emit(10)
 	self:addShape("explosion","circle",{0,0,30})
-	Timer():after(function()
+	Timer(duration):after(function()
+		self.rpt_explosion.rate = 0
 		self:removeShape("explosion")	
 	end):start()
 	grp_explosions:add(self)

@@ -6,7 +6,7 @@ Font = Class{
 			name = "console",
 			image = '',
 			characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-			size = 16,
+			size = 18,
 			align = "left",
 			limit = -1
 		}

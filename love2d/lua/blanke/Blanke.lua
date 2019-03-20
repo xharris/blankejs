@@ -292,7 +292,7 @@ BlankE = {
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 	    Asset.add("console.ttf")
-	    Draw.setFont("console")
+	    Draw.setFont("console",24)
 
 		Asset.load()
 

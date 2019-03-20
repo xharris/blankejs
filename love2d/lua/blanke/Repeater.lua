@@ -112,6 +112,17 @@ Repeater = Class{
 		self:updateEntityTexture()
 		self.current_t = self.current_t + dt
 
+		-- rate ~= 0, spawn a new particle
+		if self.rate ~= 0 then
+			if self.rate_dt > 0 then
+				self.rate_dt = self.rate_dt - dt 
+			else 
+				self.rate_dt = self.rate
+
+				self:emit()
+			end
+		end
+		
 		local dir_x,dir_y, off_x,off_y
 
 		for p, part in ipairs(self.particles) do
@@ -160,16 +171,6 @@ Repeater = Class{
 			end
 		end
 
-		-- rate ~= 0, spawn a new particle
-		if self.rate ~= 0 then
-			if self.rate_dt > 0 then
-				self.rate_dt = self.rate_dt - dt 
-			else 
-				self.rate_dt = self.rate
-
-				self:emit(self.emit_count)
-			end
-		end
 	end,
 
 	updateSpriteTexture = function(self)
@@ -260,10 +261,10 @@ Repeater = Class{
 					--new_p.spr_speed[i] = new_p.duration[i] / self.texture.duration * self.texture.sprite_speed
 				end	
 
-				if new_p.spr_frame[1] == 0 then new_p.spr_frame[1] = 1 end
-				if new_p.spr_frame[2] == 0 then new_p.spr_frame[2] = self.texture.frame_count+1 end--*(new_p.duration[1] / self.texture.duration)+1 end
+				if new_p.spr_frame[1] <= 0 then new_p.spr_frame[1] = 1 end
+				if new_p.spr_frame[2] <= 0 then new_p.spr_frame[2] = self.texture.frame_count+1 end--*(new_p.duration[1] / self.texture.duration)+1 end
 			end
-			
+
 			if new_p.quad ~= nil then
 				new_p.id = new_p.spritebatch:add(new_p.quad, new_p.x[1], new_p.y[1])
 			else 

@@ -44,6 +44,9 @@ function Player:update(dt)
 		if other.tag == "ground" then
 			self:collisionStop()
 		end
+		if other.tag:contains("explosion") then
+			Debug.log("ow!")
+		end
 	end
 end
 
