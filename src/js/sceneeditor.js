@@ -13,8 +13,8 @@ PIXI.loader.add('ProggyScene','includes/proggy_scene.fnt');
 PIXI.loader.load();
 
 class SceneEditor extends Editor {
-	constructor (...args) {
-		super(...args);
+	constructor (file_path) {
+		super();
 		this.setupFibWindow();
 
 		var this_ref = this;
@@ -774,6 +774,8 @@ class SceneEditor extends Editor {
 		});
 
 		this.addCallback('onResize', this.resizeEditor.bind(this));
+
+		if (file_path) this.load(file_path);
 	}
 
 	resizeEditor () {
@@ -1784,13 +1786,12 @@ class SceneEditor extends Editor {
 
 			// settings
 			if (data.settings) {
-				this.setCameraPosition(data.settings.camera[0], data.settings.camera[1]);
 				this.setLayer(data.settings.last_active_layer);
 				this.refreshObjectType(data.settings.last_object_type);
 				this.setObject(data.settings.last_object_name);
+				this.setCameraPosition(data.settings.camera[0], data.settings.camera[1]);
 			}
 		}
-
 		this.setTitle(nwPATH.basename(file_path));
 		this.setOnClick(function(){
 			openScene(this_ref.file);
@@ -1920,7 +1921,7 @@ document.addEventListener('fileChange', function(e){
 
 function openScene(file_path) {
 	if (!FibWindow.focus(nwPATH.basename(file_path)))
-		(new SceneEditor(app)).load(file_path);
+		new SceneEditor(file_path);
 }
 
 function addScenes(folder_path) {
@@ -1969,7 +1970,7 @@ document.addEventListener("openProject", function(e){
 					nwFS.writeFile(nwPATH.join(map_dir, 'scene'+files.length+'.scene'),"");
 				
 					// edit the new script
-					var new_scene_editor = new SceneEditor(app)
+					var new_scene_editor = new SceneEditor()
 					// add some premade objects from previous map
 					new_scene_editor.load(nwPATH.join(map_dir, 'scene'+files.length+'.scene'));
 					new_scene_editor.refreshLayerList();

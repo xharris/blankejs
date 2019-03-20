@@ -152,7 +152,7 @@ Entity = Class{
 		end
 
 		-- check for collisions
-		local dx, dy = 0, 0
+		local dx, dy = self.hspeed, self.vspeed
 		if not self.pause then
 			-- calculate gravity/gravity_direction
 			local gravx, gravy = 0,0
@@ -162,8 +162,8 @@ Entity = Class{
 			end
 
 			-- add gravity to hspeed/vspeed
-			if gravx ~= 0 then self.hspeed = self.hspeed + gravx end
-			if gravy ~= 0 then self.vspeed = self.vspeed + gravy end
+			if gravx ~= 0 then dx = dx + gravx end
+			if gravy ~= 0 then dy = dy + gravy end
 
 			-- move shapes if the x/y is different
 			if self.xprevious ~= self.x or self.yprevious ~= self.y then
@@ -175,9 +175,6 @@ Entity = Class{
         
 			self.xprevious = self.x
 			self.yprevious = self.y
-
-			dx = self.hspeed
-			dy = self.vspeed
 
 			-- move all shapes
 			for s, shape in pairs(self.shapes) do
@@ -216,21 +213,21 @@ Entity = Class{
 							-- collision action functions
 							self.collisionStopX = function(self)
 								for name, shape in pairs(self.shapes) do
-									shape:move(cx*2, 0)
+									shape:move(cx*1.1, 0)
 								end
 					            dx = 0
 							end
 
 							self.collisionStopY = function(self)
 								for name, shape in pairs(self.shapes) do
-									shape:move(0, cy*2)
+									shape:move(0, cy*1.1)
 								end
 					            dy = 0
 							end
 							
 							self.collisionStop = function(self)
 								for name, shape in pairs(self.shapes) do
-									shape:move(cx*2, cy*2)
+									shape:move(cx*1.1, cy*1.1)
 								end
 								dx, dy = 0, 0
 							end
@@ -262,11 +259,11 @@ Entity = Class{
 			self.xprevious = self.x
 			self.yprevious = self.y
 
-			local old_hspd, old_vspd = self.hspeed, self.vspeed
-			self.hspeed = dx * dt
-			self.vspeed = dy * dt
+			--local old_hspd, old_vspd = self.hspeed, self.vspeed
+			self.hspeed = dx
+			self.vspeed = dy
 			if self.postUpdate then self:postUpdate(dt) end
-			self.hspeed, self.vspeed = old_hspd, old_vspd
+			--self.hspeed, self.vspeed = old_hspd, old_vspd
 		end
 
 		if self.netSync then self:netSync() end

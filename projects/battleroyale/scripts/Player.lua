@@ -53,7 +53,6 @@ function Player:draw()
 	Draw.rect("fill",self.x-radius, self.y-radius, radius*2, radius*2)
 	Draw.reset('color')
 	self.spec:draw()
-	self:debugCollision()
 end
 
 function Player:setSpecialty(spec)

@@ -55,7 +55,6 @@ function Grenade:draw()
 	Draw.setColor("gray")
 	Draw.circle("fill",self.x,self.y,5)
 	Draw.reset('color')
-	self:debugCollision()
 end
 
 BlankE.addEntity("Explosion")
@@ -71,7 +70,7 @@ function Explosion:init(x,y)
 	grp_explosions:add(self)
 end
 function Explosion:draw()
-	--self.rpt_explosion:draw()
+	self.rpt_explosion:draw()
 	if self.rpt_explosion.count == 0 then
 		self:destroy()
 	end

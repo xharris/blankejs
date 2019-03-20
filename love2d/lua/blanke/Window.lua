@@ -21,7 +21,9 @@ Window = {
 		return res, res / Window.aspect_ratio[1] * Window.aspect_ratio[2]
 	end,
 
+	_res_modified = false,
 	setResolution = function(w, h)
+		Window._res_modified = true
 		if not h then
 			w, h = Window.getResolution(w)
 		end

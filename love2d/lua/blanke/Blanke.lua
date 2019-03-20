@@ -147,6 +147,50 @@ love.load = function(args, unfilteredArgs)
 	BlankE.init()
 end
 
+love.run = function()
+    if love.math then love.math.setRandomSeed(os.time()) end
+    if love.load then love.load(arg) end
+    if love.timer then love.timer.step() end
+
+    local dt = 0
+    local fixed_dt = 1/60
+    local accumulator = 0
+
+    while true do
+        if love.event then
+            love.event.pump()
+            for name, a, b, c, d, e, f in love.event.poll() do
+                if name == 'quit' then
+                    if not love.quit or not love.quit() then
+                        return a
+                    end
+                end
+                love.handlers[name](a, b, c, d, e, f)
+            end
+        end
+
+        if love.timer then
+            love.timer.step()
+            dt = love.timer.getDelta()
+        end
+
+        accumulator = accumulator + dt
+        while accumulator >= fixed_dt do
+            if love.update then love.update(fixed_dt) end
+            accumulator = accumulator - fixed_dt
+        end
+
+        if love.graphics and love.graphics.isActive() then
+            love.graphics.clear(love.graphics.getBackgroundColor())
+            love.graphics.origin()
+            if love.draw then love.draw() end
+            love.graphics.present()
+        end
+
+        if love.timer then love.timer.sleep(0.0001) end
+    end
+end
+
 love.quit = function()
 	local ret_val = BlankE._quit()
 	return ret_val
@@ -238,7 +282,11 @@ BlankE = {
 		end
 
 	    Window.scale_mode = options.scale_mode
-		local new_w, new_h = Window.setResolution(options.resolution)
+	    local new_w, new_h
+	    if not Window._res_modified then
+			Window.setResolution(options.resolution)
+		end
+		new_w, new_h = Window.getResolution()
 		BlankE.game_canvas:resize(new_w,new_h)
 
 	    uuid.randomseed(love.timer.getTime()*10000)
@@ -563,13 +611,12 @@ BlankE = {
 	end,
 
 	drawToScale = function(func)
-		Draw.stack(function()
-	    	Draw.translate(math.floor(BlankE._offset_x * BlankE.scale_x), math.floor(BlankE._offset_y * BlankE.scale_y))
-	    	Draw.scale(BlankE.scale_x, BlankE.scale_y)
+    	Draw.translate(math.floor(BlankE._offset_x * BlankE.scale_x), math.floor(BlankE._offset_y * BlankE.scale_y))
+    	Draw.scale(BlankE.scale_x, BlankE.scale_y)
 
-			func()
+		func()
 
-		end)
+		Draw.reset()
 	end,
 
 	reapplyScaling = function()
@@ -599,8 +646,8 @@ BlankE = {
 		BlankE.drawToScale(function()
 			BlankE.game_canvas:draw(true)
 			love.graphics.setBlendMode('alpha')
-			if BlankE.draw_debug and Debug then Debug.draw() end
 		end)
+		if BlankE.draw_debug and Debug then Debug.draw() end
 
         -- disable any scenes that aren't being actively drawn
         local active_scenes = 0

@@ -4,7 +4,8 @@ BlankE = require('blanke.Blanke')
 function BlankE.load()
 	BlankE.options = {
 		state="PlayState",
-		resolution=1,
+		--resolution=1,
+		filter="nearest",
 		inputs={
 			{"moveL","a"},
 			{"moveR","d"},

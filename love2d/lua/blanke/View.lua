@@ -1,4 +1,4 @@
-local floor = function(v) return math.floor(v+0.5) end
+local floor = function(v) return v end--math.floor(v+0.5) end
 
 local _View = Class{
 	init = function(self)
@@ -42,7 +42,7 @@ local _View = Class{
         self.scale_x = 1
         self.scale_y = 1
 
-        self._half_w, self._half_h = floor(w/2), floor(h/2)
+        self._half_w, self._half_h = w/2, h/2 --floor(w/2), floor(h/2)
 
         self.onPropSet['zoom'] = function(self, v)
         	self.scale_x = v
@@ -125,11 +125,11 @@ local _View = Class{
 
 	on = function(self)
 		local w,h = self:getSize()
-		self._half_w, self._half_h = floor(w/2), floor(h/2)
+		self._half_w, self._half_h = (w/2), (h/2)
 		Draw.push()
 
 		View._transform:reset()
-		View._transform:translate(floor(self._half_w), floor(self._half_h))
+		View._transform:translate(self._half_w, self._half_h)
 		View._transform:scale(self.scale_x, self.scale_y)
 		View._transform:rotate(math.rad(self.angle))
 		View._transform:translate(-floor(self.x + self._dx), -floor(self.y + self._dy))

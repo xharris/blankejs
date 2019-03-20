@@ -10,7 +10,6 @@ function PlayState:enter()
 	self.background_color = "white"
 
 	sc_map = Scene("MapPlain")
-	sc_map.draw_hitboxes = true
 	vw_main = View("main")
 		
 	player = Player()
