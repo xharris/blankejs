@@ -238,8 +238,8 @@ Entity = Class{
 								end
 								local mag = math.sqrt((cx^2)+(cy^2))
 								local dot = (self.hspeed * (cx/mag)) + (self.vspeed * (cy/mag))
-								self.hspeed = self.hspeed - (2 * dot * (cx/mag))
-								self.vspeed = self.vspeed - (2 * dot * (cy/mag))
+								dx = self.hspeed - (2 * dot * (cx/mag))
+								dy = self.vspeed - (2 * dot * (cy/mag))
 							end
 
 							-- call users collision callback if it exists
