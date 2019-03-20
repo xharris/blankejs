@@ -496,6 +496,7 @@ module.exports.completions = {
 		{fn:"emit",vars:{amount:"optional"}},
 		{prop:"count",info:"number of particles currently alive"},
 		{prop:"rate",info:"spawn a particle every x seconds"},
+		{prop:"emit_count",info:"number of particles to emit at once by default"},
 		{fn:"setTexture",vars:{'texture':'entity instance, image, canvas'}},
 		{prop:"x"},
 		{prop:"y"},
@@ -507,7 +508,9 @@ module.exports.completions = {
 		{prop:"r"},
 		{prop:"g"},
 		{prop:"b"},
-		{prop:"a"}
+		{prop:"a"},
+		{prop:"spr_frame",info:"for Sprite only"},
+		{prop:"spr_speed",info:"for Sprite only"}
 	],
 	"blanke-window":[
 		{prop:"aspect_ratio", info:"table. default: {4,3}"},

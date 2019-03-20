@@ -161,11 +161,14 @@ Repeater = Class{
 		end
 
 		-- rate ~= 0, spawn a new particle
-		if self.rate ~= 0 then self.rate_dt = self.rate_dt - dt end
-		if self.rate ~= 0 and self.rate_dt <= 0 then 
-			self.rate_dt = self.rate
+		if self.rate ~= 0 then
+			if self.rate_dt > 0 then
+				self.rate_dt = self.rate_dt - dt 
+			else 
+				self.rate_dt = self.rate
 
-			self:emit()
+				self:emit(self.emit_count)
+			end
 		end
 	end,
 
@@ -173,9 +176,6 @@ Repeater = Class{
 		if not self.sprite_texture then return end
 
 		local f = cond(self.spr_frame == 0, self.texture.frame, floor(self.spr_frame))
-		if not self.changed['duration'] then
-			self.duration = self.texture.duration
-		end
 
 		self.quad = self.texture.anim.frames[f]
 		self.options.quad = self.quad

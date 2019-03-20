@@ -2,7 +2,7 @@
 
 `local rpt_name = Repeater(texture, [options])`
 
-* texture can be an Image / Canvas / Entity
+* texture can be an Image / Canvas / Entity / Sprite
 * options is an optional table containing Particle Properties listed below
 
 # Props
@@ -11,6 +11,7 @@ Repeater Properties
 
 ```
 rate            -- particle is emitted every x seconds
+emit_count		-- how many particles to emit at once by default
 count           -- readonly. how many particles are currently alive
 particles[]     -- list of current particles. modifying values in this is not recommended
 ```
@@ -29,6 +30,8 @@ r               -- red
 g               -- green
 b               -- blue
 a               -- alpha
+spr_frame
+spr_speed
 ```
 
 ## Random range

@@ -58,7 +58,7 @@ function Grenade:draw()
 end
 
 BlankE.addEntity("Explosion")
-function Explosion:init(x,y)
+function Explosion:init(x,y,duration)
 	self.x, self.y = x, y
 	local offset = 30
 	self.rpt_explosion = Repeater(spr_explosion,{
@@ -66,7 +66,13 @@ function Explosion:init(x,y)
 		offset_x = {-offset,offset}, offset_y = {-offset,offset},
 		duration = {0.5,1.5}
 	})
-	self.rpt_explosion:emit(10)
+	self.rpt_explosion.rate = 0.2
+	self.rpt_explosion.emit_count = 10
+	--self.rpt_explosion:emit(10)
+	self:addShape("explosion","circle",{0,0,30})
+	Timer():after(function()
+		self:removeShape("explosion")	
+	end):start()
 	grp_explosions:add(self)
 end
 function Explosion:draw()
@@ -74,4 +80,5 @@ function Explosion:draw()
 	if self.rpt_explosion.count == 0 then
 		self:destroy()
 	end
+	self:debugCollision()
 end
