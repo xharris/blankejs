@@ -357,7 +357,6 @@ Net = {
         else
             removable[clientid] = Net._objects[clientid]
         end
-        Debug.log("removing",table.len(removable))
 
         for id, objects in pairs(removable) do
             for uuid, obj in pairs(objects) do
@@ -384,7 +383,6 @@ Net = {
     end,
 
     removeLocalObjects = function()
-        Debug.log("removing",table.len(Net._local_objects))
         for net_uuid, obj in pairs(Net._local_objects) do
             obj:destroy()
         end
@@ -484,7 +482,7 @@ Net = {
         end
         Net._local_objects[obj.net_uuid] = obj    
 
-        obj:netSync()
+        obj:netSync('x','y')
         if obj.onNetAdd and not old then obj:onNetAdd() end
 
         return Net

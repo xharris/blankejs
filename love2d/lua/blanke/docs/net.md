@@ -19,6 +19,7 @@ disconnect()
 
 send(data) send object to other clients 
 sendPersistent(data) 				-- send data. saved server side and sent to new players that join later
+event('name', data)					-- send event with name and data
 
 getPopulation()						-- get number of clients connected (including self)
 draw([classname])					-- draw objects synced through network, or just a certain class
@@ -35,8 +36,8 @@ Callbacks
 ready					-- current player sucessfully connects to the server
 connect					-- another player has connected
 disconnect				-- another player has disconnected
-receive(data)			-- received object 'data'
-event('name', data)		-- received net event with 'data'
+receive(info)			-- received object 'data'
+event(event,info)
 ```
 
 ## Event types

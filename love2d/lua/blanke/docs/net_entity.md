@@ -7,6 +7,7 @@ net_sync_vars[]
 num net_owner_id            -- id of the client this object belongs to
 num net_uuid                -- id unique to this object on the entire network
 bool net_object             -- whether or not this object was sent from another client
+bool keep_on_disconnect		-- doesn't disappear from the network when a player leaves
 ```
 
 ## net_sync_vars

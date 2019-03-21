@@ -19,7 +19,15 @@ SPEC.EXPLOSIVE = {
 			nade.x = player.x
 			nade.y = player.y 
 			nade:moveDirection(player.aim_direction, 1000)
-			grp_grenades:add(nade)
+			
+			if not player.net_event then 
+				Net.event('spec.explosive.click',{
+					_equipped_wpn=1,
+					x=nade.x, y=nade.y,
+					aim_direction=player.aim_direction,
+					net_event=true
+				})
+			end
 		end
 	end,
 	draw = function()
@@ -28,6 +36,12 @@ SPEC.EXPLOSIVE = {
 	end
 }
 
+Net.on('event',function(data)
+	if data.event == 'spec.explosive.click' then
+		SPEC.EXPLOSIVE.click(data.info)
+	end
+end)
+	
 BlankE.addEntity("Grenade")
 function Grenade:init()
 	self.friction = 3
@@ -36,6 +50,8 @@ function Grenade:init()
 	end):start()
 	self:addShape("main","circle",{0,0,5})
 	self.point = nil
+	
+	grp_grenades:add(self)
 end
 
 function Grenade:update(dt)
