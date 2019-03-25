@@ -200,16 +200,6 @@ end
 BlankE = {
 	_is_init = false,
 	_ide_mode = false,
-	show_grid = true,
-	snap = {32, 32},
-	grid_color = {255,255,255},
-	_offx = 0,
-	_offy = 0,
-	_stencil_offset = 0,
-	_snap_mouse_x = 0,
-	_snap_mouse_y = 0,
-	_mouse_x = 0,
-	_mouse_y = 0,
 	game_canvas = Canvas(800,600),
 	draw_debug = false,
 
@@ -220,7 +210,6 @@ BlankE = {
 	bottom = 0,
 	_offset_x = 0,
 	_offset_y = 0,
-	_upscaling = 1,
 	scale_x = 1,
 	scale_y = 1,
 
@@ -400,18 +389,8 @@ BlankE = {
 	end,
 
 	reloadAssets = function()
+		-- does this actually do anything?
 		require 'assets'
-	end,
-
-	getCurrentState = function()
-		local state = State.current()
-		if type(state) == "string" then
-			return state
-		end
-		if type(state) == "table" then
-			return state.classname
-		end
-		return state
 	end,
 
 	clearObjects = function(include_persistent, state)
@@ -492,88 +471,6 @@ BlankE = {
 		love.graphics.pop()
 	end,
 
-	_gridStencilFunction = function()
-		local conf_w, conf_h = CONF.window.width, CONF.window.height --game_width, game_height
-
-		local rect_x = (BlankE._grid_width/2)-(conf_w/2)
-		local rect_y = (BlankE._grid_height/2)-(conf_h/2)
-
-		local g_x, g_y = BlankE._grid_x, BlankE._grid_y
-
-	   	love.graphics.rectangle("fill",
-	   		rect_x+g_x-(BlankE._grid_width/2)+BlankE._stencil_offset,
-	   		rect_y+g_y-(BlankE._grid_height/2)+BlankE._stencil_offset,
-	   		conf_w+BlankE._stencil_offset,
-	   		conf_h+BlankE._stencil_offset
-	   	)
-	end,
-
-	_drawGridFunc = function(x, y, width, height)
-		if not (BlankE.show_grid and BlankE._ide_mode) then return BlankE end
-
-		local snap = BlankE._getSnap()
-		local grid_color = BlankE.grid_color
-
-		local conf_w = CONF.window.width
-		local conf_h = CONF.window.height
-
-		local diff_w = ((game_width) - (conf_w))
-		local diff_h = ((game_height) - (conf_h))
-
-		local half_height = height/2
-		local half_width = width/2
-
-		-- resizing the window offset
-		x = x - math.abs(diff_w)
-		y = y - math.abs(diff_h)
-		width = width + math.abs(diff_w*2)
-		height = height + math.abs(diff_h*2)
-
-		local x_offset = -((x-half_width) % snap[1])
-		local y_offset = -((y-half_height) % snap[2])
-
-		local min_grid_draw = 8
-
-		love.graphics.push('all')
-		love.graphics.setLineStyle("rough")
-		--love.graphics.setBlendMode('replace')
-
-		-- draw origin
-		love.graphics.setLineWidth(3)
-		love.graphics.setColor(grid_color[1], grid_color[2], grid_color[3], 15)
-		love.graphics.line(x-half_width, 0, x+width-half_width, 0) -- vert
-		love.graphics.line(0, y-half_height, 0, y+height-half_height)  -- horiz		
-		love.graphics.setLineWidth(1)
-
-		-- vertical lines
-		if snap[1] >= min_grid_draw then
-			for g_x = x-half_width,x+width,snap[1] do
-				love.graphics.line(g_x + x_offset, y - half_height, g_x + x_offset, y + height - half_height)
-			end
-		end
-
-		-- horizontal lines
-		if snap[2] >= min_grid_draw then
-			for g_y = y-half_height,y+height,snap[2] do
-				love.graphics.line(x - half_width, g_y + y_offset, x + width - half_width, g_y + y_offset)
-			end
-		end
-		love.graphics.pop()
-
-		return BlankE
-	end,
-
-	setGridSnap = function(snapx, snapy)
-		BlankE.snap = {snapx, snapy}
-	end,
-
-	updateGridColor = function()
-		-- make grid color inverse of background color
-		local r,g,b,a = love.graphics.getBackgroundColor()
-	    r = 255 - r; g = 255 - g; b = 255 - b;
-		BlankE.grid_color = {r,g,b}		
-	end,
-
 	update = function(dt)
 		if lurker then lurker.update() end
 	    
@@ -604,10 +501,6 @@ BlankE = {
 	    if Input("fullscreen-toggle").released then
 	    	Window.toggleFullscreen()
 	    end
-		if not BlankE._mouse_updated then
-			BlankE._mouse_x, BlankE._mouse_y = mouse_x, mouse_y
-		end
-
 	end,
 
 	drawToScale = function(func)
@@ -619,15 +512,9 @@ BlankE = {
 		Draw.reset()
 	end,
 
-	reapplyScaling = function()
-		Draw.scale(BlankE.scale_x, BlankE.scale_y)
-		Draw.translate(BlankE._offset_x, BlankE._offset_y)	
-	end,
-
 	draw = function()
 		-- draw borders
 		Draw.stack(function()
-			--love.graphics.scale(BlankE.scale_x, BlankE.scale_y)
 			BlankE.drawOutsideWindow()
 			Draw.setColor(Draw.background_color)
 			BlankE.drawToScale(function()
@@ -648,15 +535,6 @@ BlankE = {
 			love.graphics.setBlendMode('alpha')
 		end)
 		if BlankE.draw_debug and Debug then Debug.draw() end
-
-        -- disable any scenes that aren't being actively drawn
-        local active_scenes = 0
-		_iterateGameGroup('scene', function(scene)
-			if scene._is_active > 0 then 
-				active_scenes = active_scenes + 1
-				scene._is_active = scene._is_active - 1
-			end
-		end)
 
 	    local cur_time = love.timer.getTime()
 	    if next_time <= cur_time then
@@ -692,101 +570,30 @@ BlankE = {
 		window_height = h
 	end,
 
-	keypressed = function(key)
-        Input.keypressed(key)
-	end,
-
-	keyreleased = function(key)
-	    Input.keyreleased(key)
-	end,
-
+	keypressed = function(key) Input.keypressed(key) end,
+	keyreleased = function(key) Input.keyreleased(key) end,
 	mousepressed = function(x, y, button) 
 	    x, y = BlankE.scaledMouse(x, y)
 	    Input.mousepressed(x, y, button)
 	end,
-
-	mousereleased = function(x, y, button) 
-	    Input.mousereleased(x, y, button)
-	end,
-
-	wheelmoved = function(x, y)
-	    Input.wheelmoved(x, y)		
-	end,
+	mousereleased = function(x, y, button) Input.mousereleased(x, y, button) end,
+	wheelmoved = function(x, y) Input.wheelmoved(x, y) end,
 
 	_quit = function()
 		if BlankE.quit and BlankE.quit() then return true end
 
 	    if Net then Net.disconnect() end
-	    --State.switch()
-	    --BlankE.clearObjects(true)
-		BlankE.restoreCallbacks()
 		if Debug then Debug.quit() end
-
-	    -- remove globals
-	    local globals = {}--'BlankE'}
-	    for g, global in ipairs(globals) do
-	    	if _G[global] then _G[global] = nil end
-		end
 		
 		return false
 	end,
 
 	errorhandler = function(msg)
-		-- local trace = debug.traceback()
-
 		print(debug.traceback("Error: " .. tostring(msg), 10):gsub("\n[^\n]+$", ""))
-	 	
-	 	-- old_errhand(msg)
 	end,
 }
 --[[
 local old_errorhandler = love.errorhandler
 love.errorhandler = BlankE.errorhandler]]
-
-BlankE.addClassType('_err_state', 'State')
-_err_state.error_msg = 'NO GAME'
-
-local _t = 0
-function _err_state:enter(prev)
-	love.graphics.setBackgroundColor(0,0,0,0)
-end
-function _err_state:draw()
-	game_width = love.graphics.getWidth()
-	game_height = love.graphics.getHeight()
-	
-	local max_size = math.max(game_width, game_height, 500)
-
-	_t = _t + 1
-	if _t >= max_size then _t = 0 end -- don't let _t iterate into infinity
-
-
-	love.graphics.push('all')
-
-	for i = -max_size, max_size, 10 do
-		local radius = max_size - _t + i
-		if radius > 20 and radius < max_size then
-			local opacity = (radius / max_size) * 0.6
-			love.graphics.setColor(0,1,0,opacity)
-			love.graphics.circle("line", game_width/2, game_height/2, radius)
-		end
-	end
-
-	-- draw error message
-	local posx = 0
-	local posy = game_height/2
-	local align = "center"
-	if #_err_state.error_msg > 100 then
-		align = "left"
-		posx = love.window.toPixels(70)
-		posy = posx
-	end
-	love.graphics.setColor(1,1,1,sinusoidal(150,255,0.5)/255)
-	love.graphics.printf(_err_state.error_msg,posx,posy,game_width,align)
-
-	love.graphics.pop('all')
-end	
-
---error = BlankE.errorhandler
-
 
 return BlankE
