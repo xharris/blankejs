@@ -18,8 +18,8 @@ Asset = Class{
 				if asset.category == 'script' then
 					result, chunk = xpcall(asset.object, debug.traceback)
 					if not result then
-						--print(chunk)
-						error(chunk)
+						BlankE.errorhandler(chunk)
+						--error(chunk)
 					end
 				end
 			end
@@ -64,7 +64,7 @@ Asset = Class{
 		end
 
 		-- FOLDER
-		local file_info = love.filesystem.getInfo(path)
+		local file_info = getFileInfo(path)
 		if path:ends('/') or (file_info and file_info.type == "directory") then
 			local files = love.filesystem.getDirectoryItems(path:sub(0,-1))
 			for f, file in ipairs(files) do

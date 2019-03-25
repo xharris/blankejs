@@ -146,7 +146,7 @@ love.load = function(args, unfilteredArgs)
 
 	BlankE.init()
 end
-
+--[[
 love.run = function()
     if love.math then love.math.setRandomSeed(os.time()) end
     if love.load then love.load(arg) end
@@ -189,7 +189,7 @@ love.run = function()
 
         if love.timer then love.timer.sleep(0.0001) end
     end
-end
+end]]
 
 love.quit = function()
 	local ret_val = BlankE._quit()
@@ -257,7 +257,7 @@ BlankE = {
 		end
 
 		-- load config file
-		if love.filesystem.getInfo("config.json") then
+		if getFileInfo("config.json") then
 			BlankE.settings = json.decode(love.filesystem.read('config.json'))
 		end
 
@@ -736,14 +736,12 @@ BlankE = {
 
 		print(debug.traceback("Error: " .. tostring(msg), 10):gsub("\n[^\n]+$", ""))
 	 	
-	 	--[[
-	 		old_errhand(msg)
-		]]
+	 	-- old_errhand(msg)
 	end,
 }
-
+--[[
 local old_errorhandler = love.errorhandler
-love.errorhandler = BlankE.errorhandler
+love.errorhandler = BlankE.errorhandler]]
 
 BlankE.addClassType('_err_state', 'State')
 _err_state.error_msg = 'NO GAME'
@@ -753,7 +751,6 @@ function _err_state:enter(prev)
 	love.graphics.setBackgroundColor(0,0,0,0)
 end
 function _err_state:draw()
-	BlankE.updateGridColor()
 	game_width = love.graphics.getWidth()
 	game_height = love.graphics.getHeight()
 	

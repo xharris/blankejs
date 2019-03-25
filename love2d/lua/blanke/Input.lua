@@ -16,6 +16,14 @@ GameCube
 
 ]]--
 
+
+function love.joystickpressed(joy,btn)
+    Debug.log('joystick',btn)
+end
+function love.gamepadpressed(joy,btn)
+    Debug.log('gamepad',btn)
+end
+
 _Input = Class{
 	init = function(self, ...)
         self.in_key = {}

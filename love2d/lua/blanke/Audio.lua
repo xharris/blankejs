@@ -13,7 +13,7 @@ Audio = Class{
 		if asset then
 			self.audio = asset
 
-		elseif love.filesystem.getInfo(name) then
+		elseif getFileInfo(name) then
 			self.audio = Asset.add(name)
 
 		end

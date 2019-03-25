@@ -22,7 +22,7 @@ function Mario:update(dt)
 	if Input("move_u").pressed then self:moveDirection(self.direction, 50) end
 	if Input("move_d").pressed then self:moveDirection(self.direction, -50) end
 	self.sprite_angle = self.direction
-	Debug.log(self.direction, self.hspeed, self.vspeed)
+	--Debug.log(self.direction, self.hspeed, self.vspeed)
 end
 
 function Mario:draw()

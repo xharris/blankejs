@@ -22,6 +22,7 @@ function PlatformState:update(dt)
 	penguin.sprite_angle = lvl.angle
 end
 
+
 function PlatformState:draw()
 	main_view:draw(function()
 		lvl:draw()

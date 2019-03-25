@@ -34,7 +34,7 @@ Debug = {
     end,
     playRecording = function(filename)
         filename = filename or 'last_game.rec'
-        local file_info = love.filesystem.getInfo(filename)
+        local file_info = getFileInfo(filename)
         Debug.log("re-running last game")
         if file_info and file_info.type == "file" then
             Debug._playing_record = true

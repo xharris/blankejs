@@ -16,7 +16,7 @@ Image = Class{
 		elseif asset then
 			self.image = asset
 
-		elseif love.filesystem.getInfo(name) then
+		elseif getFileInfo(name) then
 			self.image = Asset.add(name)
 
 		end

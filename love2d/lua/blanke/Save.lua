@@ -9,7 +9,7 @@ Save.open = function(name)
     Save.file_path = Save.file_name
     
     -- file exists check
-    if love.filesystem.getInfo(Save.file_path) then
+    if getFileInfo(Save.file_path) then
         local contents = love.filesystem.read(Save.file_path)
         Save.file_data = json.decode(contents)
     end

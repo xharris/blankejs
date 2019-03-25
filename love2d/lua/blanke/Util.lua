@@ -132,6 +132,27 @@ function cleanPath(path)
 	if path then return path:gsub("[\\/]+","/") else return path end
 end
 
+
+function getFileInfo(path)
+	if love.filesystem.getInfo then
+		return love.filesystem.getInfo(path)
+	else
+		if not love.filesystem.exists(path) then return false end
+		local ftype = _ftypes[path]
+		if not ftype then
+			if love.filesystem.isDirectory(path) then ftype = "directory"
+			elseif love.filsystem.isFile(path) then ftype = "file"
+			elseif love.filesystem.isSymlink(path) then ftype = "symlink"
+			else ftype = "other" end
+		end
+		return {
+			type=ftype,
+			size=love.filesystem.getSize(path),
+			modtime=love.filesystem.getLastModified(path)
+		}
+	end
+end
+
 function bitmask4(tile_map, tile_val, x, y)
 	local tile_vals = {}
 	if type(tile_val) == "string" then table.insert(tile_vals, tile_val)
