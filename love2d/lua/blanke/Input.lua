@@ -38,6 +38,7 @@ _Input = Class{
         self.persistent = true
 
         -- implement later
+        self.press_count = 0
         self.pressed = false
         self.released = false
         self._release_checked = false
@@ -117,6 +118,13 @@ _Input = Class{
         self.pressed = true
         self.released = false
         self._release_checked = false
+        -- can repeat?
+        Debug.log(self.press_count)
+        if not self.can_repeat and self.press_count > 0 then
+            Debug.log("no")
+            self.pressed = false
+        end 
+        self.press_count = self.press_count + 1
     end,
 
     -- a mouse/keyboard input has been released
@@ -124,6 +132,7 @@ _Input = Class{
         self.pressed = false
         self.released = true
         self._release_checked = false
+        self.press_count = 0
     end,
 
     -- check if .release value should be reset

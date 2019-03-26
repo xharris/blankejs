@@ -13,14 +13,22 @@ function Mario:init()
 	self.effect = Effect("chroma shift")
 	--self.effect = Effect("static")
 	self.direction = 0
+	
+	self:addPlatforming(0,0,self.real_mario.width,self.real_mario.height)
+	self.gravity_direction = 90
+	self.gravity = 10
+	
+	Input("move_u").can_repeat = false
+	print_r(Input("move_u"))
 end
 
 function Mario:update(dt)	
-	local s = 2
-	if Input("move_l").pressed then self.direction = self.direction - s end
-	if Input("move_r").pressed then self.direction = self.direction + s end
-	if Input("move_u").pressed then self:moveDirection(self.direction, 50) end
-	if Input("move_d").pressed then self:moveDirection(self.direction, -50) end
+	local s = 100
+	local hx = 0
+	if Input("move_l").pressed then hx = hx + s end
+	if Input("move_r").pressed then hx = hx - s end
+	if Input("move_u").pressed then self.vspeed = -500 end
+	self.hspeed = hx
 	self.sprite_angle = self.direction
 	--Debug.log(self.direction, self.hspeed, self.vspeed)
 end

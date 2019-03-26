@@ -3,8 +3,8 @@ BlankE = require('blanke.Blanke')
 
 function BlankE.load()
 	BlankE.options = {
-		state="PlatformState",
-		plugins={"Pathfinder"},
+		state="JoystickState",
+		plugins={"Pathfinder","Platformer"},
 		resolution=4,
 		filter="nearest",
 		debug={
