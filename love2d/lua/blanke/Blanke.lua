@@ -146,7 +146,7 @@ love.load = function(args, unfilteredArgs)
 
 	BlankE.init()
 end
---[[
+
 love.run = function()
     if love.math then love.math.setRandomSeed(os.time()) end
     if love.load then love.load(arg) end
@@ -189,7 +189,7 @@ love.run = function()
 
         if love.timer then love.timer.sleep(0.0001) end
     end
-end]]
+end
 
 love.quit = function()
 	local ret_val = BlankE._quit()
@@ -246,7 +246,7 @@ BlankE = {
 		end
 
 		-- load config file
-		if getFileInfo("config.json") then
+		if love.filesystem.getInfo("config.json") then
 			BlankE.settings = json.decode(love.filesystem.read('config.json'))
 		end
 
@@ -417,72 +417,11 @@ BlankE = {
 		end)
 	end,
 
-	getInstances = function(type)
-		local classname = _G[type].classname
-		local ret_instances = {}
-		_iterateGameGroup(type, function(obj, i)
-			if obj.classname == classname then
-				table.insert(ret_instances, obj)
-			end
-		end)
-		return ret_instances
-	end,
-
-	main_cam = nil,
-	snap = {32,32},
-	initial_cam_pos = {0,0},
-
-	_getSnap = function() 
-		local zoom_amt = 1
-		local snap = ifndef(BlankE.snap, {32,32})
-		snap[1] = snap[1] * zoom_amt
-		snap[2] = snap[2] * zoom_amt
-		return snap
-	end,
-
-	_grid_x = 0,
-	_grid_y = 0,
-	_grid_width = 0,
-	_grid_height = 0,
-
-	_drawGrid = function(x, y, width, height)	
-		local grid_color = BlankE.grid_color
-
-		-- outside view line
-		love.graphics.push('all')
-		love.graphics.setColor(grid_color[1], grid_color[2], grid_color[3], 15)
-		
-		BlankE._drawGridFunc(x, y, width, height)
-
-		-- in-view lines
-		for o = 0,2,1 do
-			BlankE._stencil_offset = -o
-
-    		love.graphics.setColor(grid_color[1], grid_color[2], grid_color[3], 1)
-    		BlankE._grid_x = x
-    		BlankE._grid_y = y
-    		BlankE._grid_width = width
-    		BlankE._grid_height = height
-    		love.graphics.stencil(BlankE._gridStencilFunction, "replace", 1)
-		 	love.graphics.setStencilTest("greater", 0)
-		 	BlankE._drawGridFunc(x, y, width, height)
-    		love.graphics.setStencilTest()
-		end
-		love.graphics.pop()
-	end,
-
 	update = function(dt)
 		if lurker then lurker.update() end
 	    
 	    dt = math.min(dt, min_dt) * dt_mod
 	    next_time = next_time + min_dt
-
-	    -- BlankE.updateGridColor()
-
-		-- calculate grid offset
-		local snap = BlankE._getSnap()
-
-		local g_x, g_y = 0,0
 
 	    updateGlobals(dt)
 	    if UI then UI.update() end
@@ -592,8 +531,8 @@ BlankE = {
 		print(debug.traceback("Error: " .. tostring(msg), 10):gsub("\n[^\n]+$", ""))
 	end,
 }
---[[
+
 local old_errorhandler = love.errorhandler
-love.errorhandler = BlankE.errorhandler]]
+love.errorhandler = BlankE.errorhandler
 
 return BlankE
