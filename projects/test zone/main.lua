@@ -5,7 +5,7 @@ function BlankE.load()
 	BlankE.options = {
 		state="JoystickState",
 		plugins={"Pathfinder","Platformer"},
-		resolution=4,
+		resolution=2,
 		filter="nearest",
 		debug={
 			log=true
