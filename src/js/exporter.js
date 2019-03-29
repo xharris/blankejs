@@ -31,8 +31,8 @@ class Exporter extends Editor {
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 400;
-		this.container.height = 350;
+		this.container.width = 384;
+		this.container.height = 224;
 
 		var this_ref = this;
 

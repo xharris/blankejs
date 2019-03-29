@@ -1,7 +1,7 @@
 {
     "export": {
         "name": "test_zone",
-        "remove_unused": false
+        "remove_unused": true
     },
     "spritesheet_prvw": {
         "image/sprite-example.png": {
