@@ -119,9 +119,7 @@ _Input = Class{
         self.released = false
         self._release_checked = false
         -- can repeat?
-        Debug.log(self.press_count)
         if not self.can_repeat and self.press_count > 0 then
-            Debug.log("no")
             self.pressed = false
         end 
         self.press_count = self.press_count + 1

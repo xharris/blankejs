@@ -36,6 +36,7 @@ function Player:update(dt)
 			end
 		end
 		if self.spec and Input("click").released then
+			Debug.log("released")
 			self.spec:click()	
 		end
 

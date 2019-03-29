@@ -19,15 +19,13 @@ SPEC.EXPLOSIVE = {
 			nade.x = player.x
 			nade.y = player.y 
 			nade:moveDirection(player.aim_direction, 1000)
-			
-			if not player.net_event then 
-				Net.event('spec.explosive.click',{
-					_equipped_wpn=1,
-					x=nade.x, y=nade.y,
-					aim_direction=player.aim_direction,
-					net_event=true
-				})
-			end
+			 
+			Net.event('spec.explosive.click',{
+				_equipped_wpn=1,
+				x=nade.x, y=nade.y,
+				aim_direction=player.aim_direction,
+				net_event=true
+			})
 		end
 	end,
 	draw = function()

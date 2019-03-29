@@ -12,6 +12,7 @@ Net = {
     clients = {},           -- list of clients connected
     max_reconnects = 3,
     _reconnects = 0,
+    disable_events = false,
 
     onReceive = nil,    
     onConnect = nil,    
@@ -109,6 +110,15 @@ Net = {
             fail='onFail'
         }
         if signal_names[callback] then
+            if callback == 'event' then
+                local old_fn = fn 
+                fn = function(...)
+                    Net.disable_events = true 
+                    local ret_val = old_fn(...)
+                    Net.disable_events = false
+                    return ret_val
+                end
+            end
             Signal.on(signal_names[callback], fn)
         end
         if special_names[callback] then
@@ -210,6 +220,8 @@ Net = {
     end,
 
     _onEvent = function(data)
+        if data.clientid == Net.id then return end 
+
         -- new object added from diff client
         if data.event == 'object.add' and data.clientid ~= Net.id then
             local obj = data.info.object
@@ -296,7 +308,6 @@ Net = {
                 Net._objects._orphans = {}
             end
         end
-        
         Signal.emit('_net.event', data)
     end,
 
@@ -318,6 +329,7 @@ Net = {
     end,
     
     event = function(name, in_data)
+        if Net.disable_events then return end
         Net.send({
             type='netevent',
             event=name,
