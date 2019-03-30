@@ -66,6 +66,8 @@ class DragBox {
 
 		this.x = 0;
 		this.y = 0;
+		this.old_x = 0;
+		this.old_y = 0;
 		// place at an offset of the last box
 		if (last_box) {
 			this.x = last_box.x + (20 * last_box_direction);
@@ -242,12 +244,20 @@ class DragBox {
 	}
 
 	toggleVisible () {
+		this.old_x = this.x;
+		this.old_y = this.y;
 		this.drag_container.classList.toggle("collapsed");
+		this.move(0,0);
 
 		if (this.drag_container.classList.contains('collapsed')) {
 			interact('#'+this.drag_container.id).unset();
-			this.setupDrag();
+			app.getElement("#workspace").removeChild(this.drag_container);
+			this.appendTo(app.getElement('#sidebar'));
+
 		} else {
+			app.getElement("#sidebar").removeChild(this.drag_container);
+			this.appendTo(app.getElement('#workspace'));
+			this.setupDrag();
 			this.setupResize();
 		}
 	}

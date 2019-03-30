@@ -170,10 +170,18 @@ body:before, body:after {
 }
 
 #sidebar {
-    /* width: 155px; */
-    height: 100%;
-    display: inline-block;
-    float: left;
+    width: auto;
+    position: absolute;
+    right: 12px;
+    /* top: 57px; */
+	bottom: 60px;
+    pointer-events: none;
+    margin: 0px 0px;
+    z-index: 20;
+
+    * {
+    	pointer-events: auto;
+    }
 }
 
 #workspace {
@@ -238,7 +246,7 @@ body:before, body:after {
 	border-radius: 4px;
 	transition: background-color ease-in-out 0.2s;
 	transition: opacity ease-in-out 0.2s;
-	box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 3px;
+	box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 1px;
 
 	&.invisible {
 		opacity: 0;
@@ -255,6 +263,12 @@ body:before, body:after {
 
 	&.collapsed {
 		max-height: 24px;
+		cursor: pointer;
+		position: relative;
+		width: auto !important;
+	    margin: 5px 0px;
+	    box-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+	    background-color: rgba(0,0,0,0.15);
 
 		.asset-list {
 			display: none;
@@ -316,15 +330,16 @@ body:before, body:after {
 
 	.drag-handle {
 		.no-select();
-
+/*
 		position: absolute;
-		top: 0px; left: 0px; right: 0px;
+		top: 0px; left: 0px; right: 0px;*/
 		height: 17px;
 	    margin: 3px;
 	    margin-right: 20px;
 	    background-color: transparent;
 	    color: rgba(200, 200, 200, 1);
 	    padding-left: 26px;
+	    padding-top: 3px;
 	    line-height: 18px;
 	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 	}
@@ -338,8 +353,20 @@ body:before, body:after {
 		z-index: 1000;
 	}
 
-	&.collapsed > .resize-handle {
-		display: none;
+	&.collapsed {
+		.resize-handle {
+			display: none;
+		}
+
+		.drag-handle {
+			margin: 0px;
+			padding: 4px 10px;
+		}
+
+		.btn-close {
+			right: 100%;
+			margin: 3px 0px;
+		}
 	}
 
 	.content {

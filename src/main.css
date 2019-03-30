@@ -1621,6 +1621,7 @@
   padding-top: 3px;
   border: 1px solid #485358;
   border-radius: 2px;
+  display: inline-block;
 }
 .content[data-type="Exporter"] .platforms .title1 {
   color: #f0f0f0;
@@ -2142,7 +2143,7 @@ body:after {
   -webkit-app-region: no-drag;
   width: 35px;
   height: 30px;
-  margin: 3px 2px;
+  margin: 2px 2px;
   color: #b0bec5;
   font-size: 15px;
   float: right;
@@ -2268,10 +2269,17 @@ body.mac .tool-container button:hover {
   text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 }
 #sidebar {
-  /* width: 155px; */
-  height: 100%;
-  display: inline-block;
-  float: left;
+  width: auto;
+  position: absolute;
+  right: 12px;
+  /* top: 57px; */
+  bottom: 36px;
+  pointer-events: none;
+  margin: 10px 0px;
+  z-index: 20;
+}
+#sidebar * {
+  pointer-events: auto;
 }
 #workspace {
   background-color: transparent;
@@ -2332,6 +2340,7 @@ body.mac .tool-container button:hover {
   border-radius: 4px;
   transition: background-color ease-in-out 0.2s;
   transition: opacity ease-in-out 0.2s;
+  box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 1px;
 }
 .drag-container.invisible {
   opacity: 0;
@@ -2345,6 +2354,12 @@ body.mac .tool-container button:hover {
 }
 .drag-container.collapsed {
   max-height: 24px;
+  cursor: pointer;
+  position: relative;
+  width: auto !important;
+  margin: 5px 0px;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.15);
 }
 .drag-container.collapsed .asset-list {
   display: none;
@@ -2410,16 +2425,16 @@ body.mac .tool-container button:hover {
   user-select: none;
   /* Non-prefixed version, currently
     not supported by any browser */
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
+  /*
+		position: absolute;
+		top: 0px; left: 0px; right: 0px;*/
   height: 17px;
   margin: 3px;
   margin-right: 20px;
   background-color: transparent;
   color: #c8c8c8;
   padding-left: 26px;
+  padding-top: 3px;
   line-height: 18px;
   text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 }
@@ -2431,8 +2446,16 @@ body.mac .tool-container button:hover {
   height: 20px;
   z-index: 1000;
 }
-.drag-container.collapsed > .resize-handle {
+.drag-container.collapsed .resize-handle {
   display: none;
+}
+.drag-container.collapsed .drag-handle {
+  margin: 0px;
+  padding: 4px 10px;
+}
+.drag-container.collapsed .btn-close {
+  right: 100%;
+  margin: 3px 0px;
 }
 .drag-container .content {
   position: absolute;
