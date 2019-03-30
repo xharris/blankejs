@@ -250,7 +250,11 @@ body:before, body:after {
 
 	&.invisible {
 		opacity: 0;
-		pointer-events: none;
+		pointer-events: none !important;
+
+		* {
+			pointer-events: none !important;
+		}
 	}
 
 	&.focused {

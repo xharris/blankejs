@@ -2273,9 +2273,9 @@ body.mac .tool-container button:hover {
   position: absolute;
   right: 12px;
   /* top: 57px; */
-  bottom: 36px;
+  bottom: 60px;
   pointer-events: none;
-  margin: 10px 0px;
+  margin: 0px 0px;
   z-index: 20;
 }
 #sidebar * {
@@ -2344,7 +2344,10 @@ body.mac .tool-container button:hover {
 }
 .drag-container.invisible {
   opacity: 0;
-  pointer-events: none;
+  pointer-events: none !important;
+}
+.drag-container.invisible * {
+  pointer-events: none !important;
 }
 .drag-container.focused {
   background-color: rgba(147, 160, 166, 0.7);
