@@ -2159,6 +2159,7 @@ body:after {
 #window-buttons button.hidden {
   pointer-events: none;
   opacity: 0;
+  display: none;
 }
 #window-buttons button#btn-close {
   color: #b71c1c;
@@ -2519,11 +2520,12 @@ body.mac .tool-container button:hover {
   position: absolute;
   left: 0px;
   right: 0px;
+  border: 2px solid transparent;
   border-radius: 4px;
-  /* transition: background-color ease-in-out 0.2s;
-	transition: opacity ease-in-out 0.2s; */
   transition: all ease-in-out 0.2s;
   will-change: transform;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .fib-container * {
   transition: opacity ease-in-out 0.2s;
@@ -2546,7 +2548,7 @@ body.mac .tool-container button:hover {
   margin: 0px;
 }
 .fib-container.focused {
-  background-color: rgba(147, 160, 166, 0.7);
+  border: 2px solid rgba(147, 160, 166, 0.7);
 }
 .fib-container:hover {
   background-color: rgba(147, 160, 166, 0.7);
@@ -2625,11 +2627,11 @@ body.mac .tool-container button:hover {
   left: 0px;
   right: 0px;
   height: 20px;
-  margin: 3px;
+  margin: 0px;
   background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
   color: #c8c8c8;
-  padding-left: 26px;
-  line-height: 18px;
+  padding-left: 30px;
+  line-height: 28px;
   text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
   z-index: 19;
 }
@@ -2639,7 +2641,7 @@ body.mac .tool-container button:hover {
   bottom: 0px;
   left: 0px;
   right: 0px;
-  margin: 3px;
+  margin: 0px;
   overflow: auto;
   /* outline: 1px solid rgba(255,255,255,0.1); */
   /* opacity: 0.25; */
@@ -2684,6 +2686,7 @@ body.mac .tool-container button:hover {
   right: 0px;
   height: 34px;
   z-index: 100;
+  white-space: nowrap;
   /* background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%); */
   background: linear-gradient(to bottom, #39414e 30%, transparent);
 }
@@ -2708,6 +2711,7 @@ body.mac .tool-container button:hover {
   /* @search-text-focus; */
   width: 125px;
   font-size: 16px;
+  text-overflow: ellipsis;
 }
 #search-container #search-input:focus,
 #search-container #search-input:hover {
