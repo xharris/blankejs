@@ -2148,8 +2148,8 @@ body:after {
 #window-buttons button {
   -webkit-app-region: no-drag;
   width: 35px;
-  height: 30px;
-  margin: 2px 2px;
+  height: 28px;
+  margin: 3px 1px;
   color: #b0bec5;
   font-size: 15px;
   float: right;
