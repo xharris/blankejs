@@ -1553,7 +1553,7 @@
   color: #212121;
   background-color: #E0E0E0;
 }
-.content[data-type="Docview"] .section .header:hover + .body {
+.content[data-type="Docview"] .section .header:hover + .body:not(.hidden) {
   border: 1px solid #E0E0E0;
 }
 .content[data-type="Docview"] .section .body {
@@ -2340,7 +2340,7 @@ body.mac .tool-container button:hover {
   border-radius: 4px;
   transition: background-color ease-in-out 0.2s;
   transition: opacity ease-in-out 0.2s;
-  box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 1px;
+  box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
 }
 .drag-container.invisible {
   opacity: 0;
@@ -2369,6 +2369,9 @@ body.mac .tool-container button:hover {
 }
 .drag-container.collapsed .content {
   display: none;
+}
+.drag-container.collapsed .drag-handle {
+  line-height: 18px;
 }
 .drag-container .btn-close {
   position: absolute;
@@ -2438,7 +2441,7 @@ body.mac .tool-container button:hover {
   color: #c8c8c8;
   padding-left: 26px;
   padding-top: 3px;
-  line-height: 18px;
+  line-height: 14px;
   text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 }
 .drag-container .resize-handle {

@@ -402,7 +402,7 @@ Entity = Class{
 				
 				-- is it an Animation or an Image
 				if img then
-					local draw_x, draw_y = math.floor(self.x + 0.5), math.floor(self.y + 0.5)
+					local draw_x, draw_y = self.x, self.y
 					if sprite.update ~= nil then
 						sprite:draw(img(), draw_x, draw_y, math.rad(info.angle), info.xscale, info.yscale, -math.floor(info.xoffset), -math.floor(info.yoffset), info.xshear, info.yshear)
 					else

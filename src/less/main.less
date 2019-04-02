@@ -246,7 +246,7 @@ body:before, body:after {
 	border-radius: 4px;
 	transition: background-color ease-in-out 0.2s;
 	transition: opacity ease-in-out 0.2s;
-	box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 1px;
+	box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
 
 	&.invisible {
 		opacity: 0;
@@ -280,6 +280,10 @@ body:before, body:after {
 
 		.content {
 			display: none;
+		}
+
+		.drag-handle {
+	    	line-height: 18px;
 		}
 	}
 
@@ -344,8 +348,9 @@ body:before, body:after {
 	    color: rgba(200, 200, 200, 1);
 	    padding-left: 26px;
 	    padding-top: 3px;
-	    line-height: 18px;
+	    line-height: 14px;
 	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
+
 	}
 
 	.resize-handle {

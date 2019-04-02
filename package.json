@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "main": "src/index.html",
   "chromium-args": "--disable-devtools",
+  "single-instance":false,
   "window": {
     "frame": false,
     "transparent": true,
