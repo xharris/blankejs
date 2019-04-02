@@ -745,7 +745,9 @@ nwWIN.on('loaded', function() {
 				Array.from(el_result_container.children).forEach(function(e){
 					e.classList.remove('focused');
 				});
-				el_result_container.children[selected_index].classList.add('focused');
+				let el_focused = el_result_container.children[selected_index];
+				el_focused.classList.add('focused');
+				el_focused.scrollIntoView({behavior:"smooth",block:"nearest"})
 			} else {
 				selected_index = -1;
 			}
