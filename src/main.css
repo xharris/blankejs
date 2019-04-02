@@ -507,6 +507,12 @@
   font-size: 16px;
   height: 100%;
 }
+.content[data-type="Code"] .CodeMirror-scroll {
+  padding-top: 18px;
+}
+.content[data-type="Code"] .CodeMirror-vscrollbar {
+  top: 18px;
+}
 .content[data-type="Code"] .editor-content {
   width: 100%;
   height: 100%;
@@ -644,7 +650,7 @@
   position: absolute;
   top: 0px;
   right: 5px;
-  margin-top: 8px;
+  margin-top: 28px;
 }
 .content[data-type="SceneEditor"] #toggle-scene-sidebar i {
   text-shadow: 0px 0px 3px black;
@@ -656,7 +662,7 @@
   pointer-events: none;
   background-color: rgba(66, 66, 66, 0.81);
   transition: all ease-in-out 0.2s;
-  margin-top: 38px;
+  margin-top: 58px;
   z-index: 5;
   border-radius: 4px;
   overflow: hidden;
@@ -2153,6 +2159,7 @@ body:after {
 #window-buttons button.hidden {
   pointer-events: none;
   opacity: 0;
+  display: none;
 }
 #window-buttons button#btn-close {
   color: #b71c1c;
@@ -2516,11 +2523,12 @@ body.mac .tool-container button:hover {
   position: absolute;
   left: 0px;
   right: 0px;
+  border: 2px solid transparent;
   border-radius: 4px;
-  /* transition: background-color ease-in-out 0.2s;
-	transition: opacity ease-in-out 0.2s; */
   transition: all ease-in-out 0.2s;
   will-change: transform;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .fib-container * {
   transition: opacity ease-in-out 0.2s;
@@ -2543,7 +2551,7 @@ body.mac .tool-container button:hover {
   margin: 0px;
 }
 .fib-container.focused {
-  background-color: rgba(147, 160, 166, 0.7);
+  border: 2px solid rgba(147, 160, 166, 0.7);
 }
 .fib-container:hover {
   background-color: rgba(147, 160, 166, 0.7);
@@ -2572,6 +2580,7 @@ body.mac .tool-container button:hover {
   font-size: 16px;
   cursor: pointer;
   opacity: 0;
+  z-index: 20;
 }
 .fib-container .btn-close:hover {
   color: #5ad9a4;
@@ -2584,7 +2593,7 @@ body.mac .tool-container button:hover {
   top: 0px;
   left: 0px;
   width: 18px;
-  height: 18px;
+  height: 20px;
   background: transparent;
   color: rgba(255, 255, 255, 0.5);
   outline: none;
@@ -2594,6 +2603,7 @@ body.mac .tool-container button:hover {
   font-size: 16px;
   cursor: pointer;
   opacity: 0;
+  z-index: 20;
 }
 .fib-container:hover > .btn-menu {
   opacity: 1;
@@ -2619,22 +2629,22 @@ body.mac .tool-container button:hover {
   top: 0px;
   left: 0px;
   right: 0px;
-  height: 17px;
-  margin: 3px;
-  margin-right: 20px;
-  background-color: transparent;
+  height: 20px;
+  margin: 0px;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
   color: #c8c8c8;
-  padding-left: 26px;
-  line-height: 18px;
+  padding-left: 30px;
+  line-height: 28px;
   text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
+  z-index: 19;
 }
 .fib-container .content {
   position: absolute;
-  top: 20px;
+  top: 0px;
   bottom: 0px;
   left: 0px;
   right: 0px;
-  margin: 3px;
+  margin: 0px;
   overflow: auto;
   /* outline: 1px solid rgba(255,255,255,0.1); */
   /* opacity: 0.25; */
@@ -2679,6 +2689,7 @@ body.mac .tool-container button:hover {
   right: 0px;
   height: 34px;
   z-index: 100;
+  white-space: nowrap;
   /* background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%); */
   background: linear-gradient(to bottom, #39414e 30%, transparent);
 }
@@ -2703,6 +2714,7 @@ body.mac .tool-container button:hover {
   /* @search-text-focus; */
   width: 125px;
   font-size: 16px;
+  text-overflow: ellipsis;
 }
 #search-container #search-input:focus,
 #search-container #search-input:hover {
@@ -2713,12 +2725,22 @@ body.mac .tool-container button:hover {
 #search-container #search-input:hover::placeholder {
   color: white;
 }
-#search-container #search-results {
+#search-results {
   position: absolute;
-  top: 100%;
+  top: 34px;
   min-width: 155px;
+  max-height: calc(100% - 34px);
+  z-index: 200;
+  overflow-y: auto;
+  padding-right: 10px;
+  padding-bottom: 1px;
+  box-sizing: border-box;
 }
-#search-container #search-results .result {
+#search-results::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+#search-results .result {
   cursor: default;
   padding: 3px 15px;
   transition: all ease-in-out 0.2s;
@@ -2726,8 +2748,8 @@ body.mac .tool-container button:hover {
   background-color: #1c2027;
   color: #f0f0f0;
 }
-#search-container #search-results .result.focused,
-#search-container #search-results .result:hover {
+#search-results .result.focused,
+#search-results .result:hover {
   position: relative;
   background-color: #fafafa;
   color: #212121;

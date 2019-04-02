@@ -1,5 +1,5 @@
 var last_box = null;
-let snap = 32;
+let snap = 16;
 var last_box_direction = 1;
 var box_sizes = {};
 
@@ -244,21 +244,26 @@ class DragBox {
 	}
 
 	toggleVisible () {
-		this.old_x = this.x;
-		this.old_y = this.y;
 		this.drag_container.classList.toggle("collapsed");
-		this.move(0,0);
 
 		if (this.drag_container.classList.contains('collapsed')) {
+			// save position
+			this.old_x = this.x;
+			this.old_y = this.y;
+			this.move(0,0);
+			// move dragbox to "sidebar"
 			interact('#'+this.drag_container.id).unset();
 			app.getElement("#workspace").removeChild(this.drag_container);
 			this.appendTo(app.getElement('#sidebar'));
 
 		} else {
+			// move dragbox out of "sidebar" and restore interaction
 			app.getElement("#sidebar").removeChild(this.drag_container);
 			this.appendTo(app.getElement('#workspace'));
 			this.setupDrag();
 			this.setupResize();
+			// restore position
+			this.move(this.old_x, this.old_y);
 		}
 	}
 

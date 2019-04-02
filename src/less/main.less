@@ -79,8 +79,8 @@ body:before, body:after {
 	button {
 		.win-nodrag();
 		width: 35px;
-		height: 30px;
-		margin: 2px 2px;
+		height: 28px;
+		margin: 3px 1px;
 		color: #b0bec5;
 		font-size: 15px;
 		float: right;
@@ -90,6 +90,7 @@ body:before, body:after {
 		&.hidden {
 			pointer-events: none;
 			opacity: 0;
+			display: none;
 		}
 
 		&#btn-close {
@@ -439,11 +440,12 @@ body:before, body:after {
 	position: absolute;
 	left: 0px;
 	right: 0px;
+	border: 2px solid transparent;
 	border-radius: 4px;
-	/* transition: background-color ease-in-out 0.2s;
-	transition: opacity ease-in-out 0.2s; */
 	transition: all ease-in-out 0.2s;
 	will-change: transform;
+	overflow: hidden;
+	box-sizing: border-box;
 
 	* {
 	    transition: opacity ease-in-out 0.2s;
@@ -471,7 +473,7 @@ body:before, body:after {
 	}
 
 	&.focused {
-		background-color: @sub-window-background;
+		border: 2px solid @sub-window-background;
 	}
 
 	&:hover {
@@ -504,6 +506,7 @@ body:before, body:after {
 	    font-size: 16px;
 	    cursor: pointer;
 	    opacity: 0;
+		z-index: 20;	
 
 	    &:hover {
 	    	color: @ide-green;;
@@ -519,7 +522,7 @@ body:before, body:after {
 	    top: 0px;
 	    left: 0px;
 	    width: 18px;
-	    height: 18px;
+	    height: 20px;
 	    background: transparent;
 		color: rgba(255,255,255,0.5);
 	    outline: none;
@@ -529,6 +532,8 @@ body:before, body:after {
 	    font-size: 16px;
 	    cursor: pointer;
 	    opacity: 0;
+		z-index: 20;
+
 	}
 
 	&:hover > .btn-menu {
@@ -544,23 +549,23 @@ body:before, body:after {
 
 		position: absolute;
 		top: 0px; left: 0px; right: 0px;
-		height: 17px;
-	    margin: 3px;
-	    margin-right: 20px;
-	    background-color: transparent;
+		height: 20px;
+	    margin: 0px;
+		background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
 	    color: rgba(200, 200, 200, 1);
-	    padding-left: 26px;
-	    line-height: 18px;
+	    padding-left: 30px;
+	    line-height: 28px;
 	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
+		z-index: 19;
 	}
 
 	.content {
 		position: absolute;
-	    top: 20px;
+	    top: 0px;
 	    bottom: 0px;
 	    left: 0px;
 	    right: 0px;
-	    margin: 3px;
+	    margin: 0px;
 	    overflow: auto;
 	    /* outline: 1px solid rgba(255,255,255,0.1); */
 	    /* opacity: 0.25; */
@@ -598,6 +603,7 @@ body:before, body:after {
     right: 0px;
     height: 34px;
     z-index: 100;
+	white-space: nowrap;
     /* background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%),radial-gradient(ellipse at top, rgba(100, 221, 23, .25) 1%, transparent 40%); */
 	background: linear-gradient(to bottom, #39414e 30%, transparent);
 
@@ -625,6 +631,7 @@ body:before, body:after {
 	    color: black; /* @search-text-focus; */
 	    width: 125px;
 	    font-size: 16px;
+		text-overflow: ellipsis;
 
 	    &:focus, &:hover {
 	    	color: white;
@@ -635,29 +642,40 @@ body:before, body:after {
 	    	}
 	    }
     }
+}
 
-    #search-results {    	
-    	position: absolute;
-    	top: 100%;
-    	min-width: 155px;
+#search-results {    	
+    position: absolute;
+    top: 34px;
+    min-width: 155px;
+    max-height: calc(100% - 34px);
+    z-index: 200;
+    overflow-y: auto;
+    padding-right: 10px;
+	padding-bottom: 1px;
+	box-sizing: border-box;
 
-    	.result {
-    		cursor: default;
-    		padding: 3px 15px;
-    		transition: all ease-in-out 0.2s;
+	&::-webkit-scrollbar {
+		width: 0px;
+		height: 0px;
+	}
 
-    		outline: darken(@window-background, 50%);;
-			background-color: #1c2027;
-    		color: @search-text-focus;
+	.result {
+		cursor: default;
+		padding: 3px 15px;
+		transition: all ease-in-out 0.2s;
 
-    		&.focused, &:hover {
-    			position: relative;
-				background-color: rgba(250,250,250, 1);
-				color: rgba(33,33,33 ,1);
-    			transform: scale(1.1);
-    		}
-    	}
-    }
+		outline: darken(@window-background, 50%);;
+		background-color: #1c2027;
+		color: @search-text-focus;
+
+		&.focused, &:hover {
+			position: relative;
+			background-color: rgba(250,250,250, 1);
+			color: rgba(33,33,33 ,1);
+			transform: scale(1.1);
+		}
+	}
 }
 
 #welcome {

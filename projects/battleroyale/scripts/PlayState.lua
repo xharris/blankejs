@@ -1,6 +1,7 @@
 BlankE.addState("PlayState")
 
-local player, sc_map, vw_main
+local player, sc_map
+local vw_main = View("main")
 
 Scene.tile_hitboxes = {"ground"}
 Scene.hitboxes = {"ground"}
@@ -12,7 +13,6 @@ function PlayState:enter()
 	Net.join()
 	Net.on('ready',function()
 		sc_map = Scene("MapPlain")
-		vw_main = View("main")
 			
 		player = Player()
 		player:setSpecialty("EXPLOSIVE")
@@ -28,14 +28,12 @@ function PlayState:update(dt)
 end
 
 function PlayState:draw()
-	if vw_main then
-		vw_main:draw(function()
-			sc_map:draw()
-			Net.draw("Player")
-				
-			for name, spec in pairs(SPEC) do
-				spec.draw()
-			end
-		end)
-	end
+	vw_main:draw(function()
+		sc_map:draw()
+		Net.draw("Player")
+
+		for name, spec in pairs(SPEC) do
+			spec.draw()
+		end
+	end)
 end
