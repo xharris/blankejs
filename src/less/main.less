@@ -472,12 +472,13 @@ body:before, body:after {
 		}
 	}
 
-	&.focused {
+	&.focused, &:hover {
 		border: 2px solid @sub-window-background;
-	}
 
-	&:hover {
-		background-color: @sub-window-background;
+		.fib-title {	
+			background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
+			text-shadow: black 1px 1px 1px, black -1px -1px 1px, black -1px 1px 1px, black 1px -1px 1px, black 0px 0px 1px;
+		}
 	}
 
 	&.collapsed {
@@ -551,7 +552,6 @@ body:before, body:after {
 		top: 0px; left: 0px; right: 0px;
 		height: 20px;
 	    margin: 0px;
-		background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
 	    color: rgba(200, 200, 200, 1);
 	    padding-left: 30px;
 	    line-height: 28px;

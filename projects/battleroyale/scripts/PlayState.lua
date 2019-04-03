@@ -1,6 +1,7 @@
 BlankE.addState("PlayState")
 
 local player, sc_map
+local start = false
 local vw_main = View("main")
 
 Scene.tile_hitboxes = {"ground"}
@@ -12,6 +13,7 @@ function PlayState:enter()
 
 	Net.join()
 	Net.on('ready',function()
+		start = true
 		sc_map = Scene("MapPlain")
 			
 		player = Player()
@@ -28,12 +30,14 @@ function PlayState:update(dt)
 end
 
 function PlayState:draw()
-	vw_main:draw(function()
-		sc_map:draw()
-		Net.draw("Player")
+	if start then
+		vw_main:draw(function()
+			sc_map:draw()
+			Net.draw("Player")
 
-		for name, spec in pairs(SPEC) do
-			spec.draw()
-		end
-	end)
+			for name, spec in pairs(SPEC) do
+				spec.draw()
+			end
+		end)
+	end
 end

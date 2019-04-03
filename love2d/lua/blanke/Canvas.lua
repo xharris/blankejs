@@ -51,13 +51,13 @@ Canvas = Class{
         Canvas._applied = Canvas._applied - 1
     end,
     
-    draw = function(self, is_main_canvas)
+    draw = function(self, is_main_canvas, ...)
         if not is_main_canvas then
             Draw.push()
             love.graphics.origin()
         end
         love.graphics.setBlendMode(unpack(self.blend_mode))
-        love.graphics.draw(self.canvas)
+        love.graphics.draw(self.canvas, ...)
         if not is_main_canvas then
             Draw.pop()
         end

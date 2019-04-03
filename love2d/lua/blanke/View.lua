@@ -1,4 +1,4 @@
-local floor = function(v) return v end--math.floor(v+0.5) end
+local floor = function(v) return v end -- math.floor(v) end
 
 local _View = Class{
 	init = function(self)
@@ -129,7 +129,7 @@ local _View = Class{
 		Draw.push()
 
 		View._transform:reset()
-		View._transform:translate(self._half_w, self._half_h)
+		View._transform:translate(floor(self._half_w), floor(self._half_h))
 		View._transform:scale(self.scale_x, self.scale_y)
 		View._transform:rotate(math.rad(self.angle))
 		View._transform:translate(-floor(self.x + self._dx), -floor(self.y + self._dy))

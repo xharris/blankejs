@@ -35,8 +35,7 @@ Image = Class{
 		self.yoffset = 0
 		self.color = {1,1,1}
 		self.alpha = 1
-		self.int_position = true
-
+		
 		self.orig_width = self.image:getWidth()
 		self.orig_height = self.image:getHeight()
 		self.width = self.orig_width * math.abs(self.xscale)
@@ -84,11 +83,6 @@ Image = Class{
 
 		x = ifndef(x, self.x)
 		y = ifndef(y, self.y)
-
-		if self.int_position then
-			x = math.floor(x)
-			y = math.floor(y)
-		end
 
 		Draw.stack(function()
 			love.graphics.setColor(Draw._parseColorArgs(self.color[1], self.color[2], self.color[3], self.alpha))	

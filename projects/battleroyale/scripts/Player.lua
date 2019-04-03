@@ -7,6 +7,8 @@ function Player:init()
 	self.aim_direction = 0
 	self:addShape("main","rectangle",{0,0,20,20})
 	
+	self.my_img = Image("player_stand")
+	
 	Net.addObject(self)
 end
 
@@ -60,6 +62,10 @@ function Player:draw()
 	local radius = 10
 	Draw.rect("fill",self.x-radius, self.y-radius, radius*2, radius*2)
 	Draw.reset('color')
+	
+	self.my_img.x = self.x 
+	self.my_img.y = self.y
+	self.my_img:draw()
 end
 
 function Player:setSpecialty(spec)

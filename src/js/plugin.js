@@ -60,7 +60,7 @@ function installPlugins(silent) {
 			inspectFolder(pathJoin(eng_plugin_dir,d))
 		}
 
-		if (!silent) blanke.toast("Plugins loaded!")
+		// if (!silent) blanke.toast("Plugins loaded!")
 	});
 
 	// add .js files to ide somehow

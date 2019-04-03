@@ -660,7 +660,7 @@
   right: 5px;
   top: 0px;
   pointer-events: none;
-  background-color: rgba(66, 66, 66, 0.81);
+  background-color: rgba(38, 50, 56, 0.81);
   transition: all ease-in-out 0.2s;
   margin-top: 58px;
   z-index: 5;
@@ -2550,11 +2550,14 @@ body.mac .tool-container button:hover {
   top: 0px;
   margin: 0px;
 }
-.fib-container.focused {
+.fib-container.focused,
+.fib-container:hover {
   border: 2px solid rgba(147, 160, 166, 0.7);
 }
-.fib-container:hover {
-  background-color: rgba(147, 160, 166, 0.7);
+.fib-container.focused .fib-title,
+.fib-container:hover .fib-title {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
+  text-shadow: black 1px 1px 1px, black -1px -1px 1px, black -1px 1px 1px, black 1px -1px 1px, black 0px 0px 1px;
 }
 .fib-container.collapsed {
   max-height: 24px;
@@ -2631,7 +2634,6 @@ body.mac .tool-container button:hover {
   right: 0px;
   height: 20px;
   margin: 0px;
-  background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
   color: #c8c8c8;
   padding-left: 30px;
   line-height: 28px;

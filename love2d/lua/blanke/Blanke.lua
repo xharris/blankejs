@@ -272,8 +272,12 @@ BlankE = {
 
 	    Window.scale_mode = options.scale_mode
 	    local new_w, new_h
-	    if not Window._res_modified then
-			Window.setResolution(options.resolution)
+		if not Window._res_modified then
+			if type(options.resolution) == 'table' then
+				Window.setResolution(unpack(options.resolution))
+			else
+				Window.setResolution(options.resolution)
+			end
 		end
 		new_w, new_h = Window.getResolution()
 		BlankE.game_canvas:resize(new_w,new_h)
@@ -443,7 +447,7 @@ BlankE = {
 	end,
 
 	drawToScale = function(func)
-    	Draw.translate(math.floor(BlankE._offset_x * BlankE.scale_x), math.floor(BlankE._offset_y * BlankE.scale_y))
+    	Draw.translate(BlankE._offset_x, BlankE._offset_y)
     	Draw.scale(BlankE.scale_x, BlankE.scale_y)
 
 		func()

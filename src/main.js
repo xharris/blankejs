@@ -799,6 +799,16 @@ nwWIN.on('loaded', function() {
 		this.close(true);
 	});
 
+	// prevents text from becoming blurry
+	let ignore_resize = false;
+	nwWIN.on('resize',(w, h)=>{
+		if (!ignore_resize) {
+			nwWIN.resizeTo(parseInt(w),parseInt(h));
+			ignore_resize = true;
+		} else
+			ignore_resize = false;
+	});
+
 	// file drop zone
 	window.addEventListener('dragover', function(e) {
 		e.preventDefault();
