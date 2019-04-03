@@ -38,9 +38,9 @@ function updateGlobals(dt)
 		BlankE._offset_x = 0
 		BlankE._offset_y = 0
 		if x_scale > y_scale then
-			BlankE._offset_x = math.abs((width / scale / 2) - (new_width / 2))
+			BlankE._offset_x = math.floor(math.abs((width / scale / 2) - (new_width / 2)))
 		else
-			BlankE._offset_y = math.abs((height / scale / 2) - (new_height / 2))
+			BlankE._offset_y = math.floor(math.abs((height / scale / 2) - (new_height / 2)))
 		end
 	end
 

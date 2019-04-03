@@ -92,6 +92,11 @@ Draw = Class{
 		return Draw
 	end,
 
+	setDefaultFilter = function(min,mag,ani)
+		love.graphics.setDefaultFilter(min,mag,ani)
+		BlankE.game_canvas:setFilter(min,mag,ani)
+	end,
+
 	setPointSize = function(size)
 		love.graphics.setPointSize(size)
 	end,

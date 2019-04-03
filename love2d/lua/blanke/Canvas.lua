@@ -23,6 +23,10 @@ Canvas = Class{
     __eq = function(self, other)
         return (self.uuid == other.uuid)
     end,
+
+    setFilter = function(self, ...)
+        self.canvas:setFilter(...)
+    end,
     
     resize = function(self, w, h)
         self.canvas = love.graphics.newCanvas(w, h)

@@ -200,7 +200,7 @@ end
 BlankE = {
 	_is_init = false,
 	_ide_mode = false,
-	game_canvas = Canvas(800,600),
+	game_canvas = Canvas(),
 	draw_debug = false,
 
 	-- window scaling
@@ -260,9 +260,9 @@ BlankE = {
 		
 		-- parsing all options
 		if type(options.filter) == "table" then
-			love.graphics.setDefaultFilter(unpack(options.filter))
+			Draw.setDefaultFilter(unpack(options.filter))
 		else
-			love.graphics.setDefaultFilter(options.filter, options.filter)
+			Draw.setDefaultFilter(options.filter)
 		end
 
 		-- game window size
@@ -279,7 +279,7 @@ BlankE = {
 				Window.setResolution(options.resolution)
 			end
 		end
-		new_w, new_h = Window.getResolution()
+		new_w, new_h = Window.getResolution(1)
 		BlankE.game_canvas:resize(new_w,new_h)
 
 	    uuid.randomseed(love.timer.getTime()*10000)
@@ -449,9 +449,7 @@ BlankE = {
 	drawToScale = function(func)
     	Draw.translate(BlankE._offset_x, BlankE._offset_y)
     	Draw.scale(BlankE.scale_x, BlankE.scale_y)
-
 		func()
-
 		Draw.reset()
 	end,
 
@@ -472,10 +470,8 @@ BlankE = {
 
 		Input.update()
 
-    	love.graphics.setBlendMode('alpha', 'premultiplied')
 		BlankE.drawToScale(function()
 			BlankE.game_canvas:draw(true)
-			love.graphics.setBlendMode('alpha')
 		end)
 		if BlankE.draw_debug and Debug then Debug.draw() end
 
