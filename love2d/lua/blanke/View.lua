@@ -1,4 +1,4 @@
-local floor = function(v) return v end -- math.floor(v) end
+local floor = function(v) return math.floor(v+0.5) end
 
 local _View = Class{
 	init = function(self)

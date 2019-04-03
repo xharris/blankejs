@@ -279,7 +279,7 @@ BlankE = {
 				Window.setResolution(options.resolution)
 			end
 		end
-		new_w, new_h = Window.getResolution(1)
+		new_w, new_h = Window.getResolution()
 		BlankE.game_canvas:resize(new_w,new_h)
 
 	    uuid.randomseed(love.timer.getTime()*10000)
