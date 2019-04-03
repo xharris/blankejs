@@ -14,7 +14,7 @@ function BlankE.load()
 	
 	BlankE.options = {
 		state="PlayState",
-		resolution = 3,
+		resolution = 1,
 		filter="nearest",
 		debug = {
 			log = true
