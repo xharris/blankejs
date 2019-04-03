@@ -800,13 +800,8 @@ nwWIN.on('loaded', function() {
 	});
 
 	// prevents text from becoming blurry
-	let ignore_resize = false;
 	nwWIN.on('resize',(w, h)=>{
-		if (!ignore_resize && app.os == 'win') {
-			nwWIN.resizeTo(parseInt(w),parseInt(h));
-			ignore_resize = true;
-		} else
-			ignore_resize = false;
+		blanke.cooldownFn('window_resize',500,()=>nwWIN.resizeTo(parseInt(w),parseInt(h)))
 	});
 
 	// file drop zone
