@@ -517,6 +517,9 @@
   width: 100%;
   height: 100%;
 }
+.content[data-type="Code"] .CodeMirror-lines {
+  margin-bottom: 18px;
+}
 .content[data-type="Code"] .cm-matchhighlight {
   background-color: rgba(178, 255, 89, 0.5);
   color: black !important;
