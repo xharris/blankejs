@@ -518,7 +518,7 @@
   height: 100%;
 }
 .content[data-type="Code"] .CodeMirror-lines {
-  margin-bottom: 18px;
+  padding-bottom: 20px;
 }
 .content[data-type="Code"] .cm-matchhighlight {
   background-color: rgba(178, 255, 89, 0.5);
@@ -2651,7 +2651,7 @@ body.mac .tool-container button:hover {
   position: relative;
   background-color: #fafafa;
   color: #212121;
-  transform: scale(1.1);
+  transform: scale(1.11);
 }
 #welcome {
   position: relative;

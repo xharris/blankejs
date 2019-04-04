@@ -5,7 +5,7 @@ function BlankE.load()
 	BlankE.options = {
 		state="PlayState",
 		resolution=3,
-		filter="nearest",
+		--filter="nearest",
 		inputs={
 			{"moveL","a"},
 			{"moveR","d"},
