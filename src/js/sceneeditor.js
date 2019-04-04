@@ -551,8 +551,9 @@ class SceneEditor extends Editor {
 			this_ref.pointer_down = btn;
 
 			// dragging canvas
-			if (((btn == 1) || (btn == 0 && alt)) && !this_ref.dragging) {
+			if (btn == 1 && !this_ref.dragging) {
 				this_ref.can_drag = true;
+				this_ref.pixi.view.style.cursor = "all-scroll";
 				dragStart();
 			}
 
@@ -589,6 +590,13 @@ class SceneEditor extends Editor {
 			let btn = e.data.originalEvent.button;
 			let alt = e.data.originalEvent.altKey; 
         	this_ref.pointer_down = -1;
+
+
+			if (btn == 1 && this_ref.dragging) {
+				this_ref.can_drag = true;
+				this_ref.pixi.view.style.cursor = "auto";
+				dragStop();
+			}
 
 			if (!alt && !this_ref.dragging) {
 				if (btn == 0) {
