@@ -667,127 +667,11 @@
   border-radius: 4px;
   overflow: hidden;
   /*&:hover {*/
-  width: 150px;
+  width: 160px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
   /*}*/
   /*&:hover{*/
   /*}*/
-  /*
-		.list-view-container {
-    		white-space: nowrap;
-    		padding-bottom: 1px;
-    		position: relative;
-
-			.list-title {
-				margin: 0px;
-			    text-transform: uppercase;
-			    height: 20px;
-			    line-height: 20px;
-			    padding-left: 12px;
-			}
-
-			.actions-container {
-			    position: absolute;
-			    top: 0px;
-			    left: 0px;
-			    height: 20px;
-
-				button {
-				    position: absolute;
-				    padding: 0px 2.8px;
-				    margin: 0px;
-				    border: none;
-				    outline: none;
-				    width: 15px;
-				    height: 15px;
-				    top: 2px;
-				    left: -7.5px;
-				    border-radius: 100%;
-				    font-size: 21px;
-				    font-weight: 500;
-				    background-color: rgba(176,190,197 ,1);
-				    transition: all ease-in-out 0.2s;
-				    text-align: left;
-				    line-height: 14px;
-
-				    &:hover {	
-					    background-color: rgba(139,195,74,1);
-					    color: white;
-				    }
-
-				    i {
-				    	font-size: 10px;
-				    }
-				}
-			}
-
-			.items-container {
-				color: black;
-
-				&:hover {
-					.item {
-
-					}
-
-					.item-text {
-						text-align: left;
-					}
-				}
-
-				.item {
-					position: relative;
-					height: 18px;
-					margin: 0px 1px;
-					background-color: transparent;
-					outline: 0px dotted rgba(176, 190, 197, 0);
-
-					&:hover {
-						background-color: #CFD8DC;
-
-						> .item-actions {
-							opacity: 1;
-						}
-					}
-
-					&.selected {
-						background-color: #b0bec5;
-						outline: 1px solid #b0bec5;
-						z-index: 10;
-					}
-
-					.item-text {
-						.no-select();
-
-						left:0px;
-					    height: 100%;
-   	 					line-height: 18px;
-   	 					padding: 0px 10px;
-   	 					box-sizing: border-box;
-
-   	 					width: 100%;
-   	 					text-align: left;
-					}
-
-					.item-actions {
-						right: 0px;
-						opacity: 0;
-
-						transition: all ease-in-out 0.1s;
-
-						> button {
-							margin: 0px;
-						    height: 18px;
-						    border-radius: 2px;
-						    width: 18px;
-						}
-					}
-				}
-
-				.item > * {
-					position: absolute;
-				}
-			}
-		}*/
   /* OBJECT */
   /* LAYER */
   /* IMAGE */
@@ -841,11 +725,12 @@
 .content[data-type="SceneEditor"] .sidebar > div {
   position: relative;
   width: 100%;
+  /*
+	    	&:not(:last-child) {
+	    		 padding-bottom: 15px; 
+	    	}*/
 }
-.content[data-type="SceneEditor"] .sidebar > div:not(:last-child) {
-  /* padding-bottom: 15px; */
-}
-.content[data-type="SceneEditor"] .sidebar > div.hidden {
+.content[data-type="SceneEditor"] .sidebar .hidden {
   display: none;
 }
 .content[data-type="SceneEditor"] .sidebar .select-placetype {
@@ -856,6 +741,14 @@
   width: 100%;
   height: 30px;
   transition: none;
+}
+.content[data-type="SceneEditor"] .sidebar .image-select {
+  height: 20px;
+  width: 100%;
+  background-color: #b0bec5;
+}
+.content[data-type="SceneEditor"] .sidebar .image-select option.placeholder {
+  display: none;
 }
 .content[data-type="SceneEditor"] .sidebar .form-container {
   padding: 5px;

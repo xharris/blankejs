@@ -97,6 +97,7 @@ class SceneEditor extends Editor {
 			['spacing', 'number', {'inputs':2, 'separator':'x'}],
 			['align', 'select', {'choices':['top-left','top-right','bottom-left','bottom-right']}]
 		]);
+		this.el_image_sel 		= app.createElement("select","image-select");
 		this.el_image_info 		= app.createElement("p","image-info");
 		this.el_image_container	= app.createElement("div","image-container");
 		this.el_image_tiles_container = app.createElement("div","image-tiles-container")
@@ -123,7 +124,6 @@ class SceneEditor extends Editor {
 		this.el_snap_sep		= app.createElement("p","snap-sep");
 
 		this.el_sel_placetype 	= app.createElement("select","select-placetype");
-		this.el_sel_object		= app.createElement("select","select-object");
 		this.el_input_object	= app.createElement("input","input-object");
 		// add object types
 		let obj_types = ['image','object','tag'];
@@ -141,6 +141,14 @@ class SceneEditor extends Editor {
 		// IMAGE elements
 		this.refreshImageList();
 		this.el_image_preview.ondragstart = function() { return false; };
+		this.el_image_sel.addEventListener('change',(e)=>{
+			this_ref.setImage(e.target.options[e.target.selectedIndex].value, function(img){			
+				// set current image variable
+				this_ref.curr_image = img;
+				this_ref.refreshObjectType();
+				this_ref.refreshImageGrid();
+			});
+		});
 
 		this.el_image_form.setValue('snap', 32, 0);
 		this.el_image_form.setValue('snap', 32, 1);
@@ -453,6 +461,7 @@ class SceneEditor extends Editor {
 		this.el_sidebar.appendChild(this.el_layer_container);
 		this.el_sidebar.appendChild(this.el_sel_placetype);
 		this.el_sidebar.appendChild(this.el_object_container);
+		this.el_sidebar.appendChild(this.el_image_sel);
 		this.el_sidebar.appendChild(this.el_image_container);
 		this.el_sidebar.appendChild(this.el_tag_form.container);
 
@@ -964,12 +973,15 @@ class SceneEditor extends Editor {
 			this.el_sel_placetype.value = new_type;
 
 		this.obj_type = this.el_sel_placetype.value;
+		this.el_image_sel.classList.add('hidden');
 		this.el_image_container.classList.add('hidden');
 		this.el_object_container.classList.add('hidden');
 		this.el_tag_form.container.classList.add('hidden');		
 		
-		if (this.obj_type == 'image' && this.curr_image) {
-			this.el_image_container.classList.remove('hidden');
+		if (this.obj_type == 'image') {
+			this.el_image_sel.classList.remove("hidden");
+			if (this.curr_image)
+				this.el_image_container.classList.remove('hidden');
 		}
 		if (this.obj_type == 'object') {
 			this.el_object_container.classList.remove('hidden');
@@ -1005,19 +1017,12 @@ class SceneEditor extends Editor {
 		var this_ref = this;
 		app.removeSearchGroup('scene_image');
 		let walker = nwWALK.walk(nwPATH.join(app.project_path,'assets'));
+		this.el_image_sel.innerHTML = `<option class="placeholder" value="" disabled ${this.curr_image ? '' : 'selected'}>Select an image</option>`;
 		walker.on('file', function(path, stat, next){
 			if (stat.isFile() && !stat.name.startsWith(".") && app.findAssetType(stat.name) == 'image') {
 				let full_path = nwPATH.join(path, stat.name);
 				var img_path = nwPATH.relative(app.project_path,full_path).replace(/assets[/\\]/,'');
-
-				app.addSearchKey({key: img_path, group: 'scene_image', tags: ['image'], onSelect: function() {
-					this_ref.setImage(nwPATH.resolve(full_path), function(img){			
-						// set current image variable
-						this_ref.curr_image = img;
-						this_ref.refreshObjectType();
-						this_ref.refreshImageGrid();
-					});
-				}});
+				this_ref.el_image_sel.innerHTML += `<option value="${full_path}" ${this_ref.curr_image && this_ref.curr_image.path == img_path ? 'selected' : ''}>${img_path}</option>`;
 			}
 			next();
 		});

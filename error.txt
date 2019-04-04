@@ -62,3 +62,11 @@ TypeError: self.load is not a function
     at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:690:30)
     at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:719:6)
 
+[[ 1554338566751 ]]
+TypeError: Cannot read property 'undefined' of undefined
+    at HTMLSelectElement.SceneEditor.el_image_sel.addEventListener (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:145:25)
+
+[[ 1554343723317 ]]
+TypeError: Cannot read property 'undefined' of undefined
+    at HTMLSelectElement.SceneEditor.el_image_sel.addEventListener (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:145:25)
+

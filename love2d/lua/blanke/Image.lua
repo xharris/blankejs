@@ -1,5 +1,6 @@
 local _images = {}
- 
+local floor = function(v) return math.floor(v+0.5) end
+
 Image = Class{
 	_canvas = nil,
 	init = function(self, name, img_data)

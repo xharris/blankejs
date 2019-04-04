@@ -1,6 +1,7 @@
 local cos = math.cos
 local sin = math.sin
 local rad = math.rad
+local floor = function(v) return math.floor(v+0.5) end
 local entity_spash = {}
 
 Entity = Class{
@@ -402,7 +403,7 @@ Entity = Class{
 				
 				-- is it an Animation or an Image
 				if img then
-					local draw_x, draw_y = math.floor(self.x+0.5), math.floor(self.y+0.5)
+					local draw_x, draw_y = floor(self.x), floor(self.y)
 					if sprite.update ~= nil then
 						sprite:draw(img(), draw_x, draw_y, math.rad(info.angle), info.xscale, info.yscale, -math.floor(info.xoffset), -math.floor(info.yoffset), info.xshear, info.yshear)
 					else
