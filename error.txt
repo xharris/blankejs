@@ -70,3 +70,51 @@ TypeError: Cannot read property 'undefined' of undefined
 TypeError: Cannot read property 'undefined' of undefined
     at HTMLSelectElement.SceneEditor.el_image_sel.addEventListener (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:145:25)
 
+[[ 1554398148362 ]]
+ReferenceError: canvas is not defined
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:473:28)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1960:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1978:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:691:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:720:6)
+
+[[ 1554398203577 ]]
+TypeError: Illegal invocation
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:774:5)
+
+[[ 1554398205035 ]]
+TypeError: Illegal invocation
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:759:6)
+
+[[ 1554398206319 ]]
+TypeError: Illegal invocation
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:774:5)
+
+[[ 1554398626676 ]]
+TypeError: Illegal invocation
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:771:5)
+
+[[ 1554398628096 ]]
+TypeError: Illegal invocation
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:756:6)
+
+[[ 1554398628933 ]]
+TypeError: Illegal invocation
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:771:5)
+
+[[ 1554400996343 ]]
+ReferenceError: exitPointerLock is not defined
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:769:5)
+
+[[ 1554400998538 ]]
+TypeError: Cannot read property 'view' of undefined
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:754:16)
+
+[[ 1554400999470 ]]
+ReferenceError: exitPointerLock is not defined
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:769:5)
+
+[[ 1554401000240 ]]
+ReferenceError: exitPointerLock is not defined
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:769:5)
+

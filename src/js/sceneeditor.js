@@ -1,6 +1,6 @@
 // rework object editor:
-// - click empty space: add rectangle object
-// - click on edge of object (point is on edge): add point in between points of edge
+// - (DONE) click empty space: add rectangle object
+// - (DONE) click on edge of object (point is on edge): add point in between points of edge
 // - can drag points (important)
 
 // var earcut = require('./includes/earcut.js');
@@ -48,6 +48,7 @@ class SceneEditor extends Editor {
 		this.game_width = window.innerWidth;
 		this.game_height = window.innerHeight;
 
+		PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
 		this.pixi = new PIXI.Application(this.game_width, this.game_height, {
 			backgroundColor: 0x354048,// 0x424242,
 			antialias: false,
@@ -467,7 +468,8 @@ class SceneEditor extends Editor {
 
 		this.appendChild(this.el_sidebar);
 		this.appendChild(this.el_toggle_sidebar);
-		
+
+		// Pointer Locking for camera dragging
 		function dragStart() {
 			if (!this_ref.dragging && this_ref.can_drag) {
 				var mouse = this_ref.pixi.renderer.plugins.interaction.mouse.global;
@@ -479,9 +481,9 @@ class SceneEditor extends Editor {
 		function dragStop() {
 			if (this_ref.dragging) {
 				this_ref.dragging = false;
+				this_ref.export();
 			}
 		}
-
 		window.addEventListener('keydown', function(e){
 			var keyCode = e.keyCode || e.which;
 
@@ -509,6 +511,12 @@ class SceneEditor extends Editor {
 		});
 		this.getContent().addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
+		});
+		this.zoom = 1;
+		window.addEventListener('wheel',(e)=>{
+			e.preventDefault();
+			this_ref.zoom -= e.deltaY * 0.01;
+			this_ref.refreshCamera();
 		});
 		
 		this.tile_start = [0,0];
@@ -634,6 +642,7 @@ class SceneEditor extends Editor {
 		this.place_mouse = [0,0];
 		this.half_mouse = [0,0];
 		this.half_place_mouse = [0,0];
+		this.lock_mouse = false;
 		this.pixi.stage.on('pointermove', function(e) {
 			let x = e.data.global.x;
 			let y = e.data.global.y;
@@ -643,8 +652,8 @@ class SceneEditor extends Editor {
 			// camera dragging
 			if (this_ref.dragging) {
 				this_ref.setCameraPosition(
-					this_ref.camera_start[0] + (x - this_ref.mouse_start.x),
-					this_ref.camera_start[1] + (y - this_ref.mouse_start.y) 
+					this_ref.camera[0] + e.data.originalEvent.movementX,
+					this_ref.camera[1] + e.data.originalEvent.movementY
 				)
 			}
 		
@@ -653,6 +662,10 @@ class SceneEditor extends Editor {
 				snapx = this_ref.curr_layer.snap[0];
 				snapy = this_ref.curr_layer.snap[1];
 			}
+			/*
+			snapx *= this_ref.zoom;
+			snapy *= this_ref.zoom;
+			*/
 
 			let mx = x-this_ref.camera[0],
 				my = y-this_ref.camera[1];
@@ -662,7 +675,7 @@ class SceneEditor extends Editor {
 			this_ref.half_mouse = [Math.floor(mx),Math.floor(my)];
 			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
-			if (!e.data.originalEvent.ctrlKey || this_ref.obj_type == "object") {
+			if ((!e.data.originalEvent.ctrlKey || this_ref.obj_type == "object") && !this_ref.dragging) {
 				if (mx < 0) { mx -= snapx; x -= snapx; }
 				if (my < 0) { my -= snapy; y -= snapy; }
 
@@ -711,12 +724,6 @@ class SceneEditor extends Editor {
 			this_ref.drawDotPreview();
 		});
         
-		document.addEventListener('mouseup', function(e) {
-			if (e.button == 1 || (e.button == 0 && this_ref.dragging)) {
-				dragStop();
-			}
-		});
-        
 		// moving camera with arrow keys
 		document.addEventListener('keydown', function(e){
 			if (document.activeElement === document.body && this_ref.curr_layer) {
@@ -736,8 +743,11 @@ class SceneEditor extends Editor {
 				this_ref.setCameraPosition(this_ref.camera[0] + vx, this_ref.camera[1] + vy);
 
 				// show camera grabbing hand
-				if (e.key == "Alt")
+				if (e.key == "Alt") {
 					this_ref.pixi.view.style.cursor = "all-scroll";
+					this_ref.pixi.view.requestPointerLock();
+					dragStart();
+				}
 
 				/* TODO: cancel things 
 				if (e.key == "Esc") {
@@ -751,6 +761,12 @@ class SceneEditor extends Editor {
 		document.addEventListener('keyup', function(e){
 			if (document.activeElement === document.body) {
 				this_ref.pixi.view.style.cursor = "auto";
+
+				if (e.key == "Alt") {
+					// release mouse
+					dragStop();
+					document.exitPointerLock();
+				}
 			}
 		});
 
@@ -923,6 +939,12 @@ class SceneEditor extends Editor {
 
 	refreshCamera () {
 		this.map_container.setTransform(this.camera[0], this.camera[1]);
+		/*
+		this.map_container.scale.x = this.zoom;
+		this.map_container.scale.y = this.zoom;
+		this.grid_container.scale.x = this.zoom;
+		this.grid_container.scale.y = this.zoom;
+		*/
 		this.drawCrosshair();
 		this.drawOrigin();
 	}
