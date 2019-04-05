@@ -112,7 +112,7 @@ var app = {
 		blanke.chooseFile('nwdirectory', function(file_path){
 			blanke.showModal(
 				"<label style='line-height:35px'>new project name:</label></br>"+
-				"<label>"+file_path+"\\</label>"+
+				"<label>"+file_path+nwPATH.sep+"</label>"+
 				"<input class='ui-input' id='new-proj-name' style='width:100px;' value='my_project'/>",
 			{
 				"yes": function() { app.newProject(nwPATH.join(file_path, app.getElement('#new-proj-name').value)); },

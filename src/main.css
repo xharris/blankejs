@@ -2663,18 +2663,23 @@ body.mac .tool-container button:hover {
   overflow: hidden;
   transition: all 0.2s ease-in-out;
   z-index: 200;
+  filter: blur(0px);
 }
 #welcome * {
   color: white;
-  transition: color 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 #welcome.hidden {
-  width: 0%;
-  height: 0%;
   pointer-events: none;
+  opacity: 0;
+  transform: scale(2);
+  filter: blur(2px);
 }
 #welcome.hidden * {
   color: rgba(255, 255, 255, 0);
+}
+#welcome.hidden .title {
+  display: none;
 }
 #welcome .logo {
   position: absolute;
@@ -2682,6 +2687,34 @@ body.mac .tool-container button:hover {
   transform: translateY(-50%);
   width: 200px;
   height: 200px;
+  left: 50%;
+  background: url("logo.png");
+  background-size: 100%;
+}
+#welcome .logo::before {
+  content: "";
+  background: url(logo.png) no-repeat;
+  width: 200px;
+  height: 200px;
+  background-size: 200px 200px;
+  position: absolute;
+  filter: brightness(2);
+  left: 0px;
+  animation-name: bg-move;
+  animation-duration: 12s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+@keyframes bg-move {
+  0% {
+    clip-path: polygon(-10% 0%, 0% 0%, 0% 100%, -10% 100%);
+  }
+  5% {
+    clip-path: polygon(100% 0%, 110% 0%, 110% 100%, 100% 100%);
+  }
+  100% {
+    clip-path: polygon(100% 0%, 110% 0%, 110% 100%, 100% 100%);
+  }
 }
 #welcome .left-container {
   position: absolute;
@@ -2713,6 +2746,7 @@ body.mac .tool-container button:hover {
   background: linear-gradient(to bottom, rgba(90, 217, 164) 0%, rgba(90, 217, 164) 100%) no-repeat;
   background-position: center;
   background-size: 100% 0%;
+  padding-left: 15%;
 }
 #welcome .header-buttons button i,
 #welcome .header-buttons button .label {
@@ -2754,7 +2788,7 @@ body.mac .tool-container button:hover {
   padding-bottom: 2.5px;
   text-shadow: 1px 1px 0px black;
   width: 100%;
-  padding-left: 38px;
+  padding-left: calc(15% + 38px);
   background: linear-gradient(to bottom, rgba(90, 217, 164, 0.5) 0%, rgba(90, 217, 164, 0.5) 100%) no-repeat;
   background-position: center;
   background-size: 100% 0%;
