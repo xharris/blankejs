@@ -2676,11 +2676,19 @@ body.mac .tool-container button:hover {
 #welcome.hidden * {
   color: rgba(255, 255, 255, 0);
 }
+#welcome .logo {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 200px;
+  height: 200px;
+}
 #welcome .left-container {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   display: inline-block;
-  border-left: 1px solid rgba(255, 255, 255, 0.25);
-  margin-top: 70px;
-  margin-left: 70px;
+  width: 100%;
 }
 #welcome .header-buttons {
   -webkit-touch-callout: none;
@@ -2699,34 +2707,62 @@ body.mac .tool-container button:hover {
 }
 #welcome .header-buttons button {
   font-size: 24px;
-  line-height: 24px;
+  padding: 13px 10px;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(to bottom, rgba(90, 217, 164) 0%, rgba(90, 217, 164) 100%) no-repeat;
+  background-position: center;
+  background-size: 100% 0%;
+}
+#welcome .header-buttons button i,
+#welcome .header-buttons button .label {
+  vertical-align: top;
+  display: inline-block;
+  height: 17px;
+  line-height: 17px;
+}
+#welcome .header-buttons button .label {
+  margin: 0px;
+}
+#welcome .header-buttons button i ::before {
+  height: 24px;
+  vertical-align: middle;
 }
 #welcome .header-buttons button:hover {
-  border-left-width: 4px;
-  border-left-color: white;
+  background-size: 100% 100%;
+  color: #212121;
+}
+#welcome .header-buttons button:hover i,
+#welcome .header-buttons button:hover .label {
+  color: #212121;
 }
 #welcome .header-buttons > button,
 #welcome .file {
   -webkit-app-region: no-drag;
   cursor: pointer;
-  background-color: transparent;
   outline: none;
   border: none;
-  border-left: 1px solid rgba(255, 255, 255, 0.25);
-  transition: all 0.1s ease-in-out;
-}
-#welcome .recent-files {
-  margin-top: 20px;
+  transition: all 0.2s ease-in-out;
 }
 #welcome .recent-files .file {
+  background: transparent;
   display: block;
   font-size: 16px;
   line-height: 20px;
   text-align: left;
+  padding-top: 2.5px;
+  padding-bottom: 2.5px;
+  text-shadow: 1px 1px 0px black;
+  width: 100%;
+  padding-left: 38px;
+  background: linear-gradient(to bottom, rgba(90, 217, 164, 0.5) 0%, rgba(90, 217, 164, 0.5) 100%) no-repeat;
+  background-position: center;
+  background-size: 100% 0%;
+  transition: all ease-in-out 0.1s;
 }
 #welcome .recent-files .file:hover {
-  border-left-width: 2px;
-  border-left-color: white;
+  text-shadow: 2px 2px 0px black;
+  background-size: 100% 100%;
 }
 #welcome .title {
   position: absolute;
