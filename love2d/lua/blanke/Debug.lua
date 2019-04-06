@@ -36,6 +36,7 @@ Debug = {
         filename = filename or 'last_game.rec'
         local file_info = getFileInfo(filename)
         Debug.log("re-running last game")
+        Window.disable_fullscreen = true
         if file_info and file_info.type == "file" then
             Debug._playing_record = true
             Debug._record = json.decode(love.filesystem.read(filename))
@@ -83,6 +84,9 @@ Debug = {
                 if Debug._play_index <= Debug._event_count then
                    Debug._next_evt_time = Debug._record.inputs[Debug._play_index][1]
                 end
+            else
+                Debug._playing_record = false       
+                Window.disable_fullscreen = false
             end
         end
     end,

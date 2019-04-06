@@ -427,6 +427,7 @@ class SceneEditor extends Editor {
 			let temp_lay = this_ref.layers[lay1];
 			this_ref.layers[lay1] = this_ref.layers[lay2];
 			this_ref.layers[lay2] = temp_lay;
+			this_ref.refreshLayers();
 			this_ref.export();
 		}
 
@@ -1745,18 +1746,25 @@ class SceneEditor extends Editor {
 				this.el_layer_form.setValue('name', this.curr_layer.name);
 				this.el_layer_form.setValue('snap', this.curr_layer.snap[0], 0);
 				this.el_layer_form.setValue('snap', this.curr_layer.snap[1], 1);
-				
-				this.layers[l].container.alpha = 1;
-				this.map_container.setChildIndex(this.layers[l].container, this.map_container.children.length-1);
-				
+								
 				this.el_layer_list.selectItem(name);
-
-			} else {
-				// make other layers transparent
-				this.layers[l].container.alpha = 0.25;
 			}
 		}
+		this.refreshLayers()
 		this.drawGrid();
+	}
+
+	refreshLayers () {
+		let this_ref = this;
+		this.el_layer_list.getItems().reverse().forEach((o,i)=>{
+			let layer = this_ref.getLayer(o);
+			layer.container.alpha = 0.25;
+			this_ref.map_container.setChildIndex(layer.container, i);
+		});
+		if (this.curr_layer) {
+			//this.map_container.setChildIndex(this.curr_layer.container, this.map_container.children.length-1);
+			this.curr_layer.container.alpha = 1;
+		}
 	}
 
 	load (file_path) {

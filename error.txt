@@ -118,3 +118,33 @@ ReferenceError: exitPointerLock is not defined
 ReferenceError: exitPointerLock is not defined
     at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:769:5)
 
+[[ 1554582363101 ]]
+Error: The supplied DisplayObject must be a child of the caller
+    at e.getChildIndex (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:10:19213)
+    at e.setChildIndex (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:10:19431)
+    at el_layer_list.getItems.forEach (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1767:27)
+    at Array.forEach (<anonymous>)
+    at SceneEditor.refreshLayerOrder (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1766:33)
+    at BlankeListView.SceneEditor.el_layer_list.onItemSwap (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:430:13)
+    at HTMLButtonElement.BlankeListView.controls.move-up (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:145:34)
+
+[[ 1554582364267 ]]
+Error: The supplied DisplayObject must be a child of the caller
+    at e.getChildIndex (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:10:19213)
+    at e.setChildIndex (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:10:19431)
+    at el_layer_list.getItems.forEach (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1767:27)
+    at Array.forEach (<anonymous>)
+    at SceneEditor.refreshLayerOrder (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1766:33)
+    at BlankeListView.SceneEditor.el_layer_list.onItemSwap (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:430:13)
+    at HTMLButtonElement.BlankeListView.controls.move-down (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:154:34)
+
+[[ 1554583221281 ]]
+Error: The supplied DisplayObject must be a child of the caller
+    at e.getChildIndex (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:10:19213)
+    at e.setChildIndex (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:10:19431)
+    at el_layer_list.getItems.forEach (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1767:27)
+    at Array.forEach (<anonymous>)
+    at SceneEditor.refreshLayerOrder (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1766:33)
+    at BlankeListView.SceneEditor.el_layer_list.onItemSwap (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:430:13)
+    at HTMLButtonElement.BlankeListView.controls.move-up (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:145:34)
+

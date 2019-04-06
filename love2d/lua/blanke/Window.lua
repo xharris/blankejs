@@ -4,7 +4,8 @@ Window = {
 	scale_mode = 'scale', -- scale, stretch, fit, center
 	aspect_ratios = { {4,3},{5,4},{16,10},{16,9} },
 	resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 },--640, 800, 960, 1024, 1280, 1400, 1440, 1600, 1856, 1920, 2048 },
-	
+	disable_fullscreen = false,
+
 	detectAspectRatio = function()
 		-- detect aspect ratio
 		local w, h = love.window.getDesktopDimensions()
@@ -32,8 +33,14 @@ Window = {
 		return w, h
 	end,
 
-	getFullscreen = love.window.getFullscreen,
-	setFullscreen = love.window.setFullscreen,
+	getFullscreen = function(...)
+		if Window.disable_fullscreen then return end 
+		love.window.getFullscreen(...)
+	end,
+	setFullscreen = function(...)
+		if Window.disable_fullscreen then return end 
+		love.window.setFullscreen(...)
+	end,
 	toggleFullscreen = function(type)
 		Window.setFullscreen(not Window.getFullscreen(),type)
 	end,
