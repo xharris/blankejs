@@ -128,19 +128,17 @@ var app = {
 	},
 
 	closeProject: function() {
-		if (app.isProjectOpen()) {
-			// app.saveSettings();
-			app.getElement("#search-container").classList.add("no-project");
-			if (app.isServerRunning()) 
-				app.stopServer();
+		// app.saveSettings();
+		app.getElement("#search-container").classList.add("no-project");
+		if (app.isServerRunning()) 
+			app.stopServer();
 
-			dispatchEvent("closeProject", {path: app.project_path});
-			app.project_path = '';
-			Editor.closeAll();
-			app.clearHistory();
-			app.showWelcomeScreen();
-			app.setWinTitle("BlankE");
-		}
+		dispatchEvent("closeProject", {path: app.project_path});
+		app.project_path = '';
+		Editor.closeAll();
+		app.clearHistory();
+		app.showWelcomeScreen();
+		app.setWinTitle("BlankE");
 	},
 
 	openProject: function(path) {
@@ -166,6 +164,9 @@ var app = {
 				app.getElement("#search-container").classList.remove("no-project");
 				app.setWinTitle(nwPATH.basename(app.project_path));
 				dispatchEvent("openProject", {path: path});
+			} else {
+				blanke.toast(`Could not open project '${nwPATH.basename(path)}'`);
+				app.closeProject();
 			}
 		});
  
