@@ -42,7 +42,7 @@ Net = {
         Net.port = ifndef(port, Net.port)     
         Net.is_init = true
 
-        Net._timer = Timer():every(Net.updateObjects, 1):start()
+        Net._timer = Timer():every(1, Net.updateObjects):start()
 
         return Net
     end,

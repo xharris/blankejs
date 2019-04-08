@@ -13,16 +13,11 @@ Dialog = Class{
         self.texts = {}
         self.text_char = 1
         
-        self.timer = Timer.new()
+        self.timer = Timer()
         self.font_obj = love.graphics.newFont(self.font_size)
         self.text_obj = love.graphics.newText(self.font_obj)
 
         _addGameObject('dialog',self)
-    end,
-    
-    update = function(self, dt)
-        self.timer:update(dt)
-        return self
     end,
     
     draw = function(self)

@@ -61,6 +61,7 @@
     cm.openDialog(text, onEnter, {
       value: deflt,
       selectValueOnOpen: true,
+      closeOnBlur: false,
       closeOnEnter: false,
       onClose: function() { clearSearch(cm); },
       onKeyDown: onKeyDown

@@ -64,7 +64,7 @@ addHitbox(object_name)
 
 * **name** of the object from the scene editor
 * Entity **class** or an already created **instance**
-* **align**: "x y" / "x" / "y"
+* **align**: "x y" / "x" / "y" where...
 	* x values: center, left, right
 	* y values: center, top, bottom
 

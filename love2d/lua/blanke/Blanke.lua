@@ -404,14 +404,14 @@ BlankE = {
 	end,
 
 	clearObjects = function(include_persistent, state)
-	    if state then
-	    	local game = state.game
-			for key, objects in pairs(game) do
-				for o, obj in ipairs(objects) do
-					if (not obj.persistent) or include_persistent then
-						obj:destroy()
-						game[key][o] = nil
-					end
+		state = ifndef(state, StateManager.current_state)
+
+		local game = state.game
+		for key, objects in pairs(game) do
+			for o, obj in ipairs(objects) do
+				if (not obj.persistent) or include_persistent then
+					obj:destroy()
+					game[key][o] = nil
 				end
 			end
 		end

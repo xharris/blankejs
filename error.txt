@@ -148,3 +148,25 @@ Error: The supplied DisplayObject must be a child of the caller
     at BlankeListView.SceneEditor.el_layer_list.onItemSwap (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:430:13)
     at HTMLButtonElement.BlankeListView.controls.move-up (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:145:34)
 
+[[ 1554750893571 ]]
+ReferenceError: new_enter is not defined
+    at Code.setupEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:444:3)
+    at new Code (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:309:8)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:898:13)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:948:15)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:692:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:721:6)
+
+[[ 1554751839150 ]]
+TypeError: CodeMirror.overlayMode is not a function
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:306:23
+    at getMode (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:1338:17)
+    at loadMode (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:4611:17)
+    at attachDoc (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:4709:3)
+    at new CodeMirror (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:7800:3)
+    at CodeMirror (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:7753:47)
+    at Code.setupEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:412:20)
+    at new Code (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:309:8)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:899:13)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:949:15)
+

@@ -32,9 +32,9 @@ function PathfindState:enter()
 	end
 	
 	refreshPath()
-	Timer():every(function()
+	Timer():every(1, function()
 		--refreshPath()
-	end, 1):start()
+	end):start()
 	
 	for p = 1, #points, 2 do
 		-- Debug.log(p/2 + .5,points[p],points[p+1])

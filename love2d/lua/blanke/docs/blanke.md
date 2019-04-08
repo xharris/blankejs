@@ -28,8 +28,8 @@ bottom = 0
 ```
 
 ## Methods
-`BlankE.init([options])`
-
-* **options** overrides BlankE.options
-
-`drawOutsideWindow()` can be overriden to make custom drawings outside the game frame
+```
+BlankE.init([options])		-- options overrides BlankE.options
+clearObjects([include persistent])
+drawOutsideWindow() -- can be overriden to make custom drawings outside the game frame (the black bars that show up when scaling the window)
+```

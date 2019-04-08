@@ -2,7 +2,7 @@ BlankE.loadPlugin(name)
 
 ## Methods
 
-`(Entity):addPlatforming(left, top, width, height)`
+`(Entity):addPlatforming([left, top, width, height])`
 -- creates hitboxes: main_box, head_box, feet_box
 
 `(Entity):platformerCollide{tag, tag_contains, [wall, ceiling, floor, all]}`

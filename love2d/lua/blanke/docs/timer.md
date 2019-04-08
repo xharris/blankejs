@@ -1,27 +1,36 @@
+# What is Timer?
 
--- all time units are in seconds for Timer
+**Timer** can be used to time things. Perform an action after x seconds or every x seconds.
 
--- constructor
-Timer([duration])						-- in seconds
+>Example
+>```
+>Timer(5):every(1, function(t)
+>	some_text = "t-minus " .. t .. " seconds"
+>end):after(function()
+>	some_text = "blastoff"
+>end):start()
 
--- instance properties
-int duration							-- 0s
-bool disable_on_all_called				-- true. The timer will stop running once every supplied function is called
-int time 								-- elapsed time in seconds
-bool running
+**Note**: not everything has to been called in a condense manner as shown above. Timer(num) returns a a timer instance that can be stored in a variable.
 
--- instance methods
-before(function, [delay])				-- starts immediately unless delay is supplied
-every(function, [interval])				-- interval=1 , function happens on every interal
-after(function, [delay])				-- happens after `duration` supplied to constructor with optional delay
+# Initialization
+
+`Timer([duration])`
+
+# Props
+
+```
+duration		-- seconds
+time			-- time elapsed after timer has started
+countdown		-- readonly. the inverse of 'time', aka. how many seconds are 
+running			-- whether or not the timer is currently running
+iterations		-- readonly. how many times start() has been called
+```
+
+# Methods
+
+```
+before([delay], function)				-- starts immediately unless delay is supplied
+every([interval], function)				-- interval=1 , function happens on every interal
+after([delay], function)				-- happens after `duration` supplied to constructor with optional delay
 start()									-- MUST BE CALLED TO START THE TIMER. DO NOT FORGET THIS OR YOU WILL GO NUTS
-
--- example: have an 'enemy' entity shoot a laser every 2 seconds
-function enemy:shootLaser()
-	...
-end
-
-function enemy:spawn()
-	self.shoot_timer = Timer()
-	self.shoot_timer:every(self.shootLaser, 2):start()
-end
+```
