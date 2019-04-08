@@ -137,7 +137,7 @@ function getFileInfo(path)
 	if love.filesystem.getInfo then
 		return love.filesystem.getInfo(path)
 	else
-		if not love.filesystem.exists(path) then return false end
+		if not love.filesystem.exists(path) then return nil end
 		local ftype = _ftypes[path]
 		if not ftype then
 			if love.filesystem.isDirectory(path) then ftype = "directory"

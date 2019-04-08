@@ -82,6 +82,7 @@ module.exports.completions = {
 		{prop:"window_height"},
 		{prop:"game_time"},
 		{prop:"dt_mod",info:">1 speed up game, <1 slow down game"},
+		{fn:"sleep",info:"should not be used for a pause screen",vars:{s:'seconds'}},
 
 		{fn:"hex2rgb",vars:{hex:'"#fff"/"#ffffff"/"fff"'}},
 		{fn:"hsv2rgb",vars:{hsv:''}},
@@ -95,6 +96,7 @@ module.exports.completions = {
 		{fn:"sinusoidal",vars:{min:'',max:'',speed:'higher = faster',start_offset:'optional'},info:'returns a number'},
 		{fn:"direction_x",vars:{angle:'degrees',dist:''}},
 		{fn:"direction_y",vars:{angle:'degrees',dist:''}},
+		{fn:"direction",vars:{x1:'',y1:'',x2:'',y2:''}},
 		{fn:"distance",vars:{x1:'',x2:'',y1:'',y2:''}},
 
 		{fn:"basename",vars:{path:''}},
@@ -106,6 +108,7 @@ module.exports.completions = {
 
 		{fn:"map2Dindex",vars:{x:'',y:'',columns:''}},
 		{fn:"map2Dcoords",vars:{i:'',columns:''}},
+		
 
 		{prop:'Debug'},
 

@@ -15,8 +15,9 @@ function BlankE.load()
 			{"rclick","mouse.2"},
 			{"move_l","left","a"},
 			{"move_r","right","d"},
-			{"move_u","up","w"},
-			{"move_d","down","s"}
+			{"move_u","up","w","pad.1","pad.2"},
+			{"move_d","down","s"},
+			{"action","space"}
 		}
 	}
 	Draw.setBackgroundColor("white")

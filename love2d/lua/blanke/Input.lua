@@ -16,13 +16,10 @@ GameCube
 
 ]]--
 
-
-function love.joystickpressed(joy,btn)
-    Debug.log('joystick',btn)
-end
-function love.gamepadpressed(joy,btn)
-    Debug.log('gamepad',btn)
-end
+local c = getFileInfo("gamecontrollerdb.txt")
+if c then 
+    love.joystick.loadGamepadMappings("gamecontrollerdb.txt")
+end 
 
 _Input = Class{
 	init = function(self, ...)
@@ -31,13 +28,13 @@ _Input = Class{
         self.is_multi_key = {}
         self.in_mouse = {}
         self.in_region = {}
+        self.in_pad = {}
 
         self.onInput = nil
         self._on = false -- are any of the inputs active?
         self._reset_wheel = false
         self.persistent = true
 
-        -- implement later
         self.press_count = 0
         self.pressed = false
         self.released = false
@@ -58,23 +55,17 @@ _Input = Class{
         if input:starts("mouse") or input:starts("wheel") then
             local btn = input:split(".")[2]
             self.in_mouse[input] = 0
+
         elseif input == 'region' then
             self:addRegion(...)
 
+        elseif input:starts("pad") then
+            local pad = input:split(".")[2]
+            self:addMultikey(pad,'pad')
+
         else -- regular keyboard input
-            local multi_key = input:split("-")
-            if #multi_key > 1 then
-                -- key is only ON when all keys in this list are pressed
-                for i,key in ipairs(multi_key) do
-                    -- add a reference (key -> input_str)
-                    if not self.multi_key[key] then
-                        self.multi_key[key] = {}
-                    end
-                    self.multi_key[key][input] = true
-                end
-                self.is_multi_key[input] = true
-            end
-            self.in_key[input] = 0 --cond(love.keyboard.isDown(ifndef(btn, input)), 1, 0)
+            self:addMultikey(input,'key')
+        
         end
         return self
 	end,
@@ -84,18 +75,68 @@ _Input = Class{
             local btn = input:split(".")[2]
             self.in_mouse[input] = nil
         
+        elseif input:starts("pad") then
+            local pad = input:split(".")[2]
+            self.in_pad[pad] = nil
+            self:removeMultikey(input)
+
         else -- regular keyboard input
             self.in_key[input] = nil
-            self.is_multi_key[input] = false
+            self:removeMultikey(input)
             
         end
         return self
     end,
 
-    
-    addRegion = function(shape_type, ...)
+    addRegion = function(self, shape_type, ...)
         local other_args = {...}
         return Input
+    end,
+
+    addMultikey = function(self, input, input_type)
+        local multi_key = input:split("-")
+        if #multi_key > 1 then
+            -- key is only ON when all keys in this list are pressed
+            for i,key in ipairs(multi_key) do
+                -- add a reference (key -> input_str)
+                if not self.multi_key[key] then
+                    self.multi_key[key] = {}
+                end
+                self.multi_key[key][input] = true
+            end
+            self.is_multi_key[input] = true
+        end
+        self["in_"..input_type][input] = 0 --cond(love.keyboard.isDown(ifndef(btn, input)), 1, 0)
+    end,
+
+    removeMultikey = function(self, input)
+        self.is_multi_key[input] = false
+    end,
+
+    pressMultikey = function(self, key,in_type)
+        for input,_ in pairs(self.multi_key[key]) do
+            self["in_"..in_type][input] = self["in_"..in_type][input] + 1
+
+            -- only press if all keys are down
+            if self["in_"..in_type][input] == input:count("-")+1 then
+                self:press()
+            end
+        end
+    end,
+
+    releaseMultikey = function(self, key,in_type)
+        for input,_ in pairs(self.multi_key[key]) do
+            self["in_"..in_type][input] = self["in_"..in_type][input] - 1
+
+            -- only press if all keys are down
+            if self["in_"..in_type][input] == input:count("-") then
+                self:release()
+            end
+        end
+    end,
+
+    isMultikey = function(self, key)
+        return self.multi_key[key]
     end,
 
     reset = function(self)
@@ -185,12 +226,20 @@ _Input = Class{
 Input = {
     keys = {},
     last_key='',
+    controllers = {},
+    controller = 1,
 
     set = function(name, ...)
         local new_input = _Input(...)
         new_input.persistent = true
         Input.keys[name] = new_input
         return Input
+    end,
+
+    setController = function(id)
+        if Input.controllers[id] ~= nil then
+            Input.controller = id
+        end
     end,
 
     simulateKeyPress = function(key) Input.keypressed(key) end,
@@ -202,17 +251,10 @@ Input = {
         Input.last_key = key
         Signal.emit('keypress',key)
         for o, obj in pairs(Input.keys) do
-            if obj.in_key[key] ~= nil or obj.multi_key[key] then
+            if obj.in_key[key] ~= nil or obj:isMultikey(key) then
 
-                if obj.multi_key[key] then
-                    for input,_ in pairs(obj.multi_key[key]) do
-                        obj.in_key[input] = obj.in_key[input] + 1
-
-                        -- only press if all keys are down
-                        if obj.in_key[input] == input:count("-")+1 then
-                            obj:press()
-                        end
-                    end
+                if obj:isMultikey(key) then
+                    obj:pressMultikey(key,'key')
                 else
                     -- single key press
                     obj.in_key[key] = obj.in_key[key] + 1
@@ -227,17 +269,10 @@ Input = {
     keyreleased = function(key)
         Signal.emit('keyrelease',key)
         for o, obj in pairs(Input.keys) do
-            if obj.in_key[key] ~= nil or obj.multi_key[key] then
+            if obj.in_key[key] ~= nil or obj:isMultikey(key) then
 
-                if obj.multi_key[key] then
-                    for input,_ in pairs(obj.multi_key[key]) do
-                        obj.in_key[input] = obj.in_key[input] - 1
-
-                        -- only press if all keys are down
-                        if obj.in_key[input] == input:count("-") then
-                            obj:release()
-                        end
-                    end
+                if obj:isMultikey(key) then
+                    obj:releaseMultikey(key,'key')
                 else
                     -- single key release
                     obj.in_key[key] = 0;
@@ -246,14 +281,6 @@ Input = {
             end
         end
         return Input
-    end,
-
-    update = function()
-        for o, obj in pairs(Input.keys) do
-            for input, val in pairs(obj.in_key) do
-                if not obj.is_multi_key[input] and obj.in_key[input] > 0 then obj.in_key[input] = obj.in_key[input] + 1 end
-            end
-        end
     end,
     
     mousepressed = function(x, y, button)
@@ -309,6 +336,59 @@ Input = {
         end
     end,
 
+    joystickpressed = function(joy,btn)
+        for o, obj in pairs(Input.keys) do
+            if obj.in_pad[btn] ~= nil or obj:isMultikey(btn) then
+
+                if obj:isMultikey(btn) then
+                    obj:pressMultikey(btn,'pad')
+                else
+                    -- single key press
+                    obj.in_pad[btn] = obj.in_pad[btn] + 1
+                    obj:press()
+                end
+
+            end
+        end
+        return Input
+    end,
+
+    joystickreleased = function(joy,btn)
+        for o, obj in pairs(Input.keys) do
+            if o == "move_u" then
+                print_r(obj.in_pad)
+                Debug.log(btn,obj.in_pad[btn]==0)
+            end
+            if obj.in_pad[btn] ~= nil or obj:isMultikey(btn) then
+                Debug.log("ok go")
+                if obj:isMultikey(btn) then
+                    obj:releaseMultikey(btn,'pad')
+                else
+                    -- single key release
+                    obj.in_pad[btn] = 0
+                    obj:release()
+                end
+            end
+        end
+        return Input
+    end,
+
+    gamepadpressed = function(joy, btn)
+        --local inputtype, inputindex, hatdirection = joystick:getGamepadMapping(button)
+    end,
+
+    gamepadreleased = function(joy, btn)
+
+    end,
+
+    update = function()
+        for o, obj in pairs(Input.keys) do
+            for input, val in pairs(obj.in_key) do
+                if not obj.is_multi_key[input] and obj.in_key[input] > 0 then obj.in_key[input] = obj.in_key[input] + 1 end
+            end
+        end
+    end,
+
     _releaseCheck = function()
         for k, obj in pairs(Input.keys) do
             obj:releaseCheck()
@@ -340,5 +420,15 @@ Input = {
 }
 
 setmetatable(Input, Input.mt)
+
+function love.joystickadded(joy)
+    Input.controllers[joy:getID()] = {
+        name = joy:getName()
+    }
+end
+
+function love.joystickremoved(joy)
+    Input.controllers[joy:getID()] = nil
+end
 
 return Input

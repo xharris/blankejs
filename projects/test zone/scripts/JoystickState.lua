@@ -6,7 +6,6 @@ function JoystickState:enter()
 	Scene.tile_hitboxes = {"ground"}
 	sc_level1 = Scene("level1")
 	local ent_mario = sc_level1:addEntity("spawn",Mario,"bottom left")
-	Debug.log(ent_mario.x,ent_mario.y)
 	--View("main"):follow(ent_mario)
 end
 

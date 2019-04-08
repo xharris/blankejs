@@ -147,6 +147,11 @@ love.load = function(args, unfilteredArgs)
 	BlankE.init()
 end
 
+_sleep_timer = 0
+function sleep(s)
+	_sleep_timer = s
+end 
+
 love.run = function()
     if love.math then love.math.setRandomSeed(os.time()) end
     if love.load then love.load(arg) end
@@ -286,6 +291,7 @@ BlankE = {
 	    updateGlobals(0)
 	    Asset.add("console.ttf")
 	    Draw.setFont("console",24)
+	    Debug.setFontSize(18)
 
 		Asset.load()
 
@@ -427,6 +433,11 @@ BlankE = {
 	    dt = math.min(dt, min_dt) * dt_mod
 	    next_time = next_time + min_dt
 
+		if _sleep_timer > 0 then
+			_sleep_timer = _sleep_timer - dt
+			return
+		end
+
 	    updateGlobals(dt)
 	    if UI then UI.update() end
 	    BlankE._mouse_updated = false
@@ -517,7 +528,9 @@ BlankE = {
 	end,
 	mousereleased = function(x, y, button) Input.mousereleased(x, y, button) end,
 	wheelmoved = function(x, y) Input.wheelmoved(x, y) end,
-
+    joystickreleased = function(joy,btn) Input.joystickreleased(joy, btn) end,
+	gamepadreleased = function(joy, btn) Input.gamepadreleased(joy, btn) end,
+	
 	_quit = function()
 		if BlankE.quit and BlankE.quit() then return true end
 
