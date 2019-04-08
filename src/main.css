@@ -2243,7 +2243,6 @@ body.mac .tool-container button:hover {
   border-radius: 4px;
   transition: background-color ease-in-out 0.2s;
   transition: opacity ease-in-out 0.2s;
-  box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
 }
 .drag-container.invisible {
   opacity: 0;
@@ -2254,9 +2253,17 @@ body.mac .tool-container button:hover {
 }
 .drag-container.focused {
   background-color: rgba(147, 160, 166, 0.7);
+  box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
+}
+.drag-container:not(.focused) .content {
+  box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
 }
 .drag-container:hover {
   background-color: rgba(147, 160, 166, 0.7);
+  box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
+}
+.drag-container:hover .content {
+  box-shadow: none;
 }
 .drag-container.collapsed {
   max-height: 24px;

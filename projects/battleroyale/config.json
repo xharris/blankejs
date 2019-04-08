@@ -30,7 +30,7 @@
                 0,
                 0
             ],
-            "speed": 5,
+            "speed": 0.02,
             "frame size": [
                 171,
                 192
@@ -38,9 +38,7 @@
             "frames": 165,
             "selected frames": [
                 "\"1-5\"",
-                "\"1-32\"",
-                "\"1-4\"",
-                "\"1-33\""
+                "\"1-32\""
             ],
             "columns": 5,
             "padding": [
@@ -48,6 +46,29 @@
                 0
             ],
             "image": "image/quick_explosion.png"
+        },
+        "image/player_stand.png": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame size": [
+                0,
+                0
+            ],
+            "frames": 0,
+            "selected frames": [
+                1,
+                1
+            ],
+            "columns": 0,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image/player_stand.png"
         }
     },
     "ico": "src/logo.ico",

@@ -604,16 +604,16 @@ local Scene = Class{
 								new_entity.y = new_entity.y + (rect[4]/2) - (new_entity.sprite_height/2)
 							end
 							if align:contains("top") then
-								new_entity.y = new_entity.y
+								new_entity.y = new_entity.y - new_entity.sprite_yoffset
 							end
 							if align:contains("bottom") then
-								new_entity.y = new_entity.y + rect[4] - new_entity.sprite_height
+								new_entity.y = new_entity.y + rect[4] - new_entity.sprite_height - new_entity.sprite_yoffset
 							end
 							if align:contains("left") then
-								new_entity.x = new_entity.x
+								new_entity.x = new_entity.x - new_entity.sprite_xoffset
 							end
 							if align:contains("right") then
-								new_entity.x = new_entity.x + rect[3] - new_entity.sprite_width
+								new_entity.x = new_entity.x + rect[3] - new_entity.sprite_width - new_entity.sprite_xoffset
 							end
 						end
 

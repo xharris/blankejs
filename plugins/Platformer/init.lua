@@ -1,4 +1,9 @@
 Entity.addPlatforming = function(self, left, top, width, height)
+	left = left or 0
+	top = top or 0
+	width = ifndef(width,self.sprite_width)
+	height = ifndef(height,self.sprite_height)
+
 	-- yes, unused at the moment
 	local left2 = left + self.sprite_xoffset
 	local top2 = top + self.sprite_yoffset

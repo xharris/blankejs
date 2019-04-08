@@ -34,12 +34,12 @@ Window = {
 	end,
 
 	getFullscreen = function(...)
-		if Window.disable_fullscreen then return end 
-		love.window.getFullscreen(...)
+		if Window.disable_fullscreen == true then return end 
+		return love.window.getFullscreen(...)
 	end,
 	setFullscreen = function(...)
-		if Window.disable_fullscreen then return end 
-		love.window.setFullscreen(...)
+		if Window.disable_fullscreen == true then return end 
+		return love.window.setFullscreen(...)
 	end,
 	toggleFullscreen = function(type)
 		Window.setFullscreen(not Window.getFullscreen(),type)

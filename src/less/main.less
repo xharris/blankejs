@@ -247,7 +247,6 @@ body:before, body:after {
 	border-radius: 4px;
 	transition: background-color ease-in-out 0.2s;
 	transition: opacity ease-in-out 0.2s;
-	box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
 
 	&.invisible {
 		opacity: 0;
@@ -260,10 +259,23 @@ body:before, body:after {
 
 	&.focused {
 		background-color: @sub-window-background;
+		box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
+
+	}
+	
+	&:not(.focused) {
+		.content {		
+			box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
+		}
 	}
 
 	&:hover {
 		background-color: @sub-window-background;
+		box-shadow: rgba(0, 0, 0, 0.25) 5px 5px 0px;
+
+		.content {
+			box-shadow: none;
+		}
 	}
 
 	&.collapsed {
