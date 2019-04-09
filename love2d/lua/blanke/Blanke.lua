@@ -519,7 +519,7 @@ BlankE = {
 		window_width = w 
 		window_height = h
 	end,
-
+--[[
 	keypressed = function(key) Input.keypressed(key) end,
 	keyreleased = function(key) Input.keyreleased(key) end,
 	mousepressed = function(x, y, button) 
@@ -528,9 +528,10 @@ BlankE = {
 	end,
 	mousereleased = function(x, y, button) Input.mousereleased(x, y, button) end,
 	wheelmoved = function(x, y) Input.wheelmoved(x, y) end,
+    joystickpressed = function(joy,btn) Input.joystickreleased(joy, btn) end,
     joystickreleased = function(joy,btn) Input.joystickreleased(joy, btn) end,
 	gamepadreleased = function(joy, btn) Input.gamepadreleased(joy, btn) end,
-	
+	]]
 	_quit = function()
 		if BlankE.quit and BlankE.quit() then return true end
 

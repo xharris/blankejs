@@ -62,3 +62,33 @@
 ## Region			(mouse click in a region)
 
 	Coming Soon
+
+# Controller
+
+	pad.1 ... pad.16
+
+## GameCube Adapter
+
+	1 - Y
+
+	2 - A 
+
+	3 - B 
+
+	4 - X
+
+	5 - L
+
+	6 - R
+
+	8 - Z
+
+	10 - Start
+
+	13 - D Up
+
+	14 - D Right
+
+	15 - D Down
+
+	16 - D Left

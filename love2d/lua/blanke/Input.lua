@@ -16,6 +16,18 @@ GameCube
 
 ]]--
 
+function love.keypressed(key) Input.keypressed(key) end
+function love.keyreleased(key) Input.keyreleased(key) end
+function mousepressed(x, y, button) 
+    x, y = BlankE.scaledMouse(x, y)
+    Input.mousepressed(x, y, button)
+end
+function love.mousereleased(x, y, button) Input.mousereleased(x, y, button) end
+function love.wheelmoved(x, y) Input.wheelmoved(x, y) end
+function love.joystickpressed(joy,btn) Input.joystickpressed(joy, btn) end
+function love.joystickreleased(joy,btn) Input.joystickreleased(joy, btn) end
+function love.gamepadreleased(joy, btn) Input.gamepadreleased(joy, btn) end
+
 local c = getFileInfo("gamecontrollerdb.txt")
 if c then 
     love.joystick.loadGamepadMappings("gamecontrollerdb.txt")
@@ -227,7 +239,7 @@ Input = {
     keys = {},
     last_key='',
     controllers = {},
-    controller = 1,
+    controller = nil,
 
     set = function(name, ...)
         local new_input = _Input(...)
@@ -238,8 +250,27 @@ Input = {
 
     setController = function(id)
         if Input.controllers[id] ~= nil then
-            Input.controller = id
+            Input.controller = Input.controllers[id]
         end
+    end,
+
+    getAxis = function(i)
+        if Input.controller then 
+            i = clamp(i,1,Input.controller.axisCount)
+            return Input.controller._joy:getAxis(i)
+        end
+        return 0
+    end,
+
+    setVibration = function(left,right,duration)
+        if Input.controller then
+            return Input.controller._joy:setViration(left,right,duration)
+        end 
+    end,
+    getVibration = function()
+        if Input.controller then
+            return Input.controller._joy:getViration()
+        end 
     end,
 
     simulateKeyPress = function(key) Input.keypressed(key) end,
@@ -337,6 +368,8 @@ Input = {
     end,
 
     joystickpressed = function(joy,btn)
+        if joy:getID() ~= Input.controller.id then return end
+        btn = tostring(btn)
         for o, obj in pairs(Input.keys) do
             if obj.in_pad[btn] ~= nil or obj:isMultikey(btn) then
 
@@ -354,13 +387,11 @@ Input = {
     end,
 
     joystickreleased = function(joy,btn)
+        if joy:getID() ~= Input.controller.id then return end
+        btn = tostring(btn)
         for o, obj in pairs(Input.keys) do
-            if o == "move_u" then
-                print_r(obj.in_pad)
-                Debug.log(btn,obj.in_pad[btn]==0)
-            end
             if obj.in_pad[btn] ~= nil or obj:isMultikey(btn) then
-                Debug.log("ok go")
+
                 if obj:isMultikey(btn) then
                     obj:releaseMultikey(btn,'pad')
                 else
@@ -368,6 +399,7 @@ Input = {
                     obj.in_pad[btn] = 0
                     obj:release()
                 end
+
             end
         end
         return Input
@@ -422,12 +454,21 @@ Input = {
 setmetatable(Input, Input.mt)
 
 function love.joystickadded(joy)
+    Signal.emit('controlleradded',joy:getID())
     Input.controllers[joy:getID()] = {
-        name = joy:getName()
+        _joy = joy,
+        id = joy:getID(),
+        name = joy:getName(),
+        axisCount = joy:getAxisCount(),
+        canVibrate = joy:isVibrationSupported()
     }
+    if Input.controller == nil then 
+        Input.setController(joy:getID())
+    end
 end
 
 function love.joystickremoved(joy)
+    Signal.emit('controllerremoved',joy:getID())
     Input.controllers[joy:getID()] = nil
 end
 

@@ -27,8 +27,14 @@ end
 function Mario:update(dt)	
 	local s = 200
 	local hx = 0
-	if Input("move_l").pressed then hx = hx - s end
-	if Input("move_r").pressed then hx = hx + s end
+	if Input("move_l").pressed or Input.getAxis(1) < -0.2 then hx = hx - s end
+	if Input("move_r").pressed or Input.getAxis(1) > 0.2 then hx = hx + s end
+	
+	local ax = Input.getAxis(1)
+	if math.abs(ax) > 0.05 then
+		Debug.log(ax)
+		hx = hx + (s * ax)
+	end
 	
 	if Input("move_u").released then self.can_jump = true end
 	if Input("move_u").pressed and self.can_jump then 
