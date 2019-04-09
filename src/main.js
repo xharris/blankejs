@@ -182,6 +182,7 @@ var app = {
 		if (app.isProjectOpen()) {
 			let love_path = {
 				'win': nwPATH.join(app.settings.engine_path,'love.exe'),
+				'linux': 'love2d',
 				'mac': nwPATH.resolve(nwPATH.join(app.settings.engine_path,'love.app','Contents','MacOS','love'))
 			};
 

@@ -4,12 +4,10 @@ do:
 	make -B blanke
 
 setup:
-	npm install -g pnpm
+	# npm install -g pnpm
 	pnpm install
-	pnpm install -g less
-	pnpm install -g nw@^0.36.2-sdk
-	git submodule init
-	git submodule update
+	sudo pnpm install -g less
+	sudo pnpm install -g nw@^0.36.2-sdk
 
 clean:
 	-rm -rf node_modules

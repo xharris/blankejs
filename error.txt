@@ -170,3 +170,11 @@ TypeError: CodeMirror.overlayMode is not a function
     at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:899:13)
     at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:949:15)
 
+[[ 1554836100284 ]]
+TypeError [ERR_INVALID_ARG_TYPE]: The "file" argument must be of type string. Received type undefined
+    at validateString (internal/validators.js:125:11)
+    at normalizeSpawnArguments (child_process.js:414:3)
+    at spawn (child_process.js:553:16)
+    at Object.play (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:188:16)
+    at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:78:69)
+
