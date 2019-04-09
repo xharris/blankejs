@@ -237,7 +237,9 @@ class Exporter extends Editor {
 				}
 
 				// exporting to LINUX
-				// ... just keep the .love file I guess (TODO: look into AppImages)
+				if (target_os == "linux") {
+				
+				}
 			});
 
 		});
