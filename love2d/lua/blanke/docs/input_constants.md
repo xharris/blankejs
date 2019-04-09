@@ -69,6 +69,8 @@
 
 ## GameCube Adapter
 
+**Pad numbers**
+
 	1 - Y
 
 	2 - A 
@@ -92,3 +94,17 @@
 	15 - D Down
 
 	16 - D Left
+
+**Axis numbers**
+
+	1 - L Stick X
+
+	2 - L Stick Y
+
+	3 - C Stick Y
+
+	4 - L Trigger pressure (up = negative, down = positive, 0 = half way)
+
+	5 - R Trigger pressure
+
+	6 - C Stick X

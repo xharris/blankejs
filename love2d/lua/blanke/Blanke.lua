@@ -233,6 +233,7 @@ BlankE = {
 		auto_aspect_ratio=true,
 		state='',
 		inputs={},
+		input={no_repeat={}},
 		debug={
 			play_record=false,
 			record=false,
@@ -299,6 +300,9 @@ BlankE = {
 		for i, input in ipairs(options.inputs) do
 			Input.set(unpack(input))
 		end
+		for i, input in ipairs(options.input.no_repeat) do
+			Input(input).can_repeat = false
+		end 
 		Input.set("fullscreen-toggle","lalt-return","ralt-return")
 		
 		-- debugging 

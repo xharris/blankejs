@@ -8,6 +8,7 @@ Scene.tile_hitboxes = {"ground"}
 Scene.hitboxes = {"ground"}
 Scene.draw_order = {"ground"}
 
+
 function PlayState:enter()
 	self.background_color = "white"
 

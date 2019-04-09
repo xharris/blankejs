@@ -166,15 +166,21 @@ _Input = Class{
         return nil
     end,
 
+    update = function(self, dt)
+        if self.pressed then
+            -- can repeat?
+            if not self.can_repeat and self.press_count > 1 then
+                self.pressed = false
+            end 
+            self.press_count = self.press_count + 1
+        end
+    end,
+
     -- a mouse/keyboard input has been pressed
     press = function(self)
         self.pressed = true
         self.released = false
         self._release_checked = false
-        -- can repeat?
-        if not self.can_repeat and self.press_count > 0 then
-            self.pressed = false
-        end 
         self.press_count = self.press_count + 1
     end,
 
@@ -240,11 +246,13 @@ Input = {
     last_key='',
     controllers = {},
     controller = nil,
+    deadzone = 0,
 
     set = function(name, ...)
         local new_input = _Input(...)
         new_input.persistent = true
         Input.keys[name] = new_input
+        new_input.name = name
         return Input
     end,
 
@@ -257,7 +265,8 @@ Input = {
     getAxis = function(i)
         if Input.controller then 
             i = clamp(i,1,Input.controller.axisCount)
-            return Input.controller._joy:getAxis(i)
+            local axis = Input.controller._joy:getAxis(i)
+            return cond(math.abs(axis) > Input.deadzone, axis, 0)
         end
         return 0
     end,

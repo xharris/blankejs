@@ -21,11 +21,15 @@ function BlankE.load()
 			{"aimLD","left-down"},
 			{"aimRD","right-down"},
 			
-			{"click","mouse.1"},
+			{"click","mouse.1","pad.5"},
 			{"action1","1"},
 			{"action2","2"},
 			{"action3","3"}
 		},
+		input={
+			no_repeat={"click"}	
+		},
 		debug={log=true}
 	}
+	Input.deadzone = 0.1
 end

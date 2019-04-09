@@ -32,7 +32,6 @@ function Mario:update(dt)
 	
 	local ax = Input.getAxis(1)
 	if math.abs(ax) > 0.05 then
-		Debug.log(ax)
 		hx = hx + (s * ax)
 	end
 	

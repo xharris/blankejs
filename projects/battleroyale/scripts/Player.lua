@@ -26,6 +26,15 @@ function Player:update(dt)
 		if Input("moveD").pressed then
 			dy = dy + SPEED
 		end
+		-- controller movement
+		local ax, ay = Input.getAxis(1), Input.getAxis(2)
+			
+		if ax ~= 0 then
+			dx = ax*SPEED
+		end
+		if ay ~= 0 then
+			dy = ay*SPEED	
+		end
 		self.hspeed = dx
 		self.vspeed = dy
 
@@ -35,8 +44,7 @@ function Player:update(dt)
 				self.spec:doAction(a)
 			end
 		end
-		if self.spec and Input("click").released then
-			Debug.log("released")
+		if self.spec and Input("click").pressed then
 			self.spec:click()	
 		end
 
@@ -44,6 +52,11 @@ function Player:update(dt)
 		local vw_main = View("main")
 		self.aim_direction = direction(self.x,self.y,vw_main.mouse_x,vw_main.mouse_y)
 
+		local cx, cy = Input.getAxis(6)/0.7, Input.getAxis(3)/0.7
+		if cx ~= 0 or cy ~= 0 then
+			self.aim_direction = direction(self.x, self.y, self.x + cx, self.y + cy)	
+		end
+			
 		self.onCollision["main"] = function(other, sep)
 			if other.tag == "ground" then
 				self:collisionStop()
@@ -59,6 +72,7 @@ function Player:draw()
 	Draw.setColor("blue")
 	local radius = 10
 	Draw.rect("fill",self.x-radius, self.y-radius, radius*2, radius*2)
+		local cx, cy = Input.getAxis(3), Input.getAxis(4)
 	Draw.reset('color')
 end
 
