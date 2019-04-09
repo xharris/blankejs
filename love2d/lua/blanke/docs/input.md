@@ -24,9 +24,10 @@ if Input("jump").released then
 end
 ```
 
-## Input checking properties
+## Input properties
 
 ```
+can_repeat		-- default = true. if you set it to false, pressed will only be true once, every time the button is pressed (prevent repeated inputs)
 pressed
 released
 ```
