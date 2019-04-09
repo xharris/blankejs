@@ -1,6 +1,6 @@
 {
     "export": {
-        "name": "test_zone",
+        "name": "battleroyale",
         "remove_unused": true
     },
     "spritesheet_prvw": {

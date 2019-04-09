@@ -7,14 +7,14 @@ TODO:
 C	separate tabs from history bar
 C	implement fibonnaci-sized windows
 C	sprite sheet preview: should display image dimensions
--	find and replace		
+C	find and replace		
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
-T 	sceneeditor: pointerup event after pointerdown event happens outside of window --> freeze
+C 	sceneeditor: pointerup event after pointerdown event happens outside of window --> freeze
 T	sceneeditor: create new scene, remove premade layers, rename layer -> other layers come back
-T 	sceneeditor: image search keys still remain after closing scene editor
-T	sceneeditor: re-opening opens 3 instances
+C 	sceneeditor: image search keys still remain after closing scene editor
+C	sceneeditor: re-opening opens 3 instances
 */
 var nwGUI = require('nw.gui');
 var nwFS = require('fs-extra');
@@ -25,8 +25,8 @@ var nwWIN = nwGUI.Window.get();
 const { spawn, execFile, exec } = require('child_process')
 const { cwd, env, platform } = require('process')
 var nwNOOB = require('./js/server.js');
-var nwZIP = require('archiver');
-var nwZIP2 = require('adm-zip');
+var nwZIP = require('archiver'); // used for zipping
+var nwZIP2 = require('adm-zip'); // used for unzipping
 var nwWATCH = require('node-watch');
 var nwREQ = require('request');
 
