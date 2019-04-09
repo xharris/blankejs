@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Theora</string>
+	<string>theora</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Theora framework 1.1alpha1svn, Copyright © 2002-2009Xiph.Org Foundation</string>
 	<key>CFBundleIdentifier</key>

@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Ogg</string>
+	<string>ogg</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Ogg framework 1.1.4, Copyright © 1994-2009 Xiph.Org Foundation</string>
 	<key>CFBundleIdentifier</key>

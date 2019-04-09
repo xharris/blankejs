@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Vorbis</string>
+	<string>vorbis</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Vorbis framework 1.2.3, Copyright © 1994-2009 Xiph.Org Foundation</string>
 	<key>CFBundleIdentifier</key>

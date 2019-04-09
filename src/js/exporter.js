@@ -87,7 +87,6 @@ class Exporter extends Editor {
 				if (cb) cb(love_path);
 			});
 			archive.pipe(output);
-			console.log(nwPATH.join(engine_path,"lua"),eng_ignore)
 			archive.glob("**/*",{
 				cwd: nwPATH.join(engine_path,"lua"),
 				ignore: (eng_ignore || [])
@@ -238,7 +237,7 @@ class Exporter extends Editor {
 
 				// exporting to LINUX
 				if (target_os == "linux") {
-				
+					// just keep it as a .love
 				}
 			});
 
