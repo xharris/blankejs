@@ -178,3 +178,45 @@ TypeError [ERR_INVALID_ARG_TYPE]: The "file" argument must be of type string. Re
     at Object.play (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:188:16)
     at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:78:69)
 
+[[ 1554915578979 ]]
+SyntaxError: Identifier 'el_result_container' has already been declared
+
+[[ 1554915579859 ]]
+SyntaxError: Identifier 'el_result_container' has already been declared
+
+[[ 1554915618224 ]]
+ReferenceError: options is not defined
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:686:5)
+
+[[ 1554918788821 ]]
+ReferenceError: getResultArray is not defined
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:776:21)
+
+[[ 1554918789055 ]]
+ReferenceError: getResultArray is not defined
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:776:21)
+
+[[ 1554918789267 ]]
+ReferenceError: getResultArray is not defined
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:776:21)
+
+[[ 1554918877523 ]]
+ReferenceError: iterateResults is not defined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:763:6
+    at Array.forEach (<anonymous>)
+    at getResultsArray (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:761:35)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:776:21)
+
+[[ 1554918900881 ]]
+TypeError: Cannot convert undefined or null to object
+    at Function.from (<anonymous>)
+    at getResultsArray (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:761:10)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:763:6
+    at Array.forEach (<anonymous>)
+    at getResultsArray (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:761:35)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:776:21)
+
+[[ 1554918946713 ]]
+ReferenceError: el_reults is not defined
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:777:22)
+

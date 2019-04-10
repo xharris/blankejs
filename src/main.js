@@ -248,13 +248,16 @@ var app = {
 	search_args: {},
 	search_hashvals: [],
 	search_group: {},
+	search_hash_category: {},
 	hashSearchVal: function(key, tags) {
-		return key + '=' + (tags || []).join('+');
+		tags = tags || [];
+		tags.push('?')
+		return key + '=' + tags.join('+');
 	},
 	unhashSearchVal: function(hash_val) {
 		return {
 			key: hash_val.split('=')[0],
-			tags: hash_val.split('=')[1].split('+')
+			tags: hash_val.split('=')[1].split('+'),
 		}
 	},
 	// options: text, description, onSelect, tags
@@ -262,6 +265,7 @@ var app = {
 		var hash_val = app.hashSearchVal(options.key, options.tags);
 		app.search_funcs[hash_val] = options.onSelect;
 		app.search_args[hash_val] = options.args;
+		app.search_hash_category[hash_val] = options.category;
 
 		if (!app.search_hashvals.includes(hash_val))
 			app.search_hashvals.push(hash_val);
@@ -270,7 +274,9 @@ var app = {
 			app.search_group[options.group].push(hash_val);
 		}
 	},
-
+	getSearchCategory: function(hash_val) {
+		return app.search_hash_category[hash_val];
+	},
 	removeSearchGroup: function(group) {
 		if (app.search_group[group]) {
 			var group_len = app.search_group[group].length;
@@ -669,23 +675,45 @@ nwWIN.on('loaded', function() {
 
 	// prepare search box
 	app.getElement("#search-input").addEventListener('input', function(e){
-		var input_str = e.target.value;
-		var el_result_container = app.getElement("#search-results");
+		let input_str = e.target.value;
+		let el_result_container = app.getElement("#search-results");
 		if (input_str.length > 0) {
-			var results = app.search_hashvals.filter(val => val.toLowerCase().includes(input_str.toLowerCase()));
+			let categories = {};
+			let results = app.search_hashvals.filter(val => val.toLowerCase().includes(input_str.toLowerCase()));
 			app.clearElement(el_result_container);
 
 			// add results to div
 			for (var r = 0; r < results.length; r++) {
-				var result = app.unhashSearchVal(results[r]);
-				var el_result = app.createElement("div", "result");
+				let result = app.unhashSearchVal(results[r]);
+				let category = app.getSearchCategory(results[r]);
+
+				// add category div
+				if (category && !categories[category]) {
+					let el_category = app.createElement("div","category-container");
+					el_category.is_category = true;
+
+					el_category.el_title = app.createElement("p","title");
+					el_category.el_title.innerHTML = category;
+					
+					el_category.el_children = app.createElement("div","children");
+
+					el_category.append(el_category.el_title);
+					el_category.append(el_category.el_children);
+					el_result_container.append(el_category);
+					categories[category] = el_category;
+				}
+
+				let el_result = app.createElement("div", "result");
 				el_result.innerHTML = result.key;
 				el_result.dataset.hashval = results[r];
 				el_result.dataset.func = app.search_funcs[results[r]];
-				el_result_container.append(el_result);
+
+				if (category)
+					categories[category].el_children.append(el_result);
+				else
+					el_result_container.append(el_result);
 			}
 		} else {
-			var el_result_container = app.getElement("#search-results");
 			app.clearElement(el_result_container);
 		}
 	})
@@ -728,12 +756,25 @@ nwWIN.on('loaded', function() {
 	app.getElement("#search-input").addEventListener('keydown', function(e){
 		var keyCode = e.keyCode || e.which;
 
+		function getResultsArray(el_parent, ret_array) {
+			ret_array = ret_array || [];
+			Array.from(el_parent.children).forEach(function(e){
+				if (e.is_category) {
+					getResultsArray(e.el_children, ret_array);
+				} else {
+					ret_array.push(e);
+				}
+			});
+			return ret_array;
+		}
+
 		// TAB
 		if (keyCode == 9) {
 			e.preventDefault();
 
 			var el_result_container = app.getElement("#search-results");
-			var num_results = el_result_container.children.length;
+			let el_results = getResultsArray(el_result_container);
+			var num_results = el_results.length;
 
 			if (num_results > 0) {
 				if (e.shiftKey)
@@ -745,12 +786,13 @@ nwWIN.on('loaded', function() {
 				if (selected_index >= num_results) 	selected_index = 0;
 
 				// highlight selected result
-				Array.from(el_result_container.children).forEach(function(e){
-					e.classList.remove('focused');
+				el_results.forEach((e, i) => {
+					if (i === selected_index) {
+						e.classList.add('focused');
+						e.scrollIntoView({behavior:"smooth",block:"nearest"})
+					} else
+						e.classList.remove('focused');
 				});
-				let el_focused = el_result_container.children[selected_index];
-				el_focused.classList.add('focused');
-				el_focused.scrollIntoView({behavior:"smooth",block:"nearest"})
 			} else {
 				selected_index = -1;
 			}
@@ -849,8 +891,8 @@ nwWIN.on('loaded', function() {
 	if (DEV_MODE) {
 		app.enableDevMode(true);
 	}
-	app.addSearchKey({key: 'Start Server', onSelect: app.runServer});
-	app.addSearchKey({key: 'Stop Server', onSelect: app.stopServer});
+	app.addSearchKey({key: 'Start Server', category:'tools', onSelect: app.runServer});
+	app.addSearchKey({key: 'Stop Server', category:'tools', onSelect: app.stopServer});
 	app.addSearchKey({key: 'Check for updates', onSelect: app.checkForUpdates});
 
 	document.addEventListener("openProject",function(){

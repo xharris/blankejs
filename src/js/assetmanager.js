@@ -247,7 +247,8 @@ document.addEventListener("openProject", function(e){
 			if (!DragBox.focus("Assets"))
 				new AssetManager(app);
 		},
-		group: 'Assetmanager'
+		group: 'Assetmanager',
+		category: 'tools'
 	});
 });
 

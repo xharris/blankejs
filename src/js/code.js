@@ -927,9 +927,11 @@ function addScripts(folder_path) {
 							// get what kind of script it is
 							let tags = ['script'];
 							let s_type = ['script'];
+							let cat;
 							for (let assoc of CODE_ASSOCIATIONS) {
 								let match = data.match(assoc[0]);
 								if (match) {
+									cat = assoc[1];
 									tags.push(assoc[1]);
 									if (!Code.scripts[assoc[1]].includes(full_path)) {
 										Code.scripts[assoc[1]].push(full_path);
@@ -944,6 +946,7 @@ function addScripts(folder_path) {
 									Code.openScript(file_path);
 								},
 								tags: tags,
+								category: cat,
 								args: [full_path],
 								group: 'Scripts'
 							});

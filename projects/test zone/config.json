@@ -17,7 +17,7 @@
             ],
             "frames": 3,
             "selected frames": [
-                "\"1-3\"",
+                1,
                 1
             ],
             "columns": 3,
@@ -25,7 +25,76 @@
                 0,
                 0
             ],
-            "image": "image\\sprite-example.png"
+            "image": "image/sprite-example.png"
+        },
+        "image/Basic Bird.png": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame size": [
+                0,
+                0
+            ],
+            "frames": 0,
+            "selected frames": [
+                1,
+                1
+            ],
+            "columns": 0,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image/Basic Bird.png"
+        },
+        "image/ground.png": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame size": [
+                0,
+                0
+            ],
+            "frames": 0,
+            "selected frames": [
+                1,
+                1
+            ],
+            "columns": 0,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image/ground.png"
+        },
+        "image/cat.png": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame size": [
+                0,
+                0
+            ],
+            "frames": 0,
+            "selected frames": [
+                "\"1-3\"",
+                1
+            ],
+            "columns": 0,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image/cat.png"
         }
     },
     "ico": "src/logo.ico",

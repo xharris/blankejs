@@ -109,6 +109,7 @@ document.addEventListener("openProject", function(e){
 		onSelect: function() {
 			new Find(app);
 		},
-		group: 'Find'
+		group: 'Find',
+		category: 'tools'
 	});
 });

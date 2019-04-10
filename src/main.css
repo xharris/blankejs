@@ -1711,6 +1711,7 @@
 .content[data-type="SpritesheetPreview"] .prvw-container .image,
 .content[data-type="SpritesheetPreview"] .prvw-container .frames-container,
 .content[data-type="SpritesheetPreview"] .prvw-container .prvw {
+  image-rendering: pixelated;
   transition: all ease-in-out 0.1s;
 }
 .content[data-type="SpritesheetPreview"] .prvw-container.enable-prvw .image,
@@ -2669,6 +2670,19 @@ body.mac .tool-container button:hover {
   background-color: #fafafa;
   color: #212121;
   transform: scale(1.11);
+}
+#search-results .category-container {
+  cursor: default;
+}
+#search-results .category-container .title {
+  margin: 0px;
+  padding: 3px 15px;
+  background-color: #1c2027;
+  color: #757575;
+  text-transform: uppercase;
+}
+#search-results .category-container .children {
+  text-indent: 15px;
 }
 #welcome {
   position: relative;

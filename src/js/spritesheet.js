@@ -173,15 +173,21 @@ class SpritesheetPreview extends Editor {
 		
 		this.el_image.onload = function(){
 			this_ref.el_preview.innerHTML = "<img src='"+src+"'/>";
-			this_ref.el_preview.width = this_ref.el_image.width;
-			this_ref.el_preview.height = this_ref.el_image.height;
+			let img_w = this_ref.el_image.width, img_h = this_ref.el_image.height;
+			this_ref.el_preview.width = img_w;
+			this_ref.el_preview.height = img_h;
 
-			this_ref.el_image_size.innerHTML = this_ref.el_image.width + " x " + this_ref.el_image.height;
+			this_ref.el_image_size.innerHTML = img_w + " x " + img_h;
 
 			// use last used values
 			if (app.project_settings.spritesheet_prvw && app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)]) {
 				this_ref.el_sheet_form.useValues(app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)]);
 			}
+
+			// fit image into window frame
+			let container_w = this_ref.el_image_container.offsetWidth, container_h = this_ref.el_image_container.offsetHeight;
+			let calculated_scale = container_w / img_w > container_h / img_h ? container_w / img_w : container_h / img_h;
+			this_ref.setScale(calculated_scale > 1.0 ? calculated_scale / 2.0 : calculated_scale);
 
 			this_ref.updateFrames();
 		}
@@ -349,7 +355,8 @@ document.addEventListener("openProject", function(e){
 		onSelect: function() {
 			new SpritesheetPreview();
 		},
-		tags: ['view']
+		tags: ['view'],
+		category: 'tools'
 	});
 	app.addSearchKey({
 		key: 'Add images',
