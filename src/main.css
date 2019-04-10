@@ -2692,9 +2692,10 @@ body.mac .tool-container button:hover {
   box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;
-  transition: all 0.2s ease-in-out;
   z-index: 200;
-  filter: blur(0px);
+  /* filter: blur(0px);*/
+  transition: all 0.2s ease-in-out;
+  will-change: transform;
 }
 #welcome * {
   color: white;
@@ -2704,7 +2705,7 @@ body.mac .tool-container button:hover {
   pointer-events: none;
   opacity: 0;
   transform: scale(2);
-  filter: blur(2px);
+  /* filter: blur(2px);*/
 }
 #welcome.hidden * {
   color: rgba(255, 255, 255, 0);

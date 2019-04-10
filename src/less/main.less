@@ -713,9 +713,9 @@ body:before, body:after {
 	box-sizing: border-box;
 	white-space: nowrap;
 	overflow: hidden;
-	transition: all 0.2s ease-in-out;
 	z-index: 200;
-    filter: blur(0px);
+	transition: all 0.2s ease-in-out;
+	will-change: transform;
 
 	* {
 		color: white;
@@ -726,7 +726,6 @@ body:before, body:after {
 		pointer-events: none;
 		opacity: 0;
 		transform: scale(2);
-		filter: blur(2px);
 
 		* {
 			color: rgba(255,255,255,0);
