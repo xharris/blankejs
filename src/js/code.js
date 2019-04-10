@@ -1041,6 +1041,7 @@ function <NAME>:draw()\n\n\
 end\n");
 		},
 		tags: ['new'],
+		category: 'state',
 		group: 'Code'
 	});
 	app.addSearchKey({
@@ -1054,6 +1055,7 @@ function <NAME>:update(dt)\n\n\
 end\n");
 		},
 		tags: ['new'],
+		category: 'entity',
 		group: 'Code'
 	});
 });

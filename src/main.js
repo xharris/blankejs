@@ -265,7 +265,7 @@ var app = {
 		var hash_val = app.hashSearchVal(options.key, options.tags);
 		app.search_funcs[hash_val] = options.onSelect;
 		app.search_args[hash_val] = options.args;
-		app.search_hash_category[hash_val] = options.category;
+		app.search_hash_category[hash_val] = options.category ? options.category.toLowerCase() : null;
 
 		if (!app.search_hashvals.includes(hash_val))
 			app.search_hashvals.push(hash_val);
@@ -296,6 +296,22 @@ var app = {
 		app.search_hashvals = app.search_hashvals.filter(e => e != hash);
 		app.search_funcs[hash] = null;
 		app.search_args[hash] = null;
+	},
+	
+	// returns an array containing .result elements
+	getSearchResults: function() {
+		let ret_array = [];
+		let getChildren = function(el_parent) {
+			Array.from(el_parent.children).forEach(function(e){
+				if (e.is_category) {
+					getChildren(e.el_children, ret_array);
+				} else {
+					ret_array.push(e);
+				}
+			});
+		}
+		getChildren(app.getElement("#search-results"), []);
+		return ret_array;
 	},
 
 	settings: {},
@@ -744,7 +760,7 @@ nwWIN.on('loaded', function() {
 		// ENTER
 		if (keyCode == 13) {
 			if (selected_index >= 0) {
-				var child = app.getElement("#search-results").children[selected_index];
+				var child = app.getSearchResults()[selected_index];
 				if (child) {
 					var hash_val = child.dataset.hashval;
 					selectSearchResult(hash_val);
@@ -756,24 +772,11 @@ nwWIN.on('loaded', function() {
 	app.getElement("#search-input").addEventListener('keydown', function(e){
 		var keyCode = e.keyCode || e.which;
 
-		function getResultsArray(el_parent, ret_array) {
-			ret_array = ret_array || [];
-			Array.from(el_parent.children).forEach(function(e){
-				if (e.is_category) {
-					getResultsArray(e.el_children, ret_array);
-				} else {
-					ret_array.push(e);
-				}
-			});
-			return ret_array;
-		}
-
 		// TAB
 		if (keyCode == 9) {
 			e.preventDefault();
 
-			var el_result_container = app.getElement("#search-results");
-			let el_results = getResultsArray(el_result_container);
+			let el_results = app.getSearchResults();
 			var num_results = el_results.length;
 
 			if (num_results > 0) {

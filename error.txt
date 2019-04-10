@@ -220,3 +220,51 @@ TypeError: Cannot convert undefined or null to object
 ReferenceError: el_reults is not defined
     at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:777:22)
 
+[[ 1554926279825 ]]
+ReferenceError: getSearchResults is not defined
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:777:21)
+
+[[ 1554926280032 ]]
+ReferenceError: getSearchResults is not defined
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:777:21)
+
+[[ 1554926306030 ]]
+ReferenceError: getResultsArray is not defined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:307:5
+    at Array.forEach (<anonymous>)
+    at Object.getSearchResults (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:305:34)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:777:25)
+
+[[ 1554926306219 ]]
+ReferenceError: getResultsArray is not defined
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:307:5
+    at Array.forEach (<anonymous>)
+    at Object.getSearchResults (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:305:34)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:777:25)
+
+[[ 1554926437023 ]]
+RangeError: Maximum call stack size exceeded
+    at Function.from (<anonymous>)
+    at getChildren (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:304:10)
+    at Object.getSearchResults (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:312:10)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:306:10
+    at Array.forEach (<anonymous>)
+    at getChildren (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:304:35)
+    at Object.getSearchResults (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:312:10)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:306:10
+    at Array.forEach (<anonymous>)
+    at getChildren (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:304:35)
+
+[[ 1554926437262 ]]
+RangeError: Maximum call stack size exceeded
+    at Function.from (<anonymous>)
+    at getChildren (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:304:10)
+    at Object.getSearchResults (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:312:10)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:306:10
+    at Array.forEach (<anonymous>)
+    at getChildren (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:304:35)
+    at Object.getSearchResults (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:312:10)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:306:10
+    at Array.forEach (<anonymous>)
+    at getChildren (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:304:35)
+
