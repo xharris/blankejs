@@ -109,12 +109,12 @@ function Boss1:init()
 	
 	self.eff_boss1 = Effect("static","bloom")
 	-- add extra speed
-	Timer():every(function()
+	Timer():every(1, function()
 		if self.stage > 1 and not self.turning then
 			self.hspeed = self.hspeed + (math.sign(self.hspeed) * (self.charge_step + self.accel))
 			self.accel = self.accel + self.ACCEL
 		end
-	end, 1):start()
+	end):start()
 	
 	self.scale = 60
 	

@@ -18,7 +18,7 @@ GameCube
 
 function love.keypressed(key) Input.keypressed(key) end
 function love.keyreleased(key) Input.keyreleased(key) end
-function mousepressed(x, y, button) 
+function love.mousepressed(x, y, button) 
     x, y = BlankE.scaledMouse(x, y)
     Input.mousepressed(x, y, button)
 end
