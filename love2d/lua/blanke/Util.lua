@@ -132,7 +132,7 @@ function cleanPath(path)
 	if path then return path:gsub("[\\/]+","/") else return path end
 end
 
-
+local _ftypes = {}
 function getFileInfo(path)
 	if love.filesystem.getInfo then
 		return love.filesystem.getInfo(path)
