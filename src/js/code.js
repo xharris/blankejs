@@ -852,7 +852,7 @@ class Code extends Editor {
 		blanke.cooldownFn("codeSave", 200, function(){
 			nwFS.writeFileSync(this_ref.file, this_ref.codemirror.getValue());
 			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
-			this_ref.parseFunctions(text);
+			this_ref.parseFunctions();
 			this_ref.removeAsterisk();
 		});
 	}
