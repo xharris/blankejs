@@ -147,6 +147,7 @@ Net = {
         if Net.onFail then
             Net.is_connected = false
             Net.client = nil
+            print()
             if Net.onFail() == true then
                 if Net._reconnects >= Net.max_reconnects then
                     Net._reconnects = 0

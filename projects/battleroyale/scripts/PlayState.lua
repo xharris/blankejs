@@ -12,12 +12,9 @@ Scene.draw_order = {"ground"}
 function PlayState:enter()
 	self.background_color = "white"
 
-	Net.join()
 	Net.on('ready', setupGame)
-	Net.on('fail', function()
-		setupGame()
-		Debug.log("hi")
-	end)
+	Net.on('fail', setupGame)
+	Net.join()
 end
 
 function setupGame()
