@@ -13,21 +13,23 @@ function PlayState:enter()
 	self.background_color = "white"
 
 	Net.join()
-	Net.on('ready',function()
-		start = true
-		sc_map = Scene("MapPlain")
-			
-		player = Player()
-		player:setSpecialty("EXPLOSIVE")
-		sc_map:addEntity("player_spawn",player)
-			
-		-- setup camera
-		vw_main:follow(player)
-	end)	
+	Net.on('ready', setupGame)
+	Net.on('fail', function()
+		setupGame()
+		Debug.log("hi")
+	end)
 end
 
-function PlayState:update(dt)
+function setupGame()
+	start = true
+	sc_map = Scene("MapPlain")
 
+	player = Player()
+	player:setSpecialty("EXPLOSIVE")
+	sc_map:addEntity("player_spawn",player)
+
+	-- setup camera
+	vw_main:follow(player)
 end
 
 function PlayState:draw()
