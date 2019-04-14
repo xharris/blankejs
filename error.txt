@@ -331,3 +331,8 @@ TypeError: str_methods.append is not a function
     at Object.func (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:246:15)
     at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:641:44
 
+[[ 1555261257747 ]]
+TypeError: class_list is not iterable
+    at Object.func (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:676:20)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:641:44
+

@@ -651,24 +651,32 @@ class Code extends Editor {
 			blanke.clearElement(this_ref.el_class_methods);
 
 			// get function list
-			let re_func = [/function\s+\w+:(\w+)\(([\w,\s]*)\)/g, /\w+\.(\w+)\s*=\s*function\s*\(([\w,\s]*)\)/g];
+			let class_list = {};
+			let re_func = [/function\s+(\w+):(\w+)\(([\w,\s]*)\)/g, /(\w+)\.(\w+)\s*=\s*function\s*\(([\w,\s]*)\)/g];
 			for (let re of re_func) {
 				let match;
 				while (match = re.exec(text)) {
+					console.log(match)
 					let fn_info = {
-						name:match[1],
-						args:(match[2] || '').split(',').map((s) => s.trim())
+						class:match[1],
+						name:match[2],
+						args:(match[3] || '').split(',').map((s) => s.trim())
 					}
-					// add it to function list element
-					this_ref.el_class_methods.innerHTML += `
+					this_ref.function_list.push(fn_info)
+					
+					// add it to functions to class string
+					if (!class_list[fn_info.class]) class_list[fn_info.class] = `<div class="class-name">${fn_info.class}</div>`;
+					class_list[fn_info.class] += `
 						<div class="method-container">
 							<div class="name">${fn_info.name}(<div class="args">${fn_info.args.join(', ')}</div>)</div>
 						</div>
 					`
-					this_ref.function_list.push(fn_info)
 				}
 			}
-			console.log(this_ref.function_list);
+			// combine all class strings
+			for (let c in class_list) {
+				this_ref.el_class_methods.innerHTML += class_list[c];
+			}
 		})
 	}
 

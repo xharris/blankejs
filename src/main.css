@@ -507,12 +507,20 @@
   position: absolute;
   top: 0px;
   right: 0px;
-  margin: 12px;
+  margin: 20px;
   z-index: 20;
   transition: all ease-out 0.2s;
 }
 .content[data-type="Code"] .methods.hidden {
   height: 0px;
+}
+.content[data-type="Code"] .methods .class-name {
+  font-weight: 900;
+  font-size: 18px;
+  text-align: right;
+  color: rgba(117, 117, 117, 0.5);
+  padding-right: 3px;
+  padding-top: 5px;
 }
 .content[data-type="Code"] .methods .method-container {
   margin: 2px;
