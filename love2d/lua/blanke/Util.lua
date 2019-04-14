@@ -141,7 +141,7 @@ function getFileInfo(path)
 		local ftype = _ftypes[path]
 		if not ftype then
 			if love.filesystem.isDirectory(path) then ftype = "directory"
-			elseif love.filsystem.isFile(path) then ftype = "file"
+			elseif love.filesystem.isFile(path) then ftype = "file"
 			elseif love.filesystem.isSymlink(path) then ftype = "symlink"
 			else ftype = "other" end
 		end
