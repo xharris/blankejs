@@ -66,10 +66,11 @@ function Player:update(dt)
 
 	-- left/right movement
 	if not self.dead then
-		if Input("move_left").pressed then
+		local ax = Input.getAxis(1)
+		if Input("move_left").pressed or ax < 0 then
 			self.hspeed = -self.move_speed + self.platform_hspeed
 		end
-		if Input("move_right").pressed then
+		if Input("move_right").pressed or ax > 0 then
 			self.hspeed = self.move_speed + self.platform_hspeed
 		end
 		
@@ -77,7 +78,7 @@ function Player:update(dt)
 		if (Input("move_left").pressed or Input("move_right").pressed) and self:hadCollision("feet_box","ground") then
 			self.platform_hspeed = 0
 		end
-		
+				
 		-- jumping
 		if Input("jump").pressed and self.jumps > 0 then
 			self.vspeed = -700
@@ -88,12 +89,12 @@ function Player:update(dt)
 		if self.hspeed == 0 then
 			self.sprite_index = "stand"	
 
-		elseif Input("move_right").pressed then
-			self.sprite_xscale = 1
-			self.sprite_index = "walk"
-
-		elseif Input("move_left").pressed then
+		elseif Input("move_left").pressed or ax < 0 then
 			self.sprite_xscale = -1
+			self.sprite_index = "walk"
+			
+		elseif Input("move_right").pressed or ax > 0 then
+			self.sprite_xscale = 1
 			self.sprite_index = "walk"
 
 		else

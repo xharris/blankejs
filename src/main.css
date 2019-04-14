@@ -503,6 +503,55 @@
   height: 50%;
   display: inline-block;
 }
+.content[data-type="Code"] .methods {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  margin: 12px;
+  z-index: 20;
+  transition: all ease-out 0.2s;
+}
+.content[data-type="Code"] .methods.hidden {
+  height: 0px;
+}
+.content[data-type="Code"] .methods .method-container {
+  margin: 2px;
+  text-align: right;
+}
+.content[data-type="Code"] .methods .method-container * {
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Chrome/Safari/Opera */
+  -khtml-user-select: none;
+  /* Konqueror */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+    not supported by any browser */
+  display: inline-block;
+  color: rgba(117, 117, 117, 0.5);
+  transition: all ease-out 0.2s;
+}
+.content[data-type="Code"] .methods .method-container .args {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 21px;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+.content[data-type="Code"] .methods .method-container:hover {
+  height: 11px;
+}
+.content[data-type="Code"] .methods .method-container:hover * {
+  color: #757575;
+}
+.content[data-type="Code"] .methods .method-container:hover .args {
+  max-width: 100%;
+}
 .content[data-type="Code"] .CodeMirror {
   font-size: 16px;
   height: 100%;

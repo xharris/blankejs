@@ -277,6 +277,7 @@ function Boss1:hitSpikes()
 		
 		-- fly in the air
 		self.vspeed = -(1200 + (self.stage * 20))
+		Debug.log(self.vspeed)
 		
 		self.realise_dist = self.REALISE_DIST + (self.stage*15)
 	end

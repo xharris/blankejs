@@ -37,6 +37,58 @@
 		}
 	}
 
+	.methods {
+		position: absolute;
+		top: 0px;
+		right: 0px;
+		margin: 20px;
+		z-index: 20;
+		transition: all ease-out 0.2s;
+
+		&.hidden {
+			height: 0px;
+		}
+
+		.method-container {
+			margin: 2px;
+			text-align: right;
+
+			* {
+				.no-select();
+
+				display: inline-block;
+				color: rgba(117, 117, 117, 0.5);
+				transition: all ease-out 0.2s;
+			}
+
+			.name {
+
+			}
+
+			.args {
+				text-overflow: ellipsis;
+				overflow: hidden;
+				max-width: 21px;
+				white-space: nowrap;
+				vertical-align: bottom;
+			}
+
+			&:hover {
+				height: 11px;
+
+				* {
+					color: rgba(117, 117, 117, 1);
+				}
+				.name {
+
+				}
+				.args {
+					max-width: 100%;
+				}
+			}
+		}
+	}
+
 	.CodeMirror {
 		font-size: 16px;
 		height: 100%;

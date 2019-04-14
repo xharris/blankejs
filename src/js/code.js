@@ -212,6 +212,7 @@ class Code extends Editor {
 		});
 
 		this.editors = [];
+		this.function_list = [];
 
 		// create codemirror editor
 		this.edit_box = app.createElement("div","code");
@@ -225,6 +226,10 @@ class Code extends Editor {
 		this.appendChild(this.el_fn_helper);
 		this.fn_helper_timer = null;
 
+		// class method list
+		this.el_class_methods = app.createElement("div","methods");
+		this.appendChild(this.el_class_methods);
+
 		var this_ref = this;
 		CodeMirror.defineMode("blanke", function(config, parserConfig) {
 		  var blankeOverlay = {
@@ -234,16 +239,15 @@ class Code extends Editor {
 				else baseCur += " ";
 		    	var ch;
 		
-		    	blanke.cooldownFn("refreshObjectList", 500, function(){
-		    		refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
-		    	});				    	
+				blanke.cooldownFn("refreshObjectList", 500, function(){
+					refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
+				});				    	
 
-		      	// comment
-		      	if (stream.match(/\s*--/) || baseCur.includes("comment")) {
-		      		while ((ch = stream.next()) != null && !stream.eol());
-		      		return "comment";
-		      	}
-	
+				// comment
+				if (stream.match(/\s*--/) || baseCur.includes("comment")) {
+					while ((ch = stream.next()) != null && !stream.eol());
+					return "comment";
+				}
 
 				// class instances
 				for (let file in object_instances) {
@@ -464,6 +468,7 @@ class Code extends Editor {
 			let editor = cm;
 
 			checkGutterEvents(editor);
+			this_ref.parseFunctions();
 			this_ref.addAsterisk();
 
 			this_ref.refreshFnHelperTimer();
@@ -639,10 +644,36 @@ class Code extends Editor {
 		return new_editor;
 	}
 
+	parseFunctions() {
+		let this_ref = this;
+		blanke.cooldownFn("parseFunctions", 1000, function(){
+			let text = this_ref.codemirror.getValue()
+			blanke.clearElement(this_ref.el_class_methods);
+
+			// get function list
+			let re_func = [/function\s+\w+:(\w+)\(([\w,\s]*)\)/g, /\w+\.(\w+)\s*=\s*function\s*\(([\w,\s]*)\)/g];
+			for (let re of re_func) {
+				let match;
+				while (match = re.exec(text)) {
+					let fn_info = {
+						name:match[1],
+						args:(match[2] || '').split(',').map((s) => s.trim())
+					}
+					// add it to function list element
+					this_ref.el_class_methods.innerHTML += `
+						<div class="method-container">
+							<div class="name">${fn_info.name}(<div class="args">${fn_info.args.join(', ')}</div>)</div>
+						</div>
+					`
+					this_ref.function_list.push(fn_info)
+				}
+			}
+			console.log(this_ref.function_list);
+		})
+	}
+
 	onClose () {
 		delete code_instances[this.file];
-
-
 	}
 
 	goToLine(line) {
@@ -798,6 +829,7 @@ class Code extends Editor {
 		this.setTitle(nwPATH.basename(file_path));
 		this.removeAsterisk();
 		refreshObjectList(this.file, this.codemirror.getValue());
+		this.parseFunctions();
 
 		this.setOnClick(function(){
 			Code.openScript(this_ref.file);
@@ -812,6 +844,7 @@ class Code extends Editor {
 		blanke.cooldownFn("codeSave", 200, function(){
 			nwFS.writeFileSync(this_ref.file, this_ref.codemirror.getValue());
 			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
+			this_ref.parseFunctions(text);
 			this_ref.removeAsterisk();
 		});
 	}

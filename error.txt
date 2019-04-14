@@ -268,3 +268,66 @@ RangeError: Maximum call stack size exceeded
     at Array.forEach (<anonymous>)
     at getChildren (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:304:35)
 
+[[ 1555208110907 ]]
+TypeError: re.match is not a function
+    at parseFunctions (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:35:21)
+    at Code.edit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:810:3)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:912:11)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:963:15)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555208918519 ]]
+TypeError: match[2].join is not a function
+    at Code.parseFunctions (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:665:46)
+    at Code.edit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:831:8)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:927:11)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:978:15)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555208919385 ]]
+TypeError: match[2].join is not a function
+    at Code.parseFunctions (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:665:46)
+    at Object.func (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:246:15)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:641:44
+
+[[ 1555208997923 ]]
+TypeError: console.og is not a function
+    at Code.parseFunctions (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:662:13)
+    at Code.edit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:832:8)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:928:11)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:979:15)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555209303947 ]]
+TypeError: this.el_class_methods.innerHTML.append is not a function
+    at Code.parseFunctions (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:662:37)
+    at Code.edit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:830:8)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:926:11)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:977:15)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555209304825 ]]
+TypeError: this.el_class_methods.innerHTML.append is not a function
+    at Code.parseFunctions (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:662:37)
+    at Object.func (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:246:15)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:641:44
+
+[[ 1555209354220 ]]
+TypeError: str_methods.append is not a function
+    at Code.parseFunctions (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:663:17)
+    at Code.edit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:832:8)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:928:11)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:979:15)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555209355090 ]]
+TypeError: str_methods.append is not a function
+    at Code.parseFunctions (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:663:17)
+    at Object.func (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:246:15)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:641:44
+
