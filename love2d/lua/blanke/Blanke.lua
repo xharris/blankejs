@@ -252,7 +252,7 @@ BlankE = {
 		end
 
 		-- load config file
-		if love.filesystem.getInfo("config.json") then
+		if getFileInfo("config.json") then
 			BlankE.settings = json.decode(love.filesystem.read('config.json'))
 		end
 
