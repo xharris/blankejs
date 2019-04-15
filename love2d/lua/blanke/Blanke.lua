@@ -107,7 +107,7 @@ blanke_require('extra.noobhub')
 
 --grease 	= blanke_require('extra.grease')
 
-local modules = {'Group','Repeater','Map','Audio','Asset','Bezier','Camera','Canvas','Dialog','Font','Draw','Effect','Sprite','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
+local modules = {'Group','Repeater','Map','Audio','Asset','Bezier','Camera','Canvas','Dialog','Physics','Font','Draw','Effect','Sprite','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 -- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
 	_G[mod] = blanke_require(mod, true)
@@ -121,7 +121,6 @@ for m, mod in ipairs(modules) do
 		end
 	end
 end
-Physics = love.physics
 
 Signal.emit('modules_loaded')
 

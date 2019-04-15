@@ -516,8 +516,7 @@ class SceneEditor extends Editor {
 		this.zoom = 1;
 		window.addEventListener('wheel',(e)=>{
 			e.preventDefault();
-			this_ref.zoom -= e.deltaY * 0.01;
-			this_ref.refreshCamera();
+			this_ref.setZoom(this_ref.zoom - (e.deltaY * 0.01))
 		});
 		
 		this.tile_start = [0,0];
@@ -653,6 +652,7 @@ class SceneEditor extends Editor {
 		this.half_place_mouse = [0,0];
 		this.lock_mouse = false;
 		this.pixi.stage.on('pointermove', function(e) {
+			// mouse screen coordinates
 			let x = e.data.global.x;
 			let y = e.data.global.y;
 			let btn = this_ref.pointer_down;
@@ -671,13 +671,16 @@ class SceneEditor extends Editor {
 				snapx = this_ref.curr_layer.snap[0];
 				snapy = this_ref.curr_layer.snap[1];
 			}
-			/*
-			snapx *= this_ref.zoom;
-			snapy *= this_ref.zoom;
-			*/
 
-			let mx = x-this_ref.camera[0],
-				my = y-this_ref.camera[1];
+			x /= this_ref.zoom;
+			y /= this_ref.zoom;
+				
+			// mouse world coordinates
+			let place_mx = x-this_ref.camera[0];
+			let place_my = y-this_ref.camera[1];
+			
+			let mx = x-(this_ref.camera[0] / this_ref.zoom),
+				my = y-(this_ref.camera[1] / this_ref.zoom);
 
 			this_ref.place_mouse = [Math.floor(x),Math.floor(y)];
 			this_ref.mouse = [Math.floor(mx),Math.floor(my)];
@@ -688,26 +691,31 @@ class SceneEditor extends Editor {
 				if (mx < 0) { mx -= snapx; x -= snapx; }
 				if (my < 0) { my -= snapy; y -= snapy; }
 
+				// use: displaying mouse coordinates
 				this_ref.mouse = [
 					mx - (mx%snapx),
 					my - (my%snapy)
 				];
+				// use: placing images, drawing crosshair
 				this_ref.place_mouse = [
-					x - (mx%snapx),
-					y - (my%snapy)
+					x - (place_mx%(snapx)) * this_ref.zoom,
+					y - (place_my%(snapy)) * this_ref.zoom
 				]
 
 				if (mx < 0) { mx += snapx/2; x += snapx/2; }
 				if (my < 0) { my += snapy/2; y += snapy/2; }
+				// use: placing object points, drawing crosshair
 				this_ref.half_place_mouse = [
 					x - (mx%(snapx/2)),
 					y - (my%(snapy/2))
 				]
+				// use: displaying mouse coordinates
 				this_ref.half_mouse = [
 					mx - (mx%(snapx/2)),
 					my - (my%(snapy/2))
 				];
 			}
+
 			this_ref.drawCrosshair();
 
 			if (!alt && !this_ref.dragging) {
@@ -919,8 +927,6 @@ class SceneEditor extends Editor {
 
 	drawOrigin () {
 		if (this.curr_layer) {
-			var snapx = this.curr_layer.snap[0];
-			var snapy = this.curr_layer.snap[1];
 			var stage_width =  this.game_width;
 			var stage_height = this.game_height;
 
@@ -937,23 +943,30 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	setZoom (scale) {
+		this.zoom = scale;
+		this.refreshCamera();
+		this.drawGrid();
+	}
+
 	setCameraPosition (x, y) {
 		this.camera = [x, y];
-		// move grid
-		this.grid_container.x = this.camera[0] % this.curr_layer.snap[0];
-		this.grid_container.y = this.camera[1] % this.curr_layer.snap[1];
 
 		this.refreshCamera();
 	}
 
 	refreshCamera () {
+		// move grid
+		this.grid_container.x = this.camera[0] % (this.curr_layer.snap[0] * this.zoom);
+		this.grid_container.y = this.camera[1] % (this.curr_layer.snap[1] * this.zoom);
+
 		this.map_container.setTransform(this.camera[0], this.camera[1]);
-		/*
+		
 		this.map_container.scale.x = this.zoom;
 		this.map_container.scale.y = this.zoom;
 		this.grid_container.scale.x = this.zoom;
 		this.grid_container.scale.y = this.zoom;
-		*/
+		
 		this.drawCrosshair();
 		this.drawOrigin();
 	}
@@ -1569,14 +1582,9 @@ class SceneEditor extends Editor {
 		}
 
 		if (this.obj_type == "object" && this.curr_object) {
-			let snapx = this.curr_layer.snap[0] / 2;
-			let snapy = this.curr_layer.snap[1] / 2;
-			let x = this.half_place_mouse[0];
-			let y = this.half_place_mouse[1];
-
 			this.dot_preview.clear();
 			this.dot_preview.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .75);
-			this.dot_preview.drawRect(x-2,y-2,4,4);
+			this.dot_preview.drawRect(this.half_place_mouse[0]-2,this.half_place_mouse[1]-2,4,4);
 			this.dot_preview.endFill();
 		} else {
 			this.dot_preview.clear();
@@ -1986,6 +1994,7 @@ function addScenes(folder_path) {
 						},
 						tags: ['scene'],
 						args: [full_path],
+						category: 'Scene',
 						group: 'Scene'
 					});
 				}
