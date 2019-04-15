@@ -676,9 +676,6 @@ class SceneEditor extends Editor {
 			y /= this_ref.zoom;
 				
 			// mouse world coordinates
-			let place_mx = x-this_ref.camera[0];
-			let place_my = y-this_ref.camera[1];
-			
 			let mx = x-(this_ref.camera[0] / this_ref.zoom),
 				my = y-(this_ref.camera[1] / this_ref.zoom);
 
@@ -691,29 +688,29 @@ class SceneEditor extends Editor {
 				if (mx < 0) { mx -= snapx; x -= snapx; }
 				if (my < 0) { my -= snapy; y -= snapy; }
 
-				// use: displaying mouse coordinates
+				// use: placing images, displaying mouse coordinates
 				this_ref.mouse = [
 					mx - (mx%snapx),
 					my - (my%snapy)
 				];
-				// use: placing images, drawing crosshair
+				// use: drawing crosshair
 				this_ref.place_mouse = [
-					x - (place_mx%(snapx)) * this_ref.zoom,
-					y - (place_my%(snapy)) * this_ref.zoom
+					x - (mx%(snapx)) * this_ref.zoom,
+					y - (my%(snapy)) * this_ref.zoom
 				]
 
 				if (mx < 0) { mx += snapx/2; x += snapx/2; }
 				if (my < 0) { my += snapy/2; y += snapy/2; }
-				// use: placing object points, drawing crosshair
-				this_ref.half_place_mouse = [
-					x - (mx%(snapx/2)),
-					y - (my%(snapy/2))
-				]
-				// use: displaying mouse coordinates
+				// use: placing object points, displaying mouse coordinates
 				this_ref.half_mouse = [
 					mx - (mx%(snapx/2)),
 					my - (my%(snapy/2))
 				];
+				// use: drawing crosshair
+				this_ref.half_place_mouse = [
+					mx % (snapx/2.0 * this_ref.zoom),//(x * this_ref.zoom) - (mx%(snapx/2)),
+					my % (snapy/2.0 * this_ref.zoom)//(y * this_ref.zoom) - (my%(snapy/2))
+				]
 			}
 
 			this_ref.drawCrosshair();

@@ -336,3 +336,433 @@ TypeError: class_list is not iterable
     at Object.func (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:676:20)
     at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:641:44
 
+[[ 1555346621712 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621732 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621745 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621799 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621819 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621839 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621877 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621900 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621911 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621927 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621946 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621968 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346621987 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622006 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622039 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622394 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622417 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622434 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622454 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622484 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622502 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622535 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622540 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622584 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622627 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622640 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622707 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622723 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622807 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622858 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622870 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622905 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346622945 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346623776 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346623805 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346623814 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346623857 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346623870 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346623900 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346623964 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346624017 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346624024 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
+[[ 1555346624069 ]]
+ReferenceError: Ma is not defined
+    at e.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:685:47)
+    at e.o.emit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:8:9743)
+    at e.dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:11536)
+    at e.processPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16543)
+    at e._finishInteractionProcess (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:306:25)
+    at e.processInteractive (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi-display.js:258:18)
+    at e.onPointerMove (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/pixi.min.js:19:16046)
+
