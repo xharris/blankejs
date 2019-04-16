@@ -684,6 +684,10 @@ var blanke = {
             animation.play();
         }, duration || 4000);
     },
+    
+    places: function(i, p) {
+        return Math.floor(i * (Math.pow(10,p))) / (Math.pow(10,p));
+    },
 
     chooseFile: function(type, onChange, filename='', multiple=false) {
         var chooser = document.querySelector("#_blankeFileDialog");

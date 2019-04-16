@@ -516,30 +516,12 @@ class SceneEditor extends Editor {
 		this.zoom = 1;
 		window.addEventListener('wheel',(e)=>{
 			e.preventDefault();
-			this_ref.setZoom(this_ref.zoom - (e.deltaY * 0.01))
+			this_ref.setZoom(this_ref.zoom - (Math.sign(e.deltaY) * 0.1))
 		});
 		
 		this.tile_start = [0,0];
 		this.tile_straightedge = new PIXI.Graphics();
 		this.map_container.addChild(this.tile_straightedge);
-
-		function deleteTile(x,y) {
-			for (let s in this_ref.curr_image.pixi_images) {
-				if (this_ref.curr_image.pixi_images[s].layer_name == this_ref.curr_layer.name) {
-	                let sprite = this_ref.curr_image.pixi_images[s].sprite;
-	                let rect = sprite.getBounds();
-	                rect.x -= this_ref.camera[0];
-	                rect.y -= this_ref.camera[1];
-	                if (rect.contains(x,y)) {
-	                    sprite.destroy();
-	                    delete this_ref.curr_image.pixi_images[s];
-	                    this_ref.redrawTiles();
-
-	                    this_ref.export();
-	                }
-	            }
-            }
-		}
 
         this.pointer_down = -1;
 		this.pixi.stage.on('pointerdown',function(e){
@@ -575,7 +557,7 @@ class SceneEditor extends Editor {
 						this_ref.removeObjectPoint();
 					}
 					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
-                        deleteTile(x,y);
+						this_ref.deleteTile(this_ref.mx,this_ref.my);
                     }
 				}
 
@@ -596,6 +578,10 @@ class SceneEditor extends Editor {
 				this_ref.can_drag = true;
 				this_ref.pixi.view.style.cursor = "auto";
 				dragStop();
+			}
+
+			if (btn == 2) {
+
 			}
 
 			if (!alt && !this_ref.dragging) {
@@ -651,6 +637,8 @@ class SceneEditor extends Editor {
 		this.half_mouse = [0,0];
 		this.half_place_mouse = [0,0];
 		this.lock_mouse = false;
+		this.mx = 0;
+		this.my = 0;
 		this.pixi.stage.on('pointermove', function(e) {
 			// mouse screen coordinates
 			let x = e.data.global.x;
@@ -678,10 +666,12 @@ class SceneEditor extends Editor {
 			// mouse world coordinates
 			let mx = x-(this_ref.camera[0] / this_ref.zoom),
 				my = y-(this_ref.camera[1] / this_ref.zoom);
+			this_ref.mx = mx;
+			this_ref.my = my;
 
-			this_ref.place_mouse = [Math.floor(x),Math.floor(y)];
+			this_ref.place_mouse = [Math.floor(x * this_ref.zoom),Math.floor(y * this_ref.zoom)];
 			this_ref.mouse = [Math.floor(mx),Math.floor(my)];
-			this_ref.half_mouse = [Math.floor(mx),Math.floor(my)];
+			this_ref.half_mouse = [Math.floor(mx), Math.floor(my)];
 			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
 			if ((!e.data.originalEvent.ctrlKey || this_ref.obj_type == "object") && !this_ref.dragging) {
@@ -695,8 +685,8 @@ class SceneEditor extends Editor {
 				];
 				// use: drawing crosshair
 				this_ref.place_mouse = [
-					x - (mx%(snapx)) * this_ref.zoom,
-					y - (my%(snapy)) * this_ref.zoom
+					(x * this_ref.zoom) - (mx % snapx  * this_ref.zoom),
+					(y * this_ref.zoom) - (my % snapy * this_ref.zoom)
 				]
 
 				if (mx < 0) { mx += snapx/2; x += snapx/2; }
@@ -708,8 +698,8 @@ class SceneEditor extends Editor {
 				];
 				// use: drawing crosshair
 				this_ref.half_place_mouse = [
-					mx % (snapx/2.0 * this_ref.zoom),//(x * this_ref.zoom) - (mx%(snapx/2)),
-					my % (snapy/2.0 * this_ref.zoom)//(y * this_ref.zoom) - (my%(snapy/2))
+					(x * this_ref.zoom) - (mx % (snapx/2.0)  * this_ref.zoom),
+					(y * this_ref.zoom) - (my % (snapy/2.0) * this_ref.zoom)
 				]
 			}
 
@@ -730,7 +720,7 @@ class SceneEditor extends Editor {
 			if (btn == 2) {
 				if (this_ref.obj_type == 'image' && this_ref.curr_image) {
                     //blanke.cooldownFn("delete_tile",500,function(){
-                        deleteTile(mx, my);                                
+                        this_ref.deleteTile(mx, my);                                
                     //});
 				}
             }
@@ -941,7 +931,7 @@ class SceneEditor extends Editor {
 	}
 
 	setZoom (scale) {
-		this.zoom = scale;
+		this.zoom = scale > 0 ? scale : this.zoom;
 		this.refreshCamera();
 		this.drawGrid();
 	}
@@ -990,6 +980,8 @@ class SceneEditor extends Editor {
 			if (this.obj_type == "object") {
 				this.coord_text.text = 'x '+parseInt(this.half_mouse[0])+' y '+parseInt(this.half_mouse[1]);
 			}
+			if (this.zoom != 1) 
+				this.coord_text.text += ` zoom: ${blanke.places(this.zoom, 1)}`;
 
 			this.obj_info_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
 			this.obj_info_text.y = parseInt(center[1] + 20);
@@ -1480,6 +1472,25 @@ class SceneEditor extends Editor {
 		if (this.curr_image && this.curr_layer) {
 			for (var frame of this.selected_image_frames) {
 				this.placeImageFrame(x, y, frame, img_ref, layer);
+			}
+		}
+	}
+
+	deleteTile (x,y) {
+		for (let s in this.curr_image.pixi_images) {
+			if (this.curr_image.pixi_images[s].layer_name == this.curr_layer.name) {
+				let sprite = this.curr_image.pixi_images[s].sprite;
+				let rect = sprite.getBounds();
+				rect.x -= this.camera[0];
+				rect.y -= this.camera[1];
+				
+				if (rect.contains(x * this.zoom,y * this.zoom)) {
+					sprite.destroy();
+					delete this.curr_image.pixi_images[s];
+					this.redrawTiles();
+
+					this.export();
+				}
 			}
 		}
 	}
