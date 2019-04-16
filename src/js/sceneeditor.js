@@ -513,7 +513,11 @@ class SceneEditor extends Editor {
 		this.getContent().addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
+
+		// Zoom control
 		this.zoom = 1;
+		this.zoom_target = 1;
+		requestAnimationFrame(this.updateZoom.bind(this));
 		window.addEventListener('wheel',(e)=>{
 			e.preventDefault();
 			this_ref.setZoom(this_ref.zoom - (Math.sign(e.deltaY) * 0.1))
@@ -887,8 +891,8 @@ class SceneEditor extends Editor {
 		if (this.curr_layer) {
 			var snapx = this.curr_layer.snap[0];
 			var snapy = this.curr_layer.snap[1];
-			var stage_width =  this.game_width;
-			var stage_height = this.game_height;
+			var stage_width =  this.game_width / this.zoom;
+			var stage_height = this.game_height / this.zoom;
 
 			if (!this.grid_graphics) {
 				this.grid_graphics = new PIXI.Graphics();
@@ -896,7 +900,7 @@ class SceneEditor extends Editor {
 			}
 
 			this.grid_graphics.clear();
-			this.grid_graphics.lineStyle(1, this.grid_color, this.grid_opacity);
+			this.grid_graphics.lineStyle(1/this.zoom, this.grid_color, this.grid_opacity);
 			// vertical lines
 			for (var x = -snapx; x < stage_width + snapx; x += snapx) {
 				this.grid_graphics.moveTo(x, -snapy);
@@ -930,16 +934,40 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	setZoom (scale) {
-		this.zoom = scale > 0 ? scale : this.zoom;
-		this.refreshCamera();
+	updateZoom () {
+		if (this.zoom_target == this.zoom) return;
+
+		requestAnimationFrame(this.updateZoom.bind(this));
+		let diff = this.zoom_target - this.zoom;
+
+		// this.place_mouse
+		let old_pos = [this.mouse[0] - this.camera[0], this.mouse[1] - this.camera[1]];
+		this.zoom += diff / 10;
+
+		this.setCameraPosition(
+			(old_pos[0] * this.zoom + this.camera[0]) - this.mouse[0],
+			(old_pos[1] * this.zoom + this.camera[1]) - this.mouse[1]
+		);
+		console.log('omg')
+
 		this.drawGrid();
+}
+
+	setZoom (scale) {
+		this.zoom_target = scale > 0 ? scale : this.zoom;
 	}
 
 	setCameraPosition (x, y) {
 		this.camera = [x, y];
 
 		this.refreshCamera();
+	}
+
+	iterateContainers (fn) {
+		let containers = ['map','grid'];
+		for (let c of containers) {
+			fn(this[c+'_container']);
+		}
 	}
 
 	refreshCamera () {
@@ -949,10 +977,10 @@ class SceneEditor extends Editor {
 
 		this.map_container.setTransform(this.camera[0], this.camera[1]);
 		
-		this.map_container.scale.x = this.zoom;
-		this.map_container.scale.y = this.zoom;
-		this.grid_container.scale.x = this.zoom;
-		this.grid_container.scale.y = this.zoom;
+		this.iterateContainers((cont) => {
+			cont.scale.x = this.zoom;
+			cont.scale.y = this.zoom;
+		});
 		
 		this.drawCrosshair();
 		this.drawOrigin();

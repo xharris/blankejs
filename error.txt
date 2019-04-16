@@ -2047,3 +2047,43 @@ TypeError: Math.places is not a function
     at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:942:8)
     at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:747:14)
 
+[[ 1555379265614 ]]
+TypeError: Cannot read property 'zoom' of null
+    at updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:938:28)
+
+[[ 1555379312727 ]]
+ReferenceError: this_ref is not defined
+    at requestAnimationFrame (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:941:4)
+
+[[ 1555379468054 ]]
+TypeError: Illegal invocation
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:520:25)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1993:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2011:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555379493251 ]]
+TypeError: Illegal invocation
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:520:25)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1993:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2011:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555379522509 ]]
+TypeError: Illegal invocation
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:520:25)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1993:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2011:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555379595097 ]]
+TypeError: Illegal invocation
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:520:25)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1993:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2011:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
