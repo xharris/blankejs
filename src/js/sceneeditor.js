@@ -946,16 +946,24 @@ class SceneEditor extends Editor {
 		let newScale = this.zoom + (diff / 10);
 		
 		/* new stuff */
-		let gw = (this.game_width + this.camera[0])  / 2 ;
-		let gh = (this.game_height + this.camera[1]) / 2 ;
+		let gw = (this.game_width + this.camera[0])   ;
+		let gh = (this.game_height + this.camera[1])  ;
 
 		let newx = ((gw * this.zoom) - (gw * newScale));
 		let newy = ((gh * this.zoom) - (gh * newScale));
-		let camx = this.camera[0] + (newx);
-		let camy = this.camera[1] + (newy);
+		let camx = this.camera[0] + (newx/2);
+		let camy = this.camera[1] + (newy/2);
 
 		this.zoom = newScale;
-		this.setCameraPosition(camx,camy);
+
+		this.refreshCamera();/*
+		this.iterateContainers((cont) => {
+			cont.pivot.x = -gw/2;
+			cont.pivot.y = -gh/2;
+			cont.scale.x = this.zoom;
+			cont.scale.y = this.zoom;
+		})*/
+
 		this.drawGrid();
 }
 
@@ -966,7 +974,6 @@ class SceneEditor extends Editor {
 
 	setCameraPosition (x, y) {
 		this.camera = [x, y];
-console.log(this.camera)
 		this.refreshCamera();
 	}
 
@@ -985,8 +992,6 @@ console.log(this.camera)
 		this.map_container.setTransform(this.camera[0], this.camera[1]);
 		
 		this.iterateContainers((cont) => {
-			cont.scale.x = this.zoom;
-			cont.scale.y = this.zoom;
 		});
 		
 		this.drawCrosshair();
