@@ -517,9 +517,11 @@ class SceneEditor extends Editor {
 		// Zoom control
 		this.zoom = 1;
 		this.zoom_target = 1;
+		this.zoom_incr = 0.1;
+		this.old_cam = [0,0];
 		window.addEventListener('wheel',(e)=>{
 			e.preventDefault();
-			this_ref.setZoom(this_ref.zoom - (Math.sign(e.deltaY) * 0.1))
+			this_ref.setZoom(this_ref.zoom - (Math.sign(e.deltaY) * this.zoom_incr))
 		});
 		
 		this.tile_start = [0,0];
@@ -774,6 +776,16 @@ class SceneEditor extends Editor {
 					dragStop();
 					document.exitPointerLock();
 				}
+				
+				if (e.key == "-") {
+					// zoom out
+					this_ref.setZoom(this_ref.zoom - this_ref.zoom_incr);
+				}
+
+				if (e.key == "=") {
+					// zoom out
+					this_ref.setZoom(this_ref.zoom + this_ref.zoom_incr);
+				}
 			}
 		});
 
@@ -941,34 +953,15 @@ class SceneEditor extends Editor {
 		}
 
 		requestAnimationFrame(this.updateZoom.bind(this));
-
-		let oldScale = this.zoom;
-		let newScale = this.zoom + (diff / 10);
 		
-		/* new stuff */
-		let gw = (this.game_width + this.camera[0])   ;
-		let gh = (this.game_height + this.camera[1])  ;
-
-		let newx = ((gw * this.zoom) - (gw * newScale));
-		let newy = ((gh * this.zoom) - (gh * newScale));
-		let camx = this.camera[0] + (newx/2);
-		let camy = this.camera[1] + (newy/2);
-
-		this.zoom = newScale;
-
-		this.refreshCamera();/*
-		this.iterateContainers((cont) => {
-			cont.pivot.x = -gw/2;
-			cont.pivot.y = -gh/2;
-			cont.scale.x = this.zoom;
-			cont.scale.y = this.zoom;
-		})*/
-
+		this.zoom += diff/ 10;
+		this.refreshCamera();
 		this.drawGrid();
 }
 
 	setZoom (scale) {
 		this.zoom_target = scale > 0 ? scale : this.zoom;
+		this.old_cam = [this.camera[0], this.camera[1]];
 		requestAnimationFrame(this.updateZoom.bind(this));
 	}
 
@@ -992,6 +985,8 @@ class SceneEditor extends Editor {
 		this.map_container.setTransform(this.camera[0], this.camera[1]);
 		
 		this.iterateContainers((cont) => {
+			cont.scale.x = this.zoom;
+			cont.scale.y = this.zoom;
 		});
 		
 		this.drawCrosshair();

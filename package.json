@@ -3,7 +3,7 @@
   "description": "BlankE game dev",
   "version": "0.1.0",
   "main": "src/index.html",
-  "single-instance":false,
+  "single-instance": false,
   "window": {
     "frame": false,
     "transparent": true,
@@ -41,6 +41,7 @@
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.11",
     "node-watch": "^0.6.0",
+    "pixi-viewport": "^3.22.0",
     "request": "^2.88.0",
     "walk": "^2.3.13"
   },

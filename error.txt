@@ -2087,3 +2087,255 @@ TypeError: Illegal invocation
     at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
     at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
 
+[[ 1555512384956 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512384956 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512384982 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512384982 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512384983 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385000 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385000 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385000 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385018 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385018 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385019 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385036 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385037 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385037 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385037 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385058 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385058 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385058 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385058 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385059 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385102 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385103 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385103 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385103 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385103 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385103 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385188 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385189 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385189 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385189 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385189 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385189 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385189 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385337 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385337 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385337 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385337 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385338 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385338 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385338 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385338 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385599 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385600 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385600 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385600 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385600 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385601 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385601 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385601 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385601 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385906 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385906 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385906 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385906 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385906 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385907 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385907 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385907 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512385907 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512386310 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512386310 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512386310 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
+[[ 1555512386310 ]]
+TypeError: this.setCamera is not a function
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
+
