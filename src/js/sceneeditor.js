@@ -517,7 +517,6 @@ class SceneEditor extends Editor {
 		// Zoom control
 		this.zoom = 1;
 		this.zoom_target = 1;
-		requestAnimationFrame(this.updateZoom.bind(this));
 		window.addEventListener('wheel',(e)=>{
 			e.preventDefault();
 			this_ref.setZoom(this_ref.zoom - (Math.sign(e.deltaY) * 0.1))
@@ -935,31 +934,39 @@ class SceneEditor extends Editor {
 	}
 
 	updateZoom () {
-		if (this.zoom_target == this.zoom) return;
+		let diff = this.zoom_target - this.zoom;
+		if (Math.abs(diff) < 0.01) {
+			this.zoom = this.zoom_target;
+			return;
+		}
 
 		requestAnimationFrame(this.updateZoom.bind(this));
-		let diff = this.zoom_target - this.zoom;
 
-		// this.place_mouse
-		let old_pos = [this.mouse[0] - this.camera[0], this.mouse[1] - this.camera[1]];
-		this.zoom += diff / 10;
+		let oldScale = this.zoom;
+		let newScale = this.zoom + (diff / 10);
+		
+		/* new stuff */
+		let gw = (this.game_width - this.camera[0])  / 2 ;
+		let gh = (this.game_height - this.camera[1]) / 2 ;
 
-		this.setCameraPosition(
-			(old_pos[0] * this.zoom + this.camera[0]) - this.mouse[0],
-			(old_pos[1] * this.zoom + this.camera[1]) - this.mouse[1]
-		);
-		console.log('omg')
+		let newx = ((gw * this.zoom) - (gw * newScale));
+		let newy = ((gh * this.zoom) - (gh * newScale));
+		let camx = this.camera[0] + (newx);
+		let camy = this.camera[1] + (newy);
 
+		this.zoom = newScale;
+		this.setCameraPosition(camx,camy);
 		this.drawGrid();
 }
 
 	setZoom (scale) {
 		this.zoom_target = scale > 0 ? scale : this.zoom;
+		requestAnimationFrame(this.updateZoom.bind(this));
 	}
 
 	setCameraPosition (x, y) {
 		this.camera = [x, y];
-
+console.log(this.camera)
 		this.refreshCamera();
 	}
 
@@ -1009,7 +1016,7 @@ class SceneEditor extends Editor {
 				this.coord_text.text = 'x '+parseInt(this.half_mouse[0])+' y '+parseInt(this.half_mouse[1]);
 			}
 			if (this.zoom != 1) 
-				this.coord_text.text += ` zoom: ${blanke.places(this.zoom, 1)}`;
+				this.coord_text.text += ` zoom: ${blanke.places(this.zoom, 2)}`;
 
 			this.obj_info_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
 			this.obj_info_text.y = parseInt(center[1] + 20);
@@ -1886,6 +1893,7 @@ class SceneEditor extends Editor {
 	}
 
 	export () {
+		return;
 		if (this.deleted) return;
 
 		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
