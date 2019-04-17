@@ -786,6 +786,11 @@ class SceneEditor extends Editor {
 					// zoom out
 					this_ref.setZoom(this_ref.zoom + this_ref.zoom_incr);
 				}
+
+				if (e.key == "0") {
+					// reset zoom
+					this_ref.setZoom(1);
+				}
 			}
 		});
 
@@ -902,8 +907,8 @@ class SceneEditor extends Editor {
 		if (this.curr_layer) {
 			var snapx = this.curr_layer.snap[0];
 			var snapy = this.curr_layer.snap[1];
-			var stage_width =  this.game_width / this.zoom;
-			var stage_height = this.game_height / this.zoom;
+			var stage_width =  this.game_width; // / this.zoom;
+			var stage_height = this.game_height; // / this.zoom;
 
 			if (!this.grid_graphics) {
 				this.grid_graphics = new PIXI.Graphics();
@@ -946,6 +951,7 @@ class SceneEditor extends Editor {
 	}
 
 	updateZoom () {
+		let this_ref = this;
 		let diff = this.zoom_target - this.zoom;
 		if (Math.abs(diff) < 0.01) {
 			this.zoom = this.zoom_target;
@@ -956,8 +962,21 @@ class SceneEditor extends Editor {
 
 		requestAnimationFrame(this.updateZoom.bind(this));
 
-		this.zoom += diff/ 10;
-		this.refreshCamera();
+		let old_s = this.zoom;
+		let new_s = this.zoom + (diff / 10);
+		let gw = this.game_width + this.camera[0];
+		let gh = this.game_height + this.camera[1];
+		let offx = ((gw * new_s) - (gw * old_s)) / 2;
+		let offy = ((gh * new_s) - (gh * old_s)) / 2;
+
+		this.zoom = new_s;
+
+
+		this.setCameraPosition(
+			this.camera[0] - offx,
+			this.camera[1] - offy
+		);
+
 		this.drawGrid();
 }
 
@@ -984,12 +1003,7 @@ class SceneEditor extends Editor {
 		this.grid_container.x = this.camera[0] % (this.curr_layer.snap[0] * this.zoom);
 		this.grid_container.y = this.camera[1] % (this.curr_layer.snap[1] * this.zoom);
 
-		this.map_container.setTransform(this.camera[0], this.camera[1]);
-		
-		this.iterateContainers((cont) => {
-			cont.scale.x = this.zoom;
-			cont.scale.y = this.zoom;
-		});
+		this.map_container.setTransform(this.camera[0], this.camera[1], this.zoom, this.zoom);
 		
 		this.drawCrosshair();
 		this.drawOrigin();

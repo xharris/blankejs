@@ -2339,3 +2339,384 @@ TypeError: this.setCamera is not a function
 TypeError: this.setCamera is not a function
     at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:959:8)
 
+[[ 1555529346920 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.load (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1906:10)
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:827:23)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2039:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2057:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555529351083 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:752:14)
+
+[[ 1555529351209 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351225 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351242 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351259 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351279 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351293 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351309 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351327 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351344 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351360 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351376 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351394 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351410 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351426 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351443 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351460 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351478 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351500 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351520 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351547 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351571 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529351595 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352348 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:752:14)
+
+[[ 1555529352460 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352477 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352498 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352522 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352551 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352581 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352605 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352636 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352670 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352715 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352752 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352756 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352818 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352835 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352873 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352903 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352951 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529352997 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529353005 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529353049 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529353055 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+
+[[ 1555529353190 ]]
+ReferenceError: new_s is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1006:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:995:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1005:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
+

@@ -936,7 +936,7 @@ nwWIN.on('loaded', function() {
 		app.checkForUpdates(true);
 		dispatchEvent("ideReady");
 
-		// app.openProject('projects/boredom');
+		app.openProject('projects/test zone');
 		// app.hideWelcomeScreen();
 	});
 });
