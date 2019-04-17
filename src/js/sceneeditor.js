@@ -946,8 +946,8 @@ class SceneEditor extends Editor {
 		let newScale = this.zoom + (diff / 10);
 		
 		/* new stuff */
-		let gw = (this.game_width - this.camera[0])  / 2 ;
-		let gh = (this.game_height - this.camera[1]) / 2 ;
+		let gw = (this.game_width + this.camera[0])  / 2 ;
+		let gh = (this.game_height + this.camera[1]) / 2 ;
 
 		let newx = ((gw * this.zoom) - (gw * newScale));
 		let newy = ((gh * this.zoom) - (gh * newScale));
