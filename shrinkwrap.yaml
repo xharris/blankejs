@@ -5,7 +5,6 @@ dependencies:
   fs-extra: 5.0.0
   lodash: 4.17.11
   node-watch: 0.6.0
-  pixi-viewport: 3.22.0
   request: 2.88.0
   walk: 2.3.14
 devDependencies:
@@ -338,10 +337,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-7dFHNmqeFSEt2ZBsCriorKnn3Z2pj+fd9kmI6QoWw4//DL+icEBfc0U7qJCisqrTsKTjw4fNFy2pW9OqStD84g==
-  /eventemitter3/3.1.0:
-    dev: false
-    resolution:
-      integrity: sha512-ivIvhpq/Y0uSjcHDcOIccjmYjGLcP09MFGE7ysAwkAvkXfpZlC985pH2/ui64DKazbTW/4kN3yqozUxlXzI6cA==
   /extend/3.0.2:
     resolution:
       integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==
@@ -735,10 +730,6 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-WcRPfuSR2nBNpBXaWkBwuk+P5EE=
-  /penner/0.1.3:
-    dev: false
-    resolution:
-      integrity: sha1-C4tILU6bOa8vPXw3WSIpuKzClwU=
   /performance-now/2.1.0:
     resolution:
       integrity: sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=
@@ -762,15 +753,6 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-clVrgM+g1IqXToDnckjoDtT3+HA=
-  /pixi-viewport/3.22.0:
-    dependencies:
-      eventemitter3: 3.1.0
-      penner: 0.1.3
-    dev: false
-    peerDependencies:
-      pixi.js: '>=4.6.0'
-    resolution:
-      integrity: sha512-RwzDo8dLZttE0vZhO7XcaFM0ozgh/5YF0PKdTvD9S0nkqgx4h3wdIiqesGWIuJWG4mj+eD2sFzvBs0MyneGRKA==
   /plist/2.1.0:
     dependencies:
       base64-js: 1.2.0
@@ -1163,6 +1145,5 @@ specifiers:
   lodash: ^4.17.11
   node-watch: ^0.6.0
   nwjs-builder-phoenix: ^1.14.8
-  pixi-viewport: ^3.22.0
   request: ^2.88.0
   walk: ^2.3.13

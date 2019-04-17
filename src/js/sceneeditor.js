@@ -951,9 +951,11 @@ class SceneEditor extends Editor {
 			this.zoom = this.zoom_target;
 			return;
 		}
+		 
+		// look at https://github.com/anvaka/ngraph/tree/master/examples/pixi.js/03%20-%20Zoom%20And%20Pan instead
 
 		requestAnimationFrame(this.updateZoom.bind(this));
-		
+
 		this.zoom += diff/ 10;
 		this.refreshCamera();
 		this.drawGrid();
