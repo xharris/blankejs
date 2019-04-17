@@ -2720,3 +2720,284 @@ ReferenceError: new_s is not defined
     at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:989:8)
     at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:973:8)
 
+[[ 1555531355540 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:991:8)
+    at SceneEditor.load (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1906:10)
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:827:23)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2039:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2057:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
+
+[[ 1555531358359 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:991:8)
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:752:14)
+
+[[ 1555531358484 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358501 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358516 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358533 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358553 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358567 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358583 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358600 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358618 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358626 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.setCameraPosition (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:991:8)
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:752:14)
+
+[[ 1555531358638 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358650 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358668 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358684 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358704 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358724 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358725 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358747 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358747 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358780 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358780 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358813 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358813 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358860 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358860 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358910 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358910 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358959 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531358960 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531359013 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531359013 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531359026 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531359026 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531359137 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531359136 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531359146 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
+[[ 1555531359146 ]]
+ReferenceError: this_ref is not defined
+    at iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1009:19)
+    at SceneEditor.iterateContainers (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:997:4)
+    at SceneEditor.refreshCamera (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:1008:8)
+    at SceneEditor.updateZoom (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:979:8)
+
