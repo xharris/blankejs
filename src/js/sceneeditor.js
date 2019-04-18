@@ -964,25 +964,24 @@ class SceneEditor extends Editor {
 
 		let old_s = this.zoom;
 		let new_s = this.zoom + (diff / 10);
-		let gw = this.game_width + this.camera[0];
-		let gh = this.game_height + this.camera[1];
-		let offx = ((gw * new_s) - (gw * old_s)) / 2;
-		let offy = ((gh * new_s) - (gh * old_s)) / 2;
+		let gw = (this.game_width / 2); 
+		let gh = (this.game_height / 2);
+		let offx = ((gw * new_s) - (gw * old_s));
+		let offy = ((gh * new_s) - (gh * old_s));
 
 		this.zoom = new_s;
 
-/*
 		this.setCameraPosition(
 			this.camera[0] - offx,
 			this.camera[1] - offy
-		);*/
-		this.refreshCamera();
+		);
+		//this.refreshCamera();
 		this.drawGrid();
 }
 
 	setZoom (scale) {
 		this.zoom_target = scale > 0 ? scale : this.zoom;
-		this.old_cam = [this.camera[0], this.camera[1]];
+		this.old_cam = [this.camera[0] * this.zoom, this.camera[1] * this.zoom];
 		requestAnimationFrame(this.updateZoom.bind(this));
 	}
 
