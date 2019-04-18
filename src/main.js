@@ -157,7 +157,7 @@ var app = {
 				});
 
 				// add to recent files
-				app.settings.recent_files = app.settings.recent_files.filter(e => e != path);
+				app.settings.recent_files = app.settings.recent_files.filter(e => !e.includes(nwPATH.basename(path)));
 				app.settings.recent_files.unshift(path);
 				app.saveAppData();
 
