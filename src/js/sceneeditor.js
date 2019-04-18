@@ -980,6 +980,8 @@ class SceneEditor extends Editor {
 }
 
 	setZoom (scale) {
+		return; // TODO: zoom disabled for now
+		
 		this.zoom_target = scale > 0 ? scale : this.zoom;
 		this.old_cam = [this.camera[0] * this.zoom, this.camera[1] * this.zoom];
 		requestAnimationFrame(this.updateZoom.bind(this));

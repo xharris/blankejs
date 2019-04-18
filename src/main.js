@@ -936,7 +936,6 @@ nwWIN.on('loaded', function() {
 		app.checkForUpdates(true);
 		dispatchEvent("ideReady");
 
-		app.openProject('projects/test zone');
-		// app.hideWelcomeScreen();
+		// app.openProject('projects/test zone');
 	});
 });
