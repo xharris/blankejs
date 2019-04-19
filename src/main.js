@@ -855,6 +855,7 @@ nwWIN.on('loaded', function() {
 	// file drop zone
 	window.addEventListener('dragover', function(e) {
 		e.preventDefault();
+		console.log(e)
 		if (app.isProjectOpen())
 			app.getElement("#drop-zone").classList.add("active");
 		return false;
@@ -865,7 +866,9 @@ nwWIN.on('loaded', function() {
 		if (app.isProjectOpen()) {
 			let files = e.dataTransfer.files;
 			for (let f of files) {
+				console.log('drop',f.path);
 				nwFS.stat(f.path, (err, stats) => {
+					console.log(err, stats)
 					if (err || !stats.isFile())
 						blanke.toast(`Could not add file ${f.path}`);
 					else 

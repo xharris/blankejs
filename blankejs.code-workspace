@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "D:\\Documents\\PROJECTS\\blankejs-tutorials"
 		}
 	]
 }

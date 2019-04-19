@@ -656,7 +656,6 @@ class Code extends Editor {
 			for (let re of re_func) {
 				let match;
 				while (match = re.exec(text)) {
-					console.log(match)
 					let fn_info = {
 						class:match[1],
 						name:match[2],
