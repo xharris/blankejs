@@ -35,7 +35,7 @@ These 3 functions can only be called during a collision. They affect the entity'
 fn collisionStop()
 fn collisionStopX()
 fn collisionStopY()
-fn collisionBounce()
+fn collisionBounce(multiplier)      -- multiplier is a number that affects bounciness! 2.0 = twice the bounce. careful, as this number is very sensitive
 ```
 
 # Platformer example

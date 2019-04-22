@@ -20,6 +20,8 @@ Effect = Class{
         -- canvas that is a combination of all shaders used
         self.canvas = Canvas()
 
+        self.spare_canvas.blend_mode = {"alpha","premultiplied"}
+        self.canvas.blend_mode = {"alpha","premultiplied"}
 
         local names = {...}
         for n, name in ipairs(names) do

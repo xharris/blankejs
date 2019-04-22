@@ -52,7 +52,7 @@ Image = Class{
 		return self
 	end,
 
-	update = function(dt)
+	update = function(self, dt)
 		local gravx, gravy = 0, 0 -- lol, gravy
 		if self.gravity ~= 0 then
 			gravx = math.floor(self.gravity * cos(rad(self.gravity_direction)))

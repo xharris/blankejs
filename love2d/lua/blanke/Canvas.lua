@@ -7,7 +7,7 @@ Canvas = Class{
         self.canvas = love.graphics.newCanvas(width, height)
         self.width = self.canvas:getWidth()
         self.height = self.canvas:getHeight()
-        self.blend_mode = {"alpha","premultiplied"}
+        self.blend_mode = {"alpha","alphamultiply"}
 
         self.active = false
         self.auto_clear = true

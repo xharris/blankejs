@@ -112,14 +112,14 @@ Entity = Class{
 
     	-- subtract friction
     	if self.hspeed ~= 0 then 
-    		self.hspeed = self.hspeed - (self.hspeed * self.friction) * dt
-    		if self.friction < 1 and self.friction > 0 and math.abs(self.hspeed) <= 1 then
+    		self.hspeed = (self.hspeed - (self.hspeed * self.friction))
+    		if self.friction > 0 and self.gravity == 0 and math.abs(self.hspeed) <= 1 then
     			self.hspeed = 0
     		end
     	end
-    	if self.vspeed ~= 0 and self.gravity == 0 then 
-    		self.vspeed = self.vspeed - (self.vspeed * self.friction) * dt
-    		if self.friction < 1 and self.friction > 0 and math.abs(self.vspeed) <= 1 then
+    	if self.vspeed ~= 0 then 
+    		self.vspeed = (self.vspeed - (self.vspeed * self.friction))
+    		if self.friction > 0 and self.gravity == 0 and math.abs(self.vspeed) <= 1 then
     			self.vspeed = 0
     		end
     	end
@@ -185,6 +185,8 @@ Entity = Class{
 			local _main_shape = self.shapes[self._main_shape]
 			
 			self.collisions = {}
+			self.precoll_hspeed = self.hspeed
+			self.precoll_vspeed = self.vspeed
 			for name, fn in pairs(self.onCollision) do
 				-- make sure it actually exists
 				if self.shapes[name] ~= nil and self.shapes[name]._enabled then
@@ -233,12 +235,12 @@ Entity = Class{
 								dx, dy = 0, 0
 							end
 
-							self.collisionBounce = function(self)
+							self.collisionBounce = function(self, multiplier)
 								for name, shape in pairs(self.shapes) do
 									shape:move(cx*2, cy*2)
 								end
 								local mag = math.sqrt((cx^2)+(cy^2))
-								local dot = (self.hspeed * (cx/mag)) + (self.vspeed * (cy/mag))
+								local dot = (self.hspeed * (cx/mag)) + (self.vspeed * (cy/mag)) * (multiplier or 1)
 								dx = self.hspeed - (2 * dot * (cx/mag))
 								dy = self.vspeed - (2 * dot * (cy/mag))
 							end
@@ -261,8 +263,8 @@ Entity = Class{
 			self.yprevious = self.y
 
 			--local old_hspd, old_vspd = self.hspeed, self.vspeed
-			self.hspeed = dx
-			self.vspeed = dy
+			if self.hspeed == self.precoll_hspeed then self.hspeed = dx end
+			if self.vspeed == self.precoll_vspeed then self.vspeed = dy end
 			if self.postUpdate then self:postUpdate(dt) end
 			--self.hspeed, self.vspeed = old_hspd, old_vspd
 		end

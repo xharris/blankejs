@@ -137,11 +137,10 @@ love.load = function(args, unfilteredArgs)
 	local record = table.hasValue(args, "--record")
 	local play_record = table.hasValue(args, "--play-record")
 
-	if BlankE.options.debug then
-		BlankE.options.debug.play_record = play_record
-		BlankE.options.debug.record = ((record or ide) and not play_record)
-		if not ide then BlankE.options.debug.log = false end
-	end
+	if not BlankE.options.debug then BlankE.options.debug = {} end
+	BlankE.options.debug.play_record = play_record
+	BlankE.options.debug.record = ((record or ide) and not play_record)
+	BlankE.options.debug.log = BlankE.options.debug.log or ide 
 
 	BlankE.init()
 end
