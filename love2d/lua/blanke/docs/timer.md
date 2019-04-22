@@ -4,7 +4,7 @@
 
 >Example
 >```
->Timer(5).every(1, function(t)
+>Timer(5):every(1, function(t)
 >	some_text = "t-minus " .. t .. " seconds"
 >end):after(function()
 >	some_text = "blastoff"
