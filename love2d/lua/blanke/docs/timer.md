@@ -4,17 +4,30 @@
 
 >Example
 >```
->Timer(5):every(1, function(t)
+>Timer(5).every(1, function(t)
 >	some_text = "t-minus " .. t .. " seconds"
 >end):after(function()
 >	some_text = "blastoff"
 >end):start()
+>```
+> or
+> 
+>`Timer.every(1, function() beep() end)`
 
 **Note**: not everything has to been called in a condense manner as shown above. Timer(num) returns a a timer instance that can be stored in a variable.
 
 # Initialization
 
-`Timer([duration])`
+`Timer([duration])` will just give you a timer object
+
+These are shortcut methods:
+
+```
+Timer.every(seconds, fn)
+Timer.after(seconds, fn)
+```
+
+They return a Timer object and automatically start it.
 
 # Props
 

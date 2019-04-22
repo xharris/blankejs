@@ -35,6 +35,7 @@ These 3 functions can only be called during a collision. They affect the entity'
 fn collisionStop()
 fn collisionStopX()
 fn collisionStopY()
+fn collisionBounce()
 ```
 
 # Platformer example

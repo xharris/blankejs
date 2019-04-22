@@ -1,4 +1,4 @@
-Timer = Class{
+local _Timer = Class{
 	init = function(self, duration)
 		self._before = {}					-- when Timer.start is called
 		self._every = {}					-- every x seconds while timer is running
@@ -126,5 +126,19 @@ Timer = Class{
 
 	stop = function(self) self:reset() end
 }
+
+Timer = {
+	every = function(interval, fn)
+		return Timer():every(interval, fn):start()
+	end,
+	after = function(interval, fn)
+		return Timer(interval):after(fn):start()
+	end,
+	mt = {
+		__call = function(self, ...) return _Timer(...) end
+	}
+}
+
+setmetatable(Timer, Timer.mt)
 
 return Timer

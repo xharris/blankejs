@@ -1,6 +1,7 @@
 local _images = {}
 local floor = function(v) return math.floor(v+0.5) end
 
+
 Image = Class{
 	_canvas = nil,
 	init = function(self, name, img_data)
@@ -29,6 +30,10 @@ Image = Class{
 
 		self.x = 0
 		self.y = 0
+		self.hspeed = 0
+		self.vspeed = 0
+		self.gravity = 0
+		self.gravity_direction = 0
 		self.angle = 0
 		self.xscale = 1
 		self.yscale = 1
@@ -42,6 +47,18 @@ Image = Class{
 		self.width = self.orig_width * math.abs(self.xscale)
 		self.height = self.orig_height * math.abs(self.yscale)
 		self.crop_rect = {0,0,self.orig_width,self.orig_height}
+
+		_addGameObject('image',self)
+		return self
+	end,
+
+	update = function(dt)
+		local gravx, gravy = 0, 0 -- lol, gravy
+		if self.gravity ~= 0 then
+			gravx = math.floor(self.gravity * cos(rad(self.gravity_direction)))
+			gravy = math.floor(self.gravity * sin(rad(self.gravity_direction)))
+		end 
+		self.x, self.y = self.x + self.hspeed + gravx * dt, self.y + self.vspeed + gravy * dt
 	end,
 
 	destroy = function(self)

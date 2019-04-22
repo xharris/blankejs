@@ -5,7 +5,9 @@ BlankE.addEntity("Specialty")
 function Specialty:init(player, spec)
 	self.player = player
 	self.spec = spec
-	self.spec.init(player)
+	if spec.init then
+		self.spec.init(player)
+	end
 end
 
 function Specialty:update(dt)
@@ -17,9 +19,12 @@ function Specialty:draw()
 end
 
 function Specialty:doAction(num)
+	-- primary action
+	if num == 1
+	--[[
 	if self.spec["action"..num] then
 		self.spec["action"..num](self.player)
-	end
+	end]]
 end
 
 function Specialty:click()

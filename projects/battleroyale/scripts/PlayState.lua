@@ -22,7 +22,7 @@ function setupGame()
 	sc_map = Scene("MapPlain")
 
 	player = Player()
-	player:setSpecialty("EXPLOSIVE")
+	player:setSpecialty("KNIGHT")
 	sc_map:addEntity("player_spawn",player)
 
 	-- setup camera

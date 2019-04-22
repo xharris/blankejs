@@ -311,6 +311,11 @@ BlankE = {
 			Debug.playRecording()
 		end
 		
+		-- automatically load first found state
+		if options.state == '' and BlankE._class_type['State'] and BlankE._class_type['State'][1] then
+			options.state = BlankE._class_type['State'][1].classname
+		end 
+
 		State.switch(options.state)
 
 		if options.debug.record then

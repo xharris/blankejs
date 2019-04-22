@@ -1092,6 +1092,8 @@ BlankE.addEntity(\"<NAME>\")\n\n\
 function <NAME>:init()\n\n\
 end\n\n\
 function <NAME>:update(dt)\n\n\
+end\n\n\
+function <NAME>:draw()\n\n\
 end\n");
 		},
 		tags: ['new'],

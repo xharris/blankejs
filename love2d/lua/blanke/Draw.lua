@@ -25,6 +25,7 @@ Draw = Class{
 	white = {255,255,255,255},
 	black2 = {33,33,33,255},	-- but not actually black
 	white2 = {245,245,245,255},	-- but not actually white
+	transparent = {0,0,0,0},
 
 	_parseColorArgs = function(r,g,b,a)
 		color = r
