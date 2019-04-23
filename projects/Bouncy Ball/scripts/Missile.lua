@@ -26,7 +26,7 @@ end
 
 function Missile:explode()
 	-- break the missile image into pieces
-	local img_missile_pcs = self.img_missile:chop(5,5)
+	self.img_missile_pcs = self.img_missile:chop(5,5)
 	-- throw them in the opposite direction 
 	local opp_direction = self.img_missile.angle + 180
 	self.img_missile_pcs:forEach(function(piece)

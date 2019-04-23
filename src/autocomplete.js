@@ -74,6 +74,8 @@ module.exports.self_reference = {
 
 module.exports.completions = {
 	"global":[
+		{fn:"tostring",vars:{value:''}},
+
 		{prop:"mouse_x"},
 		{prop:"mouse_y"},
 		{prop:"game_width"},
@@ -109,7 +111,6 @@ module.exports.completions = {
 		{fn:"map2Dindex",vars:{x:'',y:'',columns:''}},
 		{fn:"map2Dcoords",vars:{i:'',columns:''}},
 		
-
 		{prop:'Debug'},
 
 		{fn:"Audio", vars:{ name: 'audio/oof.mp3 -> Audio(\"oof\")' }},
