@@ -28,19 +28,13 @@ function Paddle:update(dt)
 	if Input("move_up").pressed then
 		self.vspeed =	-move_spd
 	end
-	-- check if it is out of bounds
+	-- check if it is out of bounds horizontally
 	-- 'teleport' it to the other side of the screen, if it goes out of bounds
 	if self.x > game_width then
 		self.x = 0
 	end
-	if self.y > game_height then
-		self.y = 0
-	end
 	if self.x < 0 then
 		self.x = game_width
-	end
-	if self.y < 0 then
-		self.y = game_height
 	end
 	-- move the paddle image
 	self.img_paddle.x = self.x 
