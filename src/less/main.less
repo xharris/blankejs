@@ -43,18 +43,18 @@ body:after { bottom: -3px; }
 body:before, body:after {
     content: "";
     position: absolute;
-    background-image: linear-gradient(to right, black, rgba(90, 217, 164, .5), black); /* 100, 221, 23 */
+    background-image: linear-gradient(to right, black, fade(@ide-accent, 50%), black); /* 100, 221, 23 */
     left: 0px;
     right: 0px;
     height: 1px;
     z-index: 1000;
 }
 
-.green-outline {
-	/* outline: 1px solid @ide-green;
-	outline-offset: 0px;
-	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
-	box-shadow: 0 0 0pt 1pt rgba(90, 217, 164, 1), 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+.input-outline {
+	//outline: 1px solid @ide-accent;
+	//outline-offset: 0px;
+	//box-shadow: 0 0px 10px 3px fade(@ide-accent, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+	box-shadow: 0 0 0pt 1pt @ide-accent, 0 0px 10px 3px fade(@ide-accent, 30%), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 
 *:not(.no-custom-scroll) {
@@ -316,7 +316,7 @@ body:before, body:after {
 	    opacity: 0;
 
 	    &:hover {
-	    	color: @ide-green;;
+	    	color: @ide-accent;
 	    }
 	}
 
@@ -458,6 +458,7 @@ body:before, body:after {
 	will-change: transform;
 	overflow: hidden;
 	box-sizing: border-box;
+    display: inline-table; 	// causes integer width/height
 
 	* {
 	    transition: opacity ease-in-out 0.2s;
@@ -522,7 +523,7 @@ body:before, body:after {
 		z-index: 20;	
 
 	    &:hover {
-	    	color: @ide-green;;
+	    	color: @ide-accent;
 	    }
 	}
 
@@ -791,7 +792,7 @@ body:before, body:after {
    			padding: 13px 10px;
 			width: 100%;
     		text-align: left;
-			background: linear-gradient(to bottom, rgba(90, 217, 164) 0%, rgba(90, 217, 164) 100%) no-repeat;
+			background: linear-gradient(to bottom, @ide-accent 0%, @ide-accent 100%) no-repeat;
     		background-position: center;
 			background-size: 100% 0%;
 			padding-left: 15%;
@@ -851,7 +852,7 @@ body:before, body:after {
 			width: 100%;
 			padding-left: calc(15% + 38px);
 
-			background: linear-gradient(to bottom, rgba(90, 217, 164, 0.5) 0%, rgba(90, 217, 164, 0.5) 100%) no-repeat;
+			background: linear-gradient(to bottom, fade(@ide-accent, 50%) 0%, fade(@ide-accent, 50%) 100%) no-repeat;
     		background-position: center;
     		background-size: 100% 0%;
 
@@ -893,7 +894,7 @@ body:before, body:after {
 		> * {
 			display: inline-block;
 			vertical-align: middle;
-			transition: all 0.2s ease-in-out;
+			// transition: all 0.2s ease-in-out;
 		}
 
 		.entry-title-container {
@@ -902,7 +903,7 @@ body:before, body:after {
 
 			.entry-title {
 				.no-select();
-				color: #616161;
+				color: #9e9e9e;
     			padding: 0px 5px;
 			}
 		}
@@ -928,7 +929,7 @@ body:before, body:after {
 		.triangle-left {
 		    border-top: 11px solid @window-background;
 		    border-bottom: 11px solid @window-background;
-		    border-left: 13px solid transparent;
+		    border-left: 12px solid transparent;
 			left: 0px;
 			display: none;
 		}
@@ -936,24 +937,57 @@ body:before, body:after {
 		.triangle-right {
 		    border-top: 11px solid transparent;
 		    border-bottom: 11px solid transparent;
-		    border-left: 13px solid @window-background;
+		    border-left: 12px solid @window-background;
 			display: none;
+		}
+
+		&:nth-last-child(2) {
+			.entry-title {
+				color: #9e9e9e;
+				background-color: rgba(255,255,255,0.1);
+			}
+
+			.triangle-right, .triangle-left {
+				display: inline-block;
+			}
+
+			.triangle-left {
+				border-top-color: rgba(255,255,255,0.1);
+				border-bottom-color: rgba(255,255,255,0.1);
+			}
+			.triangle-right {
+				border-left-color: rgba(255,255,255,0.1);
+			}
+		}
+		
+		&:nth-last-child(1) {
+			.entry-title {
+				color: @window-background;
+				background-color: @ide-accent;
+			}
+
+			.triangle-right, .triangle-left {
+				display: inline-block;
+			}
+
+			.triangle-left {
+				border-top-color: @ide-accent;
+				border-bottom-color: @ide-accent;
+			}
+			.triangle-right {
+				border-left-color: @ide-accent;
+			}
 		}
 
 		&:first-child {
 			i {
 				display: none;
 			}
-		}
-
-		&:nth-last-child(1) {
-			.entry-title {
-				color: @search-text-focus;
-				background-color: @window-background;
+			.entry-title-container {
+				padding-left: 0px;
 			}
-
-			.triangle-right, .triangle-left {
-				display: inline-block;
+			.triangle-left {
+				display: none;
 			}
 		}
 	}
@@ -1018,7 +1052,7 @@ body:before, body:after {
 		    color: #FAFAFA;
 
 		    a {
-		    	color: @ide-green;
+		    	color: @ide-accent;
 		    }
 		}
 	}
@@ -1065,15 +1099,15 @@ body:before, body:after {
 	box-sizing: border-box;
 
 	input, select, button {
-		outline: 1px solid fade(@ide-green, 0%);
+		outline: 1px solid fade(@ide-accent, 0%);
     	outline-offset: -1px;
     	transition: all ease-in-out 0.1s;	
 	}
 
 	input:focus, select:focus, button:hover {
-		outline: 1px solid @ide-green;
+		outline: 1px solid @ide-accent;
     	outline-offset: 0px;
-    	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
+    	box-shadow: 0 0px 10px 3px fade(@ide-accent, 30%), 0 6px 6px rgba(0, 0, 0, 0.23);
 	}
 	
 	.form-group {
@@ -1134,7 +1168,7 @@ body:before, body:after {
 	    transition: border-color 0.2s ease-in-out;
 
 	    &:hover {
-	    	border-color: @ide-green;
+	    	border-color: @ide-accent;
 	    }
 
 		.form-label {
@@ -1177,14 +1211,14 @@ body:before, body:after {
 
 			/* unchecked */
 			&:hover .form-checkbox ~ .checkmark {
-				background-color: @ide-green;
+				background-color: @ide-accent;
 				border-radius: 2px;
     			overflow: hidden;
 			}
 
 			/* checked */
 			.form-checkbox:checked ~ .checkmark {
-				background-color: @ide-green;
+				background-color: @ide-accent;
 			}
 
 			.checkmark:after {
@@ -1236,7 +1270,7 @@ body:before, body:after {
 	color: white;
 
 	input {
-		outline: 1px solid fade(@ide-green, 0%);
+		outline: 1px solid fade(@ide-accent, 0%);
     	outline-offset: 0px;
 		background: rgba(255,255,255,0.3);
 		border: none;
@@ -1245,7 +1279,7 @@ body:before, body:after {
     	transition: all ease-in-out 0.1s;
 
     	&:focus {
-			outline: 1px solid @ide-green;
+			outline: 1px solid @ide-accent;
 	    	outline-offset: 1px;
     	}
 	}
@@ -1301,12 +1335,12 @@ body:before, body:after {
 			}
 
 			&.add {
-				border-color: fade(@ide-green, 50%);
-				color: @ide-green;
+				border-color: fade(@ide-accent, 50%);
+				color: @ide-accent;
 
 				&:hover {
 					color: white;
-					background-color: @ide-green;
+					background-color: @ide-accent;
 				}
 			}
 		}
@@ -1328,7 +1362,7 @@ body:before, body:after {
 		    color: #bdbdbd;
     		padding: 2px 0px;
 		    padding-left: 3px;
-		    border-left: 1px solid rgba(90, 217, 164, 1);
+		    border-left: 1px solid @ide-accent;
 		    cursor: pointer;
 			outline-offset: -1px;
 			outline: 0px solid transparent;
@@ -1341,7 +1375,7 @@ body:before, body:after {
 
 			&.selected {
 				border-left-width: 3px;
-			    outline: 1px solid rgba(90, 217, 164, 1);
+			    outline: 1px solid @ide-accent;
     			color: white;
 			}
 

@@ -601,6 +601,7 @@ class Code extends Editor {
 
 				blanke.cooldownFn("editor_show_hint", 250, function(){
 					editor.showHint({
+						closeOnUnfocus: false,
 						hint: function(cm) {
 							let completions = {
 								from: editor.getDoc().getCursor(),

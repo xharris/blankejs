@@ -471,7 +471,6 @@
   margin: 0px;
 }
 /* rgb(57, 65, 78);*/
-/* #64DD17; */
 .content[data-type="Code"] {
   /* TAB only
     padding-top: 33px;
@@ -601,12 +600,12 @@
   padding-bottom: 20px;
 }
 .content[data-type="Code"] .cm-matchhighlight {
-  background-color: rgba(178, 255, 89, 0.5);
+  background-color: var(--ide-accent);
   color: black !important;
-  outline: 1px solid rgba(178, 255, 89, 0.5);
+  outline: 1px solid var(--ide-accent);
 }
 .content[data-type="Code"] .CodeMirror-selection-highlight-scrollbar {
-  background-color: #4caf50;
+  background-color: var(--ide-accent);
 }
 .content[data-type="Code"] .cm-blanke-instance {
   color: #80CBC4;
@@ -619,7 +618,7 @@
 }
 .content[data-type="Code"] .cm-blanke-state,
 .content[data-type="Code"] .cm-blanke-entity {
-  color: #C3E88D;
+  color: #f44336;
   /* lime green, same as cm-string. use something like #4fc3f7 when resolved */
 }
 .content[data-type="Code"] .fn-helper {
@@ -1465,10 +1464,10 @@
 .content[data-type="AssetManager"] .file-list .file-row:hover,
 .content[data-type="AssetManager"] .file-list .file-row.selected {
   padding-left: 3px;
-  background-color: #0a2a1d;
+  background-color: #808080;
 }
 .content[data-type="AssetManager"] .file-list .file-row.selected {
-  border-left: 3px solid #5ad9a4;
+  border-left: 3px solid white;
 }
 .content[data-type="AssetManager"] .file-preview .preview-container {
   padding: 5px;
@@ -1556,7 +1555,7 @@
   transition: box-shadow ease-in-out 0.1s;
 }
 .content[data-type="Docview"] .subsection:hover:not(.expanded) {
-  /* outline: 1px solid @ide-green;
+  /* outline: 1px solid @ide-accent;
 	outline-offset: 0px;
 	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
   box-shadow: 0 0 0pt 1pt #5ad9a4, 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
@@ -1659,13 +1658,13 @@
   text-transform: uppercase;
   border: none;
   border-radius: 2px;
-  outline: 1px solid rgba(90, 217, 164, 0.9);
+  outline: 1px solid rgba(255, 255, 255, 0.9);
   z-index: 10;
   transition: all ease-in-out 0.2s;
 }
 .content[data-type="SpritesheetPreview"] .show-prvw:hover {
-  background: #5ad9a4;
-  background: rgba(90, 217, 164, 0.9);
+  background: white;
+  background: rgba(255, 255, 255, 0.9);
 }
 .content[data-type="SpritesheetPreview"] .zoom-container {
   position: absolute;
@@ -1693,7 +1692,7 @@
   height: 20px;
   z-index: 15;
   border-radius: 100%;
-  border: 1px solid rgba(90, 217, 164, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.9);
   outline: none;
   font-size: 25px;
   padding: 0px;
@@ -1705,7 +1704,7 @@
 }
 .content[data-type="SpritesheetPreview"] .zoom-in:hover,
 .content[data-type="SpritesheetPreview"] .zoom-out:hover {
-  background: rgba(90, 217, 164, 0.9);
+  background: rgba(255, 255, 255, 0.9);
 }
 .content[data-type="SpritesheetPreview"] .zoom-amt {
   position: absolute;
@@ -1938,7 +1937,7 @@
   width: 0px;
 }
 .content[data-type="Find"] .result-container .result-group .result .match {
-  color: #5ad9a4;
+  color: white;
   font-style: normal;
 }
 .content[data-type="Find"] .result-container .result-group .result .btn-open-file {
@@ -2014,7 +2013,7 @@
   tab-size: 4;
 }
 .markdown code:hover {
-  /* outline: 1px solid @ide-green;
+  /* outline: 1px solid @ide-accent;
 	outline-offset: 0px;
 	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
   box-shadow: 0 0 0pt 1pt #5ad9a4, 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
@@ -2090,7 +2089,7 @@ body:after {
   z-index: 1000;
 }
 .green-outline {
-  /* outline: 1px solid @ide-green;
+  /* outline: 1px solid @ide-accent;
 	outline-offset: 0px;
 	box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);*/
   box-shadow: 0 0 0pt 1pt #5ad9a4, 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
@@ -2381,7 +2380,7 @@ body.mac .tool-container button:hover {
   opacity: 0;
 }
 .drag-container .btn-close:hover {
-  color: #5ad9a4;
+  color: white;
 }
 .drag-container:hover > .btn-close {
   opacity: 1;
@@ -2570,7 +2569,7 @@ body.mac .tool-container button:hover {
   z-index: 20;
 }
 .fib-container .btn-close:hover {
-  color: #5ad9a4;
+  color: white;
 }
 .fib-container:hover > .btn-close {
   opacity: 1;
@@ -2947,7 +2946,7 @@ body.mac .tool-container button:hover {
   user-select: none;
   /* Non-prefixed version, currently
     not supported by any browser */
-  color: #616161;
+  color: #9e9e9e;
   padding: 0px 5px;
 }
 #history .entry:hover .entry-title {
@@ -2981,12 +2980,19 @@ body.mac .tool-container button:hover {
   display: none;
 }
 #history .entry:nth-last-child(1) .entry-title {
-  color: #f0f0f0;
-  background-color: #485358;
+  color: #485358;
+  background-color: white;
 }
 #history .entry:nth-last-child(1) .triangle-right,
 #history .entry:nth-last-child(1) .triangle-left {
   display: inline-block;
+}
+#history .entry:nth-last-child(1) .triangle-left {
+  border-top-color: white;
+  border-bottom-color: white;
+}
+#history .entry:nth-last-child(1) .triangle-right {
+  border-left-color: white;
 }
 #status-bar {
   position: absolute;
@@ -3042,7 +3048,7 @@ body.mac .tool-container button:hover {
   color: #FAFAFA;
 }
 .blankejs-toasts .toast-container .content a {
-  color: #5ad9a4;
+  color: white;
 }
 .crosshair {
   position: absolute;
@@ -3086,14 +3092,14 @@ body.mac .tool-container button:hover {
 .form-container input,
 .form-container select,
 .form-container button {
-  outline: 1px solid rgba(90, 217, 164, 0);
+  outline: 1px solid rgba(255, 255, 255, 0);
   outline-offset: -1px;
   transition: all ease-in-out 0.1s;
 }
 .form-container input:focus,
 .form-container select:focus,
 .form-container button:hover {
-  outline: 1px solid #5ad9a4;
+  outline: 1px solid white;
   outline-offset: 0px;
   box-shadow: 0 0px 10px 3px rgba(90, 217, 164, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
@@ -3161,7 +3167,7 @@ body.mac .tool-container button:hover {
   transition: border-color 0.2s ease-in-out;
 }
 .form-container .form-group[data-type="checkbox"]:hover {
-  border-color: #5ad9a4;
+  border-color: white;
 }
 .form-container .form-group[data-type="checkbox"] .form-label {
   display: inline-block;
@@ -3212,12 +3218,12 @@ body.mac .tool-container button:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
 .form-container .form-group[data-type="checkbox"] .form-inputs:hover .form-checkbox ~ .checkmark {
-  background-color: #5ad9a4;
+  background-color: white;
   border-radius: 2px;
   overflow: hidden;
 }
 .form-container .form-group[data-type="checkbox"] .form-inputs .form-checkbox:checked ~ .checkmark {
-  background-color: #5ad9a4;
+  background-color: white;
 }
 .form-container .form-group[data-type="checkbox"] .form-inputs .checkmark:after {
   content: "";
@@ -3258,7 +3264,7 @@ body.mac .tool-container button:hover {
   color: white;
 }
 .ui-modal input {
-  outline: 1px solid rgba(90, 217, 164, 0);
+  outline: 1px solid rgba(255, 255, 255, 0);
   outline-offset: 0px;
   background: rgba(255, 255, 255, 0.3);
   border: none;
@@ -3267,7 +3273,7 @@ body.mac .tool-container button:hover {
   transition: all ease-in-out 0.1s;
 }
 .ui-modal input:focus {
-  outline: 1px solid #5ad9a4;
+  outline: 1px solid white;
   outline-offset: 1px;
 }
 .ui-modal .ui-button-sphere {
@@ -3315,12 +3321,12 @@ body.mac .tool-container button:hover {
   border-right-width: 1px;
 }
 .list-view-container .actions-container button.add {
-  border-color: rgba(90, 217, 164, 0.5);
-  color: #5ad9a4;
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
 }
 .list-view-container .actions-container button.add:hover {
   color: white;
-  background-color: #5ad9a4;
+  background-color: white;
 }
 .list-view-container .items-container {
   display: inline-block;

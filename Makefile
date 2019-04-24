@@ -27,7 +27,7 @@ love:
 	love2d/love.exe projects/penguin
 
 blanke:
-	pnpm run less
+	#pnpm run less
 	pnpm run nw
 	
 engine:

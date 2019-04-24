@@ -126,6 +126,27 @@ var app = {
 		app.win_title = title;
 		app.getElement("#search-input").placeholder = title;
 	},
+	themes: {
+		green: {
+			"ide-accent": "#5ad9a4",
+			"theme-string": "#97e7c6",
+			"theme-list-active-bg": "#233e2e",
+			"theme-text-sub": "#e6ee9c",
+			"theme-text-optional": "#b2dfdb"
+		},
+		pink: {
+			"ide-accent": "#f48fb1",
+			"theme-string": "#f9bed2",
+			"theme-list-active-bg": "#3b2138",
+			"theme-text-sub": "#ee9cd3",
+			"theme-text-optional": "#dfb2d9"
+		}
+	},
+	setTheme: function(name) {
+		// change theme variables
+		less.modifyVars(app.themes[name]);
+		app.settings.theme = name;
+	},
 
 	closeProject: function() {
 		// app.saveSettings();
@@ -913,6 +934,9 @@ nwWIN.on('loaded', function() {
 	});
 
 	app.loadAppData(function(){
+		// load current theme
+		app.setTheme(app.settings.theme || "green");
+
 		// add recent projects (max 10)
 		var el_recent = app.getElement("#welcome .recent-files");
 		if (app.settings.recent_files.length > 10) 
