@@ -116,7 +116,7 @@ local SceneLayer = Class{
 			end
 		end
 		for name, entities in pairs(self.entities) do
-			entities:forEach(function(e, ent)
+			entities:forEach(function(ent)
 				ent.x = ent.x + x
 				ent.y = ent.y + y
 			end)
@@ -365,7 +365,7 @@ local Scene = Class{
 
 		-- call on instances that were added manually
 		for name, entities in pairs(self.entities) do
-			entities:forEach(function(e, ent)
+			entities:forEach(function(ent)
 				ent.x = ent.x + x
 				ent.y = ent.y + y
 			end)

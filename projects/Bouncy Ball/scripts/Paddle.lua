@@ -49,10 +49,33 @@ function Paddle:update(dt)
 end
 
 function Paddle:explode()
-	local img_paddle_pcs = self.img_paddle:chop(8,5)
-	
+	-- set a flag and check it so that the paddle can't explode again
+	if self.exploded then return end
+	self.exploded = true
+	-- break the paddle image into pieces 
+	self.img_paddle_pcs = self.img_paddle:chop(8,5)
+	-- throw them in random directions
+	local opp_direction = self.img_paddle.angle + 180
+	self.img_paddle_pcs:forEach(function(piece)
+		local direction = randRange(0, 360)
+		piece.hspeed = direction_x(direction, 20)
+		piece.vspeed = direction_y(direction, 20)
+	end)
+	Signal.emit("paddle_explode")
+	-- remove the hitbox so that it seems like it's actually exploded and gone
+	self:removeShape("main")
+	-- after some time, destroy the object
+	Timer.after(3, function()
+		self:destroy()
+	end)
 end
 
 function Paddle:draw()
-	self.img_paddle:draw()
+	-- draw the pieces
+	-- hide the old image if it's exploded
+	if self.img_paddle_pcs then
+		self.img_paddle_pcs:call('draw')
+	else
+		self.img_paddle:draw()
+	end
 end

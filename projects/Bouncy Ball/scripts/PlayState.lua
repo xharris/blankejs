@@ -31,13 +31,22 @@ function PlayState:enter()
 	
 	game_over = false
 	-- end game if paddle explodes
-	Signal.on("paddle_explosion", function()
+	Signal.on("paddle_explode", function()
 		game_over = true	
 	end)
 end
 
 function PlayState:update(dt)
+	-- end game if ball drops
+	if ent_ball.y > game_height then
+		ent_ball:destroy()
+		ent_paddle:explode()
+	end
 	
+	-- if the game is over, check if the player wants to restart
+	if game_over and Input("restart").released then
+		State.switch("PlayState")
+	end
 end
 
 function PlayState:draw()
@@ -49,4 +58,9 @@ function PlayState:draw()
 	-- draw the score
 	Draw.setColor("black")
 	Draw.text("SCORE: "..tostring(score), 20, 20)
+	
+	-- draw game over text
+	if game_over then
+		Draw.text("GAME OVER", 0, game_height/2, {align="center"})
+	end
 end

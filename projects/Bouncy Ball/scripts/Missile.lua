@@ -38,6 +38,12 @@ function Missile:explode()
 	if self.img_missile_pcs then
 		self.img_missile_pcs:call('draw')
 	end
+	-- remove the hitbox so that it seems like it's actually exploded and gone
+	self:removeShape("main")
+	-- after some time, destroy the object
+	Timer.after(3, function()
+		self:destroy()
+	end)
 end
 
 function Missile:update(dt)
@@ -62,9 +68,11 @@ function Missile:update(dt)
 end
 
 function Missile:draw()
-	self.img_missile:draw()
 	-- draw the pieces
+	-- hide the old image if it's exploded
 	if self.img_missile_pcs then
 		self.img_missile_pcs:call('draw')
+	else
+		self.img_missile:draw()
 	end
 end

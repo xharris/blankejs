@@ -25,7 +25,7 @@ closest(entity)				-- get Entity closest to entity
 `forEach(func)` calls func(index, obj) for each object. If true is returned, the loop will break early.
 >Example:
 >```
->grp_rocks:forEach(function(r, rock)
+>grp_rocks:forEach(function(rock, r)
 >   if rock.size > 20 then
 >       rock.pet = true
 >   end

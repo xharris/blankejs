@@ -82,18 +82,18 @@ Group = Class{
 	forEach = function(self, func)
 		local size = self:size()
 		for i = 0, size do
-			if self.children[i] and func(i, self.children[i]) then break end
+			if self.children[i] and func(self.children[i], i) then break end
 		end
 	end,
 
 	setProperty = function(self, attr, value)
-		self:forEach(function(o, obj)
+		self:forEach(function(obj, o)
 			if obj[attr] then obj[attr] = value end
 		end)
 	end,
 
 	set = function(self, attr_name, value) 
-		self:forEach(function(o, obj)
+		self:forEach(function(obj, o)
 			obj[attr_name] = value
 		end)
 	end,
@@ -116,7 +116,7 @@ Group = Class{
 
 	destroy = function(self)
 		-- do a forEach to prevent infinite loop with _group var
-		self:forEach(function(o, obj)
+		self:forEach(function(obj, o)
 			obj._group[self.uuid] = nil
 			if obj.destroy then obj:destroy() end
 			self.count = self.count - 1

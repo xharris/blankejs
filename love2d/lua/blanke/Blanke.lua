@@ -412,6 +412,7 @@ BlankE = {
 
 	clearObjects = function(include_persistent, state)
 		state = ifndef(state, StateManager.current_state)
+		Signal._clean(state.classname)
 
 		local game = state.game
 		for key, objects in pairs(game) do

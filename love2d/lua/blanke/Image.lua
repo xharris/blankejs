@@ -14,6 +14,7 @@ Image = Class{
 
 		if img_data and tostring(img_data):contains("ImageData") then
 			self.image = love.graphics.newImage(img_data)
+			self.is_new_image = true
 
 		elseif asset then
 			self.image = asset
@@ -62,7 +63,9 @@ Image = Class{
 	end,
 
 	destroy = function(self)
-		self.image:release()
+		if self.is_new_image then
+			self.image:release()
+		end
 	end,
 
 	-- static: check if an image exists
@@ -209,6 +212,7 @@ Image = Class{
 			end
 		end)
 		self.image = love.graphics.newImage(dest_image_data)
+		self.is_new_image = true
 	end,
 
 	frame = function(self, f, width, height, space_x, space_y)

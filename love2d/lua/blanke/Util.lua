@@ -159,7 +159,7 @@ function bitmask4(tile_map, tile_val, x, y)
 	else tile_vals = tile_val end
 
 	function checkTile(x2, y2)
-		return table.forEach(tile_vals, function(t, tile)
+		return table.forEach(tile_vals, function(tile, t)
 			if tile_map[x2] and tile_map[x2][y2] == tile then
 				return 1
 			end
@@ -181,7 +181,7 @@ function bitmask8(tile_map, tile_val, x, y)
 	else tile_vals = tile_val end
 
 	function checkTile(x2, y2)
-		return table.forEach(tile_vals, function(t, tile)
+		return table.forEach(tile_vals, function(tile, t)
 			if x2 > 0 and y2 > 0 and y2 <= #tile_map and x2 <= #tile_map[y2] and tile_map[y2][x2] == tile then
 				return 1
 			end
@@ -312,7 +312,7 @@ function table.forEach(t, func)
 	if table_len == 0 then table_len = #t end
 	
 	for i=1,table_len do
-		local ret_val = func(i,t[i])
+		local ret_val = func(t[i],i)
 		if ret_val then return ret_val end
 	end
 end

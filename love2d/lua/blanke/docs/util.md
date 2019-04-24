@@ -54,7 +54,7 @@ deepcopy(t)
 toString(t)             -- converts everything in table to string
 toNumber(t)             -- converts everything in table to number
 len(t)
-forEach(t, func)		-- func(i,val). will return a value and end early if 'func' returns a value
+forEach(t, func)		-- func(val, i). will return a value and end early if 'func' returns a value
 random(t)
 keys(t)
 join(t, sep)

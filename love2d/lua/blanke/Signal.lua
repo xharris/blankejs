@@ -1,34 +1,41 @@
 Signal = {
 	registry = {},
 	disabled = {},
-	destroy = {},
+	state_ref = {},
 
 	emit = function(name, ...)
 		local functions = ifndef(Signal.registry[name], {})
 
 		if not Signal.disabled[name] then
 			for f, func in ipairs(functions) do
-				func(...)
-				if Signal.destroy[name] then
-					for f2, func2 in ipairs(Signal.destroy[name]) do
-						if func == func2 then
-							Signal.registry[name][f] = nil
-							Signal.destroy[name][f] = nil
-						end
-					end
+				-- destroy the signal listeners if true is returned
+				if func(...) == true then
+					Signal.registry[name][f] = nil
 				end
 			end
 		end
 	end,
 
-	on = function(name, func, destroy_on_call)
+	_clean = function(state_name)
+		if Signal.state_ref[state_name] then 
+			for s, info in ipairs(Signal.state_ref[state_name]) do 
+				Signal.registry[info[1]][info[2]] = nil
+			end
+		end
+	end,
+
+	on = function(name, func, persistent)
 		Signal.disabled[name] = ifndef(Signal.disabled[name], false)
 		Signal.registry[name] = ifndef(Signal.registry[name], {})
 
 		table.insert(Signal.registry[name], func)
-		if destroy_on_call then
-			Signal.destroy[name] = ifndef(Signal.destroy[name], {})
-			table.insert(Signal.destroy[name], func)
+
+		if not persistent then
+			local state = StateManager.current().classname
+			if not Signal.state_ref[state] then
+				Signal.state_ref[state] = {}
+			end
+			table.insert(Signal.state_ref[state], {name, #Signal.registry[name]})
 		end
 	end,
 
