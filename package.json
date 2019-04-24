@@ -25,7 +25,7 @@
     }
   },
   "scripts": {
-    "less": "lessc --math=strict src/less/main.less src/main.css",
+    "less": " ",
     "nw": "nw .",
     "dist": "build --tasks win-x86 --mirror https://dl.nwjs.io/ .",
     "dist-linux": "build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",

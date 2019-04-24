@@ -146,6 +146,7 @@ var app = {
 		// change theme variables
 		less.modifyVars(app.themes[name]);
 		app.settings.theme = name;
+		app.saveAppData();
 	},
 
 	closeProject: function() {
