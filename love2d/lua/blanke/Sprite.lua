@@ -1,4 +1,6 @@
 Sprite = Class{
+	_vars = {'angle','xscale','yscale','xoffset','yoffset','xshear','yshear','color',
+	'alpha','speed','frame'},
 	init = function(self, args)
 		self.x, self.y = 0, 0
 		self.angle = 0		
@@ -51,7 +53,33 @@ Sprite = Class{
 		self.frame = self.anim.position
 	end,
 
+	debug = function(self)
+		Draw.stack(function()
+			Draw.translate(self.x, self.y)
+			Draw.rotate(self.angle)
+			Draw.shear(self.xshear, self.yshear)
+			Draw.scale(self.xscale, self.yscale)
+
+			-- draw sprite outline
+			Draw.setColor(0,1,0,2/3)
+			Draw.setLineWidth(1)
+			if self._sprites[sprite_index] then
+				love.graphics.rectangle("line", self.xoffset, self.yoffset, self.width, self.height)
+			end
+			-- draw origin point
+			Draw.setColor(0,0,0,2/3)
+			love.graphics.circle("line", 0, 0, 2)
+			Draw.setColor(0,1,0,2/3)
+			love.graphics.circle("line", 0, 0, 2)
+		end)
+	end,
+
 	draw = function(self,x,y)
+		-- drawing a certain frame
+		if self.speed == 0 and self.frame ~= 0 then
+			self.anim:gotoFrame(self.frame)
+		end
+
 		Draw.stack(function()
 			local c = self.color
 			Draw.setColor(c[1], c[2], c[3], ifndef(c[4], self.alpha))

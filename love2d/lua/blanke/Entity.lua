@@ -18,8 +18,6 @@ Entity = Class{
     	end
 
     	self._destroyed = false
-	    self._images = {}		
-		self._sprites = {} 			-- is actually the animations
 		self.draw_debug = false
 		self.scene_show_debug = false
 
@@ -31,21 +29,8 @@ Entity = Class{
 		Entity.x = 0
 		Entity.y = 0
 
-		-- sprite/animation variables
-		self._call_sprite_update = {}
-		self._sprite_prev = '' 				-- previously used sprite
-		self.sprite = {}	
-		self.sprite_angle = 0		
-		self.sprite_xscale = 1
-		self.sprite_yscale = 1
-		self.sprite_xoffset = 0
-		self.sprite_yoffset = 0
-		self.sprite_xshear = 0
-		self.sprite_yshear = 0
-		self.sprite_color = {255,255,255}
-		self.sprite_alpha = 255
-		self.sprite_speed = 1
-		self.sprite_frame = 0
+		self.sprite_obj = {}
+		self.sprite = {}
 		self.sprite_width = 0
 		self.sprite_height = 0
 
@@ -70,7 +55,7 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
-		self.onPropGet["direction"] = function() print("hi") return direction(0,0,self.hspeed,self.vspeed) end
+		self.onPropGet["direction"] = function() Debug.log(self.hspeed, self.vspeed); return direction(0,0,self.hspeed,self.vspeed) end
 		self.onPropGet["speed"] = function() return distance(0,0,self.hspeed,self.vspeed) end
 
 		self.onPropSet["sprite_index"] = function(self,v) self:refreshSpriteDims(v) end
@@ -129,20 +114,6 @@ Entity = Class{
 		end
 
     	if self._destroyed then return end -- call again in case entity is destroyed during update
-
-		if not self.pause then			
-			-- clear sprite update call list
-			for sprite_name, val in pairs(self._call_sprite_update) do
-				--[[
-				if not self._sprites[sprite_name] then
-					self._sprites[sprite_name] = {}
-					self._sprites[sprite_name].gotoFrame = function() end
-				end]]
-
-				self._sprites[sprite_name]:update(ifndef(self.sprite[sprite_name].speed, self.sprite_speed)*dt)
-				self._call_sprite_update[sprite_name] = nil
-			end
-		end
 
 		-- x/y extra coordinates
 		if self.xstart == 0 then
@@ -294,38 +265,10 @@ Entity = Class{
 		return {}
 	end,
 
-	debugSprite = function(self, sprite_index)
-		local info = {
-			angle=0,
-			xoffset=0, yoffset=0,
-			xshear=0, yshear=0,
-			xscale=1, yscale=1
-		}
-
-		if sprite_index then
-			table.update(info, self:getSpriteInfo(sprite_index))
-		end
-
-		Draw.stack(function()
-			Draw.translate(self.x, self.y)
-			Draw.rotate(info.angle)
-			Draw.shear(info.xshear, info.yshear)
-			Draw.scale(info.xscale, info.yscale)
-
-			-- draw sprite outline
-			Draw.setColor(0,1,0,2/3)
-			Draw.setLineWidth(1)
-			if self._sprites[sprite_index] then
-				local sprite_width, sprite_height = self:getSpriteDims(sprite_index)
-				love.graphics.rectangle("line", info.xoffset, info.yoffset, sprite_width, sprite_height)
-			end
-			-- draw origin point
-			Draw.setColor(0,0,0,2/3)
-			love.graphics.circle("line", 0, 0, 2)
-			Draw.setColor(0,1,0,2/3)
-			love.graphics.circle("line", 0, 0, 2)
-		end)
-		return self
+	debugSprite = function(self)
+		if self.sprites[self.sprite_index] then
+			self.sprites[self.sprite_index]:debug()
+		end 
 	end,
 
 	debugCollision = function(self)
@@ -341,23 +284,27 @@ Entity = Class{
 		self:debugCollision()
 	end,
 
-	getSpriteDims = function(self, sprite_index)
-		return self._sprites[sprite_index]:getDimensions()
-	end,
-
 	getSpriteInfo = function(self, sprite_index)
 		if not self.sprite[sprite_index] then return end
 
-		local info = table.deepcopy(self.sprite[sprite_index])
+		local vars = {'angle','xscale','yscale','xoffset','yoffset','xshear','yshear','color','alpha','speed'}
+		local info = {}
+		for i, k in ipairs(vars) do 
+			-- get prop from Sprite object
+			info[k] = self.sprite_obj[sprite_index][k]
+			
+			-- check if it is overriden for just this Sprite
+			if self.sprite[sprite_index][k] ~= nil then
+				info[k] = self.sprite[sprite_index][k]
+			end 
 
-		local vars = {'width','height','angle','xscale','yscale','xoffset','yoffset','xshear','yshear','color','alpha','speed'}
-		for v, var in ipairs(vars) do
-			if info[var] == nil then
-				info[var] = self['sprite_'..var]
-			else
-				if var == 'xoffset' or var == 'yoffset' then
-					info[var] = self['sprite_'..var] + info[var]
-				end
+			-- check for overall override
+			if self['sprite_'..k] ~= nil then 
+				if k == 'xoffset' or k == 'yoffset' then 
+					info[k] = info[k] + self['sprite_'..k]
+				else
+					info[k] = self['sprite_'..k]
+				end 
 			end
 		end
 
@@ -365,21 +312,23 @@ Entity = Class{
 	end,
 
 	drawSprite = function(self, sprite_index)
-		-- if no sprite is given, draw them all
 		if not sprite_index then
 			if self.sprite_index then
 				self:drawSprite(self.sprite_index)
 			else
 				self.sprite_width = 0
 				self.sprite_height = 0
+				-- just draw them all
+				for name, spr in pairs(self._sprites) do
+					self:drawSprite(name)
+				end 
 			end
 		end
-		local sprite = self._sprites[sprite_index]
+
+		local sprite = self.sprite_obj[sprite_index]
 		local info = self:getSpriteInfo(sprite_index)
 
 		if info and sprite then
-			self._call_sprite_update[sprite_index] = true
-
 			local sep_frame = false
 			if self.sprite[sprite_index].frame ~= nil then
 				sep_frame = true

@@ -677,6 +677,8 @@ nwWIN.on('loaded', function() {
 	app.os = os_names[nwOS.type()];
 	document.body.classList.add(app.os);
 
+	nwWIN.setShadow(true);
+
 	window.addEventListener("error", function(e){
 		app.error_occured = e;
 		app.error(e.error.stack);

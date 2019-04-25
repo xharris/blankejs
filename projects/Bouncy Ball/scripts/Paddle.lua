@@ -39,13 +39,6 @@ function Paddle:update(dt)
 	-- move the paddle image
 	self.img_paddle.x = self.x 
 	self.img_paddle.y = self.y
-	
-	-- explode on contact with missile
-	self.onCollision["main"] = function(other)
-		if other.parent.classname == "Missile" then
-			self:explode()
-		end
-	end
 end
 
 function Paddle:explode()

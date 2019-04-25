@@ -10,6 +10,6 @@ function BlankE.load()
 	
 	BlankE.options.state = "PlayState"
 	
-	--BlankE.options.resolution = 1
+	BlankE.options.resolution = 1
 	BlankE.options.filter = "nearest"
 end
