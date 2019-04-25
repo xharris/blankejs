@@ -24,6 +24,7 @@ function Ball:update(dt)
 			self:collisionBounce(1.01)
 			-- this will cause the ball to move slightly left or right depending on where it hits the paddle
 			self.hspeed = (self.x - other.parent.x) * 5
+			self.vspeed = math.min(self.vspeed, -400)
 			-- will be used later for keeping score
         	Signal.emit("ball_hit_paddle")
 		end

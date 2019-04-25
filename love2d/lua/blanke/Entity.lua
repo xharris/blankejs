@@ -70,8 +70,8 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
-		self.onPropGet["direction"] = function() return direction(self.x,self.y,self.x+self.hspeed,self.y+self.vspeed) end
-		self.onPropGet["speed"] = function() return distance(self.x,self.y,self.x+self.hspeed,self.y+self.vspeed) end
+		self.onPropGet["direction"] = function() print("hi") return direction(0,0,self.hspeed,self.vspeed) end
+		self.onPropGet["speed"] = function() return distance(0,0,self.hspeed,self.vspeed) end
 
 		self.onPropSet["sprite_index"] = function(self,v) self:refreshSpriteDims(v) end
 		self.onPropSet["sprite_color"] = function(self,v) return Draw._parseColorArgs(v) end

@@ -352,7 +352,8 @@ var app = {
 				recent_files:[],
 				plugin_path:'plugins',
 				engine_path:'love2d',
-				autocomplete_path:'./autocomplete.js'
+				autocomplete_path:'./autocomplete.js',
+				theme:'green'
 			});
 			if (callback) callback();
 		});
@@ -935,9 +936,6 @@ nwWIN.on('loaded', function() {
 	});
 
 	app.loadAppData(function(){
-		// load current theme
-		app.setTheme(app.settings.theme || "green");
-
 		// add recent projects (max 10)
 		var el_recent = app.getElement("#welcome .recent-files");
 		if (app.settings.recent_files.length > 10) 
@@ -959,6 +957,9 @@ nwWIN.on('loaded', function() {
 				el_recent.appendChild(el_br)
 			}
 		})
+
+		// load current theme
+		app.setTheme(app.settings.theme);
 		
 		app.showWelcomeScreen();
 		app.checkForUpdates(true);

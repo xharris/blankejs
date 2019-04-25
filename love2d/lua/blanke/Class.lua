@@ -74,7 +74,8 @@ local function new(class)
 	class.init    = class.init    	or class[1] or function() end
 	class.include = class.include 	or include
 	class.clone   = class.clone   	or clone
-	class.onPropSet = {}
+--[[
+		class.onPropSet = {}
 	class.onPropGet = {}
 	class._hiddenProps = {}
 	-- calls all of the setters using their current values
@@ -92,9 +93,33 @@ local function new(class)
 		end
 		rawset(c,k,v)
 	end
+	]]
 
 	-- constructor call
 	return setmetatable(class, {__call = function(c, ...)
+		
+		c.onPropSet = {}
+		c.onPropGet = {}
+		c._hiddenProps = {}
+		c.__newindex = function(o2,k,v)
+			if o2.onPropSet[k] ~= nil then
+				v = ifndef(o2.onPropSet[k](o2,v), v)
+				o2._hiddenProps[k] = v
+				return
+			end
+			rawset(c,k,v)
+		end
+		c.__index = function(o2,k)
+			local hidden_props = rawget(o2, '_hiddenProps')
+			local prop_get = rawget(o2,'onPropGet')
+			if hidden_props and hidden_props[k] ~= nil then
+				return hidden_props[k]
+			end
+			if prop_get and prop_get[k] then
+				return prop_get[k](o2)
+			end
+			return rawget(class, k)
+		 end
 		local o = setmetatable({}, c)
 
 		-- apply init properties
@@ -126,18 +151,7 @@ local function new(class)
 		end
 	    
 	    return o
-	end,
-	__index = function(c,k)
-		local hidden_props = rawget(c, '_hiddenProps')
-		local prop_get = rawget(c,'onPropGet')
-    	if hidden_props and hidden_props[k] ~= nil then
-    		return hidden_props[k]
-    	end
-		if prop_get and prop_get[k] then
-			return prop_get[k](c)
-		end
-    	return rawget(class, k)
- 	end})
+	end})
 end
 
 -- interface for cross class-system compatibility (see https://github.com/bartbes/Class-Commons).

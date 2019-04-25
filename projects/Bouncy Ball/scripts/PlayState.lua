@@ -15,10 +15,10 @@ function PlayState:enter()
 	ent_paddle.y = game_height / 2
 	
 	-- spawn a missile every 5 seconds in a random spot
-	Timer.every(5, function()
-		--[[local rand_missile = Missile()
+	Timer.every(2, function()
+		local rand_missile = Missile()
 		rand_missile.x = randRange(50, game_width - 50)
-		rand_missile.y = randRange(50, game_height - 50)]]
+		rand_missile.y = randRange(50, game_height - 50)
 	end)
 	
 	-- set the score to 0

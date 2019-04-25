@@ -12,7 +12,7 @@ function Missile:init()
 	-- have the missile fade in while it's "charging up"
 	self.img_missile.alpha = 0
 	-- at the end of the tween, set the missile to homing
-	Tween(self.img_missile, {alpha=1}, 3, "linear", function()
+	Tween(self.img_missile, {alpha=1}, 1, "linear", function()
 		-- at the end of the tween, set the missile to homing
 		self.homing = true
 		Timer.after(10, function()
@@ -51,18 +51,19 @@ function Missile:update(dt)
 	self.img_missile.x = self.x
 	self.img_missile.y = self.y
 	-- rotate the image to match the direction it's moving in
-	self.img_missile.angle = self.direction
+	self.img_missile.angle = self.direction + 90
 	
 	-- if there is a paddle, move towards it
 	local paddle = Paddle.instances[1]
 	if paddle and self.homing then
-		self:moveTowardsPoint(paddle.x, paddle.y, 400)
+		self:moveTowardsPoint(paddle.x, paddle.y, 100)
 	end
 	
 	-- call our custom explode() method during a collision
 	self.onCollision["main"] = function(other)
-		if other.parent.classname == "Paddle" then
+		if other.parent.classname == "Paddle" and self.homing then
 			self:explode()
+			other.parent:explode()
 		end
 	end	
 end
