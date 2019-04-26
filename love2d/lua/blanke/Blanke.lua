@@ -110,7 +110,7 @@ blanke_require('extra.noobhub')
 local modules = {'Group','Repeater','Map','Audio','Asset','Bezier','Camera','Canvas','Dialog','Physics','Font','Draw','Effect','Sprite','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
 -- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
 for m, mod in ipairs(modules) do
-	_G[mod] = blanke_require(mod, true)
+	_G[mod] = blanke_require(mod)
 end
 -- loop separately to add other stuff
 for m, mod in ipairs(modules) do

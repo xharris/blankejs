@@ -29,10 +29,12 @@ Entity = Class{
 		Entity.x = 0
 		Entity.y = 0
 
-		self.sprite_obj = {}
-		self.sprite = {}
-		self.sprite_width = 0
-		self.sprite_height = 0
+		self.sprite_obj = {}		-- ref to Sprite objects
+		self.sprite = {}			-- overrides for each Sprite's properties
+
+		for p, prop in ipairs(Sprite._vars) do 
+			self['sprite_'..prop] = 0
+		end 
 
 		-- movement variables
 		self.friction = 0
@@ -287,25 +289,24 @@ Entity = Class{
 	getSpriteInfo = function(self, sprite_index)
 		if not self.sprite[sprite_index] then return end
 
-		local vars = {'angle','xscale','yscale','xoffset','yoffset','xshear','yshear','color','alpha','speed'}
+		local vars = Sprite._vars
 		local info = {}
 		for i, k in ipairs(vars) do 
-			-- get prop from Sprite object
-			info[k] = self.sprite_obj[sprite_index][k]
+			-- get prop from Sprite object'
+			local prop = self.sprite_obj[sprite_index][k]
 			
-			-- check if it is overriden for just this Sprite
-			if self.sprite[sprite_index][k] ~= nil then
-				info[k] = self.sprite[sprite_index][k]
-			end 
-
 			-- check for overall override
 			if self['sprite_'..k] ~= nil then 
-				if k == 'xoffset' or k == 'yoffset' then 
-					info[k] = info[k] + self['sprite_'..k]
-				else
-					info[k] = self['sprite_'..k]
-				end 
+				info[k] = self['sprite_'..k]
 			end
+
+			-- check if it is overriden for just this Sprite
+			if self.sprite[sprite_index][k] ~= nil then
+				prop = self.sprite[sprite_index][k]
+				if k == 'xoffset' or k == 'yoffset' then
+					info[k] = prop + (self['sprite_'..k] or 0)
+				end
+			end 
 		end
 
 		return info
@@ -319,52 +320,20 @@ Entity = Class{
 				self.sprite_width = 0
 				self.sprite_height = 0
 				-- just draw them all
-				for name, spr in pairs(self._sprites) do
+				for name, spr in pairs(self.sprite) do
 					self:drawSprite(name)
 				end 
+				return
 			end
 		end
-
-		local sprite = self.sprite_obj[sprite_index]
-		local info = self:getSpriteInfo(sprite_index)
-
-		if info and sprite then
-			local sep_frame = false
-			if self.sprite[sprite_index].frame ~= nil then
-				sep_frame = true
-			end
-
-			if info.speed == 0 then
-				if sep_frame then
-					sprite:gotoFrame(info.frame)
-				else
-					sprite:gotoFrame(self.sprite_frame)
-				end
-			end
-
-			if not sep_frame then
-				self.sprite_frame = sprite.position -- TODO: what about sprites with different amount of frames. does it even matter?
-			end
-
-			-- draw current sprite (image, x,y, angle, sx, sy, ox, oy, kx, ky) s=scale, o=origin, k=shear
-			local img = self._images[sprite_index]
-			Draw.stack(function()
-				Draw.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
-				--love.graphics.setColor(info.color[1], info.color[2], info.color[3], ifndef(info.color[4], info.alpha))
-				
-				-- is it an Animation or an Image
-				if img then
-					local draw_x, draw_y = floor(self.x), floor(self.y)
-					if sprite.update ~= nil then
-						sprite:draw(img(), draw_x, draw_y, math.rad(info.angle), info.xscale, info.yscale, -math.floor(info.xoffset), -math.floor(info.yoffset), info.xshear, info.yshear)
-					else
-						love.graphics.draw(img(), draw_x, draw_y, math.rad(info.angle), info.xscale, info.yscale, -math.floor(info.xoffset), -math.floor(info.yoffset), info.xshear, info.yshear)
-					end
-				end
-
-				if self.draw_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
-			end)
+		if self.sprite_obj[sprite_index] then 
+			self.sprite_obj[sprite_index]:draw(
+				floor(self.x), 
+				floor(self.y), 
+				self:getSpriteInfo(sprite_index)
+			)
 		end
+		if self.draw_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
 	end,
 
 	draw = function(self)
@@ -390,36 +359,25 @@ Entity = Class{
 	end,
 
 	addAnimation = function(self, args)
-		-- main args
-		local ani_name = args.name
-		local name = args.image
-		local frames = ifndef(args.frames, {1,1})
-		-- other args
-		local offset = ifndef(args.offset, {0,0})
-		local left = offset[1]
-		local top = offset[2]
-		local border = ifndef(args.border, 0)
-		local speed = ifndef(args.speed, 0.1)
+		local first_sprite = (table.len(self.sprite) == 0)
 
-		if Image.exists(name) then
-			local image = Image(name)
-			local frame_size = ifndef(args.frame_size, {image.width, image.height})
-		    local grid = anim8.newGrid(frame_size[1], frame_size[2], image.width, image.height, left, top, border)
-			local sprite = anim8.newAnimation(grid(unpack(frames)), speed)
+		self.sprite_obj[args.name] = Sprite(args)
+		self.sprite[args.name] = {}
 
-			self._images[ani_name] = image
-			self._sprites[ani_name] = sprite
+		if first_sprite then 
+			for p, prop in ipairs(Sprite._vars) do 
+				if self['sprite_'..prop] == nil or self['sprite_'..prop] == 0 then
+					self['sprite_'..prop] = self.sprite_obj[args.name][prop]
+				end
+			end 
+		end 
 
-			self:refreshSpriteDims(ani_name)
-			self.sprite[ani_name] = {width=self.sprite_width, height=self.sprite_height}
-		end
 		return self
 	end,
 
 	refreshSpriteDims = function(self, name)
-		if self._sprites[name] then
-			local anim_w, anim_h = self._sprites[name]:getDimensions()
-			self.sprite_width, self.sprite_height = ifndef(anim_w, 0), ifndef(anim_h, 0)
+		if self.sprite_obj[name] then
+			self.sprite_width, self.sprite_height = self.sprite_obj[name].width, self.sprite_obj[name].height
 		end
 	end,
 

@@ -1,6 +1,7 @@
+local floor = function(v) return math.floor(v) end
+
 Sprite = Class{
-	_vars = {'angle','xscale','yscale','xoffset','yoffset','xshear','yshear','color',
-	'alpha','speed','frame'},
+	_vars = {'angle','xscale','yscale','xoffset','yoffset','xshear','yshear','alpha','speed','frame','width','height','color'},
 	init = function(self, args)
 		self.x, self.y = 0, 0
 		self.angle = 0		
@@ -16,6 +17,8 @@ Sprite = Class{
 		self.frame = 0
 		self.width = 0
 		self.height = 0
+
+		table.update(self, args)
 
 		-- main args
 		local name = args.image
@@ -74,19 +77,24 @@ Sprite = Class{
 		end)
 	end,
 
-	draw = function(self,x,y)
+	draw = function(self,x,y,options)
+		options = options or {}
+		function o(key) return options[key] or self[key] end
+
+		self.speed = o('speed')
+
 		-- drawing a certain frame
-		if self.speed == 0 and self.frame ~= 0 then
-			self.anim:gotoFrame(self.frame)
+		if o('speed') == 0 and o('frame') ~= 0 then
+			self.anim:gotoFrame(o('frame'))
 		end
 
 		Draw.stack(function()
 			local c = self.color
-			Draw.setColor(c[1], c[2], c[3], ifndef(c[4], self.alpha))
+			Draw.setColor(c[1], c[2], c[3], ifndef(c[4], o('alpha')))
 
-			self.anim:draw(self.image(), math.floor(x or self.x), math.floor(y or self.y), math.rad(self.angle), 
-				self.xscale, self.yscale, -math.floor(self.xoffset), -math.floor(self.yoffset), 
-				self.xshear, self.yshear)
+			self.anim:draw(self.image(), floor(x or self.x), floor(y or self.y), math.rad(o('angle')), 
+				o('xscale'), o('yscale'), -floor(o('xoffset')), -floor(o('yoffset')), 
+				o('xshear'), o('yshear'))
 		end)
 	end
 }

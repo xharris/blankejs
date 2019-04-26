@@ -208,8 +208,8 @@ Repeater = Class{
 			elseif texture._entity then
 				self.entity_texture = true
 				self.texture_list = {}
-				for name, sprite in pairs(texture._sprites) do
-					self.texture_list[name] = love.graphics.newSpriteBatch(texture._images[name].image)
+				for name, sprite in pairs(texture.sprite_obj) do
+					self.texture_list[name] = love.graphics.newSpriteBatch(sprite.image())
 				end
 				self:updateEntityTexture()
 

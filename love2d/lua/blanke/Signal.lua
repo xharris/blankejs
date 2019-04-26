@@ -31,7 +31,8 @@ Signal = {
 		table.insert(Signal.registry[name], func)
 
 		if not persistent then
-			local state = StateManager.current().classname
+			local state = StateManager.current()
+			if state then state = state.classname else state = '*' end
 			if not Signal.state_ref[state] then
 				Signal.state_ref[state] = {}
 			end
