@@ -89,6 +89,7 @@ class Tab {
 	close () {
 		if (this.onClose) this.onClose();
 		
+		app.setHistoryActive(this.history_id, false);
 		app.removeHistory(this.history_id);
 		this.tab_container.remove();
 	}

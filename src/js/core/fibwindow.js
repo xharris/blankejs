@@ -223,6 +223,8 @@ class FibWindow {
 
 		if (remove_history)
 			app.removeHistory(this.history_id);
+		else
+			app.setHistoryActive(this.history_id, false);
 	}
 
 	static closeAll (type) {

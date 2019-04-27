@@ -145,6 +145,7 @@ var app = {
 	setTheme: function(name) {
 		// change theme variables
 		less.modifyVars(app.themes[name]);
+		less.refresh();
 		app.settings.theme = name;
 		app.saveAppData();
 	},
@@ -537,6 +538,13 @@ var app = {
 
 	setHistoryContextMenu: function(id, fn_onmenu) {
 		if (app.history_ref[id]) app.history_ref[id].entry.oncontextmenu = fn_onmenu;
+	},
+
+	setHistoryActive: function(id, yes) {
+		if (app.history_ref[id]) {
+			if (yes) app.history_ref[id].entry.classList.add("open");
+			else app.history_ref[id].entry.classList.remove("open");
+		}
 	},
 
 	setHistoryText: function(id, text) {

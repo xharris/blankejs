@@ -941,7 +941,9 @@ body:before, body:after {
 			display: none;
 		}
 
-		&:nth-last-child(2) {
+		
+
+		&.open {
 			.entry-title {
 				color: #9e9e9e;
 				background-color: rgba(255,255,255,0.1);
@@ -960,7 +962,7 @@ body:before, body:after {
 			}
 		}
 		
-		&:nth-last-child(1) {
+		&.open:last-child {
 			.entry-title {
 				color: @window-background;
 				background-color: @ide-accent;
@@ -987,7 +989,7 @@ body:before, body:after {
 				padding-left: 0px;
 			}
 			.triangle-left {
-				display: none;
+				display: none !important;
 			}
 		}
 	}

@@ -3011,3 +3011,8 @@ ReferenceError: new_s is not defined
     at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:737:30)
     at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:766:6)
 
+[[ 1556373226722 ]]
+TypeError: Cannot read property 'history_id' of undefined
+    at FibWindow.close (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:227:40)
+    at HTMLButtonElement.FibWindow.btn_close.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:49:50)
+

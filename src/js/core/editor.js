@@ -38,6 +38,7 @@ class Editor {
 		// create tab
 		this.container = new Tab(this.constructor.name);
 		this.container.appendChild(this.content_area);
+		app.setHistoryActive(this.container.history_id, true);
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
@@ -54,6 +55,7 @@ class Editor {
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
+		app.setHistoryActive(this.container.history_id, true);
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
@@ -74,6 +76,7 @@ class Editor {
 	}
 
 	close(...args) {
+		app.setHistoryActive(this.container.history_id, false);
 		this.container.close(...args);
 		if (this.onClose) this.onClose();
 		this.closed = true;
