@@ -84,13 +84,13 @@ local function new(class)
 		end
 	end
 
-	class.__newindex = function(c,k,v)
-		if c.onPropSet[k] ~= nil then
-			v = ifndef(c.onPropSet[k](c,v), v)
-			c._hiddenProps[k] = v
+	class.__newindex = function(self,k,v)
+		if self.onPropSet[k] ~= nil then
+			v = ifndef(self.onPropSet[k](self,v), v)
+			self._hiddenProps[k] = v
 			return
 		end
-		rawset(c,k,v)
+		rawset(self,k,v)
 	end
 
 	-- constructor call
@@ -110,6 +110,7 @@ local function new(class)
 		end
 		if o.init then
 			local ret_val =	o:init(...)
+
 			-- get default values for onPropSet variables
 			for var, fn in pairs(o.onPropSet) do
 				if o.onPropGet[var] then

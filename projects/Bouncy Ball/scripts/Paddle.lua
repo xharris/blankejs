@@ -14,7 +14,7 @@ end
 
 function Paddle:update(dt)
 	-- determine how fast it will move
-	local move_spd = 800
+	local move_spd = 500
 	-- watch for key presses and move the paddle in the direction the player presses
 	if Input("move_left").pressed then
 		self.hspeed =	-move_spd

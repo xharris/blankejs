@@ -29,20 +29,21 @@ Draw = Class{
 
 	_parseColorArgs = function(r,g,b,a)
 		color = r
+		local in_type = type(color)
         
-		if (type(color) == "table") then
+		if (in_type == "table") then
 			r, g, b, a = unpack(color)
 		end
-		if (type(color) == "string") and color:startsWith("#") then
+		if (in_type == "string") and color:startsWith("#") then
 			color = hex2rgb(color)
-		elseif (type(color) == "string") then
+		elseif (in_type == "string") then
 			color = Draw[color]
 			if color then
 				if g then color[4] = clamp(g, 0, 255)
 				else color[4] = 255 end
 			end
 		end
-		if (type(color) == "number") then
+		if (in_type == "number") then
 			color = {r,g,b,a}
 		end
         if color == nil then

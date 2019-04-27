@@ -89,7 +89,7 @@ Sprite = Class{
 		end
 
 		Draw.stack(function()
-			local c = self.color
+			local c = Draw._parseColorArgs(o('color'))
 			Draw.setColor(c[1], c[2], c[3], ifndef(c[4], o('alpha')))
 
 			self.anim:draw(self.image(), floor(x or self.x), floor(y or self.y), math.rad(o('angle')), 

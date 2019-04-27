@@ -52,12 +52,11 @@ function Missile:update(dt)
 	self.img_missile.y = self.y
 	-- rotate the image to match the direction it's moving in
 	self.img_missile.angle = self.direction + 90
-	self.sprite_color = "blue"
 	
 	-- if there is a paddle, move towards it
 	local paddle = Paddle.instances[1]
 	if paddle and self.homing then
-		self:moveTowardsPoint(paddle.x, paddle.y, 100)
+		self:moveTowards(paddle, 10)
 	end
 	
 	-- call our custom explode() method during a collision

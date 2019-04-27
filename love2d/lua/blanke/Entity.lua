@@ -57,27 +57,42 @@ Entity = Class{
 
 		self.onCollision = {["*"] = function() end}
 
-		self.onPropGet["direction"] = function() Debug.log(self.hspeed, self.vspeed); return direction(0,0,self.hspeed,self.vspeed) end
-		self.onPropGet["speed"] = function() return distance(0,0,self.hspeed,self.vspeed) end
+		self.direction = 0
+		self.speed = 0
+		--[[
+		self.onPropGet["direction"] = function()
+			--Debug.log(self.classname, self.uuid, self.hspeed, self.vspeed)
+			return 1
+		end 
 
-		self.onPropSet["sprite_index"] = function(self,v) self:refreshSpriteDims(v) end
-		self.onPropSet["sprite_color"] = function(self,v) return Draw._parseColorArgs(v) end
+		self.onPropSet["speed"] = function(_,v)
+			Debug.log(v)
+			self.hspeed = cos(rad(self.direction)) * v
+			self.vspeed = sin(rad(self.direction)) * v
+		end 
+
+		self.onPropGet["speed"] = function() return 0 end
+
+		self.onPropSet["sprite_index"] = function(_,v) self:refreshSpriteDims(v) end
+		self.onPropSet["sprite_color"] = function(_,v) return Draw._parseColorArgs(v) end
+		
 		self.onPropSet["angle"] = function(self,v) self:rotateTo(v) end
 		self.onPropGet["angle"] = function() return 0 end
+		]]
 
     	_addGameObject('entity', self)
     end,
 
     _post_init = function(self)
-		if not self.sprite_index then
-			self.sprite_index = table.keys(self._sprites)[1]
+		if not self.sprite_index and #self.sprite > 0 then
+			self.sprite_index = table.keys(self.sprite)[1]
 		end
 		-- entity_spash[self.classname]:register(self, self.x, self.y, self.x, self.y)
     end,
 
     __eq = function(self, other)
     	return (self.uuid == other.uuid)
-    end,
+	end,
 
     destroy = function(self)
     	-- destroy hitboxes
@@ -96,6 +111,12 @@ Entity = Class{
 
     _update = function(self, dt)
     	if self._destroyed then return end
+
+		-- direction/speed overrides hspeed/vspeed
+		if self.speed > 0 then 
+			self.hspeed = cos(rad(self.direction)) * self.speed
+			self.vspeed = sin(rad(self.direction)) * self.speed
+		end 
 
     	-- subtract friction
     	if self.hspeed ~= 0 then 
@@ -303,6 +324,7 @@ Entity = Class{
 			-- check if it is overriden for just this Sprite
 			if self.sprite[sprite_index][k] ~= nil then
 				prop = self.sprite[sprite_index][k]
+				info[k] = prop
 				if k == 'xoffset' or k == 'yoffset' then
 					info[k] = prop + (self['sprite_'..k] or 0)
 				end
@@ -439,9 +461,13 @@ Entity = Class{
 		return self
 	end,
 
+	moveTowards = function(self, ent, speed) 
+		self:moveDirection(math.deg(math.atan2(ent.y - self.y, ent.x - self.x)), speed)
+	end, 
+
 	moveDirection = function(self, angle, speed)
-		self.hspeed = cos(rad(angle)) * speed
-		self.vspeed = sin(rad(angle)) * speed
+		self.direction = angle
+		self.speed = speed
 		return self
 	end,
     

@@ -40,7 +40,7 @@ function PlayState:update(dt)
 	-- end game if ball drops
 	if ent_ball.y > game_height then
 		ent_ball:destroy()
-		ent_paddle:explode()
+		--ent_paddle:explode()
 	end
 	
 	-- if the game is over, check if the player wants to restart

@@ -32,7 +32,8 @@ function Player:draw()
 	self:drawSprite()
 end
 
-function Player:update(dt)	
+function Player:update(dt)
+	self.sprite["walk"].color = "#f33"
 	self.hspeed = self.platform_hspeed
 	
 	self:platformerCollide{

@@ -2,7 +2,14 @@
 local sin = math.sin
 local pi = math.pi
 ]]
+local _hex_cache = {}
 function hex2rgb(hex)
+	if _hex_cache[hex] then return _hex_cache[hex] end
+	local ret = _hex2rgb(hex)
+	_hex_cache[hex] = ret 
+	return ret
+end 
+function _hex2rgb(hex)
 	assert(type(hex) == "string", "hex2rgb: expected string, got "..type(hex).." ("..hex..")")
     hex = hex:gsub("#","")
     if(string.len(hex) == 3) then
