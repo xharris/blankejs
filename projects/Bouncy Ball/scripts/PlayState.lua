@@ -15,7 +15,7 @@ function PlayState:enter()
 	ent_paddle.y = game_height / 2
 	
 	-- spawn a missile every 5 seconds in a random spot
-	Timer.every(2, function()
+	Timer.every(8, function()
 		local rand_missile = Missile()
 		rand_missile.x = randRange(50, game_width - 50)
 		rand_missile.y = randRange(50, game_height - 50)
@@ -40,7 +40,7 @@ function PlayState:update(dt)
 	-- end game if ball drops
 	if ent_ball.y > game_height then
 		ent_ball:destroy()
-		--ent_paddle:explode()
+		ent_paddle:explode()
 	end
 	
 	-- if the game is over, check if the player wants to restart

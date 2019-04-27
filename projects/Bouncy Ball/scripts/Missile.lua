@@ -56,14 +56,14 @@ function Missile:update(dt)
 	-- if there is a paddle, move towards it
 	local paddle = Paddle.instances[1]
 	if paddle and self.homing then
-		self:moveTowards(paddle, 10)
+		self:moveTowards(paddle, 100)
 	end
 	
 	-- call our custom explode() method during a collision
 	self.onCollision["main"] = function(other)
 		if other.parent.classname == "Paddle" and self.homing then
-			--self:explode()
-			--other.parent:explode()
+			self:explode()
+			other.parent:explode()
 		end
 	end	
 end
