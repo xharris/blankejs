@@ -1,22 +1,21 @@
 import React, { Component } from 'react';
+import { SVG } from './Svg';
 
 class Button extends Component {
-    render = () => (
+    render = () => {
+        return (
         <button 
             id={`btn-${this.props.id}`} 
             onClick={this.props.onClick}
         >
         {
-            this.props.svg == null ? null :
+            this.props.icon == null ? this.props.id :
             (
-                <object 
-                    className="blanke-icon" 
-                    data={`icons/${this.props.svg}.svg`} 
-                    type="image/svg+xml">{this.props.svg}</object>
+                <SVG name="play"/>
             )
         }
         </button>    
-    )
+    )}
 }
 
 export default Button;
