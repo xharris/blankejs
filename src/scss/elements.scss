@@ -50,7 +50,7 @@
 		}
 
 		.class-name {
-			.no-select();
+			@include no-select();
 			font-weight: 900;
 			font-size: 18px;
 			text-align: right;
@@ -64,7 +64,7 @@
 			text-align: right;
 
 			* {
-				.no-select();
+				@include no-select();
 
 				display: inline-block;
 				color: rgba(117, 117, 117, 0.5);
@@ -122,16 +122,16 @@
 	}
 
 	.cm-matchhighlight {
-		background-color: @ide-accent;
+		background-color: theme(ide-accent);
 	    color: black !important;
-	    outline: 1px solid @ide-accent;
+	    outline: 1px solid $ide-accent;
 	}
 	.CodeMirror-selection-highlight-scrollbar {
-		background-color: @ide-accent;
+		background-color: $ide-accent;
 	}
 
 	.cm-string {
-		color: @theme-string;
+		color: $theme-string;
 	}
 
 	.cm-blanke-instance {
@@ -174,7 +174,7 @@
 				overflow: hidden;
 				margin: 0px;
 				padding-left: 20px;
-				color: @theme-text-sub;
+				color: $theme-text-sub;
 			}
 	    }
 
@@ -194,7 +194,7 @@
 	}
 
 	.optional {
-		color: @theme-text-optional;
+		color: $theme-text-optional;
 	}
 
 	.arg-info, .prop-info {
@@ -241,7 +241,7 @@
 	min-width: 250px;
 
 	.CodeMirror-hint-active {
-		background: @theme-list-active-bg; /* #558b2f; */
+		background: $theme-list-active-bg; /* #558b2f; */
 		color: white;
 
 		.arg-info, .prop-info {
@@ -249,7 +249,7 @@
 			overflow: hidden;
 			margin: 0px;
 			padding-left: 20px;
-			color: @theme-text-sub;
+			color: $theme-text-sub;
 		}
 	}
 }
@@ -258,13 +258,13 @@
 	overflow: hidden !important;
 
 	canvas { 
-		.centered();
+		@include centered();
 	}
 
 	#toggle-scene-sidebar {
 		position: absolute;
 		top: 0px;
-		right: @window-padding;
+		right: $window-padding;
 		margin-top: 28px;
 
 		i {
@@ -274,7 +274,7 @@
 
 	.sidebar {
 	    position: absolute;
-	    right: @window-padding;
+	    right: $window-padding;
 	    top: 0px;
 	    pointer-events: none;
 		background-color: rgba(38, 50, 56, 0.81);
@@ -290,7 +290,7 @@
 
 	    /*&:hover {*/
 	    	width: 160px;  	
-	    	box-shadow: @card-shadow;
+	    	box-shadow: $card-shadow;
 	    /*}*/
 
 	    p {
@@ -309,10 +309,6 @@
 	    &:not(:hover) {
 			/* width: 50px;*/
 
-			select {
-			    /* -webkit-appearance: none; */
-			}
-
 			.btn-add-object, .btn-add-layer {
 	    		opacity: 0;
 	    	}
@@ -323,7 +319,7 @@
 	    }
 
 	    * {
-	    	.no-select();
+			@include no-select();
 	    	pointer-events: all;
 	   	 	transition: all ease-in-out 0.2s;
 	    }
@@ -489,7 +485,7 @@
 			}
 
 			&:hover > .input-letter {
-				width: calc(~'100% - 18px');
+				width: calc('100% - 18px');
 			}
 
 			.select-letter {
@@ -586,7 +582,7 @@
 	    .input-layer {
 	    	background-color: #cfd8dc;
 		    position: absolute;
-		    width: calc(~'100% - 18px');
+		    width: calc('100% - 18px');
 		    font-size: 13px;
 		    height: 30px;
 		    padding-top: 0px;
@@ -682,14 +678,14 @@
 			position: relative;
 
 			.image-selection {
-				.no-select();
+				@include no-select();
 			    position: absolute;
 			    outline: red solid 1px;
 			    pointer-events: none;
 			}
 
 			.image-preview {
-				.no-select();
+				@include no-select();
 			}
 
 			.image-grid {
@@ -721,12 +717,12 @@
 	overflow: hidden !important;
 
 	canvas { 
-		.centered();
+		@include centered();
 	}
 
 	.sidebar {
 	    position: absolute;
-	    right: @window-padding;
+	    right: $window-padding;
 	    top: 0px;
 	    pointer-events: none;
 	    background-color: rgba(207,216,220 ,0.25);
@@ -771,7 +767,7 @@
 	    .input-letter {
 	    	background-color: rgba(207,216,220 ,1);
 		    position: absolute;
-		    width: calc(~'100% - 18px');
+		    width: calc('100% - 18px');
 		    font-size: 32px;
 		    padding: 4px 5px;
 		    box-sizing: border-box;
@@ -842,7 +838,7 @@
 	    .input-layer {
 	    	background-color: #cfd8dc;
 		    position: absolute;
-		    width: calc(~'100% - 18px');
+		    width: calc('100% - 18px');
 		    font-size: 13px;
 		    height: 30px;
 		    padding-top: 0px;
@@ -962,19 +958,11 @@
 	}
 }
 
-.content[data-type="ImageBrowser"] {
-
-}
-
 .content[data-type="AssetManager"] {
 	.editor-content {
 		color: rgba(238,238,238 ,1);
-   		background-color: @beveled-bg;
+   		background-color: $beveled-bg;
    		overflow: hidden;
-	}
-
-	.search {
-		
 	}
 
 	.file-list, .file-preview {
@@ -994,7 +982,7 @@
     		margin-bottom: 5px;
 
     		.cat-handle {
-    			.no-select();
+    			@include no-select();
 
     			background-color: #485358;
 			    padding: 2px;
@@ -1025,7 +1013,7 @@
     	}
 
 		.file-row {
-			.no-select();
+			@include no-select();
 			
 			padding: 1px;
 			cursor: pointer;
@@ -1033,11 +1021,11 @@
 
 			&:hover, &.selected {
 				padding-left: 3px;
-				background-color: darken(@ide-accent, 50%);
+				background-color: darken($ide-accent, 50%);
 			}
 
 			&.selected {
-				border-left: 3px solid @ide-accent;
+				border-left: 3px solid $ide-accent;
 			}
 		}
 	}
@@ -1087,9 +1075,6 @@
 	.editor-content {
 		overflow-x: hidden;
 	}
-	.doc-container {
-
-	}
 	.section {
 		background-color: rgb(127, 140, 161);
 		color: #E0E0E0;
@@ -1097,7 +1082,7 @@
 		padding: 3px;
 
 		.header {
-			.no-select();
+			@include no-select();
 
 			margin: 0;
 			padding: 6px;
@@ -1134,12 +1119,12 @@
 		transition: box-shadow ease-in-out 0.1s;
 
 		&:hover:not(.expanded) {
-			.input-outline();
+			@extend .input-outline;
 			background: #414a58;
 		}
 
 		.subheader {
-			.no-select();
+			@include no-select();
 
 			margin: 5px;
 			font-style: italic;
@@ -1174,12 +1159,12 @@
 	.platforms {
 		position: relative;
 		padding-top: 3px;
-	    border: 1px solid @window-background;
+	    border: 1px solid $window-background;
 	    border-radius: 2px;
 		display: inline-block;
 
 	    .title1 {
-    	    color: @search-text-focus;
+    	    color: $search-text-focus;
 		    margin: 0px;
 		    position: absolute;
 		    top: -6px;
@@ -1195,7 +1180,7 @@
 		padding: 10px;
 		margin: 5px;
 		display: inline-block;
-	    border: 1px dashed @window-background;
+	    border: 1px dashed $window-background;
 		transition: all ease-in-out 0.2s;
 
 		&:hover {
@@ -1215,7 +1200,7 @@
 }
 
 .content[data-type="SpritesheetPreview"] {
-	background: @sub-window-background;
+	background: $sub-window-background;
 
 	* {
 		transform-origin: 0 0;
@@ -1242,13 +1227,13 @@
 	    text-transform: uppercase;
 	    border: none;
 	    border-radius: 2px;
-	    outline: 1px solid fade(@ide-accent, 90%);
+	    outline: 1px solid fade($ide-accent, 90%);
 	    z-index: 10;
 	    transition: all ease-in-out 0.2s;
 
 	    &:hover {
-	    	background: @ide-accent;
-	    	background: fade(@ide-accent, 90%);
+	    	background: $ide-accent;
+	    	background: fade($ide-accent, 90%);
 	    }
 	}
 
@@ -1279,7 +1264,7 @@
 		height: 20px;
 		z-index: 15;
 		border-radius: 100%;
-		border: 1px solid fade(@ide-accent, 90%);
+		border: 1px solid fade($ide-accent, 90%);
 		outline: none;
 	    font-size: 25px;
 	    padding: 0px;
@@ -1291,7 +1276,7 @@
 	    transition: all ease-in-out 0.2s;
 
 	    &:hover {
-	    	background: fade(@ide-accent, 90%);
+	    	background: fade($ide-accent, 90%);
 	    }
 	}
 	.zoom-amt {
@@ -1347,7 +1332,7 @@
 	}
 
 	.prvw-container {
-		.no-select();
+		@include no-select();
 		
 		width: 50%;
 		display: inline-block;
@@ -1417,7 +1402,7 @@
 	.editor-content {
 		padding: 5px;
     	box-sizing: border-box;
-    	background-color: @beveled-bg;
+    	background-color: $beveled-bg;
 
     	.form-container {
     		width: 100%;
@@ -1547,7 +1532,7 @@
     			}
 
     			.match {
-    				color: @ide-accent;
+    				color: $ide-accent;
     				font-style: normal;
     			}
 

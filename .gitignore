@@ -62,3 +62,6 @@ diff.txt
 dist
 .DS_Store
 error.txt
+
+cache/
+build/

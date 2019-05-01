@@ -1,6 +1,6 @@
-@card-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+$card-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
 
-.no-select {
+@mixin no-select {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none;   /* Chrome/Safari/Opera */
     -khtml-user-select: none;    /* Konqueror */
@@ -10,30 +10,30 @@
     not supported by any browser */
 }
 
-.win-drag{
+@mixin win-drag{
     -webkit-app-region: drag;
 }
 
-.win-nodrag{
+@mixin win-nodrag{
     -webkit-app-region: no-drag;
 }
 
-/* parent must be relative */
-.centered {
-    .centered-h();
-    .centered-v();
-    transform: translate(-50%,-50%);
-}
-
-.centered-h {
+@mixin centered-h {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
 }
-.centered-v {
+@mixin centered-v {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+}
+
+/* parent must be relative */
+@mixin centered {
+    @include centered-h();
+    @include centered-v();
+    transform: translate(-50%,-50%);
 }
 
 *:not(.no-custom-scroll) {
@@ -72,9 +72,9 @@
 /*
     BUTTONS
 */
-@button-transition-speed: 0.4s;
-@button-size: 26px;
-@button-icon-padding: 4px; /* 4px is practically a random number */
+$button-transition-speed: 0.4s;
+$button-size: 26px;
+$button-icon-padding: 4px; /* 4px is practically a random number */
 
 .ui-btn-group {
     cursor: default;
@@ -83,7 +83,7 @@
 }
 
 .ui-button {
-    .no-select();
+    @include no-select();
     
     margin: 3px;
     border: none;
@@ -94,7 +94,7 @@
     vertical-align: top;
     border-radius: 2px;
 
-    transition: all ease-in-out @button-transition-speed;
+    transition: all ease-in-out $button-transition-speed;
 
     &:hover {
         background-color: rgba(224,224,224,0.3);
@@ -116,10 +116,10 @@
 }
 
 .ui-button-sphere {
-    .ui-button();
+    @extend .ui-button;
     
-    height: @button-size;
-    width: @button-size;
+    height: $button-size;
+    width: $button-size;
     padding: 0px;
 
     &:hover {
@@ -128,7 +128,7 @@
 }
 
 .ui-button-rect {
-    .ui-button();
+    @extend .ui-button;
     
     padding: 5px 10px;
     background-color: transparent;
@@ -137,7 +137,7 @@
     border-radius: 0px;
     cursor: pointer;
 
-    transition: all ease-in-out @button-transition-speed;
+    transition: all ease-in-out $button-transition-speed;
 
     &:hover {
         border-radius: 4px;
@@ -154,14 +154,14 @@
 }
 
 .ui-input {
-    .win-nodrag();
+    @include win-nodrag();
 }
 
 .ui-checkbox {
-    .win-nodrag();
+    @include win-nodrag();
 
-    width: @button-size;
-    height: @button-size;
+    width: $button-size;
+    height: $button-size;
     margin: 3px;
     display: inline-block;
     vertical-align: top;
@@ -184,9 +184,9 @@
         left: 0px;
 
         & + .mdi,& + .mdi-svg {
-            width: @button-size;
-            height: @button-size;
-            padding: @button-icon-padding;
+            width: $button-size;
+            height: $button-size;
+            padding: $button-icon-padding;
             text-align: center;
         }
 
@@ -210,8 +210,8 @@
         border: 1px solid black;
         border-radius: 2px;
         margin: 0px;
-        width: @button-size;
-        height: @button-size;
+        width: $button-size;
+        height: $button-size;
         padding: 2px;
         background-color: transparent;
         box-sizing: border-box;
@@ -232,7 +232,7 @@
 }
 
 .ui-checkbox-label {
-    .ui-checkbox();
+    @extend .ui-checkbox;
 
     width: auto;
 }
@@ -256,7 +256,7 @@
     }
 
     input {
-        .ui-input();
+        @extend .ui-input;
     }
 
     .ui-input {
@@ -266,7 +266,7 @@
 
 .ui-text {
     > input {
-        .ui-input();
+        @extend .ui-input;
 
         margin-left: 10px;
     }
@@ -277,7 +277,7 @@
 }
 
 .ui-modal {
-    .win-nodrag();
+    @include win-nodrag();
 
     position: absolute;
     top: 50%;
@@ -319,7 +319,7 @@
 }
 
 /* Window CSS */
-@title-bar-height: 14px;
+$title-bar-height: 14px;
 .blanke-window {
     display: none;
     z-index: 100;
@@ -329,23 +329,23 @@
     border-radius: 2px;
     border-width: 2px;
     border-style: solid;
-    box-shadow: @card-shadow;
+    box-shadow: $card-shadow;
 
     >.title-bar {
         cursor: default;
         background-color: black;
-        height: @title-bar-height;
+        height: $title-bar-height;
         overflow: hidden;
 
         >* {
-            .no-select();
+            @include no-select();
             font-size: 12px;
         }
 
         >.title {
             pointer-events: none;
             color: white;
-            line-height: @title-bar-height;
+            line-height: $title-bar-height;
             padding-left: 2px;
         }
 
@@ -365,7 +365,7 @@
         margin-bottom: 0px;
         overflow: hidden;
         position: absolute;
-        top: @title-bar-height;
+        top: $title-bar-height;
         bottom: 0px;
         right: 0px;
         left: 0px;
