@@ -186,6 +186,7 @@ var app = {
 
 				app.getElement("#search-container").classList.remove("no-project");
 				app.setWinTitle(nwPATH.basename(app.project_path));
+
 				dispatchEvent("openProject", {path: path});
 			} else {
 				blanke.toast(`Could not open project '${nwPATH.basename(path)}'`);
@@ -423,6 +424,7 @@ var app = {
 		'font':['ttf','ttc','cff','woff','otf','otc','pfa','pfb','fnt','bdf','pfr'],
 		'script':['lua']
 	},
+	name_to_path: {},
 	getAssets: function(f_type, cb) {
 		let extensions = app.allowed_extensions[f_type];
 		if (!extensions) return;
@@ -453,6 +455,19 @@ var app = {
 	},
 	lengthenAsset: function(path){
 		return nwPATH.resolve(nwPATH.join(app.project_path,'assets',path));
+	},
+	getAssetPath: function(_type, name, cb) {
+		app.getAssets(_type, (files) => {
+			let match;
+			let re_name = /[\\\/](([\w\s.]+)\.\w+)/;
+			files.forEach((f) => {
+				let match = re_name.exec(f);
+				console.log(f,name,match)
+				if (match && match[2] == name) {
+					cb(app.lengthenAsset(app.cleanPath(nwPATH.join(_type,match[1]))));
+				}
+			});
+		});
 	},
 	cleanPath: function(path) {
 		return nwPATH.normalize(path).replaceAll('\\\\','/');

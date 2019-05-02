@@ -22,6 +22,7 @@ var keywords = [];
 
 var autocomplete, callbacks, hints;
 var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words;
+var re_image = /Image\(["']([\w\s\/.]+)["']\)/;
 
 function isReservedWord(word) {
 	return keywords.includes(word) || autocomplete.class_list.includes(word);
@@ -442,6 +443,19 @@ class Code extends Editor {
             	"Ctrl-Space": "autocomplete"
             }
 		});
+
+		const checkLineWidgets = (pos, editor) => {
+			let str_line = editor.getLine(pos.anchor.line);
+			
+			let match;
+			if (match = re_image.exec(str_line)) {
+				let el_image = app.createElement("img","code-image");
+				app.getAssetPath("image",match[1],(path)=>{
+					el_image.src = "file://"+path;
+				});
+				editor.addWidget(pos.anchor, el_image);
+			}
+		}
 		
 		// set up events
 		//this.codemirror.setSize("100%", "100%");
@@ -464,15 +478,12 @@ class Code extends Editor {
 			}
 		}
 
+		new_editor.getDoc().eachLine((l) => {
+			console.log(l);
+		})
+
 		new_editor.on("change", function(cm, e){
 			let editor = cm;
-
-			checkGutterEvents(editor);
-			this_ref.parseFunctions();
-			this_ref.addAsterisk();
-
-			this_ref.refreshFnHelperTimer();
-
 			let cursor = editor.getCursor();
 
 			let word_pos = editor.findWordAt(cursor);
@@ -480,6 +491,13 @@ class Code extends Editor {
 			let before_word_pos = {line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
 			let before_word = editor.getRange(before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
 			let word_slice = word.slice(-1);
+
+			checkGutterEvents(editor);
+			checkLineWidgets(word_pos, editor);
+
+			this_ref.parseFunctions();
+			this_ref.addAsterisk();
+			this_ref.refreshFnHelperTimer();
 
 			// get the activator used
 			let comp_activators = [':','.'];

@@ -3016,3 +3016,16 @@ TypeError: Cannot read property 'history_id' of undefined
     at FibWindow.close (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:227:40)
     at HTMLButtonElement.FibWindow.btn_close.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:49:50)
 
+[[ 1556814270799 ]]
+ReferenceError: line is not defined
+    at checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:455:16)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:490:4
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2143:43
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2100:22)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at Doc.setValue (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3892:15)
+    at CodeMirror.setValue (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9612:38)
+    at Code.edit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:846:19)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:948:11)
+
