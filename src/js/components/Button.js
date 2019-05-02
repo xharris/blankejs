@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { SVG } from './Svg';
+import { Icon } from './Icon';
 
 class Button extends Component {
     render = () => {
@@ -8,12 +8,7 @@ class Button extends Component {
             id={`btn-${this.props.id}`} 
             onClick={this.props.onClick}
         >
-        {
-            this.props.icon == null ? this.props.id :
-            (
-                <SVG name="play"/>
-            )
-        }
+            <Icon name="run"/>
         </button>    
     )}
 }
