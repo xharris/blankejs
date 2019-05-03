@@ -3,17 +3,21 @@ class Settings extends Editor {
 		super(...args);
 
 		this.setupDragbox();
-		this.setTitle("Test View");
+		this.setTitle("Settings");
 		this.removeHistory();
 
 		this.container.width = 400;
 		this.container.height = 350;
 
-		this.el_blankelist = new BlankeListView();
-		this.appendChild(this.el_blankelist.container);
+        this.el_settings = new BlankeForm([
+            
+        ]);
 	}
 }
 
 document.addEventListener('openProject',()=>{
-	// new TestView();
+	app.removeSearchGroup("Settings");
+	app.addSearchKey({key: 'IDE/Project Settings', group:"Settings", onSelect: function() {
+		new Settings(app);
+	}});
 });
