@@ -186,8 +186,11 @@
 
 	.code-image {
 		transform: translateY(-75%);
-		opacity: 0.5;
+		opacity: 0.25;
 		margin-left: 15px;
+		min-width: 150px;
+		max-width: 150px;
+		image-rendering: pixelated;
 	}
 }
 
@@ -968,19 +971,11 @@
 	}
 }
 
-.content[data-type="ImageBrowser"] {
-
-}
-
 .content[data-type="AssetManager"] {
 	.editor-content {
 		color: rgba(238,238,238 ,1);
    		background-color: @beveled-bg;
    		overflow: hidden;
-	}
-
-	.search {
-		
 	}
 
 	.file-list, .file-preview {

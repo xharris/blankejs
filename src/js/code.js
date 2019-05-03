@@ -23,6 +23,7 @@ var keywords = [];
 var autocomplete, callbacks, hints;
 var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words;
 var re_image = /Image\(["']([\w\s\/.]+)["']\)/;
+var re_animation = /self:addAnimation[\s\w{(="',]+image[\s=]+['"]([\w\s\/.]+)/;
 
 function isReservedWord(word) {
 	return keywords.includes(word) || autocomplete.class_list.includes(word);
@@ -443,19 +444,6 @@ class Code extends Editor {
             	"Ctrl-Space": "autocomplete"
             }
 		});
-
-		const checkLineWidgets = (pos, editor) => {
-			let str_line = editor.getLine(pos.anchor.line);
-			
-			let match;
-			if (match = re_image.exec(str_line)) {
-				let el_image = app.createElement("img","code-image");
-				app.getAssetPath("image",match[1],(path)=>{
-					el_image.src = "file://"+path;
-				});
-				editor.addWidget(pos.anchor, el_image);
-			}
-		}
 		
 		// set up events
 		//this.codemirror.setSize("100%", "100%");
@@ -478,10 +466,6 @@ class Code extends Editor {
 			}
 		}
 
-		new_editor.getDoc().eachLine((l) => {
-			console.log(l);
-		})
-
 		new_editor.on("change", function(cm, e){
 			let editor = cm;
 			let cursor = editor.getCursor();
@@ -493,7 +477,9 @@ class Code extends Editor {
 			let word_slice = word.slice(-1);
 
 			checkGutterEvents(editor);
-			checkLineWidgets(word_pos, editor);
+			for (let s = e.from.line; s <= e.to.line; s++) {
+				this_ref.checkLineWidgets(s, cm);
+			}
 
 			this_ref.parseFunctions();
 			this_ref.addAsterisk();
@@ -650,6 +636,7 @@ class Code extends Editor {
 		
 		new_editor.on('cursorActivity',function(cm){
 			checkGutterEvents(cm);
+			this_ref.checkLineWidgets(cm.getCursor().line, cm);
 		})
 		new_editor.on('click', function(cm, obj){
 
@@ -661,6 +648,36 @@ class Code extends Editor {
 		this.setFontSize(app.settings.code.font_size);
 
 		return new_editor;
+	}
+
+	checkLineWidgets (line, editor) {
+		let this_ref = this;
+
+		this.widgets = this.widgets || {};
+		let info = editor.lineInfo(line);
+		
+		let match;
+		if ((match = re_image.exec(info.text)) || (match = re_animation.exec(info.text))) {
+			app.getAssetPath("image",match[1],(path)=>{
+				// remove previous widget
+				if (this_ref.widgets[line]) {
+						blanke.destroyElement(this_ref.widgets[line]);
+						delete this_ref.widgets[line];
+				}
+				// create image widget
+				let el_image = app.createElement("img","code-image");
+				el_image.src = "file://"+path;
+
+				this_ref.widgets[line] = el_image;
+				editor.addWidget({line:line, ch:info.text.trimRight().length}, el_image);
+			});
+		} else {
+			// remove widget if there is one
+			if (this.widgets[line]) {
+					blanke.destroyElement(this.widgets[line]);
+					delete this.widgets[line];
+			}
+		}
 	}
 
 	parseFunctions() {
@@ -860,6 +877,10 @@ class Code extends Editor {
 		this.setOnClick(function(){
 			Code.openScript(this_ref.file);
 		});
+
+		for (let l = 0; l < this.codemirror.lineCount(); l++) {
+			this.checkLineWidgets(l, this.codemirror);
+		}
 
 		this.codemirror.refresh();
 		return this;

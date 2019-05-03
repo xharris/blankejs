@@ -462,7 +462,6 @@ var app = {
 			let re_name = /[\\\/](([\w\s.]+)\.\w+)/;
 			files.forEach((f) => {
 				let match = re_name.exec(f);
-				console.log(f,name,match)
 				if (match && match[2] == name) {
 					cb(app.lengthenAsset(app.cleanPath(nwPATH.join(_type,match[1]))));
 				}
