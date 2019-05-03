@@ -24,6 +24,7 @@ var autocomplete, callbacks, hints;
 var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words;
 var re_image = /Image\(["']([\w\s\/.]+)["']\)/;
 var re_animation = /self:addAnimation[\s\w{(="',]+image[\s=]+['"]([\w\s\/.]+)/;
+var re_sprite = /Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.]+)/;
 
 function isReservedWord(word) {
 	return keywords.includes(word) || autocomplete.class_list.includes(word);
@@ -657,7 +658,7 @@ class Code extends Editor {
 		let info = editor.lineInfo(line);
 		
 		let match;
-		if ((match = re_image.exec(info.text)) || (match = re_animation.exec(info.text))) {
+		if ((match = re_image.exec(info.text)) || (match = re_animation.exec(info.text)) || (match = re_sprite.exec(info.text))) {
 			app.getAssetPath("image",match[1],(path)=>{
 				// remove previous widget
 				if (this_ref.widgets[line]) {

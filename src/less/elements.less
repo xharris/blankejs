@@ -190,6 +190,8 @@
 		margin-left: 15px;
 		min-width: 150px;
 		max-width: 150px;
+		min-height:150px;
+		max-height:150px;
 		image-rendering: pixelated;
 	}
 }
@@ -979,7 +981,6 @@
 	}
 
 	.file-list, .file-preview {
-	    width: 50%;
 	    height: 100%;
 	    margin: 0px;
 	    float: left;
@@ -989,6 +990,7 @@
 	}
 
 	.file-list {
+		width: 30%;
     	box-sizing: border-box;
 
     	.category {
@@ -1017,7 +1019,8 @@
 
     		.cat-files {
     			height: auto;
-    			overflow: hidden;
+				overflow-y: hidden;
+				overflow-x: auto;
 
     			&.hidden {
     				height: 0px;
@@ -1044,6 +1047,8 @@
 	}
 
 	.file-preview {
+		width: 70%;
+
 		.preview-container {
 			padding: 5px;
     		border-radius: 2px;
