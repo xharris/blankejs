@@ -181,6 +181,9 @@ Image = Class{
 
 	crop = function(self, x, y, w, h)
 		local new_img = Image(self.name)
+		for p, prop in ipairs(Sprite._vars) do 
+			if self[prop] then new_img[prop] = self[prop] end 
+		end 
 		new_img.crop_rect = {x,y,w,h}
 		new_img.quad = love.graphics.newQuad(x,y,w,h,self.orig_width,self.orig_height)
 		return new_img

@@ -1,15 +1,12 @@
 BlankE.addEntity("Ball")
 
 function Ball:init()
-	-- add the image of a ball
-	self.img_ball = Image("ball")
-	-- change the image offset to the center of the image
-	self.img_ball.xoffset = self.img_ball.width / 2
-	self.img_ball.yoffset = self.img_ball.height / 2
+	-- add the image of a ball and center it
+	self:addSprite{name="main",image="ball",align="center"}
 	-- give the Ball some gravity
 	self.gravity = 6
 	-- add a hitbox
-	self:addShape('main','circle',{0,0,self.img_ball.width/2})
+	self:addShape('main','circle')
 end
 
 function Ball:update(dt)
@@ -29,11 +26,4 @@ function Ball:update(dt)
         	Signal.emit("ball_hit_paddle")
 		end
 	end
-	-- move the ball image to the Ball object's position
-	self.img_ball.x = self.x 
-	self.img_ball.y = self.y
-end
-
-function Ball:draw()
-	self.img_ball:draw()
 end

@@ -92,6 +92,29 @@
                 0
             ],
             "image": "image/ground.png"
+        },
+        "image/ball.png": {
+            "name": "",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame size": [
+                0,
+                0
+            ],
+            "frames": 0,
+            "selected frames": [
+                1,
+                1
+            ],
+            "columns": 0,
+            "padding": [
+                0,
+                0
+            ],
+            "image": "image/ball.png"
         }
     },
     "ico": "src/logo.ico",

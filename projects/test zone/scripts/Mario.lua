@@ -1,7 +1,7 @@
 BlankE.addEntity("Mario");
 
 function Mario:init()
-	self:addAnimation{name="mario_walk", image="sprite-example", frames={"1-3",1}, frame_size={29,43}, speed=1, offset={12,8}}
+	self:addSprite{name="mario_walk", image="sprite-example", frames={"1-3",1}, frame_size={29,43}, speed=1, offset={12,8}}
 	self.sprite_index = "mario_walk"
 	self.sprite_xoffset = -self.sprite_width/2
 	self.sprite_yoffset = -self.sprite_height/2

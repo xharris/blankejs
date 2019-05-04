@@ -44,12 +44,13 @@ containsPoint(x, y)				-- checks if a point is inside the sprite (not hitboxes)
 
 ## Animation/Drawing
 ```
-addAnimation{					
+addSprite{					
 	name = ""
 	image = ""
 	frames = {...}
 	frame_size = {width, height}
 	speed = 0.1
+	align = "center / left / right / top / bottom",
 	offset = {x, y}
 }
 ```
@@ -59,8 +60,15 @@ addAnimation{
 * **frames** {'1-2', 1} means columns 1-2 and row 1
 * **frame_size** {32,32} means each frame is 32 by 32
 * **speed** smaller = faster
+* **align** any combination of two string values ("left center") sets the base offset
 
-`drawSprite(sprite_index)` calls default draw function for given animation name
+NOTE: This method also works for static images (ones that aren't a spritesheet)
+
+In that case, only **name, image, align, and offset** have any effect
+
+`drawSprite([sprite_index])` calls default draw function for given animation name
+
+`getImage([sprite_index])` gets an Image object from the current frame of the Sprite or Image
 
 ## Collision
 ```

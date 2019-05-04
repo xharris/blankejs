@@ -23,7 +23,7 @@ var keywords = [];
 var autocomplete, callbacks, hints;
 var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words;
 var re_image = /Image\(["']([\w\s\/.]+)["']\)/;
-var re_animation = /self:addAnimation[\s\w{(="',]+image[\s=]+['"]([\w\s\/.]+)/;
+var re_animation = /self:addSprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.]+)/;
 var re_sprite = /Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.]+)/;
 
 function isReservedWord(word) {
@@ -321,7 +321,7 @@ class Code extends Editor {
 				fn:function(line_text, cm, cur){
 					// get currently used image name
 					let image_name = '';
-					if (image_name = line_text.match(/self:addAnimation{.*image\s*=\s*('|")([\\-\s\w]*)\1/)) 
+					if (image_name = line_text.match(/self:addSprite{.*image\s*=\s*('|")([\\-\s\w]*)\1/)) 
 						image_name = image_name[2]
 
 					let spr_prvw = new SpritesheetPreview(image_name);
@@ -342,7 +342,7 @@ class Code extends Editor {
 							arg_str += (key+"="+args[key]+", ");
 						}
 						arg_str = arg_str.slice(0,-2);
-						line_text = line_text.replace(/(\s*)(\w+):addAnim.*/g,"$1$2:addAnimation{"+arg_str+"}");
+						line_text = line_text.replace(/(\s*)(\w+):addAnim.*/g,"$1$2:addSprite{"+arg_str+"}");
 						
 						this_ref.codemirror.replaceRange(line_text,
 							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});

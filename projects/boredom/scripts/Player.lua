@@ -1,14 +1,14 @@
 BlankE.addEntity("Player")
 
 function Player:init()
-	self:addAnimation{
+	self:addSprite{
 		name = "stand",
 		image = "player_stand"
 	}
-	self:addAnimation{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.25, offset={0,0}}
+	self:addSprite{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.25, offset={0,0}}
 	self.sprite["walk"].yoffset = -1
 	
-	self:addAnimation{
+	self:addSprite{
 		name = "dead",
 		image = "player_dead"
 	}

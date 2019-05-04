@@ -10,7 +10,7 @@ class Settings extends Editor {
 		this.container.height = 350;
 
         this.el_settings = new BlankeForm([
-            
+            ['theme','select',{'choices':Object.keys(app.themes)}]
         ]);
 	}
 }

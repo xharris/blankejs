@@ -219,7 +219,7 @@
 | .\blanke\extra\HC\pol: toVertexList          :   39  : 0.0010 : 0.0   : 4920|
 | scripts/Player       : Anon                  :    0  : 0.0010 : 0.0   :   1 |
 | .\blanke\Input       : add                   :   48  : 0.0010 : 0.0   :  10 |
-| .\blanke\Entity      : addAnimation          :  442  : 0.0010 : 0.0   :   3 |
+| .\blanke\Entity      : addSprite          :  442  : 0.0010 : 0.0   :   3 |
 | .\blanke\Blanke      : addState              :  354  : 0.0010 : 0.0   :   2 |
 | .\blanke\extra\HC\pol: getIndexOfleftmost    :   64  : 0.0010 : 0.0   : 984 |
 | .\blanke\Hitbox      : setParent             :  150  : 0.0010 : 0.0   :  27 |

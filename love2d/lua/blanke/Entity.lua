@@ -84,7 +84,7 @@ Entity = Class{
     end,
 
     _post_init = function(self)
-		if not self.sprite_index and #self.sprite > 0 then
+		if not self.sprite_index and table.len(self.sprite) > 0 then
 			self.sprite_index = table.keys(self.sprite)[1]
 		end
 		-- entity_spash[self.classname]:register(self, self.x, self.y, self.x, self.y)
@@ -349,11 +349,9 @@ Entity = Class{
 			end
 		end
 		if self.sprite_obj[sprite_index] then 
-			self.sprite_obj[sprite_index]:draw(
-				floor(self.x), 
-				floor(self.y), 
-				self:getSpriteInfo(sprite_index)
-			)
+			self.sprite_obj[sprite_index].x = floor(self.x)
+			self.sprite_obj[sprite_index].y = floor(self.y)
+			self.sprite_obj[sprite_index]:draw(self:getSpriteInfo(sprite_index))
 		end
 		if self.draw_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
 	end,
@@ -380,7 +378,7 @@ Entity = Class{
 		end
 	end,
 
-	addAnimation = function(self, args)
+	addSprite = function(self, args)
 		local first_sprite = (table.len(self.sprite) == 0)
 
 		self.sprite_obj[args.name] = Sprite(args)
@@ -397,6 +395,14 @@ Entity = Class{
 		return self
 	end,
 
+	-- gets a static image of the current frame of the current sprite
+	getImage = function(self, name)
+		name = name or self.sprite_index 
+		if self.sprite[name] then 
+			return self.sprite_obj[name]:getImage()
+		end 
+	end,
+
 	refreshSpriteDims = function(self, name)
 		if self.sprite_obj[name] then
 			self.sprite_width, self.sprite_height = self.sprite_obj[name].width, self.sprite_obj[name].height
@@ -408,6 +414,13 @@ Entity = Class{
 	-- str name: reference name of shape
 	addShape = function(self, name, shape, args, tag)
 		tag = ifndef(tag, self.classname..'.'..name)
+		if not args then 
+			if shape == "rectangle" then 
+				args = {0,0,self.sprite_width,self.sprite_height}
+			elseif shape == "circle" then  
+				args = {0,0,math.max(self.sprite_width/2,self.sprite_height/2)}
+			end 
+		end
 		local new_hitbox = Hitbox(shape, args, tag, 0, 0)
 		new_hitbox:setParent(self)
 		new_hitbox:moveTo(self.x, self.y)

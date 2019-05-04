@@ -373,7 +373,7 @@ module.exports.completions = {
 
 		{prop:"show_debug", info:"debugSprite() and debugCollision() are automatically called"},
 
-		{fn:"addAnimation",named_args:true,vars:{
+		{fn:"addSprite",named_args:true,vars:{
 			name:'', 
 			image:'name of asset (ex. bob_stand, bob_walk)', 
 			frames:'{\'1-2\', 1} means columns 1-2 and row 1', 

@@ -145,7 +145,7 @@ postDraw()
 -- regular methods
 debugSprite()						-- green: call during drawing (ex. state:draw)
 debugCollision()					-- red: shows hitboxes		
-addAnimation{...}					--[[
+addSprite{...}					--[[
 	name = str
 	image = str 					-- name of asset (ex. bob_stand, bob_walk)
 	frames = {...}					-- {'1-2', 1} means columns 1-2 and row 1
