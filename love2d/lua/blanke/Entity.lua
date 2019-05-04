@@ -335,12 +335,12 @@ Entity = Class{
 	end,
 
 	drawSprite = function(self, sprite_index)
+		self.sprite_width = 0
+		self.sprite_height = 0
 		if not sprite_index then
 			if self.sprite_index then
 				self:drawSprite(self.sprite_index)
 			else
-				self.sprite_width = 0
-				self.sprite_height = 0
 				-- just draw them all
 				for name, spr in pairs(self.sprite) do
 					self:drawSprite(name)
@@ -348,10 +348,16 @@ Entity = Class{
 				return
 			end
 		end
-		if self.sprite_obj[sprite_index] then 
-			self.sprite_obj[sprite_index].x = floor(self.x)
-			self.sprite_obj[sprite_index].y = floor(self.y)
-			self.sprite_obj[sprite_index]:draw(self:getSpriteInfo(sprite_index))
+
+		local sprite = self.sprite_obj[sprite_index]
+		if sprite then 
+			-- update width/height
+			if sprite.width > self.sprite_width then self.sprite_width = sprite.width end 
+			if sprite.height > self.sprite_width then self.sprite_width = sprite.height end 
+		
+			sprite.x = floor(self.x)
+			sprite.y = floor(self.y)
+			sprite:draw(self:getSpriteInfo(sprite_index))
 		end
 		if self.draw_debug or self.scene_show_debug then self:debugSprite(sprite_index) end
 	end,
@@ -386,7 +392,7 @@ Entity = Class{
 
 		if first_sprite then 
 			for p, prop in ipairs(Sprite._vars) do 
-				if self['sprite_'..prop] == nil or self['sprite_'..prop] == 0 then
+				if (prop ~= 'xoffset' and prop ~= 'yoffset') and (self['sprite_'..prop] == nil or self['sprite_'..prop] == 0) then
 					self['sprite_'..prop] = self.sprite_obj[args.name][prop]
 				end
 			end 

@@ -52,6 +52,7 @@ Sprite = Class{
 
 		-- calculate alingment
 		if args.align then 
+			Debug.log(args.name, args.align)
 			local centered = false
 			if args.align:contains("center") then
 				centered = true
@@ -70,6 +71,7 @@ Sprite = Class{
 			if args.align:contains("bottom") then
 				self.yoffset = self.yoffset + self.height
 			end
+			Debug.log(self.xoffset, self.yoffset, self.width, self.height)
 		end 
 
 		_addGameObject("sprite",self)
@@ -140,11 +142,15 @@ Sprite = Class{
 
 			if self.is_animated then 
 				self.anim:draw(self.image(), floor(x or self.x), floor(y or self.y), math.rad(o('angle')), 
-					o('xscale'), o('yscale'), -floor(o('xoffset')), -floor(o('yoffset')), 
+					o('xscale'), o('yscale'), floor(self.xoffset + o('xoffset')), floor(self.yoffset + o('yoffset')), 
 					o('xshear'), o('yshear'))
 			else 
 				for p, prop in ipairs(Sprite._vars) do 
-					self.image[prop] = o(prop)
+					if prop == 'xoffset' or prop == 'yoffset' then 
+						self.image[prop] = self[prop] + o(prop)
+					else 
+						self.image[prop] = o(prop)
+					end
 				end 
 				self.image.x = floor(x or self.x)
 				self.image.y = floor(y or self.y)

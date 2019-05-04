@@ -615,7 +615,8 @@ var blanke = {
     },
 
     destroyElement: function(element) {    
-        element.parentNode.removeChild(element);
+        if (element.parentNode) 
+            element.parentNode.removeChild(element);
     },
 
     sortChildren: function(element, fn_compare) {

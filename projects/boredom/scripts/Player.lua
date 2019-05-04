@@ -1,22 +1,14 @@
 BlankE.addEntity("Player")
 
 function Player:init()
-	self:addSprite{
-		name = "stand",
-		image = "player_stand"
-	}
-	self:addSprite{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.25, offset={0,0}}
-	self.sprite["walk"].yoffset = -1
+	self:addSprite{name = "stand", image = "player_stand",align="center"}
 	
-	self:addSprite{
-		name = "dead",
-		image = "player_dead"
-	}
+	self:addSprite{name="walk", image="player_walk", frames={"1-2",1}, frame_size={21,33}, speed=0.25, align="center"}
+	self.sprite["walk"].yoffset = 1
+	
+	self:addSprite{name = "dead", image = "player_dead", align="center"}
 	self.sprite_index = "stand"
-	
-	self.sprite_xoffset = -self.sprite_width / 2
-	self.sprite_yoffset = -self.sprite_height / 2
-	
+		
 	self:addPlatforming(0,0,self.sprite_width-10,self.sprite_height+1)
 	self.gravity = 20
 	

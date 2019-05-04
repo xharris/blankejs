@@ -458,14 +458,18 @@ var app = {
 	},
 	getAssetPath: function(_type, name, cb) {
 		app.getAssets(_type, (files) => {
+			let found = false;
 			let match;
-			let re_name = /[\\\/](([\w\s.]+)\.\w+)/;
+			let re_name = /[\\\/](([\w\s.-]+)\.\w+)/;
 			files.forEach((f) => {
 				let match = re_name.exec(f);
-				if (match && match[2] == name) {
-					cb(app.lengthenAsset(app.cleanPath(nwPATH.join(_type,match[1]))));
+				if (!found && match && match[2] == name) {
+					found = true;
+					cb(false, app.lengthenAsset(app.cleanPath(nwPATH.join(_type,match[1]))));
 				}
 			});
+			if (!found)
+				cb(true);
 		});
 	},
 	cleanPath: function(path) {

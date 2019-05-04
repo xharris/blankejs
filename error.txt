@@ -3136,3 +3136,285 @@ TypeError: Cannot read property 'removeChild' of null
     at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
     at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
 
+[[ 1556990236178 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:681:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556990236394 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:681:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556990236587 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:681:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556990236872 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:681:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556990237054 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:681:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556990237782 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:681:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556990295291 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:662:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556990295761 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:662:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556990295914 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:662:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556990296949 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:662:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556991470578 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:666:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556991470892 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:666:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556991471081 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:666:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556991471551 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:666:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556991471733 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:666:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556991472381 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:666:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556991518145 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:665:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556991518393 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:665:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1556991518875 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:665:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1556991519029 ]]
+TypeError: Cannot read property 'removeChild' of null
+    at Object.destroyElement (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:28)
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:665:11)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:13
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2105:66)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1557004233406 ]]
+TypeError: Cannot read property 'widgets' of null
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:482:23
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2143:43
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2100:22)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at Doc.setValue (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3892:15)
+    at CodeMirror.setValue (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9612:38)
+    at Code.edit (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:886:19)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:992:11)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:1043:15)
+
+[[ 1557004263231 ]]
+TypeError: Cannot read property 'text' of null
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:670:35)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:483:14
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2143:43
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2100:22)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1557004264072 ]]
+TypeError: Cannot read property 'text' of null
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:670:35)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:483:14
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2143:43
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2100:22)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3873:15)
+
+[[ 1557004325976 ]]
+TypeError: Cannot read property 'text' of null
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:671:35)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:484:14
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2143:43
+    at fireCallbacksForOps (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2100:22)
+    at finishOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:2114:9)
+    at endOperation (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3736:3)
+    at runInOp (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:3865:13)
+    at TextareaInput.poll (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9387:3)
+    at HTMLTextAreaElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9197:11)
+
+[[ 1557005370706 ]]
+TypeError: Cannot read property 'line' of undefined
+    at otherActivity (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:639:24)
+    at signal (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:1156:59)
+    at signalDOMEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:1165:3)
+    at HTMLTextAreaElement.prepareCopyCut (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9208:9)
+
+[[ 1557005419299 ]]
+TypeError: Cannot read property 'text' of null
+    at Code.checkLineWidgets (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:674:35)
+    at otherActivity (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:640:14)
+    at signal (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:1156:59)
+    at signalDOMEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:1165:3)
+    at HTMLTextAreaElement.prepareCopyCut (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9208:9)
+

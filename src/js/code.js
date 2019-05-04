@@ -22,9 +22,9 @@ var keywords = [];
 
 var autocomplete, callbacks, hints;
 var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words;
-var re_image = /Image\(["']([\w\s\/.]+)["']\)/;
-var re_animation = /self:addSprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.]+)/;
-var re_sprite = /Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.]+)/;
+var re_image = /Image\(["']([\w\s\/.-]+)["']\)/;
+var re_animation = /self:addSprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/;
+var re_sprite = /Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/;
 
 function isReservedWord(word) {
 	return keywords.includes(word) || autocomplete.class_list.includes(word);
@@ -467,6 +467,12 @@ class Code extends Editor {
 			}
 		}
 
+		function otherActivity(cm, e) {
+			for (let s = 0; s < cm.lineCount(); s++) {
+				this_ref.checkLineWidgets(s, cm);
+			}
+		}
+
 		new_editor.on("change", function(cm, e){
 			let editor = cm;
 			let cursor = editor.getCursor();
@@ -478,9 +484,7 @@ class Code extends Editor {
 			let word_slice = word.slice(-1);
 
 			checkGutterEvents(editor);
-			for (let s = e.from.line; s <= e.to.line; s++) {
-				this_ref.checkLineWidgets(s, cm);
-			}
+			blanke.cooldownFn('checkLineWidgets',250,()=>{otherActivity(cm,e)})
 
 			this_ref.parseFunctions();
 			this_ref.addAsterisk();
@@ -634,10 +638,9 @@ class Code extends Editor {
 			}
 		});
 
-		
+				
 		new_editor.on('cursorActivity',function(cm){
 			checkGutterEvents(cm);
-			this_ref.checkLineWidgets(cm.getCursor().line, cm);
 		})
 		new_editor.on('click', function(cm, obj){
 
@@ -653,32 +656,39 @@ class Code extends Editor {
 
 	checkLineWidgets (line, editor) {
 		let this_ref = this;
-
-		this.widgets = this.widgets || {};
 		let info = editor.lineInfo(line);
 		
 		let match;
+		
 		if ((match = re_image.exec(info.text)) || (match = re_animation.exec(info.text)) || (match = re_sprite.exec(info.text))) {
-			app.getAssetPath("image",match[1],(path)=>{
-				// remove previous widget
-				if (this_ref.widgets[line]) {
-						blanke.destroyElement(this_ref.widgets[line]);
-						delete this_ref.widgets[line];
+			app.getAssetPath("image",match[1],(err, path)=>{	
+				// no asset found
+				if (err) {
+					// remove previous image
+					if (info.widgets) {
+						for (let w = 1; w < info.widgets.length; w++)
+							info.widgets[w].clear();
+						//delete this_ref.widgets[line];
+					}
 				}
-				// create image widget
-				let el_image = app.createElement("img","code-image");
-				el_image.src = "file://"+path;
-
-				this_ref.widgets[line] = el_image;
-				editor.addWidget({line:line, ch:info.text.trimRight().length}, el_image);
+				
+				// create/set image widget
+				else  {
+					let el_image;
+					if (info.widgets) {
+						// clear extra widgets
+						for (let w = 1; w < info.widgets.length; w++)
+							info.widgets[w].clear();
+						el_image = info.widgets[0].node;
+					} else {
+						el_image = app.createElement("img","code-image");
+						this_ref.widgets[line] = editor.addLineWidget(line, el_image, {noHScroll:true});
+					}
+				
+					el_image.src = "file://"+path;
+				}
 			});
-		} else {
-			// remove widget if there is one
-			if (this.widgets[line]) {
-					blanke.destroyElement(this.widgets[line]);
-					delete this.widgets[line];
-			}
-		}
+		} 
 	}
 
 	parseFunctions() {
