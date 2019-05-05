@@ -145,7 +145,6 @@ var app = {
 	setTheme: function(name) {
 		// change theme variables
 		less.modifyVars(app.themes[name]);
-		less.refresh();
 		app.settings.theme = name;
 		app.saveAppData();
 	},
@@ -433,7 +432,7 @@ var app = {
 		let ret_files = [];
 		walker.on('file',function(path, stats, next){
 			// only add files that have an extension in allowed_extensions
-			if (stats.isFile() && extensions.includes(nwPATH.extname(stats.name).slice(1))) {
+			if (stats.isFile() && !path.includes('dist') && extensions.includes(nwPATH.extname(stats.name).slice(1))) {
 				ret_files.push(nwPATH.join(path, stats.name));
 			}
 			next();
@@ -964,6 +963,9 @@ nwWIN.on('loaded', function() {
 	});
 
 	app.loadAppData(function(){
+		// load current theme
+		app.setTheme(app.settings.theme);
+
 		// add recent projects (max 10)
 		var el_recent = app.getElement("#welcome .recent-files");
 		if (app.settings.recent_files.length > 10) 
@@ -985,9 +987,6 @@ nwWIN.on('loaded', function() {
 				el_recent.appendChild(el_br)
 			}
 		})
-
-		// load current theme
-		app.setTheme(app.settings.theme);
 		
 		app.showWelcomeScreen();
 		app.checkForUpdates(true);

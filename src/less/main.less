@@ -1111,6 +1111,17 @@ body:before, body:after {
     	outline-offset: 0px;
     	box-shadow: 0 0px 10px 3px fade(@ide-accent, 30%), 0 6px 6px rgba(0, 0, 0, 0.23);
 	}
+
+	.form-header {
+		color: white;
+		background-color: @window-background;
+		padding: 5px;
+		border-radius: 2px;
+		font-size: 20px;
+		text-shadow: 0px 0px 8px @ide-accent;
+		text-transform: uppercase;
+		user-select: none;
+	}
 	
 	.form-group {
 		margin-bottom: 5px;
@@ -1138,8 +1149,9 @@ body:before, body:after {
 		-webkit-border-radius: 0px;
 		-webkit-appearance: none;
 		background-image: url(icons/chevron_down.svg);
-		background-position: 100% 50%;
+		background-position: 100% 25%;
 		background-repeat: no-repeat;
+		padding-right: 26px;
 	}
 
 	.form-group[data-size="2"] .form-text, .form-group[data-type="number"] .form-text {

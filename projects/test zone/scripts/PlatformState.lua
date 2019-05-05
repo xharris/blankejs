@@ -4,7 +4,7 @@ local lvl, penguin, main_view, my_eff
 	
 function PlatformState:enter()
 	PlatformState.background_color = "white"
-	lvl = Scene("level1")
+	lvl = Scene("Platforming")
 	
 	penguin = Mario()
 	main_view = View("main")

@@ -62,6 +62,7 @@ class Exporter extends Editor {
 
 		// extra options
 		this.el_export_form = new BlankeForm([
+			['general'],
 			['name', 'text', {'default':app.project_settings.export.name}],
 			['remove_unused','checkbox',{'default':app.project_settings.export.remove_unused,label:"remove unused classes"}]
 		]);

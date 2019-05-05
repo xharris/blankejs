@@ -348,7 +348,7 @@ class BlankeForm {
                 same as text
             }
     */
-    constructor (inputs) {
+    constructor (inputs, dark) {
         this.container = blanke.createElement("div", "form-container");
         this.arg_inputs = inputs;
         this.input_ref = {};
@@ -358,6 +358,9 @@ class BlankeForm {
         for (var input of inputs) {
             this.addInput(input);
         }
+
+        if (dark)
+            this.container.classList.add("dark");
     }
 
     addInput (input) {
@@ -365,6 +368,15 @@ class BlankeForm {
         let input_name = input[0];
         let input_type = input[1];
         let extra_args = input[2] || {};
+
+        // header element
+        if (input_type == null) {
+            let el_header = app.createElement("div","form-header");
+            el_header.innerHTML = input_name;
+            this.container.appendChild(el_header);
+            return;
+        }
+
         this.input_ref[input_name] = [];
         this.input_values[input_name] = [];
         this.input_types[input_name] = input_type;
@@ -516,6 +528,10 @@ class BlankeForm {
         }
     }
 
+    /*
+    func(value[] or value)
+        return array/value to override field values
+    */
     onChange (input_name, func) {
         let this_ref = this;
         for (var input of this.input_ref[input_name]) {
