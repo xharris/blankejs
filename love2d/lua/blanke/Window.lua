@@ -44,6 +44,9 @@ Window = {
 	toggleFullscreen = function(type)
 		Window.setFullscreen(not Window.getFullscreen(),type)
 	end,
+	
+	getPosition = function() return love.window.getPosition() end,
+	setPosition = function(x, y, display) love.window.setPosition(x, y, display) end
 }
 
 --[[ -- auto detect aspect ratio
