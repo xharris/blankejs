@@ -16,11 +16,15 @@ Asset = Class{
 		if Asset.info['script'] then
 			for a, asset in pairs(Asset.info['script']) do
 				if asset.category == 'script' then
-					result, chunk = xpcall(asset.object, debug.traceback)
-					if not result then
-						BlankE.errorhandler(chunk)
-						--error(chunk)
-					end
+					if BlankE._ide_mode then 
+						result, chunk = xpcall(asset.object, debug.traceback)
+						if not result then
+							BlankE.errorhandler(chunk)
+							--error(chunk)
+						end
+					else 
+						require(string.gsub(asset.path,'%..+',''))
+					end 
 				end
 			end
 		end
@@ -95,7 +99,10 @@ Asset = Class{
 
 		-- SCRIPT
 		if path:ends('.lua') then
-			local result, chunk = BlankE.try(love.filesystem.load, path)
+			local result, chunk
+			if BlankE._ide_mode then 
+				result, chunk = BlankE.try(love.filesystem.load, path)
+			end
 			return acceptAsset("script", chunk)
 		
 		-- IMAGE

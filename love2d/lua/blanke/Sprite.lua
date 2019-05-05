@@ -52,7 +52,6 @@ Sprite = Class{
 
 		-- calculate alingment
 		if args.align then 
-			Debug.log(args.name, args.align)
 			local centered = false
 			if args.align:contains("center") then
 				centered = true
@@ -71,7 +70,6 @@ Sprite = Class{
 			if args.align:contains("bottom") then
 				self.yoffset = self.yoffset + self.height
 			end
-			Debug.log(self.xoffset, self.yoffset, self.width, self.height)
 		end 
 
 		_addGameObject("sprite",self)

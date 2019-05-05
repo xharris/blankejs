@@ -1,9 +1,7 @@
 package.path = package.path .. ";./?/init.lua"
-blanke_path = (...):match("(.-)[^%.]+$")
 function blanke_require(import, ignore_errors)
-	local status, mod = pcall(require, blanke_path..import)
-	if status then return mod elseif not ignore_errors then error(mod) end
-	return nil
+	local import_path = 'blanke.'..import
+	return require(import_path)
 end
 
 blanke_require('Globals') 
@@ -57,10 +55,6 @@ function _addGameObject(obj_type, obj)
     	game[type] = ifndef(game[type], {})
    		table.insert(game[type], obj)
    	end)
-   	
-    if BlankE and BlankE._ide_mode then -- (cant access BlankE for some reason)
-    	IDE.onAddGameObject(type)
-    end
 end
 
 function _iterateGameGroup(group, func)
@@ -107,20 +101,25 @@ blanke_require('extra.noobhub')
 
 --grease 	= blanke_require('extra.grease')
 
-local modules = {'Group','Repeater','Map','Audio','Asset','Bezier','Camera','Canvas','Dialog','Physics','Font','Draw','Effect','Sprite','Entity','Hitbox','Image','Input','Map','Mask','Net','Save','Scene','State','Steam','Timer','Tween','UI','View'}
--- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
-for m, mod in ipairs(modules) do
-	_G[mod] = blanke_require(mod, true)
-end
--- loop separately to add other stuff
-for m, mod in ipairs(modules) do
-	if _G[mod] then 
-		if not _G[mod].classname then _G[mod].classname = mod end
-		if mod ~= "Group" and not _G[mod].instances then
-			_G[mod].instances = Group()
+function requireModules(modules)
+	-- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
+	for m, mod in ipairs(modules) do
+		_G[mod] = blanke_require(mod, true)
+	end
+	-- loop separately to add other stuff
+	for m, mod in ipairs(modules) do
+		if _G[mod] then 
+			if not _G[mod].classname then _G[mod].classname = mod end
+			if mod ~= "Group" and not _G[mod].instances then
+				_G[mod].instances = Group()
+			end
 		end
 	end
 end
+
+requireModules({'Group','Audio','Asset','Canvas','Physics','Font','Draw','Sprite','Entity','Hitbox','Image','Input','Mask','Scene','State','Timer','Tween'})
+
+local optional_modules = {"Bezier","Dialog","Camera","Effect","Map","Net","Repeater","Save","Steam","UI","View"}
 
 Signal.emit('modules_loaded')
 
@@ -131,12 +130,22 @@ local next_time = love.timer.getTime()
 
 -- inject code into load function
 love.load = function(args, unfilteredArgs)
+	-- remove optional modules that don't exist
+	local new_mod_list = {}
+	for m, mod in ipairs(optional_modules) do 
+		if getFileInfo("blanke/"..string.gsub(mod,'%.','/')..'.lua') then 
+			table.insert(new_mod_list, mod)
+		end 
+	end 
+	requireModules(new_mod_list)
+
 	if BlankE.load then BlankE.load(args, unfilteredArgs) end
-	
+
 	local ide = table.hasValue(args, "--ide")
 	local record = table.hasValue(args, "--record")
 	local play_record = table.hasValue(args, "--play-record")
 
+	BlankE._ide_mode = ide
 	if not BlankE.options.debug then BlankE.options.debug = {} end
 	BlankE.options.debug.play_record = play_record
 	BlankE.options.debug.record = ((record or ide) and not play_record)
@@ -256,10 +265,7 @@ BlankE = {
 
 		if not BlankE._callbacks_replaced then
 			BlankE._callbacks_replaced = true
-
-			if not BlankE._ide_mode then
-				BlankE.injectCallbacks()
-			end
+			BlankE.injectCallbacks()
 		end
 		
 		-- parsing all options
@@ -314,7 +320,6 @@ BlankE = {
 		if options.state == '' and BlankE._class_type['State'] and BlankE._class_type['State'][1] then
 			options.state = BlankE._class_type['State'][1].classname
 		end 
-
 		State.switch(options.state)
 
 		if options.debug.record then
