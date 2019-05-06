@@ -3430,3 +3430,28 @@ Error: ENOENT: no such file or directory, stat '/Users/xharris/Documents/blankej
     at Object.statSync (fs.js:872:3)
     at Object.statSync (/Users/xharris/Documents/blankejs/node_modules/.registry.npmjs.org/graceful-fs/4.1.15/node_modules/graceful-fs/polyfills.js:295:24)
 
+[[ 1557166718579 ]]
+TypeError: autocomplete_watch.close is not a function
+    at HTMLDocument.document.addEventListener (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:1059:45)
+    at dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:101:14)
+    at Object.saveAppData (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:371:3)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:179:9
+
+[[ 1557166718660 ]]
+TypeError: autocomplete_watch.close is not a function
+    at HTMLDocument.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:1070:45)
+    at dispatchEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:101:14)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:184:5
+
+[[ 1557167295596 ]]
+ReferenceError: Settings is not defined
+    at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:103:64)
+
+[[ 1557167349020 ]]
+TypeError: this.input_ref[input_name] is not iterable
+    at BlankeForm.onChange (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:562:41)
+    at Settings.files.forEach (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/settings.js:42:34)
+    at Array.forEach (<anonymous>)
+    at new Settings (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/settings.js:41:15)
+    at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:103:64)
+

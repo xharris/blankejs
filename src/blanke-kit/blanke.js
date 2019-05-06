@@ -489,7 +489,7 @@ class BlankeForm {
             el_inputs_container.appendChild(el_input);
         }
 
-        if (input_type == "directory") {
+        if (input_type == "directory" || input_type == "file") {
             let el_input = blanke.createElement("input","form-file-input");
             let el_file_btn = blanke.createElement("button","form-file-btn");
             el_file_btn.innerHTML = "choose";
@@ -503,10 +503,12 @@ class BlankeForm {
 
             // select folder dialog
             el_file_btn.addEventListener('click',(e)=>{
-                blanke.chooseFile('nwdirectory', function(file_path){
-                    el_input.value = file_path;
-                    el_input.dispatchEvent(new Event('input',{ bubbles: true }));
-                }, true);
+                blanke.chooseFile(
+                    (input_type == 'directory')?'nwdirectory':'',
+                    function(file_path){
+                        el_input.value = file_path;
+                        el_input.dispatchEvent(new Event('input',{ bubbles: true }));
+                });
             });
         }
 
@@ -570,7 +572,12 @@ class BlankeForm {
                 let input_args = this_ref.input_args[input_name];
 
                 let val;
-                if (input_type == "text" || input_type == "select" || input_type == "color" || input_type == "directory") {
+                if (input_type == "text" ||
+                    input_type == "select" ||
+                    input_type == "color" ||
+                    input_type == "directory" ||
+                    input_type == "file"
+                   ) {
                     val = e.target.value;
                     if (val == '' && e.target.placeholder)
                         val = input_args.default || '';

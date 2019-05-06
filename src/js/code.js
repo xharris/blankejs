@@ -1053,11 +1053,22 @@ document.addEventListener("closeProject", function(e){
 	app.removeSearchGroup("Code");
 });
 
+let autocomplete_watch;
+document.addEventListener("appdataSave",(e)=>{
+	reloadCompletions();
+	if (autocomplete_watch) autocomplete_watch.close();
+	autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
+		reloadCompletions();
+		blanke.toast("autocomplete reloaded!");
+	});
+});
+
 document.addEventListener("openProject", function(e){
 	
 	reloadCompletions();
 	// reload completions on file change
-	nwFS.watchFile(app.settings.autocomplete_path, function(e){
+	if (autocomplete_watch) autocomplete_watch.close();
+	autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
 		reloadCompletions();
 		blanke.toast("autocomplete reloaded!");
 	});
