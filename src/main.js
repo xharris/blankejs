@@ -126,29 +126,24 @@ var app = {
 		app.win_title = title;
 		app.getElement("#search-input").placeholder = title;
 	},
-	themes: {
-		green: {
-			"ide-accent": "#5ad9a4",
-			"theme-string": "#97e7c6",
-			"theme-list-active-bg": "#233e2e",
-			"theme-text-sub": "#e6ee9c",
-			"theme-text-optional": "#b2dfdb"
-		},
-		pink: {
-			"ide-accent": "#f48fb1",
-			"theme-string": "#f9bed2",
-			"theme-list-active-bg": "#3b2138",
-			"theme-text-sub": "#ee9cd3",
-			"theme-text-optional": "#dfb2d9"
-		}
-	},
+	themes: {},
 	setTheme: function(name) {
-		// change theme variables
-		less.modifyVars(app.themes[name]);
-		app.settings.theme = name;
-		app.saveAppData();
+		// get theme variables from file
+		nwFS.readFile(nwPATH.join('themes',name+'.json'),'utf-8',(err, data)=>{
+			if (err) return;
+			let theme_data = JSON.parse(data);
+			// change theme variables
+			less.modifyVars(theme_data);
+			app.settings.theme = name;
+			app.saveAppData();
+			app.refreshThemeList();
+		});
 	},
-
+	refreshThemeList: function() {
+		// get list of themes available
+		nwFS.ensureDirSync('themes');
+		app.themes = nwFS.readdirSync('themes').map((v)=>v.replace('.json',''));
+	},
 	closeProject: function() {
 		// app.saveSettings();
 		app.getElement("#search-container").classList.add("no-project");
@@ -339,7 +334,9 @@ var app = {
 
 	settings: {},
 	getAppDataFolder: function(){
-		return nw.App.dataPath || (app.os == 'mac' ? nwPATH.join('~','Library','Application Support','BlankE','Default') : '/var/local');
+		let path = nwPATH.join(nw.App.dataPath || (app.os == 'mac' ? nwPATH.join('~','Library','Application Support','BlankE','Default') : '/var/local'), 'Settings');
+		nwFS.ensureDirSync(path);
+		return path;
 	},
 	loadAppData: function(callback) {
 		var app_data_folder = app.getAppDataFolder();

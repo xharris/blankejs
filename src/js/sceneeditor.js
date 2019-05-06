@@ -1260,7 +1260,7 @@ class SceneEditor extends Editor {
 				let tag = this_ref.el_tag_form.getValue("value");
 				if (tag) {
 					e.target.tag = tag;
-					this_ref.obj_info[obj_ref.name] = obj_ref.name+" ("+e.target.tag+")";
+					this_ref.obj_info[obj_ref.name] = obj_ref.name+(tag == '' ? '' : " ("+e.target.tag+")");
 					this_ref.drawCrosshair();
 					this_ref.export();
 				}
