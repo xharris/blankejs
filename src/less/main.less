@@ -665,7 +665,7 @@ body:before, body:after {
     z-index: 200;
     overflow-y: auto;
     padding-right: 10px;
-	padding-bottom: 1px;
+	padding-bottom: 5px;
 	box-sizing: border-box;
 
 	&::-webkit-scrollbar {
@@ -1164,13 +1164,34 @@ body:before, body:after {
 	}
 
 	.form-button {
-	    margin-top: 6px;
-    	border: none;
-	    padding: 3px;
-	    background: rgba(255,255,255,0.3);
-	    outline: 1px solid rgba(0,0,0,0.5);
-	    border-radius: 2px;
-	    transition: all ease-in-out 0.1s;
+		margin: 0px 2px;
+		border: none;
+		padding: 0px 3px;
+		background: rgba(255, 255, 255, 0.3);
+		border-radius: 2px;
+		transition: all ease-in-out 0.1s;
+		line-height: 18px;
+		vertical-align: top;
+		cursor: pointer;
+	}
+
+	.form-file-input {
+		.form-text();
+	}
+
+	.form-file-btn {
+		.form-button();
+	}
+
+	.form-group[data-type="directory"] {
+		.form-inputs {
+			display: flex;
+			width: 100%;
+
+			.form-file-input {
+				width: 100%;
+			}
+		}
 	}
 
 	.form-group[data-type="checkbox"] {

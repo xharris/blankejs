@@ -129,7 +129,7 @@ var app = {
 	themes: {},
 	setTheme: function(name) {
 		// get theme variables from file
-		nwFS.readFile(nwPATH.join('themes',name+'.json'),'utf-8',(err, data)=>{
+		nwFS.readFile(nwPATH.join(app.settings.themes_path,name+'.json'),'utf-8',(err, data)=>{
 			if (err) return;
 			let theme_data = JSON.parse(data);
 			// change theme variables
@@ -141,8 +141,8 @@ var app = {
 	},
 	refreshThemeList: function() {
 		// get list of themes available
-		nwFS.ensureDirSync('themes');
-		app.themes = nwFS.readdirSync('themes').map((v)=>v.replace('.json',''));
+		nwFS.ensureDirSync(app.settings.themes_path);
+		app.themes = nwFS.readdirSync(app.settings.themes_path).map((v)=>v.replace('.json',''));
 	},
 	closeProject: function() {
 		// app.saveSettings();
@@ -350,6 +350,7 @@ var app = {
 				recent_files:[],
 				plugin_path:'plugins',
 				engine_path:'love2d',
+				themes_path:'themes',
 				autocomplete_path:'./autocomplete.js',
 				theme:'green'
 			});
@@ -357,15 +358,17 @@ var app = {
 		});
 	},
 
+	plugin_watch:null,
 	saveAppData: function() {
 		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
-		console.log(app_data_path)
 		
 		nwFS.stat(app_data_folder, function(err, stat) {
 			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
 			nwFS.writeFile(app_data_path, JSON.stringify(app.settings));
 		});
+		
+		dispatchEvent('appdataSave');
 	},
 
 	project_settings:{},

@@ -354,6 +354,7 @@ class BlankeForm {
         this.input_ref = {};
         this.input_values = {};
         this.input_types = {};
+        this.input_args = {};
 
         for (var input of inputs) {
             this.addInput(input);
@@ -380,6 +381,7 @@ class BlankeForm {
         this.input_ref[input_name] = [];
         this.input_values[input_name] = [];
         this.input_types[input_name] = input_type;
+        this.input_args[input_name] = extra_args;
 
         let container_type = "div";
         if (input_type == "checkbox")
@@ -487,6 +489,27 @@ class BlankeForm {
             el_inputs_container.appendChild(el_input);
         }
 
+        if (input_type == "directory") {
+            let el_input = blanke.createElement("input","form-file-input");
+            let el_file_btn = blanke.createElement("button","form-file-btn");
+            el_file_btn.innerHTML = "choose";
+
+            el_input.placeholder = extra_args.placeholder || '';
+            el_input.value = extra_args.default || '';
+            this.prepareInput(el_input, input_name);
+
+            el_inputs_container.appendChild(el_input);
+            el_inputs_container.appendChild(el_file_btn);
+
+            // select folder dialog
+            el_file_btn.addEventListener('click',(e)=>{
+                blanke.chooseFile('nwdirectory', function(file_path){
+                    el_input.value = file_path;
+                    el_input.dispatchEvent(new Event('input',{ bubbles: true }));
+                }, true);
+            });
+        }
+
         if (prepend_inputs)
             el_container.prepend(el_inputs_container);
         else
@@ -544,10 +567,14 @@ class BlankeForm {
                 let input_type = this_ref.input_types[e.target.name_ref];
                 let input_value = this_ref.input_values[e.target.name_ref];
                 let input_ref = this_ref.input_ref[input_name];
+                let input_args = this_ref.input_args[input_name];
 
                 let val;
-                if (input_type == "text" || input_type == "select" || input_type == "color")
+                if (input_type == "text" || input_type == "select" || input_type == "color" || input_type == "directory") {
                     val = e.target.value;
+                    if (val == '' && e.target.placeholder)
+                        val = input_args.default || '';
+                }
                 
                 if (input_type == "checkbox")
                     val = this.checked;

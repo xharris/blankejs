@@ -4,6 +4,7 @@ let dir_plugins = [];
 let zip_plugins = [];
 
 let pathJoin;
+let plugin_watch;
 
 // get a list of .lua and .js files
 function refreshPluginList(silent) {
@@ -74,8 +75,14 @@ document.addEventListener("openProject",function(e){
 
 document.addEventListener("ideReady",function(e){
 	pathJoin = nwPATH.join;
+});
+
+document.addEventListener("appdataSave", (e) => {
+	// watch for updates to plugins
 	nwFS.ensureDir(app.settings.plugin_path, (err) => {
-		let plugin_watch = nwWATCH(app.settings.plugin_path, {recursive: true}, function(evt_type, file) {
+		if (plugin_watch) 
+			plugin_watch.close();
+		plugin_watch = nwWATCH(app.settings.plugin_path, {recursive: true}, function(evt_type, file) {
 			refreshPluginList();
 		});
 	});

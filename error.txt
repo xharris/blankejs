@@ -3418,3 +3418,15 @@ TypeError: Cannot read property 'text' of null
     at signalDOMEvent (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:1165:3)
     at HTMLTextAreaElement.prepareCopyCut (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/includes/codemirror/lib/codemirror.js:9208:9)
 
+[[ 1557158781808 ]]
+TypeError: el_inputs_container.appendchild is not a function
+    at BlankeForm.addInput (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:506:33)
+    at new BlankeForm (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:359:18)
+    at new Settings (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/settings.js:13:28)
+    at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:103:64)
+
+[[ 1557163372887 ]]
+Error: ENOENT: no such file or directory, stat '/Users/xharris/Documents/blankejs/love2'
+    at Object.statSync (fs.js:872:3)
+    at Object.statSync (/Users/xharris/Documents/blankejs/node_modules/.registry.npmjs.org/graceful-fs/4.1.15/node_modules/graceful-fs/polyfills.js:295:24)
+
