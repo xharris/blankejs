@@ -749,7 +749,8 @@ var blanke = {
         chooser.id = "#_blankeFileDialog";
         chooser.style.display = "none";
         chooser.type = "file";
-        if (type != '' && filename) chooser.setAttribute(type, filename)
+        
+        if (type != '') chooser.setAttribute(type, filename)
         if (multiple) chooser.setAttribute('multiple','');
 
         document.body.appendChild(chooser);
