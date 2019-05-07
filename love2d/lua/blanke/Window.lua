@@ -28,7 +28,7 @@ Window = {
 		if not h then
 			w, h = Window.getResolution(w)
 		end
-		love.window.updateMode(w,h)
+		--love.window.updateMode(w,h)
 		updateGlobals(0)
 		return w, h
 	end,

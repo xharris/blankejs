@@ -117,7 +117,7 @@ Debug = {
     end,
 
     setFontSize = function(new_size)
-        Debug._font = Font{name="console",size=new_size}
+        Debug._font = Font{name="04B_03",size=new_size}
         return Debug
     end,
 
@@ -153,5 +153,4 @@ Debug = {
         return Debug
     end
 }
-io.output():setvbuf("no")
 return Debug

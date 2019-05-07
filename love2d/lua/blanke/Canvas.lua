@@ -30,6 +30,7 @@ Canvas = Class{
     
     resize = function(self, w, h)
         self.canvas = love.graphics.newCanvas(w, h)
+        -- TODO draw old canvas to new canvas
         self.width = self.canvas:getWidth()
         self.height = self.canvas:getHeight()
     end,

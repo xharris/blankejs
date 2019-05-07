@@ -1,4 +1,4 @@
-var removable = ["Bezier","Dialog","Effect","Map","Net","Repeater","Save","Steam","UI","View"];
+var removable = ["Audio","Bezier","Dialog","Effect","Map","Mask","Net","Physics","Repeater","Save","Scene","Steam","UI","View"];
 var remove_path = {
 	"Steam":[
 		'blanke/Steam.lua',
@@ -135,7 +135,7 @@ class Exporter extends Editor {
 						new_removable.push(nwPATH.join('blanke','plugins', p));
 					
 				}
-				console.log(new_removable)
+				new_removable.push(nwPATH.join('blanke','docs'), nwPATH.join('blanke','docs','**','*'));
 
 				startZipping(new_removable.map(app.cleanPath));
 			});

@@ -85,7 +85,7 @@ function _destroyGameObject(type, del_obj)
 end	
 
 blanke_require("extra.printr")
---ffmpeg  = blanke_require("extra.ffmpeg")
+
 json 	= blanke_require("extra.json")
 uuid 	= blanke_require("extra.uuid")
 
@@ -96,10 +96,6 @@ anim8 	= blanke_require('extra.anim8')
 HC 		= blanke_require('extra.HC')
 SpatialHash = blanke_require('extra.HC.spatialhash')
 blanke_require('extra.noobhub')
---lurker	= blanke_require("extra.lurker")
---lurker.quiet = true
-
---grease 	= blanke_require('extra.grease')
 
 function requireModules(modules)
 	-- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
@@ -117,9 +113,9 @@ function requireModules(modules)
 	end
 end
 
-requireModules({'Group','Audio','Asset','Canvas','Physics','Font','Draw','Sprite','Entity','Hitbox','Image','Input','Mask','Scene','State','Timer','Tween'})
+requireModules({'Group','Asset','Canvas','Font','Draw','Sprite','Entity','Hitbox','Image','Input','State','Timer','Tween'})
 
-local optional_modules = {"Bezier","Dialog","Camera","Effect","Map","Net","Repeater","Save","Steam","UI","View"}
+local optional_modules = {"Audio","Bezier","Dialog","Camera","Effect","Map","Mask","Net","Physics","Repeater","Save","Scene","Steam","UI","View"}
 
 Signal.emit('modules_loaded')
 
@@ -129,7 +125,18 @@ local min_dt = 1/max_fps
 local next_time = love.timer.getTime()
 
 -- inject code into load function
-love.load = function(args, unfilteredArgs)
+function love.load(args, unfilteredArgs)
+	
+end
+
+_sleep_timer = 0
+function sleep(s)
+	_sleep_timer = s
+end 
+
+function love.run()
+	local args, unfilteredArgs = {}, {} -- love.arg.parseGameArguments(arg), arg
+
 	-- remove optional modules that don't exist
 	local new_mod_list = {}
 	for m, mod in ipairs(optional_modules) do 
@@ -150,57 +157,51 @@ love.load = function(args, unfilteredArgs)
 	BlankE.options.debug.play_record = play_record
 	BlankE.options.debug.record = ((record or ide) and not play_record)
 	BlankE.options.debug.log = BlankE.options.debug.log or ide 
-
 	BlankE.init()
-end
 
-_sleep_timer = 0
-function sleep(s)
-	_sleep_timer = s
-end 
+	-- We don't want the first frame's dt to include time taken by love.load.
+	if love.timer then love.timer.step() end
 
-love.run = function()
-    if love.math then love.math.setRandomSeed(os.time()) end
-    if love.load then love.load(arg) end
-    if love.timer then love.timer.step() end
+	local dt = 0
 
-    local dt = 0
-    local fixed_dt = 1/60
-    local accumulator = 0
+	-- Main loop time.
+	print('0')
+	return function()
+		-- Process events.
+		print('1')
+		if love.event then
+			print('2')
+			love.event.pump()
+			print('3')
+			for name, a,b,c,d,e,f in love.event.poll() do
+				print('4')
+				if name == "quit" then
+					if not love.quit or not love.quit() then
+						return a or 0
+					end
+				end
+				love.handlers[name](a,b,c,d,e,f)
+			end
+		end
 
-    while true do
-        if love.event then
-            love.event.pump()
-            for name, a, b, c, d, e, f in love.event.poll() do
-                if name == 'quit' then
-                    if not love.quit or not love.quit() then
-                        return a
-                    end
-                end
-                love.handlers[name](a, b, c, d, e, f)
-            end
-        end
+		-- Update dt, as we'll be passing it to update
+		if love.timer then dt = love.timer.step() end
 
-        if love.timer then
-            love.timer.step()
-            dt = love.timer.getDelta()
-        end
+		-- Call update and draw
+		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
 
-        accumulator = accumulator + dt
-        while accumulator >= fixed_dt do
-            if love.update then love.update(fixed_dt) end
-            accumulator = accumulator - fixed_dt
-        end
+		if love.graphics and love.graphics.isActive() then
+			love.graphics.origin()
+			love.graphics.clear(love.graphics.getBackgroundColor())
 
-        if love.graphics and love.graphics.isActive() then
-            love.graphics.clear(love.graphics.getBackgroundColor())
-            love.graphics.origin()
-            if love.draw then love.draw() end
-            love.graphics.present()
-        end
+			if love.draw then love.draw() end
 
-        if love.timer then love.timer.sleep(0.0001) end
-    end
+			love.graphics.present()
+		end
+
+		if love.timer then love.timer.sleep(0.001) end
+	end
+
 end
 
 love.quit = function()
@@ -267,7 +268,6 @@ BlankE = {
 			BlankE._callbacks_replaced = true
 			BlankE.injectCallbacks()
 		end
-		
 		-- parsing all options
 		if type(options.filter) == "table" then
 			Draw.setDefaultFilter(unpack(options.filter))
@@ -279,7 +279,6 @@ BlankE = {
 	    if options.auto_aspect_ratio then
 			Window.detectAspectRatio()
 		end
-
 	    Window.scale_mode = options.scale_mode
 	    local new_w, new_h
 		if not Window._res_modified then
@@ -291,15 +290,18 @@ BlankE = {
 		end
 		new_w, new_h = Window.getResolution()
 		BlankE.game_canvas:resize(new_w,new_h)
-
 	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
-	    Asset.add("console.ttf")
-	    Draw.setFont("console",24)
-	    Debug.setFontSize(18)
+	    Asset.add("04B_03.ttf")
+		Draw.setFont("04B_03",24)
 
+		if BlankE._ide_mode then 
+			io.output():setvbuf("no")
+		end 
+		if options.debug.log then 
+			Debug.setFontSize(18)
+		end 
 		Asset.load()
-
 		-- set inputs
 		for i, input in ipairs(options.inputs) do
 			Input.set(unpack(input))
@@ -352,10 +354,14 @@ BlankE = {
 
 	try = function(func, ...) -- doesnt rly work
 		if func then
-			local result, chunk
-			result, chunk = xpcall(func, debug.traceback, ...)
-			if not result then error(chunk) end
-			return result, chunk
+			if BlankE._ide_mode then
+				local result, chunk
+				result, chunk = xpcall(func, debug.traceback, ...)
+				if not result then error(chunk) end
+				return result, chunk
+			else 
+				return func(...)
+			end 
 		end
 	end,
 
@@ -440,9 +446,7 @@ BlankE = {
 		end)
 	end,
 
-	update = function(dt)
-		if lurker then lurker.update() end
-	    
+	update = function(dt)	    
 	    dt = math.min(dt, min_dt) * dt_mod
 	    next_time = next_time + min_dt
 
@@ -462,7 +466,7 @@ BlankE = {
     	if not BlankE.pause then
 			StateManager.iterateStateStack('update', dt)
 		end
-		if Debug then Debug.update(dt) end
+		if Debug and BlankE._ide_mode then Debug.update(dt) end
 
 	    -- default fullscreen toggle shortcut
 	    if Input("fullscreen-toggle").released then
@@ -499,13 +503,12 @@ BlankE = {
 		end)
 		if BlankE.draw_debug and Debug then Debug.draw() end
 
-	    local cur_time = love.timer.getTime()
+		local cur_time = love.timer.getTime()
 	    if next_time <= cur_time then
 	        next_time = cur_time
 	        return
-	    end
+		end
 	    love.timer.sleep(next_time - cur_time)
-	    
 	end,
 
 	drawOutsideWindow = function()
@@ -549,14 +552,14 @@ BlankE = {
 		if BlankE.quit and BlankE.quit() then return true end
 
 	    if Net then Net.disconnect() end
-		if Debug then Debug.quit() end
+		if Debug and BlankE._ide_mode then Debug.quit() end
 		
 		return false
 	end,
-
+--[[
 	errorhandler = function(msg)
 		print(debug.traceback("Error: " .. tostring(msg), 10):gsub("\n[^\n]+$", ""))
-	end,
+	end,]]
 }
 
 local old_errorhandler = love.errorhandler

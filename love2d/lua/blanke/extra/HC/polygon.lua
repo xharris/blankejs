@@ -379,7 +379,7 @@ function Polygon:splitConvex()
 		local p = convex[i]
 		local k = i + 1
 		while k <= #convex do
-			local success, merged = pcall(function() return p:mergedWith(convex[k]) end)
+			local success, merged = (function() return p:mergedWith(convex[k]) end)()
 			if success and merged:isConvex() then
 				convex[i] = merged
 				p = convex[i]

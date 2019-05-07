@@ -178,7 +178,7 @@ Draw = Class{
 
     setFont = function(new_font)
     	if type(new_font) == "number" or new_font == nil then
-    		Draw.font = Font{name="console",size=(new_font or 12)}
+    		Draw.font = Font{name="04B_03",size=(new_font or 12)}
     	elseif type(new_font) == "string" and Asset.has('font', new_font) then
     		Draw.font = Font{name=new_font}
     	elseif type(new_font) == 'table' then
