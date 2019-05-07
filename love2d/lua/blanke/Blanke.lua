@@ -124,19 +124,12 @@ local max_fps = 120
 local min_dt = 1/max_fps
 local next_time = love.timer.getTime()
 
--- inject code into load function
-function love.load(args, unfilteredArgs)
-	
-end
-
 _sleep_timer = 0
 function sleep(s)
 	_sleep_timer = s
 end 
 
-function love.run()
-	local args, unfilteredArgs = {}, {} -- love.arg.parseGameArguments(arg), arg
-
+function love.load(args, unfilteredArgs)
 	-- remove optional modules that don't exist
 	local new_mod_list = {}
 	for m, mod in ipairs(optional_modules) do 
@@ -146,7 +139,11 @@ function love.run()
 	end 
 	requireModules(new_mod_list)
 
-	if BlankE.load then BlankE.load(args, unfilteredArgs) end
+	-- load config file
+	if getFileInfo("config.json") then
+		BlankE.settings = json.decode(love.filesystem.read('config.json'))
+		Window.os = BlankE.settings.os 
+	end
 
 	local ide = table.hasValue(args, "--ide")
 	local record = table.hasValue(args, "--record")
@@ -157,51 +154,11 @@ function love.run()
 	BlankE.options.debug.play_record = play_record
 	BlankE.options.debug.record = ((record or ide) and not play_record)
 	BlankE.options.debug.log = BlankE.options.debug.log or ide 
+ 
+	-- TODO: add simulate_os option
+	if BlankE._ide_mode then Window.os = '?' end 
+	if BlankE.load then BlankE.load(args, unfilteredArgs) end
 	BlankE.init()
-
-	-- We don't want the first frame's dt to include time taken by love.load.
-	if love.timer then love.timer.step() end
-
-	local dt = 0
-
-	-- Main loop time.
-	print('0')
-	return function()
-		-- Process events.
-		print('1')
-		if love.event then
-			print('2')
-			love.event.pump()
-			print('3')
-			for name, a,b,c,d,e,f in love.event.poll() do
-				print('4')
-				if name == "quit" then
-					if not love.quit or not love.quit() then
-						return a or 0
-					end
-				end
-				love.handlers[name](a,b,c,d,e,f)
-			end
-		end
-
-		-- Update dt, as we'll be passing it to update
-		if love.timer then dt = love.timer.step() end
-
-		-- Call update and draw
-		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
-
-		if love.graphics and love.graphics.isActive() then
-			love.graphics.origin()
-			love.graphics.clear(love.graphics.getBackgroundColor())
-
-			if love.draw then love.draw() end
-
-			love.graphics.present()
-		end
-
-		if love.timer then love.timer.sleep(0.001) end
-	end
-
 end
 
 love.quit = function()
@@ -259,10 +216,6 @@ BlankE = {
 			BlankE.loadPlugin(plugin)
 		end
 
-		-- load config file
-		if getFileInfo("config.json") then
-			BlankE.settings = json.decode(love.filesystem.read('config.json'))
-		end
 
 		if not BlankE._callbacks_replaced then
 			BlankE._callbacks_replaced = true
@@ -342,11 +295,7 @@ BlankE = {
 					if BlankE.old_love[fn_name] then
 						BlankE.old_love[fn_name](...)
 					end			
-					--if fn_name ~= 'quit' then
-					--	return BlankE.try(func, ...)
-					--else
-						return func(...)
-					--end
+					return func(...)
 				end
 			end
 		end
@@ -413,12 +362,7 @@ BlankE = {
 	addState  = function(in_name) BlankE.addClassType(in_name, 'State') end,
 
 	restart = function()
-		-- restart game I guess?
-	end,
-
-	reloadAssets = function()
-		-- does this actually do anything?
-		require 'assets'
+		-- TODO restart game I guess?
 	end,
 
 	clearObjects = function(include_persistent, state)
@@ -475,10 +419,14 @@ BlankE = {
 	end,
 
 	drawToScale = function(func)
-    	Draw.translate(BlankE._offset_x, BlankE._offset_y)
-    	Draw.scale(BlankE.scale_x, BlankE.scale_y)
-		func()
-		Draw.reset()
+		if Window.os ~= 'web' then 
+			Draw.translate(BlankE._offset_x, BlankE._offset_y)
+			Draw.scale(BlankE.scale_x, BlankE.scale_y)
+			func()
+			Draw.reset()
+		else 
+			func()
+		end 	
 	end,
 
 	draw = function()
@@ -502,7 +450,7 @@ BlankE = {
 			BlankE.game_canvas:draw(true)
 		end)
 		if BlankE.draw_debug and Debug then Debug.draw() end
-
+		
 		local cur_time = love.timer.getTime()
 	    if next_time <= cur_time then
 	        next_time = cur_time
@@ -535,19 +483,6 @@ BlankE = {
 		window_width = w 
 		window_height = h
 	end,
---[[
-	keypressed = function(key) Input.keypressed(key) end,
-	keyreleased = function(key) Input.keyreleased(key) end,
-	mousepressed = function(x, y, button) 
-	    x, y = BlankE.scaledMouse(x, y)
-	    Input.mousepressed(x, y, button)
-	end,
-	mousereleased = function(x, y, button) Input.mousereleased(x, y, button) end,
-	wheelmoved = function(x, y) Input.wheelmoved(x, y) end,
-    joystickpressed = function(joy,btn) Input.joystickreleased(joy, btn) end,
-    joystickreleased = function(joy,btn) Input.joystickreleased(joy, btn) end,
-	gamepadreleased = function(joy, btn) Input.gamepadreleased(joy, btn) end,
-	]]
 	_quit = function()
 		if BlankE.quit and BlankE.quit() then return true end
 
@@ -561,8 +496,5 @@ BlankE = {
 		print(debug.traceback("Error: " .. tostring(msg), 10):gsub("\n[^\n]+$", ""))
 	end,]]
 }
-
-local old_errorhandler = love.errorhandler
-love.errorhandler = BlankE.errorhandler
 
 return BlankE

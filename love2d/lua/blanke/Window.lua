@@ -5,9 +5,11 @@ Window = {
 	aspect_ratios = { {4,3},{5,4},{16,10},{16,9} },
 	resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 },--640, 800, 960, 1024, 1280, 1400, 1440, 1600, 1856, 1920, 2048 },
 	disable_fullscreen = false,
+	os='?',
 	
 	detectAspectRatio = function()
 		-- detect aspect ratio
+		if Window.os == 'web' then return end
 		local w, h = love.window.getDesktopDimensions()
 		for r, ratio in ipairs(Window.aspect_ratios) do
 			if w * (ratio[2] / ratio[1]) == h then
@@ -17,6 +19,7 @@ Window = {
 	end,
 
 	getResolution = function(index)
+		if Window.os == 'web' then return love.window.getMode() end
 		Window.resolution = ifndef(index, Window.resolution)
 		local res = Window.resolutions[Window.resolution]
 		return res, res / Window.aspect_ratio[1] * Window.aspect_ratio[2]
@@ -28,7 +31,7 @@ Window = {
 		if not h then
 			w, h = Window.getResolution(w)
 		end
-		--love.window.updateMode(w,h)
+		if Window.os ~= 'web' then love.window.updateMode(w,h) end
 		updateGlobals(0)
 		return w, h
 	end,

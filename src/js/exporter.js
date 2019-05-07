@@ -1,3 +1,5 @@
+var re_resolution = /resolution[\s=]*(?:(\d+)|{([\d\s]+),([\s\d]+)})/;
+
 var removable = ["Audio","Bezier","Dialog","Effect","Map","Mask","Net","Physics","Repeater","Save","Scene","Steam","UI","View"];
 var remove_path = {
 	"Steam":[
@@ -37,7 +39,7 @@ class Exporter extends Editor {
 		var this_ref = this;
 
 		// diplay list of target platforms
-		this.platforms = ['windows','mac','linux','love'];
+		this.platforms = ['windows','mac','linux','love','web'];
 
 		this.el_platforms = app.createElement("div","platforms");
 		let el_title1 = app.createElement("p","title1");
@@ -73,7 +75,7 @@ class Exporter extends Editor {
 		this.appendChild(this.el_export_form.container);
 	}
 
-	createLove (dir, cb) {
+	createLove (dir, target_os, cb) {
 		let love_path = nwPATH.join(dir, app.project_settings.export.name+".love");
 		let engine_path = app.settings.engine_path;
 
@@ -83,11 +85,35 @@ class Exporter extends Editor {
 				// zlib: { level: 9 }
 			});
 
+			// find the resolution
+			let str_main = nwFS.readFileSync(nwPATH.join(app.project_path,'main.lua'),'utf-8');
+			let match, resolution = [800,600];
+			if (match = re_resolution.exec(str_main)) {
+				if (match[1]) {
+					let res = match[1] - 1;
+					let aspect_ratio = [4,3];
+					let res_list = [512,640,800,1024,1280,1366,1920];
+					resolution = [
+						res_list[res],
+						res_list[res] / aspect_ratio[0] * aspect_ratio[1]
+					];
+				} else if (match[2]) {
+					resolution = [match[2], match[3]];
+				}
+			}
+
 			output.on('close', function(){
 				// done
 				if (cb) cb(love_path);
 			});
 			archive.pipe(output);
+			archive.append(`
+function love.conf(t) 
+	t.window.title = "${app.project_settings.export.name}"         -- The window title (string)
+	t.window.width = ${resolution[0]}                -- The window width (number)
+	t.window.height = ${resolution[1]}              -- The window height (number)
+end
+			`, { name: 'conf.lua' });
 			archive.glob("**/*",{
 				cwd: nwPATH.join(engine_path,"lua"),
 				ignore: (eng_ignore || [])
@@ -98,6 +124,9 @@ class Exporter extends Editor {
 			});
 			archive.finalize();
 		}
+
+		app.project_settings.os = target_os;
+		app.saveSettings();
 
 		// remove uneccesary files
 		if (app.project_settings.export.remove_unused) {
@@ -171,7 +200,7 @@ class Exporter extends Editor {
 	
 		nwFS.emptyDir(os_dir, function(err){
 			// create a LOVE file
-			this_ref.createLove(os_dir, function(love_path){
+			this_ref.createLove(os_dir, target_os, function(love_path){
 				if (target_os == "love") {
 					this_ref.doneToast("love");
 				}
@@ -239,6 +268,13 @@ class Exporter extends Editor {
 				// exporting to LINUX
 				if (target_os == "linux") {
 					// just keep it as a .love
+					this_ref.doneToast("linux");
+				}
+
+				// exporting to WEB
+				if (target_os == "web") {
+					// just keep it as a .love
+					this_ref.doneToast("web");
 				}
 			});
 

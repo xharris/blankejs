@@ -41,7 +41,7 @@ Canvas = Class{
 
         Draw.stack(function()
             love.graphics.setBlendMode("alpha")
-            love.graphics.setCanvas{self.canvas, stencil=true}
+            love.graphics.setCanvas{self.canvas}--, stencil=true}
             if self.auto_clear then
                 love.graphics.clear()
             end
