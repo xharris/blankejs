@@ -74,8 +74,8 @@ local SceneLayer = Class{
 			local tile_info = info
 
 			-- add to spritebatch
-			self.spritebatches[img_name] = ifndef(self.spritebatches[img_name], love.graphics.newSpriteBatch(self.images[img_name]()))
-			info.id = self.spritebatches[img_name]:add(love.graphics.newQuad(info.crop.x, info.crop.y, info.crop.w, info.crop.h, self.images[img_name].width, self.images[img_name].height), info.x, info.y)
+			--self.spritebatches[img_name] = ifndef(self.spritebatches[img_name], love.graphics.newSpriteBatch(self.images[img_name]()))
+			info.id = 0--self.spritebatches[img_name]:add(love.graphics.newQuad(info.crop.x, info.crop.y, info.crop.w, info.crop.h, self.images[img_name].width, self.images[img_name].height), info.x, info.y)
 			
 			-- add to tile hashtable
 			self.hashtable:add(info.x, info.y, info)
@@ -85,11 +85,13 @@ local SceneLayer = Class{
 	end,
 
 	addHitbox = function(self, points, tag, color)
+	--[[
 		self.hitboxes[tag] = ifndef(self.hitboxes[tag], {})
 		local new_hitbox = Hitbox("polygon", points, tag)
 		new_hitbox:move(self.offx, self.offy)
 		if color then new_hitbox:setColor(color) end
 		table.insert(self.hitboxes[tag], new_hitbox)
+		]] 
 	end,
 
 	addEntity = function(self, instance)
@@ -289,7 +291,7 @@ local Scene = Class{
 			table.insert(self.layers, new_layer)
 		end
 		self:sortLayers()
-
+		
 		-- tilesets (images)
 		for i, image in ipairs(scene_data.images) do
 			local img_obj = Image(image.path)
@@ -314,7 +316,6 @@ local Scene = Class{
 				end
 			end
 		end
-
 		-- objects (just store their coordinates)
 		self.objects = scene_data.objects
 		for uuid, objs in pairs(scene_data.objects) do
@@ -336,8 +337,8 @@ local Scene = Class{
 		end
 
 		-- hitboxes, tilehitboxes, and entities
-		self:addTileHitbox(unpack(Scene.tile_hitboxes))
-		self:addHitbox(unpack(Scene.hitboxes))
+		--self:addTileHitbox(unpack(Scene.tile_hitboxes))
+		--self:addHitbox(unpack(Scene.hitboxes))
 		for e, ent in ipairs(Scene.entities) do
 			self:addEntity(ent[1], ent[2], ent[3])
 		end

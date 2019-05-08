@@ -84,18 +84,20 @@ function _destroyGameObject(type, del_obj)
 	end)
 end	
 
-blanke_require("extra.printr")
+function requireExtras()
+	blanke_require("extra.printr")
 
-json 	= blanke_require("extra.json")
-uuid 	= blanke_require("extra.uuid")
+	_G['json'] 	= blanke_require("extra.json")
+	_G['uuid'] 	= blanke_require("extra.uuid")
 
-Class 	= blanke_require('Class')	-- hump.class
-Signal 	= blanke_require('Signal')
+	_G['Class'] 	= blanke_require('Class')	-- hump.class
+	_G['Signal'] 	= blanke_require('Signal')
 
-anim8 	= blanke_require('extra.anim8')
-HC 		= blanke_require('extra.HC')
-SpatialHash = blanke_require('extra.HC.spatialhash')
-blanke_require('extra.noobhub')
+	_G['anim8'] 	= blanke_require('extra.anim8')
+	_G['HC'] 		= blanke_require('extra.HC')
+	_G['SpatialHash'] = blanke_require('extra.HC.spatialhash')
+	blanke_require('extra.noobhub')
+end
 
 function requireModules(modules)
 	-- not required in loop: {'Blanke', 'Globals', 'Util', 'Debug', 'Class', 'doc','conf'}
@@ -113,11 +115,8 @@ function requireModules(modules)
 	end
 end
 
-requireModules({'Group','Asset','Canvas','Font','Draw','Sprite','Entity','Hitbox','Image','Input','State','Timer','Tween'})
-
+local core_modules = {'Group','Asset','Canvas','Font','Draw','Sprite','Entity','Hitbox','Image','Input','State','Timer','Tween'}
 local optional_modules = {"Audio","Bezier","Dialog","Camera","Effect","Map","Mask","Net","Physics","Repeater","Save","Scene","Steam","UI","View"}
-
-Signal.emit('modules_loaded')
 
 -- prevents updating while window is being moved (would mess up collisions)
 local max_fps = 120
@@ -130,20 +129,21 @@ function sleep(s)
 end 
 
 function love.load(args, unfilteredArgs)
-	-- remove optional modules that don't exist
-	local new_mod_list = {}
-	for m, mod in ipairs(optional_modules) do 
-		if getFileInfo("blanke/"..string.gsub(mod,'%.','/')..'.lua') then 
-			table.insert(new_mod_list, mod)
-		end 
-	end 
-	requireModules(new_mod_list)
+	requireExtras()
 
 	-- load config file
 	if getFileInfo("config.json") then
 		BlankE.settings = json.decode(love.filesystem.read('config.json'))
 		Window.os = BlankE.settings.os 
 	end
+
+	if Window.os == 'web' then 
+		pcall = function(fn)
+			return function(...)
+				return true, fn(...)
+			end
+		end
+	end 
 
 	local ide = table.hasValue(args, "--ide")
 	local record = table.hasValue(args, "--record")
@@ -157,7 +157,20 @@ function love.load(args, unfilteredArgs)
  
 	-- TODO: add simulate_os option
 	if BlankE._ide_mode then Window.os = '?' end 
+
+	requireModules(core_modules)
+	-- remove optional modules that don't exist
+	local new_mod_list = {}
+	for m, mod in ipairs(optional_modules) do 
+		if ide or (not BlankE.settings.ignore_modules or not table.hasValue(BlankE.settings.ignore_modules,mod)) then 
+			table.insert(new_mod_list, mod)
+		end 
+	end 
+	requireModules(new_mod_list)
+
+	Signal.emit('modules_loaded')
 	if BlankE.load then BlankE.load(args, unfilteredArgs) end
+
 	BlankE.init()
 end
 
@@ -170,7 +183,7 @@ end
 BlankE = {
 	_is_init = false,
 	_ide_mode = false,
-	game_canvas = Canvas(),
+	game_canvas = nil,
 	draw_debug = false,
 
 	-- window scaling
@@ -211,11 +224,12 @@ BlankE = {
 		table.update(BlankE._options, BlankE.options)
 		local options = BlankE._options
 
+		BlankE.game_canvas = Canvas()
+
 		-- load plugins
 		for p, plugin in ipairs(options.plugins) do
 			BlankE.loadPlugin(plugin)
 		end
-
 
 		if not BlankE._callbacks_replaced then
 			BlankE._callbacks_replaced = true
@@ -491,10 +505,12 @@ BlankE = {
 		
 		return false
 	end,
---[[
 	errorhandler = function(msg)
 		print(debug.traceback("Error: " .. tostring(msg), 10):gsub("\n[^\n]+$", ""))
-	end,]]
+	end,
 }
+
+local old_errorhandler = love.errorhandler
+love.errorhandler = BlankE.errorhandler
 
 return BlankE

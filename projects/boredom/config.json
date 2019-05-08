@@ -206,8 +206,24 @@
     },
     "export": {
         "name": "boredom",
-        "remove_unused": true
+        "remove_unused": true,
+        "web_autoplay": false,
+        "web_memory": 200,
+        "web_stack": 4
     },
     "ico": "src\\logo.ico",
-    "icns": "src\\logo.icns"
+    "icns": "src\\logo.icns",
+    "os": "web",
+    "ignore_modules": [
+        "Audio",
+        "Bezier",
+        "Dialog",
+        "Map",
+        "Mask",
+        "Net",
+        "Physics",
+        "Save",
+        "Steam",
+        "UI"
+    ]
 }

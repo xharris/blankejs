@@ -18,6 +18,7 @@ var remove_path = {
 class Exporter extends Editor {
 	constructor (...args) {
 		super(...args);
+		let this_ref = this;
 
 		if (DragBox.focus('Exporter')) return;
 
@@ -26,7 +27,9 @@ class Exporter extends Editor {
 		ifndef_obj(app.project_settings.export, {
 			name: nwPATH.basename(app.project_path),
 			remove_unused: true,
-			web_autoplay: false
+			web_autoplay: false,
+			web_memory: 24,
+			web_stack: 2
 		});
 
 		this.setupDragbox();
@@ -34,10 +37,8 @@ class Exporter extends Editor {
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 384;
-		this.container.height = 224;
-
-		var this_ref = this;
+		this.container.width = 400;
+		this.container.height = 370;
 
 		// diplay list of target platforms
 		this.platforms = ['windows','mac','linux','love','web'];
@@ -69,12 +70,14 @@ class Exporter extends Editor {
 			['name', 'text', {'default':app.project_settings.export.name}],
 			['remove_unused','checkbox',{'default':app.project_settings.export.remove_unused,label:"remove unused classes"}],
 			['web'],
-			['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}]
+			['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
+			['web_memory','number',{'default':app.project_settings.export.web_memory,label:"memory size"}],
+			['web_stack','number',{'default':app.project_settings.export.web_stack,label:"stack size"}]
 		]);
 		this.el_export_form.container.classList.add("dark");
-		this.el_export_form.onChange('name',(val) => app.project_settings.export.name = val);
-		this.el_export_form.onChange('remove_unused',(val) => app.project_settings.export.remove_unused = val);
-		this.el_export_form.onChange('web_autoplay',(val) => app.project_settings.export.web_autoplay = val);
+		['name','remove_unused','web_autoplay','web_memory','web_stack'].forEach((s)=>{
+			this_ref.el_export_form.onChange(s,(val)=>app.project_settings.export[s] = val);
+		});
 
 		this.appendChild(this.el_export_form.container);
 	}
@@ -84,6 +87,9 @@ class Exporter extends Editor {
 		let engine_path = app.settings.engine_path;
 
 		function startZipping(eng_ignore) {
+			blanke.toast('Zipping files')
+			app.saveSettings();
+
 			let output = nwFS.createWriteStream(love_path);
 			let archive = nwZIP('zip',{
 				// zlib: { level: 9 }
@@ -130,7 +136,6 @@ end
 		}
 
 		app.project_settings.os = target_os;
-		app.saveSettings();
 
 		// remove uneccesary files
 		if (app.project_settings.export.remove_unused) {
@@ -151,12 +156,17 @@ end
 				}
 				// get a list of classes that shouldn't be in zip
 				let new_removable = [];
+				app.project_settings.ignore_modules = [];
 				for (let key of removable) {
 					if (remove_path[key])
 						new_removable = new_removable.concat(remove_path[key]);
-					else
+					else 
 						new_removable.push(nwPATH.join('blanke',key+'.lua'));
 				}
+				new_removable.forEach((mod)=>{
+					if (mod.includes('.lua')) app.project_settings.ignore_modules.push(nwPATH.basename(mod).split('.')[0]);
+				});
+
 				// iterate plugins too
 				let plugins = nwFS.readdirSync(nwPATH.join(app.settings.engine_path,'lua','blanke','plugins'));
 				let str_main = nwFS.readFileSync(nwPATH.join(app.project_path,"main.lua"));
@@ -175,8 +185,6 @@ end
 		} else {
 			startZipping();
 		}
-
-
 	}
 
 	static openDistFolder(os) {
@@ -185,13 +193,6 @@ end
 
 	doneToast (os) {
 		blanke.toast("Export done! <a href='#' onclick='Exporter.openDistFolder(\""+os+"\");'>View files</a>", 8000);
-
-		// save values used
-		app.project_settings.export = {
-			'name':this.el_export_form.getValue("name"),
-			'remove_unused':this.el_export_form.getValue("remove_unused")
-		}
-		app.saveSettings();
 	}
 
 	export (target_os) {
@@ -292,7 +293,7 @@ end
 	</script>
 </body>
 </html>`;
-					let extrajs = `if(!game_loaded)var game_loaded={};if(!loadGame)var loadGame=function(data_file,div_id,play_on_focus,width,height){if(game_loaded['${project_name}'])return;width=width||800;height=height||600;let el_parent,el_overlay,el_message,canvas,ctx;el_parent=document.getElementById(div_id);el_parent.setAttribute("style","width:"+width+"px;height:"+height+"px;background:#485358;position:relative");el_overlay=document.createElement("div");el_overlay.setAttribute("style","z-index:3;position:absolute;top:0;left:0;right:0;bottom:0;cursor:pointer;box-shadow: inset 0 0 5em 1em #000;");let overlay_inner=function(t){return'<div style="text-align: center;position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%);font-size: 28px;font-family: Trebuchet MS;color: white;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding: 3px;user-select:none;">'+t+'</div>'};el_overlay.innerHTML=overlay_inner("Loading...");el_message=document.createElement("div");el_message.setAttribute("style","z-index:2;position:absolute;top:0;left:0;outline:none;color:white;font-size:12px;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding:3px;");canvas=document.createElement('canvas');canvas.setAttribute("style","z-index:1;position:absolute;left:0;right:0");canvas.width=width||800;canvas.height=height||600;canvas.oncontextmenu=function(e){e.preventDefault()};ctx=canvas.getContext('2d');el_parent.appendChild(canvas);el_parent.appendChild(el_message);el_parent.appendChild(el_overlay);let TXT={LOAD:'Loading Game',EXECUTE:'Done loading',DLERROR:'Error while loading game data.\\nCheck your internet connection.',NOWEBGL:'Your browser or graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a>.<br>Find out how to get it <a href="http://get.webgl.org/">here</a>.',};let Msg=function(m){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#888';for(var i=0,a=m.split('\\n'),n=a.length;i!=n;i++)ctx.fillText(a[i],20,20);};let Fail=function(m){el_message.innerHTML=TXT.NOWEBGL+(m?m:'')};let DoExecute=function(){Msg(TXT.EXECUTE);Module.canvas=canvas.cloneNode(!1);Module.canvas.oncontextmenu=function(e){e.preventDefault()};Module.setWindowTitle=function(title){};Module.postRun=function(){if(!Module.noExitRuntime){Fail();return};canvas.parentNode.replaceChild(Module.canvas,canvas);Txt=Msg=ctx=canvas=null;setTimeout(function(){el_parent.style.width=Module.canvas.widthNative+"px";el_parent.style.height=Module.canvas.heightNative+"px";if(play_on_focus){Browser.mainLoop.pause();el_overlay.innerHTML=overlay_inner("Click to play");el_overlay.onclick=function(){el_parent.removeChild(el_overlay);Module.canvas.focus();Browser.mainLoop.resume()}}else{el_parent.removeChild(el_overlay);Module.canvas.focus()}},1)};Browser.requestAnimationFrame=function(f){window.requestAnimationFrame(f)};setTimeout(function(){Module.run(['/p'])},50)};let DoLoad=function(){Msg(TXT.LOAD);window.onerror=function(e,u,l){Fail(e+'<br>('+u+':'+l+')')};Module={TOTAL_MEMORY:1024*1024*24,TOTAL_STACK:1024*1024*2,currentScriptUrl:'-',preInit:DoExecute};var s=document.createElement('script'),d=document.documentElement;s.src=data_file;s.async=!0;game_loaded[data_file]=!0;s.onerror=function(e){d.removeChild(s);Msg(TXT.DLERROR);canvas.disabled=!1;game_loaded[data_file]=!1};d.appendChild(s)};DoLoad()}`;
+					let extrajs = `if(!game_loaded)var game_loaded={};if(!loadGame)var loadGame=function(data_file,div_id,play_on_focus,width,height){if(game_loaded['${project_name}'])return;let use_canvas_size=!(width||height);width=width||800;height=height||600;let el_parent,el_overlay,el_message,canvas,ctx;el_parent=document.getElementById(div_id);el_parent.setAttribute("style","width:"+width+"px;height:"+height+"px;background:#485358;position:relative");el_overlay=document.createElement("div");el_overlay.setAttribute("style","z-index:2;position:absolute;top:0;left:0;right:0;bottom:0;cursor:pointer;box-shadow: inset 0 0 5em 1em #000;");let overlay_inner=function(t){return'<div style="text-align: center;position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%);font-size: 28px;font-family: Trebuchet MS;color: white;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding: 3px;user-select:none;">'+t+'</div>'};el_overlay.innerHTML=overlay_inner("Loading...");el_message=document.createElement("div");el_message.setAttribute("style","z-index:3;position:absolute;top:0;left:0;outline:none;color:white;font-size:12px;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding:3px;");canvas=document.createElement('canvas');canvas.setAttribute("style","z-index:1;position:absolute;left:0;right:0");canvas.width=width||800;canvas.height=height||600;canvas.oncontextmenu=function(e){e.preventDefault()};ctx=canvas.getContext('2d');el_parent.appendChild(canvas);el_parent.appendChild(el_message);el_parent.appendChild(el_overlay);let TXT={LOAD:'Loading Game',EXECUTE:'Done loading',DLERROR:'Error while loading game data.\\nCheck your internet connection.',NOWEBGL:'Your browser or graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a>.<br>Find out how to get it <a href="http://get.webgl.org/">here</a>.',};let Msg=function(m){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#888';for(var i=0,a=m.split('\\n'),n=a.length;i!=n;i++)ctx.fillText(a[i],20,20);};let Fail=function(m){el_parent.removeChild(el_overlay);el_message.innerHTML=TXT.NOWEBGL+(m?m:'')};let DoExecute=function(){Msg(TXT.EXECUTE);Module.canvas=canvas.cloneNode(!1);Module.canvas.oncontextmenu=function(e){e.preventDefault()};Module.setWindowTitle=function(title){};Module.postRun=function(){if(!Module.noExitRuntime){Fail();return};canvas.parentNode.replaceChild(Module.canvas,canvas);Txt=Msg=ctx=canvas=null;setTimeout(function(){if(use_canvas_size){el_parent.style.width=Module.canvas.widthNative+"px";el_parent.style.height=Module.canvas.heightNative+"px"};if(play_on_focus){Browser.mainLoop.pause();el_overlay.innerHTML=overlay_inner("Click to play");el_overlay.onclick=function(){el_parent.removeChild(el_overlay);Module.canvas.focus();Browser.mainLoop.resume()}}else{el_parent.removeChild(el_overlay);Module.canvas.focus()}},1)};Browser.requestAnimationFrame=function(f){window.requestAnimationFrame(f)};setTimeout(function(){Module.run(['/p'])},50)};let DoLoad=function(){Msg(TXT.LOAD);window.onerror=function(e,u,l){Fail(e+'<br>('+u+':'+l+')')};Module={ALLOW_MEMORY_GROWTH:1,TOTAL_MEMORY:1024*1024*${app.project_settings.web_memory},TOTAL_STACK:1024*1024*${app.project_settings.web_stack},currentScriptUrl:'-',preInit:DoExecute};var s=document.createElement('script'),d=document.documentElement;s.src=data_file;s.async=!0;game_loaded[data_file]=!0;s.onerror=function(e){el_parent.removeChild(el_overlay);d.removeChild(s);Msg(TXT.DLERROR);canvas.disabled=!1;game_loaded[data_file]=!1};d.appendChild(s)};DoLoad()}`;
 					nwFS.readFile(love_path,'base64',(err, game_data)=>{
 						if (err) console.error(err);	
 						let gamejs = `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`;

@@ -18,10 +18,7 @@ Asset = Class{
 				if asset.category == 'script' then
 					if BlankE._ide_mode then 
 						result, chunk = xpcall(asset.object, debug.traceback)
-						if not result then
-							BlankE.errorhandler(chunk)
-							--error(chunk)
-						end
+						
 					else 
 						require(string.gsub(asset.path,'%..+',''))
 					end 
