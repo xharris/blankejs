@@ -104,7 +104,7 @@ class Exporter extends Editor {
 
 			output.on('close', function(){
 				// done
-				if (cb) cb(love_path);
+				if (cb) cb(love_path, resolution);
 			});
 			archive.pipe(output);
 			archive.append(`
@@ -200,7 +200,7 @@ end
 	
 		nwFS.emptyDir(os_dir, function(err){
 			// create a LOVE file
-			this_ref.createLove(os_dir, target_os, function(love_path){
+			this_ref.createLove(os_dir, target_os, function(love_path, resolution){
 				if (target_os == "love") {
 					this_ref.doneToast("love");
 				}
@@ -273,8 +273,40 @@ end
 
 				// exporting to WEB
 				if (target_os == "web") {
-					// just keep it as a .love
-					this_ref.doneToast("web");
+					let html = `
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${project_name}</title>
+</head>
+<body>
+	<div id="my_game"></div>
+	<script src="blanke.js"></script>
+	<script type="text/javascript">
+		(function(){loadGame('${project_name}.data','my_game',true,${resolution[0]},${resolution[1]});})();
+	</script>
+</body>
+</html>`;
+					let extrajs = `if(!game_loaded)var game_loaded={};if(!loadGame)var loadGame=function(data_file,div_id,play_on_focus,width,height){if(game_loaded['${project_name}'])return;width=width||800;height=height||600;let el_parent,el_overlay,el_message,canvas,ctx;el_parent=document.getElementById(div_id);el_parent.setAttribute("style","width:"+width+"px;height:"+height+"px;background:#485358;position:relative");el_overlay=document.createElement("div");el_overlay.setAttribute("style","z-index:3;position:absolute;top:0;left:0;right:0;bottom:0;cursor:pointer;box-shadow: inset 0 0 5em 1em #000;");let overlay_inner=function(t){return'<div style="text-align: center;position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%);font-size: 28px;font-family: Trebuchet MS;color: white;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding: 3px">'+t+'</div>'};el_overlay.innerHTML=overlay_inner("Loading...");el_message=document.createElement("div");el_message.setAttribute("style","z-index:2;position:absolute;top:0;left:0;outline:none;color:white;font-size:12px;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding:3px;");canvas=document.createElement('canvas');canvas.setAttribute("style","z-index:1;position:absolute;left:0;right:0");canvas.width=width||800;canvas.height=height||600;canvas.oncontextmenu=function(e){e.preventDefault()};ctx=canvas.getContext('2d');el_parent.appendChild(canvas);el_parent.appendChild(el_message);el_parent.appendChild(el_overlay);let TXT={LOAD:'Loading Game',EXECUTE:'Done loading',DLERROR:'Error while loading game data.\\nCheck your internet connection.',NOWEBGL:'Your browser or graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a>.<br>Find out how to get it <a href="http://get.webgl.org/">here</a>.',};let Msg=function(m){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#888';for(var i=0,a=m.split('\\n'),n=a.length;i!=n;i++)ctx.fillText(a[i],20,20);};let Fail=function(m){el_message.innerHTML=TXT.NOWEBGL+(m?m:'')};let DoExecute=function(){Msg(TXT.EXECUTE);Module.canvas=canvas.cloneNode(!1);Module.canvas.oncontextmenu=function(e){e.preventDefault()};Module.setWindowTitle=function(title){};Module.postRun=function(){if(!Module.noExitRuntime){Fail();return};canvas.parentNode.replaceChild(Module.canvas,canvas);Txt=Msg=ctx=canvas=null;setTimeout(function(){el_parent.style.width=Module.canvas.widthNative+"px";el_parent.style.height=Module.canvas.heightNative+"px";if(play_on_focus){Browser.mainLoop.pause();el_overlay.innerHTML=overlay_inner("Click to play");el_overlay.onclick=function(){el_parent.removeChild(el_overlay);Module.canvas.focus();Browser.mainLoop.resume()}}else{el_parent.removeChild(el_overlay);Module.canvas.focus()}},1)};Browser.requestAnimationFrame=function(f){window.requestAnimationFrame(f)};setTimeout(function(){Module.run(['/p'])},50)};let DoLoad=function(){Msg(TXT.LOAD);window.onerror=function(e,u,l){Fail(e+'<br>('+u+':'+l+')')};Module={TOTAL_MEMORY:1024*1024*24,TOTAL_STACK:1024*1024*2,currentScriptUrl:'-',preInit:DoExecute};var s=document.createElement('script'),d=document.documentElement;s.src=data_file;s.async=!0;game_loaded[data_file]=!0;s.onerror=function(e){d.removeChild(s);Msg(TXT.DLERROR);canvas.disabled=!1;game_loaded[data_file]=!1};d.appendChild(s)};DoLoad()}`;
+					nwFS.readFile(love_path,'base64',(err, game_data)=>{
+						if (err) console.error(err);	
+						let gamejs = `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`;
+						
+						nwFS.readFile(nwPATH.join(cwd(),'src','includes','love.js'),'utf-8',(err, love_data)=>{
+							if (err) console.error(err);
+							let lovejs = love_data;
+
+							nwFS.writeFileSync(nwPATH.join(os_dir,`blanke.js`),new Uint8Array(Buffer.from(extrajs)));
+							nwFS.writeFileSync(nwPATH.join(os_dir,`${project_name}.data`),new Uint8Array(Buffer.from(lovejs + gamejs)));
+							nwFS.removeSync(love_path);
+								
+							nwFS.writeFile(nwPATH.join(os_dir,'index.html'),html,'utf-8',(err)=>{
+								if (err) console.error(err);
+								this_ref.doneToast("web");
+							});
+						});
+					});
 				}
 			});
 

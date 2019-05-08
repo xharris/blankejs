@@ -3455,3 +3455,7 @@ TypeError: this.input_ref[input_name] is not iterable
     at new Settings (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/settings.js:41:15)
     at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:103:64)
 
+[[ 1557276907878 ]]
+ReferenceError: Exporter is not defined
+    at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:93:74)
+
