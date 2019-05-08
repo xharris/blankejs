@@ -1,7 +1,10 @@
 {
     "export": {
         "name": "Bouncy Ball",
-        "remove_unused": true
+        "remove_unused": true,
+        "web_autoplay": false,
+        "web_memory": 24,
+        "web_stack": 2
     },
     "spritesheet_prvw": {
         "image/sprite-example.png": {
@@ -167,5 +170,22 @@
             "8897d740"
         ]
     },
-    "os": "web"
+    "os": "web",
+    "ignore_modules": [
+        "Audio",
+        "Bezier",
+        "Dialog",
+        "Effect",
+        "Map",
+        "Mask",
+        "Net",
+        "Physics",
+        "Repeater",
+        "Save",
+        "Scene",
+        "Steam",
+        "UI",
+        "View",
+        "Camera"
+    ]
 }

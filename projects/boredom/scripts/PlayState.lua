@@ -6,7 +6,7 @@ local player = nil
 local my_eff
 function PlayState:enter(prev)
 	PlayState.background_color = 'white'
-	
+		
 	-- hitboxes
 	Scene.tile_hitboxes = {"ground"}
 	Scene.hitboxes = {"ground", "player_die", "spike_blockStop", "boss1_stopper"}

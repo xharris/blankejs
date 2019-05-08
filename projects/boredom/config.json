@@ -208,7 +208,7 @@
         "name": "boredom",
         "remove_unused": true,
         "web_autoplay": false,
-        "web_memory": 200,
+        "web_memory": 24,
         "web_stack": 4
     },
     "ico": "src\\logo.ico",
@@ -221,7 +221,6 @@
         "Map",
         "Mask",
         "Net",
-        "Physics",
         "Save",
         "Steam",
         "UI"

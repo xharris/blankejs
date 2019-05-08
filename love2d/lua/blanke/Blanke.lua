@@ -137,14 +137,6 @@ function love.load(args, unfilteredArgs)
 		Window.os = BlankE.settings.os 
 	end
 
-	if Window.os == 'web' then 
-		pcall = function(fn)
-			return function(...)
-				return true, fn(...)
-			end
-		end
-	end 
-
 	local ide = table.hasValue(args, "--ide")
 	local record = table.hasValue(args, "--record")
 	local play_record = table.hasValue(args, "--play-record")
