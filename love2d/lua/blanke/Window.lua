@@ -20,16 +20,20 @@ Window = {
 
 	getResolution = function(index)
 		if Window.os == 'web' then return love.window.getMode() end
+		if Window._ratio_broken then return unpack(Window.resolution) end
+
 		Window.resolution = ifndef(index, Window.resolution)
 		local res = Window.resolutions[Window.resolution]
 		return res, res / Window.aspect_ratio[1] * Window.aspect_ratio[2]
 	end,
 
-	_res_modified = false,
+	_ratio_broken = false,
 	setResolution = function(w, h)
-		Window._res_modified = true
-		if not h then
+		if h == nil then
 			w, h = Window.getResolution(w)
+		else 		
+			Window._ratio_broken = true	
+			Window.resolution = {w,h}
 		end
 		if Window.os ~= 'web' then love.window.updateMode(w,h) end
 		updateGlobals(0)

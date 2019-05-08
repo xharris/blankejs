@@ -4,10 +4,10 @@ function blanke_require(import, ignore_errors)
 	return require(import_path)
 end
 
+blanke_require('Window')
 blanke_require('Globals') 
 blanke_require('Util')
 blanke_require('Debug')
-blanke_require('Window')
 
 function _getGameObjects(fn)
 	local curr_state = State.current()
@@ -228,22 +228,22 @@ BlankE = {
 			Draw.setDefaultFilter(options.filter)
 		end
 
+		uuid.randomseed(love.timer.getTime()*10000)
+		
 		-- game window size
-	    if options.auto_aspect_ratio then
-			Window.detectAspectRatio()
-		end
 	    Window.scale_mode = options.scale_mode
-	    local new_w, new_h
-		if not Window._res_modified then
-			if type(options.resolution) == 'table' then
-				Window.setResolution(unpack(options.resolution))
-			else
-				Window.setResolution(options.resolution)
+		local new_w, new_h
+		if type(options.resolution) == 'table' then
+			Window.setResolution(unpack(options.resolution))
+		else
+			if options.auto_aspect_ratio then
+				Window.detectAspectRatio()
 			end
+			Window.setResolution(options.resolution)
 		end
+		
 		new_w, new_h = Window.getResolution()
 		BlankE.game_canvas:resize(new_w,new_h)
-	    uuid.randomseed(love.timer.getTime()*10000)
 	    updateGlobals(0)
 	    Asset.add("04B_03.ttf")
 		Draw.setFont("04B_03",24)

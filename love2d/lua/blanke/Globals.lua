@@ -12,8 +12,9 @@ function updateGlobals(dt)
 
 	if not BlankE then return end
 	
-	game_width = BlankE.game_canvas.width
-	game_height = BlankE.game_canvas.height
+	if dt == 0 then
+		game_width, game_height = Window.getResolution()-- BlankE.game_canvas.height-- 
+	end
 	
 	local width, height = love.window.fromPixels(love.graphics.getDimensions())
 	local x_scale, y_scale = width / game_width, height / game_height
