@@ -60,7 +60,7 @@ function Boss1:init()
 	
 	self.twn_turn = nil
 	
-	--[[ 
+	--[[
 	0 - asleep
 	1 - 4: NOT asleep (wow)
 	]]
@@ -78,6 +78,7 @@ function Boss1:init()
 	self.sprite_index = "sleep"
 	
 	-- stage 0 
+	
 	self.z_canvas = Canvas(30, 30)
 	self.z_canvas:drawTo(function()
 		Draw.setColor("black")
@@ -88,7 +89,6 @@ function Boss1:init()
 		Draw.setColor("black")
 		Draw.text("!",0,0)
 	end)
-	--[[
 	self.sleep_z = Repeater(self.z_canvas,{
 		x = self.x + 5,
 		y = self.y + 10,
@@ -96,8 +96,7 @@ function Boss1:init()
 		max_linear_accel_x = 10,
 		linear_accel_y = -10,
 		end_color = {1,1,1,0}
-	})]]
-	
+	})
 	self.run_blur = Repeater(self,{
 		rate = 50,
 		lifetime = 2,
@@ -105,9 +104,10 @@ function Boss1:init()
 		color={0,0,0,.5},
 		end_color={1,1,1,0}
 	})
+	--[[
 	self.run_blur.rate = 50
-	
 	self.eff_boss1 = Effect("static","bloom")
+	]]
 	-- add extra speed
 	Timer():every(1, function()
 		if self.stage > 1 and not self.turning then
@@ -115,7 +115,6 @@ function Boss1:init()
 			self.accel = self.accel + self.ACCEL
 		end
 	end):start()
-	
 	self.scale = 60
 	
 	self.charge_step = 1		

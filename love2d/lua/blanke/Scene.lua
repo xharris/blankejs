@@ -90,17 +90,18 @@ local SceneLayer = Class{
 	end,
 
 	addHitbox = function(self, points, tag, color)
-		--[[
 		self.hitboxes[tag] = ifndef(self.hitboxes[tag], {})
 		local new_hitbox = Hitbox("polygon", points, tag)
 		new_hitbox:move(self.offx, self.offy)
 		if color then new_hitbox:setColor(color) end
-		table.insert(self.hitboxes[tag], new_hitbox)]]
+		table.insert(self.hitboxes[tag], new_hitbox)
 	end,
 
 	addEntity = function(self, instance)
-		self.entities[instance.classname] = ifndef(self.entities[instance.classname], Group())
-		table.insert(self.entities[instance.classname], instance)
+		if not self.entities[instance.classname] then 
+			self.entities[instance.classname] = Group()
+		end
+		self.entities[instance.classname]:add(instance)
 
 		self.obj_name_list[instance.classname] = true
 	end,
@@ -156,14 +157,14 @@ local SceneLayer = Class{
 
 		-- entity
 		if self.entities[name] then
-			for e, entity in ipairs(self.entities[name]) do
+			self.entities[name]:forEach(function(entity,e)
 				if not table.hasValue(Scene.dont_draw, entity.scene_name) and
 				   not table.hasValue(self.parent.dont_draw, entity.scene_name) then
 					Draw.stack(function()
 						entity:draw()
 					end)
 				end
-			end
+			end)
 		end
 	end,
 
@@ -341,10 +342,10 @@ local Scene = Class{
 		end
 
 		-- hitboxes, tilehitboxes, and entities
-		--self:addTileHitbox(unpack(Scene.tile_hitboxes)) -- BROKEN
-		--self:addHitbox(unpack(Scene.hitboxes)) -- BROKEN
+		self:addTileHitbox(unpack(Scene.tile_hitboxes)) -- BROKEN
+		self:addHitbox(unpack(Scene.hitboxes)) -- BROKEN
 		for e, ent in ipairs(Scene.entities) do
-			--self:addEntity(ent[1], ent[2], ent[3])
+			self:addEntity(ent[1], ent[2], ent[3])
 		end
 
 		return self
@@ -550,12 +551,14 @@ local Scene = Class{
 
 			local object = self:getObjectInfo(name)
 			for layer_uuid, polygons in pairs(self.objects[object_uuid]) do
+				
 				local layer = self:getLayerByUUID(layer_uuid)
 				for p, polygon in ipairs(polygons) do
 					local points = table.copy(polygon)
 
 					-- give entity information from scene
 					function applyInfo(obj)	
+						
 						obj.scene_name = name
 						obj.scene_tag = table.remove(points, 1)
 						obj.scene_size = object.size
@@ -589,8 +592,9 @@ local Scene = Class{
 						obj.y = y + offy
 						obj.scene_rect = {x,y,w,h}
 						obj.scene_points = new_polygon
+						
 					end
-
+					
 					if not tag or tag == points[1] then
 						local new_entity
 						if ent_class.is_instance then 	-- arg is an already made entity
@@ -600,7 +604,7 @@ local Scene = Class{
 							ent_class._init_properties = {}
 							applyInfo(ent_class._init_properties)
 							new_entity = ent_class()
-						end
+						end 
 
 						if align then
 							local rect = new_entity.scene_rect
@@ -624,13 +628,14 @@ local Scene = Class{
 
 						layer:addEntity(new_entity)
 						instances:add(new_entity)
-
+						
 						self:_addAnything(
 							new_entity.x + new_entity.sprite_xoffset,
 							new_entity.y + new_entity.sprite_yoffset,
 							new_entity.sprite_width, new_entity.sprite_height
 						)
 					end
+				
 				end
 			end
 

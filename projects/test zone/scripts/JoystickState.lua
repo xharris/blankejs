@@ -21,6 +21,6 @@ end
 
 function JoystickState:draw()
 	View("main"):draw(function()
-		--sc_level1:draw()
+		sc_level1:draw()
 	end)
 end

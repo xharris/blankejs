@@ -1,7 +1,9 @@
 package.path = package.path .. ";./?/init.lua"
+blanke_path = (...):match("(.-)[^%.]+$")
 function blanke_require(import, ignore_errors)
-	local import_path = 'blanke.'..import
-	return require(import_path)
+	local status, mod = pcall(require, blanke_path..import)
+	if status then return mod elseif not ignore_errors then error(mod) end
+	return nil
 end
 
 blanke_require('Window')

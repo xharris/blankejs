@@ -45,7 +45,7 @@ end
 
 function Mario:draw()
 	self:drawSprite()
-	self:debugCollision()
+	--self:debugCollision()
 	--[[
 	self.effect:draw(function()
 		Draw.setColor("black")

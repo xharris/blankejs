@@ -58,7 +58,7 @@ function lerp(a,b,amt)
 	return a + amt * (b-a)
 end
 
-function ifndef(var_check, default)
+function ifndef(var_check, default) 
 	if var_check ~= nil then
 		return var_check
 	end

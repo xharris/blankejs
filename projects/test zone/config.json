@@ -3,7 +3,7 @@
         "name": "test_zone",
         "remove_unused": true,
         "web_autoplay": false,
-        "web_memory": 24,
+        "web_memory": 100,
         "web_stack": 4
     },
     "spritesheet_prvw": {
