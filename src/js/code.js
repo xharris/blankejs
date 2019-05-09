@@ -316,7 +316,7 @@ class Code extends Editor {
 		this.setupEditor(this.edit_box);
 
 		this.gutterEvents = {
-			':addAnim':{
+			':addSpr':{
 				tooltip:'make a spritesheet animation',
 				fn:function(line_text, cm, cur){
 					// get currently used image name
@@ -334,22 +334,22 @@ class Code extends Editor {
 							frames:"{"+vals['selected frames'].join(',')+"}",
 							frame_size:"{"+vals['frame size'].join(',')+"}",
 							speed:vals.speed,
-							offset:"{"+[vals.offset[0],vals.offset[1]].join(',')+"}"
-							// TODO: border (padding)
+							offset:"{"+[vals.offset[0],vals.offset[1]].join(',')+"}",
+							border:vals.border
 						}
 						let arg_str = "";
 						for (let key in args) {
 							arg_str += (key+"="+args[key]+", ");
 						}
 						arg_str = arg_str.slice(0,-2);
-						line_text = line_text.replace(/(\s*)(\w+):addAnim.*/g,"$1$2:addSprite{"+arg_str+"}");
+						line_text = line_text.replace(/(\s*)(\w+):addSprite.*/g,"$1$2:addSprite{"+arg_str+"}");
 						
 						this_ref.codemirror.replaceRange(line_text,
 							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
 					}
 				}
 			},
-			'Sprite':{
+			'[^add:]Sprite':{
 				tooltip:'make a spritesheet animation',
 				fn:function(line_text, cm, cur){
 					// get currently used image name
@@ -454,7 +454,7 @@ class Code extends Editor {
 			cm.clearGutter('gutter-event');
 			
 			for (let txt in this_ref.gutterEvents) {
-				if (line_text.includes(txt)) {
+				if (line_text.match(new RegExp(txt))) {
 					let el_gutter = blanke.createElement('div','gutter-evt');
 					el_gutter.innerHTML="<i class='mdi mdi-flash'></i>";
 					if (this_ref.gutterEvents[txt].tooltip)
@@ -707,7 +707,11 @@ class Code extends Editor {
 						offset[0] += frame_size[0] * (frame[0]-1);
 						offset[1] += frame_size[1] * (frame[1]-1);
 					}
-					console.log('-'+offset[0]+'px -'+offset[1]+'px')
+					let re_border = /border=(\d+)/;
+					if (match = re_border.exec(info.text.replace(/ /g,''))) {
+						offset[0] += parseInt(match[1]);
+						offset[1] += parseInt(match[2]);
+					}
 					el_image.style.backgroundPosition = '-'+offset[0]+'px -'+offset[1]+'px';
 					
 					let re_fr

@@ -7,8 +7,8 @@ class SpritesheetPreview extends Editor {
 		this.setupDragbox();
 		this.removeHistory();
 		this.hideMenuButton();
-		this.container.width = 480;
-		this.container.height = 320;
+		this.container.width = 550;
+		this.container.height = 370;
 
 		this.scale = 1;
 
@@ -19,11 +19,11 @@ class SpritesheetPreview extends Editor {
 		this.el_sheet_form = new BlankeForm([
 			['name', 'text'],
 			['offset', 'number', {'inputs':2, 'separator':'x'}],
-			// border
 			['speed', 'number', {'inputs':1,'step':'0.1','min':'0','default':"1.0"}],
 			['frame size', 'number', {'inputs':2, 'separator':'x'}],
 			['frames','number',{'inputs':1}],
-			['columns','number',{'inputs':1}]
+			['columns','number',{'inputs':1}],
+			['border','number',{'inputs':1}]
 		]);
 		this.el_sheet_form.onChange('speed',function(val){
 			if (val < 0) return 1;
@@ -156,7 +156,7 @@ class SpritesheetPreview extends Editor {
 		this.el_sheet_form.onChange("image",function(val){
 			this_ref.setImage(val);
 		});
-		for (let prop of ["name","offset","speed","frame size", "columns", "frames", "columns"]) {
+		for (let prop of ["name","offset","speed","border", "frame size", "frames", "columns"]) {
 			this.el_sheet_form.onChange(prop, function(){ this_ref.updateFrames(); });
 		}
 
@@ -202,10 +202,10 @@ class SpritesheetPreview extends Editor {
 		let frame_dims = [this.el_sheet_form.getValue("frame size",0), this.el_sheet_form.getValue("frame size",1)];
 		let frames = this.el_sheet_form.getValue("frames");
 		let columns = this.el_sheet_form.getValue("columns");
-		let padding = [0,0]; // TODO: add later
+		let border = this.el_sheet_form.getValue("border");
 		return {
 			'name':name,'offset':offset,'speed':speed,'frame size':frame_dims,
-			'frames':frames,'selected frames':this.frames,'columns':columns,'padding':padding,'image':this.selected_img
+			'frames':frames,'selected frames':this.frames,'columns':columns,'border':border,'image':this.selected_img
 		}
 	}
 
@@ -222,7 +222,7 @@ class SpritesheetPreview extends Editor {
 
 		// create the rectangles
 		blanke.clearElement(this.el_frames_container);
-		let x = vals.offset[0], y = vals.offset[1];
+		let x = vals.offset[0] + vals.border, y = vals.offset[1] + vals.border;
 		for (let f = 0; f < vals.frames; f++) {
 			let el_frame = blanke.createElement("div","frame");
 			el_frame.style.left = x+'px';
@@ -236,11 +236,11 @@ class SpritesheetPreview extends Editor {
 			});
 			this.el_frames_container.appendChild(el_frame);
 
-			x += vals['frame size'][0] + vals.padding[0];
+			x += vals['frame size'][0] + vals.border;
 			
-			if ( x > vals.offset[0] + ((vals.columns-1) * (vals['frame size'][0]+vals.padding[0])) ) {
-				x = vals.offset[0];
-				y += (vals['frame size'][1] + vals.padding[1]);
+			if ( x > vals.offset[0] + ((vals.columns-1) * (vals['frame size'][0]+(vals.columns*vals.border) )) ) {
+				x = vals.offset[0] + vals.border;
+				y += (vals['frame size'][1] + vals.border);
 			}
 		}
 
@@ -286,8 +286,8 @@ class SpritesheetPreview extends Editor {
 				parseInt(el_frames[f].style.width), parseInt(el_frames[f].style.height)
 			]);
 
-			new_x = Math.floor((x-vals.offset[0]) / (vals['frame size'][0] + vals.padding[0])) + 1;
-			new_y = Math.floor((y-vals.offset[1]) / (vals['frame size'][1] + vals.padding[1])) + 1;
+			new_x = Math.floor((x-vals.offset[0]) / (vals['frame size'][0] + vals.border)) + 1;
+			new_y = Math.floor((y-vals.offset[1]) / (vals['frame size'][1] + vals.border)) + 1;
 			// moving to a new row
 			if (new_y > last_y) {
 				curr_chain = getChainCouple();

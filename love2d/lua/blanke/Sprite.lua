@@ -29,6 +29,7 @@ Sprite = Class{
 		local top = offset[2]
 		local border = ifndef(args.border, 0)
 		local speed = ifndef(args.speed, 0.1)
+		Debug.log(speed)
 
 		if Image.exists(name) then
 			-- spritesheet

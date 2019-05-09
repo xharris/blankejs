@@ -3459,3 +3459,23 @@ TypeError: this.input_ref[input_name] is not iterable
 ReferenceError: Exporter is not defined
     at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:93:74)
 
+[[ 1557423128861 ]]
+SyntaxError: Identifier 're_frame' has already been declared
+    at otherActivity (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:472:14)
+    at Object.blanke.cooldownFn [as func] (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/code.js:487:50)
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:697:44
+
+[[ 1557423271835 ]]
+TypeError: Cannot read property 'value' of undefined
+    at BlankeForm.getValue (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:65)
+    at SpritesheetPreview.getValues (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/spritesheet.js:205:77)
+    at SpritesheetPreview.updateFrames (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/spritesheet.js:214:19)
+    at HTMLImageElement.el_image.onload (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/spritesheet.js:192:13)
+
+[[ 1557423273518 ]]
+TypeError: Cannot read property 'value' of undefined
+    at BlankeForm.getValue (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/blanke-kit/blanke.js:618:65)
+    at SpritesheetPreview.getValues (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/spritesheet.js:205:77)
+    at SpritesheetPreview.updateFrames (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/spritesheet.js:214:19)
+    at HTMLImageElement.el_image.onload (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/spritesheet.js:192:13)
+

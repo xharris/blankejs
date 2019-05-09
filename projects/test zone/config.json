@@ -8,15 +8,15 @@
     },
     "spritesheet_prvw": {
         "image/sprite-example.png": {
-            "name": "mario_walk",
+            "name": "luigi_walk",
             "offset": [
-                12,
-                8
+                9,
+                54
             ],
-            "speed": 0.2,
+            "speed": 0.01,
             "frame size": [
-                29,
-                43
+                27,
+                49
             ],
             "frames": 3,
             "selected frames": [
@@ -24,10 +24,7 @@
                 1
             ],
             "columns": 3,
-            "padding": [
-                0,
-                0
-            ],
+            "border": 2,
             "image": "image/sprite-example.png"
         },
         "image/Basic Bird.png": {
