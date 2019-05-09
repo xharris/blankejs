@@ -96,6 +96,11 @@ String.prototype.addSlashes = function()
    return this.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
 } 
 
+// min <= x < max
+function randomRange(min, max) {
+    return Math.random() * (max-min) + min;
+}
+
 function dispatchEvent(ev_name, ev_properties) {
     var new_event = new CustomEvent(ev_name, {'detail': ev_properties});
     document.dispatchEvent(new_event);

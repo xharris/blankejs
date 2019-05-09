@@ -681,11 +681,50 @@ class Code extends Editor {
 							info.widgets[w].clear();
 						el_image = info.widgets[0].node;
 					} else {
-						el_image = app.createElement("img","code-image");
-						this_ref.widgets[line] = editor.addLineWidget(line, el_image, {noHScroll:true});
+						el_image = app.createElement("div","code-image");
+						editor.addLineWidget(line, el_image, {noHScroll:true});
+						el_image.style.left = Math.floor(randomRange(50,80))+'%';
 					}
-				
-					el_image.src = "file://"+path;
+
+					// use the first frame
+					let match, sprite = false;
+					let frame_size = [0,0];
+					let re_frame_size = /frame_size[\s=]+{\s*(\d+)\s*,\s*(\d+)\s*}/;
+					if (match = re_frame_size.exec(info.text)) {
+						sprite = true;
+						frame_size = [parseInt(match[1]),parseInt(match[2])];
+						el_image.style.width = frame_size[0]+'px';
+						el_image.style.height = frame_size[1]+'px';
+					}
+					let offset=[0,0];
+					let re_offset = /offset[\s=]+{\s*(\d+)\s*,\s*(\d+)\s*}/;
+					if (match = re_offset.exec(info.text)) {
+						offset = [parseInt(match[1]),parseInt(match[2])];
+					}
+					let re_frame = /frames={["']?(\d)+(?:-\d+["'])?,["']?(\d)+-?/;
+					if (match = re_frame.exec(info.text.replace(/ /g,''))) {
+						let frame = [parseInt(match[1]),parseInt(match[2])];
+						offset[0] += frame_size[0] * (frame[0]-1);
+						offset[1] += frame_size[1] * (frame[1]-1);
+					}
+					console.log('-'+offset[0]+'px -'+offset[1]+'px')
+					el_image.style.backgroundPosition = '-'+offset[0]+'px -'+offset[1]+'px';
+					
+					let re_fr
+					// uncropped image
+					if (!sprite) {
+						let img = new Image();
+						img.onload = () => {
+							el_image.style.width=img.width+'px';
+							el_image.style.height=img.height+'px';
+							el_image.style.backgroundSize="cover";
+							el_image.style.backgroundRepeat="no-repeat";
+							el_image.style.backgroundPosition="center";
+						}
+						img.src="file://"+path;
+					}
+							
+					el_image.style.backgroundImage = "url('file://"+path+"')";
 				}
 			});
 		} 
@@ -888,10 +927,6 @@ class Code extends Editor {
 		this.setOnClick(function(){
 			Code.openScript(this_ref.file);
 		});
-
-		for (let l = 0; l < this.codemirror.lineCount(); l++) {
-			this.checkLineWidgets(l, this.codemirror);
-		}
 
 		this.codemirror.refresh();
 		return this;
