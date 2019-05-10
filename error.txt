@@ -3479,3 +3479,10 @@ TypeError: Cannot read property 'value' of undefined
     at SpritesheetPreview.updateFrames (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/spritesheet.js:214:19)
     at HTMLImageElement.el_image.onload (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/spritesheet.js:192:13)
 
+[[ 1557499950605 ]]
+TypeError: el_platform_container.classList.push is not a function
+    at chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/exporter.js:55:37
+    at Array.forEach (<anonymous>)
+    at new Exporter (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/exporter.js:51:18)
+    at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:93:74)
+

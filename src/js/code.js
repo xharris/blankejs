@@ -710,7 +710,7 @@ class Code extends Editor {
 					let re_border = /border=(\d+)/;
 					if (match = re_border.exec(info.text.replace(/ /g,''))) {
 						offset[0] += parseInt(match[1]);
-						offset[1] += parseInt(match[2]);
+						offset[1] += parseInt(match[1]);
 					}
 					el_image.style.backgroundPosition = '-'+offset[0]+'px -'+offset[1]+'px';
 					
@@ -725,10 +725,10 @@ class Code extends Editor {
 							el_image.style.backgroundRepeat="no-repeat";
 							el_image.style.backgroundPosition="center";
 						}
-						img.src="file://"+path;
+						img.src="file://"+app.cleanPath(path);
 					}
 							
-					el_image.style.backgroundImage = "url('file://"+path+"')";
+					el_image.style.backgroundImage = "url('file://"+app.cleanPath(path)+"')";
 				}
 			});
 		} 

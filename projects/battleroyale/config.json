@@ -1,7 +1,10 @@
 {
     "export": {
         "name": "battleroyale",
-        "remove_unused": true
+        "remove_unused": true,
+        "web_autoplay": false,
+        "web_memory": 120,
+        "web_stack": 2
     },
     "spritesheet_prvw": {
         "image/sprite-example.png": {
@@ -143,5 +146,15 @@
             "80d4bd4d",
             "8897d740"
         ]
-    }
+    },
+    "os": "web",
+    "ignore_modules": [
+        "Audio",
+        "Bezier",
+        "Dialog",
+        "Mask",
+        "Save",
+        "Steam",
+        "UI"
+    ]
 }

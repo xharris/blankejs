@@ -50,6 +50,12 @@ class Exporter extends Editor {
 		
 		this.platforms.forEach(function(platform){
 			let el_platform_container = app.createElement("button",["ui-button-rect","platform",platform]);
+
+			if (platform == 'web') {
+				el_platform_container.classList.add('danger');
+				el_platform_container.title = "experimental feature!";
+			}
+
 			let el_platform_icon = app.createElement("img","icon");
 			el_platform_icon.src = "icons/"+platform+".png";
 
