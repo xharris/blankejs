@@ -5,15 +5,21 @@
         <script src="blanke.js"></script>
     </head>
     <body>
-        <canvas id="game"></canvas>
+        <div id="game"></div>
+        <input type="text"/>
     </body>
     <script type="text/javascript">
         window.onload = () => {
-            let { Asset, Scene, Sprite } = Blanke("#game");
-            Asset.add('sprite-example.png');
+            let { Asset, Input, Scene, Sprite } = Blanke("#game");
+            Asset.add('sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.01,frame_size:[27,49],frames:3,columns:3});
             Scene("scene1",{
                 onStart: () => {
-                    new Sprite("sprite-example");
+                    Input.set("move_right","right","d");
+                    this.bob = new Sprite("sprite-example");
+                },
+                onUpdate: (dt) => {
+                    if (Input("move_right").pressed)
+                        this.bob.x += 3 * dt;
                 }
             });
             Scene.start("scene1");
