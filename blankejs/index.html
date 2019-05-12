@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <script src="pixi.min.js"></script>
+        <script src="blanke.js"></script>
+    </head>
+    <body>
+        <canvas id="game"></canvas>
+    </body>
+    <script type="text/javascript">
+        window.onload = () => {
+            let { Asset, Scene, Sprite } = Blanke("#game");
+            Asset.add('sprite-example.png');
+            Scene("scene1",{
+                onStart: () => {
+                    new Sprite("sprite-example");
+                }
+            });
+            Scene.start("scene1");
+        }
+    </script>
+</html>

@@ -161,7 +161,7 @@ var app = {
 	openProject: function(path) {
 		// validate: only open if there's a main.lua
 		nwFS.readdir(path, 'utf8', function(err, files){
-			if (!err && files.includes('main.lua')) {
+			if (!err) { // && files.includes('main.lua')) { // TODO add project validation
 				if (app.isProjectOpen())
 					app.closeProject();
 
