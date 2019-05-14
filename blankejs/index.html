@@ -10,16 +10,34 @@
     </body>
     <script type="text/javascript">
         window.onload = () => {
-            let { Asset, Input, Scene, Sprite } = Blanke("#game");
-            Asset.add('sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.01,frame_size:[27,49],frames:3,columns:3});
+            let { Asset, Entity, Game, Input, Scene, Sprite } = Blanke("#game");
+            Asset.add('sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3});
+            
+            Input.set("move_left","left","a");
+            Input.set("move_right","right","d");
+            Input.set("move_up","up","w");
+            Input.move_up.can_repeat = false;
+            
+            class Mario extends Entity {
+                init () {
+                    this.addSprite('luigi_walk');
+                    this.gravity = 0.2;
+                    this.gravity_direction = 90;
+                }
+                update (dt) {
+                    this.hspeed = 0;
+                    if (Input("move_right").pressed) 
+                        this.hspeed = 3;
+                    if (Input("move_left").pressed) 
+                        this.hspeed = -3;
+                    if (Input("move_up").pressed)
+                        this.vspeed = -5;
+                }
+            }    
+
             Scene("scene1",{
                 onStart: () => {
-                    Input.set("move_right","right","d");
-                    this.bob = new Sprite("sprite-example");
-                },
-                onUpdate: (dt) => {
-                    if (Input("move_right").pressed)
-                        this.bob.x += 3 * dt;
+                    new Mario();
                 }
             });
             Scene.start("scene1");
