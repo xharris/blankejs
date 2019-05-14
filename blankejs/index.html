@@ -2,15 +2,15 @@
 <html>
 	<head>
         <script src="pixi.min.js"></script>
+        <script src="sscd.1.5.min.js"></script>
         <script src="blanke.js"></script>
     </head>
     <body>
         <div id="game"></div>
-        <input type="text"/>
     </body>
     <script type="text/javascript">
         window.onload = () => {
-            let { Asset, Entity, Game, Input, Scene, Sprite } = Blanke("#game");
+            let { Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite } = Blanke("#game");
             Asset.add('sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3});
             
             Input.set("move_left","left","a");
@@ -21,6 +21,7 @@
             class Mario extends Entity {
                 init () {
                     this.addSprite('luigi_walk');
+                    this.addShape('main',{type:'rect', shape:[0,0,30,30]});
                     this.gravity = 0.2;
                     this.gravity_direction = 90;
                 }
@@ -32,12 +33,24 @@
                         this.hspeed = -3;
                     if (Input("move_up").pressed)
                         this.vspeed = -5;
+
+                    this.onCollide['main'] = (other) => {
+                        if (other.tag == 'ground')
+                            this.collisionStopY();
+                    }
                 }
             }    
 
             Scene("scene1",{
                 onStart: () => {
+                    new Draw(
+                        ['lineStyle', 2, Draw.white],
+                        ['fill', Draw.green, 1],
+                        ['star', Game.width/2, Game.height/2, 5, 50],
+                        ['fill']
+                    );
                     new Mario();
+                    new Hitbox({tag:'ground', type:'rect', shape:[0,150,Game.width,50]});
                 }
             });
             Scene.start("scene1");

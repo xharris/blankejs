@@ -105,6 +105,78 @@ var Blanke = (selector, options) => {
         }
     }
 
+    /* -DRAW
+        Draw([args])
+
+        Ex. // Draw a star
+            new Draw([
+                ['lineStyle', 2, 0xFFFFFF],
+                ['fill', 0x35CC5A, 1],
+                ['star', Game.width/2, Game.height/2, 5, 50],
+                ['fill']
+            ]);
+     */
+    class Draw {
+        constructor (...args) {
+            this.graphics = new PIXI.Graphics();
+            this.auto_clear = true;
+            Scene.addDrawable(this.graphics);
+            this.draw(...args);
+        }
+        get x () { return this.graphics.x; }
+        get y () { return this.graphics.y; }
+        set x (v){ this.graphics.x = v; }
+        set y (v){ this.graphics.y = v; }
+        draw (...args) {
+            if (this.auto_clear)
+                this.clear();
+            for (let arg of args) {
+                let name = Draw.functions[arg[0]] || arg[0];
+                let params = arg.slice(1);
+                if (name == 'beginFill' && params.length == 0) {
+                    name = 'endFill';
+                }
+                if (this.graphics[name])
+                    this.graphics[name](...params);
+                else
+                    console.error(`${arg[0]} is not a Draw function`);
+            }
+        }
+        clear () {
+            this.graphics.clear();
+        }
+        // rgb to hex
+        static hex (rgb) {
+            let _hex = v => {
+                let h = v.toString(16);
+                return h.length == 1 ? '0' + h : h;
+            }
+            return '#'+_hex(rgb[0])+_hex(rgb[1])+_hex(rgb[2]);
+        }
+        // hex to rgb
+        static rgb (hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
+        }
+    }
+    Draw.functions = {
+        rect:'drawRect',
+        star:'drawStar',
+        fill:'beginFill'
+    }
+    Draw.colors = {
+        red: 0xF44336, pink: 0xE91E63, purple: 0x673AB7,
+        indigo: 0x3F51B5, baby_blue: 0x80D8FF, blue: 0x2196F3,
+        dark_blue: 0x0C47A1, green: 0x4CAF50, yellow: 0xFFEB3B,
+        orange: 0xFFC107, brown: 0x795548, gray: 0x9E9E9E,
+        grey: 0x9E9E9E, black: 0x000000, white: 0xFFFFFF,
+        black2: 0x212121,	       // but not actually black
+        white2: 0xF5F5F5	   // but not actually white
+    }
+    for (let color in Draw.colors) {
+        Draw[color] = Draw.colors[color];
+    }
+
     /* -SCENE */
     class _Scene {
         constructor (name) {
@@ -117,6 +189,7 @@ var Blanke = (selector, options) => {
         }
     
         _onStart () {
+            this.container.visible = true;
             this.onStart();
             // start update loop
             app.ticker.add(this.update, this);
@@ -125,7 +198,14 @@ var Blanke = (selector, options) => {
         _onEnd () {
             app.ticker.remove(this.onUpdate, this);
             this.onEnd();
-            this.container.destroy();
+            for (let obj of this.objects) {
+                if (obj._destroy)
+                    obj._destroy();
+                else if (obj.destroy)
+                    obj.destroy();
+            }
+            this.container.visible = false;
+            this.container.removeChildren();
         }
     
         update (dt) {
@@ -233,6 +313,72 @@ var Blanke = (selector, options) => {
         }
     }
 
+    /* -HITBOX */
+    class Hitbox {
+        constructor (opt) {
+            this.options = opt;
+            switch (opt.type) {
+                case 'circle':
+                    this.world_obj = Hitbox.world.add(
+                        new SSCD.Circle(new SSCD.Vector(opt.shape[0], opt.shape[1]), opt.shape[2])
+                    );
+                    break;
+                case 'rect':
+                    this.world_obj = Hitbox.world.add(
+                        new SSCD.Rectangle(
+                            new SSCD.Vector(opt.shape[0], opt.shape[1]),
+                            new SSCD.Vector(opt.shape[2], opt.shape[3])
+                        )
+                    );
+                    break;
+                case 'poly':
+                    this.world_obj = Hitbox.world.add(
+                        new SSCD.LineStrip(
+                            ...opt.shape.reduce((result, point, p) => {
+                                if ((p+1)%2 == 0) {
+                                    result.push(new SSCD.Vector(opt.shape[p], opt.shape[p-1]));
+                                }
+                                return result;
+                            },[]),
+                            true
+                        )
+                    )
+            }
+            // this.world_obj.set_collision_tags(opt.tag);
+            this.world_obj.parent = this;
+            this.tag = opt.tag;
+            this.graphics = new Draw(
+                ['fill', Draw.red],
+                ['rect', ...opt.shape],
+                ['fill']
+            );
+            Scene.addUpdatable(this);
+        }
+        move (dx, dy) { this.world_obj.move(new SSCD.Vector(dx, dy)); }
+        position (x, y) {
+            if (x!=null && y!=null) {
+                this.world_obj.set_position(new SSCD.Vector(x, y));
+                this.graphics.x = x;
+                this.graphics.y = y;
+            } else {
+                return this.world_obj.get_position();
+            }
+        }
+        collisions () {
+            let coll = Hitbox.world.pick_object(this.world_obj)
+            return coll ? coll.parent : null;
+        }
+        repel (other, ...args) {
+            this.world_obj.repel(other.world_obj, ...args);
+            this.graphics.x = this.world_obj.x;
+            this.graphics.y = this.world_obj.y;
+        }
+        destroy () {
+            Hitbox.world.remove(this.world_obj);
+        }
+    }
+    Hitbox.world = new SSCD.World({ grid_size: 400 });
+
     /* -ENTITY */
     class Entity {
         constructor (...args) {
@@ -243,6 +389,10 @@ var Blanke = (selector, options) => {
             // sprite
             this.sprites = {};
             this.sprite_index = '';
+            // collision
+            this.shape_index = '';
+            this.shapes = {};
+            this.onCollide = {};
 
             Scene.addUpdatable(this);
 
@@ -256,15 +406,39 @@ var Blanke = (selector, options) => {
             // movement
             dx += this.hspeed;
             dy += this.vspeed;
-            this.x += dx * dt;
-            this.y += dy * dt;
             if (this.update)
                 this.update(dt);
+            // collision
+            for (let name in this.shapes) {
+                let move_shape = true;  // sync shape with player position?
+                let shape = this.shapes[name];
+                let collision = shape.collisions();
+                if (collision && this.onCollide[name]) {
+                    this.collisionStopY = () => {
+                        move_shape = false;
+                        //collision.repel(shape, dy, 5);
+                        dy = 0;
+                        let new_pos = shape.position();
+                        this.y = new_pos.y;    
+                    }
+                    this.onCollide[name](collision);
+                }
+                // no collision
+                shape.position(this.x, this.y);     
+            }
+            this.x += dx * dt;
+            this.y += dy * dt;
         }
         addSprite (name) {
             this.sprites[name] = new Sprite(name);
             if (!this.sprite_index)
                 this.sprite_index = name;
+        }
+        addShape (name, options) {
+            options.tag = this.constructor.name + (options.tag ? '.'+options.tag : '');
+            this.shapes[name] = new Hitbox(options);
+            if (!this.shape_index)
+                this.shape_index = name;
         }
         set sprite_index (v) {
             // don't show other sprites
@@ -333,7 +507,6 @@ var Blanke = (selector, options) => {
             let all_pressed = true;
             let all_released = true;
             for (let i_part of i_list) {
-                console.log(input_options[name], press_check[i_part])
                 if (!keys_pressed[i_part] || (input_options[name].can_repeat == false && press_check[i_part] == true))
                     all_pressed = false;
                 if (!keys_released[i_part])
@@ -380,5 +553,5 @@ var Blanke = (selector, options) => {
     app.ticker.add(()=>{
         Input.inputCheck();
     },null,PIXI.UPDATE_PRIORITY.LOW);
-    return {Asset, Entity, Game, Input, Scene, Sprite};
+    return {Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite};
 }
