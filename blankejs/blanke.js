@@ -320,6 +320,7 @@ var Blanke = (selector, options) => {
         }
     }
 
+    /* -SPATIALHASH */
     class SpatialHash {
         constructor (size) {
             this.size = size;
@@ -362,9 +363,9 @@ var Blanke = (selector, options) => {
             let key = '';
             for (let x = x1; x <= x2; x++) {
                 for (let y = y1; y <= y2; y++) {
-                    key = Math.floor(obj.x/this.size)+','+Math.floor(obj.y/this.size);
+                    key = x+','+y;
                     if (this.hash[key]) {
-                        ret_objs.concat(Object.values(this.hash[key]).slice());
+                        ret_objs = ret_objs.concat(Object.values(this.hash[key]));
                     }
                 }
             }
@@ -397,7 +398,7 @@ var Blanke = (selector, options) => {
             }
             // this.world_obj.set_collision_tags(opt.tag);
             this.world_obj.parent = this;
-            this.world_obj.type = opt.type;
+            this.type = opt.type;
             this.tag = opt.tag;
 
             this.graphics = new Draw(
@@ -424,12 +425,11 @@ var Blanke = (selector, options) => {
         }
         collisions () {
             let shapes = Hitbox.world.getNeighbors(this);
-            console.log(shapes);
             return shapes.filter((s) => (this.collides(s)));
         }
         collides (other) {
             let shape_str = {'circle':'Circle', 'rect':'Polygon', 'poly':'Polygon'};
-            let response = SAT.Response();
+            let response = new SAT.Response();
             if (SAT['test'+shape_str[this.type]+shape_str[other.type]](this.world_obj, other.world_obj))
                 return response;
         }
@@ -439,7 +439,7 @@ var Blanke = (selector, options) => {
             this.graphics.y = this.world_obj.y;
         }
         destroy () {
-            Hitbox.world.remove(this.world_obj);
+            Hitbox.world.remove(this);
         }
     }
     Hitbox.world = new SpatialHash(Math.max(Game.width, Game.height)/2);
@@ -490,7 +490,6 @@ var Blanke = (selector, options) => {
                 shape.position(this.x,this.y);
 
                 let others = shape.collisions();
-                console.log(others);
                 if (others && this.onCollide[name]) {
                     for (let other of others) {
                         this.collisionStopY = () => {
