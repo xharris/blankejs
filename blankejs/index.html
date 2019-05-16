@@ -10,13 +10,14 @@
     </body>
     <script type="text/javascript">
         window.onload = () => {
-            let { Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite } = Blanke("#game");
+            let { Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite, Util } = Blanke("#game");
             Asset.add('sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3});
             
             Input.set("move_left","left","a");
             Input.set("move_right","right","d");
             Input.set("move_up","up","w");
-            Input.move_up.can_repeat = false;
+            Input.set("move_down","down","s");
+            //Input.move_up.can_repeat = false;
             
             class Mario extends Entity {
                 init () {
@@ -28,15 +29,15 @@
                 update (dt) {
                     this.hspeed = 0;
                     if (Input("move_right").pressed) 
-                        this.hspeed = 3;
+                        this.hspeed = 5;
                     if (Input("move_left").pressed) 
-                        this.hspeed = -3;
+                        this.hspeed = -5;
                     if (Input("move_up").pressed)
-                        this.vspeed = -5;
+                        this.vspeed = -10;
 
-                    this.onCollide['main'] = (other) => {
+                    this.onCollide['main'] = (other, res) => {
                         if (other.tag == 'ground')
-                            this.collisionStopY();
+                            this.collisionStop();
                     }
                 }
             }    
@@ -49,8 +50,10 @@
                         ['star', Game.width/2, Game.height/2, 5, 50],
                         ['fill']
                     );
-                    new Mario();
-                    new Hitbox({tag:'ground', type:'rect', shape:[0,150,Game.width,50]});
+                    let mario = new Mario();
+                    new Hitbox({tag:'ground', type:'rect', shape:[80,80,40,40]})
+                    new Hitbox({tag:'ground', type:'rect', shape:[180,0,20,Game.height]});
+                    new Hitbox({tag:'ground', type:'rect', shape:[0,180,Game.width,20]});
                 }
             });
             Scene.start("scene1");

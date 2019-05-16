@@ -365,7 +365,7 @@ var Blanke = (selector, options) => {
                 for (let y = y1; y <= y2; y++) {
                     key = x+','+y;
                     if (this.hash[key]) {
-                        ret_objs = ret_objs.concat(Object.values(this.hash[key]));
+                        ret_objs = ret_objs.concat(Object.values(this.hash[key]).filter(v => v._spatialhashid != obj._spatialhashid));
                     }
                 }
             }
@@ -397,6 +397,7 @@ var Blanke = (selector, options) => {
                         )
             }
             // this.world_obj.set_collision_tags(opt.tag);
+            this.response = new SAT.Response();
             this.world_obj.parent = this;
             this.type = opt.type;
             this.tag = opt.tag;
@@ -412,7 +413,11 @@ var Blanke = (selector, options) => {
         }
         get x () { return this.world_obj.pos.x; }
         get y () { return this.world_obj.pos.y; }
-        move (dx, dy) { this.world_obj.pos.add(new SAT.Vector(dx, dy)); }
+        move (dx, dy) {
+            this.world_obj.pos.add(new SAT.Vector(dx, dy));
+            this.graphics.x += dx;
+            this.graphics.y += dy;
+        }
         position (x, y) {
             if (x!=null && y!=null) {
                 this.world_obj.pos = new SAT.Vector(x, y);
@@ -425,13 +430,23 @@ var Blanke = (selector, options) => {
         }
         collisions () {
             let shapes = Hitbox.world.getNeighbors(this);
-            return shapes.filter((s) => (this.collides(s)));
+            let response;
+            // only return neighbors that collide
+            let collisions = shapes.reduce((arr, s) => {
+                response = this.collides(s);
+                if (response)
+                    arr.push([s, response]);
+                return arr;
+            }, []);
+            return collisions;
         }
         collides (other) {
             let shape_str = {'circle':'Circle', 'rect':'Polygon', 'poly':'Polygon'};
-            let response = new SAT.Response();
-            if (SAT['test'+shape_str[this.type]+shape_str[other.type]](this.world_obj, other.world_obj))
-                return response;
+            this.response.clear()
+            if (SAT['test'+shape_str[this.type]+shape_str[other.type]](this.world_obj, other.world_obj, this.response))
+                return {
+                    sep_vec: {x: this.response.overlapV.x, y: this.response.overlapV.y}
+                };
         }
         repel (other, ...args) {
             this.world_obj.repel(other.world_obj, ...args);
@@ -451,6 +466,8 @@ var Blanke = (selector, options) => {
             this._y = 0;
             this.hspeed = 0;
             this.vspeed = 0;
+            this.gravity = 0;
+            this.gravity_direction = 0;
             // sprite
             this.sprites = {};
             this.sprite_index = '';
@@ -463,8 +480,9 @@ var Blanke = (selector, options) => {
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: () => {
-                        if (this.sprite_index)
+                        if (this.sprite_index) {
                             return this.sprites[this.sprite_index][p];
+                        }
                     },
                     set: (v) => {
                         for (let spr in this.sprites) {
@@ -475,42 +493,75 @@ var Blanke = (selector, options) => {
             }
 
             if (this.init) this.init(...args);
+
+            this.xprevious = this.x;
+            this.yprevious = this.y;
             Scene.addUpdatable(this);
         }
         _update (dt) {
-            let dx = 0, dy = 0;
-            // gravity
-            this.hspeed += Util.direction_x(this.gravity_direction, this.gravity);
-            this.vspeed += Util.direction_y(this.gravity_direction, this.gravity);    
-            // collision
-            let last_x = this.x, last_y = this.y;
-            for (let name in this.shapes) {
-                let shape = this.shapes[name];
-                // no collision
-                shape.position(this.x,this.y);
-
-                let others = shape.collisions();
-                if (others && this.onCollide[name]) {
-                    for (let other of others) {
-                        this.collisionStopY = () => {
-                            this.y = last_y;
-                            this.vspeed = 0;
-                        }
-                        this.onCollide[name](other);
-                    }
-                }     
-            }
             if (this.update)
                 this.update(dt);
-            // movement
-            dx += this.hspeed;
-            dy += this.vspeed;
+            let dx = this.hspeed, dy = this.vspeed;  
+            // gravity
+            if (this.gravity != 0) {
+                dx += Util.direction_x(this.gravity_direction, this.gravity);
+                dy += Util.direction_y(this.gravity_direction, this.gravity); 
+            }
+            // move shapes if x/y is different
+            if (this.xprevious != this.x || this.yprevious != this.y) {
+                for (let name in this.shapes) {
+                    this.shapes[name].position(this.x, this.y);
+                }
+            }
+            // collision
+            let precoll_hspeed = this.hspeed, precoll_vspeed = this.vspeed;
+            let resx = 0, resy = 0;
+            
+            for (let name in this.shapes) {
+                let shape = this.shapes[name];
+                shape.move(dx*dt, dy*dt);
 
-            this.x += dx * dt;
-            this.y += dy * dt;
-
-            if (this.shape_index)
-                this.shapes[this.shape_index].position(this.x, this.y);
+                let coll_list = shape.collisions();
+                if (coll_list && this.onCollide[name]) {
+                    for (let info of coll_list) {
+                        let res = info[1]
+                        let cx = res.sep_vec.x, cy = res.sep_vec.y;
+                        this.collisionStopX = () => {
+                            resx += cx;
+                            dx = 0;
+                        }
+                        this.collisionStopY = () => {
+                            resy += cy;
+                            dy = 0;
+                        }
+                        this.collisionStop = () => {
+                            resx += cx;
+                            resy += cy;
+                            dx = 0, dy = 0;
+                        }
+                        this.onCollide[name](info[0], res);
+                    }
+                    delete this.collisionStopY;
+                    delete this.collisionStopX;
+                    delete this.collisionStop;
+                }     
+            }
+            for (let name in this.shapes) {
+                this.shapes[name].move(-resx, -resy);
+            }
+            // set position of entity
+            if (this.shape_index) {
+                let pos = this.shapes[this.shape_index].position();
+                this.x = pos.x, this.y = pos.y;
+            } else {
+                this.x += dx * dt;
+                this.y += dy * dt;
+            }
+            this.xprevious = this.x;
+            this.ypreviuos = this.y;
+            // preserve user-set speeds
+            if (precoll_hspeed == this.hspeed) this.hspeed = dx;
+            if (precoll_vspeed == this.vspeed) this.vspeed = dy;
         }
         addSprite (name) {
             this.sprites[name] = new Sprite(name);
@@ -520,6 +571,7 @@ var Blanke = (selector, options) => {
         addShape (name, options) {
             options.tag = this.constructor.name + (options.tag ? '.'+options.tag : '');
             this.shapes[name] = new Hitbox(options);
+            this.shapes[name].position(this.x, this.y);
             if (!this.shape_index)
                 this.shape_index = name;
         }
@@ -638,5 +690,5 @@ var Blanke = (selector, options) => {
     app.ticker.add(()=>{
         Input.inputCheck();
     },null,PIXI.UPDATE_PRIORITY.LOW);
-    return {Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite};
+    return {Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite, Util};
 }
