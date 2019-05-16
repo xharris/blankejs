@@ -22,6 +22,13 @@ var Blanke = (selector, options) => {
         blanke_ref.focused = false;
     });
 
+    function b(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+
+        -1e3+
+        -4e3+
+        -8e3+
+        -1e11).replace(/[018]/g,b)}
+    function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b)}
+
     /* -GAME */
     var Game = {
         get width () { return app.view.width; },
@@ -287,7 +294,7 @@ var Blanke = (selector, options) => {
             this.sprite.x = 0;
             this.sprite.y = 0;
        
-            let props = ['alpha'];
+            let props = ['alpha','width','height'];
             for (let p of props) {
                 Object.defineProperty(this,p,{
                     get: () => this.sprite[p],
@@ -313,60 +320,118 @@ var Blanke = (selector, options) => {
         }
     }
 
+    class SpatialHash {
+        constructor (size) {
+            this.size = size;
+            this.hash = {};
+        }
+        _hash (obj) {
+            return Math.floor(obj.x/this.size)+','+Math.floor(obj.y/this.size);
+        }
+        // must have an x/y
+        add (obj) {
+            obj._spatialhashid = uuid();
+            this.update(obj);
+            return obj;
+        }
+        update (obj) {
+            // remove from previous position
+            if (obj._spatialhashlastkey)
+                this.remove(obj, true);
+            // set to current position
+            let key = this._hash(obj);
+            obj._spatialhashlastkey = key;
+            if (this.hash[key] == undefined)
+                this.hash[key] = {};
+            this.hash[key][obj._spatialhashid] = obj;
+        }
+        remove (obj, temporary) {
+            delete this.hash[obj._spatialhashlastkey][obj._spatialhashid];
+            if (Object.values(this.hash[obj._spatialhashlastkey]).length == 0)
+                delete this.hash[obj._spatialhashlastkey];
+            // permanently removed
+            if (!temporary) {
+                delete obj._spatialhashid;
+                delete obj._spatialhashlastkey;
+            }
+        }
+        getNeighbors (obj) {
+            let ret_objs = [];
+            let x1 = Math.floor(obj.x/this.size)-1, x2 = Math.floor(obj.x/this.size)+1;
+            let y1 = Math.floor(obj.y/this.size)-1, y2 = Math.floor(obj.y/this.size)+1;
+            let key = '';
+            for (let x = x1; x <= x2; x++) {
+                for (let y = y1; y <= y2; y++) {
+                    key = Math.floor(obj.x/this.size)+','+Math.floor(obj.y/this.size);
+                    if (this.hash[key]) {
+                        ret_objs.concat(Object.values(this.hash[key]).slice());
+                    }
+                }
+            }
+            return ret_objs;
+        }
+    }
+
     /* -HITBOX */
     class Hitbox {
         constructor (opt) {
             this.options = opt;
             switch (opt.type) {
                 case 'circle':
-                    this.world_obj = Hitbox.world.add(
-                        new SSCD.Circle(new SSCD.Vector(opt.shape[0], opt.shape[1]), opt.shape[2])
-                    );
+                    this.world_obj = new SAT.Circle(new SAT.Vector(opt.shape[0], opt.shape[1]), opt.shape[2])
                     break;
                 case 'rect':
-                    this.world_obj = Hitbox.world.add(
-                        new SSCD.Rectangle(
-                            new SSCD.Vector(opt.shape[0], opt.shape[1]),
-                            new SSCD.Vector(opt.shape[2], opt.shape[3])
-                        )
-                    );
+                    this.world_obj = new SAT.Box(new SAT.Vector(opt.shape[0], opt.shape[1]), opt.shape[2], opt.shape[3]).toPolygon();
                     break;
                 case 'poly':
-                    this.world_obj = Hitbox.world.add(
-                        new SSCD.LineStrip(
-                            ...opt.shape.reduce((result, point, p) => {
+                    let start_x = opt.shape[0];
+                    let start_y = opt.shape[1];
+                    this.world_obj = new SAT.Polygon(new SAT.Vector(start_x, start_y),
+                            opt.shape.slice(2).reduce((result, point, p) => {
                                 if ((p+1)%2 == 0) {
-                                    result.push(new SSCD.Vector(opt.shape[p], opt.shape[p-1]));
+                                    result.push(new SAT.Vector(opt.shape[p]-start_x, opt.shape[p-1]-start_y));
                                 }
                                 return result;
-                            },[]),
-                            true
+                            },[])
                         )
-                    )
             }
             // this.world_obj.set_collision_tags(opt.tag);
             this.world_obj.parent = this;
+            this.world_obj.type = opt.type;
             this.tag = opt.tag;
+
             this.graphics = new Draw(
                 ['fill', Draw.red],
                 ['rect', ...opt.shape],
                 ['fill']
             );
+
+            Hitbox.world.add(this);
             Scene.addUpdatable(this);
         }
-        move (dx, dy) { this.world_obj.move(new SSCD.Vector(dx, dy)); }
+        get x () { return this.world_obj.pos.x; }
+        get y () { return this.world_obj.pos.y; }
+        move (dx, dy) { this.world_obj.pos.add(new SAT.Vector(dx, dy)); }
         position (x, y) {
             if (x!=null && y!=null) {
-                this.world_obj.set_position(new SSCD.Vector(x, y));
+                this.world_obj.pos = new SAT.Vector(x, y);
+                Hitbox.world.update(this);
                 this.graphics.x = x;
                 this.graphics.y = y;
             } else {
-                return this.world_obj.get_position();
+                return this.world_obj.pos;
             }
         }
         collisions () {
-            let coll = Hitbox.world.pick_object(this.world_obj)
-            return coll ? coll.parent : null;
+            let shapes = Hitbox.world.getNeighbors(this);
+            console.log(shapes);
+            return shapes.filter((s) => (this.collides(s)));
+        }
+        collides (other) {
+            let shape_str = {'circle':'Circle', 'rect':'Polygon', 'poly':'Polygon'};
+            let response = SAT.Response();
+            if (SAT['test'+shape_str[this.type]+shape_str[other.type]](this.world_obj, other.world_obj))
+                return response;
         }
         repel (other, ...args) {
             this.world_obj.repel(other.world_obj, ...args);
@@ -377,7 +442,7 @@ var Blanke = (selector, options) => {
             Hitbox.world.remove(this.world_obj);
         }
     }
-    Hitbox.world = new SSCD.World({ grid_size: 400 });
+    Hitbox.world = new SpatialHash(Math.max(Game.width, Game.height)/2);
 
     /* -ENTITY */
     class Entity {
@@ -394,40 +459,59 @@ var Blanke = (selector, options) => {
             this.shapes = {};
             this.onCollide = {};
 
-            Scene.addUpdatable(this);
+            let spr_props = ['alpha','width','height'];
+            for (let p of spr_props) {
+                Object.defineProperty(this,'sprite_'+p,{
+                    get: () => {
+                        if (this.sprite_index)
+                            return this.sprites[this.sprite_index][p];
+                    },
+                    set: (v) => {
+                        for (let spr in this.sprites) {
+                            this.sprites[this.sprite_index][p] = v;
+                        }
+                    }
+                });
+            }
 
             if (this.init) this.init(...args);
+            Scene.addUpdatable(this);
         }
         _update (dt) {
             let dx = 0, dy = 0;
             // gravity
             this.hspeed += Util.direction_x(this.gravity_direction, this.gravity);
-            this.vspeed += Util.direction_y(this.gravity_direction, this.gravity);
+            this.vspeed += Util.direction_y(this.gravity_direction, this.gravity);    
+            // collision
+            let last_x = this.x, last_y = this.y;
+            for (let name in this.shapes) {
+                let shape = this.shapes[name];
+                // no collision
+                shape.position(this.x,this.y);
+
+                let others = shape.collisions();
+                console.log(others);
+                if (others && this.onCollide[name]) {
+                    for (let other of others) {
+                        this.collisionStopY = () => {
+                            this.y = last_y;
+                            this.vspeed = 0;
+                        }
+                        this.onCollide[name](other);
+                    }
+                }     
+            }
+            if (this.update)
+                this.update(dt);
             // movement
             dx += this.hspeed;
             dy += this.vspeed;
-            if (this.update)
-                this.update(dt);
-            // collision
-            for (let name in this.shapes) {
-                let move_shape = true;  // sync shape with player position?
-                let shape = this.shapes[name];
-                let collision = shape.collisions();
-                if (collision && this.onCollide[name]) {
-                    this.collisionStopY = () => {
-                        move_shape = false;
-                        //collision.repel(shape, dy, 5);
-                        dy = 0;
-                        let new_pos = shape.position();
-                        this.y = new_pos.y;    
-                    }
-                    this.onCollide[name](collision);
-                }
-                // no collision
-                shape.position(this.x, this.y);     
-            }
+
             this.x += dx * dt;
             this.y += dy * dt;
+
+            if (this.shape_index)
+                this.shapes[this.shape_index].position(this.x, this.y);
         }
         addSprite (name) {
             this.sprites[name] = new Sprite(name);
@@ -440,7 +524,9 @@ var Blanke = (selector, options) => {
             if (!this.shape_index)
                 this.shape_index = name;
         }
+        get sprite_index () { return this._sprite_index || ''; }
         set sprite_index (v) {
+            this._sprite_index = v;
             // don't show other sprites
             for (let n in this.sprites) {
                 this.sprites[n].visible = false;

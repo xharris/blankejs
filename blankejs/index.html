@@ -2,7 +2,7 @@
 <html>
 	<head>
         <script src="pixi.min.js"></script>
-        <script src="sscd.1.5.min.js"></script>
+        <script src="SAT.min.js"></script>
         <script src="blanke.js"></script>
     </head>
     <body>
@@ -21,7 +21,7 @@
             class Mario extends Entity {
                 init () {
                     this.addSprite('luigi_walk');
-                    this.addShape('main',{type:'rect', shape:[0,0,30,30]});
+                    this.addShape('main',{type:'rect', shape:[0,0,this.sprite_width,this.sprite_height]});
                     this.gravity = 0.2;
                     this.gravity_direction = 90;
                 }

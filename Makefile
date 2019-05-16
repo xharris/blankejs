@@ -3,6 +3,10 @@
 do:
 	make -B blanke
 
+web:
+	start "" http://localhost:8000
+	cd blankejs && python -m SimpleHTTPServer 8000
+
 setup:
 	# npm install -g pnpm
 	pnpm install
