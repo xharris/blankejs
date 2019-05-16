@@ -17,7 +17,7 @@
             Input.set("move_right","right","d");
             Input.set("move_up","up","w");
             Input.set("move_down","down","s");
-            //Input.move_up.can_repeat = false;
+            Input.move_up.can_repeat = false;
             
             class Mario extends Entity {
                 init () {
@@ -29,11 +29,11 @@
                 update (dt) {
                     this.hspeed = 0;
                     if (Input("move_right").pressed) 
-                        this.hspeed = 5;
+                        this.hspeed = 2;
                     if (Input("move_left").pressed) 
-                        this.hspeed = -5;
+                        this.hspeed = -2;
                     if (Input("move_up").pressed)
-                        this.vspeed = -10;
+                        this.vspeed = -5;
 
                     this.onCollide['main'] = (other, res) => {
                         if (other.tag == 'ground')

@@ -630,7 +630,8 @@ var Blanke = (selector, options) => {
     });
     window.addEventListener('keydown',(e)=>{
         let key = e.key;
-        press_check[key] = false;
+        if (keys_pressed[key] == false)
+            press_check[key] = false;
         keys_pressed[key] = true;
         keys_released[key] = false;
     });
@@ -682,9 +683,8 @@ var Blanke = (selector, options) => {
         }
         for (let key in keys_pressed) {
             // for can_repeat
-            if (keys_pressed[key] == true && press_check[key] == false) {
+            if (keys_pressed[key] == true)
                 press_check[key] = true;
-            }
         }
     }
     app.ticker.add(()=>{
