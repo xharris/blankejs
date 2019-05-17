@@ -34,6 +34,8 @@ var Blanke = (selector, options) => {
         -1e11).replace(/[018]/g,b)}
     function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b)}
 
+    //var cull = new Cull.SpatialHash();
+
     /* -GAME */
     var Game = {
         get width () { return app.view.width; },
@@ -732,6 +734,40 @@ var Blanke = (selector, options) => {
             this._updateMask();
             game_container.addChild(this.container);
         }
+        get x () { return this._x; }
+        get y () { return this._y; }
+        set x (v) { 
+            if (this._last_x != this._x)
+                ;//cull.cull(this.getBounds()); 
+            this._last_x = this._x;
+            this._x = v; 
+        }
+        set y (v) { 
+            if (this._last_y != this._y)
+               ;//cull.cull(this.getBounds()); 
+            this._last_y = this._y;
+            this._y = v; 
+        }
+        get port_width () { return this._port_width; }
+        get port_height (){ return this._port_height; }
+        set port_width (v) {
+            if (this._last_port_width != this._port_width)
+                ;//cull.cull(this.getBounds()); 
+            this._last_port_width = this._port_width;
+            this._port_width = v; 
+        }
+        set port_height (v) {
+            if (this._last_port_height != this._port_height)
+                ;//cull.cull(this.getBounds()); 
+            this._last_port_height = this._port_height;
+            this._port_height = v; 
+        }
+        getBounds () {
+            return {
+                x: this._x, y: this._y,
+                width: this._port_width, height: this._port_height
+            }
+        }
         _updateMask () {
             this.mask.draw(
                 ['fill',Draw.white],
@@ -750,7 +786,6 @@ var Blanke = (selector, options) => {
         }
         follow (obj) { if (obj.x != null && obj.y != null) this.follow_obj = obj; }
         add (obj) {
-            //console.log(obj)
             if (!obj._getPixiObjs) return;
 
             let pixi_objs = obj._getPixiObjs();
@@ -769,8 +804,8 @@ var Blanke = (selector, options) => {
         }
         update () {
             let x = this.x, y = this.y;
-            let pw = this.port_width;// * this.scale.x;
-            let ph = this.port_height;// * this.scale.y;
+            let pw = this.port_width;
+            let ph = this.port_height;
             let half_pw = pw / (2 * this.scale.x);
             let half_ph = ph / (2 * this.scale.y);
             let f_obj = this.follow_obj;
@@ -782,9 +817,6 @@ var Blanke = (selector, options) => {
                    y -= f_obj.sprite_pivot.y;
                 }
             }
-            //x *= this.scale.x;
-            //y *= this.scale.y;
-            
             this.container.scale.copyFrom(this.scale);
             this.container.angle = this.angle;
             this.container.pivot.x = Math.round(-x + half_pw);
@@ -794,7 +826,6 @@ var Blanke = (selector, options) => {
 
             this.x = x;
             this.y = y;
-            // update mask
             this._updateMask();
         }
     }
