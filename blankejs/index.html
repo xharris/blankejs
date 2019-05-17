@@ -23,6 +23,8 @@
                 init () {
                     this.addSprite('luigi_walk');
                     this.addShape('main',{type:'rect', shape:[0,0,this.sprite_width,this.sprite_height]});
+                    
+                    this.sprite_pivot.set(this.sprite_width/2,this.sprite_height/2)
                     this.gravity = 0.2;
                     this.gravity_direction = 90;
                 }
@@ -45,6 +47,8 @@
             Scene("scene1",{
                 onStart: (scene) => {
                     let drawing = new Draw(
+                        ['fill',Draw.white],
+                        ['rect',-800,-800,1600,1600],
                         ['lineStyle', 2, Draw.white],
                         ['fill', Draw.green, 1],
                         ['star', Game.width/2, Game.height/2, 5, 50],
@@ -55,10 +59,14 @@
                     new Hitbox({tag:'ground', type:'rect', shape:[180,0,20,Game.height]});
                     new Hitbox({tag:'ground', type:'rect', shape:[0,180,Game.width,20]});
                 
-                    let vw_main = View("main")
+                    let vw_main = View("main");
                     vw_main.add(scene);
                     vw_main.follow(mario);
-                    //vw_main.scale.set(2);
+                    vw_main.scale.set(1.5);
+                },
+                onUpdate: (scene, dt) => {
+                    let vw_main = View("main");
+                    vw_main.angle += 0.2 * dt;
                 }
             });
             Scene.start("scene1");

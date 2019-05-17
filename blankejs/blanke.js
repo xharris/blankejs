@@ -44,8 +44,8 @@ var Blanke = (selector, options) => {
     var Util = {
         rad: (deg) => deg * (Math.PI/180),
         deg: (rad) => rad * (180/Math.PI),
-        direction_x: (angle, dist) => Math.cos(Util.rad(angle)) * dist,
-        direction_y: (angle, dist) => Math.sin(Util.rad(angle)) * dist,
+        direction_x: (angle, dist) => angle == 0 ? dist : Math.cos(Util.rad(angle)) * dist,
+        direction_y: (angle, dist) => angle == 0 ? dist : Math.sin(Util.rad(angle)) * dist,
         distance: (x1, y1, x2, y2) => Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2)),
         direction: (x1, y1, x2, y2) => Util.deg(Math.atan2(y2-y1,x2-x1))
     }
@@ -230,7 +230,7 @@ var Blanke = (selector, options) => {
         }
     
         update (dt) {
-            this.onUpdate(dt);
+            this.onUpdate.call(this, dt);
             for (let obj of this.objects) {
                 if (obj._update)
                     obj._update(dt);
@@ -245,7 +245,7 @@ var Blanke = (selector, options) => {
             Scene.ref[name] = new _Scene(name);
             // apply given callbacks
             for (let fn in functions) {
-                Scene.ref[name][fn] = functions[fn].bind(undefined,Scene.ref[name]);
+                Scene.ref[name][fn] = functions[fn].bind(Scene.ref[name],Scene.ref[name]);
             }
         }
         return Scene.ref[name];
@@ -315,7 +315,6 @@ var Blanke = (selector, options) => {
                     set: (v) => this.sprite[p] = v
                 });
             }
-            this.pivot.set(this.width/2,this.height/2)
         }
         _getPixiObjs () { return [this.sprite]; }
         get x () { return this.sprite.x; }
@@ -618,13 +617,13 @@ var Blanke = (selector, options) => {
         set x (v) {
             this._x = v;
             for (let s in this.sprites) {
-                this.sprites[s].x = v;
+                this.sprites[s].x = v + this.sprites[s].pivot.x;
             }    
         }
         set y (v) {
             this._y = v;
             for (let s in this.sprites) {
-                this.sprites[s].y = v;
+                this.sprites[s].y = v + this.sprites[s].pivot.y;
             }    
         }
     }
@@ -725,12 +724,29 @@ var Blanke = (selector, options) => {
             this.follow_obj = null;
             this.x = 0;
             this.y = 0;
+            this.mask = new Draw();
             this.port_width = Game.width;
             this.port_height= Game.height;
+            this._scale = new PIXI.Point(1,1);
+            this.angle = 0;
+            this._updateMask();
             game_container.addChild(this.container);
         }
+        _updateMask () {
+            this.mask.draw(
+                ['fill',Draw.white],
+                ['rect',
+                    -this.x,
+                    -this.y,
+                    this.port_width / this.scale.x,
+                    this.port_height / this.scale.y
+                ],
+                ['fill']
+            );
+            this.container.mask = this.mask.graphics;
+        }
         get scale () {
-            return this.container.scale;
+            return this._scale;
         }
         follow (obj) { if (obj.x != null && obj.y != null) this.follow_obj = obj; }
         add (obj) {
@@ -753,18 +769,33 @@ var Blanke = (selector, options) => {
         }
         update () {
             let x = this.x, y = this.y;
+            let pw = this.port_width;// * this.scale.x;
+            let ph = this.port_height;// * this.scale.y;
+            let half_pw = pw / (2 * this.scale.x);
+            let half_ph = ph / (2 * this.scale.y);
             let f_obj = this.follow_obj;
             if (f_obj) {
-                x = -f_obj.x  + (this.port_width / 2);
-                y = -f_obj.y + (this.port_height / 2);
+                x = -f_obj.x + half_pw;
+                y = -f_obj.y + half_ph;
                 if (f_obj.is_entity) {
-                   // x -= f_obj.sprite_width / 2;
-                   // y -= f_obj.sprite_height / 2;
+                   x -= f_obj.sprite_pivot.x;
+                   y -= f_obj.sprite_pivot.y;
                 }
             }
-            this.container.x = parseInt(x+0.5);
-            this.container.y = parseInt(y+0.5);
-           // this.container.pivot.set(this.port_width/2, this.port_height/2);
+            //x *= this.scale.x;
+            //y *= this.scale.y;
+            
+            this.container.scale.copyFrom(this.scale);
+            this.container.angle = this.angle;
+            this.container.pivot.x = Math.round(-x + half_pw);
+            this.container.pivot.y = Math.round(-y + half_ph);
+            this.container.x = pw / 2;
+            this.container.y = ph / 2;
+
+            this.x = x;
+            this.y = y;
+            // update mask
+            this._updateMask();
         }
     }
     var View = name => {
