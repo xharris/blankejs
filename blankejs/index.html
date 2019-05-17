@@ -10,7 +10,7 @@
     </body>
     <script type="text/javascript">
         window.onload = () => {
-            let { Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite, Util } = Blanke("#game");
+            let { Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite, Util, View } = Blanke("#game", {autofocus: true});
             Asset.add('sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3});
             
             Input.set("move_left","left","a");
@@ -43,8 +43,8 @@
             }    
 
             Scene("scene1",{
-                onStart: () => {
-                    new Draw(
+                onStart: (scene) => {
+                    let drawing = new Draw(
                         ['lineStyle', 2, Draw.white],
                         ['fill', Draw.green, 1],
                         ['star', Game.width/2, Game.height/2, 5, 50],
@@ -54,6 +54,11 @@
                     new Hitbox({tag:'ground', type:'rect', shape:[80,80,40,40]})
                     new Hitbox({tag:'ground', type:'rect', shape:[180,0,20,Game.height]});
                     new Hitbox({tag:'ground', type:'rect', shape:[0,180,Game.width,20]});
+                
+                    let vw_main = View("main")
+                    vw_main.add(scene);
+                    vw_main.follow(mario);
+                    //vw_main.scale.set(2);
                 }
             });
             Scene.start("scene1");

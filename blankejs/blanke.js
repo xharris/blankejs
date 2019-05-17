@@ -1,3 +1,7 @@
+/*
+Common class methods:
+    _getPixiObjs() : if available, returns an array of DisplayObjects that is used for rendering
+*/
 var Blanke = (selector, options) => {
     let blanke_ref = this;
     this.options = options || {}; // TODO change to table.update or whataever
@@ -21,6 +25,7 @@ var Blanke = (selector, options) => {
     app.view.addEventListener('blur',(e)=> {
         blanke_ref.focused = false;
     });
+    if (this.options.autofocus) app.view.focus();
 
     function b(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+
         -1e3+
@@ -130,10 +135,15 @@ var Blanke = (selector, options) => {
             Scene.addDrawable(this.graphics);
             this.draw(...args);
         }
+        _getPixiObjs () {
+            return [this.graphics];
+        }
         get x () { return this.graphics.x; }
         get y () { return this.graphics.y; }
         set x (v){ this.graphics.x = v; }
         set y (v){ this.graphics.y = v; }
+        get visible () { return this.graphics.visible; }
+        set visible (v){ this.graphics.visible = v; }
         draw (...args) {
             if (this.auto_clear)
                 this.clear();
@@ -194,10 +204,14 @@ var Blanke = (selector, options) => {
             this.onEnd = () => {};
             game_container.addChild(this.container);
         }
+
+        _getPixiObjs () {
+            return [this.container];
+        }
     
         _onStart () {
             this.container.visible = true;
-            this.onStart();
+            this.onStart.call(this);
             // start update loop
             app.ticker.add(this.update, this);
         }
@@ -231,7 +245,7 @@ var Blanke = (selector, options) => {
             Scene.ref[name] = new _Scene(name);
             // apply given callbacks
             for (let fn in functions) {
-                Scene.ref[name][fn] = functions[fn].bind(Scene.ref[name]);
+                Scene.ref[name][fn] = functions[fn].bind(undefined,Scene.ref[name]);
             }
         }
         return Scene.ref[name];
@@ -294,14 +308,16 @@ var Blanke = (selector, options) => {
             this.sprite.x = 0;
             this.sprite.y = 0;
        
-            let props = ['alpha','width','height'];
+            let props = ['alpha','width','height','pivot'];
             for (let p of props) {
                 Object.defineProperty(this,p,{
                     get: () => this.sprite[p],
                     set: (v) => this.sprite[p] = v
                 });
             }
+            this.pivot.set(this.width/2,this.height/2)
         }
+        _getPixiObjs () { return [this.sprite]; }
         get x () { return this.sprite.x; }
         set x (v){ this.sprite.x = Math.floor(v); }
         get y () { return this.sprite.y; }
@@ -407,10 +423,13 @@ var Blanke = (selector, options) => {
                 ['rect', ...opt.shape],
                 ['fill']
             );
+            this.debug = true;  // TODO remove later
 
             Hitbox.world.add(this);
             Scene.addUpdatable(this);
         }
+        set debug (v) { this.graphics.visible = v; }
+        get debug () { return this.graphics.visible; }
         get x () { return this.world_obj.pos.x; }
         get y () { return this.world_obj.pos.y; }
         move (dx, dy) {
@@ -462,21 +481,21 @@ var Blanke = (selector, options) => {
     /* -ENTITY */
     class Entity {
         constructor (...args) {
+            this.is_entity = true;
             this._x = 0;
             this._y = 0;
             this.hspeed = 0;
             this.vspeed = 0;
             this.gravity = 0;
             this.gravity_direction = 0;
-            // sprite
-            this.sprites = {};
-            this.sprite_index = '';
             // collision
             this.shape_index = '';
             this.shapes = {};
             this.onCollide = {};
-
-            let spr_props = ['alpha','width','height'];
+            // sprite
+            this.sprites = {};
+            this.sprite_index = '';
+            let spr_props = ['alpha','width','height','pivot'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: () => {
@@ -491,12 +510,13 @@ var Blanke = (selector, options) => {
                     }
                 });
             }
-
             if (this.init) this.init(...args);
-
             this.xprevious = this.x;
             this.yprevious = this.y;
             Scene.addUpdatable(this);
+        }
+        _getPixiObjs () {
+            return this.sprites.map((spr) => spr.sprite);
         }
         _update (dt) {
             if (this.update)
@@ -574,6 +594,7 @@ var Blanke = (selector, options) => {
             this.shapes[name].position(this.x, this.y);
             if (!this.shape_index)
                 this.shape_index = name;
+            this.shapes[name].debug = false; // TODO remove later
         }
         get sprite_index () { return this._sprite_index || ''; }
         set sprite_index (v) {
@@ -593,13 +614,13 @@ var Blanke = (selector, options) => {
                 this.sprites[v].visible = true;
         }
         get x () { return this._x; }
+        get y () { return this._y; }
         set x (v) {
             this._x = v;
             for (let s in this.sprites) {
                 this.sprites[s].x = v;
             }    
         }
-        get y () { return this._y; }
         set y (v) {
             this._y = v;
             for (let s in this.sprites) {
@@ -622,6 +643,8 @@ var Blanke = (selector, options) => {
     let press_check = {};
     let release_check = {}; // { 'ArrowLeft': false, 'a': true }
     window.addEventListener('keyup',(e)=>{
+        if (blanke_ref.focused) e.preventDefault();
+        else return;
         let key = e.key;
         keys_pressed[key] = false;
         keys_released[key] = true;
@@ -629,6 +652,8 @@ var Blanke = (selector, options) => {
         release_check[key] = false;
     });
     window.addEventListener('keydown',(e)=>{
+        if (blanke_ref.focused) e.preventDefault();
+        else return;
         let key = e.key;
         if (keys_pressed[key] == false)
             press_check[key] = false;
@@ -690,5 +715,68 @@ var Blanke = (selector, options) => {
     app.ticker.add(()=>{
         Input.inputCheck();
     },null,PIXI.UPDATE_PRIORITY.LOW);
-    return {Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite, Util};
+
+    /* -VIEW */
+    let view_ref = {};
+    class _View {
+        constructor (name) {
+            this.name = name;
+            this.container = new PIXI.Container();
+            this.follow_obj = null;
+            this.x = 0;
+            this.y = 0;
+            this.port_width = Game.width;
+            this.port_height= Game.height;
+            game_container.addChild(this.container);
+        }
+        get scale () {
+            return this.container.scale;
+        }
+        follow (obj) { if (obj.x != null && obj.y != null) this.follow_obj = obj; }
+        add (obj) {
+            //console.log(obj)
+            if (!obj._getPixiObjs) return;
+
+            let pixi_objs = obj._getPixiObjs();
+            for (let o of pixi_objs) {
+                o._last_parent = o.parent;
+                o.setParent(this.container);
+            }
+        }
+        destroy () {
+            delete view_ref[this.name];
+            for (let child of this.container.children) {
+                child.setParent(child._last_parent);
+                delete child._last_parent;
+            }
+            this.container.destroy();
+        }
+        update () {
+            let x = this.x, y = this.y;
+            let f_obj = this.follow_obj;
+            if (f_obj) {
+                x = -f_obj.x  + (this.port_width / 2);
+                y = -f_obj.y + (this.port_height / 2);
+                if (f_obj.is_entity) {
+                   // x -= f_obj.sprite_width / 2;
+                   // y -= f_obj.sprite_height / 2;
+                }
+            }
+            this.container.x = parseInt(x+0.5);
+            this.container.y = parseInt(y+0.5);
+           // this.container.pivot.set(this.port_width/2, this.port_height/2);
+        }
+    }
+    var View = name => {
+        if (!view_ref[name])
+            view_ref[name] = new _View(name);
+        return view_ref[name];
+    }
+    app.ticker.add(()=>{
+        for (let name in view_ref) {
+            view_ref[name].update();
+        }
+    },null,PIXI.UPDATE_PRIORITY.LOW+1);
+
+    return {Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite, Util, View};
 }
