@@ -11,6 +11,7 @@ var Blanke = (selector, options) => {
         height:200,
         resolution: 1
     });
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[(this.options.scale_mode || 'nearest').toUpperCase()];
     document.querySelector(selector).appendChild(app.view);
     // add main container for game
     let game_container = new PIXI.Container();
@@ -163,6 +164,9 @@ var Blanke = (selector, options) => {
         }
         clear () {
             this.graphics.clear();
+        }
+        destroy () {
+            this.graphics.destroy();
         }
         // rgb to hex
         static hex (rgb) {
@@ -420,11 +424,12 @@ var Blanke = (selector, options) => {
             this.tag = opt.tag;
 
             this.graphics = new Draw(
-                ['fill', Draw.red],
+                ['lineStyle', 2, Draw.red, 0.5, 0],
+                ['fill', Draw.red, 0.3],
                 ['rect', ...opt.shape],
                 ['fill']
             );
-            this.debug = true;  // TODO remove later
+            this.debug = false;  // TODO remove later
 
             Hitbox.world.add(this);
             Scene.addUpdatable(this);
@@ -540,6 +545,7 @@ var Blanke = (selector, options) => {
             
             for (let name in this.shapes) {
                 let shape = this.shapes[name];
+                shape.debug = this.debug;
                 shape.move(dx*dt, dy*dt);
 
                 let coll_list = shape.collisions();
@@ -568,7 +574,7 @@ var Blanke = (selector, options) => {
                 }     
             }
             for (let name in this.shapes) {
-                this.shapes[name].move(-resx, -resy);
+                this.shapes[name].move(-resx*1.1, -resy*1.1);
             }
             // set position of entity
             if (this.shape_index) {
@@ -595,8 +601,9 @@ var Blanke = (selector, options) => {
             this.shapes[name].position(this.x, this.y);
             if (!this.shape_index)
                 this.shape_index = name;
-            this.shapes[name].debug = false; // TODO remove later
         }
+        get debug () { return this._debug; }
+        set debug (v) { this._debug = v; }
         get sprite_index () { return this._sprite_index || ''; }
         set sprite_index (v) {
             this._sprite_index = v;
@@ -646,27 +653,19 @@ var Blanke = (selector, options) => {
     window.addEventListener('keyup',(e)=>{
         if (blanke_ref.focused) e.preventDefault();
         else return;
-        let key = e.key;
-        keys_pressed[key] = false;
-        keys_released[key] = true;
-        press_check[key] = false;
-        release_check[key] = false;
+        Input.press(e.key);
     });
     window.addEventListener('keydown',(e)=>{
         if (blanke_ref.focused) e.preventDefault();
         else return;
-        let key = e.key;
-        if (keys_pressed[key] == false)
-            press_check[key] = false;
-        keys_pressed[key] = true;
-        keys_released[key] = false;
+        Input.release(e.key);
     });
     var Input = (name) => {
         let ret = { pressed: false, released: false };
         let inputs = input_ref[name];
         if (!inputs) return;
         for (let i_str of inputs) {
-            // multi-inputs?
+            // multi-input?
             let i_list = i_str.split('+');
             let all_pressed = true;
             let all_released = true;
@@ -712,6 +711,18 @@ var Blanke = (selector, options) => {
             if (keys_pressed[key] == true)
                 press_check[key] = true;
         }
+    }
+    Input.press = (key) => {
+        keys_pressed[key] = false;
+        keys_released[key] = true;
+        press_check[key] = false;
+        release_check[key] = false;
+    }
+    Input.release = (key) => {
+        if (keys_pressed[key] == false)
+            press_check[key] = false;
+        keys_pressed[key] = true;
+        keys_released[key] = false;
     }
     app.ticker.add(()=>{
         Input.inputCheck();
@@ -819,8 +830,8 @@ var Blanke = (selector, options) => {
             }
             this.container.scale.copyFrom(this.scale);
             this.container.angle = this.angle;
-            this.container.pivot.x = Math.round(-x + half_pw);
-            this.container.pivot.y = Math.round(-y + half_ph);
+            this.container.pivot.x =(-x + half_pw);
+            this.container.pivot.y = (-y + half_ph);
             this.container.x = pw / 2;
             this.container.y = ph / 2;
 

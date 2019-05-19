@@ -27,6 +27,8 @@
                     this.sprite_pivot.set(this.sprite_width/2,this.sprite_height/2)
                     this.gravity = 0.2;
                     this.gravity_direction = 90;
+
+                    this.debug = true;
                 }
                 update (dt) {
                     this.hspeed = 0;
@@ -66,7 +68,7 @@
                 },
                 onUpdate: (scene, dt) => {
                     let vw_main = View("main");
-                    vw_main.angle += 0.2 * dt;
+                    //vw_main.angle += 0.2 * dt;
                 }
             });
             Scene.start("scene1");
