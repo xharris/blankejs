@@ -4,7 +4,7 @@ do:
 	make -B blanke
 
 web:
-	start "" http://localhost:8000
+	start "" http://localhost:8000 || open http://localhost:8000
 	cd blankejs && python -m SimpleHTTPServer 8000
 
 setup:

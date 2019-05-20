@@ -57,6 +57,7 @@ var Blanke = (selector, options) => {
     var Asset = {
         data: {},
         supported_filetypes: {
+            /* options: { name, frames, frame_size, offset, columns } */
             'image':['png']
         },
         base_textures: {},
@@ -106,6 +107,7 @@ var Blanke = (selector, options) => {
                     }
                     img_obj.texture = new PIXI.Texture(base_tex);
                     Asset.data[type][name] = img_obj;
+                    return Asset.data[type][name];
                     break;
             }
         },
@@ -156,6 +158,9 @@ var Blanke = (selector, options) => {
                 if (name == 'beginFill' && params.length == 0) {
                     name = 'endFill';
                 }
+                if (name == 'beginTextureFill' && params.length == 0) {
+                    name = "endFill";
+                }
                 if (this.graphics[name])
                     this.graphics[name](...params);
                 else
@@ -186,6 +191,7 @@ var Blanke = (selector, options) => {
         rect:'drawRect',
         star:'drawStar',
         fill:'beginFill'
+        texture:'beginTextureFill'
     }
     Draw.colors = {
         red: 0xF44336, pink: 0xE91E63, purple: 0x673AB7,
@@ -296,8 +302,7 @@ var Blanke = (selector, options) => {
     class Sprite {
         constructor (name, options) {
             this.animated = false;
-            
-            let asset = Asset.get('image',name);
+            let asset = Asset.get('sprite',name);
             // animated sprite
             if (asset.frames) {
                 this.animated = true;
@@ -851,5 +856,37 @@ var Blanke = (selector, options) => {
         }
     },null,PIXI.UPDATE_PRIORITY.LOW+1);
 
-    return {Asset, Draw, Entity, Game, Hitbox, Input, Scene, Sprite, Util, View};
+    /* -MAP */
+    let tex_
+    class Map {
+        constructor (name) {
+            this.graphics = new Draw();
+            Scene.addDrawable(this.graphcis);
+            Scene.addUpdatable(this);
+        }
+        _getPixiObjs () { return [this.graphics]; }
+        load (name) { }
+        update (dt) { }
+        /*
+            pos: [x, y, x, y, ...]
+            opt: same options as Sprite (offset, frame_size, frames, columns)
+        */
+        addTile (name, pos, opt) {
+            // get the tile texture
+            let key = [name.split('.')[0], opt.offset[0], opt.offset[1], opt.frame_size[0], opt.frame_size[1], opt.columns||0].join(',');
+            let tex_frames = Asset.get('image', key);
+            if (!tex) {
+                opt.name = key;
+                tex_frames = Asset.add(name, opt);
+            }
+            // place tiles
+            for (let t = 0; t < pos.length; t+=2) {
+                this.graphics.draw(
+                    ['texture', ]
+                )
+            }
+        } 
+    }
+
+    return {Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View};
 }
