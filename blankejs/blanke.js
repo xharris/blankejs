@@ -81,7 +81,10 @@ var Blanke = (selector, options) => {
                     if (!Asset.base_textures[path])
                         Asset.base_textures[path] = PIXI.BaseTexture.from(path);
                     let base_tex = Asset.base_textures[path];
-                    if (options && options.frames) {
+                    if (options && options.frame_size) {
+                        if (!options.frames) options.frames = 1;
+                        if (!options.columns) options.columns = options.frames;
+
                         img_obj.animated = true;
                         img_obj.frames = [];
                         name = options.name;
@@ -95,7 +98,7 @@ var Blanke = (selector, options) => {
                         // generate rectangles
                         for (let f = 0; f < options.frames; f++) {
                             img_obj.frames.push(
-                                new PIXI.Texture(base_tex, new PIXI.Rectangle(x,y,w,h))
+                                [base_tex, x, y, w, h]
                             );
                             x += framew;
                             // next row?
@@ -106,17 +109,23 @@ var Blanke = (selector, options) => {
                         }
                     }
                     img_obj.texture = new PIXI.Texture(base_tex);
+                    // crop texture frames
+                    if (img_obj.frames)
+                        img_obj.tex_frames = img_obj.frames.map( f => Asset.texCrop(f[0], f.slice(1)) );
                     Asset.data[type][name] = img_obj;
-                    return Asset.data[type][name];
+                    return img_obj;
                     break;
             }
+        },
+        texCrop: (base_tex, dims) => {
+            return new PIXI.Texture(base_tex, new PIXI.Rectangle(dims[0],dims[1],dims[2],dims[3]))
         },
         get: (type, name) => {
             if (!(Asset.data[type] && Asset.data[type][name]))
                 return;
             switch (type) {
                 case 'image':
-                    return Asset.data[type][name];//.clone();
+                    return Asset.data[type][name];
                     break;
             }
         }
@@ -190,7 +199,7 @@ var Blanke = (selector, options) => {
     Draw.functions = {
         rect:'drawRect',
         star:'drawStar',
-        fill:'beginFill'
+        fill:'beginFill',
         texture:'beginTextureFill'
     }
     Draw.colors = {
@@ -302,11 +311,11 @@ var Blanke = (selector, options) => {
     class Sprite {
         constructor (name, options) {
             this.animated = false;
-            let asset = Asset.get('sprite',name);
+            let asset = Asset.get('image',name);
             // animated sprite
-            if (asset.frames) {
+            if (asset.tex_frames) {
                 this.animated = true;
-                this.sprite = new PIXI.AnimatedSprite(asset.frames);
+                this.sprite = new PIXI.AnimatedSprite(asset.tex_frames);
                 this.speed = asset.options.speed;
                 this.sprite.play();
             }
@@ -349,7 +358,7 @@ var Blanke = (selector, options) => {
     /* -SPATIALHASH */
     class SpatialHash {
         constructor (size) {
-            this.size = size;
+            this.size = size || 200;
             this.hash = {};
         }
         _hash (obj) {
@@ -382,7 +391,18 @@ var Blanke = (selector, options) => {
                 delete obj._spatialhashlastkey;
             }
         }
-        getNeighbors (obj) {
+        getArea (x, y, w, h) { 
+            w = w || x;
+            h = h || y;
+            let ret_objs = [];
+            for (let rx = x; rx < w; rx += this.size) {
+                for (let ry = y; ry  < h; ry += this.size) {
+                    ret_objs.concat(this.getNeighbors({x:x,y:y}, true));
+                }
+            }
+            return ret_objs;
+        }
+        getNeighbors (obj, include_given) {
             let ret_objs = [];
             let x1 = Math.floor(obj.x/this.size)-1, x2 = Math.floor(obj.x/this.size)+1;
             let y1 = Math.floor(obj.y/this.size)-1, y2 = Math.floor(obj.y/this.size)+1;
@@ -391,9 +411,16 @@ var Blanke = (selector, options) => {
                 for (let y = y1; y <= y2; y++) {
                     key = x+','+y;
                     if (this.hash[key]) {
-                        ret_objs = ret_objs.concat(Object.values(this.hash[key]).filter(v => v._spatialhashid != obj._spatialhashid));
+                        ret_objs = ret_objs.concat(Object.values(this.hash[key]).filter(v => include_given || v._spatialhashid != obj._spatialhashid));
                     }
                 }
+            }
+            return ret_objs;
+        }
+        getAll () {
+            let ret_objs = [];
+            for (let key in this.hash) {
+                ret_objs = ret_objs.concat(Object.values(this.hash[key]));
             }
             return ret_objs;
         }
@@ -860,32 +887,75 @@ var Blanke = (selector, options) => {
     let tex_
     class Map {
         constructor (name) {
+            this.tile_hash = new SpatialHash();
             this.graphics = new Draw();
-            Scene.addDrawable(this.graphcis);
+            Scene.addDrawable(this.graphics._getPixiObjs()[0]);
             Scene.addUpdatable(this);
         }
-        _getPixiObjs () { return [this.graphics]; }
+        _getPixiObjs () { return this.graphics._getPixiObjs(); }
         load (name) { }
-        update (dt) { }
         /*
             pos: [x, y, x, y, ...]
-            opt: same options as Sprite (offset, frame_size, frames, columns)
+            opt: same options as Sprite (offset, frame_size)
         */
         addTile (name, pos, opt) {
             // get the tile texture
             let key = [name.split('.')[0], opt.offset[0], opt.offset[1], opt.frame_size[0], opt.frame_size[1], opt.columns||0].join(',');
-            let tex_frames = Asset.get('image', key);
-            if (!tex) {
+            let asset = Asset.get('image', key);
+            if (!asset) {
                 opt.name = key;
-                tex_frames = Asset.add(name, opt);
+                opt.crop = true;
+                asset = Asset.add(name, opt);
             }
+            let tex_frames = asset.tex_frames;
             // place tiles
-            for (let t = 0; t < pos.length; t+=2) {
-                this.graphics.draw(
-                    ['texture', ]
-                )
+            for (let t = 0; t < pos.length; t += 2) {
+                for (let f in tex_frames) {
+                    this.tile_hash.add({
+                        x: pos[t], y: pos[t+1],
+                        w: tex_frames[f].width, h: tex_frames[f].height,
+                        key: key, frame: parseInt(f), img_name: name
+                    });
+                }
             }
+            // update graphics
+            this.redrawTiles();
         } 
+        redrawTiles () {
+            let tiles = this.tile_hash.getAll();
+            let draw_instr = [];
+            let tex;
+            for (let tile of tiles) {
+                tex = Asset.get('image', tile.key);
+                console.log(tex)
+                if (tex) {
+                    console.log(tex.frames[tile.frame][0], tile);
+                    let frame = tex.frames[tile.frame][tile.frame]
+                    draw_instr.push(
+                        ['texture', tex.texture, 0xffffff, 1, new PIXI.Matrix(1,0,0,1,tile.x,tile.y)],
+                        ['rect', 0, 0, tile.w, tile.h],
+                        ['texture']
+                    )
+                }
+            }
+            this.graphics.draw(...draw_instr);
+        }
+        removeTile (name, pos) {
+            let x, y;
+            for (let t = 0; t < pos.length; t += 2) {
+                x = pos[t]; y = pos[t+1];
+                // get tiles in the area
+                let tiles = this.tile_hash.getArea(x, y);
+                for (let tile of tiles) {
+                    if (name == tile.img_name && x >= tile.x && y >= tile.y && x <= tile.x+tile.w && y <= tile.y+tile.h) {
+                        // hit tile, remove it
+                        this.tile_hash.remove(tile);
+                    }
+                }
+            }
+            // update graphics
+            this.redrawTiles();
+        }
     }
 
     return {Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View};
