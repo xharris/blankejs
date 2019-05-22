@@ -55,19 +55,18 @@
                         ['fill']
                     );
                     let mario = new Mario();
-                    new Hitbox({tag:'ground', type:'rect', shape:[0,80,40,40]})
-                    new Hitbox({tag:'ground', type:'rect', shape:[180,0,20,Game.height]});
-                    new Hitbox({tag:'ground', type:'rect', shape:[0,180,Game.width,20]});
-                
+                                    
                     let vw_main = View("main");
-                    vw_main.add(scene);
                     vw_main.follow(mario);
                     vw_main.scale.set(1.5);
 
                     let map_level1 = new Map("level1");
-                    map_level1.addTile("sprite-example.png", [0, 0, 20, 20, 30, 30], {offset:[9,54],frame_size:[27,49]});
-                    //map_level1.removeTile("sprite-example.png", [22, 22])
-                    vw_main.add(map_level1);
+                    map_level1.debug = true;
+                    map_level1.addHitbox({tag:'ground', type:'rect', shape:[0,80,40,40]})
+                    map_level1.addHitbox({tag:'ground', type:'rect', shape:[180,0,20,Game.height]});
+                    map_level1.addHitbox({tag:'ground', type:'rect', shape:[0,180,Game.width,20]});
+                    
+                    vw_main.add(scene, map_level1);
                 },
                 onUpdate: (scene, dt) => {
                     let vw_main = View("main");

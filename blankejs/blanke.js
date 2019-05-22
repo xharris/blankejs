@@ -395,9 +395,9 @@ var Blanke = (selector, options) => {
             w = w || x;
             h = h || y;
             let ret_objs = [];
-            for (let rx = x; rx < w; rx += this.size) {
-                for (let ry = y; ry  < h; ry += this.size) {
-                    ret_objs.concat(this.getNeighbors({x:x,y:y}, true));
+            for (let rx = x; rx <= w; rx += this.size) {
+                for (let ry = y; ry <= h; ry += this.size) {
+                    ret_objs = ret_objs.concat(this.getNeighbors({x:x,y:y}, true));
                 }
             }
             return ret_objs;
@@ -411,7 +411,10 @@ var Blanke = (selector, options) => {
                 for (let y = y1; y <= y2; y++) {
                     key = x+','+y;
                     if (this.hash[key]) {
-                        ret_objs = ret_objs.concat(Object.values(this.hash[key]).filter(v => include_given || v._spatialhashid != obj._spatialhashid));
+                        ret_objs = ret_objs.concat(
+                            Object.values(this.hash[key])
+                                  .filter(v => include_given || v._spatialhashid != obj._spatialhashid)
+                        );
                     }
                 }
             }
@@ -828,13 +831,15 @@ var Blanke = (selector, options) => {
             return this._scale;
         }
         follow (obj) { if (obj.x != null && obj.y != null) this.follow_obj = obj; }
-        add (obj) {
-            if (!obj._getPixiObjs) return;
+        add (...objects) {
+            for (let obj of objects) {
+                if (!obj._getPixiObjs) return;
 
-            let pixi_objs = obj._getPixiObjs();
-            for (let o of pixi_objs) {
-                o._last_parent = o.parent;
-                o.setParent(this.container);
+                let pixi_objs = obj._getPixiObjs();
+                for (let o of pixi_objs) {
+                    o._last_parent = o.parent;
+                    o.setParent(this.container);
+                }
             }
         }
         destroy () {
@@ -888,12 +893,23 @@ var Blanke = (selector, options) => {
     class Map {
         constructor (name) {
             this.tile_hash = new SpatialHash();
+            this.hitboxes = [];
             this.graphics = new Draw();
             Scene.addDrawable(this.graphics._getPixiObjs()[0]);
             Scene.addUpdatable(this);
+            this._debug = false;
         }
+        set debug (v) {
+            this._debug = v;
+            for (let hitbox of this.hitboxes) {
+                hitbox.debug = v;
+            }
+        }
+        get debug () { return this._debug; }
         _getPixiObjs () { return this.graphics._getPixiObjs(); }
-        load (name) { }
+        load (name) { 
+            
+        }
         /*
             pos: [x, y, x, y, ...]
             opt: same options as Sprite (offset, frame_size)
@@ -927,13 +943,11 @@ var Blanke = (selector, options) => {
             let tex;
             for (let tile of tiles) {
                 tex = Asset.get('image', tile.key);
-                console.log(tex)
                 if (tex) {
-                    console.log(tex.frames[tile.frame][0], tile);
-                    let frame = tex.frames[tile.frame][tile.frame]
+                    let frame = tex.frames[tile.frame]
                     draw_instr.push(
-                        ['texture', tex.texture, 0xffffff, 1, new PIXI.Matrix(1,0,0,1,tile.x,tile.y)],
-                        ['rect', 0, 0, tile.w, tile.h],
+                        ['texture', tex.tex_frames[tile.frame], 0xffffff, 1, new PIXI.Matrix(1,0,0,1,tile.x,tile.y)],
+                        ['rect', tile.x, tile.y, tile.w, tile.h],
                         ['texture']
                     )
                 }
@@ -955,6 +969,12 @@ var Blanke = (selector, options) => {
             }
             // update graphics
             this.redrawTiles();
+        }
+        addHitbox (opt) {
+            let hit = new Hitbox(opt)
+            hit.debug = this.debug;
+            this.hitboxes.push(hit);
+
         }
     }
 
