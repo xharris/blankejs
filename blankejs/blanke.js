@@ -976,6 +976,9 @@ var Blanke = (selector, options) => {
             this.hitboxes.push(hit);
 
         }
+        addMarker (name, ...points) {
+            this.markers[name] = points;
+        }
     }
 
     return {Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View};
