@@ -13,19 +13,19 @@
             let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = Blanke("#game",{
                 config_file: "config.json"
             });
+            
             Asset.add([
                 ["assets/image/player_stand.png"],
                 ["assets/image/ground.png"],
-                ["assets/maps/level1.map"]
-            ])
-            Asset.add('sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3});
+                ["assets/maps/level1.map"],
+                ['sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3}]
+            ]);
             
-
             Input.set("move_left","left","a");
             Input.set("move_right","right","d");
             Input.set("move_up","up","w");
             Input.set("move_down","down","s");
-            Input.move_up.can_repeat = false;
+            // Input.move_up.can_repeat = false;
 
             Map.config = {
                 tile_hitboxes: ["ground"],
@@ -48,8 +48,12 @@
             }
 
             Scene("play",{
-                onStart: () => {
-                    let m_level1 = Map.load('level1');
+                onStart: async () => {
+                    //let m_level1 = await Map.load('level1');
+                    let vw_main = View("main")
+                    let player = new Player();
+                    //vw_main.add(m_level1)
+                    vw_main.follow(player)
                 }
             }).start();
         }

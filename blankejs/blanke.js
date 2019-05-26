@@ -662,6 +662,7 @@ var Blanke = (selector, options) => {
                         if (this.sprite_index) {
                             return this.sprites[this.sprite_index][p];
                         }
+                        return 0;
                     },
                     set: (v) => {
                         for (let spr in this.sprites) {
@@ -961,6 +962,19 @@ var Blanke = (selector, options) => {
                 }
             }
         }
+        remove (...objects) {
+            for (let obj of objects) {
+                if (!obj._getPixiObjs) return;
+
+                let pixi_objs = obj._getPixiObjs();
+                for (let o of pixi_objs) {
+                    if (o._last_parent) {
+                        o.setParent = o._last_parent
+                        o._last_parent = this.container;
+                    }
+                }
+            }
+        }
         destroy () {
             delete view_ref[this.name];
             for (let child of this.container.children) {
@@ -1031,39 +1045,43 @@ var Blanke = (selector, options) => {
             }
         }
         get debug () { return this._debug; }
-        _getPixiObjs () { return this.main_container; }
+        _getPixiObjs () { return [this.main_container]; }
         static load (name) { 
-            Asset.get('map',name,(data)=>{
-                data = JSON.parse(data);
-                console.log(data, Game.config)
-                let new_map = new Map(name, true);
-                // ** PLACE TILES **
-                for (let img_info of data.images) {
-                    // get layer image belongs to
-                    for (let lay_name in img_info.coords) {
-                        let layer = new_map.getLayer(lay_name);
-                        for (let c of img_info.coords[lay_name]) {
-                            // place them
-                            let asset_info = new_map.addTile(img_info.path, [c[0], c[1]], {
-                                offset: [c[2], c[3]],
-                                frame_size: [c[4], c[5]]
-                            }, true)
-                            // Map.config.tile_hitboxes
-                            if (Array.isArray(Map.config.tile_hitboxes)) {
-                                let asset_name = Asset.parseAssetName(img_info.path);
-                                if (Map.config.tile_hitboxes.includes(asset_name)) {
-                                    new_map.addHitbox({
-                                        type: 'rect',
-                                        shape: [c[0], c[1], c[4], c[5]],
-                                        tag: asset_name
-                                    })
+            return new Promise(res => {
+                Asset.get('map',name,(data)=>{
+                    data = JSON.parse(data);
+                    console.log(data, Game.config)
+                    let new_map = new Map(name, true);
+                    // ** PLACE TILES **
+                    for (let img_info of data.images) {
+                        // get layer image belongs to
+                        for (let lay_name in img_info.coords) {
+                            let layer = new_map.getLayer(lay_name);
+                            for (let c of img_info.coords[lay_name]) {
+                                // place them
+                                let asset_info = new_map.addTile(img_info.path, [c[0], c[1]], {
+                                    offset: [c[2], c[3]],
+                                    frame_size: [c[4], c[5]]
+                                }, true)
+                                // Map.config.tile_hitboxes
+                                if (Array.isArray(Map.config.tile_hitboxes)) {
+                                    let asset_name = Asset.parseAssetName(img_info.path);
+                                    if (Map.config.tile_hitboxes.includes(asset_name)) {
+                                        new_map.addHitbox({
+                                            type: 'rect',
+                                            shape: [c[0], c[1], c[4], c[5]],
+                                            tag: asset_name
+                                        })
+                                    }
                                 }
                             }
-                        }
-                    } 
-                }
-                // ** PLACE HITBOXES **
-                new_map.redrawTiles();
+                        } 
+                    }
+                    // ** PLACE ENTITIES **
+                    
+                    new_map.redrawTiles();
+                    res(new_map);
+                });
             });
         }
         addLayer (name, _uuid) {
