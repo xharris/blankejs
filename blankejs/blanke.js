@@ -659,7 +659,7 @@ var Blanke = (selector, options) => {
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: () => {
-                        if (this.sprite_index) {
+                        if (this.sprites[this.sprite_index]) {
                             return this.sprites[this.sprite_index][p];
                         }
                         return 0;
@@ -677,7 +677,7 @@ var Blanke = (selector, options) => {
             Scene.addUpdatable(this);
         }
         _getPixiObjs () {
-            return this.sprites.map((spr) => spr.sprite);
+            return Object.values(this.sprites).map(spr => spr.sprite);
         }
         _update (dt) {
             if (this.update)
@@ -747,7 +747,7 @@ var Blanke = (selector, options) => {
         }
         addSprite (name) {
             this.sprites[name] = new Sprite(name);
-            if (this.sprite_index)
+            if (this.sprite_index == '')
                 this.sprite_index = name;
         }
         addShape (name, options) {
@@ -889,6 +889,9 @@ var Blanke = (selector, options) => {
         constructor (name) {
             this.name = name;
             this.container = new PIXI.Container();
+            this.bg_color = new PIXI.Sprite(PIXI.Texture.WHITE);
+            //this.background_color = Game.background_color;
+            
             this.follow_obj = null;
             this.x = 0;
             this.y = 0;
@@ -898,7 +901,16 @@ var Blanke = (selector, options) => {
             this._scale = new PIXI.Point(1,1);
             this.angle = 0;
             this._updateMask();
+            this.container.addChild(this.bg_color);
             game_container.addChild(this.container);
+        }
+        set background_color (v) {
+            this.bg_color.width = Game.width * 1.5;
+            this.bg_color.height = Game.height * 1.5;
+            this.bg_color.tint = v;
+        }
+        get background_color () {
+            return this.bg_color.tint;
         }
         get x () { return this._x; }
         get y () { return this._y; }
@@ -938,10 +950,10 @@ var Blanke = (selector, options) => {
             this.mask.draw(
                 ['fill',Draw.white],
                 ['rect',
-                    -this.x,
-                    -this.y,
-                    this.port_width / this.scale.x,
-                    this.port_height / this.scale.y
+                    0,
+                    0,
+                    this.port_width,
+                    this.port_height
                 ],
                 ['fill']
             );
@@ -950,7 +962,15 @@ var Blanke = (selector, options) => {
         get scale () {
             return this._scale;
         }
-        follow (obj) { if (obj.x != null && obj.y != null) this.follow_obj = obj; }
+        follow (obj) { 
+            if (this.follow_obj) {
+                this.remove(this.follow_obj);
+            }
+            if (obj.x != null && obj.y != null) {
+                this.follow_obj = obj;
+                this.add(this.follow_obj)
+            }
+        }
         add (...objects) {
             for (let obj of objects) {
                 if (!obj._getPixiObjs) return;
@@ -1000,10 +1020,16 @@ var Blanke = (selector, options) => {
             }
             this.container.scale.copyFrom(this.scale);
             this.container.angle = this.angle;
-            this.container.pivot.x =(-x + half_pw);
-            this.container.pivot.y = (-y + half_ph);
+            this.container.pivot.x = -x + half_pw;
+            this.container.pivot.y = -y + half_ph;
             this.container.x = pw / 2;
             this.container.y = ph / 2;
+        
+            this.bg_color.x = -x - (half_pw);
+            this.bg_color.y = -y - (half_ph);
+            //this.bg_color.x = -x;
+            //this.bg_color.y = -y;
+            this.bg_color.angle = 0;//-this.angle;
 
             this.x = x;
             this.y = y;
