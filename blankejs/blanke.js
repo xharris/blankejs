@@ -47,6 +47,58 @@ var Blanke = (selector, options) => {
         });
     }
 
+    const updateZOrder = (obj) => {
+        let containers = [];
+        if (obj._getPixiObjs) {
+            let objs = obj._getPixiObjs();
+            for (let o of objs) {
+                let container = o.parent;
+                o.zIndex = obj.z;
+                if (!containers.includes(container))
+                    containers.push(container);
+            }
+        }
+        // sort the collected containers
+        containers.forEach((cont) => {
+            /*
+            cont.children = quickSort(cont, (a,b)=>{
+                return (a.zIndex || 0) < (b.zIndex || 0);
+            })*/
+            cont.sortableChildren = true;
+            cont.sortChildren();
+//                cont.sortDirty = true;
+        })
+    }
+
+    const quickSort = (items, fn) => {
+        fn = fn || function (a, b) { return a < b; };
+        let countOuter = 0;
+        let countInner = 0;
+        let countSwap = 0;
+        function _sort(array) {
+            countOuter++;
+            if(array.length < 2) {
+              return array;
+            }
+          
+            let pivot = array[0];
+            let lesser = [];
+            let greater = [];
+          
+            for(let i = 1; i < array.length; i++) {
+              countInner++;
+              if(fn(array[i], pivot)) { // array[i] < pivot) {
+                lesser.push(array[i]);
+              } else {
+                greater.push(array[i]);
+              }
+            }
+          
+            return _sort(lesser).concat(pivot, _sort(greater));
+        }
+        return _sort (items);
+    }
+
     //var cull = new Cull.SpatialHash();
 
     // UUID stuff
@@ -671,6 +723,7 @@ var Blanke = (selector, options) => {
                     }
                 });
             }
+            this.z = 0;
             if (this.init) this.init(...args);
             this.xprevious = this.x;
             this.yprevious = this.y;
@@ -679,6 +732,11 @@ var Blanke = (selector, options) => {
         _getPixiObjs () {
             return Object.values(this.sprites).map(spr => spr.sprite);
         }
+        set z (v) {
+            this._z = v;
+            updateZOrder(this);
+        }
+        get z () { return this._z; }
         _update (dt) {
             if (this.update)
                 this.update(dt);
@@ -890,6 +948,7 @@ var Blanke = (selector, options) => {
             this.name = name;
             this.container = new PIXI.Container();
             this.bg_color = new PIXI.Sprite(PIXI.Texture.WHITE);
+            this.bg_color.zIndex = -10000000000000;
             //this.background_color = Game.background_color;
             
             this.follow_obj = null;
@@ -981,6 +1040,7 @@ var Blanke = (selector, options) => {
                     o.setParent(this.container);
                 }
             }
+            this.container.sortChildren();
         }
         remove (...objects) {
             for (let obj of objects) {
@@ -1063,7 +1123,13 @@ var Blanke = (selector, options) => {
             Scene.addDrawable(this.main_container);
             Scene.addUpdatable(this);
             this._debug = false;
+            this.z = 0;
         }
+        set z (v) {
+            this._z = v;
+            updateZOrder(this);
+        }
+        get z () { return this._z; }
         set debug (v) {
             this._debug = v;
             for (let hitbox of this.hitboxes) {
@@ -1076,7 +1142,6 @@ var Blanke = (selector, options) => {
             return new Promise(res => {
                 Asset.get('map',name,(data)=>{
                     data = JSON.parse(data);
-                    console.log(data, Game.config)
                     let new_map = new Map(name, true);
                     // ** PLACE TILES **
                     for (let img_info of data.images) {
