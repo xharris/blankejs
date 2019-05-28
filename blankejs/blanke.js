@@ -47,6 +47,17 @@ var Blanke = (selector, options) => {
         });
     }
 
+    const addZOrdering = (obj) => {
+        Object.defineProperty(obj,'z',{
+            get: function () { return this._z; },
+            set: function (v)  {
+                this._z = v;
+                updateZOrder(this);
+            }
+        })
+        obj.z = 0;
+    }
+
     const updateZOrder = (obj) => {
         let containers = [];
         if (obj._getPixiObjs) {
@@ -54,7 +65,7 @@ var Blanke = (selector, options) => {
             for (let o of objs) {
                 let container = o.parent;
                 o.zIndex = obj.z;
-                if (!containers.includes(container))
+                if (container && !containers.includes(container))
                     containers.push(container);
             }
         }
@@ -297,6 +308,7 @@ var Blanke = (selector, options) => {
         constructor (...args) {
             this.graphics = new PIXI.Graphics();
             this.auto_clear = true;
+            addZOrdering(this);
             Scene.addDrawable(this.graphics);
             this.draw(...args);
         }
@@ -501,8 +513,8 @@ var Blanke = (selector, options) => {
             let props = ['alpha','width','height','pivot'];
             for (let p of props) {
                 Object.defineProperty(this,p,{
-                    get: () => this.sprite[p],
-                    set: (v) => this.sprite[p] = v
+                    get: function () { return this.sprite[p] }, 
+                    set: function (v) { this.sprite[p] = v }
                 });
             }
         }
@@ -710,20 +722,20 @@ var Blanke = (selector, options) => {
             let spr_props = ['alpha','width','height','pivot'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
-                    get: () => {
+                    get: function () {
                         if (this.sprites[this.sprite_index]) {
                             return this.sprites[this.sprite_index][p];
                         }
                         return 0;
                     },
-                    set: (v) => {
+                    set: function (v) {
                         for (let spr in this.sprites) {
                             this.sprites[this.sprite_index][p] = v;
                         }
                     }
                 });
             }
-            this.z = 0;
+            addZOrdering(this);
             if (this.init) this.init(...args);
             this.xprevious = this.x;
             this.yprevious = this.y;
@@ -732,11 +744,6 @@ var Blanke = (selector, options) => {
         _getPixiObjs () {
             return Object.values(this.sprites).map(spr => spr.sprite);
         }
-        set z (v) {
-            this._z = v;
-            updateZOrder(this);
-        }
-        get z () { return this._z; }
         _update (dt) {
             if (this.update)
                 this.update(dt);
@@ -1123,13 +1130,8 @@ var Blanke = (selector, options) => {
             Scene.addDrawable(this.main_container);
             Scene.addUpdatable(this);
             this._debug = false;
-            this.z = 0;
+            addZOrdering(this);
         }
-        set z (v) {
-            this._z = v;
-            updateZOrder(this);
-        }
-        get z () { return this._z; }
         set debug (v) {
             this._debug = v;
             for (let hitbox of this.hitboxes) {
