@@ -1,6 +1,7 @@
 class Editor {
 	constructor () {
 		var workspace = app.getElement('#workspace');
+		var sidewindow_container = app.getElement('#sidewindow-container');
 		this.app = app;
 		this.closed = false;
 
@@ -59,6 +60,26 @@ class Editor {
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
+		this.container.onClose = this.onClose;
+		return this;
+	}
+
+	setupSideWindow(show_history) {
+		let this_ref = this;
+		this.container_type = "sidewindow";
+		this.container = new SideWindow(this.constructor.name);
+		this.container.appendChild(this.content_area);
+		this.container.btn_menu.onclick = function(e) {
+			this_ref.onMenuClick(e);
+		}
+		if (!show_history)
+			this.removeHistory();
+		else {
+			app.setHistoryActive(this.container.history_id, true);
+			app.setHistoryContextMenu(this.container.history_id, function(e) {
+				this_ref.onMenuClick(e);
+			});
+		}
 		this.container.onClose = this.onClose;
 		return this;
 	}

@@ -3486,3 +3486,24 @@ TypeError: el_platform_container.classList.push is not a function
     at new Exporter (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/exporter.js:51:18)
     at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:93:74)
 
+[[ 1559076791396 ]]
+TypeError: Cannot read property 'entry' of undefined
+    at Object.removeHistory (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:599:45)
+    at Code.removeHistory (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/editor.js:87:7)
+    at Code.setupSideWindow (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/editor.js:75:9)
+    at new Code (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/new/code.js:206:8)
+    at Function.openScript (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/new/code.js:1007:13)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/new/code.js:1059:15)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:815:30)
+    at HTMLDivElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:829:4)
+
+[[ 1559097438263 ]]
+TypeError: Cannot read property 'Game' of undefined
+    at Object.refreshGameSource (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:262:12)
+    at HTMLIFrameElement.iframe.onload (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:242:8)
+
+[[ 1559097475518 ]]
+TypeError: Cannot read property 'Game' of undefined
+    at Object.refreshGameSource (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:262:12)
+    at HTMLIFrameElement.iframe.onload (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:242:8)
+

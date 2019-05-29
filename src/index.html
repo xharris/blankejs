@@ -23,7 +23,7 @@
 		<script src="includes/codemirror/lib/codemirror.js"></script>
 		<link rel="stylesheet" href="includes/codemirror/lib/codemirror.css">
 		<link rel="stylesheet" href="includes/codemirror/theme/material.css">
-		<script src="includes/codemirror/mode/lua/lua.js"></script>
+		<script src="includes/codemirror/mode/javascript/javascript.js"></script>
 
 		<script src="includes/codemirror/addon/dialog/dialog.js"></script>
 		<link rel="stylesheet" href="includes/codemirror/addon/dialog/dialog.css">
@@ -40,31 +40,20 @@
 
 		<script src="includes/codemirror/addon/mode/overlay.js"></script>
 
-		<!-- PixiJS -->
-		<script src="includes/pixi.min.js"></script>
-		<script src="includes/pixi-display.js"></script>
-		<script src="includes/pixi-tilemap.js"></script>
-
-		<!-- PhaserJS -->
-		<script src="includes/phaser.min.js"></script>
-
-		<!-- BlankeJS -->
-		<script src="../src/blankejs/index.js"></script>
-
 		<!-- IDE core -->
 		<script src="js/core/tab.js"></script>
 		<script src="js/core/dragbox.js"></script>
+		<script src="js/core/sidewindow.js"></script>
 		<script src="js/core/fibwindow.js"></script>
 		<script src="js/core/editor.js"></script>
 
 		<!-- IDE features -->
-		<script src="js/plugin.js"></script>
+		<!-- script src="js/plugin.js"></script -->
+		<script src="js/new/code.js"></script>
+		
 		<script src="js/docview.js"></script>
 		<script src="js/exporter.js"></script>
 		<script src="js/console.js"></script>
-		<script src="js/code.js"></script>
-		<script src="js/mapeditor.js"></script>
-		<script src="js/sceneeditor.js"></script>
 		<script src="js/spritesheet.js"></script>
 		<script src="js/assetmanager.js"></script>
 		<script src="js/find.js"></script>
@@ -140,6 +129,9 @@
 		<div id="menu"></div>
 		<div id="sidebar"></div>
 		<div id="workspace"></div>
+		
+		<div id="sidewindow-container"></div>
+		<iframe id="game"></iframe>
 		
 		<div id="drop-zone">
 			<p>Drop files into your project!</p>

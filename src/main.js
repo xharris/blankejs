@@ -93,10 +93,6 @@ var app = {
 		return nwPATH.relative(app.project_path,path);
 	},
 
-	isProjectOpen: function() {
-		return (app.project_path && app.project_path != "");
-	},
-
 	newProject: function(path) {
 		nwFS.mkdir(path, function(err) {
 			if (!err) {
@@ -158,6 +154,10 @@ var app = {
 		app.setWinTitle("BlankE");
 	},
 
+	isProjectOpen: function() {
+		return (app.project_path && app.project_path != "");
+	},
+
 	openProject: function(path) {
 		// validate: only open if there's a main.lua
 		nwFS.readdir(path, 'utf8', function(err, files){
@@ -166,7 +166,6 @@ var app = {
 					app.closeProject();
 
 				app.project_path = path;
-				app.loadSettings();
 
 				// watch for file changes
 				app.watch = nwWATCH(app.project_path, {recursive: true}, function(evt_type, file) {
@@ -181,7 +180,12 @@ var app = {
 				app.getElement("#search-container").classList.remove("no-project");
 				app.setWinTitle(nwPATH.basename(app.project_path));
 
-				dispatchEvent("openProject", {path: path});
+				// start first scene
+				app.loadSettings(() => {
+					app.hideWelcomeScreen();
+					app.initEngine();
+					dispatchEvent("openProject", {path: path});
+				});
 			} else {
 				blanke.toast(`Could not open project '${nwPATH.basename(path)}'`);
 				app.closeProject();
@@ -194,6 +198,84 @@ var app = {
 		blanke.chooseFile('nwdirectory', function(file_path){
 			app.openProject(file_path);
 		}, true);
+	},
+
+	initEngine: function() {
+		let iframe = app.getElement('#game');
+		iframe.srcdoc = `
+<!DOCTYPE html>
+<html>
+	<style>
+		head, body {
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+			margin: 0px;
+			overflow: hidden;
+		}
+		#game {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+	<head>
+		<script src="../blankejs/pixi.min.js"></script>
+		<script src="../blankejs/SAT.min.js"></script>
+		<script src="../blankejs/blanke.js"></script>
+	</head>
+	<body>
+		<div id="game"></div>
+	</body>
+	<script>
+		var game = Blanke("#game",{
+			config: ${JSON.stringify(app.project_settings)},
+			fill_parent: true,
+			ide_mode: true,
+			auto_resize: true,
+			root: '${nwPATH.relative("src",nwPATH.join(app.project_path))}'
+		});
+	</script>
+</html>
+`;
+		iframe.onload = function() {
+			app.refreshGameSource();
+			app.game = iframe.contentWindow.game;
+			let { Game, View } = app.game;
+			View("_ide_view");
+			Game.background_color = 0x485358;
+		}
+	},
+
+	refreshGameSource: function () {
+		if (!Code.scripts) return;
+
+		let code = '(function(){\nlet { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game;\n';
+		for (let cat of ['entity','scene','other']) {
+			if (Array.isArray(Code.scripts[cat])) {
+				for (let path of Code.scripts[cat]) {
+					code += nwFS.readFileSync(path,'utf-8');
+				}
+			}
+		}
+		code += "\n})();"
+		if (app.game)
+			app.game.Game.end();
+
+		// reload source file
+		let iframe = app.getElement("#game");
+		let doc = iframe.contentDocument;
+		let script_path = nwPATH.relative("src",nwPATH.join(app.project_path,"temp_src.js"));
+		let old_script = doc.querySelectorAll('script.source');
+		if (old_script)
+			old_script.forEach((el) => el.remove());
+		let parent= doc.getElementsByTagName('html')[0];
+		let script= doc.createElement('script');
+		script.classList.add("source");
+		script.innerHTML= code;
+		parent.appendChild(script);
+		
 	},
 
 	play: function(options) { 
@@ -375,17 +457,18 @@ var app = {
 	loadSettings: function(callback){
 		if (app.isProjectOpen()) {	
 			nwFS.readFile(nwPATH.join(app.project_path,"config.json"), 'utf-8', function(err, data){
-				if (!err) {
-					if (!err) {
-						app.project_settings = JSON.parse(data);
-					}
-					ifndef_obj(app.project_settings, {
-						ico:nwPATH.join('src','logo.ico'),
-						icns:nwPATH.join('src','logo.icns'),
-					});
-					app.saveSettings();
-					if (callback) callback();
-				}
+				if (!err) 
+					app.project_settings = JSON.parse(data);
+				else
+					console.log(err)
+
+				ifndef_obj(app.project_settings, {
+					ico:nwPATH.join('src','logo.ico'),
+					icns:nwPATH.join('src','logo.icns'),
+					first_scene:null
+				});
+				app.saveSettings();
+				if (callback) callback();
 			});
 		}
 	},
@@ -577,6 +660,7 @@ var app = {
 	},
 
 	removeHistory: function(id) {
+		if (!app.history_ref[id]) return;
 		blanke.destroyElement(app.history_ref[id].entry);
 		blanke.destroyElement(app.history_ref[id].entry_title);
 		delete app.history_ref[id];
@@ -613,6 +697,17 @@ var app = {
 			DEV_MODE = true;
 			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
+			app.addSearchKey({key: 'Restart engine', onSelect:function(){
+				if (app.game) app.game.Game.destroy();
+
+				let iframe = app.getElement('#game')
+				blanke.destroyElement(iframe.contentDocument.querySelector('script[src="../blankejs/blanke.js"]'));
+				var head= iframe.contentDocument.getElementsByTagName('head')[0];
+				var script= iframe.contentDocument.createElement('script');
+				script.src= '../blankejs/blanke.js';
+				head.appendChild(script);
+				app.initEngine();
+			}});
 			nwGUI.Window.get().showDevTools();
 			blanke.toast("Dev mode enabled");
 		} else {
@@ -952,8 +1047,6 @@ nwWIN.on('loaded', function() {
 	app.addSearchKey({key: 'Check for updates', onSelect: app.checkForUpdates});
 
 	document.addEventListener("openProject",function(){
-		app.hideWelcomeScreen();
-
 		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
 			nwGUI.Shell.openItem(app.project_path);
 		}});
@@ -979,7 +1072,6 @@ nwWIN.on('loaded', function() {
 				el_file.innerHTML = nwPATH.basename(file);
 				el_file.title = file;
 				el_file.addEventListener('click',function(){
-					app.hideWelcomeScreen();
 					app.openProject(file);
 				});
 

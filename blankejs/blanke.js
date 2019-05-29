@@ -7,22 +7,28 @@ var Blanke = (selector, options) => {
 
     let blanke_ref = this;
     this.options = Object.assign({
-        autofocus: true,
+        auto_focus: true,
         width: 600,
         height: 400,
         resolution: 1,
-        config_file: 'config.json'
+        config_file: 'config.json',
+        fill_parent: false,
+        auto_resize: false,
+        ide_mode: false,
+        root: ''
     },options || {}); 
     // init PIXI
     let app;
+    let parent = document.querySelector(selector);
     
     app = new PIXI.Application({
         width: this.options.width,
         height: this.options.height,
-        resolution: this.options.resolution
+        resolution: this.options.resolution,
+        resizeTo: this.options.fill_parent == true ? parent : null
     });
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[(this.options.scale_mode || 'nearest').toUpperCase()];
-    document.querySelector(selector).appendChild(app.view);
+    parent.appendChild(app.view);
     // add main container for game
     let game_container = new PIXI.Container();
     app.stage.addChild(game_container);
@@ -36,15 +42,29 @@ var Blanke = (selector, options) => {
     app.view.addEventListener('blur',(e)=> {
         blanke_ref.focused = false;
     });
-    if (this.options.autofocus) app.view.focus();
+    if (this.options.auto_focus) app.view.focus();
+    // resize with parent
+    if (this.options.auto_resize) {
+        app.renderer.resize(parent.clientWidth, parent.clientHeight);
+        window.addEventListener('resize',function(){
+            app.renderer.resize(parent.clientWidth, parent.clientHeight);
+        });
+    }
 
     const engineLoaded = () => {
         // load config.json
-        Asset.add(this.options.config_file,'config',(data) => {
-            if (data) {
-                Game.config = JSON.parse(data);
-            }
-        });
+        if (this.options.config != null) {
+            Game.config = this.options.config;
+        } else {
+            Asset.add(this.options.config_file,'config',(data) => {
+                if (data) {
+                    Game.config = JSON.parse(data);
+                }
+            });
+        }
+
+        if (this.options.ide_mode) {
+        }
     }
 
     const addZOrdering = (obj) => {
@@ -71,14 +91,34 @@ var Blanke = (selector, options) => {
         }
         // sort the collected containers
         containers.forEach((cont) => {
-            /*
-            cont.children = quickSort(cont, (a,b)=>{
-                return (a.zIndex || 0) < (b.zIndex || 0);
-            })*/
             cont.sortableChildren = true;
             cont.sortChildren();
-//                cont.sortDirty = true;
         })
+    }
+
+    const setNewParent = (child, parent_container) => {
+        if (!child._getPixiObjs) return false;
+
+        let pixi_objs = child._getPixiObjs();
+        for (let o of pixi_objs) {
+            o._last_parent = o.parent;
+            o.setParent(parent_container);
+        }
+        return true;
+    }
+
+    const restorePrevParent = (child) => {
+        if (!child._getPixiObjs) return false;
+
+        let pixi_objs = child._getPixiObjs();
+        for (let o of pixi_objs) {
+            if (o._last_parent) {
+                let curr_parent = o.parent;
+                o.setParent = o._last_parent
+                o._last_parent = curr_parent;
+            }
+        }
+        return true;
     }
 
     const quickSort = (items, fn) => {
@@ -124,7 +164,21 @@ var Blanke = (selector, options) => {
     var Game = {
         config: {},
         get width () { return app.view.width; },
-        get height () { return app.view.height; }
+        get height () { return app.view.height; },
+        set background_color (v) { app.renderer.backgroundColor = v; },
+        end: () => { 
+            Scene.endAll();
+            for (let obj of Scene.stray_objects) {
+                for (let obj of this.objects) {
+                    if (obj._destroy)
+                        obj._destroy();
+                    else if (obj.destroy)
+                        obj.destroy();
+                }
+            }
+            game_container.removeChildren();
+         },
+        destroy: () => { app.destroy(true); }
     };
 
     /* -UTIL */
@@ -165,6 +219,7 @@ var Blanke = (selector, options) => {
         },
         // callback only used in : json
         add: (path, options={}, cb) => {
+            path = this.options.root + '/' + path;
             // adding multiple
             if (Array.isArray(path)) {
                 for (let ast of path) {
@@ -439,7 +494,17 @@ var Blanke = (selector, options) => {
         }
         return Scene.ref[name];
     }
-    
+
+    Scene.switch = (name) => {
+        // end other scenes
+        for (let s_name in Scene.ref) {
+            Scene.end(s_name);
+        }
+        // start it
+        Scene.stack.push(name);
+        Scene.ref[name]._onStart()
+    }
+
     Scene.start = (name) => {
         // if the scene is already running, end it
         if (Scene.ref[name].active)
@@ -451,9 +516,10 @@ var Blanke = (selector, options) => {
     
     Scene.end = (name) => {
         let index = Scene.stack.indexOf(name);
-        if (index > -1)
+        if (index > -1) {
             Scene.stack.splice(index,1);
-        Scene.ref[name]._onEnd();
+            Scene.ref[name]._onEnd();
+        }
     }
     
     Scene.endAll = () => {
@@ -954,29 +1020,15 @@ var Blanke = (selector, options) => {
         constructor (name) {
             this.name = name;
             this.container = new PIXI.Container();
-            this.bg_color = new PIXI.Sprite(PIXI.Texture.WHITE);
-            this.bg_color.zIndex = -10000000000000;
-            //this.background_color = Game.background_color;
             
             this.follow_obj = null;
             this.x = 0;
             this.y = 0;
             this.mask = new Draw();
-            this.port_width = Game.width;
-            this.port_height= Game.height;
             this._scale = new PIXI.Point(1,1);
             this.angle = 0;
             this._updateMask();
-            this.container.addChild(this.bg_color);
             game_container.addChild(this.container);
-        }
-        set background_color (v) {
-            this.bg_color.width = Game.width * 1.5;
-            this.bg_color.height = Game.height * 1.5;
-            this.bg_color.tint = v;
-        }
-        get background_color () {
-            return this.bg_color.tint;
         }
         get x () { return this._x; }
         get y () { return this._y; }
@@ -992,19 +1044,21 @@ var Blanke = (selector, options) => {
             this._last_y = this._y;
             this._y = v; 
         }
-        get port_width () { return this._port_width; }
-        get port_height (){ return this._port_height; }
+        get port_width () { return this._size_modified ? this._port_width : Game.width; }
+        get port_height (){ return this._size_modified ? this._port_height : Game.height; }
         set port_width (v) {
             if (this._last_port_width != this._port_width)
                 ;//cull.cull(this.getBounds()); 
             this._last_port_width = this._port_width;
             this._port_width = v; 
+            this._size_modified = true;
         }
         set port_height (v) {
             if (this._last_port_height != this._port_height)
                 ;//cull.cull(this.getBounds()); 
             this._last_port_height = this._port_height;
             this._port_height = v; 
+            this._size_modified = true;
         }
         getBounds () {
             return {
@@ -1039,27 +1093,13 @@ var Blanke = (selector, options) => {
         }
         add (...objects) {
             for (let obj of objects) {
-                if (!obj._getPixiObjs) return;
-
-                let pixi_objs = obj._getPixiObjs();
-                for (let o of pixi_objs) {
-                    o._last_parent = o.parent;
-                    o.setParent(this.container);
-                }
+                setNewParent(obj, this.container);
             }
             this.container.sortChildren();
         }
         remove (...objects) {
             for (let obj of objects) {
-                if (!obj._getPixiObjs) return;
-
-                let pixi_objs = obj._getPixiObjs();
-                for (let o of pixi_objs) {
-                    if (o._last_parent) {
-                        o.setParent = o._last_parent
-                        o._last_parent = this.container;
-                    }
-                }
+                restorePrevParent(obj);
             }
         }
         destroy () {
@@ -1091,13 +1131,7 @@ var Blanke = (selector, options) => {
             this.container.pivot.y = -y + half_ph;
             this.container.x = pw / 2;
             this.container.y = ph / 2;
-        
-            this.bg_color.x = -x - (half_pw);
-            this.bg_color.y = -y - (half_ph);
-            //this.bg_color.x = -x;
-            //this.bg_color.y = -y;
-            this.bg_color.angle = 0;//-this.angle;
-
+    
             this.x = x;
             this.y = y;
             this._updateMask();
@@ -1265,8 +1299,17 @@ var Blanke = (selector, options) => {
             this.hitboxes.push(hit);
 
         }
-        addMarker (name, ...points) {
-            this.markers[name] = points;
+        addEntity (entity_class, x, y, layer) {
+            let new_ent = entity_class();
+            new_ent.x = x;
+            new_ent.y = y;
+            // add to layer
+            let layer_obj = this.layers[0];
+            if (layer) {
+                layer_obj = this.layers.find((l) => l._name == layer);
+            }
+            setNewParent(new_ent, layer_obj);
+            return new_ent;
         }
     }
     Map.config = {};  // used during load()
