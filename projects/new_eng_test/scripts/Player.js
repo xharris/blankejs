@@ -16,6 +16,7 @@ class Player extends Entity {
 
 TestScene({
 	onStart: () => {
+		Game.background_color = Draw.blue;
 		let player = new Player();
 		player.x = 20;
 		player.y = 20;

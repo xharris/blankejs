@@ -1008,13 +1008,11 @@ class Code extends Editor {
 		let editor = code_instances[file_path];
 		if (!(SideWindow.focus(nwPATH.basename(file_path)) || SideWindow.focus(nwPATH.basename(file_path)+"*"))) {
 			editor = new Code(app)
-			editor.game.refreshSource(file_path);
 			editor.edit(file_path);
 		}
-		else 
-			editor.game.refreshSource(file_path);
 		if (line != null) 
 			editor.goToLine(line);
+		editor.game.refreshSource(file_path);
 	}
 }
 

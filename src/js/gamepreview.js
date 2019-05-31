@@ -6,9 +6,13 @@ class GamePreview {
 		this.container = app.createElement("iframe");
 		this.id = "game-"+guid();
 		this.container.id = this.id;
-		// engine loaded
+		// engine loaded\
+		this.refresh_file = null;
 		this.container.onload = function() {
 			this_ref.game = this_ref.container.contentWindow.game;
+			if (this_ref.refresh_file) {
+				this_ref.refreshSource(this_ref.refresh_file);
+			}
 		}
 		// add iframe content
 		this.container.srcdoc = `
@@ -65,7 +69,7 @@ class GamePreview {
 			ide_mode: true,
 			auto_resize: true,
 			root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
-			backgroundColor: 0x485358
+			background_color: 0x485358
 		});
 	</script>
 </html>
@@ -75,13 +79,19 @@ class GamePreview {
 	}
 	
 	refreshSource (current_script) {
-		if (!this.game) return;
+		if (!this.game) {
+			this.refresh_file = current_script;
+			return;
+		};
+		if (this.refresh_file) {
+			current_script = this.refresh_file
+			this.refresh_file = null;
+		}
 		let open_scripts = Object.keys(code_instances);
 		let post_load = '';
 		// get all the scripts
 		let scripts = [];
 		let curr_script_cat = 'other';
-		console.log(current_script)
 		for (let cat of ['entity','scene','other']) {
 			if (Array.isArray(Code.scripts[cat])) {
 				// put current_script at end

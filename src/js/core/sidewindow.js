@@ -50,6 +50,7 @@ class SideWindow {
 
 		this.el_container.appendChild(this.el_content);
 		this.el_editor_container = app.createElement("div",["editor-container",content_type]);
+		this.el_editor_container.this_ref = this;
 		this.el_editor_container.appendChild(this.el_container);
 
 		this.el_editor_container.addEventListener('focus',function(e){
@@ -61,6 +62,10 @@ class SideWindow {
 		
 		app.getElement("#sidewindow-container").appendChild(this.el_editor_container);
 		instances.push(this);
+
+		// update scroller
+		let total_height = app.getElements("#sidewindow-container > .editor-container").length * app.getElement("#vscroll").clientHeight;
+		app.getElement("#sidewindow-container > #vscroll > #fill").style.minHeight = total_height+"px";
 	}
 
 	callResize () {
@@ -87,12 +92,12 @@ class SideWindow {
 		let parent = app.getElement("#sidewindow-container");
 		let children = parent.children;
 		for (var b = 0; b < children.length; b++) {
-			if (children[b].title == title) {
+			if (children[b].this_ref && children[b].this_ref.title == title) {
 				// move it to the end
 				let child = parent.removeChild(children[b]);
 				parent.appendChild(child);
 				// scroll to it
-				// TODO
+				child.scrollIntoView(true, {behavior:'smooth'});
 				return true;
 			}
 		}
@@ -135,8 +140,11 @@ class SideWindow {
 	}
 
 	close (remove_history) {
-		this.el_container.remove();
+		this.el_editor_container.remove();
 
+		let total_height = app.getElements("#sidewindow-container > .editor-container").length * app.getElement("#vscroll").clientHeight;
+		app.getElement("#sidewindow-container > #vscroll > #fill").style.minHeight = total_height+"px";
+		
 		if (this.onClose) remove_history = ifndef(this.onClose(), remove_history);
 
 		if (remove_history)
@@ -175,3 +183,25 @@ class SideWindow {
 		}
 	}*/
 }
+
+document.addEventListener("ideReady",function(){
+	let ignore_scroll = false;
+	let el_sidewin_scroll = app.getElement("#sidewindow-container > #vscroll");
+	let el_sidewin_container = app.getElement("#sidewindow-container");
+	el_sidewin_container.addEventListener("scroll",function(e){
+		if (ignore_scroll) {
+			ignore_scroll = false
+			return;
+		}
+		ignore_scroll = true;
+		el_sidewin_scroll.scrollTop = (e.target.scrollTop / e.target.clientHeight) * el_sidewin_scroll.clientHeight;
+	});
+	el_sidewin_scroll.addEventListener("scroll",function(e){
+		if (ignore_scroll) {
+			ignore_scroll = false
+			return;
+		}
+		ignore_scroll = true;
+		el_sidewin_container.scrollTop = (e.target.scrollTop / e.target.clientHeight) * el_sidewin_container.clientHeight;
+	});
+});

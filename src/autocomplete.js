@@ -35,8 +35,7 @@ module.exports.class_regex = {
 		/\b(State).*/g
 	],
 	'entity': 	[
-		/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"Entity"\s*\).*/g,
-		/.*BlankE\.addEntity\s*\(\s*"(\w+)"\s*\).*/g
+		/\bclass\s+(\w+)\s+extends\s+Entity/g
 	]
 }
 

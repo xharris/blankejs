@@ -59,7 +59,7 @@ body:before, body:after {
 
 *:not(.no-custom-scroll) {
     &::-webkit-scrollbar-thumb {
-        background: @sub-window-background !important;
+        // background: @sub-window-background !important;
     }
 }
 
@@ -621,14 +621,21 @@ body:before, body:after {
 	left: 0px;
 	right: 0px;
 	z-index: 20;
-	overflow: auto;
-	pointer-events: none;
+	overflow: overlay;
 
-	&::-webkit-scrollbar-button:increment {
-		height: 23px;
+	&::-webkit-scrollbar {
+		width: 0px;
+		height: 0px;
 	}
-	&::-webkit-scrollbar-button:decrement {
-		height: 34px;
+
+	#vscroll {
+		position: fixed;
+		right: 3px;
+		top: 40px;
+		bottom: 25px;
+		width: 10px;
+		overflow-y: auto;
+		z-index: 21;
 	}
 
 	.editor-container {
@@ -655,11 +662,6 @@ body:before, body:after {
 		transition: all ease-in-out 0.2s;
 		overflow: hidden;
 		box-sizing: border-box;
-		position: absolute;
-		width: 50%;
-		right: 6px;
-		bottom: 24px;
-		top: 34px;
 		background: transparent;
 		padding: 2px;
 
@@ -807,6 +809,11 @@ body:before, body:after {
 	    width: 125px;
 	    font-size: 16px;
 		text-overflow: ellipsis;
+		text-shadow: 0px 0px 1px black, 0px 0px 1px black;
+
+		&::placeholder {
+			color: rgba(255,255,255,0.75);
+		}
 
 	    &:focus, &:hover {
 	    	color: white;
@@ -1068,6 +1075,10 @@ body:before, body:after {
 				.no-select();
 				color: #9e9e9e;
     			padding: 0px 5px;
+
+				&:not(:last-child) {
+					text-shadow: 0px 0px 1px black, 0px 0px 1px black;
+				}
 			}
 		}
 

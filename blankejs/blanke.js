@@ -16,7 +16,7 @@ var Blanke = (selector, options) => {
         auto_resize: false,
         ide_mode: false,
         root: '',
-        backgroundColor: 0x000000
+        background_color: 0x000000
     },options || {}); 
     // init PIXI
     let app;
@@ -171,6 +171,7 @@ var Blanke = (selector, options) => {
         get height () { return app.view.height; },
         set background_color (v) { app.renderer.backgroundColor = v; },
         end: () => { 
+            Game.background_color = this.options.background_color;
             // remove all game objects 
             Scene.endAll();
             for (let obj of Scene.stray_objects) {
