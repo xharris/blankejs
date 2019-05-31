@@ -95,6 +95,20 @@
 	.CodeMirror {
 		font-size: 16px;
 		height: 100%;
+
+	}
+	.CodeMirror-code {
+		// display: table;
+		background-color: rgba(38,50,56,0.85);
+	}
+	.CodeMirror-code > div {
+		// display: table;
+	}
+	.CodeMirror-linenumber {
+		background-color: rgba(38,50,56,0.85);
+	}
+	.CodeMirror-gutters {
+		background: rgba(38,50,56,0.85);
 	}
 	.CodeMirror-dialog-top {
 		border: none;
@@ -108,7 +122,6 @@
 	}
 	.CodeMirror-scroll { 
 		padding-top: 18px;
-		padding-bottom: 0px;
 		height: calc(100% - 10px);
 	}
 	.CodeMirror-vscrollbar {

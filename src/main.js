@@ -183,7 +183,7 @@ var app = {
 				// start first scene
 				app.loadSettings(() => {
 					app.hideWelcomeScreen();
-					app.initEngine();
+					//app.game = new GamePreview("#game-container");
 					dispatchEvent("openProject", {path: path});
 				});
 			} else {
@@ -200,82 +200,8 @@ var app = {
 		}, true);
 	},
 
-	initEngine: function() {
-		let iframe = app.getElement('#game');
-		iframe.srcdoc = `
-<!DOCTYPE html>
-<html>
-	<style>
-		head, body {
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			right: 0px;
-			bottom: 0px;
-			margin: 0px;
-			overflow: hidden;
-		}
-		#game {
-			width: 100%;
-			height: 100%;
-		}
-	</style>
-	<head>
-		<script src="../blankejs/pixi.min.js"></script>
-		<script src="../blankejs/SAT.min.js"></script>
-		<script src="../blankejs/blanke.js"></script>
-	</head>
-	<body>
-		<div id="game"></div>
-	</body>
-	<script>
-		var game = Blanke("#game",{
-			config: ${JSON.stringify(app.project_settings)},
-			fill_parent: true,
-			ide_mode: true,
-			auto_resize: true,
-			root: '${nwPATH.relative("src",nwPATH.join(app.project_path))}'
-		});
-	</script>
-</html>
-`;
-		iframe.onload = function() {
-			app.refreshGameSource();
-			app.game = iframe.contentWindow.game;
-			let { Game, View } = app.game;
-			View("_ide_view");
-			Game.background_color = 0x485358;
-		}
-	},
-
 	refreshGameSource: function () {
-		if (!Code.scripts) return;
-
-		let code = '(function(){\nlet { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game;\n';
-		for (let cat of ['entity','scene','other']) {
-			if (Array.isArray(Code.scripts[cat])) {
-				for (let path of Code.scripts[cat]) {
-					code += nwFS.readFileSync(path,'utf-8');
-				}
-			}
-		}
-		code += "\n})();"
-		if (app.game)
-			app.game.Game.end();
-
-		// reload source file
-		let iframe = app.getElement("#game");
-		let doc = iframe.contentDocument;
-		let script_path = nwPATH.relative("src",nwPATH.join(app.project_path,"temp_src.js"));
-		let old_script = doc.querySelectorAll('script.source');
-		if (old_script)
-			old_script.forEach((el) => el.remove());
-		let parent= doc.getElementsByTagName('html')[0];
-		let script= doc.createElement('script');
-		script.classList.add("source");
-		script.innerHTML= code;
-		parent.appendChild(script);
-		
+		if (app.game) app.game.refreshSource();
 	},
 
 	play: function(options) { 
@@ -440,6 +366,21 @@ var app = {
 		});
 	},
 
+	require: (path) => {
+		delete require.cache[require.resolve(path)];
+		return require(path);
+	},
+
+	autocomplete_watch:null,
+	watchAutocomplete: function() {
+		if (app.autocomplete_watch) app.autocomplete_watch.close();
+		console.log(cwd(),app.settings.autocomplete_path)
+		app.autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
+			dispatchEvent("autcompleteChanged");
+			blanke.toast("autocomplete reloaded!");
+		});
+	},
+
 	plugin_watch:null,
 	saveAppData: function() {
 		var app_data_folder = app.getAppDataFolder();
@@ -449,7 +390,7 @@ var app = {
 			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
 			nwFS.writeFile(app_data_path, JSON.stringify(app.settings));
 		});
-		
+
 		dispatchEvent('appdataSave');
 	},
 
@@ -480,12 +421,10 @@ var app = {
 
 	hideWelcomeScreen: function() {
 		app.getElement("#welcome").classList.add("hidden");
-		app.getElement("#workspace").style.pointerEvents = "auto";
 	},
 
 	showWelcomeScreen: function() {
 		app.getElement("#welcome").classList.remove("hidden");
-		app.getElement("#workspace").style.pointerEvents = "none";
 	},
 
 	addAsset: function(res_type, path) {
@@ -556,6 +495,26 @@ var app = {
 	},
 	cleanPath: function(path) {
 		return nwPATH.normalize(path).replaceAll('\\\\','/');
+	},
+	showDropZone: function() {
+		if (app.isProjectOpen())
+			app.getElement("#drop-zone").classList.add("active");
+	},
+	hideDropZone: function() {
+		app.getElement("#drop-zone").classList.remove("active");
+	},
+	dropFiles: function(files) {
+		for (let f of files) {
+			console.log('drop',f.path);
+			nwFS.stat(f.path, (err, stats) => {
+				console.log(err, stats)
+				if (err || !stats.isFile())
+					blanke.toast(`Could not add file ${f.path}`);
+				else 
+					app.addAsset(app.findAssetType(f.path),f.path);
+			});
+		}
+		app.hideDropZone();
 	},
 	workspace_margin_top: 34,
 	flashCrosshair: function(x, y) {
@@ -698,15 +657,7 @@ var app = {
 			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
 			app.addSearchKey({key: 'Restart engine', onSelect:function(){
-				if (app.game) app.game.Game.destroy();
-
-				let iframe = app.getElement('#game')
-				blanke.destroyElement(iframe.contentDocument.querySelector('script[src="../blankejs/blanke.js"]'));
-				var head= iframe.contentDocument.getElementsByTagName('head')[0];
-				var script= iframe.contentDocument.createElement('script');
-				script.src= '../blankejs/blanke.js';
-				head.appendChild(script);
-				app.initEngine();
+				this.game.refreshEngine();
 			}});
 			nwGUI.Window.get().showDevTools();
 			blanke.toast("Dev mode enabled");
@@ -797,7 +748,7 @@ nwWIN.on('loaded', function() {
 	app.os = os_names[nwOS.type()];
 	document.body.classList.add(app.os);
 
-	nwWIN.setShadow(true);
+	if (nwWIN.setShadow) nwWIN.setShadow(true);
 
 	window.addEventListener("error", function(e){
 		app.error_occured = e;
@@ -1000,26 +951,14 @@ nwWIN.on('loaded', function() {
 	// file drop zone
 	window.addEventListener('dragover', function(e) {
 		e.preventDefault();
-		console.log(e)
-		if (app.isProjectOpen())
-			app.getElement("#drop-zone").classList.add("active");
+		app.showDropZone();
 		return false;
 	});
 	window.addEventListener('drop', function(e) {
 		e.preventDefault();
 
 		if (app.isProjectOpen()) {
-			let files = e.dataTransfer.files;
-			for (let f of files) {
-				console.log('drop',f.path);
-				nwFS.stat(f.path, (err, stats) => {
-					console.log(err, stats)
-					if (err || !stats.isFile())
-						blanke.toast(`Could not add file ${f.path}`);
-					else 
-						app.addAsset(app.findAssetType(f.path),f.path);
-				});
-			}
+			app.dropFiles(e.dataTransfer.files);
 			app.getElement("#drop-zone").classList.remove("active");
 		}
 
@@ -1027,8 +966,7 @@ nwWIN.on('loaded', function() {
 	});
 	window.addEventListener('dragleave', function(e) {
 		e.preventDefault();
-		if (app.isProjectOpen())
-			app.getElement("#drop-zone").classList.remove("active");
+		app.hideDropZone();
 		return false;
 	});
 

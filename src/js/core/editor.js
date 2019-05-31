@@ -64,7 +64,7 @@ class Editor {
 		return this;
 	}
 
-	setupSideWindow(show_history) {
+	setupSideWindow() {
 		let this_ref = this;
 		this.container_type = "sidewindow";
 		this.container = new SideWindow(this.constructor.name);
@@ -72,14 +72,11 @@ class Editor {
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
-		if (!show_history)
-			this.removeHistory();
-		else {
-			app.setHistoryActive(this.container.history_id, true);
-			app.setHistoryContextMenu(this.container.history_id, function(e) {
-				this_ref.onMenuClick(e);
-			});
-		}
+		app.setHistoryActive(this.container.history_id, true);
+		app.setHistoryContextMenu(this.container.history_id, function(e) {
+			this_ref.onMenuClick(e);
+		});
+			
 		this.container.onClose = this.onClose;
 		return this;
 	}
@@ -132,6 +129,11 @@ class Editor {
 
 	appendChild (el) {
 		this.content_area.appendChild(el);
+	}
+
+	appendBackground (el) {
+		if (this.container.appendBackground)
+			this.container.appendBackground(el);
 	}
 
 	setTitle (val) {

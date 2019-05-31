@@ -173,7 +173,7 @@ body:before, body:after {
 #sidebar {
     width: auto;
     position: absolute;
-    right: 12px;
+    left: 12px;
     /* top: 57px; */
 	bottom: 60px;
     pointer-events: none;
@@ -195,8 +195,12 @@ body:before, body:after {
     left: 0px;
     right: 0px;
     bottom: 0px;
-    
-    /* z-index: 20; */
+	z-index: 25;
+	pointer-events: none;
+
+	> * {
+		pointer-events: auto;
+	}
 
 	> .content {
 		/* outline: 1px solid #212121; */
@@ -212,16 +216,19 @@ body:before, body:after {
 	}*/
 }
 
-#game {
+#game-container {
 	position: absolute;
     top: 0px;
     left: 0px;
     right: 0px;
 	bottom: 0px;
-	border: none;
-    outline: none;
-    width: 100%;
-    height: 100%;
+
+	> iframe {
+		border: none;
+		outline: none;
+		width: 100%;
+		height: 100%;
+	}
 }
 
 #drop-zone {
@@ -398,7 +405,7 @@ body:before, body:after {
 		}
 
 		.btn-close {
-			right: 100%;
+			left: 100%;
 			margin: 3px 0px;
 		}
 	}
@@ -610,12 +617,12 @@ body:before, body:after {
 	position: absolute;
 	right: 0px;
     top: 0px;
-    bottom: 0px;
-	width: 50%;
-    padding: 10px;
-    padding-top: 44px;
-	z-index: 100;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+	z-index: 20;
 	overflow: auto;
+	pointer-events: none;
 
 	&::-webkit-scrollbar-button:increment {
 		height: 23px;
@@ -624,23 +631,40 @@ body:before, body:after {
 		height: 34px;
 	}
 
-	.category-container {
+	.editor-container {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		overflow: hidden;
+		outline: 1px dashed rgba(255,255,255,0.25);
+	}
+
+	iframe {
+		border: none;
+		outline: none;
 		width: 100%;
 		height: 100%;
 	}
 
+	* { 
+		pointer-events: auto;
+	}
+
 	.sidewin {
-		border: 2px solid transparent;
 		border-radius: 4px;
 		transition: all ease-in-out 0.2s;
 		overflow: hidden;
 		box-sizing: border-box;
-		position: relative;
-		min-height: 200px;
-		margin-bottom: 5px;
+		position: absolute;
+		width: 50%;
+		right: 6px;
+		bottom: 24px;
+		top: 34px;
+		background: transparent;
+		padding: 2px;
 
 		&.focused, &:hover {
-			border: 2px solid @sub-window-background;
+			background: @sub-window-background;
 
 			.sidewin-title {	
 				background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
@@ -706,7 +730,7 @@ body:before, body:after {
 			position: absolute;
 			top: 0px; left: 0px; right: 0px;
 			height: 20px;
-			margin: 0px;
+			margin: 2px;
 			color: rgba(200, 200, 200, 1);
 			padding-left: 30px;
 			line-height: 28px;
@@ -715,12 +739,8 @@ body:before, body:after {
 		}
 	
 		.content {
-			position: absolute;
-			top: 0px;
-			bottom: 0px;
-			left: 0px;
-			right: 0px;
-			margin: 0px;
+			width: 100%;
+			height: 100%;
 			/* outline: 1px solid rgba(255,255,255,0.1); */
 			/* opacity: 0.25; */
 		}

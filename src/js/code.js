@@ -6,10 +6,10 @@ var code_instances = {};
 
 var CODE_ASSOCIATIONS = [
 	[
-		/BlankE\.addState\(\s*\"(\w+)\"\s*\)|BlankE\.addClassType\(\s*\"State\"\s*,\s*\"(\w+)\"\s*\)/g,
-		"state"
+		/\bScene\s*\(/g,
+		"scene"
 	],[
-		/BlankE\.addEntity\(\s*\"(\w+)\"\s*\)|BlankE\.addClassType\(\s*\"Entity\"\s*,\s*\"(\w+)\"\s*\)/g,
+		/extends\s+Entity\s*/g,
 		"entity"
 	],
 ];
@@ -31,8 +31,7 @@ function isReservedWord(word) {
 }
 
 function reloadCompletions() {
-	delete require.cache[require.resolve(app.settings.autocomplete_path)];
-	autocomplete = require(app.settings.autocomplete_path);
+	autocomplete = app.require(app.settings.autocomplete_path);
 
 	re_class = autocomplete.class_regex;
 	re_class_list = null;
@@ -203,8 +202,7 @@ function refreshObjectList (filename, content) {
 class Code extends Editor {
 	constructor () {
 		super();
-		this.setupFibWindow();
-
+		this.setupSideWindow();
 		var this_ref = this;
 		this.file = '';
 		this.script_folder = "/scripts";
@@ -232,6 +230,10 @@ class Code extends Editor {
 		// class method list
 		this.el_class_methods = app.createElement("div","methods");
 		this.appendChild(this.el_class_methods);
+
+		// add game preview
+		this.game = new GamePreview();
+		this.appendBackground(this.game.container);
 
 		var this_ref = this;
 		CodeMirror.defineMode("blanke", function(config, parserConfig) {
@@ -310,7 +312,7 @@ class Code extends Editor {
 				*/	
 		    }
 		  };
-		  return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "lua"), blankeOverlay);
+		  return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), blankeOverlay);
 		});
 
 		this.setupEditor(this.edit_box);
@@ -943,6 +945,7 @@ class Code extends Editor {
 			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
 			this_ref.parseFunctions();
 			this_ref.removeAsterisk();
+			this_ref.game.refreshSource(this_ref.file);
 		});
 	}
 
@@ -956,21 +959,13 @@ class Code extends Editor {
 
 	deleteModal () {
 		var name = this.file;
-		if (name.includes('main.lua')) {
-			blanke.showModal(
-				"You cannot delete \'"+name+"\'",
-			{
-				"oops": function() {}
-			});
-		} else {
-			var this_ref = this;
-			blanke.showModal(
-				"delete \'"+name+"\'?",
-			{
-				"yes": function() { this_ref.delete(name); },
-				"no": function() {}
-			});
-		}
+        var this_ref = this;
+        blanke.showModal(
+            "delete \'"+name+"\'?",
+        {
+            "yes": function() { this_ref.delete(name); },
+            "no": function() {}
+        });
 	}
 
 	rename (old_path, new_path) {
@@ -987,104 +982,93 @@ class Code extends Editor {
 
 	renameModal () {
 		var filename = this.file;
-
-		if (nwPATH.basename(filename) == 'main.lua') {
-			blanke.showModal(
-				"You cannot rename \'"+nwPATH.basename(filename)+"\'",
-			{
-				"oh yea I forgot": function() {}
-			});
-		} else {
-			var this_ref = this;
-			blanke.showModal(
-				"<label>new name: </label>"+
-				"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
-			{
-				"yes": function() { 
-					let new_path = nwPATH.join(nwPATH.dirname(filename), app.getElement('#new-file-name').value+".lua");
-					this_ref.rename(filename, new_path);
-				},
-				"no": function() {}
-			});
-		}
+        var this_ref = this;
+        blanke.showModal(
+            "<label>new name: </label>"+
+            "<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
+        {
+            "yes": function() { 
+                let new_path = nwPATH.join(nwPATH.dirname(filename), app.getElement('#new-file-name').value+".js");
+                this_ref.rename(filename, new_path);
+            },
+            "no": function() {}
+        });
 	}
 
 	static refreshCodeList(path) {
 		app.removeSearchGroup("Scripts");
-		Code.scripts = {};
+		Code.scripts = {other:[]};
 		for (let assoc of CODE_ASSOCIATIONS) {
 			Code.scripts[assoc[1]] = [];
 		}
-		addScripts(ifndef(path, app.project_path));
+		addScripts(path || app.project_path);
 	}
 
 	static openScript(file_path, line) {
 		let editor = code_instances[file_path];
-		if (!(FibWindow.focus(nwPATH.basename(file_path)) || FibWindow.focus(nwPATH.basename(file_path)+"*"))) {
+		if (!(SideWindow.focus(nwPATH.basename(file_path)) || SideWindow.focus(nwPATH.basename(file_path)+"*"))) {
 			editor = new Code(app)
+			editor.game.refreshSource(file_path);
 			editor.edit(file_path);
 		}
+		else 
+			editor.game.refreshSource(file_path);
 		if (line != null) 
 			editor.goToLine(line);
 	}
 }
 
 Code.scripts = {};
-
 document.addEventListener('fileChange', function(e){
-	// if (e.detail.type == 'change') {
+	if (e.detail.file.includes("scripts")) {
 		Code.refreshCodeList();
-	// }
+	}
 });
 
 function addScripts(folder_path) {
-	var file_list = [];
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
-		files.forEach(function(file){
+		for (let file of files) {
 			var full_path = nwPATH.join(folder_path, file);
-			nwFS.stat(full_path, function(err, file_stat){		
-				// iterate through directory		
-				if (file_stat.isDirectory() && file != "dist") 
-					addScripts(full_path);
+			let file_stat = nwFS.statSync(full_path);		
+			// iterate through directory		
+			if (file_stat.isDirectory() && file != "dist") 
+				addScripts(full_path);
 
-				// is a script?
-				else if (file.endsWith('.lua')) {
-					nwFS.readFile(full_path, 'utf-8', function(err, data){
-						if (!err) {
-							refreshObjectList(full_path, data);
-
-							// get what kind of script it is
-							let tags = ['script'];
-							let s_type = ['script'];
-							let cat;
-							for (let assoc of CODE_ASSOCIATIONS) {
-								let match = data.match(assoc[0]);
-								if (match) {
-									cat = assoc[1];
-									tags.push(assoc[1]);
-									if (!Code.scripts[assoc[1]].includes(full_path)) {
-										Code.scripts[assoc[1]].push(full_path);
-									}
-								}
-							}
-
-							// add file to search pool
-							app.addSearchKey({
-								key: file,
-								onSelect: function(file_path){
-									Code.openScript(file_path);
-								},
-								tags: tags,
-								category: cat,
-								args: [full_path],
-								group: 'Scripts'
-							});
+			// is a script?
+			else if (file.endsWith('.js')) {
+				// get what kind of script it is
+				let data = nwFS.readFileSync(full_path, 'utf-8');
+				refreshObjectList(full_path, data);
+				// get what kind of script it is
+				let tags = ['script'];
+				let cat, match;
+				for (let assoc of CODE_ASSOCIATIONS) {
+					match = data.match(assoc[0]);
+					if (match) {
+						cat = assoc[1];
+						tags.push(assoc[1]);
+						if (!Code.scripts[assoc[1]].includes(full_path)) {
+							Code.scripts[assoc[1]].push(full_path);
 						}
-					});
+					}
 				}
-			});
-		});
+				if (!match) 
+					Code.scripts.other.push(full_path);
+				
+				// add file to search pool
+				app.addSearchKey({
+					key: file,
+					onSelect: function(file_path){
+						Code.openScript(file_path);
+					},
+					tags: tags,
+					category: cat,
+					args: [full_path],
+					group: 'Scripts'
+				});
+			}
+		};
 	});
 }
 
@@ -1092,28 +1076,13 @@ document.addEventListener("closeProject", function(e){
 	app.removeSearchGroup("Code");
 });
 
-let autocomplete_watch;
-document.addEventListener("appdataSave",(e)=>{
+document.addEventListener("autocompleteChanged",(e)=>{
 	reloadCompletions();
-	if (autocomplete_watch) autocomplete_watch.close();
-	autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
-		reloadCompletions();
-		blanke.toast("autocomplete reloaded!");
-	});
 });
 
 document.addEventListener("openProject", function(e){
-	
 	reloadCompletions();
-	// reload completions on file change
-	if (autocomplete_watch) autocomplete_watch.close();
-	autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
-		reloadCompletions();
-		blanke.toast("autocomplete reloaded!");
-	});
-
-	var proj_path = e.detail.path;
-	Code.refreshCodeList(proj_path);
+	Code.refreshCodeList();
 
 	function key_addScript(content,name) {
 		var script_dir = nwPATH.join(app.project_path,'scripts');
@@ -1121,7 +1090,7 @@ document.addEventListener("openProject", function(e){
 			if (err) nwFS.mkdirSync(script_dir);
 
 			nwFS.readdir(script_dir, function(err, files){
-				let file_name = ifndef(name,'script'+files.length)+'.lua';
+				let file_name = ifndef(name,'script'+files.length)+'.js';
 				content = content.replaceAll("<NAME>", name);
 
 				// the file already exists. open it
@@ -1161,41 +1130,45 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'Add a script',
 		onSelect: function() {
-			key_addScript("\
--- create an Entity: BlankE.addEntity(\"Player\")\n\n\
--- create a State: BlankE.addState(\"HouseState\")\
-				");
+			key_addScript("");
 		},
 		tags: ['new'],
 		group: 'Code'
 	});
 	app.addSearchKey({
-		key: 'Add a state',
+		key: 'Add a scene',
 		onSelect: function() {
-			key_newScriptModal("state","\
-BlankE.addState(\"<NAME>\")\n\n\
-function <NAME>:enter()\n\n\
-end\n\n\
-function <NAME>:update(dt)\n\n\
-end\n\n\
-function <NAME>:draw()\n\n\
-end\n");
+			key_newScriptModal("scene",`
+Scene("<NAME>",{
+    onStart: function() {
+
+    },
+    onUpdate: function() {
+        
+    },
+    onEnd: function() {
+
+    }
+});
+`);
 		},
 		tags: ['new'],
-		category: 'state',
+		category: 'scene',
 		group: 'Code'
 	});
 	app.addSearchKey({
 		key: 'Add an entity',
 		onSelect: function() {
-			key_newScriptModal("entity","\
-BlankE.addEntity(\"<NAME>\")\n\n\
-function <NAME>:init()\n\n\
-end\n\n\
-function <NAME>:update(dt)\n\n\
-end\n\n\
-function <NAME>:draw()\n\n\
-end\n");
+			key_newScriptModal("entity",`
+class <NAME> extends Entity {
+    init () {
+
+    }
+    update (dt) {
+
+    }
+}
+`);
 		},
 		tags: ['new'],
 		category: 'entity',

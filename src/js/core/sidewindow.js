@@ -1,11 +1,11 @@
-var boxes = {};
+var instances = [];
 var curr_category = '';
 var MAX_WINDOWS = 10; //5;
 
 class SideWindow {
 	constructor (content_type) {
 		this.guid = guid();
-
+		this.history_id = app.addHistory(this.title);
 		this.title = '';
 		this.subtitle = '';
 
@@ -49,12 +49,18 @@ class SideWindow {
 		this.el_container.appendChild(this.btn_menu);
 
 		this.el_container.appendChild(this.el_content);
+		this.el_editor_container = app.createElement("div",["editor-container",content_type]);
+		this.el_editor_container.appendChild(this.el_container);
 
-        if (!boxes[content_type]) {
-            boxes[content_type] = app.createElement("div",["category-container",content_type]);
-            app.getElement("#sidewindow-container").appendChild(boxes[content_type]);
-        }
-		boxes[content_type].appendChild(this.el_container);
+		this.el_editor_container.addEventListener('focus',function(e){
+			console.log("focused")
+		});
+		this.el_editor_container.addEventListener('blur',function(e){
+			console.log("gone")
+		});
+		
+		app.getElement("#sidewindow-container").appendChild(this.el_editor_container);
+		instances.push(this);
 	}
 
 	callResize () {
@@ -78,39 +84,25 @@ class SideWindow {
 
 	// focus a fibwindow with a certain title if it exists
 	static focus (title) {
-        for (let cat in boxes) {
-            let children = boxes[cat].children;
-            for (var b = 0; b < children.length; b++) {
-                if (children[b].title == title) {
-                    // move it to the end
-                    let child = boxes[cat].removeChild(children[b]);
-                    boxes[cat].appendChild(child);
-                    SideWindow.showCategory(cat);
-                    // scroll to it
-                    // TODO
-                    return true;
-                }
-            }
-        }
+		let parent = app.getElement("#sidewindow-container");
+		let children = parent.children;
+		for (var b = 0; b < children.length; b++) {
+			if (children[b].title == title) {
+				// move it to the end
+				let child = parent.removeChild(children[b]);
+				parent.appendChild(child);
+				// scroll to it
+				// TODO
+				return true;
+			}
+		}
 		return false;
-    }
-
-    static showCategory (name) {
-        if (boxes[name]) {
-            for (let cat in boxes) {
-                if (cat == name) 
-                    boxes[cat].classList.remove('hidden');
-                else
-                    boxes[cat].classList.add('hidden');
-            }
-        }
     }
     
 	setTitle (value) {
 		if (this.el_title.innerHTML != value+this.subtitle) {
 			this.el_title.innerHTML = value+this.subtitle;
 			this.title = value;
-
 			
 			app.setHistoryText(this.history_id, this.title);
 		}
@@ -136,6 +128,10 @@ class SideWindow {
 
 	appendChild (element) {
 		this.el_content.appendChild(element);
+	}
+
+	appendBackground (element) {
+		this.el_editor_container.appendChild(element);
 	}
 
 	close (remove_history) {

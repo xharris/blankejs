@@ -15,7 +15,8 @@ var Blanke = (selector, options) => {
         fill_parent: false,
         auto_resize: false,
         ide_mode: false,
-        root: ''
+        root: '',
+        backgroundColor: 0x000000
     },options || {}); 
     // init PIXI
     let app;
@@ -25,7 +26,8 @@ var Blanke = (selector, options) => {
         width: this.options.width,
         height: this.options.height,
         resolution: this.options.resolution,
-        resizeTo: this.options.fill_parent == true ? parent : null
+        resizeTo: this.options.fill_parent == true ? parent : null,
+        backgroundColor: this.options.backgroundColor
     });
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[(this.options.scale_mode || 'nearest').toUpperCase()];
     parent.appendChild(app.view);
@@ -52,6 +54,7 @@ var Blanke = (selector, options) => {
     }
 
     const engineLoaded = () => {
+        Game.ide_mode = this.options.ide_mode;
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
@@ -63,7 +66,8 @@ var Blanke = (selector, options) => {
             });
         }
 
-        if (this.options.ide_mode) {
+        if (Game.config.first_scene) {
+            Scene.start(Game.config.first_scene);
         }
     }
 
@@ -167,16 +171,22 @@ var Blanke = (selector, options) => {
         get height () { return app.view.height; },
         set background_color (v) { app.renderer.backgroundColor = v; },
         end: () => { 
+            // remove all game objects 
             Scene.endAll();
             for (let obj of Scene.stray_objects) {
-                for (let obj of this.objects) {
-                    if (obj._destroy)
-                        obj._destroy();
-                    else if (obj.destroy)
-                        obj.destroy();
-                }
+                if (obj._destroy)
+                    obj._destroy();
+                else if (obj.destroy)
+                    obj.destroy();
             }
             game_container.removeChildren();
+            // reset input stuff
+            keys_pressed = {};  // { 'ArrowLeft': true, 'a': false }
+            keys_released = {}; // ...
+            input_ref = {};     // { bob: ['left','a'] }
+            input_options = {};
+            press_check = {};
+            release_check = {}; // { 'ArrowLeft': false, 'a': true }
          },
         destroy: () => { app.destroy(true); }
     };
@@ -215,18 +225,18 @@ var Blanke = (selector, options) => {
             return ['file', Util.basename(name)];
         },
         parseAssetName: (path) => {
-            return path.replace(/assets\/\w+\//,'').split('.').slice(0,-1).join('.');
+            return path.replace(/[\w_\\.-\/]+\/assets\/\w+\//,'').split('.').slice(0,-1).join('.');
         },
         // callback only used in : json
-        add: (path, options={}, cb) => {
-            path = this.options.root + '/' + path;
+        add: (orig_path, options={}, cb) => {
             // adding multiple
-            if (Array.isArray(path)) {
-                for (let ast of path) {
+            if (Array.isArray(orig_path)) {
+                for (let ast of orig_path) {
                     Asset.add(...ast);
                 }
                 return;
             }
+            path = this.options.root + '/' + orig_path;
             let [type, name] = Asset.getType(path);
             // default values
             if (type == 'image') {
@@ -268,7 +278,7 @@ var Blanke = (selector, options) => {
                         img_obj.frames = [];
                         name = options.name;
                         // add regular image
-                        Asset.add(path);
+                        Asset.add(orig_path);
                         // get options
                         let offx = options.offset[0], offy = options.offset[1],
                         framew = options.frame_size[0], frameh = options.frame_size[1],
@@ -506,6 +516,7 @@ var Blanke = (selector, options) => {
     }
 
     Scene.start = (name) => {
+        if (!Scene.ref[name]) return;
         // if the scene is already running, end it
         if (Scene.ref[name].active)
             Scene.end(name);
@@ -980,9 +991,10 @@ var Blanke = (selector, options) => {
         input_ref[name] = inputs;
         input_options[name] = {};
 
-        Object.defineProperty(Input,name,{
-            get: () => input_options[name]
-        })
+        if (!Input[name])
+            Object.defineProperty(Input,name,{
+                get: () => input_options[name]
+            })
     };
     Input.inputCheck = () => {
         for (let key in keys_released) {
