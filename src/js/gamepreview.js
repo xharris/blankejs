@@ -14,6 +14,12 @@ class GamePreview {
 				this_ref.refreshSource(this_ref.refresh_file);
 			}
 		}
+		this.refreshDoc();
+		if (parent)
+			app.getElement(parent).appendChild(this_ref.container);
+	}
+
+	refreshDoc () {
 		// add iframe content
 		this.container.srcdoc = `
 <!DOCTYPE html>
@@ -74,8 +80,6 @@ class GamePreview {
 	</script>
 </html>
 `;
-		if (parent)
-			app.getElement(parent).appendChild(this_ref.container);
 	}
 	
 	refreshSource (current_script) {
@@ -120,7 +124,7 @@ class GamePreview {
 
 		// wrapped in a function so local variables are destroyed on reload
 		let code = `
-if (game)
+//if (game)
 	(function(){\nlet { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game;
 	let TestScene = (funcs) => {
 		Scene.ref["_test"] = null;

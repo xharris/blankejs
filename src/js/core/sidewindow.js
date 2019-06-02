@@ -66,6 +66,8 @@ class SideWindow {
 		// update scroller
 		let total_height = app.getElements("#sidewindow-container > .editor-container").length * app.getElement("#vscroll").clientHeight;
 		app.getElement("#sidewindow-container > #vscroll > #fill").style.minHeight = total_height+"px";
+	
+		SideWindow.repositionWindows();
 	}
 
 	callResize () {
@@ -84,25 +86,33 @@ class SideWindow {
 	}
 
 	focus () {
-		SideWindow.focus(this.title);
+		return SideWindow.focus(this.title);
 	}	
 
 	// focus a fibwindow with a certain title if it exists
 	static focus (title) {
-		let parent = app.getElement("#sidewindow-container");
-		let children = parent.children;
-		for (var b = 0; b < children.length; b++) {
-			if (children[b].this_ref && children[b].this_ref.title == title) {
-				// move it to the end
-				let child = parent.removeChild(children[b]);
-				parent.appendChild(child);
-				// scroll to it
-				child.scrollIntoView(true, {behavior:'smooth'});
-				return true;
+		let child;
+		for (let c in instances) {
+			if (instances[c].title == title) {
+				child = instances.splice(c,1)[0];
+				instances.push(child);
 			}
 		}
-		return false;
-    }
+		if (child) {
+			SideWindow.repositionWindows();
+			console.log(child)
+			child.el_editor_container.scrollIntoView(true, {behavior:'smooth'});
+		}
+		return child != null;
+	}
+	
+	static repositionWindows () {
+		let height = 0;
+		for (let c in instances) {
+			instances[c].el_editor_container.style.top = height+'px';
+			height += instances[c].el_editor_container.clientHeight;
+		}
+	}
     
 	setTitle (value) {
 		if (this.el_title.innerHTML != value+this.subtitle) {
@@ -140,6 +150,9 @@ class SideWindow {
 	}
 
 	close (remove_history) {
+		instances = instances.filter((child) => child.title != this.title);
+		SideWindow.repositionWindows();
+		
 		this.el_editor_container.remove();
 
 		let total_height = app.getElements("#sidewindow-container > .editor-container").length * app.getElement("#vscroll").clientHeight;

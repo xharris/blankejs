@@ -388,6 +388,10 @@ class Code extends Editor {
 		this.autocompleting = false;
 		this.last_word = '';
 
+		this.addCallback('onFocus', function() {
+			this_ref.game.refreshSource(this_ref.file);
+		});
+
 		this.addCallback('onResize', function(w, h) {
 			// move split view around if there is one
 			let content_area = this_ref.getContent();
