@@ -935,6 +935,7 @@ class Code extends Editor {
 		this.parseFunctions();
 
 		this.setOnClick(function(){
+			console.log("go", this_ref.file);
 			Code.openScript(this_ref.file);
 		});
 

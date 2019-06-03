@@ -12,7 +12,7 @@ class Docview extends Editor {
 	constructor (...args) {
 		super(...args);
 
-		if (DragBox.focus('Docs')) return;
+		if (DragBox.focus('Docs', true)) return;
 
 		this.setupDragbox();
 		this.setTitle('Docs');

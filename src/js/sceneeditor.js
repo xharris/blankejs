@@ -15,7 +15,7 @@ PIXI.loader.load();
 class SceneEditor extends Editor {
 	constructor (file_path) {
 		super();
-		this.setupFibWindow();
+		this.setupSideWindow(true);
 
 		var this_ref = this;
 
@@ -55,7 +55,7 @@ class SceneEditor extends Editor {
 			autoResize: true,
 		});
 		this.grid_color = 0xBDBDBD;
-		this.appendChild(this.pixi.view);
+		this.appendBackground(this.pixi.view);
 
 		this.pixi.stage.interactive = true;
 		this.pixi.stage.hitArea = this.pixi.screen;
@@ -296,7 +296,7 @@ class SceneEditor extends Editor {
 					if (uuid == this_ref.curr_object.uuid) {
 						let obj = this_ref.objects[uuid];
 						blanke.showModal(
-							"<label>Remove '"+obj.name+"'?<br/>Objects are global and it will be removed from all scenes.</label>",
+							"<label>Remove '"+obj.name+"'?<br/>Objects are global and it will be removed from all maps.</label>",
 						{
 						"yes": function() {
 							// remove instances
@@ -468,7 +468,7 @@ class SceneEditor extends Editor {
 		this.el_sidebar.appendChild(this.el_tag_form.container);
 
 		this.appendChild(this.el_sidebar);
-		this.appendChild(this.el_toggle_sidebar);
+		// this.appendChild(this.el_toggle_sidebar); // commented out for SideWindow changes
 
 		// Pointer Locking for camera dragging
 		function dragStart() {
@@ -507,10 +507,10 @@ class SceneEditor extends Editor {
 				}
 			}
 		});
-		this.getContent().addEventListener('mouseenter', function(e){
+		this.pixi.view.addEventListener('mouseenter', function(e){
 			this_ref.can_drag = true;
 		});
-		this.getContent().addEventListener('mouseout', function(e){
+		this.pixi.view.addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
 
@@ -653,6 +653,7 @@ class SceneEditor extends Editor {
 
 			// camera dragging
 			if (this_ref.dragging) {
+				console.log(e.data.originalEvent);
 				this_ref.setCameraPosition(
 					this_ref.camera[0] + e.data.originalEvent.movementX,
 					this_ref.camera[1] + e.data.originalEvent.movementY
@@ -828,8 +829,9 @@ class SceneEditor extends Editor {
 	}
 
 	resizeEditor () {
-		let w = this.width;
-		let h = this.height;
+		let parent = this.pixi.view.parentElement;
+		let w = parent.clientWidth;
+		let h = parent.clientHeight;
 
 		this.pixi.renderer.view.style.width = w + "px";
 		this.pixi.renderer.view.style.height = h + "px";
@@ -844,7 +846,7 @@ class SceneEditor extends Editor {
 	onClose () {
 		app.removeSearchGroup("Scene");
 		// if this is the last scene open
-		if (!FibWindow.getWindowList().some(t => t.endsWith('.scene')))
+		if (!SideWindow.getWindowList().some(t => t.endsWith('.map')))
 			app.removeSearchGroup("scene_image");
 		
 		nwFS.unlink(this.file);
@@ -2024,7 +2026,7 @@ class SceneEditor extends Editor {
 	}
 
 	static refreshSceneList(path) {
-		app.removeSearchGroup("Scene");
+		app.removeSearchGroup("Map");
 		addScenes(ifndef(path, app.project_path));
 	}
 }
@@ -2036,7 +2038,7 @@ document.addEventListener('fileChange', function(e){
 });
 
 function openScene(file_path) {
-	if (!FibWindow.focus(nwPATH.basename(file_path)))
+	if (!SideWindow.focus(nwPATH.basename(file_path)))
 		new SceneEditor(file_path);
 }
 
@@ -2051,16 +2053,16 @@ function addScenes(folder_path) {
 					addScenes(full_path);
 
 				// add file to search pool
-				else if (file.endsWith('.scene')) {
+				else if (file.endsWith('.map')) {
 					app.addSearchKey({
 						key: file,
 						onSelect: function(file_path){
 							openScene(file_path);
 						},
-						tags: ['scene'],
+						tags: ['map'],
 						args: [full_path],
-						category: 'Scene',
-						group: 'Scene'
+						category: 'Map',
+						group: 'Map'
 					});
 				}
 			});
@@ -2078,18 +2080,18 @@ document.addEventListener("openProject", function(e){
 	SceneEditor.refreshSceneList(proj_path);
 
 	app.addSearchKey({
-		key: 'Add a scene',
+		key: 'Add a map',
 		onSelect: function() {
-			var map_dir = nwPATH.join(app.project_path,'scenes');
+			var map_dir = nwPATH.join(app.project_path,'maps');
 			// overwrite the file if it exists. fuk it (again)!!
 			nwFS.mkdir(map_dir, function(err){
 				nwFS.readdir(map_dir, function(err, files){
-					nwFS.writeFile(nwPATH.join(map_dir, 'scene'+files.length+'.scene'),"");
+					nwFS.writeFile(nwPATH.join(map_dir, 'map'+files.length+'.map'),"");
 				
 					// edit the new script
 					var new_scene_editor = new SceneEditor()
 					// add some premade objects from previous map
-					new_scene_editor.load(nwPATH.join(map_dir, 'scene'+files.length+'.scene'));
+					new_scene_editor.load(nwPATH.join(map_dir, 'map'+files.length+'.map'));
 					new_scene_editor.refreshLayerList();
 					new_scene_editor.loadObjectsFromSettings();
 				});

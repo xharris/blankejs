@@ -63,10 +63,7 @@ class SideWindow {
 		app.getElement("#sidewindow-container").appendChild(this.el_editor_container);
 		instances.push(this);
 
-		// update scroller
-		let total_height = app.getElements("#sidewindow-container > .editor-container").length * app.getElement("#vscroll").clientHeight;
-		app.getElement("#sidewindow-container > #vscroll > #fill").style.minHeight = total_height+"px";
-	
+		SideWindow.updateScroll();	
 		SideWindow.repositionWindows();
 	}
 
@@ -113,6 +110,17 @@ class SideWindow {
 			height += instances[c].el_editor_container.clientHeight;
 		}
 	}
+
+	static updateScroll () {
+		// update scroller
+		let container = app.getElement("#sidewindow-container > #vscroll");
+		blanke.clearElement(container);
+		for (let d = 0; d < instances.length; d++) {
+			let new_fill = app.createElement("div",".fill");
+			new_fill.style.minHeight = container.clientHeight+"px";
+			container.appendChild(new_fill);
+		}
+	}
     
 	setTitle (value) {
 		if (this.el_title.innerHTML != value+this.subtitle) {
@@ -133,6 +141,7 @@ class SideWindow {
 	}
 
 	onResize (w, h) {
+		console.log(w,h);
 
 	}
 
@@ -154,9 +163,7 @@ class SideWindow {
 		SideWindow.repositionWindows();
 		
 		this.el_editor_container.remove();
-
-		let total_height = app.getElements("#sidewindow-container > .editor-container").length * app.getElement("#vscroll").clientHeight;
-		app.getElement("#sidewindow-container > #vscroll > #fill").style.minHeight = total_height+"px";
+		SideWindow.updateScroll();
 		
 		if (this.onClose) remove_history = ifndef(this.onClose(), remove_history);
 
@@ -208,6 +215,17 @@ document.addEventListener("ideReady",function(){
 		}
 		ignore_scroll = true;
 		el_sidewin_scroll.scrollTop = (e.target.scrollTop / e.target.clientHeight) * el_sidewin_scroll.clientHeight;
+		// update history with currently viewed window
+		for (let win of instances) {
+			let scroll_y = e.target.scrollTop;
+			let win_y = parseInt(win.el_editor_container.style.top);
+			let win_h = win.el_editor_container.clientHeight
+			let win_bottom = win_y + win_h;
+			if (scroll_y + (win_h/2) >= win_y && 
+				scroll_y + (win_h/2) < win_bottom) {
+					app.setHistoryHighlight(win.history_id);
+				}
+		}
 	});
 	el_sidewin_scroll.addEventListener("scroll",function(e){
 		if (ignore_scroll) {
@@ -216,5 +234,18 @@ document.addEventListener("ideReady",function(){
 		}
 		ignore_scroll = true;
 		el_sidewin_container.scrollTop = (e.target.scrollTop / e.target.clientHeight) * el_sidewin_container.clientHeight;
+		// update history with currently viewed window
+		for (let win of instances) {
+			let scroll_y = e.target.scrollTop;
+			let win_y = parseInt(win.el_editor_container.style.top);
+			let win_h = win.el_editor_container.clientHeight
+			let win_bottom = win_y + win_h;
+			if (scroll_y + (win_h/2) >= win_y && 
+				scroll_y + (win_h/2) < win_bottom) {
+					app.setHistoryHighlight(win.history_id);
+				}
+		}
 	});
 });
+
+window.addEventListener('resize',() => SideWindow.updateScroll());

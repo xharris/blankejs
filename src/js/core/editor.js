@@ -64,7 +64,7 @@ class Editor {
 		return this;
 	}
 
-	setupSideWindow() {
+	setupSideWindow(transparent) {
 		let this_ref = this;
 		this.container_type = "sidewindow";
 		this.container = new SideWindow(this.constructor.name);
@@ -76,8 +76,9 @@ class Editor {
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
-			
 		this.container.onClose = this.onClose;
+		if (transparent) 
+			this.container.el_container.classList.add("transparent");
 		return this;
 	}
 
@@ -90,6 +91,8 @@ class Editor {
 		if (this.container_type == 'tab')
 			this.container.setOnClick.apply(this.container, arguments);
 		if (this.container_type == 'fibwindow')
+			app.setHistoryClick(this.container.history_id, arguments[0]);
+		if (this.container_type == 'sidewindow')
 			app.setHistoryClick(this.container.history_id, arguments[0]);
 	}
 
@@ -142,7 +145,7 @@ class Editor {
 	}
 
 	setSubtitle (val) {
-		if (this.container_type == 'dragbox' || this.container_type == 'fibwindow')
+		if (['dragbox','fibwindow','sidewindow'].includes(this.container_type))
 			this.container.setSubtitle(val);
 		return this;
 	}

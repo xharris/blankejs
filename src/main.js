@@ -570,11 +570,14 @@ var app = {
 			el_history_bar.appendChild(entry);
 
 			app.history_ref[id] = {'entry':entry, 'entry_title':entry_title, 'title':title};
+			app.setHistoryHighlight(id);
 			return id;
 		}
 	},
 
 	setHistoryMostRecent: function(id) {
+		if (!app.history_ref[id]) return;
+		
 		let e = app.history_ref[id];
 		if (!e) return;
 		let el_history_bar = app.getElement("#history");
@@ -582,6 +585,7 @@ var app = {
 		// move it to front of history
 		el_history_bar.removeChild(e.entry);
 		el_history_bar.appendChild(e.entry);
+		app.setHistoryHighlight(id);
 
 		return e.entry.dataset.guid;
 	},
@@ -606,6 +610,15 @@ var app = {
 		}
 	},
 
+	setHistoryHighlight: function(id) {
+		if (app.history_ref[id]) {
+			for (let other_id in app.history_ref) {
+				app.history_ref[other_id].entry.classList.remove("highlighted");
+			}
+			app.history_ref[id].entry.classList.add("highlighted");
+		}
+	},
+
 	setHistoryText: function(id, text) {
 		if (app.history_ref[id]) {
 			app.history_ref[id].entry_title.innerHTML = text;
@@ -621,7 +634,6 @@ var app = {
 	removeHistory: function(id) {
 		if (!app.history_ref[id]) return;
 		blanke.destroyElement(app.history_ref[id].entry);
-		blanke.destroyElement(app.history_ref[id].entry_title);
 		delete app.history_ref[id];
 	},
 
