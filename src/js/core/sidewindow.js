@@ -101,7 +101,6 @@ class SideWindow {
 		if (child) {
 			SideWindow.repositionWindows();
 			child.el_editor_container.scrollIntoView(true, {behavior:'smooth'});
-			console.log('focus',child)
 			app.setHistoryMostRecent(child.history_id);
 		}
 		return child != null;
