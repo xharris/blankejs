@@ -170,6 +170,9 @@ var Blanke = (selector, options) => {
         get width () { return app.view.width; },
         get height () { return app.view.height; },
         set background_color (v) { app.renderer.backgroundColor = v; },
+        snap: () => {
+            return app.renderer.plugins.extract.image(game_container);
+        },
         end: () => { 
             Game.background_color = this.options.background_color;
             // remove all game objects 

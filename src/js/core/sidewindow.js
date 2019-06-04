@@ -64,7 +64,8 @@ class SideWindow {
 		instances.push(this);
 	
 		SideWindow.repositionWindows();
-		//this.focus();
+		this.setTitle("new sidewindow");
+		this.focus();
 	}
 
 	callResize () {
@@ -101,7 +102,8 @@ class SideWindow {
 			}
 		}
 		if (child) {
-			child.el_editor_container.scrollIntoView(true, {behavior:'smooth',block:'start'});
+			SideWindow.focusing = child;
+			child.el_editor_container.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
 			app.setHistoryHighlight(child.history_id);
 		}
 		return child != null;
@@ -213,14 +215,17 @@ document.addEventListener("ideReady",function(){
 	let ignore_scroll = false;
 	let el_sidewin_scroll = app.getElement("#sidewindow-container > #vscroll");
 	let el_sidewin_container = app.getElement("#sidewindow-container");
+	
 	el_sidewin_container.addEventListener("scroll",function(e){
 		if (ignore_scroll) {
 			ignore_scroll = false
 			return;
 		}
 		ignore_scroll = true;
-		let scroll_y = e.target.scrollTop;
-		el_sidewin_scroll.scrollTop = (scroll_y / e.target.clientHeight) * el_sidewin_scroll.clientHeight;
+		let scroll_y = el_sidewin_container.scrollTop;
+		if (!SideWindow.focusing)
+			el_sidewin_scroll.scrollTop = (scroll_y / el_sidewin_container.clientHeight) * el_sidewin_scroll.clientHeight;
+
 		// update history with currently viewed window
 		for (let win of instances) {
 			let win_y = parseInt(win.el_editor_container.style.top);
@@ -228,7 +233,14 @@ document.addEventListener("ideReady",function(){
 			let win_bottom = win_y + win_h;
 			if (scroll_y + (win_h/2) >= win_y && 
 				scroll_y + (win_h/2) < win_bottom) {
-					//app.setHistoryHighlight(win.history_id);
+					app.setHistoryHighlight(win.history_id);
+				}
+			// don't track scrolling if scrollIntoView was used in .focus()
+			if (scroll_y >= win_y &&
+				scroll_y < win_bottom &&
+				SideWindow.focusing && SideWindow.focusing.title == win.title) {
+					SideWindow.focusing = false;
+					el_sidewin_scroll.scrollTop = (scroll_y / el_sidewin_container.clientHeight) * el_sidewin_scroll.clientHeight;
 				}
 		}
 	});
@@ -238,8 +250,10 @@ document.addEventListener("ideReady",function(){
 			return;
 		}
 		ignore_scroll = true;
-		let scroll_y = e.target.scrollTop;
-		el_sidewin_container.scrollTop = (scroll_y / e.target.clientHeight) * el_sidewin_container.clientHeight;
+		let scroll_y = el_sidewin_scroll.scrollTop;
+		if (!SideWindow.focusing)
+			el_sidewin_container.scrollTop = (scroll_y / el_sidewin_scroll.clientHeight) * el_sidewin_container.clientHeight;
+		
 		// update history with currently viewed window
 		for (let win of instances) {
 			let win_y = parseInt(win.el_editor_container.style.top);
@@ -247,7 +261,7 @@ document.addEventListener("ideReady",function(){
 			let win_bottom = win_y + win_h;
 			if (scroll_y + (win_h/2) >= win_y && 
 				scroll_y + (win_h/2) < win_bottom) {
-					//app.setHistoryHighlight(win.history_id);
+					app.setHistoryHighlight(win.history_id);
 				}
 		}
 	});

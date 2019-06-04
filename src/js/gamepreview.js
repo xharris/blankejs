@@ -1,27 +1,4 @@
-class GamePreview {
-	constructor (parent) {
-		let this_ref = this;
-
-		this.game = null;
-		this.container = app.createElement("iframe");
-		this.id = "game-"+guid();
-		this.container.id = this.id;
-		// engine loaded\
-		this.refresh_file = null;
-		this.container.onload = function() {
-			this_ref.game = this_ref.container.contentWindow.game;
-			if (this_ref.refresh_file) {
-				this_ref.refreshSource(this_ref.refresh_file);
-			}
-		}
-		this.refreshDoc();
-		if (parent)
-			app.getElement(parent).appendChild(this_ref.container);
-	}
-
-	refreshDoc () {
-		// add iframe content
-		this.container.srcdoc = `
+let getHTML = (body) => `
 <!DOCTYPE html>
 <html>
 	<style>
@@ -38,12 +15,58 @@ class GamePreview {
 			width: 100%;
 			height: 100%;
 		}
+		body > img {
+			width: 100%;
+			height: 100%;
+		}
 	</style>
 	<head>
 		<script src="../blankejs/pixi.min.js"></script>
 		<script src="../blankejs/SAT.min.js"></script>
 		<script src="../blankejs/blanke.js"></script>
 	</head>
+	${body}
+</html>
+`;
+
+class GamePreview {
+	constructor (parent) {
+		let this_ref = this;
+
+		this.game = null;
+		this.container = app.createElement("iframe");
+		this.id = "game-"+guid();
+		this.container.id = this.id;
+		// engine loaded\
+		this.refresh_file = null;
+		this.container.onload = () => {
+			this.game = this.container.contentWindow.game;
+			if (this.extra_onload) 
+				this.extra_onload();
+			if (this.refresh_file) {
+				this.refreshSource(this.refresh_file);
+			}
+		}
+		this.refreshDoc();
+		if (parent)
+			app.getElement(parent).appendChild(this_ref.container);
+	}
+
+	// destroy the renderer
+	blur () {
+		if (this.game) {	
+			let el_img = this.game.Game.snap(); 
+			this.extra_onload = () => {
+				this.container.contentDocument.body.appendChild(el_img);
+			}
+		}
+		this.container.srcdoc = getHTML(`
+	<body></body>`);
+	}
+
+	refreshDoc () {
+		// add iframe content
+		this.container.srcdoc = getHTML(`
 	<body>
 		<div id="game"></div>
 	</body>
@@ -77,9 +100,7 @@ class GamePreview {
 			root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
 			background_color: 0x485358
 		});
-	</script>
-</html>
-`;
+	</script>`);
 	}
 	
 	refreshSource (current_script) {
