@@ -64,7 +64,7 @@ class SideWindow {
 		instances.push(this);
 	
 		SideWindow.repositionWindows();
-		this.focus();
+		//this.focus();
 	}
 
 	callResize () {
@@ -90,7 +90,10 @@ class SideWindow {
 	static focus (title) {
 		let child;
 		for (let c in instances) {
-			if (instances[c].title == title && c < instances.length-1) {
+			if (instances[c].title == title)
+				child = instances[c];
+
+			if (child && c < instances.length-1) {
 				child = instances.splice(c,1)[0];
 				instances.push(child);
 				SideWindow.repositionWindows();
@@ -98,7 +101,7 @@ class SideWindow {
 			}
 		}
 		if (child) {
-			child.el_editor_container.scrollIntoView(true, {behavior:'smooth'});
+			child.el_editor_container.scrollIntoView(true, {behavior:'smooth',block:'start'});
 			app.setHistoryHighlight(child.history_id);
 		}
 		return child != null;

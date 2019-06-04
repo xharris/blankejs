@@ -1010,7 +1010,7 @@ class Code extends Editor {
 
 	static openScript(file_path, line) {
 		let editor = code_instances[file_path];
-		if (!(SideWindow.focus(nwPATH.basename(file_path)) || SideWindow.focus(nwPATH.basename(file_path)+"*"))) {
+		if (!SideWindow.focus(nwPATH.basename(file_path))) {
 			editor = new Code(app)
 			editor.edit(file_path);
 		}
