@@ -28,6 +28,7 @@ let getHTML = (body) => `
 	${body}
 </html>
 `;
+let shared_iframe;
 
 class GamePreview {
 	constructor (parent) {
@@ -41,13 +42,17 @@ class GamePreview {
 		this.refresh_file = null;
 		this.container.onload = () => {
 			this.game = this.container.contentWindow.game;
-			if (this.extra_onload) 
+			if (this.extra_onload) {
 				this.extra_onload();
+				this.extra_onload = null;
+			}
 			if (this.refresh_file) {
 				this.refreshSource(this.refresh_file);
 			}
+			this.blur();
 		}
 		this.refreshDoc();
+		this.parent = parent;
 		if (parent)
 			app.getElement(parent).appendChild(this_ref.container);
 	}
@@ -56,12 +61,16 @@ class GamePreview {
 	blur () {
 		if (this.game) {	
 			let el_img = this.game.Game.snap(); 
+			console.log(el_img)
 			this.extra_onload = () => {
 				this.container.contentDocument.body.appendChild(el_img);
 			}
-		}
-		this.container.srcdoc = getHTML(`
-	<body></body>`);
+			shared_iframe = this.container;
+			this.container.remove();
+
+			if (this.parent)
+				app.getElement(this.parent).appendChild(el_img);
+			}
 	}
 
 	refreshDoc () {
