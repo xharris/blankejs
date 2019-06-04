@@ -653,7 +653,6 @@ class SceneEditor extends Editor {
 
 			// camera dragging
 			if (this_ref.dragging) {
-				console.log(e.data.originalEvent);
 				this_ref.setCameraPosition(
 					this_ref.camera[0] + e.data.originalEvent.movementX,
 					this_ref.camera[1] + e.data.originalEvent.movementY
@@ -845,10 +844,6 @@ class SceneEditor extends Editor {
 
 	onClose () {
 		app.removeSearchGroup("Scene");
-		// if this is the last scene open
-		if (!SideWindow.getWindowList().some(t => t.endsWith('.map')))
-			app.removeSearchGroup("scene_image");
-		
 		nwFS.unlink(this.file);
 		addScenes(app.project_path);
 	}
