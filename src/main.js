@@ -668,9 +668,11 @@ var app = {
 			DEV_MODE = true;
 			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
 			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
+			/*
 			app.addSearchKey({key: 'Restart engine', onSelect:function(){
 				this.game.refreshEngine();
 			}});
+			*/
 			nwGUI.Window.get().showDevTools();
 			blanke.toast("Dev mode enabled");
 		} else {

@@ -170,11 +170,14 @@ var Blanke = (selector, options) => {
         get width () { return app.view.width; },
         get height () { return app.view.height; },
         set background_color (v) { app.renderer.backgroundColor = v; },
-        snap: () => pp.renderer.plugins.extract.image(game_container),
+        snap: () => app.renderer.plugins.extract.image(),
         end: () => { 
+            if (!app) return;
             Game.background_color = this.options.background_color;
-            // remove all game objects 
+            // destroy scenes
             Scene.endAll();
+            Scene.ref = {};
+            // remove leftover game objects 
             for (let obj of Scene.stray_objects) {
                 if (obj._destroy)
                     obj._destroy();
@@ -190,7 +193,7 @@ var Blanke = (selector, options) => {
             press_check = {};
             release_check = {}; // { 'ArrowLeft': false, 'a': true }
          },
-        destroy: () => { app.destroy(true); }
+        destroy: () => { app.destroy(true); app = null; }
     };
 
     /* -UTIL */
@@ -202,6 +205,7 @@ var Blanke = (selector, options) => {
         direction_y: (angle, dist) => angle == 0 ? dist : Math.sin(Util.rad(angle)) * dist,
         distance: (x1, y1, x2, y2) => Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2)),
         direction: (x1, y1, x2, y2) => Util.deg(Math.atan2(y2-y1,x2-x1)),
+        rand_range: (min, max) => Math.floor(Math.random() * (+max - +min)) + +min,
         // file
         basename: (path, no_ext) => no_ext == true ? path.split(re_sep).slice(-1)[0].split('.')[0] : path.split(re_sep).slice(-1)[0]
     }

@@ -1055,7 +1055,7 @@ function addScripts(folder_path) {
 						}
 					}
 				}
-				if (!match) 
+				if (!cat) 
 					Code.scripts.other.push(full_path);
 				
 				// add file to search pool

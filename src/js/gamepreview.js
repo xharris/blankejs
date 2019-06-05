@@ -28,7 +28,6 @@ let getHTML = (body) => `
 	${body}
 </html>
 `;
-let shared_iframe;
 
 class GamePreview {
 	constructor (parent) {
@@ -38,6 +37,8 @@ class GamePreview {
 		this.container = app.createElement("iframe");
 		this.id = "game-"+guid();
 		this.container.id = this.id;
+		this.parent = parent;
+		
 		// engine loaded\
 		this.refresh_file = null;
 		this.container.onload = () => {
@@ -49,28 +50,14 @@ class GamePreview {
 			if (this.refresh_file) {
 				this.refreshSource(this.refresh_file);
 			}
-			this.blur();
 		}
 		this.refreshDoc();
-		this.parent = parent;
 		if (parent)
-			app.getElement(parent).appendChild(this_ref.container);
-	}
+			parent.appendChild(this_ref.container);
 
-	// destroy the renderer
-	blur () {
-		if (this.game) {	
-			let el_img = this.game.Game.snap(); 
-			console.log(el_img)
-			this.extra_onload = () => {
-				this.container.contentDocument.body.appendChild(el_img);
-			}
-			shared_iframe = this.container;
-			this.container.remove();
-
-			if (this.parent)
-				app.getElement(this.parent).appendChild(el_img);
-			}
+		document.addEventListener('engineChanged',(e)=>{
+			this.refreshEngine();	
+		});
 	}
 
 	refreshDoc () {
@@ -121,7 +108,6 @@ class GamePreview {
 			current_script = this.refresh_file
 			this.refresh_file = null;
 		}
-		let open_scripts = Object.keys(code_instances);
 		let post_load = '';
 		// get all the scripts
 		let scripts = [];
@@ -148,8 +134,10 @@ class GamePreview {
 
 		switch (curr_script_cat) {
 			case 'entity':
-				post_load += '\nScene.start("_test")\n';
+				post_load += '\nScene.start("_test");\n';
 				break;
+			case 'scene':
+				post_load += '\nScene.start(Object.keys(Scene.ref)[0]);\n';
 		}
 
 		// wrapped in a function so local variables are destroyed on reload
@@ -190,3 +178,10 @@ class GamePreview {
 		head.appendChild(script);
 	}
 }
+
+let engine_watch;
+window.addEventListener('load',(e)=>{
+	engine_watch = nwFS.watch(nwPATH.join('.','blankejs','blanke.js'), (e) => {
+		dispatchEvent('engineChange');
+	});
+})
