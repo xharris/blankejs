@@ -1,16 +1,11 @@
 class Console extends Editor {
-	constructor (...args) {
-		super(...args);
+	constructor (static_box, parent) {
+		super();
 
-		this.setupDragbox();
-		this.removeHistory()
-		this.container.width = 460;
-		this.container.height = 130;
-
-		var this_ref = this;
-
+		this.removeHistory();
 		this.pin = false;
 
+		/*
 		this.process = [...args][0];
 		if (this.process) {
 			this.process.stdout.on('data', function(data){
@@ -25,10 +20,15 @@ class Console extends Editor {
 				}
 			});
 		}
+		*/
 
 		this.el_log = app.createElement("div", "log");
 		this.appendChild(this.el_log);
-		this.el_log.focus();
+	}
+
+	appendTo (el) {
+		el.appendChild(this.el_log);
+		console.log(el, this.el_log)
 	}
 
 	onMenuClick (e) {
@@ -68,48 +68,6 @@ class Console extends Editor {
 		if (!this.had_error) {
 			this.had_error = true;
 			console.log(str);
-
-			let re_error = /Error:\s.*[^\\\/Blanke\.lua]?[\w\\\/\.]+\/(\w+\.lua):(\d+):\s(.+)\s*stack traceback:\s+(.*)/g;
-			let re_load_error = /:\s(.*):(\d+):\s(.*)/g
-			let re_shader_error = /.*pixel shader code:\s*([\s\S]*)stack/g
-			let re_shader_message = /(?:Line\s(\d+):\sERROR:\s*(.*)\s*(?=Line|ERROR))/g
-
-			let error_parts;
-
-			// pixel shader error
-			if (str.includes("pixel shader code")) {
-				let match,
-				message = '',
-				header = 'Shader error<br>';
-
-				while (match = re_shader_message.exec(str)) {
-					if (!match[2].includes('terminated'))
-						message += "Line "+(match[1]-22)+": "+match[2]+"<br>";
-				}
-
-				str = header+message;
-			}
-
-			// regular error
-			else if (error_parts = re_error.exec(str)) {
-				let filename = nwPATH.basename(error_parts[1])
-				let line = error_parts[2]
-				let message = error_parts[3]
-				let traceback = error_parts[4]
-
-				if (filename.includes('Blanke.lua')) {
-					// error after game is loaded
-					let message_parts = re_load_error.exec(message)
-
-					if (message_parts) {
-						filename = message_parts[1]
-						line = message_parts[2]
-						message = message_parts[3]
-					}
-				}
-				// error during runtime
-				str = filename+" ("+line+"): "+message	
-			}
 
 			var el_line = app.createElement("p", "error");
 			el_line.innerHTML = str;

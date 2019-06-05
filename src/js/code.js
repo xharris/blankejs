@@ -233,6 +233,8 @@ class Code extends Editor {
 
 		// add game preview
 		this.game = new GamePreview();
+		this.console = new Console();
+		this.console.appendTo(this.container.getContent());
 		this.appendBackground(this.game.container);
 
 		var this_ref = this;
@@ -402,12 +404,14 @@ class Code extends Editor {
 			this_ref.codemirror.refresh();
 		});
 
+		this.game.onError = (msg, url, lineNo, columnNo, error) => {
+			this.console.err(`Line ${lineNo}, Col ${columnNo}: ${msg}`);
+		}
+
 		this.addCallback('onEnterView',()=>{
-			console.log("resume")
 			this.game.resume();
 		});
 		this.addCallback('onExitView',()=>{
-			console.log("pause")
 			this.game.pause();
 		});
 

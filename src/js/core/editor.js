@@ -83,7 +83,8 @@ class Editor {
 	}
 
 	removeHistory() {
-		app.removeHistory(this.container.history_id);
+		if (this.container)
+			app.removeHistory(this.container.history_id);
 	}
 
 	// Tab ONLY	

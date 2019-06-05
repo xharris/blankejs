@@ -97,7 +97,9 @@ class DragBox {
 	}
 
 	focus () {
-		DragBox.focus(this.title);
+		let val = DragBox.focus(this.title);
+		if (val !== false && val !== true) 
+			this.history_id = val;
 	}
 
 	// focus a dragbox with a certain title if it exists
@@ -108,8 +110,9 @@ class DragBox {
 			if (handles[h].innerHTML == title) {
 				handles[h].click();
 				if (!no_history)
-					app.addHistory(title);
-				return true;
+					return app.addHistory(title);
+				else
+					return true;
 			}
 		}
 		return false;

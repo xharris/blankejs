@@ -39,8 +39,9 @@ class GamePreview {
 		this.id = "game-"+guid();
 		this.container.id = this.id;
 		this.parent = parent;
+		this.line_offset = 0;
 		
-		// engine loaded\
+		// engine loaded
 		this.refresh_file = null;
 		this.container.onload = () => {
 			this.game = this.container.contentWindow.game;
@@ -167,7 +168,11 @@ class GamePreview {
 		Scene("_test", funcs);
 	}
 `;
+		this.line_offset = 0;
 		for (let path of scripts) {
+			if (path == current_script) {
+				this.line_offset = (code.match(/\n/g) || '').length;
+			}
 			code += nwFS.readFileSync(path,'utf-8') + '\n';
 		}
 		code += (post_load || '') + '})();';
@@ -183,6 +188,15 @@ class GamePreview {
 		let script= doc.createElement('script');
 		script.classList.add("source");
 		script.innerHTML= code;
+
+		parent.onerror = (msg, url, lineNo, columnNo, error) => {
+			if (this.onError) this.onError(msg, url, lineNo - this.line_offset, columnNo, error);
+			return true;
+		}
+		/*
+		iframe.contentWindow.console.log = () => {
+
+		}*/
 		parent.appendChild(script);
 	}
 

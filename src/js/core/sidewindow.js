@@ -69,6 +69,10 @@ class SideWindow {
 		this.focus();
 	}
 
+	getContent () {
+		return this.el_editor_container;
+	}
+
 	callResize () {
 		let this_ref = this;
 		blanke.cooldownFn('sidewin-resize-'+this.guid, 100, function(){	
