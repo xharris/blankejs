@@ -505,9 +505,7 @@ var app = {
 	},
 	dropFiles: function(files) {
 		for (let f of files) {
-			console.log('drop',f.path);
 			nwFS.stat(f.path, (err, stats) => {
-				console.log(err, stats)
 				if (err || !stats.isFile())
 					blanke.toast(`Could not add file ${f.path}`);
 				else 

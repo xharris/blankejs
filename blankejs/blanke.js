@@ -16,12 +16,16 @@ var Blanke = (selector, options) => {
         auto_resize: false,
         ide_mode: false,
         root: '',
-        background_color: 0x000000
+        background_color: 0x000000,
+        scale_mode: 'nearest',
+        round_pixels: true,
+        fps: 60
     },options || {}); 
     // init PIXI
     let app;
     let parent = document.querySelector(selector);
     
+    PIXI.utils.skipHello();
     app = new PIXI.Application({
         width: this.options.width,
         height: this.options.height,
@@ -29,7 +33,9 @@ var Blanke = (selector, options) => {
         resizeTo: this.options.fill_parent == true ? parent : null,
         backgroundColor: this.options.backgroundColor
     });
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[(this.options.scale_mode || 'nearest').toUpperCase()];
+    PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
+    PIXI.settings.ROUND_PIXELS = this.options.round_pixels;
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[this.options.scale_mode.toUpperCase()];
     parent.appendChild(app.view);
     // add main container for game
     let game_container = new PIXI.Container();
@@ -53,7 +59,15 @@ var Blanke = (selector, options) => {
         });
     }
 
+    const removeSnaps = () => {
+        // remove any pause image
+        let old_img = app.view.parentNode.querySelector("#game-snap");
+        if (old_img)
+            old_img.remove();
+    }
+
     const engineLoaded = () => {
+        removeSnaps();
         Game.ide_mode = this.options.ide_mode;
         // load config.json
         if (this.options.config != null) {
@@ -166,13 +180,38 @@ var Blanke = (selector, options) => {
 
     /* -GAME */
     var Game = {
+        paused: false,
         config: {},
         get width () { return app.view.width; },
         get height () { return app.view.height; },
         set background_color (v) { app.renderer.backgroundColor = v; },
-        snap: () => app.renderer.plugins.extract.image(),
+        // replaces the game with a screenshot
+        pause: () => {
+            if (Game.paused) return;
+            Game.paused = true;
+
+            removeSnaps();
+            let new_rtex = PIXI.RenderTexture.create(Game.width, Game.height);
+            app.renderer.render(game_container, new_rtex);
+            let el_img = app.renderer.extract.image(new_rtex);
+            el_img.id = "game-snap";
+            parent.appendChild(el_img);
+            app.stop();
+            app.view.style.display = "none";
+        },
+        resume: () => {
+            if (!Game.paused) return;
+            Game.paused = false;
+
+            if (!app) return;
+            removeSnaps();
+            app.start();
+            app.view.style.display = "initial";
+        },
         end: () => { 
             if (!app) return;
+            removeSnaps();
+            Game.resume();
             Game.background_color = this.options.background_color;
             // destroy scenes
             Scene.endAll();
@@ -193,7 +232,7 @@ var Blanke = (selector, options) => {
             press_check = {};
             release_check = {}; // { 'ArrowLeft': false, 'a': true }
          },
-        destroy: () => { app.destroy(true); app = null; }
+        destroy: () => { app.destroy(true); }
     };
 
     /* -UTIL */
@@ -603,9 +642,9 @@ var Blanke = (selector, options) => {
         }
         _getPixiObjs () { return [this.sprite]; }
         get x () { return this.sprite.x; }
-        set x (v){ this.sprite.x = Math.floor(v); }
+        set x (v){ this.sprite.x = v; }
         get y () { return this.sprite.y; }
-        set y (v){ this.sprite.y = Math.floor(v); }
+        set y (v){ this.sprite.y = v; }
 
         get speed () { if (this.animated) return this.sprite.animationSpeed; }
         set speed (v){ if (this.animated) this.sprite.animationSpeed = v; }

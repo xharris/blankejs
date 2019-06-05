@@ -401,6 +401,16 @@ class Code extends Editor {
 
 			this_ref.codemirror.refresh();
 		});
+
+		this.addCallback('onEnterView',()=>{
+			console.log("resume")
+			this.game.resume();
+		});
+		this.addCallback('onExitView',()=>{
+			console.log("pause")
+			this.game.pause();
+		});
+
 		this.codemirror.refresh();
 
 		// prevents user from saving a million times by holding the button down

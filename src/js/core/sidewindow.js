@@ -87,12 +87,19 @@ class SideWindow {
 		return SideWindow.focus(this.title);
 	}	
 
+	onEnterView () {}
+	onExitView () {}
+
 	// focus a fibwindow with a certain title if it exists
 	static focus (title) {
 		let child;
 		for (let c in instances) {
-			if (instances[c].title == title)
+			if (instances[c].title == title) {
 				child = instances[c];
+				child.onEnterView();
+			} else {
+				instances[c].onExitView();
+			}
 
 			if (child && c < instances.length-1) {
 				child = instances.splice(c,1)[0];
@@ -234,7 +241,10 @@ document.addEventListener("ideReady",function(){
 			if (scroll_y + (win_h/2) >= win_y && 
 				scroll_y + (win_h/2) < win_bottom) {
 					app.setHistoryHighlight(win.history_id);
+					win.onEnterView();
 				}
+			else
+				win.onExitView();
 			// don't track scrolling if scrollIntoView was used in .focus()
 			if (scroll_y >= win_y &&
 				scroll_y < win_bottom &&
@@ -262,7 +272,10 @@ document.addEventListener("ideReady",function(){
 			if (scroll_y + (win_h/2) >= win_y && 
 				scroll_y + (win_h/2) < win_bottom) {
 					app.setHistoryHighlight(win.history_id);
+					win.onEnterView();
 				}
+			else
+				win.onExitView();
 		}
 	});
 });

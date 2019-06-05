@@ -28,6 +28,7 @@ let getHTML = (body) => `
 	${body}
 </html>
 `;
+let re_scene_name = /\bScene\s*\(\s*[\'\"](.+)[\'\"]/;
 
 class GamePreview {
 	constructor (parent) {
@@ -50,14 +51,27 @@ class GamePreview {
 			if (this.refresh_file) {
 				this.refreshSource(this.refresh_file);
 			}
+			else if (this.last_script) {
+				this.refreshSource(this.last_script);
+			}
 		}
 		this.refreshDoc();
 		if (parent)
 			parent.appendChild(this_ref.container);
 
-		document.addEventListener('engineChanged',(e)=>{
+		document.addEventListener('engineChange',(e)=>{
 			this.refreshEngine();	
 		});
+	}
+	
+	pause () {
+		if (this.game)
+			this.game.Game.pause();
+	}
+
+	resume () {
+		if (this.game)
+			this.game.Game.resume();
 	}
 
 	refreshDoc () {
@@ -100,6 +114,7 @@ class GamePreview {
 	}
 	
 	refreshSource (current_script) {
+		this.last_script = current_script;
 		if (!this.game) {
 			this.refresh_file = current_script;
 			return;
@@ -137,7 +152,10 @@ class GamePreview {
 				post_load += '\nScene.start("_test");\n';
 				break;
 			case 'scene':
-				post_load += '\nScene.start(Object.keys(Scene.ref)[0]);\n';
+				let match = re_scene_name.exec(nwFS.readFileSync(current_script,'utf-8'));
+				if (match && match.length > 1)
+					post_load += `\nScene.start("${match[1]}");\n`;
+				break;
 		}
 
 		// wrapped in a function so local variables are destroyed on reload
@@ -169,19 +187,22 @@ class GamePreview {
 	}
 
 	refreshEngine () {
-		if (this.game) this.game.Game.destroy();
+		if (this.game) this.game.Game.end();
+		 
+		this.refreshDoc();
+		/*
 		let iframe = this.container;
 		blanke.destroyElement(iframe.contentDocument.querySelector('script[src="../blankejs/blanke.js"]'));
 		var head= iframe.contentDocument.getElementsByTagName('head')[0];
 		var script= iframe.contentDocument.createElement('script');
 		script.src= '../blankejs/blanke.js';
-		head.appendChild(script);
+		head.appendChild(script);*/
 	}
 }
 
 let engine_watch;
 window.addEventListener('load',(e)=>{
-	engine_watch = nwFS.watch(nwPATH.join('.','blankejs','blanke.js'), (e) => {
+	engine_watch = nwFS.watch(nwPATH.join('blankejs','blanke.js'), (e) => {
 		dispatchEvent('engineChange');
 	});
 })
