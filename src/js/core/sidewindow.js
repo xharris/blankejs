@@ -1,6 +1,7 @@
 var instances = [];
 var curr_category = '';
 var MAX_WINDOWS = 10; //5;
+var curr_focus;
 
 class SideWindow {
 	constructor (content_type) {
@@ -110,7 +111,10 @@ class SideWindow {
 		}
 		if (child) {
 			SideWindow.focusing = child;
-			child.el_editor_container.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
+			if (curr_focus && curr_focus.title == child.title)
+				child.el_editor_container.scrollIntoView({ behavior: 'auto' , block: 'start', inline: 'nearest'});
+			else
+				child.el_editor_container.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
 			app.setHistoryHighlight(child.history_id);
 		}
 		return child != null;
@@ -241,6 +245,7 @@ document.addEventListener("ideReady",function(){
 			if (scroll_y + (win_h/2) >= win_y && 
 				scroll_y + (win_h/2) < win_bottom) {
 					app.setHistoryHighlight(win.history_id);
+					curr_focus = win;
 					win.onEnterView();
 				}
 			else
@@ -272,6 +277,7 @@ document.addEventListener("ideReady",function(){
 			if (scroll_y + (win_h/2) >= win_y && 
 				scroll_y + (win_h/2) < win_bottom) {
 					app.setHistoryHighlight(win.history_id);
+					curr_focus = win;
 					win.onEnterView();
 				}
 			else
