@@ -405,6 +405,7 @@ class Code extends Editor {
 		});
 
 		this.game.onError = (msg, url, lineNo, columnNo, error) => {
+			this.game.pause();
 			this.console.err(`Line ${lineNo}, Col ${columnNo}: ${msg}`);
 		}
 
