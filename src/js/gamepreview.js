@@ -48,7 +48,6 @@ class GamePreview {
 			this.game = this.container.contentWindow.game;
 			if (this.extra_onload) {
 				this.extra_onload();
-				this.extra_onload = null;
 			}
 			if (this.refresh_file) {
 				this.refreshSource(this.refresh_file);
@@ -64,6 +63,14 @@ class GamePreview {
 		document.addEventListener('engineChange',(e)=>{
 			this.refreshEngine();	
 		});
+	}
+
+	get width () {
+		if (this.game) return this.game.Game.width;
+	}
+
+	get height () {
+		if (this.game) return this.game.Game.height;
 	}
 	
 	pause () {
