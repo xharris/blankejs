@@ -220,11 +220,13 @@ class GamePreview {
 			return true;
 		}
 		if (this.onRefresh) this.onRefresh();
-		if (this.onLog)
-		let old_log = iframe.contentWindow.console.log;
-		iframe.contentWindow.console.log = (...args) => {
-			console.log('iframe',args)
-			old_log(...args);
+		if (this.onLog) {
+			iframe.contentWindow.console = {
+				log:  (...args) => {
+					this.onLog(args)
+					//old_log(...args);
+				}
+			}
 		}
 		parent.appendChild(script);
 	}

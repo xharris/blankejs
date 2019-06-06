@@ -408,6 +408,9 @@ class Code extends Editor {
 			let file_link = `<a href='#' onclick="Code.openScript('${file}')">${nwPATH.basename(file)}</a>`;
 			this.console.err(`${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`);
 		}
+		this.game.onLog = (msgs) => {
+			this.console.log(msgs.join(' '));
+		}
 		this.game.onRefresh = () => {
 			this.console.clear();
 		}

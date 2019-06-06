@@ -674,6 +674,13 @@ var blanke = {
             element.parentNode.removeChild(element);
     },
 
+    removeChildClass: function(element, class_name) {   
+		for (let c = element.children.length -1; c >= 0; c--) {
+			if (element.children[c].classList.contains(class_name))
+			    element.removeChild(element.children[c]);
+		}
+    },
+
     sortChildren: function(element, fn_compare) {
         let sorted_children = Array.from(element.children);
         sorted_children.sort(fn_compare);

@@ -4,6 +4,7 @@ class Console extends Editor {
 
 		this.removeHistory();
 		this.pin = false;
+		this.duplicate_count = 1;
 
 		/*
 		this.process = [...args][0];
@@ -23,6 +24,12 @@ class Console extends Editor {
 		*/
 
 		this.el_log = app.createElement("div", "log");
+		this.el_lines = app.createElement("div", "lines");
+		this.last_line = '';
+		this.str_console = '';
+		this.last_dupe_line = '';
+
+		this.el_log.appendChild(this.el_lines)
 		this.appendChild(this.el_log);
 	}
 
@@ -45,27 +52,36 @@ class Console extends Editor {
 	}
 
 	clear () {
-		blanke.clearElement(this.el_log);
+		this.el_lines.innerHTML = '';
+		var el_err = document.getElementsByClassName('hi');
+		blanke.removeChildClass(this.el_log, 'error');
+		this.str_console = '';
+		this.last_line = '';
+		this.last_dupe_line = '';
+		this.duplicate_count = 1;
 		this.had_error = false;
 	}
 
 	log (str) {
-		let re_duplicate = /(.*)(\(\d+\)?)/g;
-
 		str = JSON.stringify(str.trim()).slice(1,-1);
-		let lines = str.split("\\n").map(line => JSON.parse("{\"str\":\""+line+"\"}").str)
-
-		for (let line of lines) {
-			if (line.match(re_duplicate) && this.el_log.childElementCount > 0) {
-				this.el_log.lastElementChild.innerHTML = duplicate[0];
-			} else {
-				var el_line = app.createElement("p", "line");
-				el_line.innerHTML = line;
-				this.el_log.appendChild(el_line);
-			}
+		if (this.last_line == str) {
+			this.duplicate_count++;
+			if (this.last_dupe_line !== '')
+				this.str_console = this.str_console.slice(0, -this.last_dupe_line.length);	
+			else 
+				this.str_console = this.str_console.slice(0, -(this.last_line+'\n').length);
+			this.last_dupe_line = `${str} (${this.duplicate_count})\n`;
+			this.str_console += this.last_dupe_line; 
+		} else {
+			this.duplicate_count = 1;
+			this.last_dupe_line = '';
+			this.str_console += `${str}\n`;
 		}
-
-		//el_line.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
+		this.last_line = str;
+		blanke.cooldownFn("console.log", 100, ()=>{	
+			this.el_lines.innerHTML = this.str_console;
+			this.el_log.scrollTop = this.el_log.scrollHeight;
+		});
 	}
 
 	err (str) {
@@ -77,7 +93,7 @@ class Console extends Editor {
 			this.el_log.appendChild(el_line);
 			this.el_log.appendChild(app.createElement("br"));
 
-			//el_line.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
+			el_line.scrollIntoView({ behavior: 'auto' , block: 'nearest', inline: 'nearest'});
 		}
 	}
 }
