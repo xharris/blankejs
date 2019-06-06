@@ -28,7 +28,6 @@ class Console extends Editor {
 
 	appendTo (el) {
 		el.appendChild(this.el_log);
-		console.log(el, this.el_log)
 	}
 
 	onMenuClick (e) {
@@ -43,6 +42,11 @@ class Console extends Editor {
 	processClosed () {
 		if (!this.had_error && !this.pin)
 			this.close();
+	}
+
+	clear () {
+		blanke.clearElement(this.el_log);
+		this.had_error = false;
 	}
 
 	log (str) {
@@ -61,20 +65,19 @@ class Console extends Editor {
 			}
 		}
 
-		this.el_log.scrollTop = this.el_log.scrollHeight;
+		//el_line.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
 	}
 
 	err (str) {
 		if (!this.had_error) {
 			this.had_error = true;
-			console.log(str);
 
 			var el_line = app.createElement("p", "error");
 			el_line.innerHTML = str;
 			this.el_log.appendChild(el_line);
 			this.el_log.appendChild(app.createElement("br"));
 
-			this.el_log.scrollTop = this.el_log.scrollHeight
+			//el_line.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
 		}
 	}
 }

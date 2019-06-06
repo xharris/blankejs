@@ -17,12 +17,6 @@ class SideWindow {
 		this.el_container.id = "sidewin-"+this.guid;
 		this.el_container.dataset.type = content_type;
 		this.el_container.this_ref = this;
-		this.el_container.addEventListener("click", function() {
-			app.getElements('.sidewin').forEach(function(e){
-				e.classList.remove('focused');
-			});
-			this.classList.add('focused');
-		});
 
 		this.el_container.addEventListener("transitionend", this.callResize.bind(this));
 		window.addEventListener('resize', this.callResize.bind(this));
@@ -55,10 +49,10 @@ class SideWindow {
 		this.el_editor_container.appendChild(this.el_container);
 
 		this.el_editor_container.addEventListener('focus',function(e){
-			console.log("focused")
+			
 		});
 		this.el_editor_container.addEventListener('blur',function(e){
-			console.log("gone")
+			
 		});
 		
 		app.getElement("#sidewindow-container").appendChild(this.el_editor_container);
@@ -92,8 +86,22 @@ class SideWindow {
 		return SideWindow.focus(this.title);
 	}	
 
-	onEnterView () {}
-	onExitView () {}
+	_onEnterView () {
+		if (!this.focused) {
+			this.focused = true;
+			app.getElements('.sidewin').forEach(function(e){
+				e.classList.remove('focused');
+			});
+			this.el_container.classList.add('focused');
+			if (this.onEnterView) this.onEnterView();
+		}
+	}
+	_onExitView () {
+		if (this.focused) {
+			this.focused = false;
+			if (this.onExitView) this.onExitView();
+		}
+	}
 
 	// focus a fibwindow with a certain title if it exists
 	static focus (title) {
@@ -101,9 +109,9 @@ class SideWindow {
 		for (let c in instances) {
 			if (instances[c].title == title) {
 				child = instances[c];
-				child.onEnterView();
+				child._onEnterView();
 			} else {
-				instances[c].onExitView();
+				instances[c]._onExitView();
 			}
 
 			if (child && c < instances.length-1) {
@@ -118,8 +126,10 @@ class SideWindow {
 			if (curr_focus && curr_focus.title == child.title) {
 				child.el_editor_container.scrollIntoView({ behavior: 'auto' , block: 'start', inline: 'nearest'});
 				checkScrolling(true);
-			} else
+			} else {
 				child.el_editor_container.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
+				checkScrolling();
+			}
 			app.setHistoryHighlight(child.history_id);
 		}
 		return child != null;
@@ -231,6 +241,7 @@ let checkScrolling = (check_focus) => {
 	let el_sidewin_container = app.getElement("#sidewindow-container");
 	let el_sidewin_scroll = app.getElement("#sidewindow-container > #vscroll");
 	let scroll_y = el_sidewin_container.scrollTop;
+	
 	for (let win of instances) {
 		let win_y = parseInt(win.el_editor_container.style.top);
 		let win_h = win.el_editor_container.clientHeight;
@@ -239,10 +250,11 @@ let checkScrolling = (check_focus) => {
 			scroll_y + (win_h/2) < win_bottom) {
 				app.setHistoryHighlight(win.history_id);
 				curr_focus = win;
-				win.onEnterView();
+				win._onEnterView();
 			}
 		else
-			win.onExitView();
+			win._onExitView();
+		
 		
 		if (check_focus) {
 			// don't track scrolling if scrollIntoView was used in .focus()

@@ -29,6 +29,7 @@ let getHTML = (body) => `
 </html>
 `;
 let re_scene_name = /\bScene\s*\(\s*[\'\"](.+)[\'\"]/;
+let re_new_line = /(\r\n|\r|\n)/g;
 
 class GamePreview {
 	constructor (parent) {
@@ -39,7 +40,7 @@ class GamePreview {
 		this.id = "game-"+guid();
 		this.container.id = this.id;
 		this.parent = parent;
-		this.line_offset = 0;
+		this.line_ranges = {};
 		
 		// engine loaded
 		this.refresh_file = null;
@@ -71,7 +72,7 @@ class GamePreview {
 	}
 
 	resume () {
-		if (this.game)
+		if (this.game && !this.errored)
 			this.game.Game.resume();
 	}
 
@@ -115,6 +116,10 @@ class GamePreview {
 	}
 	
 	refreshSource (current_script) {
+		if (this.errored) {	
+			this.errored = false;
+			this.refreshDoc();
+		}
 		this.last_script = current_script;
 		if (!this.game) {
 			this.refresh_file = current_script;
@@ -161,21 +166,28 @@ class GamePreview {
 
 		// wrapped in a function so local variables are destroyed on reload
 		let code = `
-//if (game)
-	(function(){\nlet { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game;
+(function(){
+	let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game;
 	let TestScene = (funcs) => {
 		Scene.ref["_test"] = null;
 		Scene("_test", funcs);
 	}
 `;
-		this.line_offset = 0;
+		let re
+		this.line_ranges = {};
+		let last_line_end = (code.match(re_new_line) || []).length;
 		for (let path of scripts) {
-			if (path == current_script) {
-				this.line_offset = (code.match(/\n/g) || '').length;
-			}
 			code += nwFS.readFileSync(path,'utf-8') + '\n';
+			// get the lines at which this piece of code starts and ends
+			this.line_ranges[path] = {
+				start: last_line_end,
+				end: (code.match(re_new_line) || []).length
+			};
+			
+			last_line_end = this.line_ranges[path].end;
 		}
-		code += (post_load || '') + '})();';
+		code += (post_load || '') + `
+})();`;
 		this.game.Game.end();
 
 		// reload source file
@@ -189,14 +201,31 @@ class GamePreview {
 		script.classList.add("source");
 		script.innerHTML= code;
 
-		parent.onerror = (msg, url, lineNo, columnNo, error) => {
-			if (this.onError) this.onError(msg, url, lineNo - this.line_offset, columnNo, error);
+		iframe.contentWindow.onerror = (msg, url, lineNo, columnNo, error) => {
+			this.errored = true;
+			this.pause();
+			if (this.onError) {
+				let file, range;
+				for (let f in this.line_ranges) {
+					range = this.line_ranges[f];
+					if (lineNo > range.start && lineNo < range.end) {
+						file = f;
+						break;
+					}
+				}
+				if (file)
+					this.onError(msg, file, lineNo - range.start, columnNo);
+
+			}
 			return true;
 		}
-		/*
-		iframe.contentWindow.console.log = () => {
-
-		}*/
+		if (this.onRefresh) this.onRefresh();
+		if (this.onLog)
+		let old_log = iframe.contentWindow.console.log;
+		iframe.contentWindow.console.log = (...args) => {
+			console.log('iframe',args)
+			old_log(...args);
+		}
 		parent.appendChild(script);
 	}
 

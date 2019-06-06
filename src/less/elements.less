@@ -1,19 +1,18 @@
 .editor-container.Code {
 	.log {
-		width: calc(50% - 19px);
+		width: calc(50% - 21px);
 		position: absolute;
 		bottom: 26px;
-		background: rgba(255,255,255,0.1);
+    	background: rgba(0,0,0,0.5);
 		box-sizing: border-box;
 		left: 2px;
 		border-radius: 4px;
-		padding: 4px;
 		max-height: 150px;
 		overflow-y: auto;
 		transition: ease-in-out all 0.1s;
 
 		&:hover {
-			background: rgba(255,255,255,0.25);
+    		background: rgba(0,0,0,0.8);
 		}
 
 		.line, .error {
@@ -21,13 +20,18 @@
 			font-size: 16px;
 			border-bottom: 1px solid rgba(255,255,255,0.1);
 			padding: 2px;
+			margin: 4px;
 			white-space: pre-wrap;
 		}
 		.line {
 			color: white;
 		}
 		.error {
-			color: #ef9a9a;
+			color: @theme-string-dark;
+
+			a {
+				color: @theme-string;
+			}
 		}
 	}
 }

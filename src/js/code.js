@@ -404,9 +404,12 @@ class Code extends Editor {
 			this_ref.codemirror.refresh();
 		});
 
-		this.game.onError = (msg, url, lineNo, columnNo, error) => {
-			this.game.pause();
-			this.console.err(`Line ${lineNo}, Col ${columnNo}: ${msg}`);
+		this.game.onError = (msg, file, lineNo, columnNo) => {
+			let file_link = `<a href='#' onclick="Code.openScript('${file}')">${nwPATH.basename(file)}</a>`;
+			this.console.err(`${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`);
+		}
+		this.game.onRefresh = () => {
+			this.console.clear();
 		}
 
 		this.addCallback('onEnterView',()=>{

@@ -6,7 +6,6 @@ class Player extends Entity {
 	update (dt) {
 		this.hspeed = 0;
 		this.vspeed = 0;
-		bob += 2;
 		if (Input("move_right").pressed)    this.hspeed = 5;
 		if (Input("move_left").pressed)     this.hspeed = -5;
 		if (Input("move_up").pressed)       this.vspeed = -5;
