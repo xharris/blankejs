@@ -127,7 +127,6 @@ class SideWindow {
 			
 		window.requestAnimationFrame(()=>{
 			window.requestAnimationFrame(()=>{
-				console.log('2')
 				app.getElement("#sidewindow-container").scroll({
 					top:parseInt(child.el_editor_container.style.top),
 					left:0,
@@ -147,7 +146,6 @@ class SideWindow {
 			//instances[c].el_editor_container.style.height = container_height+'px';
 			height += container_height;
 		}
-		console.log("1")
 		SideWindow.updateScroll();
 	}
 
