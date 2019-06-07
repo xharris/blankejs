@@ -567,13 +567,13 @@ var app = {
 			entry.appendChild(tab_tri_right);
 			el_history_bar.appendChild(entry);
 
-			app.history_ref[id] = {'entry':entry, 'entry_title':entry_title, 'title':title};
+			app.history_ref[id] = {'entry':entry, 'entry_title':entry_title, 'title':title, 'active':true};
 			app.setHistoryHighlight(id);
 			return id;
 		}
 	},
 
-	setHistoryMostRecent: function(id) {
+	setHistoryMostRecent: function(id, skip_highlight) {
 		if (!app.history_ref[id]) return;
 		
 		let e = app.history_ref[id];
@@ -583,7 +583,8 @@ var app = {
 		// move it to front of history
 		el_history_bar.removeChild(e.entry);
 		el_history_bar.appendChild(e.entry);
-		app.setHistoryHighlight(id);
+		if (!skip_highlight)
+			app.setHistoryHighlight(id);
 
 		return e.entry.dataset.guid;
 	},
@@ -592,7 +593,9 @@ var app = {
 		if (app.history_ref[id]) {
 			app.history_ref[id].entry_title.addEventListener('click',function(){
 				fn_onclick();
-				app.setHistoryMostRecent(id);
+				if (!app.history_ref[id] || !app.history_ref[id].active) {
+					app.setHistoryMostRecent(id);
+				}
 			});
 		}
 	},
@@ -603,6 +606,7 @@ var app = {
 
 	setHistoryActive: function(id, yes) {
 		if (app.history_ref[id]) {
+			app.history_ref[id].active = yes ? true : false;
 			if (yes) app.history_ref[id].entry.classList.add("open");
 			else app.history_ref[id].entry.classList.remove("open");
 		}

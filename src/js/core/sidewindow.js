@@ -59,6 +59,7 @@ class SideWindow {
 		instances.push(this);
 	
 		SideWindow.repositionWindows();
+		SideWindow.scrollTo(this, true);
 		this.setTitle("new sidewindow");
 		this.focus();
 	}
@@ -105,54 +106,53 @@ class SideWindow {
 
 	// focus a fibwindow with a certain title if it exists
 	static focus (title) {
-		let child;
+		let child, smooth_scroll = true;
 		for (let c in instances) {
+			// find the window
 			if (instances[c].title == title) {
 				child = instances[c];
-				child._onEnterView();
-			} else {
-				instances[c]._onExitView();
-			}
-
-			if (child && c < instances.length-1) {
-				child = instances.splice(c,1)[0];
-				instances.push(child);
-				SideWindow.repositionWindows();
-				app.setHistoryMostRecent(child.history_id);
 			}
 		}
+		// scroll down to the new window
 		if (child) {
-			SideWindow.focusing = child;
-			if (curr_focus && curr_focus.title == child.title) {
-				child.el_editor_container.scrollIntoView({ behavior: 'auto' , block: 'start', inline: 'nearest'});
-				//checkScrolling(true);
-			} else {
-				child.el_editor_container.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
-				//checkScrolling();
-			}
-			app.setHistoryHighlight(child.history_id);
+			SideWindow.scrollTo(child, smooth_scroll);
+			checkScrolling();
 		}
 		return child != null;
+	}
+
+	static scrollTo (child, smooth) {
+		SideWindow.focusing = child;
+		disableScrolling();
+			
+		window.requestAnimationFrame(()=>{
+			window.requestAnimationFrame(()=>{
+				console.log('2')
+				app.getElement("#sidewindow-container").scroll({
+					top:parseInt(child.el_editor_container.style.top),
+					left:0,
+					behavior: smooth ? 'smooth' : 'auto'
+				})
+			});
+		});
 	}
 	
 	static repositionWindows () {
 		let height = 0;
-		let container_height = app.getElement("#sidewindow-container").clientHeight;
-		for (let c in instances) {
 		let container = app.getElement("#sidewindow-container");
+		let container_height = container.clientHeight;
+		let last_focus = curr_focus;
+		for (let c in instances) {
 			instances[c].el_editor_container.style.top = height+'px';
 			//instances[c].el_editor_container.style.height = container_height+'px';
 			height += container_height;
 		}
-		if (curr_focus) {
-			curr_focus.el_editor_container.scrollIntoView({ behavior: 'auto' , block: 'start', inline: 'nearest'});
-			console.log("nope its",curr_focus.title)
-		}
+		console.log("1")
 		SideWindow.updateScroll();
 	}
 
 	static updateScroll () {
-		// update scroller
+		// update scroller size
 		let container = app.getElement("#sidewindow-container > #vscroll");
 		blanke.clearElement(container);
 		for (let d = 0; d < instances.length; d++) {
@@ -212,39 +212,21 @@ class SideWindow {
 		else
 			app.setHistoryActive(this.history_id, false);
 	}
-    /*
-	static closeAll (type) {
-		var windows = app.getElements(".sidewin");
-		for (var i = 0; i < windows.length; i++) {
-			if (!type || (type && windows[i].dataset.type == type))
-				windows[i].remove();
-		}
-		boxes = [];
-	}
-
-	static showHideAll () {
-		var windows = app.getElements(".fib-container");
-		for (var i = 0; i < windows.length; i++) {
-			windows[i].classList.toggle("invisible");
-		}
-	}
-
-	static showAll () {
-		var windows = app.getElements(".fib-container");
-		for (var i = 0; i < windows.length; i++) {
-			windows[i].classList.remove("invisible");
-		}
-	}
-
-	static hideAll () {	
-		var windows = app.getElements(".fib-container");
-		for (var i = 0; i < windows.length; i++) {
-			windows[i].classList.add("invisible");
-		}
-	}*/
 }
 
-let checkScrolling = (check_focus) => {
+let disableScrolling = () => {
+	//return;
+	app.getElement("#sidewindow-container").style.pointerEvents = "none";
+	app.getElement("#sidewindow-container > #vscroll").style.pointerEvents = "none";
+}
+
+let enableScrolling = () => {
+	//return;
+	app.getElement("#sidewindow-container").style.pointerEvents = "auto";
+	app.getElement("#sidewindow-container > #vscroll").style.pointerEvents = "auto";
+}
+
+let checkScrolling = () => {
 	let el_sidewin_container = app.getElement("#sidewindow-container");
 	let el_sidewin_scroll = app.getElement("#sidewindow-container > #vscroll");
 	let scroll_y = el_sidewin_container.scrollTop;
@@ -253,24 +235,23 @@ let checkScrolling = (check_focus) => {
 		let win_y = parseInt(win.el_editor_container.style.top);
 		let win_h = win.el_editor_container.clientHeight;
 		let win_bottom = win_y + win_h;
+		// update history highlighting
 		if (scroll_y + (win_h/2) >= win_y && 
 			scroll_y + (win_h/2) < win_bottom) {
+				curr_focus = win;
 				app.setHistoryHighlight(win.history_id);
 				win._onEnterView();
 			}
 		else
 			win._onExitView();
 		
-		
-		if (check_focus) {
-			// don't track scrolling if scrollIntoView was used in .focus()
-			if (scroll_y >= win_y &&
-				scroll_y < win_bottom &&
-				SideWindow.focusing && SideWindow.focusing.title == win.title) {
-					SideWindow.focusing = false;
-					curr_focus = win;
-					el_sidewin_scroll.scrollTop = (scroll_y / el_sidewin_container.clientHeight) * el_sidewin_scroll.clientHeight;
-				}
+		// finished scrolling after .focus()?
+		if (scroll_y >= win_y &&
+			scroll_y < win_bottom) {
+			if (SideWindow.focusing && SideWindow.focusing.title == win.title) {
+				SideWindow.focusing = false;
+				enableScrolling();
+			}
 		}
 	}
 }
@@ -287,11 +268,10 @@ document.addEventListener("ideReady",function(){
 		}
 		ignore_scroll = true;
 		let scroll_y = el_sidewin_container.scrollTop;
-		if (!SideWindow.focusing)
-			el_sidewin_scroll.scrollTop = (scroll_y / el_sidewin_container.clientHeight) * el_sidewin_scroll.clientHeight;
+		el_sidewin_scroll.scrollTop = (scroll_y / el_sidewin_container.clientHeight) * el_sidewin_scroll.clientHeight;
 
 		// update history with currently viewed window
-		checkScrolling(true);
+		checkScrolling();
 	});
 	el_sidewin_scroll.addEventListener("scroll",function(e){
 		if (ignore_scroll) {
@@ -300,7 +280,7 @@ document.addEventListener("ideReady",function(){
 		}
 		ignore_scroll = true;
 		let scroll_y = el_sidewin_scroll.scrollTop;
-		if (!SideWindow.focusing)
+		if (!SideWindow.focusing) 
 			el_sidewin_container.scrollTop = (scroll_y / el_sidewin_scroll.clientHeight) * el_sidewin_container.clientHeight;
 		
 		// update history with currently viewed window
