@@ -125,10 +125,10 @@ class SideWindow {
 			SideWindow.focusing = child;
 			if (curr_focus && curr_focus.title == child.title) {
 				child.el_editor_container.scrollIntoView({ behavior: 'auto' , block: 'start', inline: 'nearest'});
-				checkScrolling(true);
+				//checkScrolling(true);
 			} else {
 				child.el_editor_container.scrollIntoView({ behavior: 'smooth' , block: 'start', inline: 'nearest'});
-				checkScrolling();
+				//checkScrolling();
 			}
 			app.setHistoryHighlight(child.history_id);
 		}
@@ -137,9 +137,16 @@ class SideWindow {
 	
 	static repositionWindows () {
 		let height = 0;
+		let container_height = app.getElement("#sidewindow-container").clientHeight;
 		for (let c in instances) {
+		let container = app.getElement("#sidewindow-container");
 			instances[c].el_editor_container.style.top = height+'px';
-			height += instances[c].el_editor_container.clientHeight;
+			//instances[c].el_editor_container.style.height = container_height+'px';
+			height += container_height;
+		}
+		if (curr_focus) {
+			curr_focus.el_editor_container.scrollIntoView({ behavior: 'auto' , block: 'start', inline: 'nearest'});
+			console.log("nope its",curr_focus.title)
 		}
 		SideWindow.updateScroll();
 	}
@@ -249,7 +256,6 @@ let checkScrolling = (check_focus) => {
 		if (scroll_y + (win_h/2) >= win_y && 
 			scroll_y + (win_h/2) < win_bottom) {
 				app.setHistoryHighlight(win.history_id);
-				curr_focus = win;
 				win._onEnterView();
 			}
 		else
@@ -262,6 +268,7 @@ let checkScrolling = (check_focus) => {
 				scroll_y < win_bottom &&
 				SideWindow.focusing && SideWindow.focusing.title == win.title) {
 					SideWindow.focusing = false;
+					curr_focus = win;
 					el_sidewin_scroll.scrollTop = (scroll_y / el_sidewin_container.clientHeight) * el_sidewin_scroll.clientHeight;
 				}
 		}
@@ -301,4 +308,8 @@ document.addEventListener("ideReady",function(){
 	});
 });
 
-window.addEventListener('resize',() => SideWindow.updateScroll());
+document.addEventListener('ideReady',()=>{
+	nwWIN.on('resize',() => {
+		SideWindow.repositionWindows()
+	});
+})

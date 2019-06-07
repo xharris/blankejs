@@ -622,7 +622,7 @@ body:before, body:after {
 	right: 0px;
 	z-index: 20;
 	overflow: overlay;
-	scroll-snap-type: y mandatory;
+	/* scroll-snap-type: y mandatory; */
 
 	&::-webkit-scrollbar {
 		width: 0px;
@@ -637,10 +637,10 @@ body:before, body:after {
 		width: 10px;
 		overflow-y: auto;
 		z-index: 21;
-		scroll-snap-type: y mandatory;
+		/* scroll-snap-type: y mandatory; */
 
 		.fill {
-			scroll-snap-align: start;
+			/* scroll-snap-align: start; */
 		}
 	}
 
@@ -652,7 +652,7 @@ body:before, body:after {
 		height: 100%;
 		overflow: hidden;
 		outline: 1px dashed rgba(255,255,255,0.25);
-		scroll-snap-align: start;
+		/* scroll-snap-align: start; */
 
 		.gamepreview-freeze {
 			position: absolute;
@@ -1142,9 +1142,11 @@ body:before, body:after {
 		
 
 		&.open {
+			@background: rgba(0,0,0,0.8);
+
 			.entry-title {
 				color: #9e9e9e;
-				background-color: rgba(255,255,255,0.1);
+				background-color: @background;
 			}
 
 			.triangle-right, .triangle-left {
@@ -1152,11 +1154,11 @@ body:before, body:after {
 			}
 
 			.triangle-left {
-				border-top-color: rgba(255,255,255,0.1);
-				border-bottom-color: rgba(255,255,255,0.1);
+				border-top-color: @background;
+				border-bottom-color: @background;
 			}
 			.triangle-right {
-				border-left-color: rgba(255,255,255,0.1);
+				border-left-color: @background;
 			}
 		}
 		
