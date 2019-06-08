@@ -6,10 +6,10 @@ var code_instances = {};
 
 var CODE_ASSOCIATIONS = [
 	[
-		/\bScene\s*\(/g,
+		/\bScene\s*\(\s*[\'\"](.+)[\'\"]/g,
 		"scene"
 	],[
-		/extends\s+Entity\s*/g,
+		/(\w+)\s+extends\s+Entity\s*/g,
 		"entity"
 	],
 ];
@@ -1049,6 +1049,14 @@ document.addEventListener('fileChange', function(e){
 });
 
 function addScripts(folder_path) {
+	Code.classes = {
+		'scene':[],
+		'entity':[]
+	};
+	_addScripts(folder_path);
+}
+
+function _addScripts(folder_path) {
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
 		for (let file of files) {
@@ -1056,7 +1064,7 @@ function addScripts(folder_path) {
 			let file_stat = nwFS.statSync(full_path);		
 			// iterate through directory		
 			if (file_stat.isDirectory() && file != "dist") 
-				addScripts(full_path);
+				_addScripts(full_path);
 
 			// is a script?
 			else if (file.endsWith('.js')) {
@@ -1067,12 +1075,21 @@ function addScripts(folder_path) {
 				let tags = ['script'];
 				let cat, match;
 				for (let assoc of CODE_ASSOCIATIONS) {
-					match = data.match(assoc[0]);
+					match = assoc[0].exec(data);
 					if (match) {
 						cat = assoc[1];
 						tags.push(assoc[1]);
 						if (!Code.scripts[assoc[1]].includes(full_path)) {
 							Code.scripts[assoc[1]].push(full_path);
+						}
+						// store the class name
+						if (Object.keys(Code.classes).includes(cat)) {
+							Code.classes[cat].push(match[1]);
+						}
+						// first scene setting
+						if (cat == 'scene' && !app.project_settings.first_scene) {
+							app.project_settings.first_scene = match[1];
+							app.saveSettings();
 						}
 					}
 				}

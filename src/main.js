@@ -204,24 +204,37 @@ var app = {
 		if (app.game) app.game.refreshSource();
 	},
 
+	extra_windows: [],
 	play: function(options) { 
 		if (app.isProjectOpen()) {
-			let love_path = {
-				'win': nwPATH.join(app.settings.engine_path,'love.exe'),
-				'linux': 'love2d',
-				'mac': nwPATH.resolve(nwPATH.join(app.settings.engine_path,'love.app','Contents','MacOS','love'))
-			};
-
-			let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path),'--ide'].concat(options || []), {
-				cwd: nwPATH.join(app.settings.engine_path, 'lua')
+			let game = new GamePreview(null, {
+				test_scene: false,
+				scene: app.project_settings.first_scene,
+				size: [800, 600]
 			});
-			let console_window = new Console(child);
-			child.on('close', function(){
-				console_window.processClosed()
-			})
-			//child.unref();
-			//Editor.closeAll('Console');
+			nwFS.writeFile(nwPATH.join(app.project_path,'temp.html'), game.getSource(), ()=>{
+				app.newWindow('file://'+nwPATH.join(app.project_path,'temp.html'), (win)=>{
+					win.width = 800;
+					win.height = 600;
+					win.setResizable(false);
+					/*
+					let menu_bar = new nw.Menu({type:'menubar'});
+					menu_bar.append(new nw.MenuItem({
+						label: 'Show dev tools',
+						click: () => { win.showDevTools(); }
+					}));
+					win.menu = menu_bar;
+					*/
+				})
+			});
 		}
+	},
+
+	newWindow: function (html, cb) {
+		nw.Window.open(html, (win)=>{
+			app.extra_windows.push(win);
+			if (cb) cb(win);
+		});
 	},
 
 	toggleWindowVis: function() {
@@ -956,6 +969,10 @@ nwWIN.on('loaded', function() {
 	nwWIN.on('close',function(){
 		this.hide();
 		app.closeProject();
+		// close extra windows
+		for (let win of app.extra_windows) {
+			win.close(true);
+		}
 		this.close(true);
 	});
 

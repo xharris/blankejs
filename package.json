@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "main": "src/index.html",
   "single-instance": false,
-  "chromium-args": "--enable-webgl --ignore-gpu-blacklist",
+  "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
   "window": {
     "frame": false,
     "transparent": true,

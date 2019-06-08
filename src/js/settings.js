@@ -15,12 +15,18 @@ class Settings extends Editor {
         let paths = ['plugin','engine','themes'];
         let files = ['autocomplete'];
         this.el_settings = new BlankeForm([
+            ['GAME'],
+            ['first_scene','select',{'choices':Code.classes.scene,'default':app.project_settings.first_scene}],
 			['IDE'],
             ['theme','select',{'choices':app.themes,'default':app.settings.theme}],
             ['Paths'],
             ...paths.map((path)=>[path,'directory',{default:app.settings[path+'_path']}]),
             ...files.map((path)=>[path,'file',{default:app.settings[path+'_path']}])
-		],true);
+        ],true);
+        this.el_settings.onChange('first_scene',(value)=>{
+            app.project_settings.first_scene = value;
+            app.saveSettings();
+        });
 		this.el_settings.onChange('theme',(value)=>{
 			app.setTheme(value);
 		});

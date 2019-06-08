@@ -16,11 +16,11 @@ class Editor {
 		this.content_area.classList.add('editor-content');
 	}
 
-	setupDragbox() {
+	setupDragbox(content) {
 		var this_ref = this;
 		this.container_type = 'dragbox';
 		// create drag box
-		this.container = new DragBox(this.constructor.name)
+		this.container = new DragBox(content || this.constructor.name)
 		this.container.appendTo(workspace);
 		this.container.width = 400;
 		this.container.height = 300;
@@ -33,11 +33,11 @@ class Editor {
 		return this;
 	}
 
-	setupTab() {
+	setupTab(content) {
 		var this_ref = this;
 		this.container_type = 'tab';
 		// create tab
-		this.container = new Tab(this.constructor.name);
+		this.container = new Tab(content || this.constructor.name);
 		this.container.appendChild(this.content_area);
 		app.setHistoryActive(this.container.history_id, true);
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
@@ -47,10 +47,10 @@ class Editor {
 		return this;
 	}
 
-	setupFibWindow() {
+	setupFibWindow(content) {
 		var this_ref = this;
 		this.container_type = "fibwindow";
-		this.container = new FibWindow(this.constructor.name);
+		this.container = new FibWindow(content || this.constructor.name);
 		this.container.appendTo(workspace);
 		this.container.appendChild(this.content_area);
 		this.container.btn_menu.onclick = function(e) {
@@ -64,10 +64,10 @@ class Editor {
 		return this;
 	}
 
-	setupSideWindow(transparent) {
+	setupSideWindow(transparent, content) {
 		let this_ref = this;
 		this.container_type = "sidewindow";
-		this.container = new SideWindow(this.constructor.name);
+		this.container = new SideWindow(content || this.constructor.name);
 		this.container.appendChild(this.content_area);
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
@@ -120,6 +120,14 @@ class Editor {
 
 	get height() {
 		return this.container.height;
+	}
+
+	set width (v) {
+		this.container.width = v;
+	}
+
+	set height (v) {
+		this.container.height = v;
 	}
 
 	hideMenuButton () {

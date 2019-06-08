@@ -15,7 +15,7 @@ var Blanke = (selector, options) => {
         fill_parent: false,
         auto_resize: false,
         ide_mode: false,
-        root: '',
+        root: null,
         background_color: 0x000000,
         scale_mode: 'nearest',
         round_pixels: true,
@@ -265,7 +265,7 @@ var Blanke = (selector, options) => {
             let name = Asset.parseAssetName(path);
             for (let type in Asset.supported_filetypes) {
                 if (Asset.supported_filetypes[type].includes(ext))
-                    return [type, name];
+                    return [type, Util.basename(name)];
             }
             return ['file', Util.basename(name)];
         },
@@ -281,7 +281,7 @@ var Blanke = (selector, options) => {
                 }
                 return;
             }
-            path = this.options.root + '/' + orig_path;
+            path = (this.options.root ? this.options.root + '/' : '') + orig_path;
             let [type, name] = Asset.getType(path);
             // default values
             if (type == 'image') {
@@ -316,7 +316,7 @@ var Blanke = (selector, options) => {
                     let img_obj = {path:path, animated:false, options:options};
                     // base texture
                     if (!Asset.base_textures[path])
-                        Asset.base_textures[path] = PIXI.BaseTexture.from(path);
+                        Asset.base_textures[path] = PIXI.BaseTexture.from(path, {crossorigin:false});
                     let base_tex = Asset.base_textures[path];
                     if (options && options.frame_size) {
                         img_obj.animated = true;

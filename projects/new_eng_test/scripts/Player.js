@@ -2,9 +2,6 @@ class Player extends Entity {
 	init () {
 		this.addSprite('player_stand');
 		this.z = 20;
-		console.log("hi")
-		console.log("hi")
-		console.log("bye")
 	}
 	update (dt) {
 		this.hspeed = 0;
