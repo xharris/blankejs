@@ -17,6 +17,7 @@ class Settings extends Editor {
         this.el_settings = new BlankeForm([
             ['GAME'],
             ['first_scene','select',{'choices':Code.classes.scene,'default':app.project_settings.first_scene}],
+            ['game_size','number',{'inputs':2, 'separator':'x', 'default':app.project_settings.size}],
 			['IDE'],
             ['theme','select',{'choices':app.themes,'default':app.settings.theme}],
             ['Paths'],
@@ -25,6 +26,10 @@ class Settings extends Editor {
         ],true);
         this.el_settings.onChange('first_scene',(value)=>{
             app.project_settings.first_scene = value;
+            app.saveSettings();
+        });
+        this.el_settings.onChange('game_size',(value)=>{
+            app.project_settings.size = value; 
             app.saveSettings();
         });
 		this.el_settings.onChange('theme',(value)=>{

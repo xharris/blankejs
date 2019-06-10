@@ -225,5 +225,9 @@
         "Steam",
         "UI"
     ],
-    "first_scene": "Play"
+    "first_scene": "Play",
+    "size": [
+        600,
+        600
+    ]
 }

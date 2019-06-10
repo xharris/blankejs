@@ -515,11 +515,13 @@ var Blanke = (selector, options) => {
             app.ticker.remove(this.onUpdate, this);
             this.onEnd();
             for (let obj of this.objects) {
+                console.log(obj)
                 if (obj._destroy)
                     obj._destroy();
                 else if (obj.destroy)
                     obj.destroy();
             }
+            this.objects = [];
             this.container.visible = false;
             this.container.removeChildren();
         }
@@ -579,8 +581,8 @@ var Blanke = (selector, options) => {
     }
     
     Scene.endAll = () => {
-        for (let s in Scene.stack) {
-            Scene.stack[s]
+        for (let name of Scene.stack) {
+            Scene.end(name);
         }
     }
     
@@ -645,7 +647,6 @@ var Blanke = (selector, options) => {
         set x (v){ this.sprite.x = v; }
         get y () { return this.sprite.y; }
         set y (v){ this.sprite.y = v; }
-
         get speed () { if (this.animated) return this.sprite.animationSpeed; }
         set speed (v){ if (this.animated) this.sprite.animationSpeed = v; }
         crop (x, y, w, h) {
@@ -656,6 +657,9 @@ var Blanke = (selector, options) => {
                 new_sprite.texture = new_texture;
                 return new_sprite;
             */
+        }
+        destroy () {
+            this.sprite.destroy();
         }
     }
 
@@ -820,6 +824,7 @@ var Blanke = (selector, options) => {
         }
         destroy () {
             Hitbox.world.remove(this);
+            this.graphics.destroy();
         }
     }
     Hitbox.world = new SpatialHash(Math.max(Game.width, Game.height)/2);
@@ -865,6 +870,16 @@ var Blanke = (selector, options) => {
         }
         _getPixiObjs () {
             return Object.values(this.sprites).map(spr => spr.sprite);
+        }
+        destroy () {
+            // destroy sprites
+            for (let name in this.sprites) {
+                this.sprites[name]
+            }
+            // destroy hitboxes
+            for (let name in this.shapes) {
+                this.shapes[name].destroy();
+            }
         }
         _update (dt) {
             if (this.update)

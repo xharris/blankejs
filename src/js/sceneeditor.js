@@ -878,7 +878,7 @@ class SceneEditor extends Editor {
 			"<label>new name: </label>"+
 			"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
 		{
-			"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".scene"); },
+			"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".map"); },
 			"no": function() {}
 		});
 	}

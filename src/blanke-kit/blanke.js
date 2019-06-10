@@ -424,7 +424,10 @@ class BlankeForm {
             for (var i = 0; i < input_count; i++) {
                 let el_text = blanke.createElement("input","form-text");
                 // set starting val
-                el_text.value = ifndef(extra_args.default, input_type == "text" ? "" : "0");
+                if (Array.isArray(extra_args.default))
+                    el_text.value = ifndef(extra_args.default[i], input_type == "text" ? "" : "0");
+                else
+                    el_text.value = ifndef(extra_args.default, input_type == "text" ? "" : "0");
                 // set input type
                 el_text.type = input_type;
 

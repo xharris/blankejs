@@ -207,16 +207,24 @@ var app = {
 	extra_windows: [],
 	play: function(options) { 
 		if (app.isProjectOpen()) {
+			let proj_set = app.project_settings;
 			let game = new GamePreview(null, {
 				test_scene: false,
-				scene: app.project_settings.first_scene,
-				size: [800, 600]
+				scene: proj_set.first_scene,
+				size: proj_set.size
 			});
+			console.log(proj_set.size);
 			nwFS.writeFile(nwPATH.join(app.project_path,'temp.html'), game.getSource(), ()=>{
 				app.newWindow('file://'+nwPATH.join(app.project_path,'temp.html'), (win)=>{
-					win.width = 800;
-					win.height = 600;
+					win.width = proj_set.size[0];
+					win.height = proj_set.size[1];
 					win.setResizable(false);
+					win.showDevTools();
+					win.reload();
+					win.on('close',function(){
+						nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
+						this.close(true);
+					});
 					/*
 					let menu_bar = new nw.Menu({type:'menubar'});
 					menu_bar.append(new nw.MenuItem({
@@ -419,7 +427,8 @@ var app = {
 				ifndef_obj(app.project_settings, {
 					ico:nwPATH.join('src','logo.ico'),
 					icns:nwPATH.join('src','logo.icns'),
-					first_scene:null
+					first_scene:null,
+					size:[800,600]
 				});
 				app.saveSettings();
 				if (callback) callback();

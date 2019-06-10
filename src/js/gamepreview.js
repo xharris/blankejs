@@ -73,8 +73,9 @@ class GamePreview {
 			this.refreshSource();
 		this.parent.appendChild(this.container);
 
+		this.paused = false;
 		document.addEventListener('engineChange',(e)=>{
-			if (!this.paused)
+			if (!this.paused || this.errored)
 				this.refreshEngine();	
 		});
 	}
@@ -127,12 +128,14 @@ class GamePreview {
 			});
 			var game = Blanke("#game",{
 				config: ${JSON.stringify(app.project_settings)},
-				fill_parent: true,
+				fill_parent: false,
 				width: ${this.options.size[0]},
 				height: ${this.options.size[1]},
 				background_color: 0x485358
 			});
-			${this.refreshSource()}
+			window.addEventListener('load', function(e) {
+				${this.refreshSource()}
+			});
 		</script>`);
 	}
 
