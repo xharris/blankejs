@@ -3527,3 +3527,9 @@ TypeError: Cannot read property 'add' of undefined
     at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:787:30)
     at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:816:6)
 
+[[ 1560282407570 ]]
+TypeError: Cannot read property 'bg_content' of undefined
+    at Function.checkBackground (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:248:17)
+    at FibWindow.close (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:269:13)
+    at HTMLButtonElement.FibWindow.btn_close.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:50:50)
+

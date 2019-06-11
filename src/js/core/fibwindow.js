@@ -237,13 +237,17 @@ class FibWindow {
 				boxes[b].in_background = false;
 			}
 		}
-		if (!old_first_found)
+		if (!old_first_found) {
 			blanke.clearElement(el_bg_workspace);
+			el_bg_workspace.focused_guid = '';
+		}
 
 		// set up the first box
 		if (boxes.length == 1)
 			first_box.fib_container.classList.add("single");
-		if (first_box.bg_content && !first_box.in_background) {
+		if (first_box &&
+			first_box.bg_content && 
+			(!first_box.in_background || el_bg_workspace.focused_guid != first_box.guid)) {
 			blanke.clearElement(el_bg_workspace);
 			first_box.in_background = true;
 			first_box.fib_container.classList.add("first");
@@ -257,6 +261,7 @@ class FibWindow {
 		this.fib_container.remove();
 
 		if (this.onClose) remove_history = ifndef(this.onClose(), remove_history);
+		
 		for (let b = 0; b < boxes.length; b++) {
 			if (boxes[b].history_id == this.history_id) {
 				boxes.splice(b,1);
