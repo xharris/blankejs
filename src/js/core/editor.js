@@ -100,6 +100,20 @@ class Editor {
 		return this.container.height;
 	}
 
+	get bg_width() {
+		if (this.container.in_background)
+			return app.getElement('#bg-workspace').clientWidth;
+		else 
+			return this.width;
+	}
+
+	get bg_height() {
+		if (this.container.in_background)
+			return app.getElement('#bg-workspace').clientHeight;
+		else 
+			return this.height;
+	}
+
 	hideMenuButton () {
 		if (this.container.btn_menu)
 			this.container.btn_menu.style.display = 'none';
@@ -115,6 +129,10 @@ class Editor {
 
 	appendChild (el) {
 		this.content_area.appendChild(el);
+	}
+
+	isInBackground () {
+		return this.container.in_background == true;
 	}
 
 	appendBackground (...args) {

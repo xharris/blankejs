@@ -99,6 +99,7 @@ class FibWindow {
 				boxes[b].fib_title.click();
 				boxes.unshift(boxes.splice(b,1)[0]);
 				FibWindow.resizeWindows();
+				FibWindow.checkBackground();
 
 				return true;
 			}
@@ -223,12 +224,28 @@ class FibWindow {
 		let el_bg_workspace = app.getElement('#bg-workspace');
 		let first_box = boxes[0];
 		// remove class from other boxes
+		let old_first_found = false;
 		for (let b = 1; b < boxes.length; b++) {
-			boxes[b].fib_container.classList.remove("first")
+			if (boxes.length != 1)
+				boxes[b].fib_container.classList.remove("single");
+			if (first_box.guid != boxes[b].guid) {
+				boxes[b].fib_container.classList.remove("first");
+				if (boxes[b].bg_content && boxes[b].in_background) {
+					old_first_found = true;
+					boxes[b].appendChild(el_bg_workspace.removeChild(boxes[b].bg_content));
+				}
+				boxes[b].in_background = false;
+			}
 		}
-		// set up the first box
-		if (first_box.bg_content && first_box.guid != el_bg_workspace.focused_guid) {
+		if (!old_first_found)
 			blanke.clearElement(el_bg_workspace);
+
+		// set up the first box
+		if (boxes.length == 1)
+			first_box.fib_container.classList.add("single");
+		if (first_box.bg_content && !first_box.in_background) {
+			blanke.clearElement(el_bg_workspace);
+			first_box.in_background = true;
 			first_box.fib_container.classList.add("first");
 			el_bg_workspace.dataset.type = first_box.type;
 			el_bg_workspace.focused_guid = first_box.guid;
@@ -246,6 +263,7 @@ class FibWindow {
 			}
 		}
 		FibWindow.resizeWindows();
+		FibWindow.checkBackground();
 
 		if (remove_history)
 			app.removeHistory(this.history_id);
@@ -259,6 +277,7 @@ class FibWindow {
 			if (!type || (type && windows[i].dataset.type == type))
 				windows[i].remove();
 		}
+		blanke.clearElement(app.getElement("#bg-workspace"));
 		boxes = [];
 	}
 

@@ -271,32 +271,12 @@
 	}
 }
 
-#bg-workspace[data-type="SceneEditor"] {
-
+.fib-container[data-type="SceneEditor"] {
+	border: 1px solid rgba(147, 160, 166, 0.5);
 }
-.fib-container.first[data-type="SceneEditor"] {
-	position: absolute;
-	right: @window-padding;
-	top: 0px;
-	pointer-events: none;
-	background-color: rgba(38, 50, 56, 0.81);
-	transition: all ease-in-out 0.2s;
-	margin-top: 58px;
-	z-index: 5;
-	border-radius: 4px;
-	overflow: hidden;
-	width: auto;
-	height: auto;
-	margin: 10px;
-
-	.sidebar { 
-
-	}
-}
-.content[data-type="SceneEditor"] {
+.fib-container .content[data-type="SceneEditor"] {
 	overflow: hidden !important;
-	margin-top: 24px;
-
+    
 	canvas { 
 		.centered();
 	}
@@ -305,7 +285,8 @@
 		position: absolute;
 		top: 0px;
 		right: @window-padding;
-		margin-top: 28px;
+		z-index: 1;
+		margin-top: 24px;
 
 		i {
 			text-shadow: 0px 0px 3px black;
@@ -313,10 +294,14 @@
 	}
 
 	.sidebar {
+		position: absolute;
+		right: 0px;
+		margin: @window-padding;
+	    margin-top: 58px;
+		z-index: 1;
 	    pointer-events: none;
 		background-color: rgba(38, 50, 56, 0.81);
 	    transition: all ease-in-out 0.2s;
-	    margin-top: 58px;
 	    border-radius: 4px;
     	overflow: hidden;
 
@@ -752,222 +737,57 @@
 		/*}*/
 	}
 }
+#bg-workspace[data-type="SceneEditor"] {
 
-.content[data-type="MapEditor"] {
-	overflow: hidden !important;
+}
+.fib-container.first[data-type="SceneEditor"] {
+	position: absolute;
+	pointer-events: none;
+	background-color: rgba(38, 50, 56, 0.81);
+	transition: all ease-in-out 0.2s;
+	margin-top: 58px;
+	z-index: 5;
+	border-radius: 4px;
+	overflow: hidden;
+	width: auto !important;
+	height: auto !important;
+	margin: 10px;
 
-	canvas { 
-		.centered();
+	.content {
+		position: initial;
+		margin-top: 24px;
 	}
 
-	.sidebar {
-	    position: absolute;
-	    right: @window-padding;
-	    top: 0px;
-	    pointer-events: none;
-	    background-color: rgba(207,216,220 ,0.25);
-	    transition: all ease-in-out 0.2s;
-	    margin-top: 38px;
+	.sidebar { 
+		width: 160px;
+		margin: 0px;
+		margin-top: @window-padding;
+		background-color: transparent;
+		display: inline-table;
+		position: initial;
 
-	    &:hover {
-	    	width: 100px;  	
-	    }
-
-	    &:not(:hover) {
-			width: 50px;
-
-			.btn-add-object, .btn-add-layer {
-	    		opacity: 0;
-	    	}
-
-	    	.input-letter, .input-layer {
-	    		width: 100%;
-	    	}
-	    }
-
-	    * {
-	    	pointer-events: all;
-	   	 	transition: all ease-in-out 0.2s;
-	    }
-
-	    .object-container, .layer-container {
-	    	position: relative;
-	    	width: 100%;
-	    	padding-bottom: 15px;
-	    }
-
-	    /* OBJECT */
-	    .input-letter, .select-letter {
-		    border: none;
-		    outline: none;
-		    padding: 5px;
-		    text-align: center;
-	    }
-
-	    .input-letter {
-	    	background-color: rgba(207,216,220 ,1);
-		    position: absolute;
-		    width: calc(~'100% - 18px');
-		    font-size: 32px;
-		    padding: 4px 5px;
-		    box-sizing: border-box;
+		&.hidden {
+			height: 0px;
+			margin: 0px;
+			margin-top: 26px;
 		}
+	}
 
-		.select-letter {
-    	    background-color: rgba(176,190,197 ,1);
-		    width: 100%;
-		    height: 30px;
-		    float: right;
+	#toggle-scene-sidebar {
+		margin-top: 24px;
+	}
 
-		    option:first-child {
-		    	display: none;
-		    }
+	&:not(.single) {
+		right: 50%;
+	}
+
+	&.single {
+		right: @window-padding;
+		top: 0px;
+
+		.sidebar {
+			width: 200px;
 		}
-
-		.btn-add-object {
-		    position: absolute;
-		    padding: 1px 3px;
-		    margin: 0px;
-		    border: none;
-		    outline: none;
-		    width: 15px;
-		    height: 15px;
-		    top: 7.5px;
-		    left: -7.5px;
-		    border-radius: 100%;
-		    font-size: 20px;
-		    font-weight: 500;
-		    background-color: rgba(176,190,197 ,1);
-		    transition: all ease-in-out 0.1s;
-		    text-align: left;
-		    line-height: 15px;
-		    z-index: 10;
-
-		    &:hover {	
-			    background-color: rgba(139,195,74,1);
-			    color: white;
-		    }
-		}
-
-		.input-name {
-		    width: 100%;
-		    padding: 6px;
-		    border: 0px;
-		    box-sizing: border-box;
-		    outline: none;
-		    background-color: rgba(255,255,255,0.5);
-		}
-
-		.color-object {
-		    width: 100%;
-		    padding: 0px;
-		    margin: 0px;
-		    border: none;
-		    outline: none;
-		    background-color: transparent;
-		}
-
-		/* LAYER */
-		.input-layer, .select-layer {
-		    border: none;
-		    outline: none;
-		    padding: 5px;
-		    text-align: center;
-	    }
-
-	    .input-layer {
-	    	background-color: #cfd8dc;
-		    position: absolute;
-		    width: calc(~'100% - 18px');
-		    font-size: 13px;
-		    height: 30px;
-		    padding-top: 0px;
-    		padding-bottom: 0px;
-    		box-sizing: border-box;
-		}
-
-		.select-layer {
-    	    background-color: rgba(176,190,197 ,1);
-		    width: 100%;
-		    height: 30px;
-		    float: right;
-
-		    option:first-child {
-		    	display: none;
-		    }
-		}
-
-		.btn-add-layer {
-		    position: absolute;
-		    padding: 0px;
-		    margin: 0px;
-		    border: none;
-		    outline: none;
-		    width: 15px;
-		    height: 15px;
-		    top: 7.5px;
-		    left: -7.5px;
-		    border-radius: 100%;
-		    font-size: 21px;
-		    font-weight: 500;
-		    background-color: rgba(176,190,197 ,1);
-		    padding: 0px;
-		    transition: all ease-in-out 0.2s;
-
-		    &:hover {	
-			    background-color: rgba(139,195,74,1);
-			    color: white;
-		    }
-		}
-
-		.snap-container {
-			display: inline-block;
-   		 	width: 100%;
-
-   		 	.snap-label {
-   		 		margin: 0px;
-			    margin-top: 5px;
-			    text-transform: uppercase;
-   		 	}
-			.snap-sep {
-				margin: 0px;
-				width: 20%;
-				display: inline-block;
-				text-align: center
-   		 	}
-   		 	.snap-x, .snap-y {
-   		 		width: 40%;
-   		 		border: none;
-   		 		outline: none;
-		    	background-color: rgba(255,255,255,0.5);
-		    	padding: 4px;
-		    	box-sizing: border-box;
-
-		    	&::-webkit-outer-spin-button,
-				&::-webkit-inner-spin-button {
-				    /* display: none; <- Crashes Chrome on hover */
-				    -webkit-appearance: none;
-				    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
-				}
-   		 	}
-   		 	.snap-x {
-   		 		text-align: right;
-   		 	}
-   		 	.snap-y {
-   		 		text-align: left;
-   		 	}
-		}
-
-		/*
-		.image-container {
-			transition: all ease-in 0.1s;
-
-			&.hidden {
-			    height: 0px;
-			    overflow: hidden;
-			    padding: 0px;
-			}
-		}*/
 	}
 }
 

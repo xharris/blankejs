@@ -397,7 +397,7 @@ var app = {
 
 	hideWelcomeScreen: function() {
 		app.getElement("#welcome").classList.add("hidden");
-		app.getElement("#workspace").style.pointerEvents = "auto";
+		app.getElement("#workspace").style.pointerEvents = "";
 	},
 
 	showWelcomeScreen: function() {

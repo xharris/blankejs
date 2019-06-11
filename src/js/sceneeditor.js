@@ -51,8 +51,8 @@ class SceneEditor extends Editor {
 		PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
 		this.pixi = new PIXI.Application(this.game_width, this.game_height, {
 			backgroundColor: 0x354048,// 0x424242,
-			antialias: false,
-			resizeTo: app.getElement("#bg-workspace")
+			antialias: false//,
+			//resizeTo: app.getElement("#bg-workspace")
 		});
 		this.grid_color = 0xBDBDBD;
 		this.appendBackground(this.pixi.view);
@@ -507,10 +507,10 @@ class SceneEditor extends Editor {
 				}
 			}
 		});
-		this.getContent().addEventListener('mouseenter', function(e){
+		this.pixi.view.addEventListener('mouseenter', function(e){
 			this_ref.can_drag = true;
 		});
-		this.getContent().addEventListener('mouseout', function(e){
+		this.pixi.view.addEventListener('mouseout', function(e){
 			if (!this_ref.dragging) this_ref.can_drag = false;
 		});
 
@@ -828,13 +828,13 @@ class SceneEditor extends Editor {
 	}
 
 	resizeEditor () {
-		let w = this.width;
-		let h = this.height;
+		let w = this.bg_width;
+		let h = this.bg_height;
 
-		//this.pixi.renderer.view.style.width = w + "px";
-		//this.pixi.renderer.view.style.height = h + "px";
+		this.pixi.renderer.view.style.width = w + "px";
+		this.pixi.renderer.view.style.height = h + "px";
 		//this part adjusts the ratio:
-		//this.pixi.renderer.resize(w,h);
+		this.pixi.renderer.resize(w,h);
 		this.game_width = w;
 		this.game_height = h;
 
