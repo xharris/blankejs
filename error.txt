@@ -3486,3 +3486,44 @@ TypeError: el_platform_container.classList.push is not a function
     at new Exporter (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/exporter.js:51:18)
     at HTMLButtonElement.onclick (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/index.html:93:74)
 
+[[ 1560206638058 ]]
+TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+    at Function.checkBackground (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:227:20)
+    at new FibWindow (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:63:13)
+    at SceneEditor.setupFibWindow (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/editor.js:52:20)
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:18:8)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2040:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2058:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:787:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:816:6)
+
+[[ 1560206639832 ]]
+TypeError: Failed to execute 'appendChild' on 'Node': parameter 1 is not of type 'Node'.
+    at Function.checkBackground (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:227:20)
+    at new FibWindow (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:63:13)
+    at SceneEditor.setupFibWindow (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/editor.js:52:20)
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:18:8)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2040:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2058:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:787:30)
+    at HTMLDivElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:801:4)
+
+[[ 1560206932799 ]]
+TypeError: this.appendBackground is not a function
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:58:8)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2040:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2058:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:787:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:816:6)
+
+[[ 1560212245747 ]]
+TypeError: Cannot read property 'add' of undefined
+    at Function.checkBackground (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:232:24)
+    at FibWindow.appendBackground (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/fibwindow.js:218:13)
+    at SceneEditor.appendBackground (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/core/editor.js:122:19)
+    at new SceneEditor (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:58:8)
+    at openScene (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2040:3)
+    at onSelect (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/js/sceneeditor.js:2058:8)
+    at selectSearchResult (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:787:30)
+    at HTMLInputElement.<anonymous> (chrome-extension://nealjcpnjdgmbhbkhgidmldbcgfiigpk/src/main.js:816:6)
+

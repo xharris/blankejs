@@ -271,8 +271,31 @@
 	}
 }
 
+#bg-workspace[data-type="SceneEditor"] {
+
+}
+.fib-container.first[data-type="SceneEditor"] {
+	position: absolute;
+	right: @window-padding;
+	top: 0px;
+	pointer-events: none;
+	background-color: rgba(38, 50, 56, 0.81);
+	transition: all ease-in-out 0.2s;
+	margin-top: 58px;
+	z-index: 5;
+	border-radius: 4px;
+	overflow: hidden;
+	width: auto;
+	height: auto;
+	margin: 10px;
+
+	.sidebar { 
+
+	}
+}
 .content[data-type="SceneEditor"] {
 	overflow: hidden !important;
+	margin-top: 24px;
 
 	canvas { 
 		.centered();
@@ -290,14 +313,10 @@
 	}
 
 	.sidebar {
-	    position: absolute;
-	    right: @window-padding;
-	    top: 0px;
 	    pointer-events: none;
 		background-color: rgba(38, 50, 56, 0.81);
 	    transition: all ease-in-out 0.2s;
 	    margin-top: 58px;
-	    z-index: 5;
 	    border-radius: 4px;
     	overflow: hidden;
 

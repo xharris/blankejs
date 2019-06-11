@@ -52,10 +52,10 @@ class SceneEditor extends Editor {
 		this.pixi = new PIXI.Application(this.game_width, this.game_height, {
 			backgroundColor: 0x354048,// 0x424242,
 			antialias: false,
-			autoResize: true,
+			resizeTo: app.getElement("#bg-workspace")
 		});
 		this.grid_color = 0xBDBDBD;
-		this.appendChild(this.pixi.view);
+		this.appendBackground(this.pixi.view);
 
 		this.pixi.stage.interactive = true;
 		this.pixi.stage.hitArea = this.pixi.screen;
@@ -831,10 +831,10 @@ class SceneEditor extends Editor {
 		let w = this.width;
 		let h = this.height;
 
-		this.pixi.renderer.view.style.width = w + "px";
-		this.pixi.renderer.view.style.height = h + "px";
+		//this.pixi.renderer.view.style.width = w + "px";
+		//this.pixi.renderer.view.style.height = h + "px";
 		//this part adjusts the ratio:
-		this.pixi.renderer.resize(w,h);
+		//this.pixi.renderer.resize(w,h);
 		this.game_width = w;
 		this.game_height = h;
 

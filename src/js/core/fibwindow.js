@@ -10,6 +10,7 @@ class FibWindow {
 		this.title = '';
 		this.subtitle = '';
 		this.history_id = app.addHistory(this.title);
+		this.type = content_type;
 
 		var this_ref = this;
 
@@ -59,6 +60,7 @@ class FibWindow {
 		boxes.unshift(this);
 
 		FibWindow.resizeWindows();
+		FibWindow.checkBackground();
 	}
 
 	callResize () {
@@ -128,6 +130,7 @@ class FibWindow {
 
 		for (let b = 0; b < boxes.length; b++) {
 			let box_ref = boxes[b];
+			box_ref.index = b;
 
 			let b2 = b+1;
 
@@ -208,6 +211,29 @@ class FibWindow {
 
 	appendChild (element) {
 		this.fib_content.appendChild(element);
+	}
+
+	appendBackground (element) {
+		this.bg_content = element;
+		FibWindow.checkBackground();	
+	}
+
+	// which fibwindow should have content in the background
+	static checkBackground () {
+		let el_bg_workspace = app.getElement('#bg-workspace');
+		let first_box = boxes[0];
+		// remove class from other boxes
+		for (let b = 1; b < boxes.length; b++) {
+			boxes[b].fib_container.classList.remove("first")
+		}
+		// set up the first box
+		if (first_box.bg_content && first_box.guid != el_bg_workspace.focused_guid) {
+			blanke.clearElement(el_bg_workspace);
+			first_box.fib_container.classList.add("first");
+			el_bg_workspace.dataset.type = first_box.type;
+			el_bg_workspace.focused_guid = first_box.guid;
+			el_bg_workspace.appendChild(first_box.bg_content);
+		}
 	}
 
 	close (remove_history) {

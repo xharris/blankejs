@@ -109,8 +109,17 @@ class Editor {
 		return this.content_area;
 	}
 
+	getContainer() {
+		return this.container;
+	}
+
 	appendChild (el) {
 		this.content_area.appendChild(el);
+	}
+
+	appendBackground (...args) {
+		if (this.container_type == 'fibwindow') 
+			this.container.appendBackground(...args);
 	}
 
 	setTitle (val) {
