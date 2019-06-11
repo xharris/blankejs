@@ -111,6 +111,7 @@ class FibWindow {
 	static toggleSplit () {
 		split_enabled = !split_enabled;
 		this.resizeWindows();
+		this.checkBackground();
 	}
 
 	static refreshBadgeNum () {
@@ -223,10 +224,10 @@ class FibWindow {
 	static checkBackground () {
 		let el_bg_workspace = app.getElement('#bg-workspace');
 		let first_box = boxes[0];
-		// remove class from other boxes
+		// remove class from other boxes NOTE!!! This loops iterates 1 -> boxes.length
 		let old_first_found = false;
 		for (let b = 1; b < boxes.length; b++) {
-			if (boxes.length != 1)
+			if (boxes.length != 1 && split_enabled) 
 				boxes[b].fib_container.classList.remove("single");
 			if (first_box.guid != boxes[b].guid) {
 				boxes[b].fib_container.classList.remove("first");
@@ -243,7 +244,8 @@ class FibWindow {
 		}
 
 		// set up the first box
-		if (boxes.length == 1)
+		first_box.fib_container.classList.remove("single");
+		if (boxes.length == 1 || !split_enabled)
 			first_box.fib_container.classList.add("single");
 		if (first_box &&
 			first_box.bg_content && 
