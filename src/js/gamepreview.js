@@ -1,5 +1,5 @@
-let getHTML = (body) => {
-let rel_path = nwPATH.relative(app.project_path,'../blankejs');
+let getHTML = (body, rel_path) => {
+rel_path = rel_path || nwPATH.relative('src', app.settings.engine_path);
 return `
 <!DOCTYPE html>
 <html>
@@ -23,9 +23,9 @@ return `
 		}
 	</style>
 	<head>
-		<script src="${rel_path}/blankejs/pixi.min.js"></script>
-		<script src="${rel_path}/blankejs/SAT.min.js"></script>
-		<script src="${rel_path}/blankejs/blanke.js"></script>
+		<script src="${rel_path}/pixi.min.js"></script>
+		<script src="${rel_path}/SAT.min.js"></script>
+		<script src="${rel_path}/blanke.js"></script>
 	</head>
 	${body}
 </html>
@@ -80,6 +80,7 @@ class GamePreview {
 
 		this.paused = false;
 		document.addEventListener('engineChange',(e)=>{
+			console.log("reloading")
 			if (!this.paused || this.errored)
 				this.refreshEngine();	
 		});
@@ -105,7 +106,7 @@ class GamePreview {
 			this.game.Game.resume();
 	}
 
-	getSource () {
+	getSource (rel_path) {
 		return getHTML(`
 		<body>
 			<div id="game"></div>
@@ -141,7 +142,7 @@ class GamePreview {
 			window.addEventListener('load', function(e) {
 				${this.refreshSource()}
 			});
-		</script>`);
+		</script>`, rel_path);
 	}
 
 	refreshDoc (extra_code) {
@@ -332,8 +333,9 @@ class GamePreview {
 }
 
 let engine_watch;
-window.addEventListener('load',(e)=>{
-	engine_watch = nwFS.watch(nwPATH.join('blankejs','blanke.js'), (e) => {
+document.addEventListener('ideReady',(e)=>{
+	engine_watch = nwFS.watch(nwPATH.join(app.settings.engine_path,'blanke.js'), (e) => {
+		console.log('ok')
 		dispatchEvent('engineChange');
 	});
 })

@@ -214,7 +214,10 @@ var app = {
 				size: proj_set.size
 			});
 			console.log(proj_set.size);
-			nwFS.writeFile(nwPATH.join(app.project_path,'temp.html'), game.getSource(), ()=>{
+			nwFS.writeFile(
+				nwPATH.join(app.project_path,'temp.html'), 
+				game.getSource(nwPATH.relative(app.project_path, app.settings.engine_path)), ()=>{
+
 				app.newWindow('file://'+nwPATH.join(app.project_path,'temp.html'), (win)=>{
 					win.width = proj_set.size[0];
 					win.height = proj_set.size[1];
@@ -378,7 +381,7 @@ var app = {
 			ifndef_obj(app.settings, {
 				recent_files:[],
 				plugin_path:'plugins',
-				engine_path:'love2d',
+				engine_path:'blankejs',
 				themes_path:'themes',
 				autocomplete_path:'./autocomplete.js',
 				theme:'green'
