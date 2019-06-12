@@ -161,19 +161,13 @@ class Editor {
 		this.content_area.appendChild(el);
 	}
 
-<<<<<<< HEAD
 	appendBackground (el) {
 		if (this.container.appendBackground)
 			this.container.appendBackground(el);
-=======
-	isInBackground () {
-		return this.container.in_background == true;
 	}
 
-	appendBackground (...args) {
-		if (this.container_type == 'fibwindow') 
-			this.container.appendBackground(...args);
->>>>>>> master
+	isInBackground () {
+		return this.container.in_background == true;
 	}
 
 	setTitle (val) {
