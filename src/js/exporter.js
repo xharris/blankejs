@@ -74,11 +74,9 @@ class Exporter extends Editor {
 		this.el_export_form = new BlankeForm([
 			['general'],
 			['name', 'text', {'default':app.project_settings.export.name}],
-			['remove_unused','checkbox',{'default':app.project_settings.export.remove_unused,label:"remove unused classes"}],
+			//['remove_unused','checkbox',{'default':app.project_settings.export.remove_unused,label:"remove unused classes"}],
 			['web'],
 			['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
-			['web_memory','number',{'default':app.project_settings.export.web_memory,label:"memory size"}],
-			['web_stack','number',{'default':app.project_settings.export.web_stack,label:"stack size"}]
 		]);
 		this.el_export_form.container.classList.add("dark");
 		['name','remove_unused','web_autoplay','web_memory','web_stack'].forEach((s)=>{

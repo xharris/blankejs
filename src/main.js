@@ -213,7 +213,6 @@ var app = {
 				scene: proj_set.first_scene,
 				size: proj_set.size
 			});
-			console.log(proj_set.size);
 			nwFS.writeFile(
 				nwPATH.join(app.project_path,'temp.html'), 
 				game.getSource(nwPATH.relative(app.project_path, app.settings.engine_path)), ()=>{

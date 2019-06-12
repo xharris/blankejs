@@ -675,10 +675,10 @@ class Code extends Editor {
 			this_ref.focus();
 		});
 		new_editor.on('focus', function(cm){
-			console.log("here", this_ref.file)
+			// TODO: this_ref.game.resume(); // NOTE: has a couple edge cases!
 		});
 		new_editor.on('blur', function(cm){
-			console.log("gone", this_ref.file)
+			// TODO: this_ref.game.pause(); // NOTE: has a couple edge cases!
 		});
 
 		if (this.codemirror == undefined) this.codemirror = new_editor;

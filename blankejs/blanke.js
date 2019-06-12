@@ -10,6 +10,7 @@ var Blanke = (selector, options) => {
         auto_focus: true,
         width: 600,
         height: 400,
+        resizable: false,
         resolution: 1,
         config_file: 'config.json',
         fill_parent: false,
@@ -182,8 +183,8 @@ var Blanke = (selector, options) => {
     var Game = {
         paused: false,
         config: {},
-        get width () { return app.view.width; },
-        get height () { return app.view.height; },
+        get width () { return blanke_ref.options.resizeable ? app.view.width : blanke_ref.options.width; },
+        get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
         set background_color (v) { app.renderer.backgroundColor = v; },
         // replaces the game with a screenshot
         pause: () => {

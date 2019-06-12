@@ -1,5 +1,5 @@
 let getHTML = (body, rel_path) => {
-rel_path = rel_path || nwPATH.relative('src', app.settings.engine_path);
+rel_path = rel_path || nwPATH.relative('', app.settings.engine_path);
 return `
 <!DOCTYPE html>
 <html>
@@ -58,7 +58,7 @@ class GamePreview {
 			this.game = this.container.contentWindow.game;
 			
 			if (this.errored) {
-				//return;
+				return;
 			}
 
 			if (this.refresh_file) {
@@ -80,7 +80,6 @@ class GamePreview {
 
 		this.paused = false;
 		document.addEventListener('engineChange',(e)=>{
-			console.log("reloading")
 			if (!this.paused || this.errored)
 				this.refreshEngine();	
 		});
@@ -287,8 +286,8 @@ class GamePreview {
 			script.innerHTML= code;
 
 			iframe.contentWindow.onerror = (msg, url, lineNo, columnNo, error) => {
-				this.errored = true;
 				this.pause();
+				this.errored = true;
 				if (this.onError) {
 					let file, range;
 					for (let f in this.line_ranges) {
@@ -305,7 +304,7 @@ class GamePreview {
 				return true;
 			}
 			if (this.onRefresh) this.onRefresh();
-			if (false && this.onLog) {
+			if (this.onLog) {
 				iframe.contentWindow.console = {
 					log:  (...args) => {
 						this.onLog(args)
@@ -319,9 +318,8 @@ class GamePreview {
 	}
 
 	refreshEngine () {
-		if (this.game) this.game.Game.end();
-		 
-		this.refreshDoc();
+		if (!this.paused)
+			this.refreshSource(this.last_script);
 		/*
 		let iframe = this.container;
 		blanke.destroyElement(iframe.contentDocument.querySelector('script[src="../blankejs/blanke.js"]'));
@@ -335,7 +333,6 @@ class GamePreview {
 let engine_watch;
 document.addEventListener('ideReady',(e)=>{
 	engine_watch = nwFS.watch(nwPATH.join(app.settings.engine_path,'blanke.js'), (e) => {
-		console.log('ok')
 		dispatchEvent('engineChange');
 	});
 })

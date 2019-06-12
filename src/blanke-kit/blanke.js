@@ -350,7 +350,10 @@ class BlankeForm {
                 default = null
             }
             - number {
-                same as text
+                ...same as text,
+                step,
+                min,
+                max
             }
     */
     constructor (inputs, dark) {
@@ -424,9 +427,9 @@ class BlankeForm {
             for (var i = 0; i < input_count; i++) {
                 let el_text = blanke.createElement("input","form-text");
                 // set starting val
-                if (Array.isArray(extra_args.default))
+                if (Array.isArray(extra_args.default)) {
                     el_text.value = ifndef(extra_args.default[i], input_type == "text" ? "" : "0");
-                else
+                } else
                     el_text.value = ifndef(extra_args.default, input_type == "text" ? "" : "0");
                 // set input type
                 el_text.type = input_type;
@@ -438,7 +441,7 @@ class BlankeForm {
                     }
                 }
 
-                this.prepareInput(el_text, input_name);
+                this.prepareInput(el_text, input_name, i);
 
                 el_text.setAttribute('data-index',i);
                 el_inputs_container.appendChild(el_text);
@@ -538,10 +541,10 @@ class BlankeForm {
     }
 
     // "private" method
-    prepareInput (element, name) {
+    prepareInput (element, name, index) {
         element.name_ref = name;
         this.input_ref[name].push(element);
-        this.input_values[name].push(0);
+        this.input_values[name][index || 0] = (index != null ? this.input_args[name].default[index] : this.input_args[name].default);
     }
 
     getInput (input_name) {
