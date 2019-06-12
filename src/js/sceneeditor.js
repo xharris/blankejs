@@ -51,8 +51,8 @@ class SceneEditor extends Editor {
 		PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
 		this.pixi = new PIXI.Application(this.game_width, this.game_height, {
 			backgroundColor: 0x354048,// 0x424242,
-			antialias: false,
-			autoResize: true,
+			antialias: false//,
+			//resizeTo: app.getElement("#bg-workspace")
 		});
 		this.grid_color = 0xBDBDBD;
 		this.appendBackground(this.pixi.view);
@@ -831,6 +831,10 @@ class SceneEditor extends Editor {
 		let parent = this.pixi.view.parentElement;
 		let w = parent.clientWidth;
 		let h = parent.clientHeight;
+		/*
+		let w = this.bg_width;
+		let h = this.bg_height;
+		*/
 
 		this.pixi.renderer.view.style.width = w + "px";
 		this.pixi.renderer.view.style.height = h + "px";

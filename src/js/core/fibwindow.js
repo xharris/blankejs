@@ -10,6 +10,7 @@ class FibWindow {
 		this.title = '';
 		this.subtitle = '';
 		this.history_id = app.addHistory(this.title);
+		this.type = content_type;
 
 		var this_ref = this;
 
@@ -59,6 +60,7 @@ class FibWindow {
 		boxes.unshift(this);
 
 		FibWindow.resizeWindows();
+		FibWindow.checkBackground();
 	}
 
 	callResize () {
@@ -97,6 +99,7 @@ class FibWindow {
 				boxes[b].fib_title.click();
 				boxes.unshift(boxes.splice(b,1)[0]);
 				FibWindow.resizeWindows();
+				FibWindow.checkBackground();
 
 				return true;
 			}
@@ -108,6 +111,7 @@ class FibWindow {
 	static toggleSplit () {
 		split_enabled = !split_enabled;
 		this.resizeWindows();
+		this.checkBackground();
 	}
 
 	static refreshBadgeNum () {
@@ -128,6 +132,7 @@ class FibWindow {
 
 		for (let b = 0; b < boxes.length; b++) {
 			let box_ref = boxes[b];
+			box_ref.index = b;
 
 			let b2 = b+1;
 
@@ -210,16 +215,62 @@ class FibWindow {
 		this.fib_content.appendChild(element);
 	}
 
+	appendBackground (element) {
+		this.bg_content = element;
+		FibWindow.checkBackground();	
+	}
+
+	// which fibwindow should have content in the background
+	static checkBackground () {
+		let el_bg_workspace = app.getElement('#bg-workspace');
+		let first_box = boxes[0];
+		// remove class from other boxes NOTE!!! This loops iterates 1 -> boxes.length
+		let old_first_found = false;
+		for (let b = 1; b < boxes.length; b++) {
+			if (boxes.length != 1 && split_enabled) 
+				boxes[b].fib_container.classList.remove("single");
+			if (first_box.guid != boxes[b].guid) {
+				boxes[b].fib_container.classList.remove("first");
+				if (boxes[b].bg_content && boxes[b].in_background) {
+					old_first_found = true;
+					boxes[b].appendChild(el_bg_workspace.removeChild(boxes[b].bg_content));
+				}
+				boxes[b].in_background = false;
+			}
+		}
+		if (!old_first_found) {
+			blanke.clearElement(el_bg_workspace);
+			el_bg_workspace.focused_guid = '';
+		}
+
+		// set up the first box
+		first_box.fib_container.classList.remove("single");
+		if (boxes.length == 1 || !split_enabled)
+			first_box.fib_container.classList.add("single");
+		if (first_box &&
+			first_box.bg_content && 
+			(!first_box.in_background || el_bg_workspace.focused_guid != first_box.guid)) {
+			blanke.clearElement(el_bg_workspace);
+			first_box.in_background = true;
+			first_box.fib_container.classList.add("first");
+			el_bg_workspace.dataset.type = first_box.type;
+			el_bg_workspace.focused_guid = first_box.guid;
+			el_bg_workspace.appendChild(first_box.bg_content);
+		}
+	}
+
 	close (remove_history) {
 		this.fib_container.remove();
 
 		if (this.onClose) remove_history = ifndef(this.onClose(), remove_history);
+		
 		for (let b = 0; b < boxes.length; b++) {
 			if (boxes[b].history_id == this.history_id) {
 				boxes.splice(b,1);
 			}
 		}
 		FibWindow.resizeWindows();
+		FibWindow.checkBackground();
 
 		if (remove_history)
 			app.removeHistory(this.history_id);
@@ -233,6 +284,7 @@ class FibWindow {
 			if (!type || (type && windows[i].dataset.type == type))
 				windows[i].remove();
 		}
+		blanke.clearElement(app.getElement("#bg-workspace"));
 		boxes = [];
 	}
 

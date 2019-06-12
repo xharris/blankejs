@@ -130,6 +130,20 @@ class Editor {
 		this.container.height = v;
 	}
 
+	get bg_width() {
+		if (this.container.in_background)
+			return app.getElement('#bg-workspace').clientWidth;
+		else 
+			return this.width;
+	}
+
+	get bg_height() {
+		if (this.container.in_background)
+			return app.getElement('#bg-workspace').clientHeight;
+		else 
+			return this.height;
+	}
+
 	hideMenuButton () {
 		if (this.container.btn_menu)
 			this.container.btn_menu.style.display = 'none';
@@ -139,13 +153,27 @@ class Editor {
 		return this.content_area;
 	}
 
+	getContainer() {
+		return this.container;
+	}
+
 	appendChild (el) {
 		this.content_area.appendChild(el);
 	}
 
+<<<<<<< HEAD
 	appendBackground (el) {
 		if (this.container.appendBackground)
 			this.container.appendBackground(el);
+=======
+	isInBackground () {
+		return this.container.in_background == true;
+	}
+
+	appendBackground (...args) {
+		if (this.container_type == 'fibwindow') 
+			this.container.appendBackground(...args);
+>>>>>>> master
 	}
 
 	setTitle (val) {
