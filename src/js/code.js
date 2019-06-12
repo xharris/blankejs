@@ -202,7 +202,7 @@ function refreshObjectList (filename, content) {
 class Code extends Editor {
 	constructor () {
 		super();
-		this.setupSideWindow();
+		this.setupFibWindow();
 		var this_ref = this;
 		this.file = '';
 		this.script_folder = "/scripts";
@@ -234,7 +234,8 @@ class Code extends Editor {
 		// add game preview
 		this.game = new GamePreview();
 		this.console = new Console();
-		this.console.appendTo(this.container.getContent());
+		this.console.appendTo(this.getContent());
+		this.getContainer().bg_first_only = true;
 		this.appendBackground(this.game.container);
 
 		var this_ref = this;

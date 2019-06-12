@@ -15,7 +15,7 @@ PIXI.loader.load();
 class SceneEditor extends Editor {
 	constructor (file_path) {
 		super();
-		this.setupSideWindow(true);
+		this.setupFibWindow(true);
 
 		var this_ref = this;
 

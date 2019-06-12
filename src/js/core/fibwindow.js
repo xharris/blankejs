@@ -11,6 +11,7 @@ class FibWindow {
 		this.subtitle = '';
 		this.history_id = app.addHistory(this.title);
 		this.type = content_type;
+		this.bg_first_only = false;
 
 		var this_ref = this;
 
@@ -206,6 +207,10 @@ class FibWindow {
 
 	}
 
+	getContent () {
+		return this.fib_content
+	}
+
 	setContent (element) {
 		this.fib_content.innerHTML = "";
 		this.fib_content.appendChild(element);
@@ -233,7 +238,8 @@ class FibWindow {
 				boxes[b].fib_container.classList.remove("first");
 				if (boxes[b].bg_content && boxes[b].in_background) {
 					old_first_found = true;
-					boxes[b].appendChild(el_bg_workspace.removeChild(boxes[b].bg_content));
+					if (!boxes[b].bg_first_only)
+						boxes[b].appendChild(el_bg_workspace.removeChild(boxes[b].bg_content));
 				}
 				boxes[b].in_background = false;
 			}
@@ -244,7 +250,8 @@ class FibWindow {
 		}
 
 		// set up the first box
-		first_box.fib_container.classList.remove("single");
+		if (first_box)
+			first_box.fib_container.classList.remove("single");
 		if (boxes.length == 1 || !split_enabled)
 			first_box.fib_container.classList.add("single");
 		if (first_box &&

@@ -53,8 +53,13 @@ class GamePreview {
 		
 		// engine loaded
 		this.refresh_file = null;
-		this.container.onload = () => {
+		this.errored = false;
+		this.container.addEventListener('load', () => {
 			this.game = this.container.contentWindow.game;
+			
+			if (this.errored) {
+				//return;
+			}
 
 			if (this.refresh_file) {
 				this.refreshSource(this.refresh_file);
@@ -67,8 +72,8 @@ class GamePreview {
 			}	
 			if (this.options.onLoad)
 				this.options.onLoad(this);
-		}
-		this.refreshDoc();
+		})
+		this.refreshSource();
 		if (!(this.refresh_file || this.last_script))
 			this.refreshSource();
 		this.parent.appendChild(this.container);
@@ -177,16 +182,16 @@ class GamePreview {
 			`width: ${this.options.size[0]},
 			height: ${this.options.size[1]},`
 			}
-		    root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
+			root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
 			background_color: 0x485358
 		});
+		${extra_code}
 	</script>`);
 	}
 	
 	refreshSource (current_script) {
 		if (this.errored) {	
 			this.errored = false;
-			this.refreshDoc();
 		}
 		this.last_script = current_script;
 		if (!this.game) 
@@ -237,7 +242,7 @@ class GamePreview {
 
 		// wrapped in a function so local variables are destroyed on reload
 		let code = `
-(function(){
+(function(){ //window.addEventListener("load",function(){
 	let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game;
 	let TestScene = (funcs) => {
 	${this.options.test_scene ? `
@@ -261,15 +266,17 @@ class GamePreview {
 			last_line_end = this.line_ranges[path].end;
 		}
 		code += (post_load || '') + `
-})();`;
-		if (this.game)
-			this.game.Game.end();
+})(); //});`;
+		if (this.game) this.game.Game.end();
+		else {
+			this.refreshDoc(code);
+		}
 
 		// reload source file
 		let iframe = this.container;
 		let doc = iframe.contentDocument;
 
-		if (doc) {
+		if (this.game) {
 			let old_script = doc.querySelectorAll('script.source');
 			if (old_script)
 				old_script.forEach((el) => el.remove());
@@ -297,7 +304,7 @@ class GamePreview {
 				return true;
 			}
 			if (this.onRefresh) this.onRefresh();
-			if (this.onLog) {
+			if (false && this.onLog) {
 				iframe.contentWindow.console = {
 					log:  (...args) => {
 						this.onLog(args)

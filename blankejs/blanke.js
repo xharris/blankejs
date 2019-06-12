@@ -515,7 +515,6 @@ var Blanke = (selector, options) => {
             app.ticker.remove(this.onUpdate, this);
             this.onEnd();
             for (let obj of this.objects) {
-                console.log(obj)
                 if (obj._destroy)
                     obj._destroy();
                 else if (obj.destroy)

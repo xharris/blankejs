@@ -50,7 +50,7 @@ class Editor {
 	setupFibWindow(content) {
 		var this_ref = this;
 		this.container_type = "fibwindow";
-		this.container = new FibWindow(content || this.constructor.name);
+		this.container = new FibWindow(typeof content == 'string' ? content : this.constructor.name);
 		this.container.appendTo(workspace);
 		this.container.appendChild(this.content_area);
 		this.container.btn_menu.onclick = function(e) {
@@ -150,7 +150,7 @@ class Editor {
 	}
 
 	getContent() {
-		return this.content_area;
+		return this.container.getContent();
 	}
 
 	getContainer() {
@@ -164,6 +164,8 @@ class Editor {
 	appendBackground (el) {
 		if (this.container.appendBackground)
 			this.container.appendBackground(el);
+		else	
+			this.appendChild(el);
 	}
 
 	isInBackground () {

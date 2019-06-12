@@ -42,6 +42,17 @@
     bottom: 24px;
     top: 40px;
 }
+.fib-container.first[data-type="Code"] {
+	height: 50% !important;
+	bottom: 0px;
+
+	&.single {
+		height: 100% !important;
+		width: 50% !important;
+		right: 0px;
+		bottom: initial;
+	}
+}
 .content[data-type="Code"] {
     /* TAB only
     padding-top: 33px;
@@ -862,21 +873,33 @@
 	}
 }
 
-.content[data-type="Console"] {
+.content[data-type="Code"] {
 	overflow: hidden;
 
 	.log {
+		position: absolute;
+		bottom: 13px;
+		z-index: 10;
+		left: 2px;
+		right: 2px;
 		overflow: auto;
-		width: 100%;
-		height: 100%;
-		background-color: rgba(33,33,33 ,1);
+    	background: rgba(0,0,0,0.5);
+		box-sizing: border-box;
+		border-radius: 4px;
+		max-height: 150px;
+		overflow-y: auto;
+		z-index: 0;
+		transition: ease-in-out all 0.1s;
+
+		&:hover {
+    		background: rgba(0,0,0,0.8);
+		}
 
 		.line, .error {
 			margin: 0px;
-		    font-size: 16px;
-		    border-bottom: 1px solid rgba(255,255,255,0.1);
-		    padding: 2px;
-		    white-space: pre;
+			font-size: 16px;
+			margin: 0px 4px;
+			white-space: pre-wrap;
 		}
 
 		.line {
@@ -884,7 +907,12 @@
 		}
 
 		.error {
-			color: rgba(239,154,154 ,1);
+			padding: 2px;
+			color: @theme-string-dark;
+
+			a {
+				color: @theme-string;
+			}
 		}
 	}
 }
