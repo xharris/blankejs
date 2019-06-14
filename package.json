@@ -2,16 +2,9 @@
   "name": "BlankE",
   "description": "BlankE game dev",
   "version": "0.1.0",
-  "main": "src/index.html",
+  "main": "entry.js",
   "single-instance": false,
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
-  "window": {
-    "frame": false,
-    "transparent": true,
-    "width": 800,
-    "height": 600,
-    "icon": "src/logo.png"
-  },
   "build": {
     "nwVersion": "stable",
     "nwFlavor": "sdk",
@@ -28,6 +21,7 @@
   "scripts": {
     "less": " ",
     "nw": "nw .",
+    "electron": "electron .",
     "dist": "build --tasks win-x86 .",
     "dist-linux": "build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
     "dist-mac": "build --tasks mac-x64 --mirror https://dl.nwjs.io/ .;"

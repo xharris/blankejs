@@ -198,9 +198,9 @@ class Editor {
 		this.asset_list.innerHTML = "";
 
 		// context menu
-		var menu = new nwGUI.Menu();
+		var menu = new elec.Menu();
 		context_menu.forEach(function(m){
-			var item = new nwGUI.MenuItem(m);
+			var item = new elec.MenuItem(m);
 			item.click = function() { on_menu_click(this.label, this_ref.list_value); }
 			menu.append(item);
 		});

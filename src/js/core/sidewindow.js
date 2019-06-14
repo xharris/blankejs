@@ -287,7 +287,7 @@ document.addEventListener("ideReady",function(){
 });
 
 document.addEventListener('ideReady',()=>{
-	nwWIN.on('resize',() => {
+	app.window.on('resize',() => {
 		SideWindow.repositionWindows()
 	});
 })

@@ -361,12 +361,14 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'Add images',
 		onSelect: function() {
-			blanke.chooseFile('file', function(files){
+			blanke.chooseFile({
+				properties:['openFile','multiSelections']
+			}, function(files){
 				files = files.split(';');
 				for (var f of files) {
 					app.addAsset('image',f);
 				}
-			}, true, true);
+			});
 		},
 		tags: ['view']
 	});

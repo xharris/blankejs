@@ -32,7 +32,7 @@ love:
 
 blanke:
 	pnpm run less
-	pnpm run nw
+	pnpm run electron
 	
 engine:
 	cp -r love2d dist/BlankE-0.1.0-win-x86/love2d

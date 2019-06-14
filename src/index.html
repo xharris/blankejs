@@ -3,9 +3,8 @@
 	<head>
 		<script type="text/javascript">
 			var DEV_MODE = true;
-			if (DEV_MODE) require('nw.gui').Window.get().showDevTools();
 		</script>
-
+		<!-- meta http-equiv="Content-Security-Policy" content="default-src 'self'" -->
 		<!-- Material Design Icons -->
 		<link rel="stylesheet" type="text/css" media="all" href="includes/mdi/css/materialdesignicons.min.css"/>
 
@@ -83,7 +82,7 @@
 		</script>
 		<script src="includes/less.min.js"></script>
 		<script src="main.js"></script>
-
+		
 	</head>
 	<body>
 
@@ -92,26 +91,26 @@
 			<input id="search-input" type="text" placeholder="Search" tabindex="-1"/>
 
 			<div class="tool-container">
-				<button id="btn-play" onclick="app.play()" title="run game"><object class="blanke-icon" data="icons/run.svg" type="image/svg+xml"></object></button>
-				<button id="btn-export" onclick="new Exporter()" title="export game"><object class="blanke-icon" data="icons/package.svg" type="image/svg+xml"></object></button>
-				<button onclick="app.toggleWindowVis()" title="show/hide floating windows">
+				<button id="btn-play" title="run game"><object class="blanke-icon" data="icons/run.svg" type="image/svg+xml"></object></button>
+				<button id="btn-export" title="export game"><object class="blanke-icon" data="icons/package.svg" type="image/svg+xml"></object></button>
+				<button id="btn-winvis" title="show/hide floating windows">
 					<object class="blanke-icon" data="icons/window_visibility.svg" type="image/svg+xml"></object>
 					<p id="dragbox-badge" class="btn-badge"></p>
 				</button>
-				<button onclick="app.toggleSplit()" title="toggle window splitting">
+				<button id="btn-winsplit" title="toggle window splitting">
 					<object class="blanke-icon" data="icons/window_split.svg" type="image/svg+xml"></object>
 					<p id="fibwindow-badge" class="btn-badge"></p>
 				</button>
-				<button onclick="new Docview()" title="view documentation"><object class="blanke-icon" data="icons/notebook.svg" type="image/svg+xml"></object></button>
-				<button onclick="new Settings()" title="IDE/Game settings"><object class="blanke-icon" data="icons/wrench.svg" type="image/svg+xml"></object></button>
+				<button id="btn-docs" title="view documentation"><object class="blanke-icon" data="icons/notebook.svg" type="image/svg+xml"></object></button>
+				<button id="btn-settings" title="IDE/Game settings"><object class="blanke-icon" data="icons/wrench.svg" type="image/svg+xml"></object></button>
 				<!-- button id="btn-test" onclick="blanke.toast('do stuffs please')"><i class="mdi mdi-test-tube"></i></button -->
 			</div>
 		</div>
 
 		<div id="window-buttons">
-			<button id="btn-close" class="ui-button" onclick="app.close()"><i class="mdi mdi-window-close"></i></button>
-			<button id="btn-maximze" class="ui-button" onclick="app.maximize()"><i class="mdi mdi-window-maximize"></i></button>
-			<button id="btn-minimize" class="ui-button" onclick="app.minimize()"><i class="mdi mdi-window-minimize"></i></button>	
+			<button id="btn-close" class="ui-button"><i class="mdi mdi-window-close"></i></button>
+			<button id="btn-maximize" class="ui-button"><i class="mdi mdi-window-maximize"></i></button>
+			<button id="btn-minimize" class="ui-button"><i class="mdi mdi-window-minimize"></i></button>	
 			<button id="btn-update" class="ui-button hidden"><i class="mdi mdi-update"></i></button>
 		</div>
 
@@ -119,12 +118,12 @@
 			<div class="title">BlankE</div>
 			<div class="left-container">
 				<div class="header-buttons">
-					<button class="new">
+					<button id="btn-new">
 						<i class="mdi mdi-plus"></i>
 						<p class="label">New project</p>
 					</button>
 					</br>
-					<button class="open">
+					<button id="btn-open">
 						<i class="mdi mdi-folder-open"></i>
 						<p class="label">Open project</p>
 					</button>

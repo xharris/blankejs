@@ -84,6 +84,5 @@ document.addEventListener('openProject',()=>{
 
 let engine_watch;
 document.addEventListener('ideReady',(e)=>{
-    console.log('ok ready')
     Settings.watchEngine();
 })

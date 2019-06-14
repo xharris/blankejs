@@ -192,7 +192,7 @@ end
 	}
 
 	static openDistFolder(os) {
-		nwGUI.Shell.openItem(nwPATH.join(app.project_path,"dist",os));
+		elec.shell.openItem(nwPATH.join(app.project_path,"dist",os));
 	}
 
 	doneToast (os) {

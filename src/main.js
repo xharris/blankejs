@@ -16,12 +16,12 @@ T	sceneeditor: create new scene, remove premade layers, rename layer -> other la
 C 	sceneeditor: image search keys still remain after closing scene editor
 C	sceneeditor: re-opening opens 3 instances
 */
-var nwGUI = require('nw.gui');
+const elec = require('electron');
+
 var nwFS = require('fs-extra');
 var nwWALK = require('walk');
 var nwPATH = require('path');
 var nwOS = require('os');
-var nwWIN = nwGUI.Window.get();
 const { spawn, execFile, exec } = require('child_process')
 const { cwd, env, platform } = require('process')
 var nwNOOB = require('./js/server.js');
@@ -33,11 +33,14 @@ var nwUGLY = require('uglify-es');
 
 var app = {
 	project_path: "",
-	watch: null,
-	game_window: null,
+	proj_watch: null,
 	maximized: false,
 	os: null, // win, mac, linux,
 	error_occured: null,
+	
+	get window() {
+		return elec.remote.getCurrentWindow()
+	},
 
 	getElement: function(sel) {
 		return document.querySelector(sel);
@@ -69,25 +72,25 @@ var app = {
 	},
 
 	contextMenu: function(x, y, items) {
-		var menu = new nwGUI.Menu();
+		var menu = new elec.Menu();
 		for (var i = 0; i < items.length; i++) {
-			var menuitem = menu.append(new nwGUI.MenuItem(items[i]));
+			var menuitem = menu.append(new elec.MenuItem(items[i]));
 		}
-		menu.popup(x, y);
+		menu.popup({x:x, y:y});
 	},
 
 	close: function() {
-		nwWIN.close();
+		app.window.close();
 	},
 
 	maximize: function() {
-		if (app.maximized) nwWIN.unmaximize();
-		else nwWIN.maximize();
+		if (app.maximized) app.window.unmaximize();
+		else app.window.maximize();
 		app.maximized = !app.maximized;
 	},
 
 	minimize: function() {
-		nwWIN.minimize();
+		app.window.minimize();
 	},
 
 	getRelativePath: function(path) {
@@ -106,7 +109,9 @@ var app = {
 	},
 
 	newProjectDialog: function() {
-		blanke.chooseFile('nwdirectory', function(file_path){
+		blanke.chooseFile({
+			properties:['openDirectory']
+		}, function(file_path){
 			blanke.showModal(
 				"<label style='line-height:35px'>new project name:</label></br>"+
 				"<label>"+file_path+nwPATH.sep+"</label>"+
@@ -115,7 +120,7 @@ var app = {
 				"yes": function() { app.newProject(nwPATH.join(file_path, app.getElement('#new-proj-name').value)); },
 				"no": function() {}
 			});
-		}, true);
+		});
 	},
 
 	win_title: '',
@@ -169,10 +174,10 @@ var app = {
 				app.project_path = path;
 
 				// watch for file changes
-				app.watch = nwWATCH(app.project_path, {recursive: true}, function(evt_type, file) {
+				app.proj_watch = nwWATCH(app.project_path, {recursive: true}, function(evt_type, file) {
 					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
 				});
-
+				
 				// add to recent files
 				app.settings.recent_files = app.settings.recent_files.filter(e => !e.includes(nwPATH.basename(path)));
 				app.settings.recent_files.unshift(path);
@@ -196,9 +201,11 @@ var app = {
 	},
 
 	openProjectDialog: function() {
-		blanke.chooseFile('nwdirectory', function(file_path){
+		blanke.chooseFile({
+			properties:['openDirectory']
+		}, function(file_path){
 			app.openProject(file_path);
-		}, true);
+		});
 	},
 
 	refreshGameSource: function () {
@@ -245,33 +252,46 @@ var app = {
 			nwFS.writeFile(
 				nwPATH.join(app.project_path,'temp.html'), game.getSource(), ()=>{
 
-				app.newWindow('file://'+nwPATH.join(app.project_path,'temp.html'), (win)=>{
-					win.width = proj_set.size[0];
-					win.height = proj_set.size[1];
-					win.setResizable(false);
-					win.showDevTools();
-					win.reload();
-					win.on('close',function(){
-						nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
-						this.close(true);
-					});
-					/*
-					let menu_bar = new nw.Menu({type:'menubar'});
-					menu_bar.append(new nw.MenuItem({
-						label: 'Show dev tools',
-						click: () => { win.showDevTools(); }
-					}));
-					win.menu = menu_bar;
-					*/
+				app.newWindow(nwPATH.join(app.project_path,'temp.html'), {
+						width: proj_set.size[0],
+						height: proj_set.size[1],
+						resizable: false,
+						useContentSize: true
+					},
+					(win)=>{
+						win.webContents.openDevTools();
+						/*
+						win.reload();
+						*/
+						win.on('closed',function(){
+							nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
+							return true;//this.close(true);
+						});
+						/*
+						let menu_bar = new nw.Menu({type:'menubar'});
+						menu_bar.append(new nw.MenuItem({
+							label: 'Show dev tools',
+							click: () => { win.showDevTools(); }
+						}));
+						win.menu = menu_bar;
+						*/
 				})
 			});
 		}
 	},
 
-	newWindow: function (html, cb) {
-		nw.Window.open(html, (win)=>{
-			app.extra_windows.push(win);
-			if (cb) cb(win);
+	newWindow: function (html, options, cb) {
+		if (!cb) {
+			cb = options;
+			options = {};
+		}
+		options.parent = app.window;
+		let child = new elec.remote.BrowserWindow(options)
+		child.loadFile(nwPATH.relative('',html));
+		child.once('ready-to-show', ()=>{
+			app.extra_windows.push(child);
+			if (cb) cb(child);
+			child.show();
 		});
 	},
 
@@ -393,7 +413,7 @@ var app = {
 
 	settings: {},
 	getAppDataFolder: function(){
-		let path = nwPATH.join(nw.App.dataPath || (app.os == 'mac' ? nwPATH.join('~','Library','Application Support','BlankE','Default') : '/var/local'), 'Settings');
+		let path = nwPATH.join(elec.remote.app.getPath("appData"), "BlankE"); 
 		nwFS.ensureDirSync(path);
 		return path;
 	},
@@ -425,7 +445,6 @@ var app = {
 	autocomplete_watch:null,
 	watchAutocomplete: function() {
 		if (app.autocomplete_watch) app.autocomplete_watch.close();
-		console.log(cwd(),app.settings.autocomplete_path)
 		app.autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
 			dispatchEvent("autcompleteChanged");
 			blanke.toast("autocomplete reloaded!");
@@ -721,14 +740,14 @@ var app = {
 	enableDevMode(force_search_keys) {
 		if (!DEV_MODE || force_search_keys) {
 			DEV_MODE = true;
-			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
-			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
+			app.addSearchKey({key: 'Dev Tools', onSelect: app.window.webContents.openDevTools});
+			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ elec.shell.openItem(app.getAppDataFolder()); }});
 			/*
 			app.addSearchKey({key: 'Restart engine', onSelect:function(){
 				this.game.refreshEngine();
 			}});
 			*/
-			nwGUI.Window.get().showDevTools();
+			app.window.webContents.openDevTools();
 			blanke.toast("Dev mode enabled");
 		} else {
 			blanke.toast("Dev mode already enabled!");
@@ -807,7 +826,7 @@ var app = {
 	error () {
 		if (!DEV_MODE)
 			nwFS.appendFile('error.txt','[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
-				blanke.toast(`Error! See <a href="#" onclick="nwGUI.Shell.showItemInFolder(nwPATH.join(cwd(),'error.txt'));">error.txt</a> for more info`);
+				blanke.toast(`Error! See <a href="#" onclick="elec.shell.showItemInFolder(nwPATH.join(cwd(),'error.txt'));">error.txt</a> for more info`);
 			});
 	},
 
@@ -816,12 +835,23 @@ var app = {
 	}
 }
 
-nwWIN.on('loaded', function() {
+app.window.webContents.on("did-finish-load",()=>{
+	blanke.elec_ref = elec;
+
+	// index.html button events
+	app.getElement("#btn-close").addEventListener('click',()=> { app.window.close() });
+	app.getElement("#btn-maximize").addEventListener('click',()=> { app.window.maximize() });
+	app.getElement("#btn-minimize").addEventListener('click',()=> { app.window.minimize() });
+	app.getElement("#btn-play").addEventListener('click',()=> { app.play() });
+	app.getElement("#btn-export").addEventListener('click',()=> { new Exporter() });
+	app.getElement("#btn-winvis").addEventListener('click',()=> { app.toggleWindowVis() });
+	app.getElement("#btn-winsplit").addEventListener('click',()=> { app.toggleSplit() });
+	app.getElement("#btn-docs").addEventListener('click',()=> { new Docview() });
+	app.getElement("#btn-settings").addEventListener('click',()=> { new Settings() });
+
 	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
 	app.os = os_names[nwOS.type()];
 	document.body.classList.add(app.os);
-
-	if (nwWIN.setShadow) nwWIN.setShadow(true);
 
 	window.addEventListener("error", function(e){
 		app.error_occured = e;
@@ -847,16 +877,14 @@ nwWIN.on('loaded', function() {
 	// Welcome screen
 
 	// new project
-	var el_new_proj = app.getElement("#welcome .new");
-	el_new_proj.onclick = function(){ 
+	app.getElement("#btn-new").addEventListener('click',function(e){ 
 		app.newProjectDialog();
-	}
+	});
 
 	// open project
-	var el_open_proj = app.getElement("#welcome .open");
-	el_open_proj.onclick = function(){ 
+	app.getElement("#btn-open").addEventListener('click',function(e){ 
 		app.openProjectDialog();
-	}
+	});
 
 	// prepare search box
 	app.getElement("#search-input").addEventListener('input', function(e){
@@ -1010,7 +1038,7 @@ nwWIN.on('loaded', function() {
 		}
 	});
 
-	nwWIN.on('close',function(){
+	app.window.on('closed',function(){
 		this.hide();
 		app.closeProject();
 		// close extra windows
@@ -1021,8 +1049,8 @@ nwWIN.on('loaded', function() {
 	});
 
 	// prevents text from becoming blurry
-	nwWIN.on('resize',(w, h)=>{
-		blanke.cooldownFn('window_resize',500,()=>nwWIN.resizeTo(parseInt(w),parseInt(h)))
+	app.window.on('resize',(w, h)=>{
+		blanke.cooldownFn('window_resize',500,()=>app.window.setSize(parseInt(w),parseInt(h)))
 	});
 
 	// file drop zone
@@ -1063,7 +1091,7 @@ nwWIN.on('loaded', function() {
 
 	document.addEventListener("openProject",function(){
 		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
-			nwGUI.Shell.openItem(app.project_path);
+			elec.shell.openItem(app.project_path);
 		}});
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();
