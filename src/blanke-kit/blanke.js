@@ -576,6 +576,7 @@ class BlankeForm {
     */
     onChange (input_name, func) {
         let this_ref = this;
+        if (!this.input_ref[input_name]) return;
         for (var input of this.input_ref[input_name]) {
             let event_type = 'input';
 

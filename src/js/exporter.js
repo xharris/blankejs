@@ -79,7 +79,7 @@ class Exporter extends Editor {
 			['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
 		]);
 		this.el_export_form.container.classList.add("dark");
-		['name','remove_unused','web_autoplay','web_memory','web_stack'].forEach((s)=>{
+		['name','web_autoplay','web_memory','web_stack'].forEach((s)=>{
 			this_ref.el_export_form.onChange(s,(val)=>app.project_settings.export[s] = val);
 		});
 

@@ -824,19 +824,26 @@ var app = {
 	},
 
 	error () {
-		if (!DEV_MODE)
-			nwFS.appendFile('error.txt','[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
-				blanke.toast(`Error! See <a href="#" onclick="elec.shell.showItemInFolder(nwPATH.join(cwd(),'error.txt'));">error.txt</a> for more info`);
-			});
+		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
+			blanke.toast(`Error! See <a href="#" onclick="app.openErrorFile()">error.txt</a> for more info`);
+		});
+	},
+
+	openErrorFile () {
+		elec.shell.openItem(nwPATH.join(app.getAppDataFolder(),'error.txt'));
 	},
 
 	newShortcut (options) {
-		//nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut(options));
+		elec.remote.globalShortcut.register(options.key,options.active)
 	}
 }
 
 app.window.webContents.on("did-finish-load",()=>{
+	process.chdir(nwPATH.join(__dirname,'..'));
 	blanke.elec_ref = elec;
+
+	// remove error file
+	nwFS.remove(nwPATH.join(app.getAppDataFolder(),'error.txt'));
 
 	// index.html button events
 	app.getElement("#btn-close").addEventListener('click',()=> { app.window.close() });
@@ -1001,27 +1008,21 @@ app.window.webContents.on("did-finish-load",()=>{
 	
 	// shortcut: focus search box
 	app.newShortcut({
-		key: "Ctrl+R",
+		key: "CommandOrControl+R",
 		active: function() {
 			app.getElement("#search-input").focus();
 		}
 	});
 	// shortcut: enable dev mode
 	app.newShortcut({
-		key: "Ctrl+Shift+D",
-		active: function() {
-			app.enableDevMode();
-		}
-	});
-	app.newShortcut({
-		key: "Command+Shift+D",
+		key: "CommandOrControl+Shift+D",
 		active: function() {
 			app.enableDevMode();
 		}
 	});
 	// shortcut: shift window focus
 	app.newShortcut({
-		key: "Ctrl+T",
+		key: "CommandOrControl+T",
 		active: function() {
 			var windows = app.getElements(".drag-container");
 			if (windows.length > 1) {

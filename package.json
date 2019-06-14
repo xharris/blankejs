@@ -24,7 +24,7 @@
     "electron": "electron .",
     "dist": "build --tasks win-x86 .",
     "dist-linux": "build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
-    "dist-mac": "build --tasks mac-x64 --mirror https://dl.nwjs.io/ .;"
+    "dist-mac": "node package.js"
   },
   "dependencies": {
     "adm-zip": "^0.4.13",
@@ -39,6 +39,6 @@
     "walk": "^2.3.13"
   },
   "devDependencies": {
-    "nwjs-builder-phoenix": "^1.14.8"
+    "electron-packager": "^13.1.1"
   }
 }

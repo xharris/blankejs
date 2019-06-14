@@ -5,11 +5,12 @@ elec.app.on('ready', function(){
         width: 800,
         height: 600,
         frame: false,
-        titleBarStyle: "customButtonsOnHover",
+        titleBarStyle: 'hidden',
         webPreferences: {
             nodeIntegration: true
         }
     })
+    main_window.setWindowButtonVisibility(false);
     main_window.loadFile(`src/index.html`);
-    main_window.webContents.openDevTools();
+    // main_window.webContents.openDevTools();
 });

@@ -110,24 +110,14 @@ document.addEventListener("openProject", function(e){
 
 	// shortcut: run game
 	app.newShortcut({
-		key: "Ctrl+B", active: function() {
-			app.play();
-		}
-	});
-	app.newShortcut({
-		key: "Command+B", active: function() {
+		key: "CommandOrControl+B", active: function() {
 			app.play();
 		}
 	});
 
 	// shortcut: run recording
 	app.newShortcut({
-		key: "Ctrl+Shift+B", active: function() {
-			app.play('--play-record');
-		}
-	});
-	app.newShortcut({
-		key: "Command+Shift+B", active: function() {
+		key: "CommandOrControl+Shift+B", active: function() {
 			app.play('--play-record');
 		}
 	});
