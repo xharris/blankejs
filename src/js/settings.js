@@ -44,6 +44,8 @@ class Settings extends Editor {
                     return app.settings[path+'_path'];
                 }
                 app.settings[path+'_path'] = value;
+                if (path == 'engine') 
+                    Settings.watchEngine();
                 app.saveAppData();
 
                 app.refreshThemeList();
@@ -61,7 +63,16 @@ class Settings extends Editor {
             });
         });
 		this.appendChild(this.el_settings.container);
-	}
+    }
+    
+    static watchEngine () {
+        app.minifyEngine();
+        if (engine_watch)
+            engine_watch.close();
+        engine_watch = nwWATCH(app.settings.engine_path, {recursive: true}, (e, file) => {   
+            app.minifyEngine();
+        });
+    }
 }
 
 document.addEventListener('openProject',()=>{
@@ -70,3 +81,9 @@ document.addEventListener('openProject',()=>{
 		new Settings(app);
 	}});
 });
+
+let engine_watch;
+document.addEventListener('ideReady',(e)=>{
+    console.log('ok ready')
+    Settings.watchEngine();
+})

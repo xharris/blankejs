@@ -1,5 +1,4 @@
-let getHTML = (body, rel_path) => {
-rel_path = rel_path || nwPATH.relative('', app.settings.engine_path);
+let getHTML = (body) => {
 return `
 <!DOCTYPE html>
 <html>
@@ -23,9 +22,7 @@ return `
 		}
 	</style>
 	<head>
-		<script src="${rel_path}/pixi.min.js"></script>
-		<script src="${rel_path}/SAT.min.js"></script>
-		<script src="${rel_path}/blanke.js"></script>
+		<script type="text/javascript">${app.engine_code}</script>
 	</head>
 	${body}
 </html>
@@ -105,7 +102,7 @@ class GamePreview {
 			this.game.Game.resume();
 	}
 
-	getSource (rel_path) {
+	getSource () {
 		return getHTML(`
 		<body>
 			<div id="game"></div>
@@ -141,7 +138,7 @@ class GamePreview {
 			window.addEventListener('load', function(e) {
 				${this.refreshSource()}
 			});
-		</script>`, rel_path);
+		</script>`);
 	}
 
 	refreshDoc (extra_code) {
@@ -329,10 +326,3 @@ class GamePreview {
 		head.appendChild(script);*/
 	}
 }
-
-let engine_watch;
-document.addEventListener('ideReady',(e)=>{
-	engine_watch = nwFS.watch(nwPATH.join(app.settings.engine_path,'blanke.js'), (e) => {
-		dispatchEvent('engineChange');
-	});
-})

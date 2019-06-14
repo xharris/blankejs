@@ -109,26 +109,26 @@ document.addEventListener("openProject", function(e){
 
 
 	// shortcut: run game
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+	app.newShortcut({
 		key: "Ctrl+B", active: function() {
 			app.play();
 		}
-	}));
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+	});
+	app.newShortcut({
 		key: "Command+B", active: function() {
 			app.play();
 		}
-	}));
+	});
 
 	// shortcut: run recording
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+	app.newShortcut({
 		key: "Ctrl+Shift+B", active: function() {
 			app.play('--play-record');
 		}
-	}));
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+	});
+	app.newShortcut({
 		key: "Command+Shift+B", active: function() {
 			app.play('--play-record');
 		}
-	}));
+	});
 });

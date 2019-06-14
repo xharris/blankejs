@@ -29,6 +29,7 @@ var nwZIP = require('archiver'); // used for zipping
 var nwZIP2 = require('adm-zip'); // used for unzipping
 var nwWATCH = require('node-watch');
 var nwREQ = require('request');
+var nwUGLY = require('uglify-es');
 
 var app = {
 	project_path: "",
@@ -204,6 +205,34 @@ var app = {
 		if (app.game) app.game.refreshSource();
 	},
 
+	engine_code: '',
+	minifyEngine: function(cb) {
+		blanke.toast('Compiling engine code. Please wait..');
+		nwFS.readdir(app.settings.engine_path, (err,files) => {
+			if (err) return;
+			files.splice(files.indexOf('blanke.js'),1);
+			files.push('blanke.js');
+			// place all code in one object
+			let code_obj = {};
+			for (let path of files) {
+				code_obj[path] = nwFS.readFileSync(nwPATH.join(app.settings.engine_path,path),'utf-8') + '\n\n';
+			}
+			// uglify
+			let code = nwUGLY.minify(code_obj,{
+				keep_classnames: true,
+				ie8: true,
+				compress: false,
+				mangle: true
+			});
+			if (!code.error) {
+				app.engine_code = code.code;
+				nwFS.writeFile('blanke.min.js',code.code,'utf-8');
+				if (cb) cb(app.engine_code);
+                dispatchEvent('engineChange');
+			}
+		});
+	},
+
 	extra_windows: [],
 	play: function(options) { 
 		if (app.isProjectOpen()) {
@@ -214,8 +243,7 @@ var app = {
 				size: proj_set.size
 			});
 			nwFS.writeFile(
-				nwPATH.join(app.project_path,'temp.html'), 
-				game.getSource(nwPATH.relative(app.project_path, app.settings.engine_path)), ()=>{
+				nwPATH.join(app.project_path,'temp.html'), game.getSource(), ()=>{
 
 				app.newWindow('file://'+nwPATH.join(app.project_path,'temp.html'), (win)=>{
 					win.width = proj_set.size[0];
@@ -781,6 +809,10 @@ var app = {
 			nwFS.appendFile('error.txt','[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
 				blanke.toast(`Error! See <a href="#" onclick="nwGUI.Shell.showItemInFolder(nwPATH.join(cwd(),'error.txt'));">error.txt</a> for more info`);
 			});
+	},
+
+	newShortcut (options) {
+		//nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut(options));
 	}
 }
 
@@ -938,29 +970,29 @@ nwWIN.on('loaded', function() {
 			}
 		}
 	});
-
+	
 	// shortcut: focus search box
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+	app.newShortcut({
 		key: "Ctrl+R",
 		active: function() {
 			app.getElement("#search-input").focus();
 		}
-	}));
+	});
 	// shortcut: enable dev mode
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+	app.newShortcut({
 		key: "Ctrl+Shift+D",
 		active: function() {
 			app.enableDevMode();
 		}
-	}));
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+	});
+	app.newShortcut({
 		key: "Command+Shift+D",
 		active: function() {
 			app.enableDevMode();
 		}
-	}));
+	});
 	// shortcut: shift window focus
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
+	app.newShortcut({
 		key: "Ctrl+T",
 		active: function() {
 			var windows = app.getElements(".drag-container");
@@ -976,7 +1008,7 @@ nwWIN.on('loaded', function() {
 				windows[index].click();
 			}
 		}
-	}));
+	});
 
 	nwWIN.on('close',function(){
 		this.hide();

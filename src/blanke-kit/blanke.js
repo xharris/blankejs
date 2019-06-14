@@ -544,7 +544,12 @@ class BlankeForm {
     prepareInput (element, name, index) {
         element.name_ref = name;
         this.input_ref[name].push(element);
-        this.input_values[name][index || 0] = (index != null ? this.input_args[name].default[index] : this.input_args[name].default);
+        let input_type = this.input_types[name];
+        let _default = input_type == "text" ? "" : "0";
+        if (this.input_args[name].default)
+            this.input_values[name][index || 0] = (index != null ? this.input_args[name].default[index] : this.input_args[name].default);
+        else
+            this.input_values[name][index || 0] = (input_type == "text" ? "" : 0);
     }
 
     getInput (input_name) {

@@ -13,7 +13,7 @@
     "icon": "src/logo.png"
   },
   "build": {
-    "nwVersion": "0.36.2",
+    "nwVersion": "stable",
     "nwFlavor": "sdk",
     "files": [
       "./src/**/**"
@@ -28,7 +28,7 @@
   "scripts": {
     "less": " ",
     "nw": "nw .",
-    "dist": "build --tasks win-x86 --mirror https://dl.nwjs.io/ .",
+    "dist": "build --tasks win-x86 .",
     "dist-linux": "build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
     "dist-mac": "build --tasks mac-x64 --mirror https://dl.nwjs.io/ .;"
   },
@@ -36,10 +36,12 @@
     "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
     "commonmark": "^0.28.1",
+    "electron": "^5.0.3",
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.11",
     "node-watch": "^0.6.0",
     "request": "^2.88.0",
+    "uglify-es": "^3.3.9",
     "walk": "^2.3.13"
   },
   "devDependencies": {
