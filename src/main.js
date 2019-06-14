@@ -72,9 +72,9 @@ var app = {
 	},
 
 	contextMenu: function(x, y, items) {
-		var menu = new elec.Menu();
+		var menu = new elec.remote.Menu();
 		for (var i = 0; i < items.length; i++) {
-			var menuitem = menu.append(new elec.MenuItem(items[i]));
+			var menuitem = menu.append(new elec.remote.MenuItem(items[i]));
 		}
 		menu.popup({x:x, y:y});
 	},

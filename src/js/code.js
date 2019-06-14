@@ -1038,13 +1038,15 @@ class Code extends Editor {
 
 	static openScript(file_path, line) {
 		let editor = code_instances[file_path];
-		if (!SideWindow.focus(nwPATH.basename(file_path))) {
+		if (!FibWindow.focus(nwPATH.basename(file_path))) {
 			editor = new Code(app)
 			editor.edit(file_path);
 		}
 		if (line != null) 
 			editor.goToLine(line);
-		editor.game.refreshSource(file_path);
+		blanke.cooldownFn("openScript-gamepreview", 200, function(){
+			editor.game.refreshSource(editor.file);
+		});
 	}
 }
 

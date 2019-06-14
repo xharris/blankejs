@@ -23,10 +23,6 @@ dist:
 	npm run less
 	pnpm run dist
 
-dist-mac:
-	pnpm run less
-	pnpm run dist-mac
-
 love:
 	love2d/love.exe projects/penguin
 

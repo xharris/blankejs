@@ -4,8 +4,7 @@ Common class methods:
 */
 var Blanke = (selector, options) => {
     let re_sep = /[\\\/]/;
-
-    
+        
     let blanke_ref = this;
     this.options = Object.assign({
         auto_focus: true,

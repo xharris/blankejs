@@ -22,9 +22,7 @@
     "less": " ",
     "nw": "nw .",
     "electron": "electron .",
-    "dist": "build --tasks win-x86 .",
-    "dist-linux": "build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
-    "dist-mac": "node package.js"
+    "dist": "node package.js"
   },
   "dependencies": {
     "adm-zip": "^0.4.13",

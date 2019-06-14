@@ -10,7 +10,8 @@ elec.app.on('ready', function(){
             nodeIntegration: true
         }
     })
-    main_window.setWindowButtonVisibility(false);
+    if (main_window.setWindowButtonVisibility)
+        main_window.setWindowButtonVisibility(false);
     main_window.loadFile(`src/index.html`);
     // main_window.webContents.openDevTools();
 });

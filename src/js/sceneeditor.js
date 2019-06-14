@@ -869,7 +869,7 @@ class SceneEditor extends Editor {
 			if (success) {
 				this_ref.file = new_path;
 				this_ref.setTitle(nwPATH.basename(this_ref.file));
-				Scene.refreshSceneList();
+				SceneEditor.refreshSceneList();
 			} else
 				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
 		});
@@ -2037,7 +2037,7 @@ document.addEventListener('fileChange', function(e){
 });
 
 function openScene(file_path) {
-	if (!SideWindow.focus(nwPATH.basename(file_path)))
+	if (!FibWindow.focus(nwPATH.basename(file_path)))
 		new SceneEditor(file_path);
 }
 
