@@ -1221,7 +1221,6 @@ var Blanke = (selector, options) => {
     },null,PIXI.UPDATE_PRIORITY.LOW+1);
 
     /* -MAP */
-    let tex_
     class Map {
         constructor (name, from_file) {
             this.name = name;
@@ -1250,6 +1249,7 @@ var Blanke = (selector, options) => {
             return new Promise(res => {
                 Asset.get('map',name,(data)=>{
                     data = JSON.parse(data);
+                    console.log(data)
                     let new_map = new Map(name, true);
                     // ** PLACE TILES **
                     for (let img_info of data.images) {

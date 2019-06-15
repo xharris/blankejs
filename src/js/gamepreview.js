@@ -273,7 +273,7 @@ class GamePreview {
 		let iframe = this.container;
 		let doc = iframe.contentDocument;
 
-		if (this.game) {
+		if (this.game && doc) {
 			let old_script = doc.querySelectorAll('script.source');
 			if (old_script)
 				old_script.forEach((el) => el.remove());

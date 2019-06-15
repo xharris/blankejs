@@ -214,29 +214,31 @@ var app = {
 
 	engine_code: '',
 	minifyEngine: function(cb) {
-		blanke.toast('Compiling engine code. Please wait..');
-		nwFS.readdir(app.settings.engine_path, (err,files) => {
-			if (err) return;
-			files.splice(files.indexOf('blanke.js'),1);
-			files.push('blanke.js');
-			// place all code in one object
-			let code_obj = {};
-			for (let path of files) {
-				code_obj[path] = nwFS.readFileSync(nwPATH.join(app.settings.engine_path,path),'utf-8') + '\n\n';
-			}
-			// uglify
-			let code = nwUGLY.minify(code_obj,{
-				keep_classnames: true,
-				ie8: true,
-				compress: false,
-				mangle: true
+		blanke.cooldownFn('minify-engine',500,function(){
+			blanke.toast('Compiling engine code. Please wait..');
+			nwFS.readdir(app.settings.engine_path, (err,files) => {
+				if (err) return;
+				files.splice(files.indexOf('blanke.js'),1);
+				files.push('blanke.js');
+				// place all code in one object
+				let code_obj = {};
+				for (let path of files) {
+					code_obj[path] = nwFS.readFileSync(nwPATH.join(app.settings.engine_path,path),'utf-8') + '\n\n';
+				}
+				// uglify
+				let code = nwUGLY.minify(code_obj,{
+					keep_classnames: true,
+					ie8: true,
+					compress: false,
+					mangle: true
+				});
+				if (!code.error) {
+					app.engine_code = code.code;
+					nwFS.writeFile('blanke.min.js',code.code,'utf-8');
+					if (cb) cb(app.engine_code);
+					dispatchEvent('engineChange');
+				}
 			});
-			if (!code.error) {
-				app.engine_code = code.code;
-				nwFS.writeFile('blanke.min.js',code.code,'utf-8');
-				if (cb) cb(app.engine_code);
-                dispatchEvent('engineChange');
-			}
 		});
 	},
 
