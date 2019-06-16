@@ -12,6 +12,8 @@ function sendToBack(sprite, parent) {var sprite = (typeof(sprite) != "undefined"
 PIXI.loader.add('ProggyScene','includes/proggy_scene.fnt');
 PIXI.loader.load();
 
+let map_folder = () => nwPATH.join(app.project_path,'assets','maps');
+
 class SceneEditor extends Editor {
 	constructor (file_path) {
 		super();
@@ -20,7 +22,6 @@ class SceneEditor extends Editor {
 		var this_ref = this;
 
 		this.file = '';
-		this.map_folder = '/maps';
 		
 		this.grid_opacity = 0.05;
 		this.snap_on = true;
@@ -520,8 +521,10 @@ class SceneEditor extends Editor {
 		this.zoom_incr = 0.1;
 		this.old_cam = [0,0];
 		window.addEventListener('wheel',(e)=>{
+			/*
 			e.preventDefault();
 			this_ref.setZoom(this_ref.zoom - (Math.sign(e.deltaY) * this.zoom_incr))
+			*/
 		});
 		
 		this.tile_start = [0,0];
@@ -848,7 +851,7 @@ class SceneEditor extends Editor {
 
 	onClose () {
 		app.removeSearchGroup("Scene");
-		nwFS.unlink(this.file);
+		//nwFS.unlink(this.file);
 		addScenes(app.project_path);
 	}
 
@@ -2081,7 +2084,7 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'Add a map',
 		onSelect: function() {
-			var map_dir = nwPATH.join(app.project_path,'maps');
+			var map_dir = map_folder();
 			// overwrite the file if it exists. fuk it (again)!!
 			nwFS.mkdir(map_dir, function(err){
 				nwFS.readdir(map_dir, function(err, files){

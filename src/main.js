@@ -223,7 +223,10 @@ var app = {
 				// place all code in one object
 				let code_obj = {};
 				for (let path of files) {
-					code_obj[path] = nwFS.readFileSync(nwPATH.join(app.settings.engine_path,path),'utf-8') + '\n\n';
+					let long_path = nwPATH.join(app.settings.engine_path,path);
+					let fstat = nwFS.statSync(long_path);
+					if (fstat.isFile())
+						code_obj[path] = nwFS.readFileSync(long_path,'utf-8') + '\n\n';
 				}
 				// uglify
 				let code = nwUGLY.minify(code_obj,{
@@ -1052,8 +1055,11 @@ app.window.webContents.on("did-finish-load",()=>{
 	});
 
 	// prevents text from becoming blurry
-	app.window.on('resize',(w, h)=>{
-		blanke.cooldownFn('window_resize',500,()=>app.window.setSize(parseInt(w),parseInt(h)))
+	app.window.on('resize',(e)=>{
+		blanke.cooldownFn('window_resize',500,()=>{
+			let size = e.sender.getSize();
+			app.window.setSize(parseInt(size[0]), parseInt(size[1]))
+		})
 	});
 
 	// file drop zone

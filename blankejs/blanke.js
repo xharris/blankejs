@@ -1,10 +1,25 @@
 /*
 Common class methods:
     _getPixiObjs() : if available, returns an array of DisplayObjects that is used for rendering
+
+Todo:
+NEED
+    - Audio
+    - Asset (font)
+    - Effect
+    - Input (mouse, controller)
+    - Net
+    - Window
+PLUGINS
+    - Particle
+    - Tween
+    - Bezier
+    - Physics
+    - Steam
 */
 var Blanke = (selector, options) => {
     let re_sep = /[\\\/]/;
-        
+
     let blanke_ref = this;
     this.options = Object.assign({
         auto_focus: true,
@@ -1249,7 +1264,6 @@ var Blanke = (selector, options) => {
             return new Promise(res => {
                 Asset.get('map',name,(data)=>{
                     data = JSON.parse(data);
-                    console.log(data)
                     let new_map = new Map(name, true);
                     // ** PLACE TILES **
                     for (let img_info of data.images) {

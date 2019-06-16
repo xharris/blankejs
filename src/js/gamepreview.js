@@ -186,7 +186,7 @@ class GamePreview {
 	</script>`);
 	}
 	
-	refreshSource (current_script) {
+	refreshSource (current_script, new_doc) {
 		if (this.errored) {	
 			this.errored = false;
 		}
@@ -265,7 +265,7 @@ class GamePreview {
 		code += (post_load || '') + `
 })(); //});`;
 		if (this.game) this.game.Game.end();
-		else {
+		if (!this.game || new_doc) {
 			this.refreshDoc(code);
 		}
 
@@ -316,7 +316,7 @@ class GamePreview {
 
 	refreshEngine () {
 		if (!this.paused)
-			this.refreshSource(this.last_script);
+			this.refreshSource(this.last_script, true);
 		/*
 		let iframe = this.container;
 		blanke.destroyElement(iframe.contentDocument.querySelector('script[src="../blankejs/blanke.js"]'));
