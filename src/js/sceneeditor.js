@@ -832,6 +832,7 @@ class SceneEditor extends Editor {
 
 	resizeEditor () {
 		let parent = this.pixi.view.parentElement;
+		if (!parent) return;
 		let w = parent.clientWidth;
 		let h = parent.clientHeight;
 		/*

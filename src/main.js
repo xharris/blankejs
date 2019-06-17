@@ -7,7 +7,8 @@ TODO:
 C	separate tabs from history bar
 C	implement fibonnaci-sized windows
 C	sprite sheet preview: should display image dimensions
-C	find and replace		
+C	find and replace
+	GamePreview - auto insert Asset.add() method		
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
@@ -229,12 +230,17 @@ var app = {
 						code_obj[path] = nwFS.readFileSync(long_path,'utf-8') + '\n\n';
 				}
 				// uglify
+				let code = {
+					error: false,
+					code: Object.values(code_obj).join('\n')
+				}
+				/*
 				let code = nwUGLY.minify(code_obj,{
 					keep_classnames: true,
 					ie8: true,
 					compress: false,
 					mangle: true
-				});
+				});*/
 				if (!code.error) {
 					app.engine_code = code.code;
 					nwFS.writeFile('blanke.min.js',code.code,'utf-8');

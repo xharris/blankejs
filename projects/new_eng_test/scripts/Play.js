@@ -1,8 +1,7 @@
-
 Scene("Play",{
     onStart: function() {
-		Map.load("test1")
 		new Player();
+		Map.load("test1")
     },
     onUpdate: function() {
         

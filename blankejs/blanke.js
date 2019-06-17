@@ -35,7 +35,9 @@ var Blanke = (selector, options) => {
         background_color: 0x000000,
         scale_mode: 'nearest',
         round_pixels: true,
-        fps: 60
+        fps: 60,
+        assets: [],
+        onLoad: () => {}
     },options || {}); 
     // init PIXI
     let app;
@@ -88,17 +90,15 @@ var Blanke = (selector, options) => {
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
-        } else {
-            Asset.add(this.options.config_file,'config',(data) => {
-                if (data) {
-                    Game.config = JSON.parse(data);
-                }
-            });
-        }
-
-        if (Game.config.first_scene) {
-            Scene.start(Game.config.first_scene);
-        }
+        } 
+        Asset.add(this.options.assets);
+        Asset._load(() => {
+            if (this.options.onLoad)
+                this.options.onLoad();
+            if (Game.config.first_scene && Scene.stack.length == 0) {
+                Scene.start(Game.config.first_scene);
+            }
+        })
     }
 
     const addZOrdering = (obj) => {
@@ -269,6 +269,7 @@ var Blanke = (selector, options) => {
     var Asset = {
         data: {},
         path_name: {},
+        loader: new PIXI.Loader(),
         supported_filetypes: {
             /* options: { name, frames, frame_size, offset, columns } */
             'image':['png'],
@@ -297,7 +298,7 @@ var Blanke = (selector, options) => {
                 }
                 return;
             }
-            path = (this.options.root ? this.options.root + '/' : '') + orig_path;
+            let path = (this.options.root ? this.options.root + '/' : '') + orig_path;
             let [type, name] = Asset.getType(path);
             // default values
             if (type == 'image') {
@@ -314,6 +315,16 @@ var Blanke = (selector, options) => {
             } else {
                 name =  typeof options === "string" ? options : (options.name || name)
             }
+            // add it to loader
+            Asset.loader.add(name, path, {metadata:{type:type, options:options}}, Asset._onComplete);
+        },
+        _onComplete: (info) => {
+            let type = info.metadata.type;
+            let data = info.data;
+            let name = info.name;
+            let options = info.metadata.options;
+            let path = info.url;
+            
             let storeAsset = (_type,_path,_name, _data) => {
                 if (!(_type && _path && _name)) return;
                 if (!Asset.data[_type]) {
@@ -331,38 +342,21 @@ var Blanke = (selector, options) => {
                 case 'image':
                     let img_obj = {path:path, animated:false, options:options};
                     // base texture
-                    if (!Asset.base_textures[path])
-                        Asset.base_textures[path] = PIXI.BaseTexture.from(path, {crossorigin:false});
+                    if (!Asset.base_textures[path]) {
+                        Asset.base_textures[path] = info.texture.baseTexture;// PIXI.BaseTexture.from(path, {crossorigin:false});
+                    }
                     let base_tex = Asset.base_textures[path];
+                    
                     if (options && options.frame_size) {
                         img_obj.animated = true;
-                        img_obj.frames = [];
                         name = options.name;
-                        // add regular image
-                        Asset.add(orig_path);
-                        // get options
-                        let offx = options.offset[0], offy = options.offset[1],
-                        framew = options.frame_size[0], frameh = options.frame_size[1],
-                        col = options.columns;
-                        let x = offx, y = offy, w = framew, h = frameh;
-                        // generate rectangles
-                        for (let f = 0; f < options.frames; f++) {
-                            img_obj.frames.push(
-                                [base_tex, x, y, w, h]
-                            );
-                            x += framew;
-                            // next row?
-                            if ((f % col) - 1 > col) {
-                                x = offx;
-                                y += frameh;
-                            }                                
-                        }
+                        options.from_asset = true;
+                        // crop texture frames
+                        let result = Asset.texCrop(path, options, base_tex);
+                        img_obj.frames = result.frames;
+                        img_obj.tex_frames = result.tex_frames;
                     }
-                    img_obj.texture = new PIXI.Texture(base_tex);
-                    // crop texture frames
-                    if (img_obj.frames)
-                        img_obj.tex_frames = img_obj.frames.map( f => Asset.texCrop(f[0], f.slice(1)) );
-                    
+                    img_obj.texture = info.texture;// new PIXI.Texture(base_tex);
                     storeAsset(type, path, name, img_obj);
                     Asset.data[type][name] = img_obj;
                     return img_obj;
@@ -370,52 +364,87 @@ var Blanke = (selector, options) => {
                 // FILE / MAP : json, text, file with data...
                 case 'file':
                 case 'map':
-                    let prom = new Promise((res, rej)=>{
-                        let xhr = new XMLHttpRequest();
-                        xhr.onreadystatechange = () => {
-                            if (xhr.readyState === XMLHttpRequest.DONE) {
-                                if (xhr.status === 200) {
-                                    storeAsset(type, path, name, xhr.responseText);
-                                    // success
-                                    res(xhr.responseText);
-                                } else {
-                                    // error
-                                    res(null);
-                                }
-                            }
-                        }
-                        xhr.open("GET",path,true);
-                        xhr.send();
-                    });
-                    storeAsset(type, path, name, prom);
-                    if (cb) 
-                        prom.then(cb);
+                    storeAsset(type, path, name, data);
                     break;
             }
         },
-        texCrop: (base_tex, dims) => {
-            return new PIXI.Texture(base_tex, new PIXI.Rectangle(dims[0],dims[1],dims[2],dims[3]))
+        tex_crop_cache: {},
+        texCrop: (path, opt, base_tex) => {
+            opt = Object.assign({
+                offset: [0,0],
+                columns: 1,
+                frames: 1,
+                speed: 1,
+                is_key: false,
+                from_asset: false,
+            }, opt);
+            if (!opt.from_asset) 
+                path = (this.options.root ? this.options.root + '/' : '') + path;
+            if (opt.is_key) 
+                return Asset.tex_crop_cache[path];
+            if (!base_tex) {
+                // use supplied name
+                if (!Asset.base_textures[path]) {
+                    Asset.base_textures[path] = PIXI.BaseTexture.from(path, {crossorigin:false})
+                }
+                base_tex = Asset.base_textures[path]
+            }
+            let key = [path.split('.').slice(0,-1).join('.'), opt.offset[0], opt.offset[1], opt.frame_size[0], opt.frame_size[1], opt.columns||0].join(',');
+            if (!Asset.tex_crop_cache[key]) {
+                // get options
+                let offx = opt.offset[0], offy = opt.offset[1];
+                let framew = opt.frame_size[0], frameh = opt.frame_size[1];
+                let col = opt.columns;
+                let x = offx, y = offy, w = framew, h = frameh;
+                let frames = [];
+                // generate rectangles
+                for (let f = 0; f < opt.frames; f++) {
+                    frames.push(
+                        [x, y, w, h]
+                    );
+                    x += framew;
+                    // next row?
+                    if ((f % col) - 1 > col) {
+                        x = offx;
+                        y += frameh;
+                    }                                
+                }
+                Asset.tex_crop_cache[key] = {
+                    key: key,
+                    frames: frames,
+                    tex_frames: frames.map(dims => new PIXI.Texture(base_tex, new PIXI.Rectangle(dims[0], dims[1], dims[2], dims[3])))
+                }
+                console.log('adding',key,Asset.tex_crop_cache)
+            } else console.log('found',key,Asset.tex_crop_cache)
+            return Asset.tex_crop_cache[key];
         },
-        get: (type, name, cb) => {
+        _load: (cb) => {
+            Asset.loader.load(cb);
+        },
+        get: (type, name) => {
             if (!(Asset.data[type] && Asset.data[type][name]))
                 return;
             switch (type) {
                 case 'image':
-                    return Asset.data[type][name];
-                    break;
                 case 'file':
                 case 'map':
-                    let data = Asset.data[type][name];
-                    if (typeof data.then == 'function') {
-                        data.then(cb);
-                    } else
-                        cb(data);
+                    return Asset.data[type][name];
+                    break;
             }
         },
         getName: (type, path) => {
             if (Asset.path_name[type] && Asset.path_name[type][path])
                 return Asset.path_name[type][path];
             return [];
+        },
+        getPath: (type, name) => {
+            if (Asset.path_name[type]) {
+                for (let path in Asset.path_name[type]) {
+                    if (Asset.path_name[type][path].includes(name)) {
+                        return path;
+                    }
+                }
+            }
         }
     }
 
@@ -589,7 +618,7 @@ var Blanke = (selector, options) => {
     
     Scene.end = (name) => {
         let index = Scene.stack.indexOf(name);
-        if (index > -1) {
+        if (index > -1 && Scene.ref[name]) {
             Scene.stack.splice(index,1);
             Scene.ref[name]._onEnd();
         }
@@ -1261,41 +1290,39 @@ var Blanke = (selector, options) => {
         get debug () { return this._debug; }
         _getPixiObjs () { return [this.main_container]; }
         static load (name) { 
-            return new Promise(res => {
-                Asset.get('map',name,(data)=>{
-                    data = JSON.parse(data);
-                    let new_map = new Map(name, true);
-                    // ** PLACE TILES **
-                    for (let img_info of data.images) {
-                        // get layer image belongs to
-                        for (let lay_name in img_info.coords) {
-                            let layer = new_map.getLayer(lay_name);
-                            for (let c of img_info.coords[lay_name]) {
-                                // place them
-                                let asset_info = new_map.addTile(img_info.path, [c[0], c[1]], {
-                                    offset: [c[2], c[3]],
-                                    frame_size: [c[4], c[5]]
-                                }, true)
-                                // Map.config.tile_hitboxes
-                                if (Array.isArray(Map.config.tile_hitboxes)) {
-                                    let asset_name = Asset.parseAssetName(img_info.path);
-                                    if (Map.config.tile_hitboxes.includes(asset_name)) {
-                                        new_map.addHitbox({
-                                            type: 'rect',
-                                            shape: [c[0], c[1], c[4], c[5]],
-                                            tag: asset_name
-                                        })
-                                    }
-                                }
+            let data = Asset.get('map',name);
+            if (!data) return;
+            data = JSON.parse(data);
+            let new_map = new Map(name, true);
+            // ** PLACE TILES **
+            for (let img_info of data.images) {
+                // get layer image belongs to
+                for (let lay_name in img_info.coords) {
+                    let layer = new_map.getLayer(lay_name);
+                    for (let c of img_info.coords[lay_name]) {
+                        // place them
+                        let asset_info = new_map.addTile(img_info.path, [c[0], c[1]], {
+                            offset: [c[2], c[3]],
+                            frame_size: [c[4], c[5]],
+                            is_name: false
+                        }, true)
+                        // Map.config.tile_hitboxes
+                        if (Array.isArray(Map.config.tile_hitboxes)) {
+                            let asset_name = Asset.parseAssetName(img_info.path);
+                            if (Map.config.tile_hitboxes.includes(asset_name)) {
+                                new_map.addHitbox({
+                                    type: 'rect',
+                                    shape: [c[0], c[1], c[4], c[5]],
+                                    tag: asset_name
+                                })
                             }
-                        } 
+                        }
                     }
-                    // ** PLACE ENTITIES **
-                    
-                    new_map.redrawTiles();
-                    res(new_map);
-                });
-            });
+                } 
+            }
+            // ** PLACE ENTITIES **
+            
+            new_map.redrawTiles();
         }
         addLayer (name, _uuid) {
             let new_cont = new PIXI.Container();
@@ -1318,15 +1345,14 @@ var Blanke = (selector, options) => {
             opt: same options as Sprite (offset, frame_size)
         */
         addTile (name, pos, opt, skip_redraw) {
+            if (opt.is_name) {
+                // turn image name into path
+                let name = Asset.getPath(name);
+                if (!name) return;
+            }
             if (opt.layer == null) opt.layer = this.layers[0]._name;
             // get the tile texture
-            let key = [name.split('.')[0], opt.offset[0], opt.offset[1], opt.frame_size[0], opt.frame_size[1], opt.columns||0].join(',');
-            let asset = Asset.get('image', key);
-            if (!asset) {
-                opt.name = key;
-                opt.crop = true;
-                asset = Asset.add(name, opt);
-            }
+            let asset = Asset.texCrop(name, opt);
             let tex_frames = asset.tex_frames;
             // place tiles
             for (let t = 0; t < pos.length; t += 2) {
@@ -1334,7 +1360,7 @@ var Blanke = (selector, options) => {
                     this.tile_hash.add({
                         x: pos[t], y: pos[t+1],
                         w: tex_frames[f].width, h: tex_frames[f].height,
-                        key: key, frame: parseInt(f), img_name: name,
+                        key: asset.key, frame: parseInt(f), img_name: name,
                         layer: opt.layer
                     });
                 }
@@ -1349,9 +1375,8 @@ var Blanke = (selector, options) => {
             for (let tile of tiles) {
                 if (!draw_instr[tile.layer])
                     draw_instr[tile.layer] = [];
-                tex = Asset.get('image', tile.key);
+                tex = Asset.texCrop(tile.key, {is_key:true});
                 if (tex) {
-                    let frame = tex.frames[tile.frame]
                     draw_instr[tile.layer].push(
                         ['texture', tex.tex_frames[tile.frame], 0xffffff, 1, new PIXI.Matrix(1,0,0,1,tile.x,tile.y)],
                         ['rect', tile.x, tile.y, tile.w, tile.h],
@@ -1399,6 +1424,10 @@ var Blanke = (selector, options) => {
         }
     }
     Map.config = {};  // used during load()
+
+    /* -AUDIO */
+    const AudioContext = window.AudioContext || window.webkitAudioContext; // for legacy browsers
+    const audio_ctx = new AudioContext();
 
     engineLoaded.call(this);
     return {Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View};

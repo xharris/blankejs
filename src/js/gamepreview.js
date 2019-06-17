@@ -102,26 +102,24 @@ class GamePreview {
 			this.game.Game.resume();
 	}
 
+	getAssets () {
+		let str_assets = [];
+
+	}
+
 	getSource () {
 		return getHTML(`
-		<body>
+		<tbody>
 			<div id="game"></div>
 		</body>
 		<script>
 			let app = window.parent.app;
 			window.addEventListener('dragover', function(e) {
 				e.preventDefault();
-				app.showDropZone();
 				return false;
 			});
 			window.addEventListener('drop', function(e) {
 				e.preventDefault();
-	
-				if (app.isProjectOpen()) {
-					app.dropFiles(e.dataTransfer.files);
-					app.getElement("#drop-zone").classList.remove("active");
-				}
-	
 				return false;
 			});
 			window.addEventListener('dragleave', function(e) {
@@ -133,10 +131,18 @@ class GamePreview {
 				fill_parent: false,
 				width: ${this.options.size[0]},
 				height: ${this.options.size[1]},
-				background_color: 0x485358
-			});
-			window.addEventListener('load', function(e) {
-				${this.refreshSource()}
+				background_color: 0x485358,
+				assets: [
+					["config.json"],
+					["assets/image/player_stand.png"],
+					["assets/image/ground.png"],
+					["assets/audio/door.wav"],
+					["assets/maps/test1.map"],
+					['assets/image/sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3}]				
+				],
+				onLoad: function(){
+					${this.refreshSource()}
+				}
 			});
 		</script>`);
 	}
@@ -180,9 +186,19 @@ class GamePreview {
 			height: ${this.options.size[1]},`
 			}
 			root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
-			background_color: 0x485358
+			background_color: 0x485358,
+			assets: [
+				["config.json"],
+				["assets/image/player_stand.png"],
+				["assets/image/ground.png"],
+				["assets/audio/door.wav"],
+				["assets/maps/test1.map"],
+				['assets/image/sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3}]				
+			],
+			onLoad: function(){
+				${extra_code}
+			}
 		});
-		${extra_code}
 	</script>`);
 	}
 	
@@ -239,7 +255,7 @@ class GamePreview {
 
 		// wrapped in a function so local variables are destroyed on reload
 		let code = `
-(function(){ //window.addEventListener("load",function(){
+(function(){
 	let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game;
 	let TestScene = (funcs) => {
 	${this.options.test_scene ? `
@@ -249,7 +265,6 @@ class GamePreview {
 	: ''}
 	}
 `;
-		let re
 		this.line_ranges = {};
 		let last_line_end = (code.match(re_new_line) || []).length;
 		for (let path of scripts) {
@@ -262,8 +277,7 @@ class GamePreview {
 			
 			last_line_end = this.line_ranges[path].end;
 		}
-		code += (post_load || '') + `
-})(); //});`;
+		code += (post_load || '') + `})();`;
 		if (this.game) this.game.Game.end();
 		if (!this.game || new_doc) {
 			this.refreshDoc(code);
@@ -298,6 +312,7 @@ class GamePreview {
 						this.onError(msg, file, lineNo - range.start, columnNo);
 
 				}
+				console.error(msg, url, lineNo, columnNo, error)
 				return true;
 			}
 			if (this.onRefresh) this.onRefresh();

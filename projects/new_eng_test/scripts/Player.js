@@ -1,7 +1,7 @@
 class Player extends Entity {
 	init () {
 		this.addSprite('player_stand');
-		this.z = 20;
+		this.z = 10;
 	}
 	update (dt) {
 		this.hspeed = 0;
@@ -16,6 +16,5 @@ class Player extends Entity {
 TestScene({
 	onStart: () => {
 		Map.load("test1")
-		let player = new Player();
 	}
 })
