@@ -526,7 +526,7 @@ var app = {
 		'audio':['mp3','ogg','wav'],
 		'scene':['scene'],
 		'font':['ttf','ttc','cff','woff','otf','otc','pfa','pfb','fnt','bdf','pfr'],
-		'script':['lua']
+		'script':['js']
 	},
 	name_to_path: {},
 	getAssets: function(f_type, cb) {

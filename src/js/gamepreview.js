@@ -51,8 +51,24 @@ class GamePreview {
 		// engine loaded
 		this.refresh_file = null;
 		this.errored = false;
+		this.last_code = null;
 		this.container.addEventListener('load', () => {
-			this.game = this.container.contentWindow.game;
+			this.game = this.container.contentWindow.game_instance;
+			let iframe = this.container;
+			let doc = iframe.contentDocument;
+			doc.querySelectorAll("#game canvas").forEach(el => el.remove());
+
+			if (this.last_code) {
+				let old_script = doc.querySelectorAll('script.source');
+				if (old_script)
+					old_script.forEach((el) => el.remove());
+				let parent= doc.getElementsByTagName('body')[0];
+				let script= doc.createElement('script');
+				script.classList.add("source");
+				script.innerHTML= this.last_code;
+				parent.appendChild(script);
+				this.last_code = null;
+			}
 			
 			if (this.errored) {
 				return;
@@ -61,18 +77,39 @@ class GamePreview {
 			if (this.refresh_file) {
 				this.refreshSource(this.refresh_file);
 			}
-			else if (this.last_script) {
-				this.refreshSource(this.last_script);
-			}
-			else {
-				this.refreshSource();
-			}	
 			if (this.options.onLoad)
 				this.options.onLoad(this);
+
+			iframe.contentWindow.onerror = (msg, url, lineNo, columnNo, error) => {
+				this.pause();
+				this.errored = true;
+				if (this.onError) {
+					let file, range;
+					for (let f in this.line_ranges) {
+						range = this.line_ranges[f];
+						if (lineNo > range.start && lineNo < range.end) {
+							file = f;
+							break;
+						}
+					}
+					if (file)
+						this.onError(msg, file, lineNo - range.start, columnNo);
+
+				}
+				console.error(msg, url, lineNo, columnNo, error)
+				return true;
+			}
+			if (this.onRefresh) this.onRefresh();
+			if (this.onLog) {
+				iframe.contentWindow.console = {
+					log:  (...args) => {
+						this.onLog(args)
+						//old_log(...args);
+					}
+				}
+			}
 		})
 		this.refreshSource();
-		if (!(this.refresh_file || this.last_script))
-			this.refreshSource();
 		this.parent.appendChild(this.container);
 
 		this.paused = false;
@@ -109,7 +146,7 @@ class GamePreview {
 
 	getSource () {
 		return getHTML(`
-		<tbody>
+		<body>
 			<div id="game"></div>
 		</body>
 		<script>
@@ -126,7 +163,7 @@ class GamePreview {
 				e.preventDefault();
 				return false;
 			});
-			var game = Blanke("#game",{
+			var game_instance = Blanke("#game",{
 				config: ${JSON.stringify(app.project_settings)},
 				fill_parent: false,
 				width: ${this.options.size[0]},
@@ -146,61 +183,6 @@ class GamePreview {
 			});
 		</script>`);
 	}
-
-	refreshDoc (extra_code) {
-		// add iframe content
-		this.container.srcdoc = getHTML(`
-	<body>
-		<div id="game"></div>
-	</body>
-	<script>
-		let app = window.parent.app;
-		window.addEventListener('dragover', function(e) {
-			e.preventDefault();
-			app.showDropZone();
-			return false;
-		});
-		window.addEventListener('drop', function(e) {
-			e.preventDefault();
-
-			if (app.isProjectOpen()) {
-				app.dropFiles(e.dataTransfer.files);
-				app.getElement("#drop-zone").classList.remove("active");
-			}
-
-			return false;
-		});
-		window.addEventListener('dragleave', function(e) {
-			e.preventDefault();
-			app.hideDropZone();
-			return false;
-		});
-		var game = Blanke("#game",{
-			config: ${JSON.stringify(app.project_settings)},
-			fill_parent: true,
-			ide_mode: true,
-			${this.options.size == null ?
-			`auto_resize: true,`
-			:
-			`width: ${this.options.size[0]},
-			height: ${this.options.size[1]},`
-			}
-			root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
-			background_color: 0x485358,
-			assets: [
-				["config.json"],
-				["assets/image/player_stand.png"],
-				["assets/image/ground.png"],
-				["assets/audio/door.wav"],
-				["assets/maps/test1.map"],
-				['assets/image/sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3}]				
-			],
-			onLoad: function(){
-				${extra_code}
-			}
-		});
-	</script>`);
-	}
 	
 	refreshSource (current_script, new_doc) {
 		if (this.errored) {	
@@ -213,6 +195,10 @@ class GamePreview {
 			current_script = this.refresh_file
 			this.refresh_file = null;
 		}
+		console.log(this.game)
+		if (this.game)
+			this.game.Game.end();
+
 		let post_load = '';
 		// get all the scripts
 		let scripts = [];
@@ -236,7 +222,6 @@ class GamePreview {
 				scripts = scripts.concat(new_scripts);
 			}
 		}
-
 		switch (curr_script_cat) {
 			case 'entity':
 				if (this.options.test_scene)
@@ -254,21 +239,51 @@ class GamePreview {
 		}
 
 		// wrapped in a function so local variables are destroyed on reload
+		let onload_code = `
+		let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game_instance;
+		let TestScene = (funcs) => {
+		${this.options.test_scene ? `
+			Scene.ref["_test"] = null;
+			Scene("_test", funcs);
+		`
+		: ''}
+		}\n`;
+
 		let code = `
-(function(){
-	let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game;
-	let TestScene = (funcs) => {
-	${this.options.test_scene ? `
-		Scene.ref["_test"] = null;
-		Scene("_test", funcs);
-	`
-	: ''}
+var game_instance = Blanke("#game",{
+	config: ${JSON.stringify(app.project_settings)},
+	fill_parent: true,
+	ide_mode: true,
+	${this.options.size == null ?
+	`auto_resize: true,`
+	:
+	`width: ${this.options.size[0]},
+	height: ${this.options.size[1]},`
 	}
-`;
+	root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
+	background_color: 0x485358,
+	assets: [
+		["config.json"],
+		["assets/image/player_stand.png"],
+		["assets/image/ground.png"],
+		["assets/audio/door.wav"],
+		["assets/maps/test1.map"],
+		['assets/image/sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3}]				
+	],
+	onLoad: function(){
+		let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game_instance;
+		let TestScene = (funcs) => {
+		${this.options.test_scene ? 
+`			Scene.ref["_test"] = null;
+			Scene("_test", funcs);
+`
+		: ''}
+		}\n`;
 		this.line_ranges = {};
 		let last_line_end = (code.match(re_new_line) || []).length;
 		for (let path of scripts) {
 			code += nwFS.readFileSync(path,'utf-8') + '\n';
+			onload_code += nwFS.readFileSync(path,'utf-8') + '\n';
 			// get the lines at which this piece of code starts and ends
 			this.line_ranges[path] = {
 				start: last_line_end,
@@ -277,56 +292,43 @@ class GamePreview {
 			
 			last_line_end = this.line_ranges[path].end;
 		}
-		code += (post_load || '') + `})();`;
-		if (this.game) this.game.Game.end();
-		if (!this.game || new_doc) {
-			this.refreshDoc(code);
-		}
+		onload_code += (post_load || '');
+		code += (post_load || '') + `
+	}
+});`;
+		this.container.srcdoc = getHTML(`
+	<body>
+		<div id="game"></div>
+	</body>
+	<script class="source">
+	</script>`);
 
-		// reload source file
-		let iframe = this.container;
-		let doc = iframe.contentDocument;
+		this.last_code = `
+		let app = window.parent.app;
+		window.addEventListener('dragover', function(e) {
+			e.preventDefault();
+			app.showDropZone();
+			return false;
+		});
+		window.addEventListener('drop', function(e) {
+			e.preventDefault();
 
-		if (this.game && doc) {
-			let old_script = doc.querySelectorAll('script.source');
-			if (old_script)
-				old_script.forEach((el) => el.remove());
-			let parent= doc.getElementsByTagName('body')[0];
-			let script= doc.createElement('script');
-			script.classList.add("source");
-			script.innerHTML= code;
-
-			iframe.contentWindow.onerror = (msg, url, lineNo, columnNo, error) => {
-				this.pause();
-				this.errored = true;
-				if (this.onError) {
-					let file, range;
-					for (let f in this.line_ranges) {
-						range = this.line_ranges[f];
-						if (lineNo > range.start && lineNo < range.end) {
-							file = f;
-							break;
-						}
-					}
-					if (file)
-						this.onError(msg, file, lineNo - range.start, columnNo);
-
-				}
-				console.error(msg, url, lineNo, columnNo, error)
-				return true;
+			if (app.isProjectOpen()) {
+				app.dropFiles(e.dataTransfer.files);
+				app.getElement("#drop-zone").classList.remove("active");
 			}
-			if (this.onRefresh) this.onRefresh();
-			if (this.onLog) {
-				iframe.contentWindow.console = {
-					log:  (...args) => {
-						this.onLog(args)
-						//old_log(...args);
-					}
-				}
-			}
-			parent.appendChild(script);
-		}
-		return code;
+
+			return false;
+		});
+		window.addEventListener('dragleave', function(e) {
+			e.preventDefault();
+			app.hideDropZone();
+			return false;
+		});
+		${code}
+		`;
+
+		return onload_code;
 	}
 
 	refreshEngine () {

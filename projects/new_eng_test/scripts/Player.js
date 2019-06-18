@@ -15,6 +15,8 @@ class Player extends Entity {
 
 TestScene({
 	onStart: () => {
-		Map.load("test1")
+		console.log("test")
+		new Player();
+		Map.load("test1");
 	}
 })
