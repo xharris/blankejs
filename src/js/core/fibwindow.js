@@ -266,7 +266,8 @@ class FibWindow {
 			el_bg_workspace.appendChild(first_box.bg_content);
 		}
 
-		boxes[0]._onFocus();
+		if (boxes[0])
+			boxes[0]._onFocus();
 	}
 
 	_onFocus () {

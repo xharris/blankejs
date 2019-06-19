@@ -10,7 +10,7 @@ function ifndef_obj(obj, defaults) {
     if (obj === undefined) obj = {};
     for (let d in defaults) {
         if (obj[d] === undefined) obj[d] = defaults[d];
-    }
+    } 
     return obj;
 }
 
@@ -712,7 +712,7 @@ var blanke = {
             }
         
         // reset the timer if necessary
-        if (overwrite_timer || blanke.cooldown_keys.timer == null) {
+        if (overwrite_timer || blanke.cooldown_keys[name].timer == null) {
             clearTimeout(blanke.cooldown_keys[name].timer);
             blanke.cooldown_keys[name].timer = setTimeout(function(){
                 blanke.cooldown_keys[name].func();

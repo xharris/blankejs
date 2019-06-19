@@ -1,8 +1,8 @@
 Scene("Play",{
     onStart: function() {
-		new Player();
-		Map.load("test1")
-    },
+		let map_test1 = Map.load("test1")
+    	map_test1.spawnEntity(Player,"player",{align:"bottom"})
+	},
     onUpdate: function() {
         
     },

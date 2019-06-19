@@ -104,7 +104,7 @@ class GamePreview {
 			if (this.onLog) {
 				iframe.contentWindow.console = {
 					log:  (...args) => {
-						this.onLog(args)
+						this.onLog(...args)
 						//old_log(...args);
 					}
 				}

@@ -62,8 +62,19 @@ class Console extends Editor {
 		this.had_error = false;
 	}
 
-	log (str) {
-		str = JSON.stringify(str.trim()).slice(1,-1);
+	parse (line) {
+		// one-liner limits object depth
+		return JSON.stringify(line, function (k, v) { return typeof(k) == 'object' ? "" + v : v; }).slice(1,-1);
+	}
+
+	log (...args) {
+		// parse args
+		let str = '';
+		if (args.length > 1) {
+			str += this.parse(args); 
+		} else {
+			str += this.parse(args[0]); 
+		}
 		if (this.last_line == str) {
 			this.duplicate_count++;
 			if (this.last_dupe_line !== '')
@@ -78,8 +89,8 @@ class Console extends Editor {
 			this.str_console += `${str}\n`;
 		}
 		this.last_line = str;
+		this.el_lines.innerHTML = this.str_console;
 		blanke.cooldownFn("console.log", 100, ()=>{	
-			this.el_lines.innerHTML = this.str_console;
 			this.el_log.scrollTop = this.el_log.scrollHeight;
 		});
 	}
