@@ -414,6 +414,7 @@ class Code extends Editor {
 		}
 		this.game.onRefresh = () => {
 			this.console.clear();
+			this.codemirror.focus();
 		}
 
 		this.addCallback('onEnterView',()=>{

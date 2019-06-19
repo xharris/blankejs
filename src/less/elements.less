@@ -377,7 +377,7 @@
 	.sidebar {
 		position: absolute;
 		right: 0px;
-		margin: @window-padding;
+		margin: 25px;
 	    margin-top: 58px;
 		z-index: 1;
 	    pointer-events: none;
@@ -826,13 +826,18 @@
 	pointer-events: none;
 	background-color: rgba(38, 50, 56, 0.81);
 	transition: all ease-in-out 0.2s;
-	margin-top: 58px;
 	z-index: 5;
 	border-radius: 4px;
-	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: auto;
+	max-height: 500px;
+	max-width: 250px;
 	width: auto !important;
-	height: auto !important;
-	margin: 10px;
+	heightm: auto !important;
+	margin: 0px 10px;
+	display: inline;
+	top: 0px;
+	
 
 	.content {
 		position: initial;
@@ -840,11 +845,11 @@
 	}
 
 	.sidebar { 
-		width: 160px;
+		width: auto;
 		margin: 0px;
 		margin-top: @window-padding;
 		background-color: transparent;
-		display: inline-table;
+		/* display: inline-table; */
 		position: initial;
 
 		&.hidden {

@@ -89,6 +89,7 @@ var Blanke = (selector, options) => {
     const engineLoaded = () => {
         removeSnaps();
         Game.ide_mode = this.options.ide_mode;
+        Game.background_color = this.options.background_color;
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
@@ -230,7 +231,6 @@ var Blanke = (selector, options) => {
             if (!app) return;
             removeSnaps();
             Game.resume();
-            Game.background_color = this.options.background_color;
             // destroy scenes
             Scene.endAll();
             Scene.ref = {};
@@ -660,8 +660,6 @@ var Blanke = (selector, options) => {
         constructor (name, options) {
             this.animated = false;
             let asset = Asset.get('image',name);
-            if (!asset) 
-                console.log("NO",name);
             // animated sprite
             if (asset.tex_frames) {
                 this.animated = true;
@@ -1375,7 +1373,7 @@ var Blanke = (selector, options) => {
             for (let tile of tiles) {
                 if (!draw_instr[tile.layer])
                     draw_instr[tile.layer] = [];
-                tex = Asset.texCrop(tile.key, {is_key:true});
+                tex = Asset.texCrop(tile.key, {is_key:true,from_asset:true});
                 if (tex) {
                     draw_instr[tile.layer].push(
                         ['texture', tex.tex_frames[tile.frame], 0xffffff, 1, new PIXI.Matrix(1,0,0,1,tile.x,tile.y)],

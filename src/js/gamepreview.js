@@ -56,7 +56,8 @@ class GamePreview {
 			this.game = this.container.contentWindow.game_instance;
 			let iframe = this.container;
 			let doc = iframe.contentDocument;
-			doc.querySelectorAll("#game canvas").forEach(el => el.remove());
+			let canvas = doc.querySelectorAll("#game canvas");
+			canvas.forEach(el => el.remove());
 
 			if (this.last_code) {
 				let old_script = doc.querySelectorAll('script.source');
@@ -195,7 +196,6 @@ class GamePreview {
 			current_script = this.refresh_file
 			this.refresh_file = null;
 		}
-		console.log(this.game)
 		if (this.game)
 			this.game.Game.end();
 

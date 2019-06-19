@@ -101,6 +101,7 @@ class FibWindow {
 				boxes.unshift(boxes.splice(b,1)[0]);
 				FibWindow.resizeWindows();
 				FibWindow.checkBackground();
+				boxes[0]._onFocus();
 
 				return true;
 			}
@@ -238,7 +239,7 @@ class FibWindow {
 				boxes[b].fib_container.classList.remove("first");
 				if (boxes[b].bg_content && boxes[b].in_background) {
 					old_first_found = true;
-					if (!boxes[b].bg_first_only)
+					if (!boxes[b].bg_first_only) 
 						boxes[b].appendChild(el_bg_workspace.removeChild(boxes[b].bg_content));
 				}
 				boxes[b].in_background = false;
@@ -263,6 +264,19 @@ class FibWindow {
 			el_bg_workspace.dataset.type = first_box.type;
 			el_bg_workspace.focused_guid = first_box.guid;
 			el_bg_workspace.appendChild(first_box.bg_content);
+		}
+
+		boxes[0]._onFocus();
+	}
+
+	_onFocus () {
+		if (this.onFocus) // TODO: don't focus if already focused
+			this.onFocus();
+		this.focused = true;
+		for (var b = 0; b < boxes.length; b++) {
+			if (boxes[b].title != this.title) {
+				boxes[b].focused = false;
+			}
 		}
 	}
 
