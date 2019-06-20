@@ -15,13 +15,16 @@ module.exports.keywords = [
 // (?:(?:local\s+|,\s*)(?!\.)([a-zA-Z_]\w*)[,\n\r]?\s*)[^\n\r\.\:]+?(?:(?!=\s*function)(?==)|[\n\r])
 module.exports.user_words = {
 	'var':[
-		/local\s+([a-zA-Z_]\w*)(?!=\s*function)/g,
-		/local\s+(?:[a-zA-Z_]\w*,\s*)+([a-zA-Z_]\w*)(?!=\s*function)/g,
-		
+		// single var
+		/([a-zA-Z_]\w+?)\s*=\s(?!function|\(\)\s*=>)/g,
+		// comma separated var list
+		/(?:let|var)\s+(?:[a-zA-Z_]+[\w\s=]+?,\s*)+([a-zA-Z_]\w+)(?!\s*=)/g
 	],
 	'fn':[
-		/(?:local\s+)(?!\.)([a-zA-Z_]\w*)\s*=\s*function\s*\(/g,
-		/function\s+(?!\.)([a-zA-Z_]\w*)\s*\(/g
+		// var = function
+		/([a-zA-Z_]\w+?)\s*=\s(?:function|\(\)\s*=>)/g,
+		// function var()
+		/function\s+([a-zA-Z_]\w+)\s*\(/g
 	]
 }
 
