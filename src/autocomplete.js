@@ -25,6 +25,13 @@ module.exports.user_words = {
 	]
 }
 
+// displays the image in the editor
+module.export.image = [
+	/Sprite\(["']([\w\s\/.-]+)["']\)/,
+	/self:addSprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/,
+	/Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/
+];
+
 module.exports.class_list = ['Net','Group','Canvas','Draw','BlankE','Debug','Asset','Input','Image','Scene','Signal','Bezier','Window','math','Audio','string','table'];
 
 // Group 1: name of class to replace <class_name> in instance_regex

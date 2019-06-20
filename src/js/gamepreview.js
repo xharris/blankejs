@@ -58,18 +58,6 @@ class GamePreview {
 			let doc = iframe.contentDocument;
 			let canvas = doc.querySelectorAll("#game canvas");
 			canvas.forEach(el => el.remove());
-
-			if (this.last_code) {
-				let old_script = doc.querySelectorAll('script.source');
-				if (old_script)
-					old_script.forEach((el) => el.remove());
-				let parent= doc.getElementsByTagName('body')[0];
-				let script= doc.createElement('script');
-				script.classList.add("source");
-				script.innerHTML= this.last_code;
-				parent.appendChild(script);
-				this.last_code = null;
-			}
 			
 			if (this.errored) {
 				return;
@@ -108,6 +96,18 @@ class GamePreview {
 						//old_log(...args);
 					}
 				}
+			}
+
+			if (this.last_code) {
+				let old_script = doc.querySelectorAll('script.source');
+				if (old_script)
+					old_script.forEach((el) => el.remove());
+				let parent= doc.getElementsByTagName('body')[0];
+				let script= doc.createElement('script');
+				script.classList.add("source");
+				script.innerHTML= this.last_code;
+				parent.appendChild(script);
+				this.last_code = null;
 			}
 		})
 		this.refreshSource();
@@ -191,7 +191,7 @@ class GamePreview {
 		}
 		this.last_script = current_script;
 		if (!this.game) 
-			this.refresh_file = current_script;
+			this.refresh_file = app.cleanPath(current_script);
 		if (this.refresh_file) {
 			current_script = this.refresh_file
 			this.refresh_file = null;
@@ -280,14 +280,15 @@ var game_instance = Blanke("#game",{
 		: ''}
 		}\n`;
 		this.line_ranges = {};
-		let last_line_end = (code.match(re_new_line) || []).length;
+		let line_offset = 22; // compensates for line 308 where extra code is added;
+		let last_line_end = (code.match(re_new_line) || []).length + line_offset;
 		for (let path of scripts) {
 			code += nwFS.readFileSync(path,'utf-8') + '\n';
 			onload_code += nwFS.readFileSync(path,'utf-8') + '\n';
 			// get the lines at which this piece of code starts and ends
 			this.line_ranges[path] = {
 				start: last_line_end,
-				end: (code.match(re_new_line) || []).length
+				end: (code.match(re_new_line) || []).length + line_offset
 			};
 			
 			last_line_end = this.line_ranges[path].end;

@@ -2024,7 +2024,7 @@ class SceneEditor extends Editor {
 			nwFS.writeFileSync(this.file, JSON.stringify(export_data));
 		} else {
 			console.log(this.file+' not saved cause of error',app.error_occured)
-			blanke.toast(this.file+' not saved!');
+			blanke.toast(this.file+' not saved because an error occurred earlier! Please re-open the IDE :(');
 		}
 	}
 

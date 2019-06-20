@@ -339,19 +339,6 @@
 		}
 	}
 }
-
-.sidewin[data-type="SceneEditor"] {
-	position: absolute;
-	right: 16px;
-    top: 40px;
-
-	.sidebar {
-	    pointer-events: none;
-		background-color: rgba(38, 50, 56, 0.81);
-	    transition: all ease-in-out 0.2s;
-	    margin-top: 24px;
-	}
-}
 .fib-container[data-type="SceneEditor"] {
 	border: 1px solid rgba(147, 160, 166, 0.5);
 }
@@ -818,9 +805,6 @@
 		/*}*/
 	}
 }
-#bg-workspace[data-type="SceneEditor"] {
-
-}
 .fib-container.first[data-type="SceneEditor"] {
 	position: absolute;
 	pointer-events: none;
@@ -833,7 +817,7 @@
 	max-height: 480px;
 	max-width: 200px;
 	width: auto !important;
-	heightm: auto !important;
+	height: auto !important;
 	margin: 0px 10px;
 	display: inline;
 	top: 0px;
@@ -871,10 +855,6 @@
 	&.single {
 		right: @window-padding;
 		top: 0px;
-
-		.sidebar {
-			width: 200px;
-		}
 	}
 }
 

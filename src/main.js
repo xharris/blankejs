@@ -248,7 +248,7 @@ var app = {
 					dispatchEvent('engineChange');
 				}
 			});
-		});
+		}, true);
 	},
 
 	extra_windows: [],
@@ -577,7 +577,7 @@ var app = {
 		});
 	},
 	cleanPath: function(path) {
-		return nwPATH.normalize(path).replaceAll('\\\\','/');
+		return path == null ? path : nwPATH.normalize(path).replaceAll('\\\\','/');
 	},
 	showDropZone: function() {
 		if (app.isProjectOpen())

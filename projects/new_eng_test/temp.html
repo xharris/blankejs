@@ -146,7 +146,13 @@ var Blanke = (selector, options) => {
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
-        } 
+        }
+        // update Map.obj_uuid
+        if (Game.config.scene) {
+            for (let uuid in Game.config.scene.objects) {
+                Map.obj_uuid[Game.config.scene.objects[uuid].name] = uuid;
+            }
+        }
         Asset.add(this.options.assets);
         Asset._load(() => {
             if (this.options.onLoad)
@@ -1322,7 +1328,9 @@ var Blanke = (selector, options) => {
             this.tile_hash = new SpatialHash();
             this.hitboxes = [];
             this.layers = []; // PIXI.Containers
+            this.layer_uuid = {}; // layer_name --> layer_uuid
             this.main_container = new PIXI.Container();
+            this.data = {};
 
             if (!from_file)
                 this.addLayer('layer0');
@@ -1345,6 +1353,11 @@ var Blanke = (selector, options) => {
             if (!data) return;
             data = JSON.parse(data);
             let new_map = new Map(name, true);
+            new_map.data = data;
+            // ** ADD LAYERS **
+            for (let lay_info of data.layers) {
+                new_map.addLayer(lay_info.name, lay_info.uuid);
+            }
             // ** PLACE TILES **
             for (let img_info of data.images) {
                 // get layer image belongs to
@@ -1372,8 +1385,12 @@ var Blanke = (selector, options) => {
                 } 
             }
             // ** PLACE ENTITIES **
+
+            // ** SET HITBOX COLORS ** 
+            
             
             new_map.redrawTiles();
+            return new_map;
         }
         addLayer (name, _uuid) {
             let new_cont = new PIXI.Container();
@@ -1383,6 +1400,7 @@ var Blanke = (selector, options) => {
             new_cont._graphics._getPixiObjs()[0].setParent(new_cont);
             this.main_container.addChild(new_cont);
             this.layers.push(new_cont);
+            this.layer_uuid[name] = new_cont._uuid;
             return new_cont;
         }
         getLayer (name, is_uuid) {
@@ -1461,10 +1479,29 @@ var Blanke = (selector, options) => {
             this.hitboxes.push(hit);
 
         }
-        addEntity (entity_class, x, y, layer) {
-            let new_ent = entity_class();
+        addEntity (entity_class, x, y, opt) {
+            opt = Object.assign(Map._ent_default_opt, opt || {});
+            let {layer, align, from_spawn} = opt;
+            let new_ent = new entity_class();
             new_ent.x = x;
             new_ent.y = y;
+            // alignment
+            if (align && from_spawn) {
+                let obj_size = Game.config.scene.objects[from_spawn].size;
+                // vertical align
+                if (align.includes('bottom')) 
+                    new_ent.y += (obj_size[1] / 2) - new_ent.sprite_height;
+                
+                if (align.includes('top')) 
+                    new_ent.y -= (obj_size[1] / 2);
+                
+                // horizontal align
+                if (align.includes('right')) 
+                    new_ent.x += (obj_size[0] / 2) - new_ent.sprite_width;
+
+                if (align.includes('left'))
+                    new_ent.x -= (obj_size[0] / 2);
+            }
             // add to layer
             let layer_obj = this.layers[0];
             if (layer) {
@@ -1473,8 +1510,36 @@ var Blanke = (selector, options) => {
             setNewParent(new_ent, layer_obj);
             return new_ent;
         }
+        spawnEntity (entity_class, obj_name, opt) {
+            opt = Object.assign(Map._ent_default_opt, opt || {});
+            let {layer} = opt;
+            if (!layer) {
+                let layer_names = Object.keys(this.layer_uuid);
+                for (let name of layer_names) {
+                    opt.layer = name;
+                    this.spawnEntity(entity_class, obj_name, opt);
+                }
+                return;
+            }
+            let obj_uuid = Map.obj_uuid[obj_name];
+            let layer_uuid = this.layer_uuid[layer];
+            if (!obj_uuid || !layer_uuid) return;
+            // spawn entity_class at every occurrence of obj_name
+            let entities = [];
+            for (let coords of this.data.objects[obj_uuid][layer_uuid]) {
+                opt.from_spawn = obj_uuid;
+                entities.push(this.addEntity(entity_class, coords[1], coords[2], opt));
+            }
+            return entities;
+        }
     }
-    Map.config = {};  // used during load()
+    Map.obj_uuid = {}; // obj_name --> obj_uuid from config.json
+    Map.config = {};  // user-defined. used during Map.load()
+    Map._ent_default_opt = {
+        layer: null,
+        align: null,
+        from_spawn: null
+    }
 
     /* -AUDIO */
     const AudioContext = window.AudioContext || window.webkitAudioContext; // for legacy browsers
@@ -1543,14 +1608,13 @@ class Player extends Entity {
 TestScene({
 	onStart: () => {
 		new Player();
-		Map.load("test1");
 	}
 })
 Scene("Play",{
     onStart: function() {
-		new Player();
-		Map.load("test1")
-    },
+		let map_test1 = Map.load("test1")
+    	map_test1.spawnEntity(Player,"player",{align:"bottom"})
+	},
     onUpdate: function() {
         
     },

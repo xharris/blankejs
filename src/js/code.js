@@ -21,10 +21,7 @@ var user_words = [];
 var keywords = [];
 
 var autocomplete, callbacks, hints;
-var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words;
-var re_image = /Image\(["']([\w\s\/.-]+)["']\)/;
-var re_animation = /self:addSprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/;
-var re_sprite = /Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/;
+var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words, re_image;
 
 function isReservedWord(word) {
 	return keywords.includes(word) || autocomplete.class_list.includes(word);
@@ -40,6 +37,7 @@ function reloadCompletions() {
 	hints = autocomplete.completions;
 	re_instance = autocomplete.instance_regex;
 	re_user_words = autocomplete.user_words;
+	re_image = autocomplete.image;
 	keywords = autocomplete.keywords;
 
 	re_class_and_instance = Object.assign({}, re_class);
@@ -406,7 +404,7 @@ class Code extends Editor {
 		});
 
 		this.game.onError = (msg, file, lineNo, columnNo) => {
-			let file_link = `<a href='#' onclick="Code.openScript('${file}')">${nwPATH.basename(file)}</a>`;
+			let file_link = `<a href='#' onclick="Code.openScript('${file}',${lineNo})">${nwPATH.basename(file)}</a>`;
 			this.console.err(`${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`);
 		}
 		this.game.onLog = (...msgs) => {
@@ -694,8 +692,10 @@ class Code extends Editor {
 		let info = editor.lineInfo(line);
 		
 		let match;
-		
-		if ((match = re_image.exec(info.text)) || (match = re_animation.exec(info.text)) || (match = re_sprite.exec(info.text))) {
+		for (let re in re_image) {
+			if (!match) match = re.exec(info.text);
+		}
+		if (match) {
 			app.getAssetPath("image",match[1],(err, path)=>{	
 				// no asset found
 				if (err) {
@@ -1070,7 +1070,7 @@ function _addScripts(folder_path) {
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
 		for (let file of files) {
-			var full_path = nwPATH.join(folder_path, file);
+			var full_path = app.cleanPath(nwPATH.join(folder_path, file));
 			let file_stat = nwFS.statSync(full_path);		
 			// iterate through directory		
 			if (file_stat.isDirectory() && file != "dist") 
