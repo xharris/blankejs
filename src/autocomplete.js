@@ -29,7 +29,7 @@ module.exports.user_words = {
 }
 
 // displays the image in the editor
-module.export.image = [
+module.exports.image = [
 	/Sprite\(["']([\w\s\/.-]+)["']\)/,
 	/self:addSprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/,
 	/Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/
@@ -64,6 +64,7 @@ module.exports.instance_regex = {
 	'effect': 	/\b(\w+)\s*=\s*Effect\((?:[\"\']\w+[\"\'],?)*\)/g,
 	'view': 	/\b(\w+)\s*=\s*View\([\"\']\w+[\"\']*\)\s+?/g,
 	'repeater':	/\b(\w+)\s*=\s*Repeater\([\w\.\s\,\{\}\=]*\)?\s?/g,
+	'map':		/\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g,
 	'group': 	[
 		/\b(?:self\.)?(\w+)\s*=\s*Group\(\)\s+?/g,
 		/\b(\w+\.instances).*/g,

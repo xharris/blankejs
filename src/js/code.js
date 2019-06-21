@@ -518,7 +518,7 @@ class Code extends Editor {
 			this_ref.refreshFnHelperTimer();
 
 			// get the activator used
-			let comp_activators = [':','.'];
+			let comp_activators = ['.'];
 			let activator = before_word;
 			if (comp_activators.includes(word_slice))
 				activator = word_slice;
@@ -692,7 +692,7 @@ class Code extends Editor {
 		let info = editor.lineInfo(line);
 		
 		let match;
-		for (let re in re_image) {
+		for (let re of re_image) {
 			if (!match) match = re.exec(info.text);
 		}
 		if (match) {
@@ -846,9 +846,6 @@ class Code extends Editor {
 			}
 			// named args or listed args
 			let paren = ["(",")"];
-			if (hint.named_args) {
-				paren = ["{","}"];
-			}
 			render = hint.fn + paren[0] + Object.keys(hint.vars || {}).map(specialReplacements) + paren[1] +
 						"<p class='prop-info'>"+(hint.info || '')+"</p>"+
 						"<p class='arg-info'>"+arg_info+"</p>"+
