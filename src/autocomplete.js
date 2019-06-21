@@ -6,9 +6,13 @@ let color_vars = {
 }
 let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
+// used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
 module.exports.keywords = [
-	'and','break','do','else','elseif','end','false','for','function','if',
-	'in','local','nil','not','or','repeat','return','then','true','until','while'
+	'break','case','catch','class','const','continue','debugger','default','delete',
+	'do','else','export','extends','finally','for','function','if','import','in',
+	'instanceof','new','return','super','switch','this','throw','try','typeof',
+	'var','void','while','with','yield'
 ]
 
 // only vars starting with 'local'
