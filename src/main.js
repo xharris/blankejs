@@ -35,6 +35,7 @@ var nwUGLY = require('uglify-es');
 var app = {
 	project_path: "",
 	proj_watch: null,
+	asset_watch: null,
 	maximized: false,
 	os: null, // win, mac, linux,
 	error_occured: null,
@@ -177,6 +178,20 @@ var app = {
 				// watch for file changes
 				app.proj_watch = nwWATCH(app.project_path, {recursive: true}, function(evt_type, file) {
 					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
+				});
+
+				// watch for asset changes
+				app.getAssets();
+				if (app.asset_watch)
+					app.asset_watch.close()
+				app.asset_watch = nwWATCH(nwPATH.join(app.project_path,'assets'), {recursive: true}, (evt_type, file) => {
+					if (file) { 
+						blanke.cooldownFn('asset_watch',500,()=>{
+							app.getAssets((files)=>{
+								dispatchEvent("assetsChange");
+							});
+						})
+					}
 				});
 				
 				// add to recent files
@@ -453,15 +468,6 @@ var app = {
 		return require(path);
 	},
 
-	autocomplete_watch:null,
-	watchAutocomplete: function() {
-		if (app.autocomplete_watch) app.autocomplete_watch.close();
-		app.autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
-			dispatchEvent("autcompleteChanged");
-			blanke.toast("autocomplete reloaded!");
-		});
-	},
-
 	plugin_watch:null,
 	saveAppData: function() {
 		var app_data_folder = app.getAppDataFolder();
@@ -524,13 +530,22 @@ var app = {
 	allowed_extensions: {
 		'image':['png','jpg','jpeg'],
 		'audio':['mp3','ogg','wav'],
-		'scene':['scene'],
 		'font':['ttf','ttc','cff','woff','otf','otc','pfa','pfb','fnt','bdf','pfr'],
-		'script':['js']
+		'script':['js'],
+		'map':['map']
 	},
 	name_to_path: {},
+	asset_list: [],
 	getAssets: function(f_type, cb) {
-		let extensions = app.allowed_extensions[f_type];
+		let extensions = [];
+		let all_assets = false;
+		if (cb)
+			extensions = app.allowed_extensions[f_type];
+		else {
+			cb = f_type;
+			all_assets = true;
+			extensions = [].concat.apply([], Object.values(app.allowed_extensions));
+		}
 		if (!extensions) return;
 		
 		let walker = nwWALK.walk(app.project_path);
@@ -543,6 +558,8 @@ var app = {
 			next();
 		});
 		walker.on('end',function(){
+			if (all_assets)
+				app.asset_list = ret_files;
 			if (cb) cb(ret_files);
 		});
 	},

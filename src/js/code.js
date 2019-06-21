@@ -610,7 +610,7 @@ class Code extends Editor {
 					if (hint_opts.fn && 
 						(
 							(hint_opts.global && globalActivator()) || 
-							(activator == ':' && !hint_opts.global && (token_type.includes('instance') || hint_opts.callback)) || 
+							(activator == '.' && !hint_opts.global && (token_type.includes('instance') || hint_opts.callback)) || 
 							(activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))
 						) && containsTyped(hint_opts.fn)
 					) {

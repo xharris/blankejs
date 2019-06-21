@@ -118,6 +118,10 @@ class GamePreview {
 			if (!this.paused || this.errored)
 				this.refreshEngine();	
 		});
+		document.addEventListener('assetsChange',(e)=>{
+			if (!this.paused || this.errored)
+				this.refreshEngine();
+		});
 	}
 
 	get width () {
@@ -169,20 +173,25 @@ class GamePreview {
 				fill_parent: false,
 				width: ${this.options.size[0]},
 				height: ${this.options.size[1]},
-				background_color: 0x485358,
-				assets: [
-					["config.json"],
-					["assets/image/player_stand.png"],
-					["assets/image/ground.png"],
-					["assets/audio/door.wav"],
-					["assets/maps/test1.map"],
-					['assets/image/sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3}]				
-				],
+				assets: [${this.getAssetStr()}],
 				onLoad: function(){
 					${this.refreshSource()}
 				}
 			});
 		</script>`);
+	}
+
+	getAssetStr () {
+		let ret = `
+					["config.json"],
+					${app.asset_list.reduce((arr, val) => {
+						if (val.includes('assets'))
+							arr.push(`["assets/${app.shortenAsset(val)}"]`)
+						return arr;
+					},[]).join(',\n\t\t\t\t\t')}
+				`;
+		console.log(ret)
+		return ret;
 	}
 	
 	refreshSource (current_script, new_doc) {
@@ -262,14 +271,7 @@ var game_instance = Blanke("#game",{
 	}
 	root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
 	background_color: 0x485358,
-	assets: [
-		["config.json"],
-		["assets/image/player_stand.png"],
-		["assets/image/ground.png"],
-		["assets/audio/door.wav"],
-		["assets/maps/test1.map"],
-		['assets/image/sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3}]				
-	],
+	assets: [${this.getAssetStr()}],
 	onLoad: function(){
 		let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game_instance;
 		let TestScene = (funcs) => {

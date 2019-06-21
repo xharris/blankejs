@@ -46,6 +46,8 @@ class Settings extends Editor {
                 app.settings[path+'_path'] = value;
                 if (path == 'engine') 
                     Settings.watchEngine();
+                if (path == 'autocomplete')
+                    Settings.watchAutocomplete();
                 app.saveAppData();
 
                 app.refreshThemeList();
@@ -73,6 +75,17 @@ class Settings extends Editor {
             app.minifyEngine();
         });
     }
+
+    static watchAutocomplete () {
+		if (autocomplete_watch) {
+            autocomplete_watch.close();
+            dispatchEvent("autocompleteChanged");
+        }
+	    autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
+			dispatchEvent("autocompleteChanged");
+			blanke.toast("autocomplete reloaded!");
+		});
+    }
 }
 
 document.addEventListener('openProject',()=>{
@@ -82,7 +95,8 @@ document.addEventListener('openProject',()=>{
 	}});
 });
 
-let engine_watch;
+let engine_watch, autocomplete_watch;
 document.addEventListener('ideReady',(e)=>{
     Settings.watchEngine();
+    Settings.watchAutocomplete();
 })

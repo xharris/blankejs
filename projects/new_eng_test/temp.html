@@ -718,16 +718,17 @@ var Blanke = (selector, options) => {
     class Sprite {
         constructor (name, options) {
             this.animated = false;
-            let asset = Asset.get('image',name);
             // animated sprite
-            if (asset.tex_frames) {
+            if (options && options.frames) {
                 this.animated = true;
+                let asset = Asset.texCrop(name, options)
                 this.sprite = new PIXI.AnimatedSprite(asset.tex_frames);
-                this.speed = asset.options.speed;
+                this.speed = options.speed;
                 this.sprite.play();
             }
             // static image
             else {
+                let asset = Asset.get('image',name);
                 this.sprite = new PIXI.Sprite(asset.texture);
             }
             Scene.addDrawable(this.sprite);
@@ -1477,7 +1478,7 @@ var Blanke = (selector, options) => {
             let hit = new Hitbox(opt)
             hit.debug = this.debug;
             this.hitboxes.push(hit);
-
+            return hit;
         }
         addEntity (entity_class, x, y, opt) {
             opt = Object.assign(Map._ent_default_opt, opt || {});
@@ -1575,14 +1576,12 @@ var Blanke = (selector, options) => {
 				fill_parent: false,
 				width: 600,
 				height: 400,
-				background_color: 0x485358,
 				assets: [
 					["config.json"],
-					["assets/image/player_stand.png"],
 					["assets/image/ground.png"],
-					["assets/audio/door.wav"],
-					["assets/maps/test1.map"],
-					['assets/image/sprite-example.png',{name:'luigi_walk',offset:[9,54],speed:0.2,frame_size:[27,49],frames:3,columns:3}]				
+					["assets/image/player_stand.png"],
+					["assets/image/sprite-example.png"],
+					["assets/audio/door.wav"]
 				],
 				onLoad: function(){
 					
@@ -1613,6 +1612,7 @@ TestScene({
 Scene("Play",{
     onStart: function() {
 		let map_test1 = Map.load("test1")
+		
     	map_test1.spawnEntity(Player,"player",{align:"bottom"})
 	},
     onUpdate: function() {
