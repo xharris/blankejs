@@ -1478,7 +1478,7 @@ var Blanke = (selector, options) => {
             let hit = new Hitbox(opt)
             hit.debug = this.debug;
             this.hitboxes.push(hit);
-            return hit;
+            //return hit;
         }
         addEntity (entity_class, x, y, opt) {
             opt = Object.assign(Map._ent_default_opt, opt || {});
@@ -1578,6 +1578,8 @@ var Blanke = (selector, options) => {
 				height: 400,
 				assets: [
 					["config.json"],
+					["assets/maps/test1.map"],
+					["assets/maps/test2.map"],
 					["assets/image/ground.png"],
 					["assets/image/player_stand.png"],
 					["assets/image/sprite-example.png"],
@@ -1612,8 +1614,7 @@ TestScene({
 Scene("Play",{
     onStart: function() {
 		let map_test1 = Map.load("test1")
-		
-    	map_test1.spawnEntity(Player,"player",{align:"bottom"})
+		map_test1.spawnEntity(Player,"player",{align:"bottom"})
 	},
     onUpdate: function() {
         

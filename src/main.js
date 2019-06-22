@@ -553,7 +553,7 @@ var app = {
 		walker.on('file',function(path, stats, next){
 			// only add files that have an extension in allowed_extensions
 			if (stats.isFile() && !path.includes('dist') && extensions.includes(nwPATH.extname(stats.name).slice(1))) {
-				ret_files.push(nwPATH.join(path, stats.name));
+				ret_files.push(app.cleanPath(nwPATH.join(path, stats.name)));
 			}
 			next();
 		});
@@ -572,15 +572,16 @@ var app = {
 		return 'other';
 	},
 	shortenAsset: function(path){
-		return nwPATH.relative(app.project_path,path).replace(/assets[/\\]/,'');
+		path = app.cleanPath(path);
+		return app.cleanPath(nwPATH.relative(app.project_path,path)).replace(/assets\//,'');
 	},
 	lengthenAsset: function(path){
+		path = app.cleanPath(path);
 		return nwPATH.resolve(nwPATH.join(app.project_path,'assets',path));
 	},
 	getAssetPath: function(_type, name, cb) {
 		app.getAssets(_type, (files) => {
 			let found = false;
-			let match;
 			let re_name = /[\\\/](([\w\s.-]+)\.\w+)/;
 			files.forEach((f) => {
 				let match = re_name.exec(f);
@@ -594,7 +595,8 @@ var app = {
 		});
 	},
 	cleanPath: function(path) {
-		return path == null ? path : nwPATH.normalize(path).replaceAll('\\\\','/');
+		console.log(path)
+		if (path) return path.replaceAll(/\\/g,'/');
 	},
 	showDropZone: function() {
 		if (app.isProjectOpen())
