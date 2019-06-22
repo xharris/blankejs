@@ -259,6 +259,7 @@ var app = {
 				if (!code.error) {
 					app.engine_code = code.code;
 					nwFS.writeFile('blanke.min.js',code.code,'utf-8');
+					blanke.toast('...done compiling engine');
 					if (cb) cb(app.engine_code);
 					dispatchEvent('engineChange');
 				}
@@ -595,7 +596,6 @@ var app = {
 		});
 	},
 	cleanPath: function(path) {
-		console.log(path)
 		if (path) return path.replaceAll(/\\/g,'/');
 	},
 	showDropZone: function() {

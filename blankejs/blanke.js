@@ -4,7 +4,7 @@ Common class methods:
 
 Todo:
 NEED
-    - Audio
+    C Audio
     - Asset (font)
     - Effect
     - Input (mouse, controller)
@@ -16,6 +16,7 @@ PLUGINS
     - Bezier
     - Physics
     - Steam
+    - UI
 */
 var Blanke = (selector, options) => {
     let re_sep = /[\\\/]/;
@@ -164,6 +165,15 @@ var Blanke = (selector, options) => {
         return true;
     }
 
+    const aliasProps = (parent, child, props) => {
+        for (let p of props) {
+            Object.defineProperty(parent,p,{
+                get: function () { return child[p] }, 
+                set: function (v) { child[p] = v }
+            });
+        }
+    }
+
     const quickSort = (items, fn) => {
         fn = fn || function (a, b) { return a < b; };
         let countOuter = 0;
@@ -281,6 +291,7 @@ var Blanke = (selector, options) => {
         supported_filetypes: {
             /* options: { name, frames, frame_size, offset, columns } */
             'image':['png'],
+            'audio':['wav'],
             'map':['map']
         },
         base_textures: {},
@@ -376,7 +387,18 @@ var Blanke = (selector, options) => {
                 case 'map':
                     storeAsset(type, path, name, data);
                     break;
+                // AUDIO
+                case 'audio':
+                    storeAsset(type, path, name, new Howl({src:[path]}));
+                    break;
             }
+        },
+        audioSprite: (name, sprites) => {
+            let path = Asset.getPath('audio',name)
+            if (!path) return;
+            let new_audio = new Howl({src:[path], sprite:sprites});
+            Asset.data.audio[name] = new_audio;
+            return new_audio;
         },
         tex_crop_cache: {},
         texCrop: (path, opt, base_tex) => {
@@ -684,12 +706,7 @@ var Blanke = (selector, options) => {
             this.sprite.y = 0;
        
             let props = ['alpha','width','height','pivot'];
-            for (let p of props) {
-                Object.defineProperty(this,p,{
-                    get: function () { return this.sprite[p] }, 
-                    set: function (v) { this.sprite[p] = v }
-                });
-            }
+            aliasProps(this, this.sprite, props);
         }
         _getPixiObjs () { return [this.sprite]; }
         get x () { return this.sprite.x; }
@@ -1490,9 +1507,31 @@ var Blanke = (selector, options) => {
     }
 
     /* -AUDIO */
-    const AudioContext = window.AudioContext || window.webkitAudioContext; // for legacy browsers
-    const audio_ctx = new AudioContext();
+    let Audio = (name) => Asset.get('audio', name);
+    Audio.play = (name) => {
+        let asset = Asset.get("audio",name);
+        if (asset) {
+            asset.play();
+        }
+    }
+    Audio.sprite = (name, sprites) => Asset.audioSprite(name, sprites);
+
+    /* -TEXT */
+    class Text {
+        constructor (str, opt) {
+            this.pixi_text = new PIXI.Text(str, opt);
+            if (opt)
+                Object.keys(opt).forEach((k, v) => {this.pixi_text[k] = v});
+            let props = ['x','y','text','alpha','anchor','angle','buttonMode'];
+            aliasProps(this, this.pixi_text, props);
+            Scene.addDrawable(this.pixi_text);
+        }
+        destroy () {
+            this.pixi_text.destroy();
+        }
+        set blend_mode (v) {}
+    }
 
     engineLoaded.call(this);
-    return {Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View};
+    return {Asset, Audio, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View};
 }

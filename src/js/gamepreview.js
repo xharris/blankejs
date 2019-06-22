@@ -1,3 +1,4 @@
+let engine_classes = 'Asset, Audio, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View';
 let getHTML = (body) => {
 return `
 <!DOCTYPE html>
@@ -190,7 +191,6 @@ class GamePreview {
 						return arr;
 					},[]).join(',\n\t\t\t\t\t')}
 				`;
-		console.log(ret)
 		return ret;
 	}
 	
@@ -249,7 +249,7 @@ class GamePreview {
 
 		// wrapped in a function so local variables are destroyed on reload
 		let onload_code = `
-		let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game_instance;
+		let { ${engine_classes} } = game_instance;
 		let TestScene = (funcs) => {
 		${this.options.test_scene ? `
 			Scene.ref["_test"] = null;
@@ -273,7 +273,7 @@ var game_instance = Blanke("#game",{
 	background_color: 0x485358,
 	assets: [${this.getAssetStr()}],
 	onLoad: function(){
-		let { Asset, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Util, View } = game_instance;
+		let { ${engine_classes} } = game_instance;
 		let TestScene = (funcs) => {
 		${this.options.test_scene ? 
 `			Scene.ref["_test"] = null;
