@@ -174,6 +174,21 @@ var Blanke = (selector, options) => {
         }
     }
 
+    const enableEffects = (obj) => {
+        Object.defineProperty(obj,'effect',{
+            get: function() {
+                if (!obj._effect) 
+                    obj._effect = new EffectManager(obj);
+                return obj._effect;
+            },
+            set: function(v) {
+                if (!obj._effect) 
+                    obj._effect = new EffectManager(obj);
+                obj._effect.add(v);
+            }
+        })
+    }
+
     const quickSort = (items, fn) => {
         fn = fn || function (a, b) { return a < b; };
         let countOuter = 0;
@@ -929,6 +944,7 @@ var Blanke = (selector, options) => {
                 });
             }
             addZOrdering(this);
+            enableEffects(this);
             if (this.init) this.init(...args);
             this.xprevious = this.x;
             this.yprevious = this.y;
@@ -1478,19 +1494,19 @@ var Blanke = (selector, options) => {
         spawnEntity (entity_class, obj_name, opt) {
             opt = Object.assign(Map._ent_default_opt, opt || {});
             let {layer} = opt;
+            let entities = [];
             if (!layer) {
                 let layer_names = Object.keys(this.layer_uuid);
                 for (let name of layer_names) {
                     opt.layer = name;
-                    this.spawnEntity(entity_class, obj_name, opt);
+                    entities = entities.concat(this.spawnEntity(entity_class, obj_name, opt));
                 }
-                return;
+                return entities;
             }
             let obj_uuid = Map.obj_uuid[obj_name];
             let layer_uuid = this.layer_uuid[layer];
             if (!obj_uuid || !layer_uuid) return;
             // spawn entity_class at every occurrence of obj_name
-            let entities = [];
             for (let coords of this.data.objects[obj_uuid][layer_uuid]) {
                 opt.from_spawn = obj_uuid;
                 entities.push(this.addEntity(entity_class, coords[1], coords[2], opt));
@@ -1516,22 +1532,69 @@ var Blanke = (selector, options) => {
     }
     Audio.sprite = (name, sprites) => Asset.audioSprite(name, sprites);
 
-    /* -TEXT */
+    /* -TEXT on-hold */
     class Text {
-        constructor (str, opt) {
-            this.pixi_text = new PIXI.Text(str, opt);
-            if (opt)
-                Object.keys(opt).forEach((k, v) => {this.pixi_text[k] = v});
-            let props = ['x','y','text','alpha','anchor','angle','buttonMode'];
+        constructor (str, opt) {/*
+            opt = Object.assign({
+                font:"16px Arial",
+                align:"left"
+            },opt || {})
+            this.pixi_text = new PIXI.BitmapText(str, opt);
+            //if (opt)
+            //    Object.keys(opt).forEach((k, v) => {this.pixi_text[k] = v});
+            let props = ['x','y','text',];//'alpha','anchor','angle','cursor'];
             aliasProps(this, this.pixi_text, props);
-            Scene.addDrawable(this.pixi_text);
+            Scene.addDrawable(this.pixi_text);*/
         }
+        _getPixiObjs () { /* return [this.pixi_text]*/ }
         destroy () {
             this.pixi_text.destroy();
         }
         set blend_mode (v) {}
+        set button_mode (v) {} // keep? interactive=true, buttonMode=true
+        set filter_area (v) {}
+    }
+
+    /* -EFFECT */
+    class Effect {
+        // Effect: (frag, vert), PIXI: (vert, frag) !!!!
+        constructor (opt) {
+            let { name, frag, vert, defaults } = opt;
+            // already made?
+            if (Effect.library[name])
+                return Effect.library[name];
+            this.name = name;
+            this.filter = new PIXI.Filter(vert, frag, defaults);
+            let def_names = Objects.keys(defaults);
+            for (let def of def_names) {
+                Object.defineProperty(this,def,{
+                    get: function () { return this.filter.uniforms[def]; },
+                    set: function (v){ this.filter.uniforms[def] = v; }
+                })
+            }
+            Effect.library[name] = this;
+        }
+    }
+    Effect.library = {};
+    class EffectManager {
+        constructor (parent) {
+            this.effects = {};
+            this.parent = parent;
+        }
+        add (name) {
+            if (!this.effects[name]) {
+                // add to parent
+            }
+            this.effects[name] = {};
+        }
+        tweak (name, _var, val) {}
+        remove (name) {
+            if (this.effects[name]) {
+                // remove from parent
+            }
+        }
     }
 
     engineLoaded.call(this);
-    return {Asset, Audio, Draw, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View};
+    return {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View};
 }

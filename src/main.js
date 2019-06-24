@@ -32,6 +32,8 @@ var nwWATCH = require('node-watch');
 var nwREQ = require('request');
 var nwUGLY = require('uglify-es');
 
+let re_engine_classes = /return\s+{\s*([\w\s,]+)\s*}/;
+
 var app = {
 	project_path: "",
 	proj_watch: null,
@@ -231,7 +233,9 @@ var app = {
 	engine_code: '',
 	minifyEngine: function(cb) {
 		blanke.cooldownFn('minify-engine',500,function(){
-			blanke.toast('Compiling engine code. Please wait..');
+			let toast = blanke.toast('Compiling engine code. Please wait', -1);
+			toast.icon = 'dots-horizontal';
+			toast.style = 'wait';
 			nwFS.readdir(app.settings.engine_path, (err,files) => {
 				if (err) return;
 				files.splice(files.indexOf('blanke.js'),1);
@@ -244,6 +248,8 @@ var app = {
 					if (fstat.isFile())
 						code_obj[path] = nwFS.readFileSync(long_path,'utf-8') + '\n\n';
 				}
+				// get blanke.js classes
+				GamePreview.engine_classes = re_engine_classes.exec(code_obj['blanke.js'])[1] 
 				// uglify
 				let code = {
 					error: false,
@@ -259,7 +265,10 @@ var app = {
 				if (!code.error) {
 					app.engine_code = code.code;
 					nwFS.writeFile('blanke.min.js',code.code,'utf-8');
-					blanke.toast('...done compiling engine');
+					toast.text = "Compiled engine code!";
+					toast.icon = 'check-bold';
+					toast.style = "good";
+					toast.die(1500);
 					if (cb) cb(app.engine_code);
 					dispatchEvent('engineChange');
 				}
@@ -820,7 +829,9 @@ var app = {
 
 	update(ver) {
 		// download new version
-		blanke.toast('Downloading update');
+		let toast = blanke.toast('Downloading update',-1);
+		toast.icon = 'dots-horizontal';
+		toast.style = 'wait';
 		nwREQ(`https://github.com/xharris/blankejs/archive/${ver}.zip`)
 			.pipe(nwFS.createWriteStream('update.zip'))
 			.on('close',function(){
@@ -843,7 +854,7 @@ var app = {
 					}
 				}
 				nwFS.removeSync('update.zip');
-				blanke.toast('Done updating. Restarting...');
+				toast.text = 'Done updating. Restarting';
 				// restart app
 				chrome.runtime.reload();
 			})

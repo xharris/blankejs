@@ -658,6 +658,77 @@ class BlankeForm {
     }
 }
 
+class Toast {
+    constructor (text, duration) {
+        if (!Toast.el_toasts) {
+            Toast.el_toasts = blanke.createElement('div','blankejs-toasts');
+            document.body.appendChild(Toast.el_toasts);
+        }
+        this.el_new_toast = blanke.createElement("div","toast-container");
+        this.el_content = blanke.createElement("p","content");
+        this.el_icon = blanke.createElement("object")
+        this.el_icon.classList.add('blanke-icon');
+        this.el_icon.type = 'image/svg+xml';
+        this.el_br = blanke.createElement("br");
+
+        this.el_new_toast.appendChild(this.el_content);
+        this.el_new_toast.appendChild(this.el_icon);
+
+        Toast.el_toasts.appendChild(this.el_new_toast);
+        Toast.el_toasts.appendChild(this.el_br);
+
+        // animate toast appearance
+        Array.from(Toast.el_toasts.children).forEach(function(el) {
+            let animation = [
+                { transform: 'translateY('+el.offsetHeight+'px)' },
+                { transform: 'translateY(0px)' }
+            ];
+            el.animate(animation, {
+                duration: 200,
+                iterations: 1,
+                easing: 'ease-out'
+            });
+        });
+
+        // duration
+        if (duration == null || duration >= 0)
+            this.die(duration);
+
+        this.style = 'none';
+        this.text = text;
+    }
+    set text (v) {
+        this.el_content.innerHTML = v;
+    }
+    // go away after t ms
+    die (t) {
+        setTimeout(()=>{
+            let animation = this.el_new_toast.animate([{ opacity:1 }, { opacity:0 }], { duration:200, iterations:1, easing:'ease-in'})
+            animation.pause();
+            animation.onfinish = () => {
+                blanke.destroyElement(this.el_new_toast);
+                blanke.destroyElement(this.el_br);
+            }
+            animation.play();
+        }, t || 4000);
+    }
+    set icon (v) {
+        this.el_icon.style.display = 'inline-block';
+        this.el_icon.data = `icons/${v}.svg`;
+    }
+    set style (v) {
+        let styles = {
+            'none':'212121',
+            'wait':'fff176',
+            'good':'8BC34A',
+            'bad':'f44336'
+        }
+        if (styles[v]) 
+            this.el_icon.style.backgroundColor = '#'+styles[v];
+    }
+}
+Toast.el_toasts = null;
+
 var blanke = {
     elec_ref: null,
     _windows: {},
@@ -673,7 +744,7 @@ var blanke = {
     createElement: function(el_type, el_class) {
         var ret_el = document.createElement(el_type);
         if (Array.isArray(el_class)) ret_el.classList.add(...el_class);
-        else ret_el.classList.add(el_class);
+        else if (el_class) ret_el.classList.add(el_class);
         return ret_el;
     },
 
@@ -725,41 +796,7 @@ var blanke = {
 
     el_toasts: undefined,
     toast: function(text, duration) {
-        if (!blanke.el_toasts) {
-            blanke.el_toasts = blanke.createElement('div','blankejs-toasts');
-            document.body.appendChild(blanke.el_toasts);
-        }
-
-        let el_new_toast = blanke.createElement("div","toast-container");
-        let el_content = blanke.createElement("p","content");
-        let el_br = blanke.createElement("br");
-        el_content.innerHTML = text;
-        el_new_toast.appendChild(el_content);
-        blanke.el_toasts.appendChild(el_new_toast);
-        blanke.el_toasts.appendChild(el_br);
-
-        // animation
-        Array.from(blanke.el_toasts.children).forEach(function(el) {
-            let animation = [
-                { transform: 'translateY('+el.offsetHeight+'px)' },
-                { transform: 'translateY(0px)' }
-            ];
-            el.animate(animation, {
-                duration: 200,
-                iterations: 1,
-                easing: 'ease-out'
-            });
-        });
-
-        setTimeout(function(){
-            let animation = el_new_toast.animate([{ opacity:1 }, { opacity:0 }], { duration:200, iterations:1, easing:'ease-in'})
-            animation.pause();
-            animation.onfinish = function(){
-                blanke.destroyElement(el_new_toast);
-                blanke.destroyElement(el_br);
-            }
-            animation.play();
-        }, duration || 4000);
+        return new Toast(text, duration)
     },
     
     places: function(i, p) {
