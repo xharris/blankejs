@@ -27,8 +27,10 @@ return `
 	${body}
 </html>
 `};
+
 let re_scene_name = /\bScene\s*\(\s*[\'\"](.+)[\'\"]/;
 let re_new_line = /(\r\n|\r|\n)/g;
+let re_error_line = /<anonymous>:(\d+):(\d+)\)/;
 
 class GamePreview {
 	constructor (parent, opt) {
@@ -72,6 +74,13 @@ class GamePreview {
 			iframe.contentWindow.onerror = (msg, url, lineNo, columnNo, error) => {
 				this.pause();
 				this.errored = true;
+				// get line and col
+				let match = re_error_line.exec(error.stack);
+				if (match) {
+					lineNo = parseInt(match[1]);
+					columnNo = parseInt(match[2]);
+				}
+				msg = msg.replace("Uncaught Error: ","");
 				if (this.onError) {
 					let file, range;
 					for (let f in this.line_ranges) {

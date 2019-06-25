@@ -89,6 +89,7 @@ var Blanke = (selector, options) => {
 
     const engineLoaded = () => {
         removeSnaps();
+        Game.time = 0;
         Game.ide_mode = this.options.ide_mode;
         Game.background_color = this.options.background_color;
         // load config.json
@@ -179,7 +180,7 @@ var Blanke = (selector, options) => {
             get: function() {
                 if (!obj._effect) 
                     obj._effect = new EffectManager(obj);
-                return obj._effect;
+                return obj._effect.effects;
             },
             set: function(v) {
                 if (!obj._effect) 
@@ -191,9 +192,6 @@ var Blanke = (selector, options) => {
 
     const quickSort = (items, fn) => {
         fn = fn || function (a, b) { return a < b; };
-        let countOuter = 0;
-        let countInner = 0;
-        let countSwap = 0;
         function _sort(array) {
             countOuter++;
             if(array.length < 2) {
@@ -232,6 +230,7 @@ var Blanke = (selector, options) => {
     var Game = {
         paused: false,
         config: {},
+        time: 0,
         get width () { return blanke_ref.options.resizeable ? app.view.width : blanke_ref.options.width; },
         get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
         set background_color (v) { app.renderer.backgroundColor = v; },
@@ -294,9 +293,14 @@ var Blanke = (selector, options) => {
         distance: (x1, y1, x2, y2) => Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2)),
         direction: (x1, y1, x2, y2) => Util.deg(Math.atan2(y2-y1,x2-x1)),
         rand_range: (min, max) => Math.floor(Math.random() * (+max - +min)) + +min,
+        lerp: (a, b, amt) => a + amt * (b - a),
+        sinusoidal: (min, max, spd, off=0) => min + -Math.cos(Util.lerp(0,Math.PI/2,off) + Game.time * spd) * ((max - min)/2) + ((max - min)/2), 
         // file
         basename: (path, no_ext) => no_ext == true ? path.split(re_sep).slice(-1)[0].split('.')[0] : path.split(re_sep).slice(-1)[0]
     }
+    app.ticker.add((dt)=>{
+        Game.time += dt;
+    });
     
     /* -ASSET */
     var Asset = {
@@ -1558,21 +1562,32 @@ var Blanke = (selector, options) => {
     /* -EFFECT */
     class Effect {
         // Effect: (frag, vert), PIXI: (vert, frag) !!!!
-        constructor (opt) {
-            let { name, frag, vert, defaults } = opt;
-            // already made?
-            if (Effect.library[name])
-                return Effect.library[name];
+        constructor (_name) {
+            if (!Effect.library[_name]) 
+                throw new Error(`Effect '${_name}' not found!`);
+            let { name, frag, vert, defaults } = Effect.library[_name];
+
             this.name = name;
             this.filter = new PIXI.Filter(vert, frag, defaults);
-            let def_names = Objects.keys(defaults);
+            this.filter.name = name;
+            let def_names = Object.keys(defaults);
             for (let def of def_names) {
                 Object.defineProperty(this,def,{
                     get: function () { return this.filter.uniforms[def]; },
-                    set: function (v){ this.filter.uniforms[def] = v; }
+                    set: function (v){
+                         this.filter.uniforms[def] = v; }
                 })
             }
-            Effect.library[name] = this;
+        }
+        destroy () {
+            this.filter.destroy();
+        }
+        static create (opt) {
+            opt = Object.assign({
+                name:'new_effect',
+                defaults:{}
+            }, opt || {})
+            Effect.library[opt.name] = opt;
         }
     }
     Effect.library = {};
@@ -1584,13 +1599,21 @@ var Blanke = (selector, options) => {
         add (name) {
             if (!this.effects[name]) {
                 // add to parent
+                this.effects[name] = new Effect(name)
+                this.updateParentFilters();
             }
-            this.effects[name] = {};
         }
-        tweak (name, _var, val) {}
+        updateParentFilters () {
+            this.parent._getPixiObjs().forEach((obj)=>{
+                obj.filters = Object.values(this.effects).map(e => e.filter);
+            });
+        }
         remove (name) {
             if (this.effects[name]) {
                 // remove from parent
+                this.effects[name].destroy();
+                delete this.effects[name];
+                this.updateParentFilters();
             }
         }
     }

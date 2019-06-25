@@ -54,7 +54,7 @@ class Console extends Editor {
 	clear () {
 		this.el_lines.innerHTML = '';
 		blanke.removeChildClass(this.el_log, 'error');
-		blanke.removeChildClass(this.el_log, 'separator');
+		// blanke.removeChildClass(this.el_log, 'separator');
 		this.str_console = '';
 		this.last_line = '';
 		this.last_dupe_line = '';
@@ -69,12 +69,7 @@ class Console extends Editor {
 
 	log (...args) {
 		// parse args
-		let str = '';
-		if (args.length > 1) {
-			str += this.parse(args); 
-		} else {
-			str += this.parse(args[0]); 
-		}
+		let str = this.parse(args); 
 		if (this.last_line == str) {
 			this.duplicate_count++;
 			if (this.last_dupe_line !== '')
@@ -102,7 +97,7 @@ class Console extends Editor {
 			var el_line = app.createElement("p", "error");
 			el_line.innerHTML = str;
 			this.el_log.appendChild(el_line);
-			this.el_log.appendChild(app.createElement("br","separator"));
+			// this.el_log.appendChild(app.createElement("br","separator"));
 
 			el_line.scrollIntoView({ behavior: 'auto' , block: 'nearest', inline: 'nearest'});
 		}
