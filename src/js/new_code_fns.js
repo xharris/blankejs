@@ -83,7 +83,6 @@ var getKeywords = (file, content) => {
         let data = content || nwFS.readFileSync(file,'utf-8')
         if (!data) return;
 
-        let append = (key, list) => { if (!list.includes) list.push(key); }
         let match = (regex, store_list) => {
             store_list[file] = {};
             for (let cat in regex) {
@@ -105,7 +104,7 @@ var getKeywords = (file, content) => {
     });
 }
 
-CodeMirro.defineMode("blanke", (config, parserConfig) => {
+CodeMirror.defineMode("blanke", (config, parserConfig) => {
     var blankeOverlay = {
         token: (stream, state) => {
             let baseCur = stream.lineOracle.state.baseCur;
