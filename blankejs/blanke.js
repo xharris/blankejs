@@ -724,7 +724,7 @@ var Blanke = (selector, options) => {
             this.sprite.x = 0;
             this.sprite.y = 0;
        
-            let props = ['alpha','width','height','pivot'];
+            let props = ['alpha','width','height','pivot','angle'];
             aliasProps(this, this.sprite, props);
         }
         _getPixiObjs () { return [this.sprite]; }
@@ -931,7 +931,7 @@ var Blanke = (selector, options) => {
             // sprite
             this.sprites = {};
             this.sprite_index = '';
-            let spr_props = ['alpha','width','height','pivot'];
+            let spr_props = ['alpha','width','height','pivot','angle'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
@@ -1618,6 +1618,11 @@ var Blanke = (selector, options) => {
         }
     }
 
+    /* -NET */
+    var Net = {
+
+    }
+
     engineLoaded.call(this);
-    return {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View};
+    return {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Net, Scene, Sprite, Text, Util, View};
 }

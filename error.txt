@@ -1,9 +1,0 @@
-[[ 1560541762182 ]]
-TypeError: Cannot read property 'register' of undefined
-    at Object.newShortcut (file:///Users/xharris/Documents/blankejs/src/main.js:834:23)
-    at file:///Users/xharris/Documents/blankejs/src/main.js:1004:6
-    at CallbacksRegistry.apply (/Users/xharris/Documents/blankejs/node_modules/electron/dist/Electron.app/Contents/Resources/electron.asar/renderer/callbacks-registry.js:47:25)
-    at /Users/xharris/Documents/blankejs/node_modules/electron/dist/Electron.app/Contents/Resources/electron.asar/renderer/api/remote.js:287:21
-    at EventEmitter.<anonymous> (/Users/xharris/Documents/blankejs/node_modules/electron/dist/Electron.app/Contents/Resources/electron.asar/renderer/api/remote.js:277:7)
-    at EventEmitter.emit (events.js:194:13)
-

@@ -41,6 +41,18 @@ module.exports.image = [
 
 module.exports.class_list = ['Game','Util','Map'];
 
+module.exports.class_extends = {
+    'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g
+}
+
+module.exports.instance = {
+	'entity': [
+		/\b(\w+)\s*=\s*new\s+<class_name>\s*\(/g,
+		/\b(\w+)\s*=\s*(?:\w+)\s*\.\s*spawnEntity/g
+	],
+	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g
+}
+
 // Group 1: name of class to replace <class_name> in instance_regex
 module.exports.class_regex = {
 	'state': 	[
@@ -55,7 +67,10 @@ module.exports.class_regex = {
 
 // Group 1: name of instance 
 module.exports.instance_regex = {
-	'entity': /\b([a-zA-Z_]\w+?)\s*=\s*new\s+<class_name>\s*\(/g,
+	'entity': [
+		/\b(\w+)\s*=\s*new\s+<class_name>\s*\(/g,
+		/\b(\w+)\s*=\s*(?:\w+)\s*\.\s*spawnEntity/g
+	],
 	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g
 }
 // old group/bezier regex: /\b(?:self.|self:)?(\w+)\s*=\s*Group\(\).*/g
@@ -98,5 +113,15 @@ module.exports.completions = {
 		{ fn: 'addEntity', vars: { entity_class:'', x:'', y:'', options:'{ layer, align (left, right, top, bottom, center) }' } },
 		{ fn: 'addHitbox', vars: { hitbox_args:'' } },
 		{ fn: 'removeTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', layer:'' } }
+	],
+	"blanke-entity-instance":[
+		{ prop: 'x' },
+		{ prop: 'y' },
+		{ prop: 'hspeed' },
+		{ prop: 'vspeed' },
+		{ prop: 'gravity' },
+		{ prop: 'gravity_direction' },
+		{ prop: 'shape_index', info:'base shape of the entity' },
+		{ prop: 'shapes', info:`{ 'shape_name' : Hitbox }`}
 	]
 }
