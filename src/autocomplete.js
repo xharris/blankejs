@@ -16,7 +16,8 @@ module.exports.keywords = [
 	'var','void','while','with','yield'
 ]
 
-module.exports.class_list = ['Game','Util','Map']
+// TestScene is included just so it looks nice
+module.exports.class_list = ['Game','Util','Map','Effect','Scene','Input','Entity','TestScene'];
 
 module.exports.class_extends = {
     'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g
@@ -34,6 +35,7 @@ module.exports.user_words = {
 	'var':[
 		// single var
 		/([a-zA-Z_]\w+?)\s*=\s(?!function|\(\)\s*=>)/g,
+		/(?:let|var)\s+([a-zA-Z_]\w+)/g,
 		// comma separated var list
 		/(?:let|var)\s+(?:[a-zA-Z_]+[\w\s=]+?,\s*)+([a-zA-Z_]\w+)(?!\s*=)/g
 	],

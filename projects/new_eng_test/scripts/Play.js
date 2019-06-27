@@ -1,11 +1,11 @@
 let txt, player;
+let bob = 3;
+let bob2, bob3;
 Scene("Play",{
     onStart: function() {
 		let map_test1 = Map.load("test1")
 		player = map_test1.spawnEntity(Player,"player",{align:"bottom"})[0];
 		player.effect = "wub";
-		dlayer = new Player();
-		
 	},
     onUpdate: function(scene, dt) {
 		player.effect.wub.val = Util.sinusoidal(0,1,0.05);

@@ -199,25 +199,28 @@
 		background-color: @ide-accent;
 	}
 
-	.cm-string {
-		color: @theme-string; /*  #e0e0e0; */
-	}
-
-	.cm-blanke-instance {
-		color: #80CBC4;
+	.cm-def, .cm-variable, .cm-blanke-instance {
+		color: #cfd8dc;
+		text-shadow: 2px 2px rgba(0,0,0,1);
 	}
 
 	.cm-blanke-class {
 		color: #4fc3f7;
 	}
 
+	.cm-string {
+		color: @theme-string; /*  #e0e0e0; */
+	}
+
 	.cm-blanke-self {
 		color: #FFB74D;
 	}
 
+/*
 	.cm-blanke-state, .cm-blanke-entity {
 		color: @ide-accent; /* #e57373 */
 	}
+	*/
 
 	.fn-helper {
 	    position: absolute;
@@ -233,6 +236,10 @@
 		border-radius: 4px;
 
 	    transition: all ease-in-out 0.2s;
+
+		.item-type {
+			bottom: 2px;
+		}
 
 	    &:hover {
 	    	opacity: 1;

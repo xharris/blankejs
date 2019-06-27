@@ -210,10 +210,10 @@ class Code extends Editor {
 							let parent = '';
 							for (let p in ext_classes) {
 								if (ext_classes[p] == cat)
-									parent = `blanke-${p}-instance`;
+									parent = `blanke-${p.toLowerCase()}-instance`;
 							}
 							if (stream.match(new RegExp("^"+name))) 
-								return baseCur+`blanke-instance ${parent} blanke-${cat}-instance`;
+								return baseCur+`blanke-instance ${parent} blanke-${cat.toLowerCase()}-instance`;
 						}
 					}
 
@@ -221,14 +221,14 @@ class Code extends Editor {
 					for (let cat in ext_classes) { // entity
 						for (let name of ext_classes[cat]) { // Player
 							if (stream.match(new RegExp("^"+name))) 
-								return baseCur+`blanke-class blanke-${cat}`;
+								return baseCur+`blanke-class blanke-${cat.toLowerCase()}`;
 						}
 					}
 
 					// regular classes
 					for (let name of classes) { // Map, Scene
 						if (stream.match(new RegExp("^"+name))) 
-							return baseCur+`blanke-class blanke-${name}`;
+							return baseCur+`blanke-class blanke-${name.toLowerCase()}`;
 					}
 
 					// this keyword
@@ -427,10 +427,11 @@ class Code extends Editor {
 			}
 		}
 
-		let showHints = (editor, list) => {
+		let showHints = (editor, in_list) => {
 			let hint_types = {};
-			for (var o in list) {
-				let hint_opts = list[o];
+			let list = [];
+			for (var o in in_list) {
+				let hint_opts = in_list[o];
 				let add = false;
 				let text = hint_opts.fn || hint_opts.prop;
 
@@ -450,7 +451,6 @@ class Code extends Editor {
 					});
 				}
 			}
-			console.log(Object.assign(list,{}));
 			blanke.cooldownFn("editor_show_hint", 250, function(){
 				editor.showHint({
 					closeOnUnfocus: false,
@@ -507,16 +507,31 @@ class Code extends Editor {
 
 			console.log(word, token_type);
 
+			let hint_list = [];
 			// dot activation
 			if (word == '.') {
-				let hint_list = [];
 				let tokens = token_type.split(' ');
 				for (let tok of tokens) {
 					hint_list = hint_list.concat(hints[tok] || []);
 				}
-				showHints(editor, hint_list);
+			}
+			// globals
+			if (word != '.' && token_type == 'variable') {
+				console.log(var_list[this_ref.file])
+				// variable
+				var_list[this_ref.file].var.forEach(v => {
+					if (v.startsWith(word))
+						hint_list.push({ prop: v });
+				})
+				// function
+				var_list[this_ref.file].fn.forEach(v => {
+					if (v.startsWith(word))
+						hint_list.push({ fn: v });
+				})
 			}
 			
+			if (hint_list.length > 0)
+				showHints(editor, hint_list);
 		});
 
 				
