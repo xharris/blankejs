@@ -1,6 +1,5 @@
 let txt, player;
-let bob = 3;
-let bob2, bob3;
+
 Scene("Play",{
     onStart: function() {
 		let map_test1 = Map.load("test1")

@@ -190,11 +190,6 @@
 		padding-bottom: 20px;
 	}
 
-	.cm-matchhighlight {
-		background-color: @ide-accent;
-	    color: black !important;
-	    outline: 1px solid @ide-accent;
-	}
 	.CodeMirror-selection-highlight-scrollbar {
 		background-color: @ide-accent;
 	}
@@ -205,18 +200,33 @@
 	}
 
 	.cm-blanke-class {
-		color: #4fc3f7;
+		color: @ide-bold;
 	}
 
-	.cm-string {
+	.cm-property {
+		color: @ide-accent-2;
+	}
+
+	.cm-string, .cm-string-2 {
 		color: @theme-string; /*  #e0e0e0; */
 		text-shadow: none;
+	}
+
+	.cm-keyword { 
+		color: #9E9E9E;
 	}
 
 	.cm-blanke-self {
 		color: #FFB74D;
 	}
 
+	.cm-matchhighlight {
+		background-color: @ide-accent;
+	    color: black !important;
+		outline: 1px solid @ide-accent;
+		text-shadow: none;
+		box-shadow: 3px 3px black;
+	}
 /*
 	.cm-blanke-state, .cm-blanke-entity {
 		color: @ide-accent; 

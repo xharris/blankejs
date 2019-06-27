@@ -74,7 +74,7 @@ var getCompletionList = (_type) => {
 // ** called when a file is modified
 var script_list = [];
 var getKeywords = (file, content) => {
-	if (file.includes('main.js')) return;
+	if (file.includes('main.js')) return; // main.js makes while loop freeze for some reason
     blanke.cooldownFn('getKeywords.'+file, 500, ()=>{
         ext_class_list[file] = {};
         instance_list[file] = {};
@@ -95,18 +95,16 @@ var getKeywords = (file, content) => {
 						store_list[_file] = {};
 
 					// clear old list of results
-					//if (file == _file || (file != _file && !store_list[_file][cat] )) {
-						if (!store_list[_file][cat])
-							store_list[_file][cat] = [];
-						let _match;
-						for (let re of regex) {
-							while (_match = re.exec(data)) {
-								if (!store_list[_file][cat].includes(_match[1]))
-									store_list[_file][cat].push(_match[1]);
-							}
-							
+					if (!store_list[_file][cat])
+						store_list[_file][cat] = [];
+					let _match;
+					for (let re of regex) {
+						while (_match = re.exec(data)) {
+							if (!store_list[_file][cat].includes(_match[1]))
+								store_list[_file][cat].push(_match[1]);
 						}
-					//}
+						
+					}
             	}
 			}
         }
