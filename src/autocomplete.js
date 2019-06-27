@@ -1,3 +1,4 @@
+
 let color_vars = {
 	r:'red component (0-1 or 0-255) / hex (#ffffff) / preset (\'blue\')',
 	g:'green component',
@@ -15,8 +16,20 @@ module.exports.keywords = [
 	'var','void','while','with','yield'
 ]
 
-// only vars starting with 'local'
-// (?:(?:local\s+|,\s*)(?!\.)([a-zA-Z_]\w*)[,\n\r]?\s*)[^\n\r\.\:]+?(?:(?!=\s*function)(?==)|[\n\r])
+module.exports.class_list = ['Game','Util','Map']
+
+module.exports.class_extends = {
+    'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g
+}
+
+module.exports.instance = {
+	'entity': [
+		/\b(\w+)\s*=\s*new\s+<class_name>\s*\(/g,
+		/\b(\w+)\s*=\s*(?:\w+)\s*\.\s*spawnEntity\s*\(\s*<class_name>\s*,/g
+	],
+	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g
+}
+
 module.exports.user_words = {
 	'var':[
 		// single var
@@ -32,54 +45,11 @@ module.exports.user_words = {
 	]
 }
 
-// displays the image in the editor
 module.exports.image = [
 	/Sprite\(["']([\w\s\/.-]+)["']\)/,
 	/self:addSprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/,
 	/Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/
 ];
-
-module.exports.class_list = ['Game','Util','Map'];
-
-module.exports.class_extends = {
-    'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g
-}
-
-module.exports.instance = {
-	'entity': [
-		/\b(\w+)\s*=\s*new\s+<class_name>\s*\(/g,
-		/\b(\w+)\s*=\s*(?:\w+)\s*\.\s*spawnEntity/g
-	],
-	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g
-}
-
-// Group 1: name of class to replace <class_name> in instance_regex
-module.exports.class_regex = {
-	'state': 	[
-		/.*BlankE\.addClassType\s*\(\s*"(\w+)"\s*,\s*"State"\s*\).*/g,
-		/.*BlankE\.addState\s*\(\s*"(\w+)"\s*\).*/g,
-		/\b(State).*/g
-	],
-	'entity': 	[
-		/\bclass\s+(\w+)\s+extends\s+Entity/g
-	]
-}
-
-// Group 1: name of instance 
-module.exports.instance_regex = {
-	'entity': [
-		/\b(\w+)\s*=\s*new\s+<class_name>\s*\(/g,
-		/\b(\w+)\s*=\s*(?:\w+)\s*\.\s*spawnEntity/g
-	],
-	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g
-}
-// old group/bezier regex: /\b(?:self.|self:)?(\w+)\s*=\s*Group\(\).*/g
-
-// how to treat use of the 'self' keyword when used inside a callback
-module.exports.self_reference = {
-	'blanke-state': 'class',
-	'blanke-entity': 'instance'
-}
 
 /*
 	{ fn: "name", info, vars }
@@ -88,7 +58,7 @@ module.exports.self_reference = {
 	- info: "description"
 	- vars: { arg1: 'default', arg2: 'description', etc: '' }
 */
-module.exports.completions = {
+module.exports.hints = {
 	"global":[],
 	"blanke-game":[
 		{ fn: 'end' }

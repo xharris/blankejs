@@ -1,5 +1,22 @@
 /* AUTOCOMPLETE
 
+let color_vars = {
+	r:'red component (0-1 or 0-255) / hex (#ffffff) / preset (\'blue\')',
+	g:'green component',
+	b:'blue component',
+	a:'optional alpha'
+}
+let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
+
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
+// used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
+module.exports.keywords = [
+	'break','case','catch','class','const','continue','debugger','default','delete',
+	'do','else','export','extends','finally','for','function','if','import','in',
+	'instanceof','new','return','super','switch','this','throw','try','typeof',
+	'var','void','while','with','yield'
+]
+
 module.exports.class_list = ['Game','Util','Map']
 
 module.exports.class_extends = {
@@ -39,7 +56,7 @@ var class_list = []     // class_list (Map, Scene, Effect)
 var re_class_extends, re_instance, re_user_words;
 
 // called when autocomplete.js is modified
-var refreshCompletions = () => {
+var reloadCompletions = () => {
     // get regex from autocomplete.js
     autocomplete = app.require(app.settings.autocomplete_path);
     re_class_extends = autocomplete.class_extends;
@@ -63,28 +80,33 @@ var getCompletionList = (_type) => {
         }
     }
     let arrays = {
-        'class':    ext_class_list,
+        'ext-class':ext_class_list,
         'instance': instance_list,
-        'var':      var_list
+        'var':      var_list,
+        'class':    class_list      // array
     }
     if (arrays[_type]) {
         return retrieve(arrays[_type]);
     }
 }
 
-// ** called when a file is modified
+// replaces refreshObjectList ** called when a file is modified
 var getKeywords = (file, content) => {
-    ext_class_list[file] = {};
-    instance_list[file] = {};
-    var_list[file] = {};
+    blanke.cooldownFn('getKeywords.'+file, 500, ()=>{
+        ext_class_list[file] = {};
+        instance_list[file] = {};
+        var_list[file] = {};
 
-    blanke.cooldownFn('getUserClasses.'+file, 500, ()=>{
         // read file
         let data = content || nwFS.readFileSync(file,'utf-8')
         if (!data) return;
 
+        // should a server be running?
+        if (!app.isServerRunning() && content.includes("Net.")) {								
+            app.runServer();
+        }
+
         let match = (regex, store_list) => {
-            store_list[file] = {};
             for (let cat in regex) {
                 // clear old list of results
                 store_list[file][cat] = [];
@@ -97,10 +119,32 @@ var getKeywords = (file, content) => {
             }
         }
         // start scanning
+        ext_class_list[file] = {};
         match(re_class_extends, ext_class_list);        // user-made classes
-        match(re_instance, instance_list);
+        instance_list[file] = {};
+        // add user class regexes
+        let new_re_instance = {};
+        let re_instance_copy = [].concat(re_instance);
+        for (let cat in re_instance_copy) {
+            new_re_instance[cat] = [];
+            for (let re of re_instance_copy[cat]) {
+                if (re.source.includes('<class_name>')) {
+                    // YES - make the replacement
+                    if (ext_class_list[file][cat]) {
+                        // iterate user-made classes
+                        for (let class_name of ext_class_list[file][cat]) {
+                            new_re_instance[cat].push(new RegExp(re.source.replace('<class_name>', class_name)))
+                        }
+                    }
+                } else {
+                    // NO - add current regex
+                    new_re_instance[cat].push(re);
+                }
+            }
+        }
+        match(new_re_instance, instance_list);
+        var_list[file] = {};
         match(re_user_words, var_list);
-
     });
 }
 
@@ -122,65 +166,58 @@ CodeMirror.defineMode("blanke", (config, parserConfig) => {
 
             // instance
             let instances = getCompletionList('instance');
-            for (let cat in instances) {
-                for (let name of instances[cat]) {
+            for (let cat in instances) { // Player, Map
+                for (let name of instances[cat]) { // player1, map1
                     if (stream.match(new RegExp("^"+name))) 
                         return baseCur+`blanke-instance blanke-${cat}-instance`;
                 }
             }
 
             // extended classes
-            return baseCur+"blanke-class blanke-"+match[1].toLowerCase();
-
-            // class
-            
-
-            if (re_class_list) {
-                let match = stream.match(new RegExp(re_class_list));
-                if (match) {
-                    console.log('class',stream.string,match[1])
-                    
+            let ext_classes = getCompletionList('ext-class');
+            for (let cat in ext_classes) { // Entity
+                for (let name of ext_classes[cat]) { // Player
+                    if (stream.match(new RegExp("^"+name))) 
+                        return baseCur+`blanke-class blanke-${cat}`;
                 }
             }
 
-            // user made classes (PlayState, Player)
-            for (let category in object_list) {
-                if (re_class[category]) {
-                    
-                    let re_obj_category = '^\\s(';
-                    for (let obj_name in object_list[category]) {
-                        re_obj_category += obj_name+'|';
-                    }
-
-                    if (Object.keys(object_list[category]).length > 0) {
-                        if (stream.match(new RegExp(re_obj_category.slice(0,-1)+')'))) {
-                            if (category=='entity') console.log(re_obj_category.slice(0,-1)+')')
-                            ;//return baseCur+"blanke-class blanke-"+category;
-                        }
-                    }
-
-                }
+            // regular classes
+            let classes = getCompletionList('ext-class');
+            for (let name of classes[cat]) { // Map, Scene
+                if (stream.match(new RegExp("^"+name))) 
+                    return baseCur+`blanke-class blanke-${cat}`;
             }
 
-            // self keyword
-            if (stream.match(/^self/g)) {
-                return baseCur+"blanke-self";
+            // this keyword
+            if (stream.match(/^this/g)) {
+                return baseCur+"blanke-this";
             }
 
             while (stream.next() && false) {}
             return null;
-
-            /* keeping this code since it's a good example
-            if (stream.match("{{")) {
-                while ((ch = stream.next()) != null)
-                    if (ch == "}" && stream.next() == "}") {
-                        stream.eat("}");
-                        return "blanke-test";
-                    }
-            }
-            */	
         }
-        };
-        return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), blankeOverlay);
+    };
+    return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), blankeOverlay);
+});
+
+new_editor.on('change', (cm, e) => {
+    let editor = cm;
+    let cursor = editor.getCursor();
+
+    let word_pos = editor.findWordAt(cursor);
+    let word = editor.getRange(word_pos.anchor, word_pos.head);
+    let before_word_pos = {line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
+    let before_word = editor.getRange(before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
+    let word_slice = word.slice(-1);
+
+    checkGutterEvents(editor);
+    blanke.cooldownFn('checkLineWidgets',250,()=>{otherActivity(cm,e)})
+
+    this_ref.parseFunctions();
+    this_ref.addAsterisk();
+    this_ref.refreshFnHelperTimer();
+
+
 });
 

@@ -14,133 +14,187 @@ var CODE_ASSOCIATIONS = [
 	],
 ];
 
-var ext_class_list = {};// class_extends (Player)
-var instance_list = {}; // instance (let player = new Player())
-var var_list = {};      // user_words (let player;)
-var class_list = []     // class_list (Map, Scene, Effect)
+var object_list = {}
+var object_src = {};
+var object_instances = {};
+var user_words = [];
 var keywords = [];
 
-var autocomplete, hints;
-var re_class_extends, re_instance, re_user_words, re_image;
+var autocomplete, callbacks, hints;
+var re_class, re_class_list, re_class_and_instance, re_instance, re_user_words, re_image;
 
 function isReservedWord(word) {
 	return keywords.includes(word) || autocomplete.class_list.includes(word);
 }
 
-// called when autocomplete.js is modified
-var reloadCompletions = () => {
-    // get regex from autocomplete.js
-    autocomplete = app.require(app.settings.autocomplete_path);
-    re_class_extends = autocomplete.class_extends;
-    re_instance = autocomplete.instance;
-    re_user_words = autocomplete.user_words;
-	keywords = autocomplete.keywords;
-	hints = autocomplete.hints;
-	class_list = autocomplete.class_list;
+function reloadCompletions() {
+	autocomplete = app.require(app.settings.autocomplete_path);
+
+	re_class = autocomplete.class_regex;
+	re_class_list = null;
+	if (autocomplete.class_list)
+		re_class_list = '('+autocomplete.class_list.join('|')+')';
+	hints = autocomplete.completions;
+	re_instance = autocomplete.instance_regex;
+	re_user_words = autocomplete.user_words;
 	re_image = autocomplete.image;
-}
+	keywords = autocomplete.keywords;
 
-var getCompletionList = (_type) => {
-    let retrieve = (obj) => {
-        let ret_obj = {};
-        // do you like loops??
-        for (let file in obj) {
-            for (let cat in obj[file]) {
-				if (!ret_obj[cat])
-                	ret_obj[cat] = [];
-                for (let name of obj[file][cat]) {
-                    if (!ret_obj[cat].includes(name)) {
-                        ret_obj[cat].push(name);
-                    }
-                }
-            }
-        }
-		return ret_obj;
-    }
-    let arrays = {
-        'ext-class':ext_class_list,
-        'instance': instance_list,
-        'var':      var_list,
-        'class':    class_list      // array
-    }
-	let ret_val = arrays[_type];
-    if (ret_val) {
-		if (Array.isArray(ret_val))
-			return ret_val
-        return retrieve(ret_val);
-    }
-}
+	re_class_and_instance = Object.assign({}, re_class);
+	for (let c in re_instance) {
+		if (!re_class_and_instance[c])
+			re_class_and_instance[c] = re_instance[c];
+	}
 
-// ** called when a file is modified
-var script_list = [];
-var getKeywords = (file, content) => {
-	if (file.includes('main.js')) return;
-    blanke.cooldownFn('getKeywords.'+file, 500, ()=>{
-        ext_class_list[file] = {};
-        instance_list[file] = {};
-        var_list[file] = {};
-
-        // should a server be running?
-        if (!app.isServerRunning() && content.includes("Net.")) {								
-            app.runServer();
-        }
-
-        let match = (regex_obj, store_list) => {
-			// refresh matches for all files
-			for (let _file of script_list) {
-				let data = (file == _file) ? content : nwFS.readFileSync(_file,'utf-8');
-				for (let cat in regex_obj) {
-					let regex = [].concat(regex_obj[cat])
-					if (!store_list[_file])
-						store_list[_file] = {};
-
-					// clear old list of results
-					//if (file == _file || (file != _file && !store_list[_file][cat] )) {
-						if (!store_list[_file][cat])
-							store_list[_file][cat] = [];
-						let _match;
-						for (let re of regex) {
-							while (_match = re.exec(data)) {
-								if (!store_list[_file][cat].includes(_match[1]))
-									store_list[_file][cat].push(_match[1]);
-							}
-							
-						}
-					//}
-            	}
+	callbacks = {};
+	for (let htype in hints) {
+		for (let prop of hints[htype]) {
+			if (prop.callback) {
+				if (!callbacks[htype]) callbacks[htype] = [];
+				callbacks[htype].push(prop.fn);
 			}
-        }
-        // start scanning
-        ext_class_list[file] = {};
-        match(re_class_extends, ext_class_list);        // user-made classes
-        instance_list[file] = {};
-        // add user class regexes
-        let new_re_instance = {};
-        for (let cat in re_instance) {
-            new_re_instance[cat] = [];
-			let re_list = [].concat(re_instance[cat]);
-            for (let re of re_list) {
-                if (re.source.includes('<class_name>')) { 
-                    // YES - make the replacement
-					let ext_classes = getCompletionList('ext-class')[cat];
-                    if (ext_classes) {
-                        // iterate user-made classes
-                        for (let class_name of ext_classes) {
-							if (!new_re_instance[class_name])
-								new_re_instance[class_name] = [];
-                            new_re_instance[class_name].push(new RegExp(re.source.replace('<class_name>', class_name), re.flags))
-                        }
-                    }
-                } else {
-                    // NO - add current regex
-                    new_re_instance[cat].push(re);
-                }
-            }
-        }
-        match(new_re_instance, instance_list);
-        var_list[file] = {};
-        match(re_user_words, var_list);
-    });
+		}
+	}
+}
+
+function refreshObjectList (filename, content) {
+	// should a server be running?
+	if (!app.isServerRunning() && content.includes("Net.")) {								
+		app.runServer();
+	}
+
+	// remove from whole list
+	let obj_string = object_src[filename] || '';
+	for (let category in object_list) {
+		if (!object_list[category]) object_list[category] = {}
+
+		let objects = object_list[category];
+		if (object_instances[filename] && object_instances[filename][category])
+			object_instances[filename][category] = [];
+
+		for (let obj_name in objects) {
+			let occurences = obj_string.split(obj_name).length - 1;
+			if (occurences > 0) {
+				object_list[category][obj_name] -= occurences;
+				if (object_list[category][obj_name] == 0)
+					delete object_list[category][obj_name];
+			}
+		}
+	}
+
+	// find words that the user made using 'local' or whatever
+	user_words[filename] = [];
+	// variables
+	for (let r in re_user_words.var) {
+		let re = re_user_words.var[r];
+		let match;
+		while (match = re.exec(content)) {
+			if (!isReservedWord(match[1])) {
+				user_words[filename].push({
+					prop:match[1],
+					global:true
+				});
+			}
+		}
+	}
+	// functions
+	for (let r in re_user_words.fn) {
+		let re = re_user_words.fn[r];
+		let match;
+		while (match = re.exec(content)) {
+			if (!isReservedWord(match[1])) {
+				user_words[filename].push({
+					fn:match[1],
+					global:true
+				});
+			}
+		}
+	}
+
+	// clear src list
+	object_src[filename] = '';
+
+	function iterateRegex (regex_list) {
+		let ret_matches = [];
+
+		for (var category in regex_list) {
+			let re = regex_list[category];
+		
+			ret_matches = [];
+			if (re) {
+				if (Array.isArray(re)) {
+					for (let subre of re) {
+						let matches = [];
+						do {
+							matches = subre.exec(content);
+							if (matches) {
+								ret_matches.push(matches[1]);
+							}
+						} while (matches && matches.length);
+					}
+				} else {
+					let matches = [];
+					do {
+						matches = re.exec(content);
+						if (matches) {
+							ret_matches.push(matches[1]);
+						}
+					} while (matches && matches.length);
+				}
+			}
+
+			// if (ret_matches.length == 0) continue;
+			for (let o in ret_matches) {
+				let obj_name = ret_matches[o];
+				object_src[filename] += obj_name + ' ';
+
+				// increment in whole list
+				if (!object_list[category]) object_list[category] = {};
+				if (object_list[category][obj_name])
+					object_list[category][obj_name]++;
+				else {
+					object_list[category][obj_name] = 1;
+				}
+			}
+		}
+	}
+	
+	iterateRegex(re_class);
+	iterateRegex(re_instance);
+
+	function checkInstance(cat, regex) {
+		var ret_instance_match;
+
+		if(!object_instances[filename])
+			object_instances[filename] = {};
+		if(!object_instances[filename][cat])
+			object_instances[filename][cat] = [];
+		do {
+			ret_instance_match = regex.exec(content);
+			if (!ret_instance_match) {
+				// continue; // no longer usable after adding 'for (let obj_name of ret_matches)'
+			}
+			else if(!object_instances[filename][cat].includes(ret_instance_match[1])) {
+				object_instances[filename][cat].push(ret_instance_match[1]);
+			}
+
+		} while (ret_instance_match)
+	}
+
+	for (let category in object_list) {
+		for (let obj_name in object_list[category]) {
+			// get instances made with those classes
+			if (re_instance[category]) {
+				if (Array.isArray(re_instance[category])) {
+					for (let subre of re_instance[category]) {
+						checkInstance(category, new RegExp(subre.source.replace('<class_name>', obj_name), subre.flags))
+					}
+				} else {
+					checkInstance(category, new RegExp(re_instance[category].source.replace('<class_name>', obj_name), re_instance[category].flags));
+				}
+			}
+		}
+	}
 }
 
 class Code extends Editor {
@@ -183,64 +237,83 @@ class Code extends Editor {
 		this.appendBackground(this.game.container);
 
 		var this_ref = this;
-		CodeMirror.defineMode("blanke", (config, parserConfig) => {
-			var blankeOverlay = {
-				token: (stream, state) => {
-					let baseCur = stream.lineOracle.state.baseCur;
-					if (baseCur == null) baseCur = "";
-					else baseCur += " ";
-					var ch;
+		CodeMirror.defineMode("blanke", function(config, parserConfig) {
+		  var blankeOverlay = {
+		    token: function(stream, state) {
+				let baseCur = stream.lineOracle.state.baseCur;
+				if (baseCur == null) baseCur = "";
+				else baseCur += " ";
+		    	var ch;
+		
+				blanke.cooldownFn("refreshObjectList", 500, function(){
+					refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
+				});				    	
 
-					getKeywords(this_ref.file, this_ref.codemirror.getValue());
-
-					// comment
-					if (stream.match(/\s*\/\//) || baseCur.includes("comment")) {
-						while ((ch = stream.next()) != null && !stream.eol());
-						return "comment";
-					}
-
-					let instances = getCompletionList('instance');
-					let ext_classes = getCompletionList('ext-class');
-					let classes = getCompletionList('class');
-
-					// instance
-					for (let cat in instances) { // Player, Map
-						for (let name of instances[cat]) { // player1, map1
-							// get parent class name
-							let parent = '';
-							for (let p in ext_classes) {
-								if (ext_classes[p] == cat)
-									parent = `blanke-${p}-instance`;
-							}
-							if (stream.match(new RegExp("^"+name))) 
-								return baseCur+`blanke-instance ${parent} blanke-${cat}-instance`;
-						}
-					}
-
-					// extended classes
-					for (let cat in ext_classes) { // entity
-						for (let name of ext_classes[cat]) { // Player
-							if (stream.match(new RegExp("^"+name))) 
-								return baseCur+`blanke-class blanke-${cat}`;
-						}
-					}
-
-					// regular classes
-					for (let name of classes) { // Map, Scene
-						if (stream.match(new RegExp("^"+name))) 
-							return baseCur+`blanke-class blanke-${name}`;
-					}
-
-					// this keyword
-					if (stream.match(/^this/g)) {
-						return baseCur+"blanke-this";
-					}
-
-					while (stream.next() && false) {}
-					return null;
+				// comment
+				if (stream.match(/\s*--/) || baseCur.includes("comment")) {
+					while ((ch = stream.next()) != null && !stream.eol());
+					return "comment";
 				}
-			};
-			return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), blankeOverlay);
+
+				// class instances
+				for (let file in object_instances) {
+					for (let category in object_instances[file]) {
+			      		if (object_instances[file] && object_instances[file][category]) {
+			      			for (var instance_name of object_instances[file][category]) {
+			      				if (stream.match(new RegExp("^"+instance_name))) {
+			      					return baseCur+"blanke-instance blanke-"+category+"-instance";
+			      				}
+			      			}
+			      		}
+			      	}
+		      	}
+
+		      	// class list (Draw, Asset, etc)
+				if (re_class_list) {
+					let match = stream.match(new RegExp(re_class_list));
+					if (match) {
+						return baseCur+"blanke-class blanke-"+match[1].toLowerCase();
+					}
+				}
+
+				// user made classes (PlayState, Player)
+		    	for (let category in object_list) {
+			    	if (re_class[category]) {
+						
+			    		let re_obj_category = '^\\s(';
+			    		for (let obj_name in object_list[category]) {
+							re_obj_category += obj_name+'|';
+			    		}
+
+			    		if (Object.keys(object_list[category]).length > 0) {
+			    			if (stream.match(new RegExp(re_obj_category.slice(0,-1)+')'))) {
+					      		return baseCur+"blanke-class blanke-"+category;
+				    		}
+				    	}
+
+				    }
+				}
+
+				// self keyword
+		      	if (stream.match(/^self/g)) {
+		      		return baseCur+"blanke-self";
+		      	}
+
+			    while (stream.next() && false) {}
+			    return null;
+
+				/* keeping this code since it's a good example
+				if (stream.match("{{")) {
+			      	while ((ch = stream.next()) != null)
+			      		if (ch == "}" && stream.next() == "}") {
+			      			stream.eat("}");
+			      			return "blanke-test";
+			      		}
+		      	}
+				*/	
+		    }
+		  };
+		  return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), blankeOverlay);
 		});
 
 		this.setupEditor(this.edit_box);
@@ -427,96 +500,169 @@ class Code extends Editor {
 			}
 		}
 
-		let showHints = (editor, list) => {
-			let hint_types = {};
-			for (var o in list) {
-				let hint_opts = list[o];
-				let add = false;
-				let text = hint_opts.fn || hint_opts.prop;
-
-				if (hint_opts.fn) {
-					hint_types[text] = 'function1';
-					add = true;
-				}
-				if (hint_opts.prop) {
-					hint_types[text] = 'property';
-					add = true;
-				}
-				if (add) {
-					list.push({
-						text:text,
-						hint_opts:hint_opts,
-						render:function(el, editor, data) { el.innerHTML = this_ref.getCompleteHTML(hint_opts); }
-					});
-				}
-			}
-			console.log(Object.assign(list,{}));
-			blanke.cooldownFn("editor_show_hint", 250, function(){
-				editor.showHint({
-					closeOnUnfocus: false,
-					hint: function(cm) {
-						let completions = {
-							from: editor.getDoc().getCursor(),
-							to: editor.getDoc().getCursor(),
-							list: list
-						};
-
-						CodeMirror.on(completions, 'pick', function(completion){
-							let comp_word = editor.findWordAt(editor.getCursor());
-							if (hint_types[completion.text] == 'property')
-								editor.replaceRange(completion.text, comp_word.anchor, comp_word.head);
-							else if (hint_types[completion.text] == 'function1')
-								editor.replaceRange(completion.text+'(', comp_word.anchor, comp_word.head);
-
-							this_ref.setFnHelper(this_ref.getCompleteHTML(completion.hint_opts));
-						});
-
-						return completions
-					},
-					completeSingle: false
-				});
-			});
-		}
-
 		new_editor.on("change", function(cm, e){
 			let editor = cm;
 			let cursor = editor.getCursor();
 
 			let word_pos = editor.findWordAt(cursor);
 			let word = editor.getRange(word_pos.anchor, word_pos.head);
-
-			if (this_ref.last_word == word) return;
-			this_ref.last_word = word;
-			
 			let before_word_pos = {line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
 			let before_word = editor.getRange(before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
 			let word_slice = word.slice(-1);
-			let token_pos = {line: cursor.line, ch: cursor.ch-1};
-			if (before_word == '.' && word != '.') {
-				token_pos.ch = before_word_pos.ch - 1;
-			}
-       		let token_type = editor.getTokenTypeAt(token_pos) || '';
-
 
 			checkGutterEvents(editor);
 			blanke.cooldownFn('checkLineWidgets',250,()=>{otherActivity(cm,e)})
 
-			// this_ref.parseFunctions();
+			this_ref.parseFunctions();
 			this_ref.addAsterisk();
-			// this_ref.refreshFnHelperTimer();
+			this_ref.refreshFnHelperTimer();
 
-			console.log(word, token_type);
+			// get the activator used
+			let comp_activators = ['.'];
+			let activator = before_word;
+			if (comp_activators.includes(word_slice))
+				activator = word_slice;
 
-			// dot activation
-			if (word == '.') {
-				let hint_list = [];
-				let tokens = token_type.split(' ');
-				for (let tok of tokens) {
-					hint_list = hint_list.concat(hints[tok] || []);
-				}
-				showHints(editor, hint_list);
+			let token_pos = {line: cursor.line, ch: cursor.ch-1};
+			if (comp_activators.includes(before_word) && !comp_activators.includes(word)) {
+				token_pos.ch = before_word_pos.ch - 1;
 			}
-			
+       		let token_type = editor.getTokenTypeAt(token_pos) || '';
+
+			//if ((comp_activators.includes(word_slice) || comp_activators.includes(before_word.slice(-1))) && !this_ref.autocompleting) {
+			this_ref.autocompleting = true;
+			//}
+
+			if (this_ref.autocompleting && this_ref.last_word != word) {
+				this_ref.last_word = word;
+				function containsTyped(str) {
+					if (str == word) return false;
+					if (word_slice == activator) return true;
+					else return str.startsWith(word);
+				}
+
+				function globalActivator() {
+					return (word.trim() != '' && !comp_activators.includes(activator));
+				}
+
+				let hint_list = [];
+				let list = [];
+				let hint_types = {};
+
+				// token can have multiple types
+				let types = token_type.split(' ');
+
+				// get most recent callback token type
+				if (types.includes("blanke-self")) {
+					let loop = token_pos.line-1;
+					do {
+						let tokens = editor.getLineTokens(loop);
+						for (var t of tokens) {
+							if (t.type && t.type.includes("blanke-class")) {
+								let class_type = t.type.split(" ").slice(-1)[0];
+								let line = editor.getLine(loop);
+
+								if (callbacks[class_type]) {
+									for (let cb of callbacks[class_type]) {
+										if (line.includes(":"+cb)) {
+											let self_ref = autocomplete.self_reference[class_type];
+											if (self_ref == "class") 
+												types = ["blanke-class", class_type];
+											else if (self_ref == "instance")
+												types = ["blanke-instance", class_type+"-instance"];
+
+											if (self_ref)
+												token_type = types.join(' ');
+
+											loop = 0;
+										}
+									}
+								}
+							}
+						}
+						loop--;
+					} while (loop > 0);
+				}
+
+				for (let t of types) {
+					Array.prototype.push.apply(hint_list, hints[t] || []);
+				}
+
+				// add global hints
+				if (hints.global) {
+					for (let h = 0; h < hints.global.length; h++) {
+						hints.global[h].global = true;
+						hint_list.push(hints.global[h]);
+					}
+				}
+
+				// add user-made words
+				for (let u in user_words[this_ref.file]) {
+					hint_list.push(user_words[this_ref.file][u]);
+				}
+
+				// iterate through hint suggestions
+				for (var o in hint_list) {
+					let hint_opts = hint_list[o];
+					let add = false;
+					let text = hint_opts.fn || hint_opts.prop;
+
+					if (hint_opts.fn && 
+						(
+							(hint_opts.global && globalActivator()) || 
+							(activator == '.' && !hint_opts.global && (token_type.includes('instance') || hint_opts.callback)) || 
+							(activator == '.' && !hint_opts.global && !hint_opts.callback && !token_type.includes('instance'))
+						) && containsTyped(hint_opts.fn)
+					) {
+						hint_types[text] = 'function1';
+						if (hint_opts.named_args) {
+							hint_types[text] = 'function2';
+						}
+						add = true;
+					}
+					if (hint_opts.prop && 
+						((activator == '.' && !hint_opts.global) || (hint_opts.global && globalActivator())) && 
+						!hint_opts.callback && containsTyped(hint_opts.prop)) {
+						hint_types[text] = 'property';
+						add = true;
+					}
+					if (add) {
+						list.push({
+							text:text,
+							hint_opts:hint_opts,
+							render:function(el, editor, data) { el.innerHTML = this_ref.getCompleteHTML(hint_opts); }
+						});
+					}
+				}
+
+				blanke.cooldownFn("editor_show_hint", 250, function(){
+					editor.showHint({
+						closeOnUnfocus: false,
+						hint: function(cm) {
+							let completions = {
+								from: editor.getDoc().getCursor(),
+								to: editor.getDoc().getCursor(),
+								list: list
+							};
+
+							CodeMirror.on(completions, 'pick', function(completion){
+								let comp_word = editor.findWordAt(editor.getCursor());
+								if (hint_types[completion.text] == 'property')
+									editor.replaceRange(completion.text, comp_word.anchor, comp_word.head);
+								else if (hint_types[completion.text] == 'function1')
+									editor.replaceRange(completion.text+'(', comp_word.anchor, comp_word.head);
+								else if (hint_types[completion.text] == 'function2')
+									editor.replaceRange(completion.text+'{', comp_word.anchor, comp_word.head);
+
+								this_ref.setFnHelper(this_ref.getCompleteHTML(completion.hint_opts));
+							});
+
+							return completions
+						},
+						completeSingle: false
+					});
+				});
+			}
 		});
 
 				
@@ -811,7 +957,7 @@ class Code extends Editor {
 
 		this.setTitle(nwPATH.basename(file_path));
 		this.removeAsterisk();
-		getKeywords(this.file, this.codemirror.getValue());
+		refreshObjectList(this.file, this.codemirror.getValue());
 		this.parseFunctions();
 
 		this.setOnClick(function(){
@@ -826,7 +972,7 @@ class Code extends Editor {
 		let this_ref = this;
 		blanke.cooldownFn("codeSave", 200, function(){
 			nwFS.writeFileSync(this_ref.file, this_ref.codemirror.getValue());
-			getKeywords(this_ref.file, this_ref.codemirror.getValue());
+			refreshObjectList(this_ref.file, this_ref.codemirror.getValue());
 			this_ref.parseFunctions();
 			this_ref.removeAsterisk();
 			this_ref.game.refreshSource(this_ref.file);
@@ -885,7 +1031,7 @@ class Code extends Editor {
 		for (let assoc of CODE_ASSOCIATIONS) {
 			Code.scripts[assoc[1]] = [];
 		}
-		addScripts(path || app.getAssetPath('scripts'));
+		addScripts(path || app.project_path);
 	}
 
 	static openScript(file_path, line) {
@@ -914,18 +1060,24 @@ function addScripts(folder_path) {
 		'scene':[],
 		'entity':[]
 	};
-	
+	_addScripts(folder_path);
+}
+
+function _addScripts(folder_path) {
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
-		script_list = files.map(f => app.cleanPath(nwPATH.join(folder_path,f)));
 		for (let file of files) {
 			var full_path = app.cleanPath(nwPATH.join(folder_path, file));
-			
+			let file_stat = nwFS.statSync(full_path);		
+			// iterate through directory		
+			if (file_stat.isDirectory() && file != "dist") 
+				_addScripts(full_path);
+
 			// is a script?
-			if (file.endsWith('.js')) {
+			else if (file.endsWith('.js')) {
 				// get what kind of script it is
 				let data = nwFS.readFileSync(full_path, 'utf-8');
-				getKeywords(full_path, data);
+				refreshObjectList(full_path, data);
 				// get what kind of script it is
 				let tags = ['script'];
 				let cat, match;

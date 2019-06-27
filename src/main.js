@@ -590,6 +590,12 @@ var app = {
 		return nwPATH.resolve(nwPATH.join(app.project_path,'assets',path));
 	},
 	getAssetPath: function(_type, name, cb) {
+		if (!name) {
+			if (_type == 'scripts')
+				return nwPATH.resolve(nwPATH.join(app.project_path,_type))
+			else
+				return nwPATH.resolve(nwPATH.join(app.project_path,'assets',_type))
+		}
 		app.getAssets(_type, (files) => {
 			let found = false;
 			let re_name = /[\\\/](([\w\s.-]+)\.\w+)/;
