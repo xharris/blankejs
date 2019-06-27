@@ -501,11 +501,9 @@ class Code extends Editor {
 			checkGutterEvents(editor);
 			blanke.cooldownFn('checkLineWidgets',250,()=>{otherActivity(cm,e)})
 
-			// this_ref.parseFunctions();
+			this_ref.parseFunctions();
 			this_ref.addAsterisk();
-			// this_ref.refreshFnHelperTimer();
-
-			console.log(word, token_type);
+			this_ref.refreshFnHelperTimer();
 
 			let hint_list = [];
 			// dot activation
@@ -517,7 +515,6 @@ class Code extends Editor {
 			}
 			// globals
 			if (word != '.' && token_type == 'variable') {
-				console.log(var_list[this_ref.file])
 				// variable
 				var_list[this_ref.file].var.forEach(v => {
 					if (v.startsWith(word))
@@ -638,6 +635,7 @@ class Code extends Editor {
 		} 
 	}
 
+	// TODO: not updated since hinting rework
 	parseFunctions() {
 		let this_ref = this;
 		blanke.cooldownFn("parseFunctions", 1000, function(){
