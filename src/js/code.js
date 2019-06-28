@@ -425,13 +425,16 @@ class Code extends Editor {
 			}
 		}
 
-		let showHints = (editor, in_list) => {
+		let showHints = (editor, in_list, input) => {
 			let hint_types = {};
 			let list = [];
 			for (var o in in_list) {
 				let hint_opts = in_list[o];
 				let add = false;
 				let text = hint_opts.fn || hint_opts.prop;
+
+				if (input != '.' && !text.startsWith(input)) 
+					continue;
 
 				if (hint_opts.fn) {
 					hint_types[text] = 'function1';
@@ -505,7 +508,7 @@ class Code extends Editor {
 
 			let hint_list = [];
 			// dot activation
-			if (word == '.') {
+			if (word == '.' || before_word == '.') {
 				let tokens = token_type.split(' ');
 				for (let tok of tokens) {
 					hint_list = hint_list.concat(hints[tok] || []);
@@ -526,7 +529,7 @@ class Code extends Editor {
 			}
 			
 			if (hint_list.length > 0)
-				showHints(editor, hint_list);
+				showHints(editor, hint_list, word);
 		});
 
 				

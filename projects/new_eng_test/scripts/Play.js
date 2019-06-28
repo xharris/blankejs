@@ -8,6 +8,7 @@ Scene("Play",{
 	},
     onUpdate: function(scene, dt) {
 		player.effect.wub.val = Util.sinusoidal(0,1,0.05);
+		
     },
     onEnd: function() {
 		
