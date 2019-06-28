@@ -7,6 +7,13 @@ let color_vars = {
 }
 let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
 
+let prop_z = { prop: 'z', info: 'lower numbers are drawn behind higher numbers' }
+let prop_xyz = [
+	{ prop: 'x' },
+	{ prop: 'y' },
+	prop_z
+]
+
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
 // used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
 module.exports.keywords = [
@@ -80,6 +87,7 @@ module.exports.hints = {
 	],
 	"blanke-map-instance":[
 		{ prop: 'debug' },
+		...prop_xyz,
 		{ fn: 'addLayer', vars: { name:'' } },
 		{ fn: 'addTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', options:'{ layer }' } },
 		{ fn: 'addEntity', vars: { entity_class:'', x:'', y:'', options:'{ layer, align (left, right, top, bottom, center) }' } },
@@ -87,13 +95,17 @@ module.exports.hints = {
 		{ fn: 'removeTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', layer:'' } }
 	],
 	"blanke-entity-instance":[
-		{ prop: 'x' },
-		{ prop: 'y' },
+		...prop_xyz,
 		{ prop: 'hspeed' },
 		{ prop: 'vspeed' },
 		{ prop: 'gravity' },
 		{ prop: 'gravity_direction' },
 		{ prop: 'shape_index', info:'base shape of the entity' },
 		{ prop: 'shapes', info:`{ 'shape_name' : Hitbox }`}
+	],
+	"blanke-input":[
+		{ fn: 'set', vars: { name:'', inputs:'...' } },
+		{ fn: 'on', vars: { event:'', object:'opt', callback:'opt' }},
+		{ prop: 'stop_propagation', info: 'automatically stop event propagation? (default: true)' }
 	]
 }

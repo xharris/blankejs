@@ -186,7 +186,10 @@ var app = {
 				app.getAssets();
 				if (app.asset_watch)
 					app.asset_watch.close()
-				app.asset_watch = nwWATCH(nwPATH.join(app.project_path,'assets'), {recursive: true}, (evt_type, file) => {
+				
+				let asset_path = app.getAssetPath();
+				nwFS.ensureDirSync(asset_path)
+				app.asset_watch = nwWATCH(asset_path, {recursive: true}, (evt_type, file) => {
 					if (file) { 
 						blanke.cooldownFn('asset_watch',500,()=>{
 							app.getAssets((files)=>{
@@ -593,8 +596,10 @@ var app = {
 		if (!name) {
 			if (_type == 'scripts')
 				return nwPATH.resolve(nwPATH.join(app.project_path,_type))
-			else
+			else if (_type)
 				return nwPATH.resolve(nwPATH.join(app.project_path,'assets',_type))
+			else 
+				return nwPATH.resolve(nwPATH.join(app.project_path,'assets'))
 		}
 		app.getAssets(_type, (files) => {
 			let found = false;
@@ -729,12 +734,16 @@ var app = {
 		}
 	},
 
+	last_history_highlight: [],
 	setHistoryHighlight: function(id) {
 		if (app.history_ref[id]) {
+			app.last_history_highlight.unshift(id);
 			for (let other_id in app.history_ref) {
 				app.history_ref[other_id].entry.classList.remove("highlighted");
 			}
 			app.history_ref[id].entry.classList.add("highlighted");
+		} else if (app.last_history_highlight[0] && !id) {
+			app.setHistoryHighlight(app.last_history_highlight[0])
 		}
 	},
 
@@ -754,6 +763,9 @@ var app = {
 		if (!app.history_ref[id]) return;
 		blanke.destroyElement(app.history_ref[id].entry);
 		delete app.history_ref[id];
+		let i = app.last_history_highlight.indexOf(id)
+		if (i > -1) app.last_history_highlight.splice(i,1);
+		app.setHistoryHighlight();
 	},
 
 	clearHistory: function() {

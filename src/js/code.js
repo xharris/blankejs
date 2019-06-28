@@ -2,6 +2,9 @@
 	re_class_list: removed ^ at beginning
 	changed order in defineMode: instance > class_list
 */
+var re_add_sprite = /this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/;
+var re_new_sprite = /new\s+Sprite\s*\(\s*['"]([\w\s\/.-]+)['"]\s*,/;
+
 var code_instances = {};
 
 var CODE_ASSOCIATIONS = [
@@ -243,70 +246,54 @@ class Code extends Editor {
 
 		this.setupEditor(this.edit_box);
 
+		let showSpritePreview = (image_name, cb) => {
+			let spr_prvw = new SpritesheetPreview(image_name);
+			spr_prvw.onCopyCode = function(vals){
+				let rows = Math.floor(vals.frames/vals.columns);
+
+				let args = {
+					image:'\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"',
+					frames:vals['selected_frames'].length,
+					frame_size:"["+vals['frame_size'].join(',')+"]",
+					speed:vals.speed,
+					offset:"["+vals.offset.join(',')+"]",
+					border:"["+vals.border.join(',')+']'
+				}
+				let arg_str = '\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\", {';
+				for (let key in args) {
+					arg_str += (key+":"+args[key]+", ");
+				}
+				arg_str = arg_str.slice(0,-2) + '}';
+				if (cb) cb(arg_str);
+			}
+		}
+
 		this.gutterEvents = {
-			':addSpr':{
+			'\.addSpr':{
 				tooltip:'make a spritesheet animation',
-				fn:function(line_text, cm, cur){
+				fn:function(line_text, cm, cur){		
 					// get currently used image name
 					let image_name = '';
-					if (image_name = line_text.match(/self:addSprite{.*image\s*=\s*('|")([\\-\s\w]*)\1/)) 
-						image_name = image_name[2]
-
-					let spr_prvw = new SpritesheetPreview(image_name);
-					spr_prvw.onCopyCode = function(vals){
-						let rows = Math.floor(vals.frames/vals.columns);
-
-						let args = {
-							name:'\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\"',
-							image:'\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"',
-							frames:"{"+vals['selected frames'].join(',')+"}",
-							frame_size:"{"+vals['frame size'].join(',')+"}",
-							speed:vals.speed,
-							offset:"{"+[vals.offset[0],vals.offset[1]].join(',')+"}",
-							border:vals.border
-						}
-						let arg_str = "";
-						for (let key in args) {
-							arg_str += (key+"="+args[key]+", ");
-						}
-						arg_str = arg_str.slice(0,-2);
-						line_text = line_text.replace(/(\s*)(\w+):addSprite.*/g,"$1$2:addSprite{"+arg_str+"}");
-						
-						this_ref.codemirror.replaceRange(line_text,
-							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
-					}
+					if (image_name = line_text.match(re_add_sprite)) 
+						image_name = image_name[1]
+					showSpritePreview(image_name, (arg_str) => { 
+						console.log(arg_str, line_text)
+						line_text = line_text.replace(/(\s*)(\w+).addSpr.*/g,"$1$2.addSprite("+arg_str+")");
+						this_ref.codemirror.replaceRange(line_text,{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
+					});
 				}
 			},
-			'[^add:]Sprite':{
+			'new\\s+Sprite':{
 				tooltip:'make a spritesheet animation',
 				fn:function(line_text, cm, cur){
 					// get currently used image name
 					let image_name = '';
-					if (image_name = line_text.match(/Sprite{.*image\s*=\s*('|")([\\-\s\w]*)\1/)) 
-						image_name = image_name[2]
-
-					let spr_prvw = new SpritesheetPreview(image_name);
-					spr_prvw.onCopyCode = function(vals){
-						let rows = Math.floor(vals.frames/vals.columns);
-
-						let args = {
-							image:'\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"',
-							frames:"{"+vals['selected frames'].join(',')+"}",
-							frame_size:"{"+vals['frame size'].join(',')+"}",
-							speed:vals.speed,
-							offset:"{"+[vals.offset[0],vals.offset[1]].join(',')+"}"
-							// TODO: border (padding)
-						}
-						let arg_str = "";
-						for (let key in args) {
-							arg_str += (key+"="+args[key]+", ");
-						}
-						arg_str = arg_str.slice(0,-2);
-						line_text = line_text.replace(/Sprite.*/g,"Sprite{"+arg_str+"}");
-						
-						this_ref.codemirror.replaceRange(line_text,
-							{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
-					}
+					if (image_name = line_text.match(re_new_sprite)) 
+						image_name = image_name[1]
+					showSpritePreview(image_name, (arg_str) => {
+						line_text = line_text.replace(/Sprite.*/g,"Sprite("+arg_str+")");
+						this_ref.codemirror.replaceRange(line_text,{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
+					})
 				}
 			}
 		}

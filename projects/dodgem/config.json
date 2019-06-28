@@ -1,0 +1,34 @@
+{
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns",
+    "first_scene": null,
+    "size": [
+        800,
+        600
+    ],
+    "spritesheet_prvw": {
+        "image/blue_robot.png": {
+            "name": "run",
+            "offset": [
+                38,
+                0
+            ],
+            "speed": 1,
+            "frame_size": [
+                38,
+                33
+            ],
+            "frames": 6,
+            "selected_frames": [
+                1,
+                1
+            ],
+            "columns": 8,
+            "border": [
+                0,
+                0
+            ],
+            "image": "image/blue_robot.png"
+        }
+    }
+}

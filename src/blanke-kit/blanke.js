@@ -449,7 +449,7 @@ class BlankeForm {
                 // add separator if necessary
                 if (i < input_count - 1) {
                     let el_sep = blanke.createElement("p","form-separator");
-                    el_sep.innerHTML = extra_args.separator;
+                    el_sep.innerHTML = extra_args.separator || 'x';
                     el_inputs_container.appendChild(el_sep);
                 }
             }

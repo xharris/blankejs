@@ -1,5 +1,5 @@
 var boxes = [];
-var MAX_WINDOWS = 10; //5;
+var MAX_WINDOWS = 4; //5;
 var split_enabled = true;
 var SHOW_SINGLE_BOX_TITLEBAR = true;
 
