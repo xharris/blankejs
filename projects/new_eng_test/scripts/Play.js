@@ -2,14 +2,13 @@ let txt, player;
 
 Scene("Play",{
     onStart: function() {
-		let map_test1 = Map.load("test1")
-		player = map_test1.spawnEntity(Player,"player",{align:"bottom"})[0];
-		player.effect = "wub";
-	},
+			let map_test1 = Map.load("test1")
+			player = map_test1.spawnEntity(Player,"player",{align:"bottom"})[0];
+			player.effect = "wub";
+		},
     onUpdate: function(scene, dt) {
-		player.effect.wub.val = Util.sinusoidal(0,1,0.05);
-		
-    },
+			player.effect.wub.val = Util.sinusoidal(0,1,0.05);
+		},
     onEnd: function() {
 		
     }

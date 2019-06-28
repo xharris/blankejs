@@ -27,6 +27,54 @@ return `
 	${body}
 </html>
 `};
+/* goes in refreshSource
+${inf_loop_detector}
+		let test_code = infiniteLoopDetector.wrap(\`${code.replaceAll('\`','\\`')}\`);
+		try {
+			eval(test_code);
+		} catch (e) {
+			console.log("no")
+			throw e;
+		}
+		*/
+let inf_loop_detector = `
+var infiniteLoopDetector = (function() {
+  var map = {}
+
+  // define an InfiniteLoopError class
+  function InfiniteLoopError(msg, type) {
+    Error.call(this ,msg)
+    this.type = 'InfiniteLoopError'
+  }
+  
+  function infiniteLoopDetector(id) {
+    if (id in map) { 
+      if (Date.now() - map[id] > 1000) {
+        delete map[id]
+        throw new Error('Loop runing too long!', 'InfiniteLoopError')
+      }
+    } else { 
+		map[id] = Date.now()
+    }
+  }
+
+  infiniteLoopDetector.wrap = function(codeStr) {
+    if (typeof codeStr !== 'string') {
+      throw new Error('Can only wrap code represented by string, not any other thing at the time! If you want to wrap a function, convert it to string first.')
+    }
+    // this is not a strong regex, but enough to use at the time
+    return codeStr.replace(/for *\\(.*\\{|while *\\(.*\\{|do *\\{/g, function(loopHead) {
+      var id = parseInt(Math.random() * Number.MAX_SAFE_INTEGER)
+      return \`infiniteLoopDetector(\${id});\${loopHead}infiniteLoopDetector(\${id});\`
+    })
+  }
+
+  infiniteLoopDetector.unwrap = function(codeStr) {
+    return codeStr.replace(/infiniteLoopDetector\\([0-9]*?\\);/g, '')
+  }
+   return infiniteLoopDetector
+}())
+`;
 
 let re_scene_name = /\bScene\s*\(\s*[\'\"](.+)[\'\"]/;
 let re_new_line = /(\r\n|\r|\n)/g;
@@ -99,7 +147,9 @@ class GamePreview {
 			}
 			if (this.onRefresh) this.onRefresh();
 			if (this.onLog) {
+				let old_warn = iframe.contentWindow.console.warn;
 				iframe.contentWindow.console = {
+					warn: old_warn,
 					log:  (...args) => {
 						this.onLog(...args)
 						//old_log(...args);
@@ -341,6 +391,7 @@ var game_instance = Blanke("#game",{
 
 		return onload_code;
 	}
+	
 
 	refreshEngine () {
 		if (!this.paused)
