@@ -671,6 +671,8 @@ class Toast {
         this.el_icon.type = 'image/svg+xml';
         this.el_br = blanke.createElement("br");
 
+        el_icon.addEventListener('click',() => { this.die(0); })
+
         this.el_new_toast.appendChild(this.el_content);
         this.el_new_toast.appendChild(this.el_icon);
 

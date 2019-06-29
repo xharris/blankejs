@@ -239,18 +239,24 @@ var app = {
 			let toast = blanke.toast('Compiling engine code. Please wait', -1);
 			toast.icon = 'dots-horizontal';
 			toast.style = 'wait';
-			nwFS.readdir(app.settings.engine_path, (err,files) => {
-				if (err) return;
-				files.splice(files.indexOf('blanke.js'),1);
-				files.push('blanke.js');
+
+			let code_obj = {};
+			let walker = nwWALK.walk(app.settings.engine_path);
+			walker.on('file', (path, stat, next) => {
 				// place all code in one object
-				let code_obj = {};
-				for (let path of files) {
-					let long_path = nwPATH.join(app.settings.engine_path,path);
-					let fstat = nwFS.statSync(long_path);
-					if (fstat.isFile())
-						code_obj[path] = nwFS.readFileSync(long_path,'utf-8') + '\n\n';
-				}
+				if (stat.isFile() && stat.name.endsWith('.js'))
+					code_obj[stat.name] = nwFS.readFileSync(
+						nwPATH.join(path, stat.name)
+						,'utf-8'
+					) + '\n\n';		
+				next();
+			});
+			walker.on('errors', ()=>{
+				toast.text = "Engine compilation failed";
+				toast.icon = 'close';
+				toast.style = "bad";
+			});
+			walker.on('end', () => {
 				// get blanke.js classes
 				GamePreview.engine_classes = re_engine_classes.exec(code_obj['blanke.js'])[1] 
 				// uglify
@@ -275,7 +281,7 @@ var app = {
 					if (cb) cb(app.engine_code);
 					dispatchEvent('engineChange');
 				}
-			});
+			})
 		}, true);
 	},
 

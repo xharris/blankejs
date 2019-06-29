@@ -13,6 +13,7 @@ let prop_xyz = [
 	{ prop: 'y' },
 	prop_z
 ]
+let prop_effect = { prop: 'effect' };
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
 // used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
@@ -88,6 +89,7 @@ module.exports.hints = {
 	"blanke-map-instance":[
 		{ prop: 'debug' },
 		...prop_xyz,
+		prop_effect,
 		{ fn: 'addLayer', vars: { name:'' } },
 		{ fn: 'addTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', options:'{ layer }' } },
 		{ fn: 'addEntity', vars: { entity_class:'', x:'', y:'', options:'{ layer, align (left, right, top, bottom, center) }' } },
@@ -101,7 +103,8 @@ module.exports.hints = {
 		{ prop: 'gravity' },
 		{ prop: 'gravity_direction' },
 		{ prop: 'shape_index', info:'base shape of the entity' },
-		{ prop: 'shapes', info:`{ 'shape_name' : Hitbox }`}
+		{ prop: 'shapes', info:`{ 'shape_name' : Hitbox }`},
+		prop_effect
 	],
 	"blanke-input":[
 		{ fn: 'set', vars: { name:'', inputs:'...' } },

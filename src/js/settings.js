@@ -1,3 +1,6 @@
+let paths = ['plugin','engine','themes'];
+let files = ['autocomplete'];
+
 class Settings extends Editor {
 	constructor (...args) {
 		super(...args);
@@ -9,11 +12,9 @@ class Settings extends Editor {
 		this.hideMenuButton();
 
 		this.container.width = 300;
-		this.container.height = 270;
-
+        this.container.height = 270;
+        
 		app.refreshThemeList();
-        let paths = ['plugin','engine','themes'];
-        let files = ['autocomplete'];
         this.el_settings = new BlankeForm([
             ['GAME'],
             ['first_scene','select',{'choices':Code.classes.scene,'default':app.project_settings.first_scene}],
@@ -43,7 +44,7 @@ class Settings extends Editor {
                 } catch (e) {
                     return app.settings[path+'_path'];
                 }
-                app.settings[path+'_path'] = value;
+                app.settings[path+'_path'] = app.cleanPath(value);
                 if (path == 'engine') 
                     Settings.watchEngine();
                 if (path == 'autocomplete')
@@ -60,7 +61,7 @@ class Settings extends Editor {
                 } catch (e) {
                     return app.settings[path+'_path'];
                 }
-                app.settings[path+'_path'] = value;
+                app.settings[path+'_path'] = app.cleanPath(value);
                 app.saveAppData();
             });
         });
@@ -99,4 +100,8 @@ let engine_watch, autocomplete_watch;
 document.addEventListener('ideReady',(e)=>{
     Settings.watchEngine();
     Settings.watchAutocomplete();
+
+    paths.forEach(p => {app.settings[p+'_path'] = app.cleanPath(app.settings[p+'_path'])});
+    files.forEach(p => {app.settings[p+'_path'] = app.cleanPath(app.settings[p+'_path'])});
+    app.saveAppData();
 })

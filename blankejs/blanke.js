@@ -7,10 +7,11 @@ NEED
     C Audio
     - Asset (font)
     C Effect
-    - Input (mouse, controller)
+    C Input (mouse)
     - Net
     - Window
 PLUGINS
+    - Gamepad
     - Particle
     - Tween
     - Bezier
@@ -1674,12 +1675,6 @@ var Blanke = (selector, options) => {
                 this.updateParentFilters();
             }
         }
-    }
-
-    /* -NET */
-    var Net = {
-        join: () => {},
-        disconnect: () => {}
     }
 
     engineLoaded.call(this);
