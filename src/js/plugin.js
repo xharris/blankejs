@@ -10,20 +10,8 @@ let plugin_watch;
 // get a list of .lua and .js files
 function refreshPluginList(silent) {
 	blanke.cooldownFn('refreshPlugin',500,function(){
-		if (plugin_window)
-			plugin_window.refreshList();
-		inpectPlugins(silent)
+		inspectPlugins(silent)
 	});
-}
-
-function movePlugin(path) {
-	nwFS.ensureDir(pathJoin(app.settings.engine_path, 'plugins'), err => {
-		if (err) return;
-		for (let key in js_plugin_info) {
-			nwFS.copySync()
-
-		}
-	})
 }
 
 // scan and copy plugins
@@ -33,20 +21,30 @@ function inspectPlugins(silent) {
 		let info_key = file; // may be changed later, who knows
 		
 		if (file.endsWith('.js')) {
-			// add file path
 			let data = nwFS.readFileSync(file,'utf-8');
 			if (!js_plugin_info[info_key]) {
 				js_plugin_info[info_key] = {
 					files: [],
+					enabled: false
 				}
 			}
-			js_plugin_info[info_key].files.push(file);
+			// add file path
+			if (!js_plugin_info[info_key].files.includes(file))
+				js_plugin_info[info_key].files.push(file);
+
 			let info_keys = ['Name','Author','Description'];
 			for (let k of info_keys) {
 				let re = new RegExp(`\\*\\s*${k}\\s*:\\s*([\\w\\s\\.]+)`)
 				//js_plugin_info
 				let match = re.exec(data);
-				if (match) js_plugin_info[info_key][k] = match[1];
+				if (match) js_plugin_info[info_key][k.toLowerCase()] = match[1].trim();
+			}
+			if (!js_plugin_info[info_key].name)
+				js_plugin_info[info_key].name = nwPATH.basename(file);
+
+			// copy files if the plugin is already enabled
+			if (js_plugin_info[info_key].enabled) {
+				Plugins.pluginOn(info_key);
 			}
 		}
 		if (file.endsWith('.md')) {
@@ -72,7 +70,6 @@ function inspectPlugins(silent) {
 				// .js
 				if (f.endsWith('.js')) {
 					inspectFile(full_path);
-					movePlugin(full_path);
 					//nwFS.copyFileSync(pathJoin(app.settings.plugin_path,f), pathJoin(eng_plugin_dir,f));
 				}
 
@@ -82,7 +79,6 @@ function inspectPlugins(silent) {
 					if (!nwFS.statSync(dir_path).isDirectory())
 						nwZIP2(full_path).extractAllTo(dir_path, true);
 					inspectFolder(dir_path);
-					movePlugin(full_path);
 				}
 
 				// dir
@@ -90,11 +86,13 @@ function inspectPlugins(silent) {
 					d = nwPATH.basename(f);
 					//nwFS.copySync(pathJoin(app.settings.plugin_path,d), pathJoin(eng_plugin_dir,d))
 					inspectFolder(pathJoin(app.settings.plugin_path,d));
-					movePlugin(full_path);
 				}
 
 				// if (!silent) blanke.toast("Plugins loaded!")
 			}
+
+			if (plugin_window)
+				plugin_window.refreshList();
 		})
 	});
 
@@ -119,37 +117,106 @@ class Plugins extends Editor {
 		plugin_window = this;
 
 		this.el_list_container = app.createElement("div","list-container");
+		this.appendChild(this.el_list_container);
+
+		this.el_reference = {};
+		this.refreshList();
 	}
 
 	refreshList () {
-
-	}
-
-	pluginOn () {
-
-	}
-
-	// _type: dir, js
-	pluginOff (_type) {
-		// remove file/dir
-		switch (_type) {
-			case 'dir':
-
-				break;
-			case 'js':
+		for (let key in js_plugin_info) {
+			let info = js_plugin_info[key];
+			// create the list item elements
+			if (!this.el_reference[key]) {
+				let el_ref = {};
+				el_ref.el_toggle = app.createElement('label',['toggle','form-group']);
+				el_ref.el_toggle.dataset.type = 'checkbox';
+				el_ref.el_toggle.key_ref = key;
+				el_ref.el_container = app.createElement('div',['container','dark']);
+				el_ref.el_container.appendChild(el_ref.el_toggle);
 				
-				break;
+				this.el_list_container.appendChild(el_ref.el_container);
+				this.el_reference[key] = el_ref;
+			}
 		}
+		// remove el references that are no longer a plugin
+		for (let key in this.el_reference) {
+			let exists = true;
+			if (!js_plugin_info[key])
+				exists = false;
+			else {
+				for (let f of js_plugin_info[key].files) {
+					if (!nwFS.statSync(f).isFile())
+						exists = false;
+				}
+			}
+			if (!exists) {
+				this.el_reference[key].el_container.remove();
+				delete this.el_reference[key];
+			}
+		}
+		// edit values of plugin elements
+		for (let key in this.el_reference) {
+			let el_ref = this.el_reference[key];
+			let info = js_plugin_info[key];
+			el_ref.el_toggle.innerHTML = `
+				<div class='form-inputs'>
+					<input type='checkbox' class='form-checkbox' ${info.enabled ? 'checked' : ''}/>
+					<span class='checkmark'></span>
+				</div>
+				<div class='form-label'>
+					<div class='name'>${info.name}</div>
+					${info.author ? `<div class='author'>${info.author}</div>` : ''}
+					${info.description ? `<div class='description'>${info.description}</div>` : ''}
+				</label>
+			`;
+			el_ref.el_toggle.querySelector('.form-checkbox').addEventListener('change', e => {
+				let key_ref = el_ref.el_toggle.key_ref;
+				js_plugin_info[key_ref].enabled = e.target.checked;
+				if (e.target.checked)
+					Plugins.enable(key_ref);
+				else 
+					Plugins.disable(key_ref);
+			});
+		}
+	}
+
+	static enable (key) {
+		nwFS.ensureDir(pathJoin(app.settings.engine_path, 'plugins'), err => {
+			if (err) return;
+			
+			for (let path of js_plugin_info[key].files) {
+				nwFS.copySync(path, pathJoin(app.settings.engine_path, 'plugins', nwPATH.basename(path)));
+				app.project_settings.enabled_plugins[nwPATH.basename(path)] = true;
+			}
+			app.saveSettings();
+		})
+	}
+
+	static disable (key) {
+		// remove file		
+		for (let path of js_plugin_info[key].files) {
+			nwFS.removeSync(pathJoin(app.settings.engine_path, 'plugins', nwPATH.basename(path)));
+			app.project_settings.enabled_plugins[nwPATH.basename(path)] = false;
+		}
+		app.saveSettings();
 	}
 }
 
 document.addEventListener("openProject",function(e){
+	if (!app.project_settings.enabled_plugins)
+		app.project_settings.enabled_plugins = {};
+	app.saveSettings();
 	refreshPluginList(true);
 });
 
 
 document.addEventListener("ideReady",function(e){
 	pathJoin = nwPATH.join;
+	app.addSearchKey({
+		key: 'Enable/disable plugins',
+		onSelect: () => { new Plugins(); }
+	})
 });
 
 document.addEventListener("appdataSave", (e) => {
