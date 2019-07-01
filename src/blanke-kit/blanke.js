@@ -18,7 +18,7 @@ function guid() {
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
     .toString(16)
-    .substring(1);
+    .substring(1 );
 }
 return s4() + s4();
 }
@@ -671,7 +671,7 @@ class Toast {
         this.el_icon.type = 'image/svg+xml';
         this.el_br = blanke.createElement("br");
 
-        el_icon.addEventListener('click',() => { this.die(0); })
+        this.el_icon.addEventListener('click',() => { this.die(0); })
 
         this.el_new_toast.appendChild(this.el_content);
         this.el_new_toast.appendChild(this.el_icon);
@@ -693,7 +693,7 @@ class Toast {
         });
 
         // duration
-        if (duration == null || duration >= 0)
+        if (duration == null || duration > 0)
             this.die(duration);
 
         this.style = 'none';
@@ -703,7 +703,7 @@ class Toast {
         this.el_content.innerHTML = v;
     }
     // go away after t ms
-    die (t) {
+    die (t, cb) {
         setTimeout(()=>{
             let animation = this.el_new_toast.animate([{ opacity:1 }, { opacity:0 }], { duration:200, iterations:1, easing:'ease-in'})
             animation.pause();
@@ -712,6 +712,7 @@ class Toast {
                 blanke.destroyElement(this.el_br);
             }
             animation.play();
+            if (cb) cb();
         }, t || 4000);
     }
     set icon (v) {

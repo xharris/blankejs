@@ -157,7 +157,12 @@ class AssetManager extends Editor {
 				el_preview_container.appendChild(el_image_size);
 			}
 			el_image.src = "file://"+path;
-		} else {
+		} 
+		/*
+		else if (file_type == 'audio') {
+
+		}*/
+		else {
 			el_preview_container.style.display = "none";
 		}
 

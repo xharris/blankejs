@@ -92,7 +92,7 @@ class GamePreview {
 		this.line_ranges = {};
 
 		this.options = ifndef_obj(opt, {
-			test_scene: true,
+			test_scene: false,
 			scene: null,
 			size: null,
 			onLoad: null
@@ -332,13 +332,10 @@ var game_instance = Blanke("#game",{
 	assets: [${this.getAssetStr()}],
 	onLoad: function(){
 		let { ${GamePreview.engine_classes} } = game_instance;
-		let TestScene = (funcs) => {
-		${this.options.test_scene ? 
+		let TestScene = (funcs) => {${this.options.test_scene ? 
 `			Scene.ref["_test"] = null;
 			Scene("_test", funcs);
-`
-		: ''}
-		}\n`;
+`	: ''}}\n`;
 		this.line_ranges = {};
 		let line_offset = 22; // compensates for line 308 where extra code is added;
 		let last_line_end = (code.match(re_new_line) || []).length + line_offset;

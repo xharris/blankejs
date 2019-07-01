@@ -25,7 +25,7 @@ module.exports.keywords = [
 ]
 
 // TestScene is included just so it looks nice
-module.exports.class_list = ['Game','Util','Map','Effect','Scene','Input','Entity','TestScene'];
+module.exports.class_list = ['Game','Util','Map','Effect','Scene','Sprite','Input','Entity','TestScene'];
 
 module.exports.class_extends = {
     'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g

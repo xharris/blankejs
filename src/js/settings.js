@@ -69,11 +69,11 @@ class Settings extends Editor {
     }
     
     static watchEngine () {
-        app.minifyEngine();
+        app.minifyEngine(null,{ save_internal: true });
         if (engine_watch)
             engine_watch.close();
         engine_watch = nwWATCH(app.settings.engine_path, {recursive: true}, (e, file) => {   
-            app.minifyEngine();
+            app.minifyEngine(null,{ save_internal: true });
         });
     }
 

@@ -1,7 +1,7 @@
 {
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
-    "first_scene": null,
+    "first_scene": "ScenePlay",
     "size": [
         800,
         600
@@ -13,14 +13,14 @@
                 38,
                 0
             ],
-            "speed": 1,
+            "speed": 0.7,
             "frame_size": [
                 38,
                 33
             ],
             "frames": 6,
             "selected_frames": [
-                1,
+                "\"1-6\"",
                 1
             ],
             "columns": 8,

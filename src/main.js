@@ -234,11 +234,15 @@ var app = {
 	},
 
 	engine_code: '',
-	minifyEngine: function(cb) {
+	minifyEngine: function(cb, opt) {
+		opt = opt || {};
 		blanke.cooldownFn('minify-engine',500,function(){
-			let toast = blanke.toast('Compiling engine code. Please wait', -1);
-			toast.icon = 'dots-horizontal';
-			toast.style = 'wait';
+			let toast;
+			if (!opt.silent) {
+				toast = blanke.toast('Compiling engine code. Please wait', -1);
+				toast.icon = 'dots-horizontal';
+				toast.style = 'wait';
+			}
 
 			let code_obj = {};
 			let walker = nwWALK.walk(app.settings.engine_path);
@@ -252,9 +256,11 @@ var app = {
 				next();
 			});
 			walker.on('errors', ()=>{
-				toast.text = "Engine compilation failed";
-				toast.icon = 'close';
-				toast.style = "bad";
+				if (!opt.silent) {
+					toast.text = "Engine compilation failed";
+					toast.icon = 'close';
+					toast.style = "bad";
+				}
 			});
 			walker.on('end', () => {
 				// get blanke.js classes
@@ -264,21 +270,28 @@ var app = {
 					error: false,
 					code: Object.values(code_obj).join('\n')
 				}
-				/*
-				let code = nwUGLY.minify(code_obj,{
-					keep_classnames: true,
-					ie8: true,
-					compress: false,
-					mangle: true
-				});*/
+				if (opt.wrapper) 
+					code.code = opt.wrapper(code.code);
+
+				if (opt.minify) {
+					let code = nwUGLY.minify(code_obj,{
+						keep_classnames: true,
+						ie8: true,
+						compress: false,
+						mangle: true
+					});
+				}
 				if (!code.error) {
-					app.engine_code = code.code;
+					if (opt.save_internal)
+						app.engine_code = code.code;
 					nwFS.writeFile('blanke.min.js',code.code,'utf-8');
-					toast.text = "Compiled engine code!";
-					toast.icon = 'check-bold';
-					toast.style = "good";
-					toast.die(1500);
-					if (cb) cb(app.engine_code);
+					if (!opt.silent) {
+						toast.text = "Compiled engine code!";
+						toast.icon = 'check-bold';
+						toast.style = "good";
+						toast.die(1500);
+					}
+					if (cb) cb(code.code);
 					dispatchEvent('engineChange');
 				}
 			})

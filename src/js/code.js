@@ -177,7 +177,7 @@ class Code extends Editor {
 		this.appendChild(this.el_class_methods);
 
 		// add game preview
-		this.game = new GamePreview();
+		this.game = new GamePreview(null,{ test_scene: true });
 		this.console = new Console();
 		this.console.appendTo(this.getContent());
 		this.getContainer().bg_first_only = true;
@@ -246,20 +246,25 @@ class Code extends Editor {
 
 		this.setupEditor(this.edit_box);
 
-		let showSpritePreview = (image_name, cb) => {
+		let showSpritePreview = (image_name, include_img, cb) => {
 			let spr_prvw = new SpritesheetPreview(image_name);
 			spr_prvw.onCopyCode = function(vals){
 				let rows = Math.floor(vals.frames/vals.columns);
 
 				let args = {
-					image:'\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"',
-					frames:vals['selected_frames'].length,
+					frames:vals['selected_frames'],
 					frame_size:"["+vals['frame_size'].join(',')+"]",
 					speed:vals.speed,
 					offset:"["+vals.offset.join(',')+"]",
 					border:"["+vals.border.join(',')+']'
 				}
-				let arg_str = '\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\", {';
+				if (include_img)
+					args.image = '\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"';
+				
+				let arg_str = '';
+				if (include_img)
+					arg_str += '\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\", ';
+				arg_str += '{';
 				for (let key in args) {
 					arg_str += (key+":"+args[key]+", ");
 				}
@@ -276,8 +281,7 @@ class Code extends Editor {
 					let image_name = '';
 					if (image_name = line_text.match(re_add_sprite)) 
 						image_name = image_name[1]
-					showSpritePreview(image_name, (arg_str) => { 
-						console.log(arg_str, line_text)
+					showSpritePreview(image_name, true, (arg_str) => { 
 						line_text = line_text.replace(/(\s*)(\w+).addSpr.*/g,"$1$2.addSprite("+arg_str+")");
 						this_ref.codemirror.replaceRange(line_text,{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
 					});
@@ -290,8 +294,8 @@ class Code extends Editor {
 					let image_name = '';
 					if (image_name = line_text.match(re_new_sprite)) 
 						image_name = image_name[1]
-					showSpritePreview(image_name, (arg_str) => {
-						line_text = line_text.replace(/Sprite.*/g,"Sprite("+arg_str+")");
+					showSpritePreview(image_name, false, (arg_str) => {
+						line_text = line_text.replace(/Sprite.*/g,"Sprite('"+image_name+"',"+arg_str+")");
 						this_ref.codemirror.replaceRange(line_text,{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
 					})
 				}

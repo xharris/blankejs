@@ -8,9 +8,9 @@ NEED
     - Asset (font)
     C Effect
     C Input (mouse)
-    - Net
     - Window
 PLUGINS
+    - Net ?
     - Gamepad
     - Particle
     - Tween
@@ -21,6 +21,7 @@ PLUGINS
 */
 var Blanke = (selector, options) => {
     let re_sep = /[\\\/]/;
+    let re_no_ext = /([\/\\\.]*[\w\/\\]+)/;
 
     let blanke_ref = this;
     this.options = Object.assign({
@@ -435,7 +436,10 @@ var Blanke = (selector, options) => {
                 is_key: false,
                 from_asset: false,
             }, opt);
-            if (!opt.from_asset) 
+            let real_path = Asset.getPath('image', path);
+            if (real_path) 
+                path = real_path;
+            else if (!opt.from_asset) 
                 path = (this.options.root ? this.options.root + '/' : '') + path;
             if (opt.is_key) 
                 return Asset.tex_crop_cache[path];
@@ -446,7 +450,7 @@ var Blanke = (selector, options) => {
                 }
                 base_tex = Asset.base_textures[path]
             }
-            let key = [path.split('.').slice(0,-1).join('.'), opt.offset[0], opt.offset[1], opt.frame_size[0], opt.frame_size[1], opt.columns||0].join(',');
+            let key = [path.match(re_no_ext)[1], opt.offset[0], opt.offset[1], opt.frame_size[0], opt.frame_size[1], opt.columns||0].join(',');
             if (!Asset.tex_crop_cache[key]) {
                 // get options
                 let offx = opt.offset[0], offy = opt.offset[1];
@@ -1678,5 +1682,5 @@ var Blanke = (selector, options) => {
     }
 
     engineLoaded.call(this);
-    return {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Net, Scene, Sprite, Text, Util, View};
+    return {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View};
 }
