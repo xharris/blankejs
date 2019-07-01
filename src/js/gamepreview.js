@@ -251,6 +251,31 @@ class GamePreview {
 				`;
 		return ret;
 	}
+
+	static getScriptOrder (curr_script) {
+		let scripts = [];
+		let curr_script_cat = 'other';
+		for (let cat of ['entity','scene','other']) {
+			if (Array.isArray(Code.scripts[cat])) {
+				// put current_script at end
+				let new_scripts = Code.scripts[cat];
+				if (curr_script) {
+					let found = false;
+					new_scripts = new_scripts.filter((val) => {
+						if (val == curr_script) {
+							found = true;
+							curr_script_cat = cat;
+						}
+						return val != curr_script;
+					});
+					if (found)
+						scripts.push(curr_script);
+				}
+				scripts = scripts.concat(new_scripts);
+			}
+		}
+		return scripts;
+	}
 	
 	refreshSource (current_script, new_doc) {
 		if (this.errored) {	
@@ -268,27 +293,7 @@ class GamePreview {
 
 		let post_load = '';
 		// get all the scripts
-		let scripts = [];
-		let curr_script_cat = 'other';
-		for (let cat of ['entity','scene','other']) {
-			if (Array.isArray(Code.scripts[cat])) {
-				// put current_script at end
-				let new_scripts = Code.scripts[cat];
-				if (current_script) {
-					let found = false;
-					new_scripts = new_scripts.filter((val) => {
-						if (val == current_script) {
-							found = true;
-							curr_script_cat = cat;
-						}
-						return val != current_script;
-					});
-					if (found)
-						scripts.push(current_script);
-				}
-				scripts = scripts.concat(new_scripts);
-			}
-		}
+		let scripts = GamePreview.getScriptOrder(current_script);
 		switch (curr_script_cat) {
 			case 'entity':
 				if (this.options.test_scene)

@@ -1764,7 +1764,7 @@ var PIXI=function(t){"use strict";var e="undefined"!=typeof globalThis?globalThi
 				return false;
 			});
 			var game_instance = Blanke("#game",{
-				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"ScenePlay","size":[800,600],"spritesheet_prvw":{"image/blue_robot.png":{"name":"run","offset":[38,0],"speed":1,"frame_size":[38,33],"frames":6,"selected_frames":[1,1],"columns":8,"border":[0,0],"image":"image/blue_robot.png"}},"enabled_plugins":{"blanke-net.js":false,"doing.js":false}},
+				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"ScenePlay","size":[800,600],"spritesheet_prvw":{"image/blue_robot.png":{"name":"run","offset":[38,0],"speed":0.7,"frame_size":[38,33],"frames":6,"selected_frames":["\"1-6\"",1],"columns":8,"border":[0,0],"image":"image/blue_robot.png"}},"enabled_plugins":{"blanke-net.js":false,"doing.js":false}},
 				fill_parent: false,
 				width: 800,
 				height: 600,
@@ -1781,7 +1781,7 @@ var PIXI=function(t){"use strict";var e="undefined"!=typeof globalThis?globalThi
 
 class Robot extends Entity {
     init () {
-		this.addSprite("run", {image:"blue_robot", frames:2, frame_size:[38,33], speed:1, offset:[38,0], border:[0,0]})
+		this.addSprite("run", {frames:6, frame_size:[38,33], speed:1, offset:[38,0], border:[0,0], image:"blue_robot"})
     }
     update (dt) {
 
@@ -1790,14 +1790,15 @@ class Robot extends Entity {
 
 TestScene({
 	onStart: () => {
-		new Robot();
+		let rob = new Robot();
+		rob.x = 50;
+		rob.y = 50;
 	}
 })
 
 
 Scene("ScenePlay",{
     onStart: function() {
-		new Sprite("blue_robot", {frames:2, frame_size:[38,33], speed:1, offset:[38,0], border:[0,0]});
 		let bob = new Robot();
 		bob.x = 50
 		bob.y = 50

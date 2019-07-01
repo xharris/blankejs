@@ -274,7 +274,7 @@ var app = {
 					code.code = opt.wrapper(code.code);
 
 				if (opt.minify) {
-					let code = nwUGLY.minify(code_obj,{
+					code = nwUGLY.minify(code_obj,{
 						keep_classnames: true,
 						ie8: true,
 						compress: false,

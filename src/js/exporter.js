@@ -7,16 +7,6 @@ class Exporter extends Editor {
 
 		if (DragBox.focus('Exporter')) return;
 
-		// setup default settings
-		if (!app.project_settings.export) app.project_settings.export = {};
-		ifndef_obj(app.project_settings.export, {
-			name: nwPATH.basename(app.project_path),
-			remove_unused: true,
-			web_autoplay: false,
-			web_memory: 24,
-			web_stack: 2
-		});
-
 		this.setupDragbox();
 		this.setTitle('Exporter');
 		this.removeHistory();
@@ -55,19 +45,30 @@ class Exporter extends Editor {
 
 		this.appendChild(this.el_platforms);
 
+		// setup default settings
+		if (!app.project_settings.export) app.project_settings.export = {};
+		ifndef_obj(app.project_settings.export, {
+			name: nwPATH.basename(app.project_path),
+			remove_unused: true,
+			web_autoplay: false,
+			minify: true
+		});
+
 		// extra options
-		this.el_export_form = new BlankeForm([
+		let form_options = [
 			['general'],
 			['name', 'text', {'default':app.project_settings.export.name}],
 			//['remove_unused','checkbox',{'default':app.project_settings.export.remove_unused,label:"remove unused classes"}],
 			['web'],
 			['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
-		]);
+			['minify','checkbox',{'default':app.project_settings.export.minify}]
+		];
+		this.el_export_form = new BlankeForm(form_options);
 		this.el_export_form.container.classList.add("dark");
-		['name','web_autoplay','web_memory','web_stack'].forEach((s)=>{
-			this_ref.el_export_form.onChange(s,(val)=>app.project_settings.export[s] = val);
+		form_options.forEach((s)=>{
+			if (s.length > 1)
+				this_ref.el_export_form.onChange(s[0],(val)=>app.project_settings.export[s[0]] = val);
 		});
-
 		this.appendChild(this.el_export_form.container);
 	}
 
@@ -79,13 +80,17 @@ class Exporter extends Editor {
 		this.toast.icon = 'dots-horizontal';
 		this.toast.style = 'wait';
 		let game = new GamePreview();
-
+		let scripts = GamePreview.getScriptOrder();
+		let user_code = '';
+		for (let path of scripts) {
+			user_code += nwFS.readFileSync(path,'utf-8') + '\n';
+		}
 		app.minifyEngine((code)=>{
 			nwFS.writeFileSync(js_path,code,'utf-8');
 			if (cb) cb(js_path, this.toast);
 		},{ 
 			silent: true,
-			minifiy: false, // true,
+			minifiy: app.project_settings.export.minify, // true,
 			wrapper: (code) => `
 ${code}
 
@@ -98,13 +103,12 @@ if (!Blanke.run) {
 }
 Blanke.game_options['${app.project_settings.export.name}'] = {
 	config: ${JSON.stringify(app.project_settings)},
-	fill_parent: true,
-	width: ${app.project_settings.size[0]}
-	height: ${app.project_settings.size[1]}
+	width: ${app.project_settings.size[0]},
+	height: ${app.project_settings.size[1]},
 	assets: [${game.getAssetStr()}],
 	onLoad: function(){
-		${game.refreshSource()}
-	});
+		${user_code}
+	}
 };
 `	 
 		})
