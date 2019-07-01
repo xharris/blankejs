@@ -12,41 +12,41 @@ function refreshPluginList(silent) {
 	blanke.cooldownFn('refreshPlugin',500,function(){
 		if (plugin_window)
 			plugin_window.refreshList();
-		nwFS.readdir(app.settings.plugin_path, (err, files) => {
-			let full_path;
-			for (let f of files) {
-				full_path = pathJoin(app.settings.plugin_path, f);
-				if (f.endsWith('.js')) {
-					js_plugins.push(f);
-				}
-				if (f.endsWith('.blex') || f.endsWith('.zip') || f.endsWith('.rar')) {
-					zip_plugins.push(f);
-				}
-				if (nwFS.statSync(full_path).isDirectory()) {
-					dir_plugins.push(full_path);
-				}
-			}
-			inspectPlugins(silent);
-		});
+		inpectPlugins(silent)
 	});
 }
 
-function inspectPlugins(silent) {
-	// move lua files to <engine_path>
-	let eng_plugin_dir = app.settings.engine_path;
+function movePlugin(path) {
+	nwFS.ensureDir(pathJoin(app.settings.engine_path, 'plugins'), err => {
+		if (err) return;
+		for (let key in js_plugin_info) {
+			nwFS.copySync()
 
+		}
+	})
+}
+
+// scan and copy plugins
+function inspectPlugins(silent) {
 	function inspectFile (file) {
 		file = app.cleanPath(file);
-		console.log('inspect',file)
+		let info_key = file; // may be changed later, who knows
+		
 		if (file.endsWith('.js')) {
+			// add file path
 			let data = nwFS.readFileSync(file,'utf-8');
-			js_plugin_info[file] = {
-				path: file,
+			if (!js_plugin_info[info_key]) {
+				js_plugin_info[info_key] = {
+					files: [],
+				}
 			}
+			js_plugin_info[info_key].files.push(file);
 			let info_keys = ['Name','Author','Description'];
 			for (let k of info_keys) {
-				let re = new RegExp()
+				let re = new RegExp(`\\*\\s*${k}\\s*:\\s*([\\w\\s\\.]+)`)
 				//js_plugin_info
+				let match = re.exec(data);
+				if (match) js_plugin_info[info_key][k] = match[1];
 			}
 		}
 		if (file.endsWith('.md')) {
@@ -63,26 +63,39 @@ function inspectPlugins(silent) {
 
 	nwFS.ensureDir(app.settings.plugin_path, err => {
 		if (err) return console.error(err);
-		// .js
-		for (let f of js_plugins) {
-			inspectFile(pathJoin(app.settings.plugin_path,f))
-			//nwFS.copyFileSync(pathJoin(app.settings.plugin_path,f), pathJoin(eng_plugin_dir,f));
-		}
-		// .zip/.rar/.blex
-		for (let f of zip_plugins) {
-			let dir_path = pathJoin(app.settings.plugin_path,f.split('.')[0]);
-			if (!nwFS.statSync(dir_path).isDirectory())
-				nwZIP2(pathJoin(app.settings.plugin_path,f)).extractAllTo(dir_path, true);
-			inspectFolder(dir_path);
-		}
-		// dir
-		for (let d of dir_plugins) {
-			d = nwPATH.basename(d);
-			//nwFS.copySync(pathJoin(app.settings.plugin_path,d), pathJoin(eng_plugin_dir,d))
-			inspectFolder(pathJoin(app.settings.plugin_path,d))
-		}
+		
+		nwFS.readdir(app.settings.plugin_path, (err, files) => {
+			if (err) return;
 
-		// if (!silent) blanke.toast("Plugins loaded!")
+			for (let f of files) {
+				let full_path = pathJoin(app.settings.plugin_path,f);
+				// .js
+				if (f.endsWith('.js')) {
+					inspectFile(full_path);
+					movePlugin(full_path);
+					//nwFS.copyFileSync(pathJoin(app.settings.plugin_path,f), pathJoin(eng_plugin_dir,f));
+				}
+
+				// .zip/.rar/.blex
+				if (f.endsWith('.blex') || f.endsWith('.zip') || f.endsWith('.rar')) {
+					let dir_path = pathJoin(app.settings.plugin_path,f.split('.')[0]);
+					if (!nwFS.statSync(dir_path).isDirectory())
+						nwZIP2(full_path).extractAllTo(dir_path, true);
+					inspectFolder(dir_path);
+					movePlugin(full_path);
+				}
+
+				// dir
+				if (nwFS.statSync(full_path).isDirectory()) {
+					d = nwPATH.basename(f);
+					//nwFS.copySync(pathJoin(app.settings.plugin_path,d), pathJoin(eng_plugin_dir,d))
+					inspectFolder(pathJoin(app.settings.plugin_path,d));
+					movePlugin(full_path);
+				}
+
+				// if (!silent) blanke.toast("Plugins loaded!")
+			}
+		})
 	});
 
 	// add .js files to ide somehow
@@ -117,7 +130,7 @@ class Plugins extends Editor {
 	}
 
 	// _type: dir, js
-	pluginOff (_type, ) {
+	pluginOff (_type) {
 		// remove file/dir
 		switch (_type) {
 			case 'dir':
