@@ -111,7 +111,7 @@ var Blanke = (selector, options) => {
         Asset.add(this.options.assets);
         Asset._load(() => {
             if (this.options.onLoad)
-                this.options.onLoad();
+                this.options.onLoad(classes);
             if (Game.config.first_scene && Scene.stack.length == 0) {
                 Scene.start(Game.config.first_scene);
             }
@@ -1682,5 +1682,6 @@ var Blanke = (selector, options) => {
     }
 
     engineLoaded.call(this);
-    return {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View};
+    var classes = {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View};
+    return classes;
 }

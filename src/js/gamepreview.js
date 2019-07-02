@@ -1,7 +1,7 @@
 let getHTML = (body) => {
 return `
 <!DOCTYPE html>
-<html>
+<html>https://i.imgur.com/ceduLvT.png
 	<style>
 		head, body {
 			position: absolute;
@@ -274,6 +274,8 @@ class GamePreview {
 				scripts = scripts.concat(new_scripts);
 			}
 		}
+		if (curr_script)
+			return [ scripts, curr_script_cat ];
 		return scripts;
 	}
 	
@@ -293,7 +295,12 @@ class GamePreview {
 
 		let post_load = '';
 		// get all the scripts
-		let scripts = GamePreview.getScriptOrder(current_script);
+		let scripts = [];
+		let curr_script_cat = 'other';
+		if (current_script)
+			[ scripts, curr_script_cat ] = GamePreview.getScriptOrder(current_script);
+		else 
+			scripts = GamePreview.getScriptOrder()
 		switch (curr_script_cat) {
 			case 'entity':
 				if (this.options.test_scene)
@@ -335,8 +342,8 @@ var game_instance = Blanke("#game",{
 	root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
 	background_color: 0x485358,
 	assets: [${this.getAssetStr()}],
-	onLoad: function(){
-		let { ${GamePreview.engine_classes} } = game_instance;
+	onLoad: function(classes){
+		let { ${GamePreview.engine_classes} } = classes;
 		let TestScene = (funcs) => {${this.options.test_scene ? 
 `			Scene.ref["_test"] = null;
 			Scene("_test", funcs);
@@ -344,6 +351,7 @@ var game_instance = Blanke("#game",{
 		this.line_ranges = {};
 		let line_offset = 22; // compensates for line 308 where extra code is added;
 		let last_line_end = (code.match(re_new_line) || []).length + line_offset;
+		console.log(scripts, curr_script_cat)
 		for (let path of scripts) {
 			code += nwFS.readFileSync(path,'utf-8') + '\n';
 			onload_code += nwFS.readFileSync(path,'utf-8') + '\n';

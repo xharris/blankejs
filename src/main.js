@@ -32,7 +32,7 @@ var nwWATCH = require('node-watch');
 var nwREQ = require('request');
 var nwUGLY = require('uglify-es');
 
-let re_engine_classes = /return\s+{\s*([\w\s,]+)\s*}/;
+let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
 var app = {
 	project_path: "",

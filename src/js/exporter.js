@@ -106,7 +106,9 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 	width: ${app.project_settings.size[0]},
 	height: ${app.project_settings.size[1]},
 	assets: [${game.getAssetStr()}],
-	onLoad: function(){
+	onLoad: function(classes){
+		let { ${GamePreview.engine_classes} } = classes;
+		let TestScene = () => {};
 		${user_code}
 	}
 };
