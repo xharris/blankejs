@@ -31,7 +31,7 @@ var nwZIP2 = require('adm-zip'); // used for unzipping
 var nwWATCH = require('node-watch');
 var nwREQ = require('request');
 var nwUGLY = require('uglify-es');
-var nwPACK = require('electron-packager');
+const nwPACK = require('electron-packager');
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
@@ -337,6 +337,12 @@ var app = {
 				})
 			});
 		}
+	},
+
+	nofity: function (opt) {
+		let notif = new elec.remote.Notification(opt.title, opt);
+		notif.onclick = opt.onclick;
+		notif.show();
 	},
 
 	newWindow: function (html, options, cb) {

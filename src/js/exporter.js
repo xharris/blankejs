@@ -160,6 +160,14 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 			this.toast.style = 'good';
 			this.toast.text = "Export done! <a href='#' onclick='Exporter.openDistFolder(\""+os+"\");'>View files</a>";
 			this.toast.die(8000);
+
+			app.notify({
+				title: 'Export complete!',
+				body: `\\(^o^)/`,
+				onclick: () => {
+					Exporter.openDistFolder(os);
+				}
+			})
 		}
 	}
 
@@ -231,8 +239,8 @@ elec.app.on('ready', function(){
 					`,'utf-8');
 					nwFS.writeFileSync(nwPATH.join(os_dir,'package.json'),`
 {
-	"appname": "${app.project_settings.export.name}",
-	"productName": "${app.project_settings.export.name}",
+	"name": "${app.project_settings.export.name}",
+	"version": 1.0,
 	"main": "entry.js",
 	"chromium-args": "--enable-webgl --ignore-gpu-blacklist"
 }
@@ -245,7 +253,7 @@ elec.app.on('ready', function(){
 						overwrite: true
 						// platform: 'darwin'
 					}).then(paths => {
-						this_ref.dontToast("mac");
+						this_ref.doneToast("mac");
 					})
 					/*
 					nwFS.copySync(nwPATH.join(engine_path,"love.app"), app_path);

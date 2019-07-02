@@ -20,14 +20,12 @@ clean:
 	make -B setup
 
 dist:
-	npm run less
 	pnpm run dist
 
 love:
 	love2d/love.exe projects/penguin
 
 blanke:
-	pnpm run less
 	pnpm run electron
 	
 engine:
