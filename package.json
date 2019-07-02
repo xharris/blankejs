@@ -5,22 +5,7 @@
   "main": "entry.js",
   "single-instance": false,
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
-  "build": {
-    "nwVersion": "stable",
-    "nwFlavor": "sdk",
-    "files": [
-      "./src/**/**"
-    ],
-    "mac": {
-      "icon": "./src/logo.icns"
-    },
-    "win": {
-      "icon": "./src/logo.ico"
-    }
-  },
   "scripts": {
-    "less": " ",
-    "nw": "nw .",
     "electron": "electron .",
     "dist": "node package.js"
   },
@@ -34,9 +19,7 @@
     "node-watch": "^0.6.0",
     "request": "^2.88.0",
     "uglify-es": "^3.3.9",
-    "walk": "^2.3.13"
-  },
-  "devDependencies": {
+    "walk": "^2.3.13",
     "electron-packager": "^13.1.1"
   }
 }

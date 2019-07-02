@@ -87,7 +87,40 @@ class Exporter extends Editor {
 		}
 		app.minifyEngine((code)=>{
 			nwFS.writeFileSync(js_path,code,'utf-8');
-			if (cb) cb(js_path, this.toast);
+			let str_html = `
+<!DOCTYPE html>
+<html>
+	<style>
+		head, body {
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+			margin: 0px;
+			overflow: hidden;
+		}
+		#game {
+			width: 100%;
+			height: 100%;
+		}
+		body > img {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+	<head>
+		<script type="text/javascript" src="${nwPATH.basename(js_path)}"></script>
+	</head>
+	<body>
+		<div id="game"></div>
+	</body>
+	<script>
+		Blanke.run('#game','${app.project_settings.export.name}');
+	</script>
+</html>`
+			nwFS.writeFileSync(nwPATH.join(dir,'index.html'),str_html,'utf-8');
+			if (cb) cb(js_path);
 		},{ 
 			silent: true,
 			minifiy: app.project_settings.export.minify, // true,
@@ -142,7 +175,7 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 			// move assets
 			nwFS.copySync(app.getAssetPath(), nwPATH.join(os_dir, 'assets'));
 			// create js file
-			this_ref.createJS(os_dir, target_os, function(js_path){
+			this_ref.createJS(os_dir, target_os, async function(){
 				if (target_os == "love") {
 					this_ref.doneToast("love");
 				}
@@ -184,7 +217,37 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 
 				// exporting to MAC
 				if (target_os == "mac") {
-					let app_path = nwPATH.join(os_dir,project_name+".app");
+					this_ref.toast.text = "Building app"
+					nwFS.writeFileSync(nwPATH.join(os_dir,'entry.js'),`
+const elec = require('electron');
+
+elec.app.on('ready', function(){
+    let main_window = new elec.BrowserWindow({
+        width: ${app.project_settings.size[0]},
+        height: ${app.project_settings.size[1]}
+    })
+    main_window.loadFile('index.html');
+});
+					`,'utf-8');
+					nwFS.writeFileSync(nwPATH.join(os_dir,'package.json'),`
+{
+	"appname": "${app.project_settings.export.name}",
+	"productName": "${app.project_settings.export.name}",
+	"main": "entry.js",
+	"chromium-args": "--enable-webgl --ignore-gpu-blacklist"
+}
+					`,'utf-8');
+					nwPACK({
+						dir: os_dir,
+						out: nwPATH.join(os_dir,'out'),
+						executableName: app.project_settings.export.name,
+						icon: 'src/logo',
+						overwrite: true
+						// platform: 'darwin'
+					}).then(paths => {
+						this_ref.dontToast("mac");
+					})
+					/*
 					nwFS.copySync(nwPATH.join(engine_path,"love.app"), app_path);
 					nwFS.moveSync(love_path, nwPATH.join(app_path,"Contents","Resources",project_name+".love"));
 					// make replacements in Info.plist
@@ -205,6 +268,7 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 							this_ref.doneToast("mac")
 						});
 					})
+					*/
 				}
 
 				// exporting to LINUX
@@ -215,41 +279,7 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 
 				// exporting to WEB
 				if (target_os == "web") {
-					let str_html = `
-<!DOCTYPE html>
-<html>
-	<style>
-		head, body {
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			right: 0px;
-			bottom: 0px;
-			margin: 0px;
-			overflow: hidden;
-		}
-		#game {
-			width: 100%;
-			height: 100%;
-		}
-		body > img {
-			width: 100%;
-			height: 100%;
-		}
-	</style>
-	<head>
-		<script type="text/javascript" src="${nwPATH.basename(js_path)}"></script>
-	</head>
-	<body>
-		<div id="game"></div>
-	</body>
-	<script>
-		Blanke.run('#game','${app.project_settings.export.name}');
-	</script>
-</html>`
-					nwFS.writeFile(nwPATH.join(os_dir,'index.html'),str_html,'utf-8',()=>{
-						this_ref.doneToast('web');
-					});
+					this_ref.doneToast('web');
 				}
 			});
 
