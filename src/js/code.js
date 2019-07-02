@@ -251,16 +251,18 @@ class Code extends Editor {
 			spr_prvw.onCopyCode = function(vals){
 				let rows = Math.floor(vals.frames/vals.columns);
 
-				let args = {
-					frames:vals['selected_frames'],
-					frame_size:"["+vals['frame_size'].join(',')+"]",
-					speed:vals.speed,
-					offset:"["+vals.offset.join(',')+"]",
-					border:"["+vals.border.join(',')+']'
-				}
+				let args = {};
 				if (include_img)
 					args.image = '\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"';
 				
+				args.frames = vals.frames;
+				args.speed = vals.speed;
+
+				let optional = ['frame_size','border','offset'];
+				for (let opt of optional) {
+					if (vals[opt].reduce((s,n)=>s+n) > 0)
+						args[opt] = "["+vals[opt].join(',')+"]"
+				}
 				let arg_str = '';
 				if (include_img)
 					arg_str += '\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\", ';
@@ -374,7 +376,8 @@ class Code extends Editor {
             completeSingle: false,
             extraKeys: {
             	"Cmd-S": function(cm) {
-            		this_ref.save();
+					this_ref.save();
+					cm.focus();
             	},
             	"Ctrl-S": function(cm) {
             		this_ref.save();

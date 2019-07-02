@@ -351,7 +351,6 @@ var game_instance = Blanke("#game",{
 		this.line_ranges = {};
 		let line_offset = 22; // compensates for line 308 where extra code is added;
 		let last_line_end = (code.match(re_new_line) || []).length + line_offset;
-		console.log(scripts, curr_script_cat)
 		for (let path of scripts) {
 			code += nwFS.readFileSync(path,'utf-8') + '\n';
 			onload_code += nwFS.readFileSync(path,'utf-8') + '\n';

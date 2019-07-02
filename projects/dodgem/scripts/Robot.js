@@ -1,7 +1,7 @@
 
 class Robot extends Entity {
     init () {
-		this.addSprite("run", {frames:6, frame_size:[38,33], speed:1, offset:[38,0], border:[0,0], image:"blue_robot"})
+		this.addSprite("run", {image:"blue_robot", frames:6, speed:0.7, frame_size:[38,33], offset:[38,0]})
     }
     update (dt) {
 
