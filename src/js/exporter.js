@@ -240,7 +240,8 @@ elec.app.on('ready', function(){
 					nwFS.writeFileSync(nwPATH.join(os_dir,'package.json'),`
 {
 	"name": "${app.project_settings.export.name}",
-	"version": 1.0,
+	"description": "Made with BlankE",
+	"version": "1.0",
 	"main": "entry.js",
 	"chromium-args": "--enable-webgl --ignore-gpu-blacklist"
 }
