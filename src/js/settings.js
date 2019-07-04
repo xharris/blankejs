@@ -78,14 +78,18 @@ class Settings extends Editor {
     }
 
     static watchAutocomplete () {
+        app.refreshAutocomplete();
 		if (autocomplete_watch) {
             autocomplete_watch.close();
             dispatchEvent("autocompleteChanged");
         }
+		app.ignore_errors = true;
 	    autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
-			dispatchEvent("autocompleteChanged");
+            app.refreshAutocomplete();
+            dispatchEvent("autocompleteChanged");
 			blanke.toast("autocomplete reloaded!");
 		});
+		app.ignore_errors = false;
     }
 }
 

@@ -155,6 +155,8 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 	}
 
 	doneToast (os) {
+		if (this.temp_dir)
+			nwFS.removeSync(this.temp_dir);
 		if (this.toast) {
 			this.toast.icon = 'check-bold';
 			this.toast.style = 'good';
@@ -171,62 +173,64 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 		}
 	}
 
+	/*
+		darwin: game.app/Contents/Resources/app
+		- darwin-x64
+		linux: resources/app
+		- linux-arm64
+		- linux-ia32
+		- linux-armv7l
+		- linux-x64
+		mas: game.app/Contents/Resources/app
+		- mas-x64
+	*/
+
 	export (target_os) {
 		let this_ref = this;
+		let bin_dir = nwPATH.join('src','binaries');
+		let temp_dir = target_os == 'web' ? os_dir : nwPATH.join(app.project_path,'dist','temp');
 		let os_dir = nwPATH.join(app.project_path,"dist",target_os);
 		let engine_path = app.settings.engine_path;
 		let project_name = app.project_settings.export.name;
 
+		if (target_os != 'web') {
+			this.temp_dir = temp_dir;
+		} else 
+			this.temp_dir = null;
+		nwFS.removeSync(temp_dir);
+
 		blanke.toast("Starting export for "+target_os);
 
+		let setupBinaries = (binary_list, app_dir) => {
+			this.toast.text = "Extracting binary";
+			let zip = new nwZIP2('./src/binaries.zip');
+			let entries = zip.getEntries();
+			
+			for (let bin of binary_list) {
+				let extracted = {};
+				entries.forEach(entry => {
+					let name = entry.entryName;
+					if (name.startsWith(bin) &&
+						!name.includes('.DS_Store') && 
+						!extracted[name]) {
+
+						extracted[name] = true;
+						console.log(name);
+						try {
+							zip.extractEntryTo(name,os_dir);
+						} catch (e) {}
+					}
+				});
+				// move app folder into resources folder
+				this.toast.text = "Copying game code";
+				nwFS.moveSync(temp_dir, app_dir.replace('<BINARY>',bin));
+			}
+		}
 		nwFS.emptyDir(os_dir, function(err){
 			// move assets
-			nwFS.copySync(app.getAssetPath(), nwPATH.join(os_dir, 'assets'));
-			// create js file
-			this_ref.createJS(os_dir, target_os, async function(){
-				if (target_os == "love") {
-					this_ref.doneToast("love");
-				}
-
-				// export to WINDOWS
-				if (target_os == "windows") {
-					let exec_cmd = '';
-					let exe_path = nwPATH.join(os_dir, project_name+".exe");
-
-					// TODO: test on mac/linux
-					// copy /b love.exe+game.love game.exe
-					let f_loveexe = nwFS.createReadStream(nwPATH.join(engine_path,"love.exe"), {flags:'r', encoding:'binary'});
-					let f_gamelove = nwFS.createReadStream(love_path, {flags:'r', encoding:'binary'});
-					let f_gameexe = nwFS.createWriteStream(exe_path, {flags:'w', encoding:'binary'});
-					// set up callbacks
-					f_loveexe.on('end', ()=>{ f_gamelove.pipe(f_gameexe, {end:false}); })
-					f_gamelove.on('end', ()=>{ f_gameexe.end(''); })
-					// start merging
-					f_loveexe.pipe(f_gameexe, {end:false});
-					// finished all merging
-					f_gameexe.on('finish', () => {
-						nwFS.removeSync(love_path);
-						// copy dlls and stuff
-						nwFS.copySync(engine_path,os_dir,{filter:function(path){
-							path = path.replace(process.cwd(),"");
-							let exclude = [".app",".exe",/[\\\/]lua([\\\/]|\b)/];
-
-							for (let e of exclude) {
-								if (path.match(e)) {
-									return false;
-								}
-							}
-							return true;
-						}});
-		
-						this_ref.doneToast("windows");
-					});
-				}
-
-				// exporting to MAC
-				if (target_os == "mac") {
-					this_ref.toast.text = "Building app"
-					nwFS.writeFileSync(nwPATH.join(os_dir,'entry.js'),`
+			nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
+			// entry.js
+			nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
 const elec = require('electron');
 
 elec.app.on('ready', function(){
@@ -236,48 +240,38 @@ elec.app.on('ready', function(){
     })
     main_window.loadFile('index.html');
 });
-					`,'utf-8');
-					nwFS.writeFileSync(nwPATH.join(os_dir,'package.json'),`
+			`,'utf-8');
+			// package.json
+			nwFS.writeFileSync(nwPATH.join(temp_dir,'package.json'),`
 {
 	"name": "${app.project_settings.export.name}",
 	"description": "Made with BlankE",
 	"version": "1.0",
-	"main": "entry.js",
+	"main": "app/entry.js",
 	"chromium-args": "--enable-webgl --ignore-gpu-blacklist"
 }
-					`,'utf-8');
-					nwPACK({
-						dir: os_dir,
-						out: nwPATH.join(os_dir,'out'),
-						executableName: app.project_settings.export.name,
-						icon: 'src/logo',
-						overwrite: true
-						// platform: 'darwin'
-					}).then(paths => {
-						this_ref.doneToast("mac");
-					})
-					/*
-					nwFS.copySync(nwPATH.join(engine_path,"love.app"), app_path);
-					nwFS.moveSync(love_path, nwPATH.join(app_path,"Contents","Resources",project_name+".love"));
-					// make replacements in Info.plist
-					nwFS.readFile(nwPATH.join(app_path,"Contents","Info.plist"), {encoding:'utf-8'}, function(err, data){
-						if (err) { console.error(err); return; }
+			`,'utf-8');
+			// create js file
+			this_ref.createJS(temp_dir, target_os, function(){	
+				if (target_os != 'web') 
+					this_ref.toast.text = "Building app";
 
-						data = data.replaceAll("org.love2d.love", "com.XHH."+project_name);
-						data = data.replaceAll(/L\u00D6VE/g, project_name);
-						data = data.replaceAll(/<key>UTExportedTypeDeclarations<\/key>\s*<array>[\s\S]+<\/array>/g, "");
+				// export to WINDOWS
+				if (target_os == "windows") {
+					
+				}
 
-						// change icon
-						nwFS.copySync(app.project_settings.icns, nwPATH.join(app_path,"Contents","Resources","GameIcon.icns"));
-						nwFS.copySync(app.project_settings.icns, nwPATH.join(app_path,"Contents","Resources","OS X AppIcon.icns"));
-						// nwFS.copySync(app.project_settings.icns, nwPATH.join(app_path,"Contents","Resources","Document.icns"));
+				// exporting to MAC
+				if (target_os == "mac") {
 
-						nwFS.writeFile(nwPATH.join(app_path,"Contents","Info.plist"), data, function(err){
-							if (err) { console.error(err); return; }
-							this_ref.doneToast("mac")
-						});
-					})
-					*/
+					setupBinaries(
+						['darwin-x64'], 
+						nwPATH.join(os_dir,`<BINARY>`,'game.app','Contents','Resources','app')
+					);
+
+					
+
+					this_ref.doneToast('mac');
 				}
 
 				// exporting to LINUX

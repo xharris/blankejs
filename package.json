@@ -19,7 +19,9 @@
     "node-watch": "^0.6.0",
     "request": "^2.88.0",
     "uglify-es": "^3.3.9",
-    "walk": "^2.3.13",
-    "electron-packager": "^13.1.1"
+    "walk": "^2.3.13"
+  },
+  "devDependencies": {
+    "electron-packager": "^14.0.1"
   }
 }

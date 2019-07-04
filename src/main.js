@@ -31,7 +31,6 @@ var nwZIP2 = require('adm-zip'); // used for unzipping
 var nwWATCH = require('node-watch');
 var nwREQ = require('request');
 var nwUGLY = require('uglify-es');
-const nwPACK = require('electron-packager');
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
@@ -42,6 +41,7 @@ var app = {
 	maximized: false,
 	os: null, // win, mac, linux,
 	error_occured: null,
+	ignore_errors: false,
 	
 	get window() {
 		return elec.remote.getCurrentWindow()
@@ -234,6 +234,20 @@ var app = {
 		if (app.game) app.game.refreshSource();
 	},
 
+	autocomplete: {},
+	refreshAutocomplete: function() {
+		let err = false;
+		try {
+			app.autocomplete = app.require(app.settings.autocomplete_path)
+		} catch (e) {
+			err = true;
+			console.log('autocomplete not loaded');
+		} finally {
+			if (!err)
+				console.log('autocomplete loaded');
+		}
+	},
+
 	engine_code: '',
 	minifyEngine: function(cb, opt) {
 		opt = opt || {};
@@ -339,7 +353,7 @@ var app = {
 		}
 	},
 
-	nofity: function (opt) {
+	notify: function (opt) {
 		let notif = new elec.remote.Notification(opt.title, opt);
 		notif.onclick = opt.onclick;
 		notif.show();
@@ -486,7 +500,7 @@ var app = {
 		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
-			if (!err) 
+			if (!err && data.length > 1) 
 				app.settings = JSON.parse(data);
 			else
 				app.settings = {};
@@ -524,10 +538,10 @@ var app = {
 	loadSettings: function(callback){
 		if (app.isProjectOpen()) {	
 			nwFS.readFile(nwPATH.join(app.project_path,"config.json"), 'utf-8', function(err, data){
-				if (!err) 
+				if (!err || data.length > 1) 
 					app.project_settings = JSON.parse(data);
 				else
-					console.log(err)
+					app.project_settings = {};
 
 				ifndef_obj(app.project_settings, {
 					ico:nwPATH.join('src','logo.ico'),
@@ -909,9 +923,11 @@ var app = {
 	},
 
 	error () {
-		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
-			blanke.toast(`Error! See <a href="#" onclick="app.openErrorFile()">error.txt</a> for more info`);
-		});
+		// if (!app.ignore_errors) { 
+			nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
+				blanke.toast(`Error! See <a href="#" onclick="app.openErrorFile()">error.txt</a> for more info`);
+			});
+		// }
 	},
 
 	openErrorFile () {
@@ -932,7 +948,7 @@ app.window.webContents.on("did-finish-load",()=>{
 
 	// index.html button events
 	app.getElement("#btn-close").addEventListener('click',()=> { app.window.close() });
-	app.getElement("#btn-maximize").addEventListener('click',()=> { app.window.maximize() });
+	app.getElement("#btn-maximize").addEventListener('click',()=> { app.window.isMaximized() ? app.window.unmaximize() : app.window.maximize() });
 	app.getElement("#btn-minimize").addEventListener('click',()=> { app.window.minimize() });
 	app.getElement("#btn-play").addEventListener('click',()=> { app.play() });
 	app.getElement("#btn-export").addEventListener('click',()=> { new Exporter() });
@@ -944,6 +960,12 @@ app.window.webContents.on("did-finish-load",()=>{
 	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
 	app.os = os_names[nwOS.type()];
 	document.body.classList.add(app.os);
+
+	/*
+	window.onerror = (...args) => {
+		console.log(args);
+	}
+	*/
 
 	window.addEventListener("error", function(e){
 		app.error_occured = e;

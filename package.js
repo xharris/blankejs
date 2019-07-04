@@ -1,7 +1,9 @@
 const packager = require('electron-packager');
 packager({
     dir: 'projects/dodgem/dist/mac',
-    out: 'projects/dodgem/dist/mac',
+    out: 'src/binaries',
+    arch: 'all',
+    platform: 'all',
     overwrite: true,
     icon: 'src/logo',
     ignore: [

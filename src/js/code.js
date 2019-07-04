@@ -33,7 +33,7 @@ function isReservedWord(word) {
 // called when autocomplete.js is modified
 var reloadCompletions = () => {
     // get regex from autocomplete.js
-    autocomplete = app.require(app.settings.autocomplete_path);
+    autocomplete = app.autocomplete;
     re_class_extends = autocomplete.class_extends;
     re_instance = autocomplete.instance;
     re_user_words = autocomplete.user_words;
@@ -917,6 +917,7 @@ document.addEventListener('fileChange', function(e){
 	}
 });
 
+Code.classes = {};
 function addScripts(folder_path) {
 	Code.classes = {
 		'scene':[],
