@@ -1,3 +1,5 @@
+const packager = require('electron-packager');
+
 var re_resolution = /resolution[\s=]*(?:(\d+)|{([\d\s]+),([\s\d]+)})/;
 
 class Exporter extends Editor {
@@ -201,6 +203,19 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 
 		blanke.toast("Starting export for "+target_os);
 
+		let setupBinary = (binary_list) => {
+			let platforms = binary_list.reduce((a, c) => {
+				c = c.split('-')[0];
+				if (!a.includes(c)) a[c] = [];
+				return a; 
+			},{});
+			binary_list.forEach((c) => {
+				c = c.split('-');
+				if (!platforms[c[0]].includes(c[1])) platforms[c[0]].push(c[1]);
+			});
+			console.log(platforms)
+		}
+
 		let setupBinaries = (binary_list, app_dir) => {
 			this.toast.text = "Extracting binary";
 			let zip = new nwZIP2('./src/binaries.zip');
@@ -258,19 +273,15 @@ elec.app.on('ready', function(){
 
 				// export to WINDOWS
 				if (target_os == "windows") {
-					
+					setupBinary(['win32-x64','darwin-x64'])
 				}
 
 				// exporting to MAC
 				if (target_os == "mac") {
 
-					setupBinaries(
-						['darwin-x64'], 
-						nwPATH.join(os_dir,`<BINARY>`,'game.app','Contents','Resources','app')
-					);
+					setupBinary(['darwin-x64']);
 
-					
-
+				
 					this_ref.doneToast('mac');
 				}
 
