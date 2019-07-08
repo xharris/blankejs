@@ -153,6 +153,7 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 	}
 
 	doneToast (os) {
+		process.noAsar = false;
 		if (this.temp_dir)
 			nwFS.removeSync(this.temp_dir);
 		if (this.toast) {
@@ -172,6 +173,7 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 	}
 
 	errToast () {
+		process.noAsar = false;
 		if (this.temp_dir)
 			nwFS.removeSync(this.temp_dir);
 		
@@ -252,12 +254,8 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 		this.toast.icon = 'dots-horizontal';
 		this.toast.style = 'wait';
 
-		console.log(os_dir)
+		process.noAsar = true;
 		nwDEL([os_dir])
-			.catch(err => {
-				this.errToast();
-				return console.error(err)
-			})
 			.then(() => {
 				// move assets
 				nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
@@ -289,6 +287,7 @@ elec.app.on('ready', function(){
 						this_ref.toast.text = "Building app";
 
 					// export to WINDOWS
+					// TODO NOTE: on non-windows platforms requires Wine
 					if (target_os == "windows") 
 						setupBinary('win32-x64')
 					
@@ -307,7 +306,10 @@ elec.app.on('ready', function(){
 						this_ref.doneToast('web');
 					}
 				});
-
+			})
+			.catch(err => {
+				this.errToast();
+				return console.error(err)
 			});
 	}
 }
