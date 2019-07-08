@@ -255,7 +255,7 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 		this.toast.style = 'wait';
 
 		process.noAsar = true;
-		nwDEL([os_dir])
+		nwDEL([os_dir],{ force: true })
 			.then(() => {
 				// move assets
 				nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
