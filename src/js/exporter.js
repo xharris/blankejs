@@ -203,17 +203,32 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 
 		blanke.toast("Starting export for "+target_os);
 
-		let setupBinary = (binary_list) => {
+		let setupBinary = async (...binary_list) => {
 			let platforms = binary_list.reduce((a, c) => {
-				c = c.split('-')[0];
-				if (!a.includes(c)) a[c] = [];
+				let [ plat, arch ] = c.split('-');
+				if (!a[plat]) a[plat] = [];
+				if (!a[plat].includes(arch)) a[plat].push(arch);
 				return a; 
 			},{});
 			binary_list.forEach((c) => {
 				c = c.split('-');
 				if (!platforms[c[0]].includes(c[1])) platforms[c[0]].push(c[1]);
 			});
-			console.log(platforms)
+			// iterate platforms
+			for (let plaform in platforms) {
+				await packager({
+					dir: temp_dir,
+					out: os_dir,
+					platform: platform,
+					arch: platforms[platform],
+					overwrite: true,
+					icon: 'src/logo',
+					prebuiltAsar: 'D:/Documents/PROJECTS/blankejs/dist/BlankE-win32-x64/resources/electron.asar'
+				}).catch(err => {
+					console.error(err);
+				});
+			}
+			this.doneToast(target_os);
 		}
 
 		let setupBinaries = (binary_list, app_dir) => {
@@ -230,7 +245,6 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 						!extracted[name]) {
 
 						extracted[name] = true;
-						console.log(name);
 						try {
 							zip.extractEntryTo(name,os_dir);
 						} catch (e) {}
@@ -247,7 +261,7 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 			// entry.js
 			nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
 const elec = require('electron');
-
+//process.noAsar = true;
 elec.app.on('ready', function(){
     let main_window = new elec.BrowserWindow({
         width: ${app.project_settings.size[0]},
@@ -273,13 +287,13 @@ elec.app.on('ready', function(){
 
 				// export to WINDOWS
 				if (target_os == "windows") {
-					setupBinary(['win32-x64','darwin-x64'])
+					setupBinary('win32-x64')
 				}
 
 				// exporting to MAC
 				if (target_os == "mac") {
 
-					setupBinary(['darwin-x64']);
+					setupBinary('darwin-x64');
 
 				
 					this_ref.doneToast('mac');
