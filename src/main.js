@@ -31,6 +31,7 @@ var nwZIP2 = require('adm-zip'); // used for unzipping
 var nwWATCH = require('node-watch');
 var nwREQ = require('request');
 var nwUGLY = require('uglify-es');
+var nwDEL = require('del');
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
@@ -934,7 +935,9 @@ var app = {
 		elec.shell.openItem(nwPATH.join(app.getAppDataFolder(),'error.txt'));
 	},
 
+	shortcut_log: {},
 	newShortcut (options) {
+		app.shortcut_log[options.key] = options;
 		elec.remote.globalShortcut.register(options.key,options.active)
 	}
 }
@@ -942,6 +945,13 @@ var app = {
 app.window.webContents.on("did-finish-load",()=>{
 	process.chdir(nwPATH.join(__dirname,'..'));
 	blanke.elec_ref = elec;
+
+	app.window.on('blur', ()=>{ elec.remote.globalShortcut.unregisterAll(); })
+	app.window.on('focus', ()=>{
+		for (let name in app.shortcut_log) {
+			app.newShortcut(app.shortcut_log[name]);
+		}
+	})
 
 	// remove error file
 	nwFS.remove(nwPATH.join(app.getAppDataFolder(),'error.txt'));
@@ -1145,6 +1155,11 @@ app.window.webContents.on("did-finish-load",()=>{
 			}
 		}
 	});
+	// shortcut: PREVENT refreshing
+	app.newShortcut({
+		key: "CommandOrControl+R",
+		active: function() {}
+	})
 
 	app.window.on('closed',function(){
 		this.hide();

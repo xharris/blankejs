@@ -19,9 +19,6 @@ clean:
 	npm uninstall -g nw
 	make -B setup
 
-binaries:
-	pnpm run binaries
-
 dist:
 	pnpm run dist
 

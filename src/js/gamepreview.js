@@ -1,7 +1,7 @@
 let getHTML = (body) => {
 return `
 <!DOCTYPE html>
-<html>https://i.imgur.com/ceduLvT.png
+<html>
 	<style>
 		head, body {
 			position: absolute;

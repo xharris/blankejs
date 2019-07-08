@@ -1,5 +1,3 @@
-const packager = require('electron-packager');
-
 var re_resolution = /resolution[\s=]*(?:(\d+)|{([\d\s]+),([\s\d]+)})/;
 
 class Exporter extends Editor {
@@ -78,9 +76,7 @@ class Exporter extends Editor {
 		let js_path = nwPATH.join(dir, app.project_settings.export.name+".js");
 		let engine_path = app.settings.engine_path;
 
-		this.toast = blanke.toast(`Building JS file`,1000000);
-		this.toast.icon = 'dots-horizontal';
-		this.toast.style = 'wait';
+		this.toast.text = `Building JS file`
 		let game = new GamePreview();
 		let scripts = GamePreview.getScriptOrder();
 		let user_code = '';
@@ -167,7 +163,27 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 
 			app.notify({
 				title: 'Export complete!',
-				body: `\\(^o^)/`,
+				body: `\\( ^o^ )/`,
+				onclick: () => {
+					Exporter.openDistFolder(os);
+				}
+			})
+		}
+	}
+
+	errToast () {
+		if (this.temp_dir)
+			nwFS.removeSync(this.temp_dir);
+		
+		if (this.toast) {
+			this.toast.icon = 'close';
+			this.toast.style = 'bad';
+			this.toast.text = "Export failed!";
+			this.toast.die(8000);
+
+			app.notify({
+				title: 'Export failed!',
+				body: `( -_-")`,
 				onclick: () => {
 					Exporter.openDistFolder(os);
 				}
@@ -215,50 +231,38 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 				if (!platforms[c[0]].includes(c[1])) platforms[c[0]].push(c[1]);
 			});
 			// iterate platforms
-			for (let plaform in platforms) {
-				await packager({
+			for (let platform in platforms) {
+				let packager = require('electron-packager');
+				packager({
 					dir: temp_dir,
 					out: os_dir,
 					platform: platform,
 					arch: platforms[platform],
 					overwrite: true,
 					icon: 'src/logo',
+				}).then(err => {
+					this.doneToast(target_os);
 				}).catch(err => {
-					console.error(err);
+					this.errToast();
 				});
 			}
-			this.doneToast(target_os);
 		}
 
-		let setupBinaries = (binary_list, app_dir) => {
-			this.toast.text = "Extracting binary";
-			let zip = new nwZIP2('./src/binaries.zip');
-			let entries = zip.getEntries();
-			
-			for (let bin of binary_list) {
-				let extracted = {};
-				entries.forEach(entry => {
-					let name = entry.entryName;
-					if (name.startsWith(bin) &&
-						!name.includes('.DS_Store') && 
-						!extracted[name]) {
+		this.toast = blanke.toast('Removing old files',-1);
+		this.toast.icon = 'dots-horizontal';
+		this.toast.style = 'wait';
 
-						extracted[name] = true;
-						try {
-							zip.extractEntryTo(name,os_dir);
-						} catch (e) {}
-					}
-				});
-				// move app folder into resources folder
-				this.toast.text = "Copying game code";
-				nwFS.moveSync(temp_dir, app_dir.replace('<BINARY>',bin));
-			}
-		}
-		nwFS.emptyDir(os_dir, function(err){
-			// move assets
-			nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
-			// entry.js
-			nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
+		console.log(os_dir)
+		nwDEL([os_dir])
+			.catch(err => {
+				this.errToast();
+				return console.error(err)
+			})
+			.then(() => {
+				// move assets
+				nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
+				// entry.js
+				nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
 const elec = require('electron');
 //process.noAsar = true;
 elec.app.on('ready', function(){
@@ -268,49 +272,43 @@ elec.app.on('ready', function(){
     })
     main_window.loadFile('index.html');
 });
-			`,'utf-8');
-			// package.json
-			nwFS.writeFileSync(nwPATH.join(temp_dir,'package.json'),`
+				`,'utf-8');
+				// package.json
+				nwFS.writeFileSync(nwPATH.join(temp_dir,'package.json'),`
 {
 	"name": "${app.project_settings.export.name}",
 	"description": "Made with BlankE",
 	"version": "1.0",
-	"main": "app/entry.js",
+	"main": "./entry.js",
 	"chromium-args": "--enable-webgl --ignore-gpu-blacklist"
 }
-			`,'utf-8');
-			// create js file
-			this_ref.createJS(temp_dir, target_os, function(){	
-				if (target_os != 'web') 
-					this_ref.toast.text = "Building app";
+				`,'utf-8');
+				// create js file
+				this_ref.createJS(temp_dir, target_os, function(){	
+					if (target_os != 'web') 
+						this_ref.toast.text = "Building app";
 
-				// export to WINDOWS
-				if (target_os == "windows") {
-					setupBinary('win32-x64')
-				}
+					// export to WINDOWS
+					if (target_os == "windows") 
+						setupBinary('win32-x64')
+					
+					// exporting to MAC
+					if (target_os == "mac") 
+						setupBinary('darwin-x64');
 
-				// exporting to MAC
-				if (target_os == "mac") {
+					// exporting to LINUX
+					if (target_os == "linux") {
+						// just keep it as a .love
+						this_ref.doneToast("linux");
+					}
 
-					setupBinary('darwin-x64');
+					// exporting to WEB
+					if (target_os == "web") {
+						this_ref.doneToast('web');
+					}
+				});
 
-				
-					this_ref.doneToast('mac');
-				}
-
-				// exporting to LINUX
-				if (target_os == "linux") {
-					// just keep it as a .love
-					this_ref.doneToast("linux");
-				}
-
-				// exporting to WEB
-				if (target_os == "web") {
-					this_ref.doneToast('web');
-				}
 			});
-
-		});
 	}
 }
 
