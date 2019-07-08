@@ -223,7 +223,6 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 					arch: platforms[platform],
 					overwrite: true,
 					icon: 'src/logo',
-					prebuiltAsar: 'D:/Documents/PROJECTS/blankejs/dist/BlankE-win32-x64/resources/electron.asar'
 				}).catch(err => {
 					console.error(err);
 				});
