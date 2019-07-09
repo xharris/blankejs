@@ -48,7 +48,7 @@ class Settings extends Editor {
                 if (path == 'engine') 
                     Settings.watchEngine();
                 if (path == 'autocomplete')
-                    Settings.watchAutocomplete();
+                    app.watchAutocomplete();
                 app.saveAppData();
 
                 app.refreshThemeList();
@@ -78,18 +78,6 @@ class Settings extends Editor {
     }
 
     static watchAutocomplete () {
-        app.refreshAutocomplete();
-		if (autocomplete_watch) {
-            autocomplete_watch.close();
-            dispatchEvent("autocompleteChanged");
-        }
-		app.ignore_errors = true;
-	    autocomplete_watch = nwFS.watch(app.settings.autocomplete_path, function(e){
-            app.refreshAutocomplete();
-            dispatchEvent("autocompleteChanged");
-			blanke.toast("autocomplete reloaded!");
-		});
-		app.ignore_errors = false;
     }
 }
 
@@ -103,7 +91,7 @@ document.addEventListener('openProject',()=>{
 let engine_watch, autocomplete_watch;
 document.addEventListener('ideReady',(e)=>{
     Settings.watchEngine();
-    Settings.watchAutocomplete();
+    app.watchAutocomplete();
 
     paths.forEach(p => {app.settings[p+'_path'] = app.cleanPath(app.settings[p+'_path'])});
     files.forEach(p => {app.settings[p+'_path'] = app.cleanPath(app.settings[p+'_path'])});

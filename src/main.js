@@ -236,17 +236,38 @@ var app = {
 	},
 
 	autocomplete: {},
+	autocomplete_loaded: false,
 	refreshAutocomplete: function() {
 		let err = false;
+		app.autocomplete_loaded = false;
+		app.ignore_errors = true;
 		try {
 			app.autocomplete = app.require(app.settings.autocomplete_path)
 		} catch (e) {
 			err = true;
 			console.log('autocomplete not loaded');
 		} finally {
-			if (!err)
+			app.ignore_errors = false;
+			if (!err) {
+				app.autocomplete_loaded = false;
 				console.log('autocomplete loaded');
+			}
 		}
+	},
+
+	watchAutocomplete: function() {
+        app.refreshAutocomplete();
+		if (autocomplete_watch) {
+            autocomplete_watch.close();
+            dispatchEvent("autocompleteChanged");
+        }
+		app.ignore_errors = true;
+	    autocomplete_watch = nwFS.watch(nwPATH.resolve('src',app.settings.autocomplete_path), function(e){
+            app.refreshAutocomplete();
+            dispatchEvent("autocompleteChanged");
+			blanke.toast("autocomplete reloaded!");
+		});
+		app.ignore_errors = false;
 	},
 
 	engine_code: '',
@@ -503,16 +524,15 @@ var app = {
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
 			if (!err && data.length > 1) 
 				app.settings = JSON.parse(data);
-			else
-				app.settings = {};
-			ifndef_obj(app.settings, {
+				
+			app.settings = Object.assign({
 				recent_files:[],
 				plugin_path:'plugins',
 				engine_path:'blankejs',
 				themes_path:'themes',
 				autocomplete_path:'./autocomplete.js',
 				theme:'green'
-			});
+			}, app.settings || {});
 			if (callback) callback();
 		});
 	},
@@ -924,11 +944,10 @@ var app = {
 	},
 
 	error () {
-		// if (!app.ignore_errors) { 
-			nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
+		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
+			if (!app.ignore_errors)
 				blanke.toast(`Error! See <a href="#" onclick="app.openErrorFile()">error.txt</a> for more info`);
-			});
-		// }
+		});
 	},
 
 	openErrorFile () {

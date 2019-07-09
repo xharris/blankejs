@@ -3,7 +3,7 @@
 	changed order in defineMode: instance > class_list
 */
 var re_add_sprite = /this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/;
-var re_new_sprite = /new\s+Sprite\s*\(\s*['"]([\w\s\/.-]+)['"]\s*,/;
+var re_new_sprite = /new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/;
 
 var code_instances = {};
 
@@ -34,13 +34,13 @@ function isReservedWord(word) {
 var reloadCompletions = () => {
     // get regex from autocomplete.js
     autocomplete = app.autocomplete;
-    re_class_extends = autocomplete.class_extends;
-    re_instance = autocomplete.instance;
-    re_user_words = autocomplete.user_words;
-	keywords = autocomplete.keywords;
-	hints = autocomplete.hints;
-	class_list = autocomplete.class_list;
-	re_image = autocomplete.image;
+    re_class_extends = autocomplete.class_extends || {};
+    re_instance = autocomplete.instance || {};
+    re_user_words = autocomplete.user_words || {};
+	keywords = autocomplete.keywords || [];
+	hints = autocomplete.hints || {};
+	class_list = autocomplete.class_list || [];
+	re_image = autocomplete.image || [];
 }
 
 var getCompletionList = (_type) => {
@@ -252,9 +252,7 @@ class Code extends Editor {
 				let rows = Math.floor(vals.frames/vals.columns);
 
 				let args = {};
-				if (include_img)
-					args.image = '\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"';
-				
+				args.image = '\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"';
 				args.frames = vals.frames;
 				args.speed = vals.speed;
 
@@ -264,6 +262,7 @@ class Code extends Editor {
 						args[opt] = "["+vals[opt].join(',')+"]"
 				}
 				let arg_str = '';
+				
 				if (include_img)
 					arg_str += '\"'+(vals.name == '' || !vals.name ? 'my_animation' : vals.name)+'\", ';
 				arg_str += '{';
@@ -271,7 +270,7 @@ class Code extends Editor {
 					arg_str += (key+":"+args[key]+", ");
 				}
 				arg_str = arg_str.slice(0,-2) + '}';
-				if (cb) cb(arg_str);
+				if (cb) cb(arg_str, vals.name);
 			}
 		}
 
@@ -296,8 +295,8 @@ class Code extends Editor {
 					let image_name = '';
 					if (image_name = line_text.match(re_new_sprite)) 
 						image_name = image_name[1]
-					showSpritePreview(image_name, false, (arg_str) => {
-						line_text = line_text.replace(/Sprite.*/g,"Sprite('"+image_name+"',"+arg_str+")");
+					showSpritePreview(image_name, false, (arg_str, image_name) => {
+						line_text = line_text.replace(/Sprite.*/g,"Sprite("+arg_str+")");
 						this_ref.codemirror.replaceRange(line_text,{line:cur.line,ch:0}, {line:cur.line,ch:10000000});
 					})
 				}

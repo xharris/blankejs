@@ -116,7 +116,6 @@ class SpritesheetPreview extends Editor {
 			if (img_name && img_name != '') {
 				let match;
 				for (let i = 0; i < this_ref.image_list.length; i++) {
-					console.log(this_ref.image_list[i])
 					if (match = this_ref.image_list[i].match(/image[\\/]+([/\\-\s\w]*)\./)) {
 						if (match[1] == img_name) {
 							this_ref.setImage(this_ref.image_list[i]);

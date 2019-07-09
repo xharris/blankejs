@@ -109,7 +109,7 @@ var Blanke = (selector, options) => {
             }
         }
         Asset.add(this.options.assets);
-        Asset._load(() => {
+        Asset.load(() => {
             if (this.options.onLoad)
                 this.options.onLoad(classes);
             if (Game.config.first_scene && Scene.stack.length == 0) {
@@ -147,6 +147,16 @@ var Blanke = (selector, options) => {
         })
     }
 
+    // Pixi object
+    const replaceChild = (child, new_child) => {
+        let parent = child.parent;
+        if (parent) {
+            child.destroy();
+            new_child.setParent(parent);
+        }
+    }
+
+    // Blanke object
     const setNewParent = (child, parent_container) => {
         if (!child._getPixiObjs) return false;
 
@@ -334,7 +344,7 @@ var Blanke = (selector, options) => {
             return path.replace(/[\w_\\.-\/]+\/assets\/\w+\//,'').split('.').slice(0,-1).join('.');
         },
         // callback only used in : json
-        add: (orig_path, options={}, cb) => {
+        add: (orig_path, options={}) => {
             // adding multiple
             if (Array.isArray(orig_path)) {
                 for (let ast of orig_path) {
@@ -479,7 +489,7 @@ var Blanke = (selector, options) => {
             }
             return Asset.tex_crop_cache[key];
         },
-        _load: (cb) => {
+        load: (cb) => {
             Asset.loader.onComplete.add(cb)
             Asset.loader.load();
         },
@@ -534,22 +544,61 @@ var Blanke = (selector, options) => {
         get visible () { return this.graphics.visible; }
         set visible (v){ this.graphics.visible = v; }
         draw (...args) {
+            let getTex = (name) => {
+                let asset_path = Asset.getPath('image',name)
+                return asset_path ? Asset.base_texture[asset_path] : name;
+            }
+            
             if (this.auto_clear)
                 this.clear();
+
+            let in_hole = false;
             for (let arg of args) {
+                let skip_call = false; // not actually used yet
                 let name = Draw.functions[arg[0]] || arg[0];
                 let params = arg.slice(1);
                 if (name == 'beginFill' && params.length == 0) {
                     name = 'endFill';
                 }
-                if (name == 'beginTextureFill' && params.length == 0) {
-                    name = "endFill";
+                if (name == 'beginTextureFill') {
+                    if (params.length == 0)
+                        name = "endFill";
+                    else 
+                        params[0] = getTex(params[0]);
                 }
-                if (this.graphics[name])
+                if (name == 'lineTextureStyle') 
+                    params[1] = getTex(params[1]);
+                
+                if (name == 'drawStar' && params.length >= 6)
+                        params[5] = Util.rad(params[5])
+                
+                if (name == 'arc') {
+                    if (params.length >= 4)
+                        params[3] = Util.rad(params[3])
+                    if (params.length >= 5)
+                        params[4] = Util.rad(params[4])
+                }
+
+                if (name == 'beginHole' && in_hole) {
+                    if (in_hole)
+                        name = 'endHole';
+                    in_hole = !in_hole;
+                }
+
+                if (!skip_call && this.graphics[name])
                     this.graphics[name](...params);
                 else
                     console.error(`${arg[0]} is not a Draw function`);
             }
+        }
+        clone () {
+            let new_graphics = new Draw();
+            replaceChild(new_graphics.graphics, this.graphics.clone());
+            new_graphics.graphics = new_graphics;
+            return 
+        }
+        containsPoint (x, y) {
+            return this.graphics.containsPoint(new PIXI.Point(x,y));
         }
         clear () {
             this.graphics.clear();
@@ -572,10 +621,18 @@ var Blanke = (selector, options) => {
         }
     }
     Draw.functions = {
-        rect:'drawRect',
-        star:'drawStar',
-        fill:'beginFill',
-        texture:'beginTextureFill'
+        fill:       'beginFill',
+        texture:    'beginTextureFill',
+        bezier:     'bezierCurveTo',
+        quadCurve:  'quadraticCurveTo',
+        hole:       'beginHole',
+
+        rect:       'drawRect',
+        circle:     'drawCircle',
+        polygon:    'drawPolygon',
+        roundRect:  'drawRoundedRect',
+        ellipse:    'drawEllipse',
+        star:       'drawStar'
     }
     Draw.colors = {
         red: 0xF44336, pink: 0xE91E63, purple: 0x673AB7,
@@ -734,7 +791,9 @@ var Blanke = (selector, options) => {
         constructor (name, options) {
             this.animated = false;
             // animated sprite
-            if (options && options.frames) {
+            if ((options && options.frames) || (!options && name.frames)) {
+                if (!options)
+                    options = name;
                 this.animated = true;
                 let asset = Asset.texCrop(options.image || name, options)
                 this.sprite = new PIXI.AnimatedSprite(asset.tex_frames);
@@ -996,6 +1055,8 @@ var Blanke = (selector, options) => {
                 this.shapes[name].destroy();
             }
         }
+        get visible () { return this._visible || false; }
+        set visible (v) { this._getPixiObjs().forEach(o => { o.visible = false }); }
         _update (dt) {
             if (this.update)
                 this.update(dt);
@@ -1681,7 +1742,10 @@ var Blanke = (selector, options) => {
         }
     }
 
+    /* -MATRIX */
+    let Matrix = PIXI.Matrix;
+
     engineLoaded.call(this);
-    var classes = {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Scene, Sprite, Text, Util, View};
+    var classes = {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View};
     return classes;
 }

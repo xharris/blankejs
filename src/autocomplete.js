@@ -14,6 +14,8 @@ let prop_xyz = [
 	prop_z
 ]
 let prop_effect = { prop: 'effect' };
+let prop_visible = { prop: 'visible' };
+let prop_pixi_point = (name) => ({ prop: 'point', info: '{ x, y, set(x, y=x) }' })
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
 // used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
@@ -25,7 +27,7 @@ module.exports.keywords = [
 ]
 
 // TestScene is included just so it looks nice
-module.exports.class_list = ['Game','Util','Map','Effect','Scene','Sprite','Input','Entity','TestScene'];
+module.exports.class_list = ['Asset','Game','Util','Draw','Scene','Map','Effect','Scene','Sprite','Input','Entity','TestScene'];
 
 module.exports.class_extends = {
     'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g
@@ -36,7 +38,9 @@ module.exports.instance = {
 		/\b(\w+)\s*=\s*new\s+<class_name>\s*\(/g,
 		/\b(\w+)\s*=\s*(?:\w+)\s*\.\s*spawnEntity\s*\(\s*<class_name>\s*,/g
 	],
-	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g
+	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g,
+	'draw': /\b(\w+)\s*=\s*new\s+Draw\s*\(/g,
+	'sprite': /\b(\w+)\s*=\s*new\s+Sprite\s*\(\s*\{[\s\w\[\]:"',.]+\}\s*\)/g
 }
 
 module.exports.user_words = {
@@ -69,8 +73,13 @@ module.exports.image = [
 	- vars: { arg1: 'default', arg2: 'description', etc: '' }
 */
 module.exports.hints = {
-	"global":[],
+	"global":[
+		{ fn: "Scene", vars: { name:'', callbacks:'{ onStart, onUpdate, onEnd }' } }
+	],
 	"blanke-game":[
+		{ prop: 'width' },
+		{ prop: 'height' },
+		{ prop: 'background_color', info: 'getter/setter' },
 		{ fn: 'end' }
 	],
 	"blanke-util":[
@@ -81,7 +90,62 @@ module.exports.hints = {
 		{ fn: 'distance', vars: { x1:'', y1:'', x2:'', y2:'' } },
 		{ fn: 'direction', vars: { x1:'', y1:'', x2:'', y2:'' } },
 		{ fn: 'rand_range', vars: { min:'', max:'' } },
-		{ fn: 'basename', vars: { path:'', no_ext:'' } }
+		{ fn: 'basename', vars: { path:'', no_ext:'' } },
+		{ fn: 'lerp', vars: { a:'', b:'', amt:'[0,1]' } },
+		{ fn: 'sinusoidal', vars: { min:'', max:'', spd:'', offset:'opt' } }
+	],
+	"blanke-asset":[
+		{ prop: 'supported_filetypes', info: '{ type : [extensions] }' },
+		{ prop: 'base_textures', info: '{ path : Pixi.Texture }' },
+		{ fn: 'parseAssetName', info: 'turns a path into an asset keyname' },
+		{ fn: 'getName', vars: { type:'', path:'' } },
+		{ fn: 'getPath', vars: { type:'', name:'' } },
+		{ fn: 'add', vars: { path:'', options:'' } },
+		{ fn: 'load', info: 'loads everything added (Asset.add) and calls cb() when done', vars: { cb:'' } },
+		{ fn: 'audioSprite', info: 'creates HowlerJS sprites', vars: { name:'asset name', sprites:'{ name: [start, stop] }' } },
+		{ fn: 'texCrop', info: `returns</br>
+{</br>
+&nbsp;&nbsp; key: tex_crop_cache key,</br>
+&nbsp;&nbsp; frames: [[x,y,w,h]],</br>
+&nbsp;&nbsp; tex_frames: [cropped Pixi.Texture's]</br>
+}`, vars: {} }
+	],
+	"blanke-draw":[
+		{ fn: 'hex', vars: { rgb: '[r,g,b]' } },
+		{ fn: 'rgb', vars: { hex: '#FFFFFF (case-insensitive)'}},
+		...['red','pink','purple',
+			'indigo','baby_blue','blue',
+			'dark_blue','green','yellow',
+			'orange','brown','gray','grey',
+			'black','white','black2','white2'].map(c=>({ prop: c }))
+	],
+	"blanke-draw-instance":[
+		...prop_xyz,
+		prop_effect,
+		prop_visible,
+		{ fn: 'draw', vars: { instruction:'see docs for possible drawings', etc:'' } },
+		{ prop: 'auto_clear', info: 'clear before every draw()' },
+		{ fn: 'clone', info: 'returns new Draw instance' },
+		{ fn: 'containsPoint', vars: { x:'', y:'' } },
+		{ fn: 'clear' },
+		{ fn: 'destroy' }
+	],
+	"blanke-scene":[
+		{ fn: 'switch', vars: { name:'' } },
+		{ fn: 'start', info: 'does not end previous scene.</br>recommended: use Scene.switch()', vars: { name: '' } },
+		{ fn: 'end', vars: { name:'' } },
+		{ fn: 'endAll' },
+		{ prop: 'stack', info: 'contains list of currently active scene names' }
+	],
+	"blanke-sprite-instance":[
+		...prop_xyz,
+		prop_effect,
+		{ prop: 'alpha' },
+		{ prop: 'width' },
+		{ prop: 'height' },
+		prop_pixi_point('pivot'),
+		{ prop: 'angle', info: 'degrees' },
+		{ fn: 'destroy' }
 	],
 	"blanke-map":[
 		{ fn: 'load', vars: { name:'map asset' } }
@@ -98,6 +162,7 @@ module.exports.hints = {
 	],
 	"blanke-entity-instance":[
 		...prop_xyz,
+		prop_visible,
 		{ prop: 'hspeed' },
 		{ prop: 'vspeed' },
 		{ prop: 'gravity' },

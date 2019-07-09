@@ -27,7 +27,7 @@ class Docview extends Editor {
 		this.doc_data = {};
 		this.doc_container = app.createElement("div","doc-container");
 
-		let doc_path = nwPATH.join(app.settings.engine_path,'lua','blanke','docs');
+		let doc_path = nwPATH.join(app.settings.engine_path,'docs');
 		nwFS.readFile(nwPATH.join(doc_path,'docs.json'), 'utf-8', function(err, data){
 			if (!err) {
 				this_ref.doc_sections = JSON.parse(data);
