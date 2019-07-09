@@ -5,16 +5,16 @@ Scene("ScenePlay",{
 		bob = new Robot();
 		bob.x = 50
 		bob.y = 50
-		bob.visible = false
 		
 		drawing = new Draw(
 			['fill', Draw.green],
-			//['rect', 100, 100, 200, 200],
-			//['hole'],
+			['rect', 100, 100, 200, 200],
+			['hole'],
 			['moveTo', 100, 100],
-			['arc', 100, 100, 150, 0, 90]
-			//['hole']
+			['arc', 100, 100, 150, 0, 90],
+			['hole']
 		)
+		Input.on('click',[drawing,bob],()=>{ console.log('hi') });
     },
     onUpdate: function() {
         bob.x = Util.sinusoidal(50,100,0.1)

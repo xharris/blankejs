@@ -1237,13 +1237,25 @@ var Blanke = (selector, options) => {
     */
     Input.stop_propagation = true;
     Input.on = (event, obj, cb) => {
+        // user just wants click event in general (not a specific object)
         if (!cb) {
             cb = obj;
             obj = [app.stage];
             app.stage.hitArea = new PIXI.Rectangle(0,0,Game.width,Game.height);
+        } else {
+            // multiple objs given, flatten to pixi objects   
+            if (Array.isArray(obj)) {
+                obj = obj.reduce((a,c)=>{
+                    if (c._getPixiObjs)
+                        return a.concat(c._getPixiObjs());
+                },[]);
+            } else if (obj._getPixiObjs) {
+                // single obj, convert to pixi object
+                obj = obj._getPixiObjs();
+            } else {
+                return;
+            }
         }
-        if (obj._getPixiObjs) obj = obj._getPixiObjs();
-        if (!Array.isArray(obj)) return;
         // add the event for each Pixi object
         obj.forEach(o => { 
             o.interactive = true;
