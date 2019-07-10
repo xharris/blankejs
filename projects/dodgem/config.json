@@ -32,7 +32,9 @@
         }
     },
     "enabled_plugins": {
-        "blanke-net.js": false,
-        "doing.js": false
+        "blanke-net.js": true,
+        "doing.js": false,
+        "socket.io.js": false,
+        "goober.js": false
     }
 }

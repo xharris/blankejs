@@ -18,13 +18,14 @@ function refreshPluginList(silent) {
 function inspectPlugins(silent) {
 	function inspectFile (file) {
 		file = app.cleanPath(file);
-		let info_key = file; // may be changed later, who knows
+		let info_key = (nwPATH.dirname(file) != app.settings.plugin_path) ? nwPATH.dirname(file) : file;
 		
 		if (file.endsWith('.js')) {
 			let data = nwFS.readFileSync(file,'utf-8');
 			if (!js_plugin_info[info_key]) {
 				js_plugin_info[info_key] = {
 					files: [],
+					docs: [],
 					enabled: false
 				}
 			}
@@ -44,11 +45,21 @@ function inspectPlugins(silent) {
 
 			// copy files if the plugin is already enabled
 			if (js_plugin_info[info_key].enabled) {
-				Plugins.pluginOn(info_key);
+				Plugins.enable(info_key);
 			}
 		}
 		if (file.endsWith('.md')) {
-			Docview.addPlugin(file.split('.')[0], pathJoin(app.settings.plugin_path,file.split('.')[0], file));
+			let data = nwFS.readFileSync(file,'utf-8');
+			let info_keys = ['Name','Author'];
+			let info = { Name:nwPATH.basename(file), Author:null };
+			// get info about plugrin from readme
+			for (let k of info_keys) {
+				let re = new RegExp(`\\[\\/\\/\\]: # \\(${k}:\\s*([\\w\\s\\.]+)\\s*\\)`)
+				let match = re.exec(data);
+				if (match) info[k] = match[1].trim();
+			}
+			js_plugin_info[info_key].docs.push(file);
+			Docview.addPlugin(info.Name+(info.Author ? ' ('+info.Author+')' : ''), file);
 		}
 	}
 
@@ -146,11 +157,15 @@ class Plugins extends Editor {
 				exists = false;
 			else {
 				for (let f of js_plugin_info[key].files) {
-					if (!nwFS.statSync(f).isFile())
+					if (!nwFS.pathExistsSync(f))
 						exists = false;
 				}
 			}
 			if (!exists) {
+				Plugins.disable(key);
+				for (let doc of js_plugin_info[key].docs) {
+					Docview.removePlugin(doc);
+				}
 				this.el_reference[key].el_container.remove();
 				delete this.el_reference[key];
 			}
