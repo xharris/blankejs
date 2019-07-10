@@ -35,7 +35,7 @@ var Blanke = (selector, options) => {
         auto_resize: false,
         ide_mode: false,
         root: null,
-        background_color: 0x000000,
+        background_color: null,
         scale_mode: 'nearest',
         round_pixels: true,
         fps: 60,
@@ -53,6 +53,7 @@ var Blanke = (selector, options) => {
         height: this.options.height,
         resolution: this.options.resolution,
         resizeTo: this.options.fill_parent == true ? parent : null,
+        transparent: true,
         backgroundColor: this.options.backgroundColor
     });
     PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
@@ -97,7 +98,9 @@ var Blanke = (selector, options) => {
         removeSnaps();
         Game.time = 0;
         Game.ide_mode = this.options.ide_mode;
-        Game.background_color = this.options.background_color;
+        if (this.options.background_color) 
+            Game.background_color = this.options.background_color;
+        
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
@@ -249,7 +252,8 @@ var Blanke = (selector, options) => {
         time: 0,
         get width () { return blanke_ref.options.resizeable ? app.view.width : blanke_ref.options.width; },
         get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
-        set background_color (v) { app.renderer.backgroundColor = v; },
+        get background_color () { return app.renderer.backgroundColor; },
+        set background_color (v) { console.log(v); app.renderer.transparent = false; app.renderer.backgroundColor = v; },
         // replaces the game with a screenshot
         pause: () => {
             if (Game.paused) return;
@@ -658,9 +662,9 @@ var Blanke = (selector, options) => {
                 this.container.filterArea.height = Game.height;
             })
             this.objects = [];
-            this.onStart = () => {};
-            this.onUpdate = (dt) => {};
-            this.onEnd = () => {};
+            this.onStart = (scene) => {};
+            this.onUpdate = (scene,dt) => {};
+            this.onEnd = (scene) => {};
             game_container.addChild(this.container);
             enableEffects(this);
         }
@@ -1429,6 +1433,7 @@ var Blanke = (selector, options) => {
             view_ref[name] = new _View(name);
         return view_ref[name];
     }
+    View.names = () => Object.keys(view_ref);
     app.ticker.add(()=>{
         for (let name in view_ref) {
             view_ref[name].update();

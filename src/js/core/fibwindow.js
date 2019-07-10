@@ -64,6 +64,18 @@ class FibWindow {
 		FibWindow.checkBackground();
 	}
 
+	// mainly for boxes with bg_content
+	// 0 - full window, 1 - half-window, 2 - quarter window
+	getSizeType () {
+		if (this.bg_content && this.index == 0) {
+			if (boxes.length == 1)
+				return 1;
+			if (boxes.length == 2)
+				return 2;
+		}
+		return 0;
+	}
+
 	callResize () {
 		let this_ref = this;
 		blanke.cooldownFn('scene-resize-'+this.guid, 100, function(){	

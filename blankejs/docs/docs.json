@@ -4,5 +4,14 @@
     ],
     "Draw":[
         {"title":"Usage","file":"draw.md"}
+    ],
+    "Input":[
+        {"title":"Usage","file":"input.md"}
+    ],
+    "Scene":[
+        {"title":"Usage","file":"scene.md"}
+    ],
+    "View":[
+        {"title":"Usage","file":"view.md"}
     ]
 }

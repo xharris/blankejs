@@ -65,11 +65,12 @@ class Docview extends Editor {
 
 									// syntax highlighting
 									document.querySelectorAll('code').forEach(block => {
-										block.className = 'lua';
+										block.className = 'javascript';
 										hljs.highlightBlock(block);
 									});
 									// links
 									document.querySelectorAll('a').forEach(block => {
+										block.title = block.href;
 										block.onclick = function(){
 											elec.shell.openExternal(this.href);
 											return false;

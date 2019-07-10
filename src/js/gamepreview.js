@@ -11,6 +11,7 @@ return `
 			bottom: 0px;
 			margin: 0px;
 			overflow: hidden;
+			background: #485358;
 		}
 		#game {
 			width: 100%;
@@ -90,6 +91,7 @@ class GamePreview {
 		this.container.id = this.id;
 		this.parent = parent || document.createDocumentFragment();
 		this.line_ranges = {};
+		this.size = 0;
 
 		this.options = ifndef_obj(opt, {
 			test_scene: false,
@@ -278,6 +280,60 @@ class GamePreview {
 			return [ scripts, curr_script_cat ];
 		return scripts;
 	}
+
+	getExtraEngineCode () {
+		let view_size = ``;
+		if (this.options.test_scene && this.size > 0) {
+				view_size = `
+						view.port_width = window.innerWidth;
+						view.port_height = window.innerHeight;
+				`;
+			if (this.size == 1) {
+				view_size = `
+						view.port_width = window.innerWidth / 2;
+						view.port_height = window.innerHeight;
+				`;
+			}
+			if (this.size == 2) {
+				view_size = `
+						view.port_width = window.innerWidth / 2;
+						view.port_height = window.innerHeight / 2;
+				`;
+			}
+			return `
+			let TestScene = (funcs) => {
+				Scene.ref["_test"] = null;
+				Scene("_test", funcs);
+			}
+			let TestView = (name, follow_obj, dont_add_scene) => {
+				let view = View("_test_"+name);
+				if (Scene.ref['_test'] && !dont_add_scene)
+					view.add(Scene.ref['_test']);
+				view.follow(follow_obj);
+				${view_size}
+				return view;
+			}
+			let _resizeTestView = (name) => {
+				let view = View(name);
+				if (!view.dont_resize) {
+					${view_size}
+				}
+			}
+			window.addEventListener('resize',()=>{
+				let view_list = View.names();
+				for (let name of view_list) {
+					if (name.startsWith('_test')) {
+						_resizeTestView(name);
+					}
+				}
+			});
+			`;
+		}
+		return `
+		let TestScene = () => {};
+		let TestView = () => {};
+		`;
+	}
 	
 	refreshSource (current_script, new_doc) {
 		if (this.errored) {	
@@ -320,13 +376,7 @@ class GamePreview {
 		// wrapped in a function so local variables are destroyed on reload
 		let onload_code = `
 		let { ${GamePreview.engine_classes} } = game_instance;
-		let TestScene = (funcs) => {
-		${this.options.test_scene ? `
-			Scene.ref["_test"] = null;
-			Scene("_test", funcs);
-		`
-		: ''}
-		}\n`;
+		${this.getExtraEngineCode()}\n`;
 
 		let code = `
 var game_instance = Blanke("#game",{
@@ -340,14 +390,11 @@ var game_instance = Blanke("#game",{
 	height: ${this.options.size[1]},`
 	}
 	root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
-	background_color: 0x485358,
+	//background_color: 0x485358,
 	assets: [${this.getAssetStr()}],
 	onLoad: function(classes){
 		let { ${GamePreview.engine_classes} } = classes;
-		let TestScene = (funcs) => {${this.options.test_scene ? 
-`			Scene.ref["_test"] = null;
-			Scene("_test", funcs);
-`	: ''}}\n`;
+		${this.getExtraEngineCode()}\n`;
 		this.line_ranges = {};
 		let line_offset = 22; // compensates for line 308 where extra code is added;
 		let last_line_end = (code.match(re_new_line) || []).length + line_offset;

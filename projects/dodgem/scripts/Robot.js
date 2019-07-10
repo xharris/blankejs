@@ -13,5 +13,11 @@ TestScene({
 		let rob = new Robot();
 		rob.x = 50;
 		rob.y = 50;
+		
+		TestView("player",rob);
+		Game.background_color = Draw.black;
+	},
+	onUpdate: (scene, dt) => {
+		
 	}
 })

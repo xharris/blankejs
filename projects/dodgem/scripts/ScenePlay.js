@@ -1,7 +1,8 @@
 let bob;
 let drawing;
+let my_view;
 Scene("ScenePlay",{
-    onStart: function() {
+    onStart: function(scene) {
 		bob = new Robot();
 		bob.x = 50
 		bob.y = 50

@@ -178,10 +178,13 @@ class Code extends Editor {
 
 		// add game preview
 		this.game = new GamePreview(null,{ test_scene: true });
+		
 		this.console = new Console();
 		this.console.appendTo(this.getContent());
 		this.getContainer().bg_first_only = true;
 		this.appendBackground(this.game.container);
+		
+		this.game.size = this.container.getSizeType();
 
 		var this_ref = this;
 		CodeMirror.defineMode("blanke", (config, parserConfig) => {
@@ -307,10 +310,13 @@ class Code extends Editor {
 		this.last_word = '';
 
 		this.addCallback('onFocus', function() {
+			this_ref.game.size = this_ref.container.getSizeType();
 			this_ref.game.refreshSource(this_ref.file);
 		});
 
 		this.addCallback('onResize', function(w, h) {
+			this_ref.game.size = this_ref.container.getSizeType();
+
 			// move split view around if there is one
 			let content_area = this_ref.getContent();
 			content_area.classList.remove("horizontal","vertical");

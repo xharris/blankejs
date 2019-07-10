@@ -32,9 +32,15 @@
         }
     },
     "enabled_plugins": {
-        "blanke-net.js": true,
+        "blanke-net.js": false,
         "doing.js": false,
         "socket.io.js": false,
         "goober.js": false
+    },
+    "export": {
+        "name": "dodgem",
+        "remove_unused": true,
+        "web_autoplay": false,
+        "minify": true
     }
 }

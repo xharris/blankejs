@@ -27,7 +27,7 @@ module.exports.keywords = [
 ]
 
 // TestScene is included just so it looks nice
-module.exports.class_list = ['Asset','Game','Util','Draw','Scene','Map','Effect','Scene','Sprite','Input','Entity','TestScene'];
+module.exports.class_list = ['Asset','Game','Util','Draw','Scene','Map','Effect','Scene','Sprite','Input','Entity','TestScene','TestView'];
 
 module.exports.class_extends = {
     'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g
@@ -173,7 +173,7 @@ module.exports.hints = {
 	],
 	"blanke-input":[
 		{ fn: 'set', vars: { name:'', inputs:'...' } },
-		{ fn: 'on', vars: { event:'', object:'opt', callback:'opt' }},
+		{ fn: 'on', vars: { event:'', object:'opt', callback:'' }},
 		{ prop: 'stop_propagation', info: 'automatically stop event propagation? (default: true)' }
 	]
 }
