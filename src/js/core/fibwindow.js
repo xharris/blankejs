@@ -147,6 +147,7 @@ class FibWindow {
 		for (let b = 0; b < boxes.length; b++) {
 			let box_ref = boxes[b];
 			box_ref.index = b;
+			box_ref.fib_container.dataset.index = b.toString();
 
 			let b2 = b+1;
 

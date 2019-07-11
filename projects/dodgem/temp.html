@@ -295,7 +295,7 @@ var Blanke = (selector, options) => {
         get width () { return blanke_ref.options.resizeable ? app.view.width : blanke_ref.options.width; },
         get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
         get background_color () { return app.renderer.backgroundColor; },
-        set background_color (v) { console.log(v); app.renderer.transparent = false; app.renderer.backgroundColor = v; },
+        set background_color (v) { console.log('bg',v); app.renderer.transparent = false; app.renderer.backgroundColor = v; },
         // replaces the game with a screenshot
         pause: () => {
             if (Game.paused) return;
@@ -1847,7 +1847,7 @@ var PIXI=function(t){"use strict";var e="undefined"!=typeof globalThis?globalThi
 				return false;
 			});
 			var game_instance = Blanke("#game",{
-				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"ScenePlay","size":[800,600],"spritesheet_prvw":{"image/blue_robot.png":{"name":"run","offset":[38,0],"speed":0.7,"frame_size":[38,33],"frames":6,"selected_frames":[1,1],"columns":8,"border":[0,0],"image":"image/blue_robot.png"}},"enabled_plugins":{"blanke-net.js":false,"doing.js":false,"socket.io.js":false,"goober.js":false},"export":{"name":"dodgem","remove_unused":true,"web_autoplay":false,"minify":true},"os":"mac"},
+				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"ScenePlay","size":[800,600],"spritesheet_prvw":{"image/blue_robot.png":{"name":"run","offset":[38,0],"speed":0.7,"frame_size":[38,33],"frames":6,"selected_frames":[1,1],"columns":8,"border":[0,0],"image":"image/blue_robot.png"}},"enabled_plugins":{"blanke-net.js":false,"doing.js":false,"socket.io.js":false,"goober.js":false},"export":{"name":"dodgem","remove_unused":true,"web_autoplay":false,"minify":true}},
 				fill_parent: false,
 				width: 800,
 				height: 600,
@@ -1879,7 +1879,7 @@ TestScene({
 		rob.y = 50;
 		
 		TestView("player",rob);
-		Game.background_color = Draw.white;
+		Game.background_color = Draw.black;
 	},
 	onUpdate: (scene, dt) => {
 		
@@ -1894,6 +1894,7 @@ Scene("ScenePlay",{
 		bob = new Robot();
 		bob.x = 50
 		bob.y = 50
+		Game.background_color = Draw.black;
 		
 		drawing = new Draw(
 			['fill', Draw.green],

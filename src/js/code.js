@@ -316,6 +316,9 @@ class Code extends Editor {
 
 		this.addCallback('onResize', function(w, h) {
 			this_ref.game.size = this_ref.container.getSizeType();
+			
+			if (!this_ref.container.in_background)
+				this_ref.console.clear();
 
 			// move split view around if there is one
 			let content_area = this_ref.getContent();
@@ -327,14 +330,17 @@ class Code extends Editor {
 		});
 
 		this.game.onError = (msg, file, lineNo, columnNo) => {
+			this.disableFnHelper();
 			let file_link = `<a href='#' onclick="Code.openScript('${file}',${lineNo})">${nwPATH.basename(file)}</a>`;
 			this.console.err(`${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`);
 		}
 		this.game.onLog = (...msgs) => {
-			this.console.log(...msgs);
+			if (this.container.in_background)
+				this.console.log(...msgs);
 		}
 		this.game.onRefresh = () => {
 			this.console.clear();
+			this.enableFnHelper();
 			this.codemirror.focus();
 		}
 
@@ -728,9 +734,19 @@ class Code extends Editor {
 	}
 
 	setFnHelper (html) {
+		if (this.no_fn_helper) return;
 		this.el_fn_helper.classList.remove("hidden");
 		this.el_fn_helper.innerHTML = html;
 		this.refreshFnHelperTimer();
+	}
+
+	disableFnHelper () {
+		this.no_fn_helper = true;
+		this.clearFnHelper();
+	}
+
+	enableFnHelper () {
+		this.no_fn_helper = false;
 	}
 
 	clearFnHelper () {
@@ -740,6 +756,7 @@ class Code extends Editor {
 
 	// when timer runs out, hide fn_helper
 	refreshFnHelperTimer () {
+		if (this.no_fn_helper) return;
 		let this_ref = this;
 		clearTimeout(this.fn_helper_timer);
 		this.fn_helper_timer = setTimeout(function(){
