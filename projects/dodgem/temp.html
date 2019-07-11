@@ -95,8 +95,8 @@ var Blanke = (selector, options) => {
         height: this.options.height,
         resolution: this.options.resolution,
         resizeTo: this.options.fill_parent == true ? parent : null,
-        transparent: true,
-        backgroundColor: this.options.backgroundColor
+        //transparent: true,
+        backgroundColor: this.options.ide_mode ? 0x485358 : this.options.backgroundColor
     });
     PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
     PIXI.settings.ROUND_PIXELS = this.options.round_pixels;
@@ -1847,7 +1847,7 @@ var PIXI=function(t){"use strict";var e="undefined"!=typeof globalThis?globalThi
 				return false;
 			});
 			var game_instance = Blanke("#game",{
-				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"ScenePlay","size":[800,600],"spritesheet_prvw":{"image/blue_robot.png":{"name":"run","offset":[38,0],"speed":0.7,"frame_size":[38,33],"frames":6,"selected_frames":[1,1],"columns":8,"border":[0,0],"image":"image/blue_robot.png"}},"enabled_plugins":{"blanke-net.js":false,"doing.js":false,"socket.io.js":false,"goober.js":false},"export":{"name":"dodgem","remove_unused":true,"web_autoplay":false,"minify":true}},
+				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"ScenePlay","size":[800,600],"spritesheet_prvw":{"image/blue_robot.png":{"name":"run","offset":[38,0],"speed":0.7,"frame_size":[38,33],"frames":6,"selected_frames":[1,1],"columns":8,"border":[0,0],"image":"image/blue_robot.png"}},"enabled_plugins":{"blanke-net.js":false,"doing.js":false,"socket.io.js":false,"goober.js":false},"export":{"name":"dodgem","remove_unused":true,"web_autoplay":false,"minify":true},"os":"mac"},
 				fill_parent: false,
 				width: 800,
 				height: 600,
@@ -1873,16 +1873,25 @@ class Robot extends Entity {
 }
 
 TestScene({
-	onStart: () => {
-		let rob = new Robot();
-		rob.x = 50;
-		rob.y = 50;
+	onStart: (s) => {
+		s.rob = new Robot();
+		s.rob.x = 50;
+		s.rob.y = 50;
 		
-		TestView("player",rob);
+		let drawing = new Draw(
+			['fill', Draw.green],
+			['rect', 100, 100, 200, 200],
+			['hole'],
+			['moveTo', 100, 100],
+			['arc', 100, 100, 150, 0, 90],
+			['hole']
+		)
+		
+		TestView("player",s.rob);
 		Game.background_color = Draw.black;
 	},
-	onUpdate: (scene, dt) => {
-		
+	onUpdate: (s, dt) => {
+		s.rob.x = Util.sinusoidal(50,100,0.1)
 	}
 })
 
@@ -1894,9 +1903,25 @@ Scene("ScenePlay",{
 		bob = new Robot();
 		bob.x = 50
 		bob.y = 50
-		Game.background_color = Draw.black;
+		//Game.background_color = Draw.black;
 		
-		drawing = new Draw(
+		my_view = View("bob")
+		
+	},
+    onUpdate: function() {
+    },
+    onEnd: function() {
+		
+    }
+});
+
+TestScene({
+	onStart: (s) => {
+		s.rob = new Robot();
+		s.rob.x = 50;
+		s.rob.y = 50;
+		
+		let drawing = new Draw(
 			['fill', Draw.green],
 			['rect', 100, 100, 200, 200],
 			['hole'],
@@ -1904,15 +1929,14 @@ Scene("ScenePlay",{
 			['arc', 100, 100, 150, 0, 90],
 			['hole']
 		)
-		Input.on('click',[drawing,bob],()=>{ console.log('hi') });
-    },
-    onUpdate: function() {
-        bob.x = Util.sinusoidal(50,100,0.1)
-    },
-    onEnd: function() {
 		
-    }
-});
+		TestView("player",s.rob);
+		Game.background_color = Draw.black;
+	},
+	onUpdate: (s, dt) => {
+		s.rob.x = Util.sinusoidal(50,100,0.1)
+	}
+})
 
 Scene.start("ScenePlay");
 

@@ -53,8 +53,7 @@ var Blanke = (selector, options) => {
         height: this.options.height,
         resolution: this.options.resolution,
         resizeTo: this.options.fill_parent == true ? parent : null,
-        transparent: true,
-        backgroundColor: this.options.backgroundColor
+        backgroundColor: this.options.ide_mode ? 0x485358 : this.options.backgroundColor
     });
     PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
     PIXI.settings.ROUND_PIXELS = this.options.round_pixels;
@@ -253,7 +252,7 @@ var Blanke = (selector, options) => {
         get width () { return blanke_ref.options.resizeable ? app.view.width : blanke_ref.options.width; },
         get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
         get background_color () { return app.renderer.backgroundColor; },
-        set background_color (v) { console.log('bg',v); app.renderer.transparent = false; app.renderer.backgroundColor = v; },
+        set background_color (v) { app.renderer.backgroundColor = v; },
         // replaces the game with a screenshot
         pause: () => {
             if (Game.paused) return;

@@ -8,9 +8,12 @@ let color_vars = {
 let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
 
 let prop_z = { prop: 'z', info: 'lower numbers are drawn behind higher numbers' }
-let prop_xyz = [
+let prop_xy = [
 	{ prop: 'x' },
-	{ prop: 'y' },
+	{ prop: 'y' }
+]
+let prop_xyz = [
+	...prop_xy,
 	prop_z
 ]
 let prop_effect = { prop: 'effect' };
@@ -27,7 +30,11 @@ module.exports.keywords = [
 ]
 
 // TestScene is included just so it looks nice
-module.exports.class_list = ['Asset','Game','Util','Draw','Scene','Map','Effect','Scene','Sprite','Input','Entity','TestScene','TestView'];
+module.exports.class_list = [
+	'Asset','Game','Util','Draw','Scene',
+	'Map','Effect','Scene','Sprite','Input',
+	'Entity','View','TestScene','TestView'
+];
 
 module.exports.class_extends = {
     'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g
@@ -40,7 +47,8 @@ module.exports.instance = {
 	],
 	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g,
 	'draw': /\b(\w+)\s*=\s*new\s+Draw\s*\(/g,
-	'sprite': /\b(\w+)\s*=\s*new\s+Sprite\s*\(\s*\{[\s\w\[\]:"',.]+\}\s*\)/g
+	'sprite': /\b(\w+)\s*=\s*new\s+Sprite\s*\(\s*\{[\s\w\[\]:"',.]+\}\s*\)/g,
+	'view': /\b(\w+)\s*=\s*View\s*\([\s\w"']+\)/g
 }
 
 module.exports.user_words = {
@@ -175,5 +183,8 @@ module.exports.hints = {
 		{ fn: 'set', vars: { name:'', inputs:'...' } },
 		{ fn: 'on', vars: { event:'', object:'opt', callback:'' }},
 		{ prop: 'stop_propagation', info: 'automatically stop event propagation? (default: true)' }
+	],
+	"blanke-view-instance":[
+		...prop_xy
 	]
 }

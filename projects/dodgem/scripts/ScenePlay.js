@@ -6,7 +6,9 @@ Scene("ScenePlay",{
 		bob = new Robot();
 		bob.x = 50
 		bob.y = 50
-		Game.background_color = Draw.black;
+		
+		my_view = View("bob")
+		
 	},
     onUpdate: function() {
     },
