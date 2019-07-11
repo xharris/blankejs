@@ -13,7 +13,6 @@ TestScene({
 		s.rob = new Robot();
 		s.rob.x = 50;
 		s.rob.y = 50;
-		console.log('hi')
 		Game.background_color = Draw.blue;
 		
 		let drawing = new Draw(

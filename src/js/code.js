@@ -853,7 +853,8 @@ class Code extends Editor {
 	}
 
 	refreshGame () {
-		this.game.refreshSource(this.file);
+		if (!this.deleted)
+			this.game.refreshSource(this.file);
 	}
 
 	save () {
@@ -868,7 +869,8 @@ class Code extends Editor {
 	}
 
 	delete (path) {
-		nwFS.unlink(path);
+		this.deleted = true;
+		nwFS.remove(path);
 
 		if (this.file == path) {
 			this.close(true);

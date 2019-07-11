@@ -411,15 +411,17 @@ var game_instance = Blanke("#game",{
 		let line_offset = 22; // compensates for line 308 where extra code is added;
 		let last_line_end = (code.match(re_new_line) || []).length + line_offset;
 		for (let path of scripts) {
-			code += nwFS.readFileSync(path,'utf-8') + '\n';
-			onload_code += nwFS.readFileSync(path,'utf-8') + '\n';
-			// get the lines at which this piece of code starts and ends
-			this.line_ranges[path] = {
-				start: last_line_end,
-				end: (code.match(re_new_line) || []).length + line_offset
-			};
-			
-			last_line_end = this.line_ranges[path].end;
+			if (nwFS.pathExists(path)) {
+				code += nwFS.readFileSync(path,'utf-8') + '\n';
+				onload_code += nwFS.readFileSync(path,'utf-8') + '\n';
+				// get the lines at which this piece of code starts and ends
+				this.line_ranges[path] = {
+					start: last_line_end,
+					end: (code.match(re_new_line) || []).length + line_offset
+				};
+				
+				last_line_end = this.line_ranges[path].end;
+			}
 		}
 		onload_code += (post_load || '');
 		code += (post_load || '') + `
