@@ -97,9 +97,6 @@ var Blanke = (selector, options) => {
         removeSnaps();
         Game.time = 0;
         Game.ide_mode = this.options.ide_mode;
-        if (this.options.background_color) 
-            Game.background_color = this.options.background_color;
-        
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
@@ -670,6 +667,10 @@ var Blanke = (selector, options) => {
 
         _getPixiObjs () {
             return [this.container];
+        }
+
+        destroy () {
+            this.container.destroy();
         }
     
         _onStart () {

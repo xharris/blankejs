@@ -147,7 +147,6 @@ class GamePreview {
 				console.error(msg, url, lineNo, columnNo, error)
 				return true;
 			}
-			if (this.onRefresh) this.onRefresh();
 			if (this.onLog) {
 				let old_warn = iframe.contentWindow.console.warn;
 				iframe.contentWindow.console = {
@@ -170,6 +169,7 @@ class GamePreview {
 				parent.appendChild(script);
 				this.last_code = null;
 			}
+			if (this.onRefresh) this.onRefresh();
 		})
 		this.refreshSource();
 		this.parent.appendChild(this.container);
@@ -257,12 +257,12 @@ class GamePreview {
 	static getScriptOrder (curr_script) {
 		let scripts = [];
 		let curr_script_cat = 'other';
-		for (let cat of ['entity','scene','other']) {
+		let found = false;
+		for (let cat of ['other','entity','scene']) {
 			if (Array.isArray(Code.scripts[cat])) {
 				// put current_script at end
 				let new_scripts = Code.scripts[cat];
 				if (curr_script) {
-					let found = false;
 					new_scripts = new_scripts.filter((val) => {
 						if (val == curr_script) {
 							found = true;
@@ -270,12 +270,12 @@ class GamePreview {
 						}
 						return val != curr_script;
 					});
-					if (found)
-						scripts.push(curr_script);
 				}
 				scripts = scripts.concat(new_scripts);
 			}
 		}
+		if (found)
+			scripts.push(curr_script);
 		if (curr_script)
 			return [ scripts, curr_script_cat ];
 		return scripts;
@@ -302,6 +302,9 @@ class GamePreview {
 			}
 			return `
 			let TestScene = (funcs) => {
+				if (Scene.ref._test)
+					Scene.ref._test.destroy();
+				delete Scene.ref['_test'];
 				Scene.ref["_test"] = null;
 				Scene("_test", funcs);
 			}
@@ -353,22 +356,31 @@ class GamePreview {
 		// get all the scripts
 		let scripts = [];
 		let curr_script_cat = 'other';
-		if (current_script)
+		let contains_test_scene = false;
+
+		if (current_script) {
 			[ scripts, curr_script_cat ] = GamePreview.getScriptOrder(current_script);
-		else 
+			contains_test_scene = nwFS.readFileSync(current_script).includes('TestScene({')
+		} else 
 			scripts = GamePreview.getScriptOrder()
 		switch (curr_script_cat) {
 			case 'entity':
-				if (this.options.test_scene)
+				if (this.options.test_scene && contains_test_scene)
 					post_load += '\nScene.start("_test");\n';
 				break;
 			case 'scene':
 				let match = re_scene_name.exec(nwFS.readFileSync(current_script,'utf-8'));
-				if (match && match.length > 1)
-					post_load += `\nScene.start("${match[1]}");\n`;
+				if (match && match.length > 1) {
+					if (contains_test_scene)
+						post_load += '\nScene.start("_test");\n';
+					else
+						post_load += `\nScene.start("${match[1]}");\n`;
+				}
 				break;
 			case 'other':
-				if (this.options.scene)
+				if (contains_test_scene)
+					post_load += '\nScene.start("_test");\n';
+				else if (this.options.scene)
 					post_load += '\nScene.start("'+this.options.scene+'");\n';
 				break;
 		}

@@ -311,7 +311,7 @@ class Code extends Editor {
 
 		this.addCallback('onFocus', function() {
 			this_ref.game.size = this_ref.container.getSizeType();
-			this_ref.game.refreshSource(this_ref.file);
+			this_ref.refreshGame();
 		});
 
 		this.addCallback('onResize', function(w, h) {
@@ -852,6 +852,10 @@ class Code extends Editor {
 		return this;
 	}
 
+	refreshGame () {
+		this.game.refreshSource(this.file);
+	}
+
 	save () {
 		let this_ref = this;
 		blanke.cooldownFn("codeSave", 200, function(){
@@ -859,7 +863,7 @@ class Code extends Editor {
 			getKeywords(this_ref.file, this_ref.codemirror.getValue());
 			this_ref.parseFunctions();
 			this_ref.removeAsterisk();
-			this_ref.game.refreshSource(this_ref.file);
+			this_ref.refreshGame();
 		});
 	}
 
@@ -927,7 +931,7 @@ class Code extends Editor {
 		if (line != null) 
 			editor.goToLine(line);
 		blanke.cooldownFn("openScript-gamepreview", 200, function(){
-			editor.game.refreshSource(editor.file);
+			editor.refreshGame();
 		});
 	}
 }
