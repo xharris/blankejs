@@ -310,9 +310,11 @@ class GamePreview {
 			}
 			let TestView = (name, follow_obj, dont_add_scene) => {
 				let view = View("_test_"+name);
-				if (Scene.ref['_test'] && !dont_add_scene)
-					view.add(Scene.ref['_test']);
-				view.follow(follow_obj);
+				let test_scene = Scene.ref['_test'];
+				if (test_scene && !dont_add_scene)
+					view.add(test_scene);
+				if (follow_obj)
+					view.follow(follow_obj);
 				${view_size}
 				return view;
 			}

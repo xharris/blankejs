@@ -51,7 +51,9 @@ class Exporter extends Editor {
 			name: nwPATH.basename(app.project_path),
 			remove_unused: true,
 			web_autoplay: false,
-			minify: true
+			frameless: false,
+			minify: true,
+			resizable: false
 		});
 
 		// extra options
@@ -60,8 +62,8 @@ class Exporter extends Editor {
 			['name', 'text', {'default':app.project_settings.export.name}],
 			//['remove_unused','checkbox',{'default':app.project_settings.export.remove_unused,label:"remove unused classes"}],
 			['web'],
-			['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
-			['minify','checkbox',{'default':app.project_settings.export.minify}]
+			//['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
+			...(['minify','frameless','resizable'].map((o)=>[o,'checkbox',{'default':app.project_settings.export[o]}]))
 		];
 		this.el_export_form = new BlankeForm(form_options);
 		this.el_export_form.container.classList.add("dark");
@@ -114,25 +116,20 @@ class Exporter extends Editor {
 		<div id="game"></div>
 	</body>
 	<script>
-		Blanke.run('#game','${app.project_settings.export.name}');
+		window.addEventListener('load',()=>{
+			Blanke.run('#game','${app.project_settings.export.name}');
+		})
 	</script>
 </html>`
 			nwFS.writeFileSync(nwPATH.join(dir,'index.html'),str_html,'utf-8');
 			if (cb) cb(js_path);
 		},{ 
 			silent: true,
-			minifiy: app.project_settings.export.minify, // true,
+			release: true,
+			minify: app.project_settings.export.minify, // true,
 			wrapper: (code) => `
 ${code}
-
-if (!Blanke.game_options)
-	Blanke.game_options = {};
-if (!Blanke.run) {
-	Blanke.run = (selector, name) => {
-		Blanke(selector, Blanke.game_options[name])
-	}
-}
-Blanke.game_options['${app.project_settings.export.name}'] = {
+Blanke.addGame('${app.project_settings.export.name}',{
 	config: ${JSON.stringify(app.project_settings)},
 	width: ${app.project_settings.size[0]},
 	height: ${app.project_settings.size[1]},
@@ -142,7 +139,7 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 		let TestScene = () => {};
 		${user_code}
 	}
-};
+});
 `	 
 		})
 		app.project_settings.os = target_os; // why ?
@@ -194,14 +191,14 @@ Blanke.game_options['${app.project_settings.export.name}'] = {
 	}
 
 	/*
-		darwin: game.app/Contents/Resources/app
+		darwin
 		- darwin-x64
-		linux: resources/app
+		linux
 		- linux-arm64
 		- linux-ia32
 		- linux-armv7l
 		- linux-x64
-		mas: game.app/Contents/Resources/app
+		mas (mac app store)
 		- mas-x64
 	*/
 
@@ -267,8 +264,11 @@ elec.app.on('ready', function(){
     let main_window = new elec.BrowserWindow({
         width: ${app.project_settings.size[0]},
 		height: ${app.project_settings.size[1]},
-		frame: false
+		frame: ${!app.project_settings.frameless},
+		resizable: ${!app.project_settings.resizable}
     })
+	if (main_window.setMenuBarVisibility)
+		main_window.setMenuBarVisibility(false);
     main_window.loadFile('index.html');
 });
 				`,'utf-8');
@@ -298,8 +298,8 @@ elec.app.on('ready', function(){
 
 					// exporting to LINUX
 					if (target_os == "linux") {
-						// just keep it as a .love
-						this_ref.doneToast("linux");
+						// linux-arm64, linux-ia32, linux-armv7l, linux-x64
+						setupBinary('linux-arm64')
 					}
 
 					// exporting to WEB

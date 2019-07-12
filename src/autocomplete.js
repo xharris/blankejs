@@ -48,7 +48,10 @@ module.exports.instance = {
 	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g,
 	'draw': /\b(\w+)\s*=\s*new\s+Draw\s*\(/g,
 	'sprite': /\b(\w+)\s*=\s*new\s+Sprite\s*\(\s*\{[\s\w\[\]:"',.]+\}\s*\)/g,
-	'view': /\b(\w+)\s*=\s*View\s*\([\s\w"']+\)/g
+	'view': [
+		/\b(\w+)\s*=\s*View\s*\([\s\w"']+\)/g,
+		/\b(\w+)\s*=\s*TestView\s*\([\s\w"',]+\)/g
+	]
 }
 
 module.exports.user_words = {

@@ -307,15 +307,16 @@ var app = {
 					error: false,
 					code: Object.values(code_obj).join('\n')
 				}
-				if (opt.wrapper) 
+				if (opt.wrapper) {
 					code.code = opt.wrapper(code.code);
+					code_obj.user_code = code.code;
+				}
 
 				if (opt.minify) {
 					code = nwUGLY.minify(code_obj,{
-						keep_classnames: true,
 						ie8: true,
-						compress: false,
-						mangle: true
+						compress: opt.release ? {} : false,
+						mangle: { toplevel:false }
 					});
 				}
 				if (!code.error) {
@@ -350,8 +351,10 @@ var app = {
 				app.newWindow(nwPATH.join(app.project_path,'temp.html'), {
 						width: proj_set.size[0],
 						height: proj_set.size[1],
-						resizable: false,
-						useContentSize: true
+						useContentSize: true,
+						webPreferences: {
+							nodeIntegration: true
+						}
 					},
 					(win)=>{
 						win.webContents.openDevTools();

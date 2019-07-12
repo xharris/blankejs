@@ -23,10 +23,11 @@ var Blanke = (selector, options) => {
     let re_sep = /[\\\/]/;
     let re_no_ext = /([\/\\\.]*[\w\/\\]+)/;
 
-    let elec, nwOS;
+    let elec, nwOS, eWin;
     if (typeof require === 'function' && require('electron')) {
         elec = require('electron');
         nwOS = require('os');
+        eWin = elec.remote.getCurrentWindow();
     }
 
     let blanke_ref = this;
@@ -122,8 +123,7 @@ var Blanke = (selector, options) => {
             }
         })
         // default fullscreen shortcut (NOT WORKING)
-        Input.set('Alt+Enter','toggle-fullscreen');
-        console.log(input_ref)
+        Input.set('toggle-fullscreen','Alt+Enter');
     }
 
     const addZOrdering = (obj) => {
@@ -255,11 +255,16 @@ var Blanke = (selector, options) => {
         paused: false,
         config: {},
         time: 0,
-        get os () { // ide, win, mac, linux
-            if (this.options.ide_mode) return 'ide';
-            let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
-            let os = os_names[nwOS.type()];
-            if (os) return os;
+        get os () { // ide, win, mac, linux, android, ios
+            if (blanke_ref.options.ide_mode) return 'ide';
+            let os_list = ['win','mac','linux','android'];
+            let u_agent = navigator.userAgent.toLowerCase();
+            for (let d of os_list) {
+                if (u_agent.includes(d))
+                    return d;
+            }
+            if (/ipad|iphone|ipod/i.test(u_agent))
+                return 'ios';
             return '?';
         },
         get width () { return blanke_ref.options.resizeable ? app.view.width : blanke_ref.options.width; },
@@ -282,12 +287,29 @@ var Blanke = (selector, options) => {
         },
         get fullscreen () {
             if (Game.os != 'ide')
-                return elec.remote.isFullscreen();
+                return document.fullscreen;
             return false;
         },
         set fullscreen (v) {
             if (Game.os != 'ide') {
-                elec.remote.setFullScreen(!Game.fullscreen)
+                let c = app.view;
+                if (v) {
+                    (
+                        c.requestFullscreen ||
+                        c.mozRequestFullScreen ||
+                        c.webkitRequestFullScreen ||
+                        c.msRequestFullscreen || 
+                        function () {throw new Error("Can't enter fullscreen!")}
+                    ).call(c);
+                } else {
+                    (
+                        document.exitFullscreen ||
+                        document.mozCancelFullScreen || 
+                        document.webkitCancelFullScreen ||
+                        document.msExitFullscreen || 
+                        function () {throw new Error("Can't leave fullscreen!")}
+                    ).call(document);
+                }
             }
         },
         resume: () => {
@@ -344,7 +366,6 @@ var Blanke = (selector, options) => {
         Game.time += dt;
         if (Input('toggle-fullscreen').released) {
             Game.fullscreen = !Game.fullscreen;
-            console.log(Game.fullscreen)
         }
     });
     
@@ -1403,8 +1424,12 @@ var Blanke = (selector, options) => {
         get scale () {
             return this._scale;
         }
-        follow (obj) { 
+        follow (obj) {
+            if (obj.view_follow && obj.view_follow.name == this.name)
+                return;
+            obj.view_follow = this;
             if (this.follow_obj) {
+                this.follow_obj.view_follow = null;
                 this.remove(this.follow_obj);
             }
             if (obj.x != null && obj.y != null) {
@@ -1414,12 +1439,16 @@ var Blanke = (selector, options) => {
         }
         add (...objects) {
             for (let obj of objects) {
-                setNewParent(obj, this.container);
+                if (!obj.view || obj.view.name != this.name) {
+                    obj.view = this;
+                    setNewParent(obj, this.container);
+                }
             }
             this.container.sortChildren();
         }
         remove (...objects) {
             for (let obj of objects) {
+                obj.view = null;
                 restorePrevParent(obj);
             }
         }
@@ -1795,4 +1824,16 @@ var Blanke = (selector, options) => {
     engineLoaded.call(this);
     var classes = {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View};
     return classes;
+}
+Blanke.addGame = (name, options) => {
+    console.log('adding',name,options)
+    if (!Blanke.game_options) Blanke.game_options = {};
+    Blanke.game_options[name] = options;
+}
+Blanke.run = (selector, name) => {
+    if (!Blanke.game_options) Blanke.game_options = {};
+    if (Blanke.game_options[name])
+        Blanke(selector, Blanke.game_options[name])
+    else
+        console.log(`BlankE game '${name}' not found!`);
 }
