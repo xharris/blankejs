@@ -266,7 +266,8 @@ const elec = require('electron');
 elec.app.on('ready', function(){
     let main_window = new elec.BrowserWindow({
         width: ${app.project_settings.size[0]},
-        height: ${app.project_settings.size[1]}
+		height: ${app.project_settings.size[1]},
+		frame: false
     })
     main_window.loadFile('index.html');
 });

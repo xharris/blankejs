@@ -47,6 +47,12 @@ var Blanke = (selector, options) => {
     let re_sep = /[\\\/]/;
     let re_no_ext = /([\/\\\.]*[\w\/\\]+)/;
 
+    let elec, nwOS;
+    if (typeof require === 'function' && require('electron')) {
+        elec = require('electron');
+        nwOS = require('os');
+    }
+
     let blanke_ref = this;
     this.options = Object.assign({
         auto_focus: true,
@@ -121,9 +127,6 @@ var Blanke = (selector, options) => {
         removeSnaps();
         Game.time = 0;
         Game.ide_mode = this.options.ide_mode;
-        if (this.options.background_color) 
-            Game.background_color = this.options.background_color;
-        
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
@@ -142,6 +145,9 @@ var Blanke = (selector, options) => {
                 Scene.start(Game.config.first_scene);
             }
         })
+        // default fullscreen shortcut
+        Input.set('Alt+Enter','toggle-fullscreen');
+        console.log(input_ref)
     }
 
     const addZOrdering = (obj) => {
@@ -273,10 +279,17 @@ var Blanke = (selector, options) => {
         paused: false,
         config: {},
         time: 0,
+        get os () { // ide, win, mac, linux
+            if (this.options.ide_mode) return 'ide';
+            let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
+            let os = os_names[nwOS.type()];
+            if (os) return os;
+            return '?';
+        },
         get width () { return blanke_ref.options.resizeable ? app.view.width : blanke_ref.options.width; },
         get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
         get background_color () { return app.renderer.backgroundColor; },
-        set background_color (v) { app.renderer.backgroundColor = v; console.log(app.renderer.backgroundColor) },
+        set background_color (v) { app.renderer.backgroundColor = v; },
         // replaces the game with a screenshot
         pause: () => {
             if (Game.paused) return;
@@ -290,6 +303,16 @@ var Blanke = (selector, options) => {
             parent.appendChild(el_img);
             app.stop();
             app.view.style.display = "none";
+        },
+        get fullscreen () {
+            if (Game.os != 'ide')
+                return elec.remote.isFullscreen();
+            return false;
+        },
+        set fullscreen (v) {
+            if (Game.os != 'ide') {
+                elec.remote.setFullScreen(!Game.fullscreen)
+            }
         },
         resume: () => {
             if (!Game.paused) return;
@@ -343,6 +366,10 @@ var Blanke = (selector, options) => {
     }
     app.ticker.add((dt)=>{
         Game.time += dt;
+        if (Input('toggle-fullscreen').released) {
+            Game.fullscreen = !Game.fullscreen;
+            console.log(Game.fullscreen)
+        }
     });
     
     /* -ASSET */
@@ -615,7 +642,7 @@ var Blanke = (selector, options) => {
                 if (!skip_call && this.graphics[name])
                     this.graphics[name](...params);
                 else
-                    console.error(`${arg[0]} is not a Draw function`);
+                    throw new Error(`${arg[0]} is not a Draw function`);
             }
         }
         clone () {
@@ -694,6 +721,10 @@ var Blanke = (selector, options) => {
 
         _getPixiObjs () {
             return [this.container];
+        }
+
+        destroy () {
+            this.container.destroy();
         }
     
         _onStart () {
@@ -1223,7 +1254,7 @@ var Blanke = (selector, options) => {
     var Input = (name) => {
         let ret = { pressed: false, released: false };
         let inputs = input_ref[name];
-        if (!inputs) return;
+        if (!inputs) return ret;
         for (let i_str of inputs) {
             // multi-input?
             let i_list = i_str.split('+');
@@ -1862,35 +1893,33 @@ b.aInB=a.r<=c.r&&l<=c.r-a.r,b.bInA=c.r<=a.r&&l<=a.r-c.r);h.push(d);return!0};f.t
 		let TestView = () => {};
 		
 
+Input.set("left","a","left")
+Input.set("right","d","right")
+
 class Robot extends Entity {
     init () {
-		this.addSprite("run", {image:"blue_robot", frames:6, speed:0.7, frame_size:[38,33], offset:[38,0]})
+		this.addSprite("run", {image:"blue_robot", frames:6, speed:0.1, frame_size:[38,33], offset:[38,0]})
     }
     update (dt) {
-
+		this.hspeed = 0;
+ 		if (Input("left").pressed)
+			this.hspeed = -2;
+ 		if (Input("right").pressed)
+			this.hspeed = 2;
     }
 }
 
 TestScene({
 	onStart: (s) => {
 		s.rob = new Robot();
-		s.rob.x = 50;
-		s.rob.y = 50;
-		Game.background_color = Draw.blue;
-		
-		let drawing = new Draw(
-			['fill', Draw.green],
-			['rect', 100, 100, 200, 200],
-			['hole'],
-			['moveTo', 100, 100],
-			['arc', 100, 100, 150, 0, 90],
-			['hole']
+		new Draw(
+			['lineStyle',1,Draw.black],
+			['rect',-50,-50,100,100]	
 		)
-		
-		//TestView("player",s.rob);
-	},
-	onUpdate: (s, dt) => {
-		s.rob.x = Util.sinusoidal(50,100,0.1)
+		// TestView("player",s.rob);
+		let view = View("player")
+		view.follow(s.rob)
+		view.add(s)
 	}
 })
 
@@ -1912,29 +1941,6 @@ Scene("ScenePlay",{
 		
     }
 });
-
-TestScene({
-	onStart: (s) => {
-		s.rob = new Robot();
-		s.rob.x = 50;
-		s.rob.y = 50;
-		
-		let drawing = new Draw(
-			['fill', Draw.green],
-			['rect', 100, 100, 200, 200],
-			['hole'],
-			['moveTo', 100, 100],
-			['arc', 100, 100, 150, 0, 90],
-			['hole']
-		)
-		
-		TestView("player",s.rob);
-		Game.background_color = Draw.black;
-	},
-	onUpdate: (s, dt) => {
-		s.rob.x = Util.sinusoidal(50,100,0.1)
-	}
-})
 
 Scene.start("ScenePlay");
 
