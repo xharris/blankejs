@@ -1826,7 +1826,6 @@ var Blanke = (selector, options) => {
     return classes;
 }
 Blanke.addGame = (name, options) => {
-    console.log('adding',name,options)
     if (!Blanke.game_options) Blanke.game_options = {};
     Blanke.game_options[name] = options;
 }
