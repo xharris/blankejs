@@ -1124,7 +1124,6 @@
 		background-color: #212121;
 		padding: 10px;
 	}
-
 	.platforms {
 		position: relative;
 		padding-top: 3px;
@@ -1144,30 +1143,11 @@
 	}
 
 	.platform {
-		width: 50px;
-		height: 50px;
-		padding: 10px;
-		margin: 5px;
-		display: inline-block;
-	    border: 1px dashed @window-background;
-		transition: all ease-in-out 0.2s;
+		margin: 10px;
+		transition: all ease-in-out 0.1s;
 
-		&:hover {
-			border: none;
-		}
-
-		.icon {
-			width: 100%;
-			height: 100%;
-			pointer-events: none;
-		}
-
-		&.danger {
-			border-color: #f44336;
-
-			&:hover {
-				background-color: #f44336;
-			}
+		object {
+			width: 32px;
 		}
 	}
 

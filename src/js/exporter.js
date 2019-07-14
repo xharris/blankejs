@@ -25,14 +25,11 @@ class Exporter extends Editor {
 		
 		this.platforms.forEach(function(platform){
 			let el_platform_container = app.createElement("button",["ui-button-rect","platform",platform]);
+			el_platform_container.title = platform;
 
-			if (platform == 'web') {
-				el_platform_container.classList.add('danger');
-				el_platform_container.title = "experimental feature!";
-			}
-
-			let el_platform_icon = app.createElement("img","icon");
-			el_platform_icon.src = "icons/"+platform+".png";
+			let el_platform_icon = app.createElement("object");
+			el_platform_icon.type = "image/svg+xml";
+			el_platform_icon.data = "icons/"+platform+".svg";
 
 			el_platform_container.value = platform;
 			el_platform_container.addEventListener('click', function(e){
