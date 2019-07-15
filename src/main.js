@@ -271,12 +271,16 @@ var app = {
 	},
 
 	engine_code: '',
+	minify_toast: null,
 	minifyEngine: function(cb, opt) {
 		opt = opt || {};
 		blanke.cooldownFn('minify-engine',500,function(){
-			let toast;
+			if (!opt.silent && !app.minify_toast) {
+				app.minify_toast = blanke.toast('',-1);
+			}
+			let toast = app.minify_toast;
 			if (!opt.silent) {
-				toast = blanke.toast('Compiling engine code. Please wait', -1);
+				toast.text = 'Compiling engine code. Please wait';
 				toast.icon = 'dots-horizontal';
 				toast.style = 'wait';
 			}

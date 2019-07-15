@@ -1241,12 +1241,12 @@ var Blanke = (selector, options) => {
     window.addEventListener('keyup',(e)=>{
         if (blanke_ref.focused) e.preventDefault();
         else return;
-        Input.press(e.key);
+        Input.release(e.key);
     });
     window.addEventListener('keydown',(e)=>{
         if (blanke_ref.focused) e.preventDefault();
         else return;
-        Input.release(e.key);
+        Input.press(e.key);
     });
     var Input = (name) => {
         let ret = { pressed: false, released: false };
@@ -1338,13 +1338,13 @@ var Blanke = (selector, options) => {
                 press_check[key] = true;
         }
     }
-    Input.press = (key) => {
+    Input.release = (key) => {
         keys_pressed[key] = false;
         keys_released[key] = true;
         press_check[key] = false;
         release_check[key] = false;
     }
-    Input.release = (key) => {
+    Input.press = (key) => {
         if (keys_pressed[key] == false)
             press_check[key] = false;
         keys_pressed[key] = true;

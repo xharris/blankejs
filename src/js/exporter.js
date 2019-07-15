@@ -202,8 +202,8 @@ Blanke.addGame('${app.project_settings.export.name}',{
 	export (target_os) {
 		let this_ref = this;
 		let bin_dir = nwPATH.join('src','binaries');
-		let temp_dir = target_os == 'web' ? os_dir : nwPATH.join(app.project_path,'dist','temp');
 		let os_dir = nwPATH.join(app.project_path,"dist",target_os);
+		let temp_dir = target_os == 'web' ? os_dir : nwPATH.join(app.project_path,'dist','temp');
 		let engine_path = app.settings.engine_path;
 		let project_name = app.project_settings.export.name;
 
@@ -239,6 +239,7 @@ Blanke.addGame('${app.project_settings.export.name}',{
 				}).then(err => {
 					this.doneToast(target_os);
 				}).catch(err => {
+					app.error(err)
 					this.errToast();
 				});
 			}
