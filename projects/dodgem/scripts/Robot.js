@@ -33,6 +33,6 @@ TestScene({
 	},
 	onUpdate: (s,dt) => {
 		let view = TestView("player")
-		console.log(view.port_width, view.port_height);
+		//console.log(view.port_width, view.port_height);
 	}
 })

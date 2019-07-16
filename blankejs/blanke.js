@@ -123,7 +123,7 @@ var Blanke = (selector, options) => {
             }
         })
         // default fullscreen shortcut (NOT WORKING)
-        Input.set('toggle-fullscreen','Alt+Enter');
+        Input.set('toggle-fullscreen','Alt Enter');
     }
 
     const addZOrdering = (obj) => {
@@ -337,13 +337,8 @@ var Blanke = (selector, options) => {
             }
             game_container.removeChildren();
             // reset input stuff
-            keys_pressed = {};  // { 'ArrowLeft': true, 'a': false }
-            keys_released = {}; // ...
-            input_ref = {};     // { bob: ['left','a'] }
-            input_options = {};
-            press_check = {};
-            release_check = {}; // { 'ArrowLeft': false, 'a': true }
-         },
+            input_ref = {};
+        },
         destroy: () => { app.destroy(true); }
     };
 
@@ -359,6 +354,26 @@ var Blanke = (selector, options) => {
         rand_range: (min, max) => Math.floor(Math.random() * (+max - +min)) + +min,
         lerp: (a, b, amt) => a + amt * (b - a),
         sinusoidal: (min, max, spd, off=0) => min + -Math.cos(Util.lerp(0,Math.PI/2,off) + Game.time * spd) * ((max - min)/2) + ((max - min)/2), 
+        // string
+        str_count: (string, subString, allowOverlapping) => {
+            // author: Vitim.us https://gist.github.com/victornpb/7736865
+            string += "";
+            subString += "";
+            if (subString.length <= 0) return (string.length + 1);
+
+            var n = 0,
+                pos = 0,
+                step = allowOverlapping ? 1 : subString.length;
+
+            while (true) {
+                pos = string.indexOf(subString, pos);
+                if (pos >= 0) {
+                    ++n;
+                    pos += step;
+                } else break;
+            }
+            return n;
+        },
         // file
         basename: (path, no_ext) => no_ext == true ? path.split(re_sep).slice(-1)[0].split('.')[0] : path.split(re_sep).slice(-1)[0]
     }
@@ -1232,59 +1247,107 @@ var Blanke = (selector, options) => {
         'right':'ArrowRight',
         'up':'ArrowUp'
     };
-    let keys_pressed = {};  // { 'ArrowLeft': true, 'a': false }
-    let keys_released = {}; // ...
-    let input_ref = {};     // { bob: ['left','a'] }
-    let input_options = {};
-    let press_check = {};
-    let release_check = {}; // { 'ArrowLeft': false, 'a': true }
+    let input_ref = {};
     window.addEventListener('keyup',(e)=>{
         if (blanke_ref.focused) e.preventDefault();
         else return;
-        Input.release(e.key);
+        Object.values(input_ref).forEach(obj => obj.release(e.key));
     });
     window.addEventListener('keydown',(e)=>{
         if (blanke_ref.focused) e.preventDefault();
         else return;
-        Input.press(e.key);
+        Object.values(input_ref).forEach(obj => obj.press(e.key));
     });
-    var Input = (name) => {
-        let ret = { pressed: false, released: false };
-        let inputs = input_ref[name];
-        if (!inputs) return ret;
-        for (let i_str of inputs) {
-            // multi-input?
-            let i_list = i_str.split('+');
-            let all_pressed = true;
-            let all_released = true;
-            for (let i_part of i_list) {
-                if (!keys_pressed[i_part] || (input_options[name].can_repeat == false && press_check[i_part] == true))
-                    all_pressed = false;
-                if (!keys_released[i_part])
-                    all_released = false;
+    class _Input {
+        constructor (name, inputs) {
+            this.name = name;
+            this.inputs = inputs.map(i => i.trim());
+            this.options = {
+                can_repeat: true
             }
-            if (all_pressed)
-                ret.pressed = true;
-            if (all_released)
-                ret.released = true;
+            this.key_ref = {};          // { 'ArrowLeft' : ['left k'], 'k' : ['left k'] }
+            this.press_count = {};      // { 'left k': 0 }
+            this.combo_count = {};      // { 'left k': 2 }
+            this.was_pressed = {};      // { 'left k': bool }
+            this.release_checked = false;   // { 'left k': bool }
+            this.press_checked = false;     // { 'left k': bool }
+            this.pressed = false;
+            this.released = false;
+
+            for (let i of this.inputs) {
+                i = i.trim();
+                this.press_count[i] = 0;
+                this.combo_count[i] = Util.str_count(i,' ')+1;
+                this.was_pressed[i] = false;
+                this.release_checked = false;
+                this.press_checked = false;
+                this.pressed = false;
+                this.released = false;
+                i.split(' ').forEach(n => {
+                    n = key_translation[n] || n;
+                    this.key_ref[n] = this.key_ref[n] || [];
+                    this.key_ref[n].push(i);
+                });
+            }
         }
-        return ret;
-    };
-    Input.set = (name, ...input) => {
+        update () {
+            if (this.pressed && !this.options.can_repeat && !this.press_checked) {
+                this.pressed = false;
+                this.press_checked = true;
+            }
+            if (this.released && !this.release_checked) {
+                this.released = false;
+                this.release_checked = true;
+            }
+        }
+        press (key) {
+            let inputs = this.key_ref[key] || [];
+            inputs.forEach(i => {
+                if (this.press_count[i] < this.combo_count[i])
+                    this.press_count[i] += 1;
+                // all keys in this combo pressed
+                if (this.press_count[i] >= this.combo_count[i] && (this.options.can_repeat || !this.was_pressed[i])) {
+                    this.press_count[i] = this.combo_count[i];
+                    this.was_pressed[i] = true;
+                    this.press_checked = false;
+                    this.pressed = true;
+                }
+            })
+        }
+        release (key) {
+            let inputs = this.key_ref[key] || [];
+            inputs.forEach(i => {
+                if (this.press_count[i] > 0)
+                    this.press_count[i] -= 1;
+                if (this.press_count[i] < this.combo_count[i] && this.was_pressed[i]) {
+                    this.was_pressed[i] = false;
+                    this.release_checked = false;
+                    this.released = true;
+
+                    if (Object.values(this.was_pressed).every(v => !v)) {
+                        this.pressed = false;
+                    }
+                }
+            })
+        }
+        // returns { pressed: bool, released: bool }
+        check () {
+            return { 
+                options: this.options,
+                pressed: this.pressed, //Object.values(this.was_pressed).some(v => v), 
+                released: this.released 
+            }
+        }
+    }
+    var Input = (name) => input_ref[name] ? input_ref[name].check() : {}
+    Input.set = (name, ...inputs) => {
         if (['set','inputCheck'].includes(name)) return;
-        let inputs = [];
-        for (let i of input) {
-            if (key_translation[i])
-                inputs.push(key_translation[i]);
-            else
-                inputs.push(i);
-        }
-        input_ref[name] = inputs;
-        input_options[name] = {};
+        input_ref[name] = new _Input(name, inputs);
+
 
         if (!Input[name])
             Object.defineProperty(Input,name,{
-                get: () => input_options[name]
+                get: () => input_ref[name].options
             })
     };
     /*  Input.on('touch', (e) => {})    // defaults to whole canvas
@@ -1324,34 +1387,11 @@ var Blanke = (selector, options) => {
         });
         return Input;
     }
-    Input.inputCheck = () => {
-        for (let key in keys_released) {
-            // released is only true once
-            if (release_check[key] == false && keys_released[key] == true) {
-                release_check[key] = true;
-                keys_released[key] = false;
-            }
-        }
-        for (let key in keys_pressed) {
-            // for can_repeat
-            if (keys_pressed[key] == true)
-                press_check[key] = true;
-        }
-    }
-    Input.release = (key) => {
-        keys_pressed[key] = false;
-        keys_released[key] = true;
-        press_check[key] = false;
-        release_check[key] = false;
-    }
-    Input.press = (key) => {
-        if (keys_pressed[key] == false)
-            press_check[key] = false;
-        keys_pressed[key] = true;
-        keys_released[key] = false;
+    Input.update = () => {
+       Object.values(input_ref).forEach(obj => obj.update() );
     }
     app.ticker.add(()=>{
-        Input.inputCheck();
+        Input.update();
     },null,PIXI.UPDATE_PRIORITY.LOW);
 
     /* -VIEW */

@@ -332,6 +332,7 @@ var app = {
 						toast.icon = 'check-bold';
 						toast.style = "good";
 						toast.die(1500);
+						app.minify_toast = null;
 					}
 					if (cb) cb(code.code);
 					dispatchEvent('engineChange');

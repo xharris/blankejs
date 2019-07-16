@@ -1,6 +1,7 @@
 let bob;
 let drawing;
 let my_view;
+
 Scene("ScenePlay",{
     onStart: function(scene) {
 		bob = new Robot();
@@ -14,7 +15,7 @@ Scene("ScenePlay",{
 		)
 		drawing.z = -1;
 	},
-    onUpdate: function() {
+    onUpdate: function(scene, dt) {
 		drawing.x = Util.sinusoidal(0,100,0.02)
     },
     onEnd: function() {
