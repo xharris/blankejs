@@ -242,9 +242,14 @@ var app = {
 		app.autocomplete_loaded = false;
 		app.ignore_errors = true;
 		try {
-			app.autocomplete = app.require(app.settings.autocomplete_path)
+			let data = app.require(app.settings.autocomplete_path)
+			if (Object.keys(data).length == 0)
+				throw 'autocomplete not loaded';
+			else 
+				app.autocomplete = data;
 		} catch (e) {
 			err = true;
+			blanke.toast('error in autocomplete file!')
 			console.log('autocomplete not loaded');
 		} finally {
 			app.ignore_errors = false;

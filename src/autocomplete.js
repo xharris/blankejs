@@ -18,7 +18,7 @@ let prop_xyz = [
 ]
 let prop_effect = { prop: 'effect' };
 let prop_visible = { prop: 'visible' };
-let prop_pixi_point = (name) => ({ prop: 'point', info: '{ x, y, set(x, y=x) }' })
+let prop_pixi_point = (name) => ({ prop: name || 'point', info: '{ x, y, set(x, y=x) }' })
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
 // used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
@@ -188,6 +188,16 @@ module.exports.hints = {
 		{ prop: 'stop_propagation', info: 'automatically stop event propagation? (default: true)' }
 	],
 	"blanke-view-instance":[
-		...prop_xy
+		...prop_xy,
+		{ prop: 'port_x' },
+		{ prop: 'port_y' },
+		{ prop: 'port_width' },
+		{ prop: 'port_height' }, 
+		{ fn: 'follow', vars: { obj:'any object with an x and y value' } },
+		{ prop: 'xoffset' },
+		{ prop: 'yoffset' },
+		prop_pixi_point('scale'),
+		{ prop: 'angle', info: 'degrees' },
+		prop_effect
 	]
 }

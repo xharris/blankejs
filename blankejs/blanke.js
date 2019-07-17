@@ -1483,6 +1483,7 @@ var Blanke = (selector, options) => {
                 delete child._last_parent;
             }
             this.container.destroy();
+            game_container.alpha = 1;
         }
         update () {
             let x = this.x, y = this.y;
