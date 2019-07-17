@@ -25,14 +25,15 @@ class Robot extends Entity {
 TestScene({
 	onStart: (s) => {
 		s.rob = new Robot();
-		new Draw(
+		let drawing = new Draw(
 			['lineStyle',1,Draw.black],
-			['rect',1,1,Game.width-2,Game.height-2]	
+			['rect',1,1,Game.width-2,Game.height-2],
+			['rect',20,20,100,100]
 		)
-		TestView("player",s.rob);
+		let view = TestView("player", s.rob);
 	},
 	onUpdate: (s,dt) => {
-		let view = TestView("player")
-		//console.log(view.port_width, view.port_height);
+		//let view = TestView("player")
+		//view.angle = Util.sinusoidal(-45,45,0.01)
 	}
 })

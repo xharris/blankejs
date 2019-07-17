@@ -283,13 +283,14 @@ class GamePreview {
 
 	getExtraEngineCode () {
 		let view_size = ``;
+		// TODO: take another look at this. game viewport is cutoff
 		if (this.options.test_scene && this.size > 0) {
 				view_size = `
 						view.port_width = window.innerWidth;
 						view.port_height = window.innerHeight;
 				`;
 			if (this.size == 1) {
-				view_size = `
+				view_size += `
 						view.port_width = window.innerWidth / 2;
 						view.port_height = window.innerHeight;
 				`;
@@ -308,11 +309,8 @@ class GamePreview {
 				Scene.ref["_test"] = null;
 				Scene("_test", funcs);
 			}
-			let TestView = (name, follow_obj, dont_add_scene) => {
+			let TestView = (name, follow_obj) => {
 				let view = View("_test_"+name);
-				let test_scene = Scene.ref['_test'];
-				if (test_scene && !dont_add_scene)
-					view.add(test_scene);
 				if (follow_obj)
 					view.follow(follow_obj);
 				${view_size}
