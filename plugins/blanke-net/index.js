@@ -1,11 +1,3 @@
-exports.onPluginLoad = () => {
-    document.addEventListener('script_modified', scriptModified);
-}
-
-exports.onPluginUnload = () => {
-    
-}
-
 exports.autocomplete = {
     class_list: 'Net',
     hints: {
@@ -14,6 +6,14 @@ exports.autocomplete = {
             { fn: 'disconnect' }
         ]
     }
+}
+
+exports.onPluginLoad = () => {
+    document.addEventListener('script_modified', scriptModified);
+}
+
+exports.onPluginUnload = () => {
+    
 }
 
 let scriptModified = (e) => {

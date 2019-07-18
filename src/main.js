@@ -997,6 +997,7 @@ app.window.webContents.on("did-finish-load",()=>{
 	app.getElement("#btn-winvis").addEventListener('click',()=> { app.toggleWindowVis() });
 	app.getElement("#btn-winsplit").addEventListener('click',()=> { app.toggleSplit() });
 	app.getElement("#btn-docs").addEventListener('click',()=> { new Docview() });
+	app.getElement("#btn-plugins").addEventListener('click',()=> { new Plugins() });
 	app.getElement("#btn-settings").addEventListener('click',()=> { new Settings() });
 
 	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};

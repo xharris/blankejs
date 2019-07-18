@@ -1451,6 +1451,8 @@ var Blanke = (selector, options) => {
             this.follow_obj = null;
             this.x = 0;
             this.y = 0;
+            this.xoffset = 0;
+            this.yoffset = 0;
             // this.mask = new Draw();
             this._scale = new PIXI.Point(1,1);
             this.angle = 0;
@@ -1523,6 +1525,7 @@ var Blanke = (selector, options) => {
                 delete child._last_parent;
             }
             this.container.destroy();
+            game_container.alpha = 1;
         }
         update () {
             let x = this.x, y = this.y;
@@ -1542,8 +1545,8 @@ var Blanke = (selector, options) => {
             
             this.container.scale.copyFrom(this.scale);
             this.container.angle = this.angle;
-            this.matrix.tx = x; - half_pw;
-            this.matrix.ty = y; - half_ph;
+            this.matrix.tx = x + this.xoffset;
+            this.matrix.ty = y + this.yoffset;
             this.container.pivot.x = half_pw;
             this.container.pivot.y = half_ph;
             this.container.x = pw / 2 + this.port_x;
@@ -1966,7 +1969,8 @@ Input.set("down","s","down")
 class Robot extends Entity {
     init () {
 		this.addSprite("run", {image:"blue_robot", frames:6, speed:0.1, frame_size:[38,33], offset:[38,0]})
-    }
+    	
+	}
     update (dt) {
 		this.hspeed = 0;
 		this.vspeed = 0;
@@ -1989,11 +1993,11 @@ TestScene({
 			['rect',1,1,Game.width-2,Game.height-2],
 			['rect',20,20,100,100]
 		)
-		TestView("player", s.rob)
+		let view = TestView("player", s.rob);
 	},
 	onUpdate: (s,dt) => {
-		let view = TestView("player")
-		view.angle = Util.sinusoidal(-45,45,0.01)
+		//let view = TestView("player")
+		//view.angle = Util.sinusoidal(-45,45,0.01)
 	}
 })
 
