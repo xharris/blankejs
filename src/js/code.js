@@ -84,9 +84,7 @@ var getKeywords = (file, content) => {
         var_list[file] = {};
 
         // should a server be running?
-        if (!app.isServerRunning() && content.includes("Net.")) {								
-            app.runServer();
-        }
+		dispatchEvent('script_modified',{path:file, content:content})
 
         let match = (regex_obj, store_list) => {
 			// refresh matches for all files

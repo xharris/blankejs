@@ -21,14 +21,29 @@ function inspectPlugins(silent) {
 		let info_key = (nwPATH.dirname(file) != app.settings.plugin_path) ? nwPATH.dirname(file) : file;
 		
 		if (file.endsWith('.js')) {
-			let data = nwFS.readFileSync(file,'utf-8');
 			if (!js_plugin_info[info_key]) {
 				js_plugin_info[info_key] = {
 					files: [],
 					docs: [],
-					enabled: false
+					enabled: false,
+					module: null
 				}
 			}
+			if (nwPATH.basename(file) == 'index.js') {
+				// it's a module
+				let module = js_plugin_info[info_key].module;
+				if (module && module.onPluginUnload) {
+					module.onPluginUnload();
+					delete require.cache[file];
+				}
+				js_plugin_info[info_key].module = require(file);
+				if (js_plugin_info[info_key].module.onPluginLoad)
+					js_plugin_info[info_key].module.onPluginLoad();
+				return;
+			}
+
+			let data = nwFS.readFileSync(file,'utf-8');
+
 			// add file path
 			if (!js_plugin_info[info_key].files.includes(file))
 				js_plugin_info[info_key].files.push(file);
@@ -193,6 +208,14 @@ class Plugins extends Editor {
 				else 
 					Plugins.disable(key_ref);
 			});
+		}
+	}
+
+	static pluginEvent (name, ...args) {
+		for (let p in js_plugin_info) {
+			let module = js_plugin_info[p].module;
+			if (module && module[name])
+				module.module[name](...args);
 		}
 	}
 
