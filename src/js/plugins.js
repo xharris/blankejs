@@ -39,6 +39,7 @@ function inspectPlugins(silent) {
 				js_plugin_info[info_key].module = require(file);
 				if (js_plugin_info[info_key].module.onPluginLoad)
 					js_plugin_info[info_key].module.onPluginLoad();
+				
 				return;
 			}
 
@@ -117,8 +118,10 @@ function inspectPlugins(silent) {
 				// if (!silent) blanke.toast("Plugins loaded!")
 			}
 
-			if (plugin_window)
+			if (plugin_window) {
 				plugin_window.refreshList();
+			}
+			dispatchEvent('loadedPlugins');
 		})
 	});
 
@@ -211,12 +214,13 @@ class Plugins extends Editor {
 		}
 	}
 
-	static pluginEvent (name, ...args) {
+	static getAutocomplete = () => {
+		let ret = {};
 		for (let p in js_plugin_info) {
-			let module = js_plugin_info[p].module;
-			if (module && module[name])
-				module.module[name](...args);
+			if (js_plugin_info[p].module && js_plugin_info[p].module.autocomplete)
+				ret[p] = js_plugin_info[p].module.autocomplete;
 		}
+		return ret;
 	}
 
 	static enable (key) {

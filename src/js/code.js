@@ -34,6 +34,12 @@ function isReservedWord(word) {
 var reloadCompletions = () => {
     // get regex from autocomplete.js
     autocomplete = app.autocomplete;
+
+	let plugin_ac = Plugins.getAutocomplete();
+	for (let p in plugin_ac) {
+		addCompletions(plugin_ac[p]);
+	}
+
     re_class_extends = autocomplete.class_extends || {};
     re_instance = autocomplete.instance || {};
     re_user_words = autocomplete.user_words || {};
@@ -41,6 +47,37 @@ var reloadCompletions = () => {
 	hints = autocomplete.hints || {};
 	class_list = autocomplete.class_list || [];
 	re_image = autocomplete.image || [];
+}
+
+document.addEventListener('loadedPlugins', reloadCompletions);
+
+var addCompletions = (data) => {
+	// add plugin autocomplete
+	let update = (old_obj, new_obj, key) => {
+		if (key == null) {
+			// iterate keys of new_obj and put them in old_obj
+			for (let k in new_obj) {
+				update(old_obj, new_obj, k);
+			}
+		} else {
+			if (!Array.isArray(old_obj[key]) && typeof old_obj[key] == 'object') {
+				// go one level deeper
+				for (let k in new_obj[key]) {
+					update(old_obj[key], new_obj[key], k);
+				}
+			}
+			else {
+				// concat new_obj value to old_obj
+				if (Array.isArray(old_obj[key])) {
+					old_obj[key] = old_obj[key].concat(new_obj[key]);
+				} else if (!old_obj[key]) {
+					// completely new value, add it to old_obj
+					old_obj[key] = new_obj[key];
+				}
+			}
+		}
+	}
+	update(autocomplete, data);
 }
 
 var getCompletionList = (_type) => {
