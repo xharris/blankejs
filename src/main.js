@@ -180,7 +180,10 @@ var app = {
 				app.project_path = path;
 
 				// watch for file changes
-				app.proj_watch = nwWATCH(app.project_path, {recursive: true}, function(evt_type, file) {
+				app.proj_watch = nwWATCH(app.project_path, {
+					recursive: true,
+					filter: f => !/dist/.test(f)
+				}, function(evt_type, file) {
 					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
 				});
 

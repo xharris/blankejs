@@ -32,6 +32,10 @@ angle = degrees
 
 `texture` image_name, [color, alpha] (both beginTextureFill/endFill)
 
+`entity` instance, [color, alpha]
+
+> __NOTE__: Be careful when using __texture/entity__ if auto_clear is set to 0. Drawing many textures using the Draw class could lead to using up a lot of memory since the Draw class still calculates it's own hitbox. Alternatively use Canvas.
+
 `lineStyle` width, color, alpha, alignment (0 = inner, 0.5 = middle, 1 = outer)
 
 `lineTextureStyle` width, texture, color, alpha, Matrix, alignment

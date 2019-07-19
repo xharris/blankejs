@@ -623,6 +623,8 @@ var Blanke = (selector, options) => {
                 let skip_call = false; // not actually used yet
                 let name = Draw.functions[arg[0]] || arg[0];
                 let params = arg.slice(1);
+                let extra_calls = [];
+
                 if (name == 'beginFill' && params.length == 0) {
                     name = 'endFill';
                 }
@@ -632,7 +634,7 @@ var Blanke = (selector, options) => {
                     else 
                         params[0] = getTex(params[0]);
                 }
-                if (name == 'lineTextureStyle') 
+                if (name == 'lineTextureStyle') // width, line, ...
                     params[1] = getTex(params[1]);
                 
                 if (name == 'drawStar' && params.length >= 6)
@@ -651,10 +653,27 @@ var Blanke = (selector, options) => {
                     in_hole = !in_hole;
                 }
 
+                if (name == 'entity' && params[0].sprite_index != '') {
+                    name = 'beginTextureFill'
+                    let ent = params[0];
+                    let spr = ent.sprites[ent.sprite_index]
+                    params[0] = spr.texture;
+                    if (!params[1]) params[1] = Draw.white;
+                    if (!params[2]) params[2] = 1;
+                    if (!params[3]) params[3] = spr.matrix;
+                    extra_calls = [
+                        ['drawRect',spr.x - spr.pivot.x,spr.y - spr.pivot.y,spr.width,spr.height],
+                        ['endFill']
+                    ];
+                }
+
                 if (!skip_call && this.graphics[name])
                     this.graphics[name](...params);
                 else
                     throw new Error(`${arg[0]} is not a Draw function`);
+                if (extra_calls)
+                    for (let call of extra_calls)
+                        this.graphics[call[0]](...call.slice(1));
             }
         }
         clone () {
@@ -711,6 +730,39 @@ var Blanke = (selector, options) => {
     }
     for (let color in Draw.colors) {
         Draw[color] = Draw.colors[color];
+    }
+
+    /* -CANVAS */
+    class Canvas { 
+        constructor () {
+            this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
+            this.container = new PIXI.Sprite(this.rtex);
+            this.width = Game.width;
+            this.height = Game.height;
+            this.auto_clear = true;
+            addZOrdering(this);
+            enableEffects(this);
+            Scene.addDrawable(this.container);
+            this._size_changed = false;
+            window.addEventListener('resize',()=>{
+                if (!this._size_changed)
+                    this.resize(app.view.width, app.view.height, true);
+            })
+        }
+        _getPixiObjs () { return [this.container]; }
+        draw (obj, matrix) {
+            let pixi_objs = obj._getPixiObjs ? obj._getPixiObjs() : [];
+            for (let pixi_obj of pixi_objs)
+                app.renderer.render(pixi_obj, this.rtex, this.auto_clear, matrix);
+            this.container.texture = this.rtex;
+        }
+        resize (w, h, internal) {
+            this.width = w;
+            this.height = h;
+            this.rtex.resize(w, h);
+            if (!internal)
+                this._size_changed = true;
+        }
     }
 
     /* -SCENE */
@@ -860,6 +912,7 @@ var Blanke = (selector, options) => {
     class Sprite {
         constructor (name, options) {
             this.animated = false;
+            this._matrix = new Matrix(1,0,0,1,0,0);
             // animated sprite
             if ((options && options.frames) || (!options && name.frames)) {
                 if (!options)
@@ -880,18 +933,28 @@ var Blanke = (selector, options) => {
             this.sprite.x = 0;
             this.sprite.y = 0;
        
-            let props = ['alpha','width','height','pivot','angle'];
+            let props = ['alpha','width','height','pivot','angle','scale','skew'];
         
             enableEffects(this);
             aliasProps(this, this.sprite, props);
         }
         _getPixiObjs () { return [this.sprite]; }
+        get matrix () {
+            this._matrix.setTransform(
+                this.x, this.y, this.pivot.x, this.pivot.y, 
+                this.scale.x, this.scale.y, this.angle, 
+                this.skew.x, this.skew.y
+            );
+            return this._matrix;
+        }
         get x () { return this.sprite.x; }
         set x (v){ this.sprite.x = v; }
         get y () { return this.sprite.y; }
         set y (v){ this.sprite.y = v; }
         get speed () { if (this.animated) return this.sprite.animationSpeed; }
         set speed (v){ if (this.animated) this.sprite.animationSpeed = v; }
+        get texture () { return this.sprite.texture }
+        set texture (v) { this.sprite.texture = v }
         crop (x, y, w, h) {
             /*
                 // copy texture
@@ -1089,7 +1152,7 @@ var Blanke = (selector, options) => {
             // sprite
             this.sprites = {};
             this.sprite_index = '';
-            let spr_props = ['alpha','width','height','pivot','angle'];
+            let spr_props = ['alpha','width','height','pivot','angle','scale','skew'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
@@ -1339,7 +1402,26 @@ var Blanke = (selector, options) => {
             }
         }
     }
-    var Input = (name) => input_ref[name] ? input_ref[name].check() : {}
+    var Input = (...name) => {
+        if (name.length == 1)
+            return input_ref[name[0]] ? input_ref[name[0]].check() : {}
+        else {
+            let ret = { pressed: { any: false, all: true }, released: { any: false, all: true } };
+            for (let n of name) {
+                let val = input_ref[n] ? input_ref[n].check() : {}
+                ret[n] = val;
+                if (!val.pressed)
+                    ret.pressed.all = false;
+                else
+                    ret.pressed.any = true;
+                if (!val.released)
+                    ret.released.all = false;
+                else 
+                    ret.released.any = true;
+            }
+            return ret;
+        }
+    }
     Input.set = (name, ...inputs) => {
         if (['set','inputCheck'].includes(name)) return;
         input_ref[name] = new _Input(name, inputs);
@@ -1394,28 +1476,26 @@ var Blanke = (selector, options) => {
         Input.update();
     },null,PIXI.UPDATE_PRIORITY.LOW);
 
-    /* -VIEW */
+    /* -VIEW 
+    - at the moment, you can only have one view at a time.
+    - alternatively use a Canvas and draw everything
+    - difference between View and Canvas: View can capture input events and add specific objects to the 'view world'
+    */
     let view_ref = {};
     class _View {
-        constructor (name) {
+        constructor (name) { // keeping name property in case multiple views is more possible in the future
             this.name = name;
-
-            this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
-            this.container = new PIXI.Sprite(this.rtex);
-            this.matrix = new Matrix(1,0,0,1,0,0);
-            this.port_x = 0;
-            this.port_y = 0;
-
+            this.container = new PIXI.Container();
+            
             this.follow_obj = null;
             this.x = 0;
             this.y = 0;
-            this.xoffset = 0;
-            this.yoffset = 0;
-            // this.mask = new Draw();
+            this.port_x = 0;
+            this.port_y = 0;
+            this.mask = new Draw();
             this._scale = new PIXI.Point(1,1);
             this.angle = 0;
-            this._render();
-            app.stage.addChild(this.container);
+            game_container.addChild(this.container);
             enableEffects(this);
         }
         _getPixiObjs () { return [this.container]; }
@@ -1433,9 +1513,6 @@ var Blanke = (selector, options) => {
             this._last_y = this._y;
             this._y = v; 
         }
-        _resize () {
-            this.rtex.resize(this.port_width, this.port_height);
-        }
         get port_width () { return this._size_modified ? this._port_width : Game.width; }
         get port_height (){ return this._size_modified ? this._port_height : Game.height; }
         set port_width (v) {
@@ -1444,7 +1521,6 @@ var Blanke = (selector, options) => {
             this._last_port_width = this._port_width;
             this._port_width = v; 
             this._size_modified = true;
-            this._resize(); 
         }
         set port_height (v) {
             if (this._last_port_height != this._port_height)
@@ -1452,19 +1528,12 @@ var Blanke = (selector, options) => {
             this._last_port_height = this._port_height;
             this._port_height = v; 
             this._size_modified = true;
-            this._resize(); 
         }
         getBounds () {
             return {
                 x: this._x, y: this._y,
                 width: this._port_width, height: this._port_height
             }
-        }
-        _render () {
-            game_container.alpha = 1;
-            app.renderer.render(game_container, this.rtex, true, this.matrix);  
-            game_container.alpha = 0; 
-            this.container.texture = this.rtex;
         }
         get scale () {
             return this._scale;
@@ -1473,8 +1542,31 @@ var Blanke = (selector, options) => {
             if (obj.view_follow && obj.view_follow.name == this.name)
                 return;
             obj.view_follow = this;
-            if (obj.x != null && obj.y != null)
+            if (this.follow_obj) {
+                this.follow_obj.view_follow = null;
+                this.remove(this.follow_obj);
+            }
+            if (obj.x != null && obj.y != null) {
                 this.follow_obj = obj;
+                this.add(this.follow_obj)
+            }
+            // TODO: automatically add current scene
+
+        }
+        add (...objects) {
+            for (let obj of objects) {
+                if (!obj.view || obj.view.name != this.name) {
+                    obj.view = this;
+                    setNewParent(obj, this.container);
+                }
+            }
+            this.container.sortChildren();
+        }
+        remove (...objects) {
+            for (let obj of objects) {
+                obj.view = null;
+                restorePrevParent(obj);
+            }
         }
         destroy () {
             delete view_ref[this.name];
@@ -1483,7 +1575,6 @@ var Blanke = (selector, options) => {
                 delete child._last_parent;
             }
             this.container.destroy();
-            game_container.alpha = 1;
         }
         update () {
             let x = this.x, y = this.y;
@@ -1500,24 +1591,35 @@ var Blanke = (selector, options) => {
                    y -= f_obj.sprite_pivot.y;
                 }
             }
-            
             this.container.scale.copyFrom(this.scale);
             this.container.angle = this.angle;
-            this.matrix.tx = x + this.xoffset;
-            this.matrix.ty = y + this.yoffset;
-            this.container.pivot.x = half_pw;
-            this.container.pivot.y = half_ph;
-            this.container.x = pw / 2 + this.port_x;
-            this.container.y = ph / 2 + this.port_y;
+            this.container.pivot.x = -x; + half_pw;
+            this.container.pivot.y = -y; + half_ph;
+            this.container.x = this.port_x;
+            this.container.y = this.port_y;
     
             this.x = x;
             this.y = y;
-            this._render();
+            
+            this.mask.draw(
+                ['fill',Draw.white],
+                ['rect',
+                    -x,
+                    -y,
+                    this.port_width,
+                    this.port_height
+                ],
+                ['fill']
+            );
+            this.container.mask = this.mask.graphics;
         }
     }
-    var View = name => {
+    var View = (follow) => {
+        let name = 'a_name';
         if (!view_ref[name])
             view_ref[name] = new _View(name);
+        if (follow)
+            view_ref[name].follow(follow);
         return view_ref[name];
     }
     View.names = () => Object.keys(view_ref);
@@ -1850,7 +1952,7 @@ var Blanke = (selector, options) => {
     let Matrix = PIXI.Matrix;
 
     engineLoaded.call(this);
-    var classes = {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View};
+    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View};
     return classes;
 }
 Blanke.addGame = (name, options) => {

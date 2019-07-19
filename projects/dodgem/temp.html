@@ -665,6 +665,8 @@ var Blanke = (selector, options) => {
                 let skip_call = false; // not actually used yet
                 let name = Draw.functions[arg[0]] || arg[0];
                 let params = arg.slice(1);
+                let extra_calls = [];
+
                 if (name == 'beginFill' && params.length == 0) {
                     name = 'endFill';
                 }
@@ -674,7 +676,7 @@ var Blanke = (selector, options) => {
                     else 
                         params[0] = getTex(params[0]);
                 }
-                if (name == 'lineTextureStyle') 
+                if (name == 'lineTextureStyle') // width, line, ...
                     params[1] = getTex(params[1]);
                 
                 if (name == 'drawStar' && params.length >= 6)
@@ -693,10 +695,27 @@ var Blanke = (selector, options) => {
                     in_hole = !in_hole;
                 }
 
+                if (name == 'entity' && params[0].sprite_index != '') {
+                    name = 'beginTextureFill'
+                    let ent = params[0];
+                    let spr = ent.sprites[ent.sprite_index]
+                    params[0] = spr.texture;
+                    if (!params[1]) params[1] = Draw.white;
+                    if (!params[2]) params[2] = 1;
+                    if (!params[3]) params[3] = spr.matrix;
+                    extra_calls = [
+                        ['drawRect',spr.x - spr.pivot.x,spr.y - spr.pivot.y,spr.width,spr.height],
+                        ['endFill']
+                    ];
+                }
+
                 if (!skip_call && this.graphics[name])
                     this.graphics[name](...params);
                 else
                     throw new Error(`${arg[0]} is not a Draw function`);
+                if (extra_calls)
+                    for (let call of extra_calls)
+                        this.graphics[call[0]](...call.slice(1));
             }
         }
         clone () {
@@ -753,6 +772,37 @@ var Blanke = (selector, options) => {
     }
     for (let color in Draw.colors) {
         Draw[color] = Draw.colors[color];
+    }
+
+    /* -CANVAS */
+    let canvas_rtexs = [];
+    class Canvas { 
+        constructor () {
+            this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
+            this.container = new PIXI.Sprite(this.rtex);
+            this.width = Game.width;
+            this.height = Game.height;
+            this.auto_clear = true;
+            addZOrdering(this);
+            enableEffects(this);
+            Scene.addDrawable(this.container);
+            this._size_changed = false;
+            window.addEventListener('resize',()=>{
+                this.rtex.resize(app.view.width, app.view.height);
+            })
+            canvas_rtexs.push(this.rtex);
+        }
+        destroy () {
+            this.container.destroy();
+            this.rtex.destroy();
+        }
+        _getPixiObjs () { return [this.container]; }
+        draw (obj, matrix) {
+            let pixi_objs = obj._getPixiObjs ? obj._getPixiObjs() : [];
+            for (let pixi_obj of pixi_objs)
+                app.renderer.render(pixi_obj, this.rtex, this.auto_clear, matrix);
+            this.container.texture = this.rtex;
+        }
     }
 
     /* -SCENE */
@@ -902,6 +952,7 @@ var Blanke = (selector, options) => {
     class Sprite {
         constructor (name, options) {
             this.animated = false;
+            this._matrix = new Matrix(1,0,0,1,0,0);
             // animated sprite
             if ((options && options.frames) || (!options && name.frames)) {
                 if (!options)
@@ -922,18 +973,28 @@ var Blanke = (selector, options) => {
             this.sprite.x = 0;
             this.sprite.y = 0;
        
-            let props = ['alpha','width','height','pivot','angle'];
+            let props = ['alpha','width','height','pivot','angle','scale','skew'];
         
             enableEffects(this);
             aliasProps(this, this.sprite, props);
         }
         _getPixiObjs () { return [this.sprite]; }
+        get matrix () {
+            this._matrix.setTransform(
+                this.x, this.y, this.pivot.x, this.pivot.y, 
+                this.scale.x, this.scale.y, this.angle, 
+                this.skew.x, this.skew.y
+            );
+            return this._matrix;
+        }
         get x () { return this.sprite.x; }
         set x (v){ this.sprite.x = v; }
         get y () { return this.sprite.y; }
         set y (v){ this.sprite.y = v; }
         get speed () { if (this.animated) return this.sprite.animationSpeed; }
         set speed (v){ if (this.animated) this.sprite.animationSpeed = v; }
+        get texture () { return this.sprite.texture }
+        set texture (v) { this.sprite.texture = v }
         crop (x, y, w, h) {
             /*
                 // copy texture
@@ -1131,7 +1192,7 @@ var Blanke = (selector, options) => {
             // sprite
             this.sprites = {};
             this.sprite_index = '';
-            let spr_props = ['alpha','width','height','pivot','angle'];
+            let spr_props = ['alpha','width','height','pivot','angle','scale','skew'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
@@ -1381,7 +1442,26 @@ var Blanke = (selector, options) => {
             }
         }
     }
-    var Input = (name) => input_ref[name] ? input_ref[name].check() : {}
+    var Input = (...name) => {
+        if (name.length == 1)
+            return input_ref[name[0]] ? input_ref[name[0]].check() : {}
+        else {
+            let ret = { pressed: { any: false, all: true }, released: { any: false, all: true } };
+            for (let n of name) {
+                let val = input_ref[n] ? input_ref[n].check() : {}
+                ret[n] = val;
+                if (!val.pressed)
+                    ret.pressed.all = false;
+                else
+                    ret.pressed.any = true;
+                if (!val.released)
+                    ret.released.all = false;
+                else 
+                    ret.released.any = true;
+            }
+            return ret;
+        }
+    }
     Input.set = (name, ...inputs) => {
         if (['set','inputCheck'].includes(name)) return;
         input_ref[name] = new _Input(name, inputs);
@@ -1557,9 +1637,11 @@ var Blanke = (selector, options) => {
             this._render();
         }
     }
-    var View = name => {
+    var View = (name, follow) => {
         if (!view_ref[name])
             view_ref[name] = new _View(name);
+        if (follow)
+            view_ref[name].follow(follow);
         return view_ref[name];
     }
     View.names = () => Object.keys(view_ref);
@@ -1892,7 +1974,7 @@ var Blanke = (selector, options) => {
     let Matrix = PIXI.Matrix;
 
     engineLoaded.call(this);
-    var classes = {Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View};
+    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View};
     return classes;
 }
 Blanke.addGame = (name, options) => {
@@ -1955,7 +2037,7 @@ var PIXI=function(t){"use strict";var e="undefined"!=typeof globalThis?globalThi
 				],
 				onLoad: function(){
 					
-		let { Asset, Audio, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View } = game_instance;
+		let { Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View } = game_instance;
 		
 		let TestScene = () => {};
 		let TestView = () => {};
@@ -1969,9 +2051,10 @@ Input.set("down","s","down")
 class Robot extends Entity {
     init () {
 		this.addSprite("run", {image:"blue_robot", frames:6, speed:0.1, frame_size:[38,33], offset:[38,0]})
-    	
+    	this.sprite_pivot.x = this.sprite_width / 2;
 	}
     update (dt) {
+		// movement
 		this.hspeed = 0;
 		this.vspeed = 0;
  		if (Input("left").pressed)
@@ -1982,22 +2065,16 @@ class Robot extends Entity {
 			this.vspeed = -2;
 		if (Input("down").pressed)
 			this.vspeed = 2;
+		// animation
+		if (Input('left','right').pressed.any)
+			this.sprite_scale.x = Math.sign(this.hspeed);
     }
 }
 
 TestScene({
 	onStart: (s) => {
-		s.rob = new Robot();
-		let drawing = new Draw(
-			['lineStyle',1,Draw.black],
-			['rect',1,1,Game.width-2,Game.height-2],
-			['rect',20,20,100,100]
-		)
-		let view = TestView("player", s.rob);
-	},
-	onUpdate: (s,dt) => {
-		//let view = TestView("player")
-		//view.angle = Util.sinusoidal(-45,45,0.01)
+		let rob = new Robot();
+		//let view = TestView("player", rob);
 	}
 })
 
@@ -2011,26 +2088,14 @@ Scene("ScenePlay",{
 		bob.x = 50
 		bob.y = Game.height - bob.sprite_height
 		
-		drawing = new Draw(
-			['fill',Draw.blue],
-			['rect',0,0,100,100]
-		)
+		drawing = new Canvas()
+		drawing.auto_clear = false;
 		drawing.z = -1;
-		
-		new Draw(
-			['lineStyle',1,Draw.black],
-			['rect',1,1,Game.width-2,Game.height-2],
-			['rect',20,20,100,Game.height]
-		)
-		
-		let bop = View("player")
-		bop.port_width = 100;
-		bop.port_height = 100;
-		bop.follow(bob);
-		bop.angle = 45;
+		View("bob",bob)	
 	},
     onUpdate: function(scene, dt) {
-		drawing.x = Util.sinusoidal(0,100,0.02)
+		// draw trail
+		drawing.draw(bob)
     },
     onEnd: function() {
 		

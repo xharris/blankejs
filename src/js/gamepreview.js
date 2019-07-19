@@ -290,7 +290,7 @@ class GamePreview {
 						view.port_height = window.innerHeight;
 				`;
 			if (this.size == 1) {
-				view_size += `
+				view_size = `
 						view.port_width = window.innerWidth / 2;
 						view.port_height = window.innerHeight;
 				`;
@@ -309,8 +309,8 @@ class GamePreview {
 				Scene.ref["_test"] = null;
 				Scene("_test", funcs);
 			}
-			let TestView = (name, follow_obj) => {
-				let view = View("_test_"+name);
+			let TestView = (follow_obj) => {
+				let view = View();
 				if (follow_obj)
 					view.follow(follow_obj);
 				${view_size}

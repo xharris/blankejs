@@ -15,3 +15,7 @@ elec.app.on('ready', function(){
     main_window.loadFile(`src/index.html`);
     // main_window.webContents.openDevTools();
 });
+
+process.on('uncaughtException', (err) => {
+    console.log(err);
+})
