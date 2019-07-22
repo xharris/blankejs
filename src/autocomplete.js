@@ -76,6 +76,11 @@ module.exports.image = [
 	/Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/
 ];
 
+module.exports.this_ref = {
+	'blanke-entity-instance':/\bclass\s+\w+\s+extends\s+Entity/g,
+	'blanke-scene':/\b(?:onStart|onUpdate|onEnd)\s*:[\s\w]+\(([a-zA-Z_]\w+?)\s*[),]/g
+}
+
 /*
 	{ fn: "name", info, vars }
 	{ prop: "name", info }

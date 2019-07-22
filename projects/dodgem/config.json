@@ -29,6 +29,29 @@
                 0
             ],
             "image": "image/blue_robot.png"
+        },
+        "image/balls.png": {
+            "name": "ball",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame_size": [
+                128,
+                128
+            ],
+            "frames": 5,
+            "selected_frames": [
+                "\"1-4\"",
+                1
+            ],
+            "columns": 5,
+            "border": [
+                0,
+                0
+            ],
+            "image": "image/balls.png"
         }
     },
     "enabled_plugins": {

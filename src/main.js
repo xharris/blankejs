@@ -262,7 +262,7 @@ var app = {
 			}
 		}
 	},
-
+	autocomplete_toast: null,
 	watchAutocomplete: function() {
         app.refreshAutocomplete();
 		if (autocomplete_watch) {
@@ -272,8 +272,11 @@ var app = {
 		app.ignore_errors = true;
 	    autocomplete_watch = nwFS.watch(nwPATH.resolve('src',app.settings.autocomplete_path), function(e){
             app.refreshAutocomplete();
-            dispatchEvent("autocompleteChanged");
-			blanke.toast("autocomplete reloaded!");
+			dispatchEvent("autocompleteChanged");
+			if (!app.autocomplete_toast)
+				app.autocomplete_toast = blanke.toast("autocomplete reloaded!", null, () => {
+					app.autocomplete_toast = null;
+				});
 		});
 		app.ignore_errors = false;
 	},

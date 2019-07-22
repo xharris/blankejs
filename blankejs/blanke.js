@@ -736,25 +736,27 @@ var Blanke = (selector, options) => {
     class Canvas { 
         constructor () {
             this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
-            this.container = new PIXI.Sprite(this.rtex);
+            this.sprite = new PIXI.Sprite(this.rtex);
             this.width = Game.width;
             this.height = Game.height;
             this.auto_clear = true;
             addZOrdering(this);
             enableEffects(this);
-            Scene.addDrawable(this.container);
+            Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
                 if (!this._size_changed)
                     this.resize(app.view.width, app.view.height, true);
             })
+            aliasProps(this, this.sprite, ['alpha']);
+            enableEffects(this);
         }
-        _getPixiObjs () { return [this.container]; }
+        _getPixiObjs () { return [this.sprite]; }
         draw (obj, matrix) {
             let pixi_objs = obj._getPixiObjs ? obj._getPixiObjs() : [];
             for (let pixi_obj of pixi_objs)
                 app.renderer.render(pixi_obj, this.rtex, this.auto_clear, matrix);
-            this.container.texture = this.rtex;
+            this.sprite.texture = this.rtex;
         }
         resize (w, h, internal) {
             this.width = w;
@@ -870,6 +872,12 @@ var Blanke = (selector, options) => {
         for (let name of Scene.stack) {
             Scene.end(name);
         }
+    }
+
+    // gets last added scene
+    Scene.current = () => {
+        if (Scene.stack.length > 0)
+            return Scene(Scene.stack[Scene.stack.length-1]);
     }
     
     Scene.addDrawable = (obj) => {
@@ -1538,7 +1546,7 @@ var Blanke = (selector, options) => {
         get scale () {
             return this._scale;
         }
-        follow (obj) {
+        follow (obj, dont_add_scene) {
             if (obj.view_follow && obj.view_follow.name == this.name)
                 return;
             obj.view_follow = this;
@@ -1550,8 +1558,9 @@ var Blanke = (selector, options) => {
                 this.follow_obj = obj;
                 this.add(this.follow_obj)
             }
-            // TODO: automatically add current scene
-
+            let curr_scene = Scene.current();
+            if (!dont_add_scene && curr_scene)
+                this.add(curr_scene); 
         }
         add (...objects) {
             for (let obj of objects) {
@@ -1593,8 +1602,8 @@ var Blanke = (selector, options) => {
             }
             this.container.scale.copyFrom(this.scale);
             this.container.angle = this.angle;
-            this.container.pivot.x = -x; + half_pw;
-            this.container.pivot.y = -y; + half_ph;
+            this.container.pivot.x = -x;
+            this.container.pivot.y = -y;
             this.container.x = this.port_x;
             this.container.y = this.port_y;
     

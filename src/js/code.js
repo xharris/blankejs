@@ -22,9 +22,10 @@ var instance_list = {}; // instance (let player = new Player())
 var var_list = {};      // user_words (let player;)
 var class_list = []     // class_list (Map, Scene, Effect)
 var keywords = [];
+var this_lines = {};	// { file: {line_text : ref_type} }
 
 var autocomplete, hints;
-var re_class_extends, re_instance, re_user_words, re_image;
+var re_class_extends, re_instance, re_user_words, re_image, re_this;
 
 function isReservedWord(word) {
 	return keywords.includes(word) || autocomplete.class_list.includes(word);
@@ -47,6 +48,7 @@ var reloadCompletions = () => {
 	hints = autocomplete.hints || {};
 	class_list = autocomplete.class_list || [];
 	re_image = autocomplete.image || [];
+	re_this = autocomplete.this_ref || {};
 }
 
 document.addEventListener('loadedPlugins', reloadCompletions);
@@ -175,7 +177,19 @@ var getKeywords = (file, content) => {
         }
         match(new_re_instance, instance_list);
         var_list[file] = {};
-        match(re_user_words, var_list);
+		match(re_user_words, var_list);
+
+		// for 'this' keyword
+		this_lines[file] = {};
+		for (let name in re_this) {
+			let regexs = [].concat(re_this[name]);
+			for (let re of regexs) {
+				let match;
+				while (match = re.exec(content)) {
+					this_lines[file][match[0].trim()] = [name].concat(match.slice(1));
+				}
+			}
+		}
     });
 }
 
@@ -226,6 +240,7 @@ class Code extends Editor {
 			var blankeOverlay = {
 				token: (stream, state) => {
 					let baseCur = stream.lineOracle.state.baseCur;
+					let line = stream.lineOracle.line;
 					if (baseCur == null) baseCur = "";
 					else baseCur += " ";
 					var ch;
@@ -270,10 +285,6 @@ class Code extends Editor {
 							return baseCur+`blanke-class blanke-${name.toLowerCase()}`;
 					}
 
-					// this keyword
-					if (stream.match(/^this/g)) {
-						return baseCur+"blanke-this";
-					}
 
 					while (stream.next() && false) {}
 					return null;
@@ -536,8 +547,6 @@ class Code extends Editor {
 			if (before_word == '.' && word != '.') {
 				token_pos.ch = before_word_pos.ch - 1;
 			}
-       		let token_type = editor.getTokenTypeAt(token_pos) || '';
-
 
 			checkGutterEvents(editor);
 			blanke.cooldownFn('checkLineWidgets',250,()=>{otherActivity(cm,e)})
@@ -547,25 +556,47 @@ class Code extends Editor {
 			this_ref.refreshFnHelperTimer();
 
 			let hint_list = [];
+			let token = editor.getTokenAt(token_pos);
+			let tokens = (token.type || '').split(' ');
+			let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
 			// dot activation
 			if (word == '.' || before_word == '.') {
-				let tokens = token_type.split(' ');
+				/*
+				// this -> replace with real instance type
+				if (is_key_or_var) {
+					// look at previous lines until a 'this regex' is hit
+					let loop = token_pos.line - 1;
+					let this_lines_keys = Object.keys(this_lines[this_ref.file]);
+					do {
+						let line = editor.getLine(loop).trim();
+						for (let l of this_lines_keys) {
+							if (line.includes(l) && (token.string == 'this' || this_lines[this_ref.file][l].includes(token.string))) {
+								tokens.push(this_lines[this_ref.file][l][0]);
+								console.log(token.string, this_lines)
+							}
+						}
+						loop--;
+					} while (loop > 0);
+				}*/
 				for (let tok of tokens) {
 					hint_list = hint_list.concat(hints[tok] || []);
 				}
 			}
-			// globals
-			if (word != '.' && token_type == 'variable') {
+			console.log(word, before_word, tokens, hint_list)
+			// 'global scope'
+			if ((word != '.' && before_word != '.') && is_key_or_var) {
 				// variable
-				var_list[this_ref.file].var.forEach(v => {
-					if (v.startsWith(word))
-						hint_list.push({ prop: v });
-				})
+				if (var_list[this_ref.file].var)
+					var_list[this_ref.file].var.forEach(v => {
+						if (v.startsWith(word))
+							hint_list.push({ prop: v });
+					})
 				// function
-				var_list[this_ref.file].fn.forEach(v => {
-					if (v.startsWith(word))
-						hint_list.push({ fn: v });
-				})
+				if (var_list[this_ref.file].fn)
+					var_list[this_ref.file].fn.forEach(v => {
+						if (v.startsWith(word))
+							hint_list.push({ fn: v });
+					})
 			}
 			
 			if (hint_list.length > 0)

@@ -1,6 +1,6 @@
 var boxes = [];
 var MAX_WINDOWS = 4; //5;
-var split_enabled = true;
+var split_enabled = false;
 var SHOW_SINGLE_BOX_TITLEBAR = true;
 
 class FibWindow {

@@ -659,7 +659,7 @@ class BlankeForm {
 }
 
 class Toast {
-    constructor (text, duration) {
+    constructor (text, duration, die_cb) {
         if (!Toast.el_toasts) {
             Toast.el_toasts = blanke.createElement('div','blankejs-toasts');
             document.body.appendChild(Toast.el_toasts);
@@ -694,7 +694,7 @@ class Toast {
 
         // duration
         if (duration == null || duration > 0)
-            this.die(duration);
+            this.die(duration, die_cb);
 
         this.style = 'none';
         this.text = text;
