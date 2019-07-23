@@ -263,7 +263,7 @@ class Code extends Editor {
 							// get parent class name
 							let parent = '';
 							for (let p in ext_classes) {
-								if (ext_classes[p] == cat)
+								if (ext_classes[p].includes(cat))
 									parent = `blanke-${p.toLowerCase()}-instance`;
 							}
 							if (stream.match(new RegExp("^"+name))) 
@@ -479,11 +479,13 @@ class Code extends Editor {
 		let showHints = (editor, in_list, input) => {
 			let hint_types = {};
 			let list = [];
+			
 			for (var o in in_list) {
 				let hint_opts = in_list[o];
 				let add = false;
 				let text = hint_opts.fn || hint_opts.prop;
 
+				//console.log(input, text)
 				if (input != '.' && !text.startsWith(input)) 
 					continue;
 
@@ -530,23 +532,15 @@ class Code extends Editor {
 			});
 		}
 
+		let before_dot = '';
 		new_editor.on("change", function(cm, e){
 			let editor = cm;
 			let cursor = editor.getCursor();
 
-			let word_pos = editor.findWordAt(cursor);
-			let word = editor.getRange(word_pos.anchor, word_pos.head);
-
+/*
 			if (this_ref.last_word == word) return;
 			this_ref.last_word = word;
-			
-			let before_word_pos = {line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
-			let before_word = editor.getRange(before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
-			let word_slice = word.slice(-1);
-			let token_pos = {line: cursor.line, ch: cursor.ch-1};
-			if (before_word == '.' && word != '.') {
-				token_pos.ch = before_word_pos.ch - 1;
-			}
+			*/
 
 			checkGutterEvents(editor);
 			blanke.cooldownFn('checkLineWidgets',250,()=>{otherActivity(cm,e)})
@@ -556,35 +550,53 @@ class Code extends Editor {
 			this_ref.refreshFnHelperTimer();
 
 			let hint_list = [];
-			let token = editor.getTokenAt(token_pos);
+			// dot activation
+			let word_pos = editor.findWordAt(cursor);
+			let word = editor.getRange(word_pos.anchor, word_pos.head);
+			let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
+			let before_word = editor.getRange(before_word_pos.anchor, before_word_pos.head);//before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
+			let before_dot_pos = editor.findWordAt({line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1})
+			if (before_word == '.') {
+				before_dot = editor.getRange(before_dot_pos.anchor, before_dot_pos.head);
+			} else {
+				before_dot = '';
+			}
+			// word that triggered the dot
+			let keyword = (before_dot != '') ? before_dot : before_word;
+			let keyword_pos = (before_dot != '') ? before_dot_pos : before_word_pos;
+
+			if (before_dot == '' && before_word == '.' && word != '.') {
+				keyword_pos.ch = before_word_pos.ch - 1;
+			}
+			console.log([word, before_word, keyword])
+
+			let token = editor.getTokenAt(keyword_pos);
 			let tokens = (token.type || '').split(' ');
 			let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
-			// dot activation
-			if (word == '.' || before_word == '.') {
-				/*
+
+			if (keyword != '') {
 				// this -> replace with real instance type
 				if (is_key_or_var) {
 					// look at previous lines until a 'this regex' is hit
-					let loop = token_pos.line - 1;
+					let loop = keyword_pos.line - 1;
 					let this_lines_keys = Object.keys(this_lines[this_ref.file]);
 					do {
 						let line = editor.getLine(loop).trim();
 						for (let l of this_lines_keys) {
-							if (line.includes(l) && (token.string == 'this' || this_lines[this_ref.file][l].includes(token.string))) {
+							if (line.includes(l) && 
+								(keyword == 'this' || this_lines[this_ref.file][l].includes(keyword))) {
 								tokens.push(this_lines[this_ref.file][l][0]);
-								console.log(token.string, this_lines)
 							}
 						}
 						loop--;
 					} while (loop > 0);
-				}*/
+				}
 				for (let tok of tokens) {
 					hint_list = hint_list.concat(hints[tok] || []);
 				}
 			}
-			console.log(word, before_word, tokens, hint_list)
 			// 'global scope'
-			if ((word != '.' && before_word != '.') && is_key_or_var) {
+			if (word != '.' && is_key_or_var) {
 				// variable
 				if (var_list[this_ref.file].var)
 					var_list[this_ref.file].var.forEach(v => {
@@ -598,7 +610,7 @@ class Code extends Editor {
 							hint_list.push({ fn: v });
 					})
 			}
-			
+			console.log(word, before_word, keyword, (word == '.' || before_word == '.'), hint_list)
 			if (hint_list.length > 0)
 				showHints(editor, hint_list, word);
 		});

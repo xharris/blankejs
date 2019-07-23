@@ -264,19 +264,20 @@ class FibWindow {
 		}
 
 		// set up the first box
-		if (first_box)
+		if (first_box) {
 			first_box.fib_container.classList.remove("single");
-		if (boxes.length == 1 || !split_enabled)
-			first_box.fib_container.classList.add("single");
-		if (first_box &&
-			first_box.bg_content && 
-			(!first_box.in_background || el_bg_workspace.focused_guid != first_box.guid)) {
-			blanke.clearElement(el_bg_workspace);
-			first_box.in_background = true;
-			first_box.fib_container.classList.add("first");
-			el_bg_workspace.dataset.type = first_box.type;
-			el_bg_workspace.focused_guid = first_box.guid;
-			el_bg_workspace.appendChild(first_box.bg_content);
+			
+			if (boxes.length == 1 || !split_enabled)
+				first_box.fib_container.classList.add("single");
+			if (first_box.bg_content && 
+				(!first_box.in_background || el_bg_workspace.focused_guid != first_box.guid)) {
+				blanke.clearElement(el_bg_workspace);
+				first_box.in_background = true;
+				first_box.fib_container.classList.add("first");
+				el_bg_workspace.dataset.type = first_box.type;
+				el_bg_workspace.focused_guid = first_box.guid;
+				el_bg_workspace.appendChild(first_box.bg_content);
+			}
 		}
 
 		if (boxes[0])

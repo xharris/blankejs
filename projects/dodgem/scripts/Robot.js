@@ -31,5 +31,6 @@ TestScene({
 	onStart: (s) => {
 		let rob = new Robot();
 		TestView(rob);
+		
 	}
 })

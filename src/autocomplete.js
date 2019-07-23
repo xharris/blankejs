@@ -78,7 +78,7 @@ module.exports.image = [
 
 module.exports.this_ref = {
 	'blanke-entity-instance':/\bclass\s+\w+\s+extends\s+Entity/g,
-	'blanke-scene':/\b(?:onStart|onUpdate|onEnd)\s*:[\s\w]+\(([a-zA-Z_]\w+?)\s*[),]/g
+	'blanke-scene':/\b(?:onStart|onUpdate|onEnd)[:\s\w]*\(([a-zA-Z_]\w*)\s*[),]/g
 }
 
 /*
@@ -185,7 +185,9 @@ module.exports.hints = {
 		{ prop: 'gravity_direction' },
 		{ prop: 'shape_index', info:'base shape of the entity' },
 		{ prop: 'shapes', info:`{ 'shape_name' : Hitbox }`},
-		prop_effect
+		prop_effect,
+		{ fn: 'addSprite', vars: { name: '', options: 'frames, columns, frame_size[w,h], speed, spacing[x,y], offset[x,y]' } },
+		{ fn: 'addShape', vars: { name: '',  options: 'type(circle/rect/poly), ...see docs' } }
 	],
 	"blanke-input":[
 		{ fn: 'set', vars: { name:'', inputs:'...' } },

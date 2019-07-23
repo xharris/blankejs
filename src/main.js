@@ -246,14 +246,14 @@ var app = {
 		app.ignore_errors = true;
 		try {
 			let data = app.require(app.settings.autocomplete_path)
-			if (Object.keys(data).length == 0)
+			if (!data)
 				throw 'autocomplete not loaded';
 			else 
 				app.autocomplete = data;
 		} catch (e) {
 			err = true;
 			blanke.toast('error in autocomplete file!')
-			console.log('autocomplete not loaded');
+			console.log(e);
 		} finally {
 			app.ignore_errors = false;
 			if (!err) {
@@ -1018,7 +1018,10 @@ app.window.webContents.on("did-finish-load",()=>{
 
 	window.addEventListener("error", function(e){
 		app.error_occured = e;
-		app.error(e.error.stack);
+		if (e.error)
+			app.error(e.error.stack);
+		else 
+			app.error(JSON.stringify(e));
 	});
 
 	// changing searchbox placeholder between "Some title" and "Search..."
