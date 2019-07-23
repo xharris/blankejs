@@ -33,7 +33,8 @@ module.exports.keywords = [
 module.exports.class_list = [
 	'Asset','Game','Util','Draw','Scene',
 	'Map','Effect','Scene','Sprite','Input',
-	'Entity','View','TestScene','TestView'
+	'Entity','View','Timer',
+	'TestScene','TestView'
 ];
 
 module.exports.class_extends = {
@@ -105,7 +106,8 @@ module.exports.hints = {
 		{ fn: 'direction_y', vars: { angle:'degrees', dist:'' } },
 		{ fn: 'distance', vars: { x1:'', y1:'', x2:'', y2:'' } },
 		{ fn: 'direction', vars: { x1:'', y1:'', x2:'', y2:'' } },
-		{ fn: 'rand_range', vars: { min:'', max:'' } },
+		{ fn: 'rand_range', info: 'returns int [min,max)', vars: { min:'', max:'' } },
+		{ fn: 'rand_choose', vars: { array:'' } },
 		{ fn: 'basename', vars: { path:'', no_ext:'' } },
 		{ fn: 'lerp', vars: { a:'', b:'', amt:'[0,1]' } },
 		{ fn: 'sinusoidal', vars: { min:'', max:'', spd:'', offset:'opt' } }
@@ -182,7 +184,7 @@ module.exports.hints = {
 		{ prop: 'hspeed' },
 		{ prop: 'vspeed' },
 		{ prop: 'gravity' },
-		{ prop: 'gravity_direction' },
+		{ prop: 'gravity_direction', info: '0 = right, 90 = down'},
 		{ prop: 'shape_index', info:'base shape of the entity' },
 		{ prop: 'shapes', info:`{ 'shape_name' : Hitbox }`},
 		prop_effect,

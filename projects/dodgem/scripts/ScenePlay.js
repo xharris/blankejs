@@ -7,7 +7,11 @@ Scene("ScenePlay",{
 		bob = new Robot();
 		bob.x = Game.width / 2
 		bob.y = Game.height / 2
+		bob.z = 5;
 		
+		Timer.every(1000,()=>{
+			new Ball();
+		});
 	},
     onUpdate: function(scene, dt) {
 		// draw trail

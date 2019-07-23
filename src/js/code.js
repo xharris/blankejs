@@ -479,6 +479,7 @@ class Code extends Editor {
 		let showHints = (editor, in_list, input) => {
 			let hint_types = {};
 			let list = [];
+			let text_added = []; // hints that area already added
 			
 			for (var o in in_list) {
 				let hint_opts = in_list[o];
@@ -486,7 +487,7 @@ class Code extends Editor {
 				let text = hint_opts.fn || hint_opts.prop;
 
 				//console.log(input, text)
-				if (input != '.' && !text.startsWith(input)) 
+				if (input != '.' && !text.startsWith(input) && text != input) 
 					continue;
 
 				if (hint_opts.fn) {
@@ -497,7 +498,8 @@ class Code extends Editor {
 					hint_types[text] = 'property';
 					add = true;
 				}
-				if (add) {
+				if (add && !text_added.includes(text)) {
+					text_added.push(text);
 					list.push({
 						text:text,
 						hint_opts:hint_opts,
@@ -563,12 +565,14 @@ class Code extends Editor {
 			}
 			// word that triggered the dot
 			let keyword = (before_dot != '') ? before_dot : before_word;
-			let keyword_pos = (before_dot != '') ? before_dot_pos : before_word_pos;
+			// before_dot_pos : before_word_pos
+			let keyword_pos = (before_dot != '') ? 
+				{line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1} : 
+				{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
 
 			if (before_dot == '' && before_word == '.' && word != '.') {
 				keyword_pos.ch = before_word_pos.ch - 1;
 			}
-			console.log([word, before_word, keyword])
 
 			let token = editor.getTokenAt(keyword_pos);
 			let tokens = (token.type || '').split(' ');
@@ -610,7 +614,6 @@ class Code extends Editor {
 							hint_list.push({ fn: v });
 					})
 			}
-			console.log(word, before_word, keyword, (word == '.' || before_word == '.'), hint_list)
 			if (hint_list.length > 0)
 				showHints(editor, hint_list, word);
 		});

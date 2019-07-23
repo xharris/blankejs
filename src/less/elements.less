@@ -54,10 +54,48 @@
 	}
 }
 .content[data-type="Code"] {
-    /* TAB only
-    padding-top: 33px;
-	padding-bottom: 22px;*/
 	overflow: hidden;
+
+	.log {
+		position: absolute;
+		bottom: 13px;
+		z-index: 10;
+		left: 2px;
+		right: 2px;
+		overflow: auto;
+    	background: rgba(0,0,0,0.5);
+		box-sizing: border-box;
+		border-radius: 4px;
+		max-height: 20%;
+		/* min-height: 25px; */
+		overflow-y: auto;
+		z-index: 0;
+		transition: ease-in-out all 0.1s;
+
+		&:hover {
+    		background: rgba(0,0,0,0.8);
+		}
+
+		.lines, .error {
+			margin: 0px;
+			font-size: 16px;
+			margin: 0px 4px;
+			white-space: pre-wrap;
+		}
+
+		.lines {
+			color: white;
+		}
+
+		.error {
+			padding: 2px;
+			color: @theme-string-dark;
+
+			a {
+				color: @theme-string;
+			}
+		}
+	}
 
     .gutter-event {
     	width: 10px;
@@ -80,16 +118,14 @@
 		height: 100%;
 	}
 
-	.editor-content {
-		&.horizontal .code.split {
-			width: 50%;
-			display: inline-block;
-		}
-		
-		&.vertical .code.split {
-			height: 50%;
-			display: inline-block;
-		}
+	&.horizontal .code.split {
+		width: 50%;
+		display: inline-block;
+	}
+	
+	&.vertical .code.split {
+		height: 50%;
+		display: inline-block;
 	}
 
 	.methods {
@@ -865,51 +901,6 @@
 	&.single {
 		right: @window-padding;
 		top: 0px;
-	}
-}
-
-.content[data-type="Code"] {
-	overflow: hidden;
-
-	.log {
-		position: absolute;
-		bottom: 13px;
-		z-index: 10;
-		left: 2px;
-		right: 2px;
-		overflow: auto;
-    	background: rgba(0,0,0,0.5);
-		box-sizing: border-box;
-		border-radius: 4px;
-		max-height: 20%;
-		/* min-height: 25px; */
-		overflow-y: auto;
-		z-index: 0;
-		transition: ease-in-out all 0.1s;
-
-		&:hover {
-    		background: rgba(0,0,0,0.8);
-		}
-
-		.lines, .error {
-			margin: 0px;
-			font-size: 16px;
-			margin: 0px 4px;
-			white-space: pre-wrap;
-		}
-
-		.lines {
-			color: white;
-		}
-
-		.error {
-			padding: 2px;
-			color: @theme-string-dark;
-
-			a {
-				color: @theme-string;
-			}
-		}
 	}
 }
 

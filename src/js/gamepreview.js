@@ -234,6 +234,7 @@ class GamePreview {
 				fill_parent: false,
 				width: ${this.options.size[0]},
 				height: ${this.options.size[1]},
+				${this.options.resizable ? 'resizable: true,' : '' }
 				assets: [${this.getAssetStr()}],
 				onLoad: function(){
 					${this.refreshSource()}
@@ -396,7 +397,8 @@ var game_instance = Blanke("#game",{
 	fill_parent: true,
 	ide_mode: true,
 	${this.options.size == null ?
-	`auto_resize: true,`
+	`auto_resize: true,
+	resizable: true,`
 	:
 	`width: ${this.options.size[0]},
 	height: ${this.options.size[1]},`

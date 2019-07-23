@@ -279,6 +279,7 @@ var Blanke = (selector, options) => {
         paused: false,
         config: {},
         time: 0,
+        ms: 0,
         get os () { // ide, win, mac, linux, android, ios
             if (blanke_ref.options.ide_mode) return 'ide';
             let os_list = ['win','mac','linux','android'];
@@ -375,7 +376,9 @@ var Blanke = (selector, options) => {
         direction_y: (angle, dist) => angle == 0 ? dist : Math.sin(Util.rad(angle)) * dist,
         distance: (x1, y1, x2, y2) => Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2)),
         direction: (x1, y1, x2, y2) => Util.deg(Math.atan2(y2-y1,x2-x1)),
-        rand_range: (min, max) => Math.floor(Math.random() * (+max - +min)) + +min,
+        // rand_range -> int [min,max)
+        rand_range: (min, max) => Math.floor(Math.random() * (max - min)) + min,
+        rand_choose: (arr) => arr[Util.rand_range(0,arr.length)],
         lerp: (a, b, amt) => a + amt * (b - a),
         sinusoidal: (min, max, spd, off=0) => min + -Math.cos(Util.lerp(0,Math.PI/2,off) + Game.time * spd) * ((max - min)/2) + ((max - min)/2), 
         // string
@@ -403,6 +406,7 @@ var Blanke = (selector, options) => {
     }
     app.ticker.add((dt)=>{
         Game.time += dt;
+        Game.ms += app.ticker.elapsedMS;
         if (Input('toggle-fullscreen').released) {
             Game.fullscreen = !Game.fullscreen;
         }
@@ -760,25 +764,27 @@ var Blanke = (selector, options) => {
     class Canvas { 
         constructor () {
             this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
-            this.container = new PIXI.Sprite(this.rtex);
+            this.sprite = new PIXI.Sprite(this.rtex);
             this.width = Game.width;
             this.height = Game.height;
             this.auto_clear = true;
             addZOrdering(this);
             enableEffects(this);
-            Scene.addDrawable(this.container);
+            Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
                 if (!this._size_changed)
                     this.resize(app.view.width, app.view.height, true);
             })
+            aliasProps(this, this.sprite, ['alpha']);
+            enableEffects(this);
         }
-        _getPixiObjs () { return [this.container]; }
+        _getPixiObjs () { return [this.sprite]; }
         draw (obj, matrix) {
             let pixi_objs = obj._getPixiObjs ? obj._getPixiObjs() : [];
             for (let pixi_obj of pixi_objs)
                 app.renderer.render(pixi_obj, this.rtex, this.auto_clear, matrix);
-            this.container.texture = this.rtex;
+            this.sprite.texture = this.rtex;
         }
         resize (w, h, internal) {
             this.width = w;
@@ -838,12 +844,7 @@ var Blanke = (selector, options) => {
     
         update (dt) {
             this.onUpdate.call(this, dt);
-            for (let obj of this.objects) {
-                if (obj._update)
-                    obj._update(dt);
-                else if (obj.update)
-                    obj.update(dt);
-            }
+            iter_scene_objects(this.objects, dt);
         }
 
         start () {
@@ -895,29 +896,48 @@ var Blanke = (selector, options) => {
             Scene.end(name);
         }
     }
+
+    // gets last added scene
+    Scene.current = () => {
+        if (Scene.stack.length > 0)
+            return Scene(Scene.stack[Scene.stack.length-1]);
+    }
     
-    Scene.addDrawable = (obj) => {
+    Scene.addDrawable = (pixi_obj) => {
         if (Scene.stack.length > 0) 
-            Scene(Scene.stack[Scene.stack.length-1]).container.addChild(obj);
+            Scene(Scene.stack[Scene.stack.length-1]).container.addChild(pixi_obj);
         else
-            game_container.addChild(obj);
+            game_container.addChild(pixi_obj);
     }
 
     Scene.addUpdatable = (obj) => {
+        let old_destroy = obj.destroy;
+        obj.destroy = (...args) => {
+            obj.destroyed = true;
+            if (old_destroy) old_destroy.call(obj, ...args);
+        }
         if (Scene.stack.length > 0) 
             Scene(Scene.stack[Scene.stack.length-1]).objects.push(obj);
-        else
-            Scene.stray_objects.push(obj);
+        else 
+            Scene.stray_objects.push(obj);    
     }
-    // if a scene has not been createed
-    Scene.stray_objects = [];
-    app.ticker.add((dt) => {
-        for (let obj of Scene.stray_objects) {
-            if (obj._update)
+
+    let iter_scene_objects = (arr, dt) => {
+        for (let o = arr.length - 1; o >= 0; o--) {
+            let obj = arr[o];
+            if (obj.destroyed)
+                arr.splice(o, 1);
+            else if (obj._update)
                 obj._update(dt);
             else if (obj.update)
                 obj.update(dt);
         }
+    }
+
+    // if a scene has not been createed
+    Scene.stray_objects = [];
+    app.ticker.add((dt) => {
+        iter_scene_objects(Scene.stray_objects, dt);
     });
     
     Scene.ref = {};
@@ -977,6 +997,13 @@ var Blanke = (selector, options) => {
         set y (v){ this.sprite.y = v; }
         get speed () { if (this.animated) return this.sprite.animationSpeed; }
         set speed (v){ if (this.animated) this.sprite.animationSpeed = v; }
+        get frame () { return this.animated ? this.sprite.currentFrame : 0; }
+        set frame (v) {
+            if (!this.animated) return;
+            if (this.speed == 0) this.sprite.gotoAndStop(v);
+            else this.sprite.gotoAndPlay(v);
+        }
+        get frames () { return this.sprite.totalFrames; }
         get texture () { return this.sprite.texture }
         set texture (v) { this.sprite.texture = v }
         crop (x, y, w, h) {
@@ -1100,7 +1127,7 @@ var Blanke = (selector, options) => {
             this.graphics = new Draw(
                 ['lineStyle', 2, Draw.red, 0.5, 0],
                 ['fill', Draw.red, 0.3],
-                ['rect', ...opt.shape],
+                [opt.type == 'poly' ? 'polygon' : opt.type, ...opt.shape],
                 ['fill']
             );
             this.debug = false;  // TODO remove later
@@ -1176,7 +1203,7 @@ var Blanke = (selector, options) => {
             // sprite
             this.sprites = {};
             this.sprite_index = '';
-            let spr_props = ['alpha','width','height','pivot','angle','scale','skew'];
+            let spr_props = ['alpha','width','height','pivot','angle','scale','skew','frame','frames'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
@@ -1205,18 +1232,23 @@ var Blanke = (selector, options) => {
         destroy () {
             // destroy sprites
             for (let name in this.sprites) {
-                this.sprites[name]
+                this.sprites[name].destroy();
             }
             // destroy hitboxes
             for (let name in this.shapes) {
                 this.shapes[name].destroy();
             }
+            if (this._debug)
+                this._debug.destroy();
         }
         get visible () { return this._visible || false; }
         set visible (v) { this._getPixiObjs().forEach(o => { o.visible = false }); }
         _update (dt) {
+            if (this.destroyed) return;
             if (this.update)
                 this.update(dt);
+            if (this.destroyed) return;
+
             let dx = this.hspeed, dy = this.vspeed;  
             // gravity
             if (this.gravity != 0) {
@@ -1286,14 +1318,52 @@ var Blanke = (selector, options) => {
                 this.sprite_index = name;
         }
         addShape (name, options) {
+            if (typeof options == 'string') options = { type:options };
             options.tag = this.constructor.name + (options.tag ? '.'+options.tag : '');
+            if (!options.shape) {
+                switch (options.type) {
+                    case 'rect': options.shape = [0,0,this.sprite_width,this.sprite_height]; break;
+                    case 'circle': options.shape = [0,0,Math.max(this.sprite_width,this.sprite_height)/2]; break;
+                }
+            }
+            // sprite pivot offset
+            if (options.type == 'rect') { 
+                options.shape[0] -= this.sprite_pivot.x;
+                options.shape[1] -= this.sprite_pivot.y;
+            }
             this.shapes[name] = new Hitbox(options);
             this.shapes[name].position(this.x, this.y);
             if (!this.shape_index)
                 this.shape_index = name;
         }
         get debug () { return this._debug; }
-        set debug (v) { this._debug = v; }
+        set debug (v) {
+            if (v) {
+                this._debug = new Draw();
+            } else if (this._debug) {
+                this._debug.destroy();
+                // disable hitbox debugs
+                for (let name in this.shapes) {
+                    this.shapes[name].debug = false;
+                }
+            }
+        }
+        updateDebug () {
+            let d = this._debug;
+            if (d) {
+                // enable hitbox debugs
+                for (let name in this.shapes) {
+                    this.shapes[name].debug = true;
+                }
+                //
+                d.x = this.x;
+                d.y = this.y;
+                d.draw(
+                    ['lineStyle',1,Draw.green,0.75],
+                    ['circle',0,0,4]
+                )
+            }  
+        }
         get sprite_index () { return this._sprite_index; }
         set sprite_index (v) {
             this._sprite_index = v;
@@ -1313,17 +1383,22 @@ var Blanke = (selector, options) => {
         }
         get x () { return this._x; }
         get y () { return this._y; }
-        set x (v) {
-            this._x = v;
+        set x (v) { this._x = v; this.updatePosition(); }
+        set y (v) { this._y = v; this.updatePosition(); }
+        updatePosition () {
+            if (this.destroyed) return;
             for (let s in this.sprites) {
-                this.sprites[s].x = v + this.sprites[s].pivot.x;
-            }    
+                this.sprites[s].x = this._x;// + this.sprites[s].pivot.x;
+                this.sprites[s].y = this._y;// + this.sprites[s].pivot.y;
+            }
+            for (let name in this.shapes) {
+                this.shapes[name].position(this._x, this._y);
+            }
+            this.updateDebug();
         }
-        set y (v) {
-            this._y = v;
-            for (let s in this.sprites) {
-                this.sprites[s].y = v + this.sprites[s].pivot.y;
-            }    
+        moveDirection (angle, speed) {
+            this.hspeed = Util.direction_x(angle, speed);
+            this.vspeed = Util.direction_y(angle, speed);
         }
     }
 
@@ -1562,7 +1637,7 @@ var Blanke = (selector, options) => {
         get scale () {
             return this._scale;
         }
-        follow (obj) {
+        follow (obj, dont_add_scene) {
             if (obj.view_follow && obj.view_follow.name == this.name)
                 return;
             obj.view_follow = this;
@@ -1574,8 +1649,9 @@ var Blanke = (selector, options) => {
                 this.follow_obj = obj;
                 this.add(this.follow_obj)
             }
-            // TODO: automatically add current scene
-
+            let curr_scene = Scene.current();
+            if (!dont_add_scene && curr_scene)
+                this.add(curr_scene); 
         }
         add (...objects) {
             for (let obj of objects) {
@@ -1617,8 +1693,8 @@ var Blanke = (selector, options) => {
             }
             this.container.scale.copyFrom(this.scale);
             this.container.angle = this.angle;
-            this.container.pivot.x = -x; + half_pw;
-            this.container.pivot.y = -y; + half_ph;
+            this.container.pivot.x = -x;
+            this.container.pivot.y = -y;
             this.container.x = this.port_x;
             this.container.y = this.port_y;
     
@@ -1975,8 +2051,40 @@ var Blanke = (selector, options) => {
     /* -MATRIX */
     let Matrix = PIXI.Matrix;
 
+    /* -TIMER */
+    let Timer = {
+        fn_after: [],
+        fn_every: [],
+        after: (t, fn) => { Timer.fn_after.push({ t:t, start_t:Game.ms, end_t:Game.ms+t, fn:fn || function(){} }); },
+        every: (t, fn) => { Timer.fn_every.push({ t:t, last_t:Game.ms, curr_t:0, iter:0, fn:fn }); }
+    }
+    app.ticker.add((dt)=>{
+        let ms = Game.ms;
+        // after
+        for (let f = Timer.fn_after.length - 1; f >= 0; f--) {
+            let info = Timer.fn_after[f];
+            if (!info.done && ms >= info.end_t) {
+                info.fn();
+                // remove timer
+                Timer.fn_after.splice(f, 1);
+            }
+        }
+        // every
+        for (let f = Timer.fn_every.length - 1; f >= 0; f--) {
+            let info = Timer.fn_every[f];
+            if (!info.done && info.curr_t > info.t) {
+                info.last_t = ms;
+                info.iter++;
+                // remove the timer if user returns true
+                if (info.fn(info.iter) == true) 
+                    Timer.fn_every.splice(f, 1);
+            }
+            info.curr_t = ms - info.last_t;
+        }
+    });
+
     engineLoaded.call(this);
-    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View};
+    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Timer, Util, View};
     return classes;
 }
 Blanke.addGame = (name, options) => {
@@ -2047,17 +2155,19 @@ b.aInB=a.r<=c.r&&l<=c.r-a.r,b.bInA=c.r<=a.r&&l<=a.r-c.r);h.push(d);return!0};f.t
 				return false;
 			});
 			var game_instance = Blanke("#game",{
-				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"ScenePlay","size":[800,600],"spritesheet_prvw":{"image/blue_robot.png":{"name":"run","offset":[38,0],"speed":0.7,"frame_size":[38,33],"frames":6,"selected_frames":[1,1],"columns":8,"border":[0,0],"image":"image/blue_robot.png"}},"enabled_plugins":{"blanke-net.js":false,"doing.js":false,"socket.io.js":false,"goober.js":false},"export":{"name":"dodgem","remove_unused":true,"web_autoplay":false,"minify":true,"frameless":false,"resizable":false}},
+				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"ScenePlay","size":[800,600],"spritesheet_prvw":{"image/blue_robot.png":{"name":"run","offset":[38,0],"speed":0.7,"frame_size":[38,33],"frames":6,"selected_frames":[1,1],"columns":8,"border":[0,0],"image":"image/blue_robot.png"},"image/balls.png":{"name":"ball","offset":[0,0],"speed":1,"frame_size":[128,128],"frames":5,"selected_frames":[1,1],"columns":5,"border":[0,0],"image":"image/balls.png"}},"enabled_plugins":{"blanke-net.js":false,"doing.js":false,"socket.io.js":false,"goober.js":false},"export":{"name":"dodgem","remove_unused":true,"web_autoplay":false,"minify":true}},
 				fill_parent: false,
 				width: 800,
 				height: 600,
+				
 				assets: [
 					["config.json"],
+					["assets/image/balls.png"],
 					["assets/image/blue_robot.png"]
 				],
 				onLoad: function(){
 					
-		let { Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Util, View } = game_instance;
+		let { Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Timer, Util, View } = game_instance;
 		
 		let TestScene = () => {};
 		let TestView = () => {};
@@ -2095,9 +2205,87 @@ TestScene({
 	onStart: (s) => {
 		let rob = new Robot();
 		TestView(rob);
+		
 	}
 })
 
+// [1] soccer : bounces, affected by gravity downwards
+// [2] beach ball : move diagonal, bounce top/bottom
+// [3] spikey : move straight right, accelerates
+// [4] bowling ball : like beach ball, slower
+// [5] smiley : bounces, affected by gravity up/downwards
+
+class Ball extends Entity {
+    init () {
+		this.addSprite("ball", {image:"balls", frames:5, speed:0, frame_size:[128,128]})
+		this.sprite_pivot.set(this.sprite_width/2, this.sprite_height/2)
+		
+		let b_type = Util.rand_range(0,5);
+		
+		let scale;
+		if (b_type == 4) // bowling ball
+			scale = 2;
+		else if (b_type == 4 || b_type == 2) // bowling ball, beach ball
+			scale = 1;
+		else 
+			scale = 0.5;
+		
+		this.sprite_scale.set(scale);
+		this.addShape('main',{type:'circle',shape:[0,0,this.sprite_width/2 - (15*scale)]})
+		
+		this.x = -this.sprite_width;
+		this.y = Util.rand_range(0,Game.height/2);
+		this.sprite_frame = b_type-1;
+		this.debug = true;
+		
+		switch (b_type) {
+			case 1: // soccer
+				this.hspeed = 3;
+				this.gravity_direction = 90;
+				this.gravity = 0.2;
+				break;
+			case 2: // beach ball
+				this.moveDirection(Util.rand_choose([-45,45]),10)
+				break;
+			case 3: // spikey
+				this.hspeed = 0;
+				break;
+			case 4: // bowling ball
+				this.moveDirection(Util.rand_choose([-45,45]),2)
+				break;
+			case 5: // smiley
+				this.hspeed = 3;
+				this.gravity_direction = 90 * -Util.rand_choose([-1,1]);
+				this.gravity = 0.2;
+				break;
+		}
+	}
+    update (dt) {
+		if (this.y < this.sprite_height/2) {
+			this.y = this.sprite_height/2
+			this.vspeed = -this.vspeed;
+		}
+		if (this.y > Game.height - this.sprite_height/2) {
+			this.y = Game.height - this.sprite_height/2
+			this.vspeed = -this.vspeed;
+		}
+		// beach ball
+		if (this.b_type == 3)
+			this.hspeed += 0.2;
+		
+		if (this.x > Game.width + this.sprite_width/2)
+			this.destroy();
+    }
+}
+
+TestScene({
+	onStart: () => {
+		Timer.every(1000,()=>{
+			console.log('new')
+			new Ball();
+		});
+	}
+})
 let bob;
 let drawing;
 let my_view;
@@ -2105,30 +2293,13 @@ let my_view;
 Scene("ScenePlay",{
     onStart: function(scene) {
 		bob = new Robot();
-		bob.x = 0
-		bob.y = 0
-		jon = new Sprite({image:"blue_robot", frames:6, speed:0.7, frame_size:[38,33], offset:[38,0]})
-		jon.x = 20
-		jon.y = Game.height - bob.sprite_height
-		Input.on('click',jon,()=>{
-			console.log('ok then')
-		})	
+		bob.x = Game.width / 2
+		bob.y = Game.height / 2
+		bob.z = 5;
 		
-		drawing = new Draw(
-			['lineStyle',5,Draw.blue,1,0],
-			['rect',0,0,300,300],
-			['fill']
-		)
-		//drawing.auto_clear = false;
-		//drawing.z = -1;
-		let cam = View(bob)
-		cam.add(scene)
-		//cam.port_width = 300
-		//cam.port_height = 300
-		/*
-		let cam2 = View("bob2",bob)
-		cam2.add(scene)
-		*/
+		Timer.every(1000,()=>{
+			new Ball();
+		});
 	},
     onUpdate: function(scene, dt) {
 		// draw trail
