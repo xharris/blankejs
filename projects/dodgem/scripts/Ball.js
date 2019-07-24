@@ -9,7 +9,8 @@ class Ball extends Entity {
 		this.addSprite("ball", {image:"balls", frames:5, speed:0, frame_size:[128,128]})
 		this.sprite_pivot.set(this.sprite_width/2, this.sprite_height/2)
 		
-		let b_type = Util.rand_range(0,5);
+		let b_type = Util.rand_range(0,6);
+		this.b_type = b_type;
 		
 		let scale;
 		if (b_type == 4) // bowling ball
@@ -70,7 +71,6 @@ class Ball extends Entity {
 TestScene({
 	onStart: () => {
 		Timer.every(1000,()=>{
-			console.log('new')
 			new Ball();
 		});
 	}

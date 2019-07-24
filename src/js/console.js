@@ -64,7 +64,7 @@ class Console extends Editor {
 
 	parse (line) {
 		// one-liner limits object depth
-		return (JSON.stringify(line, function (k, v) { return typeof(k) == 'object' ? "" + v : v; }) || `"${line}"`).slice(1,-1);
+		return (JSON.stringify(line, (k, v) => !Array.isArray(v) && typeof v === 'object' ? v.constructor.name : v) || `"${line}"`).slice(1,-1);
 	}
 
 	log (...args) {

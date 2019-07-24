@@ -187,6 +187,7 @@ module.exports.hints = {
 		{ prop: 'gravity_direction', info: '0 = right, 90 = down'},
 		{ prop: 'shape_index', info:'base shape of the entity' },
 		{ prop: 'shapes', info:`{ 'shape_name' : Hitbox }`},
+		{ prop: 'sprite_align', info: `changes sprite_pivot with a combination of 'left right top bottom center'`},
 		prop_effect,
 		{ fn: 'addSprite', vars: { name: '', options: 'frames, columns, frame_size[w,h], speed, spacing[x,y], offset[x,y]' } },
 		{ fn: 'addShape', vars: { name: '',  options: 'type(circle/rect/poly), ...see docs' } }

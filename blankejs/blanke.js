@@ -22,13 +22,14 @@ PLUGINS
 var Blanke = (selector, options) => {
     let re_sep = /[\\\/]/;
     let re_no_ext = /([\/\\\.]*[\w\/\\]+)/;
-
+/*
     let elec, nwOS, eWin;
     if (typeof require === 'function' && require('electron')) {
         elec = require('electron');
         nwOS = require('os');
         eWin = elec.remote.getCurrentWindow();
     }
+*/
 
     let blanke_ref = this;
     this.options = Object.assign({
@@ -214,6 +215,11 @@ var Blanke = (selector, options) => {
         })
     }
 
+    const storeInstance = (c,i) => {
+        if (!c._instances) c._instances = [];
+        c._instances.push(i);
+    }
+
     const quickSort = (items, fn) => {
         fn = fn || function (a, b) { return a < b; };
         function _sort(array) {
@@ -273,9 +279,30 @@ var Blanke = (selector, options) => {
         get background_color () { return app.renderer.backgroundColor; },
         set background_color (v) { app.renderer.backgroundColor = v; },
         // replaces the game with a screenshot
+        paused: false,
         pause: () => {
-            if (Game.paused) return;
             Game.paused = true;
+            app.ticker.stop();
+        },
+        resume: () => {
+            Game.paused = false;
+            app.ticker.start();
+        },
+        step: () => {
+            /*
+            app.ticker.update(performance.now());
+            app.renderer.render(app.stage);
+            */
+            if (Game.paused) {
+                Game.resume()
+                app.ticker.addOnce(()=>{
+                    Game.pause();
+                },null,PIXI.UPDATE_PRIORITY.UTILITY);
+            }
+        },
+        freeze: () => {
+            if (Game.frozen) return;
+            Game.frozen = true;
 
             removeSnaps();
             let new_rtex = PIXI.RenderTexture.create(Game.width, Game.height);
@@ -285,6 +312,15 @@ var Blanke = (selector, options) => {
             parent.appendChild(el_img);
             app.stop();
             app.view.style.display = "none";
+        },
+        unfreeze: () => {
+            if (!Game.frozen) return;
+            Game.frozen = false;
+
+            if (!app) return;
+            removeSnaps();
+            app.start();
+            app.view.style.display = "initial";
         },
         get fullscreen () {
             if (Game.os != 'ide')
@@ -312,15 +348,6 @@ var Blanke = (selector, options) => {
                     ).call(document);
                 }
             }
-        },
-        resume: () => {
-            if (!Game.paused) return;
-            Game.paused = false;
-
-            if (!app) return;
-            removeSnaps();
-            app.start();
-            app.view.style.display = "initial";
         },
         end: () => { 
             if (!app) return;
@@ -1023,9 +1050,11 @@ var Blanke = (selector, options) => {
             this.hash[key][obj._spatialhashid] = obj;
         }
         remove (obj, temporary) {
-            delete this.hash[obj._spatialhashlastkey][obj._spatialhashid];
-            if (Object.values(this.hash[obj._spatialhashlastkey]).length == 0)
-                delete this.hash[obj._spatialhashlastkey];
+            if (this.hash[obj._spatialhashlastkey]) {
+                delete this.hash[obj._spatialhashlastkey][obj._spatialhashid];
+                if (Object.values(this.hash[obj._spatialhashlastkey]).length == 0) 
+                    delete this.hash[obj._spatialhashlastkey];
+            }
             // permanently removed
             if (!temporary) {
                 delete obj._spatialhashid;
@@ -1201,6 +1230,7 @@ var Blanke = (selector, options) => {
             this.xprevious = this.x;
             this.yprevious = this.y;
             Scene.addUpdatable(this);
+            storeInstance(Entity, this);
         }
         _getPixiObjs () {
             return Object.values(this.sprites).map(spr => spr.sprite);
@@ -1264,7 +1294,7 @@ var Blanke = (selector, options) => {
                             resy += cy;
                             dx = 0, dy = 0;
                         }
-                        this.onCollide[name](info[0], res);
+                        this.onCollide[name].call(this, info[0], res);
                     }
                     delete this.collisionStopY;
                     delete this.collisionStopX;
@@ -1318,6 +1348,7 @@ var Blanke = (selector, options) => {
                 this._debug = new Draw();
             } else if (this._debug) {
                 this._debug.destroy();
+                this._debug = null;
                 // disable hitbox debugs
                 for (let name in this.shapes) {
                     this.shapes[name].debug = false;
@@ -1339,6 +1370,20 @@ var Blanke = (selector, options) => {
                     ['circle',0,0,4]
                 )
             }  
+        }
+        get sprite_align () { return this._sprite_align || ''; }
+        set sprite_align (v) {
+            this._sprite_align = v;
+            if (v.includes('center')) 
+                this.sprite_pivot.set(this.sprite_width/2,this.sprite_height/2);
+            if (v.includes('left'))
+                this.sprite_pivot.x = 0;
+            if (v.includes('right'))
+                this.sprite_pivot.x = this.sprite_width;
+            if (v.includes('top'))
+                this.sprite_pivot.y = 0;
+            if (v.includes('bottom'))
+                this.sprite_pivot.y = this.sprite_height;
         }
         get sprite_index () { return this._sprite_index; }
         set sprite_index (v) {

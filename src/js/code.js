@@ -208,6 +208,7 @@ class Code extends Editor {
 
 		this.editors = [];
 		this.function_list = [];
+		this.breakpoints = {};
 
 		// create codemirror editor
 		this.edit_box = app.createElement("div","code");
@@ -423,7 +424,7 @@ class Code extends Editor {
 			theme: "material",
             smartIndent : true,
             lineNumbers : true,
-            gutters:["CodeMirror-linenumbers","gutter-event"],
+            gutters:["CodeMirror-linenumbers","gutter-event","breakpoints"],
             lineWrapping : false,
             indentUnit : 4,
             tabSize : 4,
@@ -447,6 +448,19 @@ class Code extends Editor {
             	"Ctrl-F": "findPersistent",
             	"Ctrl-Space": "autocomplete"
             }
+		});
+
+		new_editor.on('gutterClick',(cm, n) => {
+			let info = cm.lineInfo(n);
+			let marker = blanke.createElement("div");
+			marker.innerHTML=`<i class="breakpoint">*</i>`;
+			let enable = !info.gutterMarkers || !info.gutterMarkers.breakpoints;
+			cm.setGutterMarker(n, "breakpoints", enable ? marker : null);
+
+			if (enable) 
+				this.breakpoints[n] = true;
+			else
+				delete this.breakpoints[n];
 		});
 		
 		// set up events
@@ -934,8 +948,10 @@ class Code extends Editor {
 	}
 
 	refreshGame () {
-		if (!this.deleted)
+		if (!this.deleted) {
+			this.game.breakpoints = Object.keys(this.breakpoints).map(parseInt);
 			this.game.refreshSource(this.file);
+		}
 	}
 
 	save () {

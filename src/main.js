@@ -63,6 +63,22 @@ var app = {
 		return ret_el;
 	},
 
+	createIconButton: function(icon, title) {
+		let el_btn = app.createElement("button");
+		let el_icon = app.createElement("object","blanke-icon");
+		el_icon.data = "icons/"+icon+".svg";
+		el_icon.type = "image/svg+xml";
+		el_icon.innerHTML = icon[0].toUpperCase();
+		el_btn.appendChild(el_icon);
+		el_btn.title = title;
+		el_btn.change = (icon2, title2) => {
+			el_icon.data = "icons/"+icon2+".svg";
+			el_icon.innerHTML = icon2[0].toUpperCase();
+			el_btn.title = title2;
+		}
+		return el_btn;
+	},
+
 	clearElement: function(element) {
 		while (element.firstChild) {
 			element.removeChild(element.firstChild);
@@ -98,7 +114,12 @@ var app = {
 	minimize: function() {
 		app.window.minimize();
 	},
-
+	watch: function(path, cb) {
+		return nwWATCH(path, {
+			recursive: true,
+			filter: f => !/dist/.test(f) && !f.includes('.asar')
+		}, cb);
+	},
 	getRelativePath: function(path) {
 		return nwPATH.relative(app.project_path,path);
 	},
@@ -169,7 +190,6 @@ var app = {
 	isProjectOpen: function() {
 		return (app.project_path && app.project_path != "");
 	},
-
 	openProject: function(path) {
 		// validate: only open if there's a main.lua
 		nwFS.readdir(path, 'utf8', function(err, files){
@@ -180,10 +200,7 @@ var app = {
 				app.project_path = path;
 
 				// watch for file changes
-				app.proj_watch = nwWATCH(app.project_path, {
-					recursive: true,
-					filter: f => !/dist/.test(f)
-				}, function(evt_type, file) {
+				app.proj_watch = app.watch(app.project_path, function(evt_type, file) {
 					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
 				});
 
@@ -194,7 +211,7 @@ var app = {
 				
 				let asset_path = app.getAssetPath();
 				nwFS.ensureDirSync(asset_path)
-				app.asset_watch = nwWATCH(asset_path, {recursive: true}, (evt_type, file) => {
+				app.asset_watch = app.watch(asset_path, (evt_type, file) => {
 					if (file) { 
 						blanke.cooldownFn('asset_watch',500,()=>{
 							app.getAssets((files)=>{

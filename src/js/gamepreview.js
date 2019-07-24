@@ -86,12 +86,14 @@ class GamePreview {
 		let this_ref = this;
 
 		this.game = null;
-		this.container = app.createElement("iframe");
+		this.container = app.createElement("div","game-preview-container");
+		this.iframe = app.createElement("iframe");
 		this.id = "game-"+guid();
-		this.container.id = this.id;
+		this.iframe.id = this.id;
 		this.parent = parent || document.createDocumentFragment();
 		this.line_ranges = {};
 		this.size = 0;
+		this.breakpoints = [];
 
 		this.options = ifndef_obj(opt, {
 			test_scene: false,
@@ -104,9 +106,8 @@ class GamePreview {
 		this.refresh_file = null;
 		this.errored = false;
 		this.last_code = null;
-		this.container.addEventListener('load', () => {
-			this.game = this.container.contentWindow.game_instance;
-			let iframe = this.container;
+		this.iframe.addEventListener('load', () => {
+			let iframe = this.iframe;
 			let doc = iframe.contentDocument;
 			let canvas = doc.querySelectorAll("#game canvas");
 			canvas.forEach(el => el.remove());
@@ -169,10 +170,11 @@ class GamePreview {
 				parent.appendChild(script);
 				this.last_code = null;
 			}
+			this.game = this.iframe.contentWindow.game_instance;
 			if (this.onRefresh) this.onRefresh();
 		})
 		this.refreshSource();
-		this.parent.appendChild(this.container);
+		this.parent.appendChild(this.iframe);
 
 		this.paused = false;
 		document.addEventListener('engineChange',(e)=>{
@@ -183,6 +185,26 @@ class GamePreview {
 			if (!this.paused || this.errored)
 				this.refreshEngine();
 		});
+
+		// game controls
+		this.el_control_bar = app.createElement("div","control-bar");
+		this.el_pauseplay = app.createIconButton("pause","pause");
+		this.el_pauseplay.addEventListener('click',()=>{
+			this.game_paused() ? this.game_resume() : this.game_pause();
+			if (this.game_paused())
+				this.el_pauseplay.change('run','resume preview');
+			else 
+				this.el_pauseplay.change('pause','pause preview');
+		});
+		this.el_control_bar.appendChild(this.el_pauseplay);
+		this.el_step = app.createIconButton("step","step once");
+		this.el_step.addEventListener('click',()=>{
+			this.game_step();
+		});
+		this.el_control_bar.appendChild(this.el_step);
+
+		this.container.appendChild(this.iframe);
+		this.container.appendChild(this.el_control_bar);
 	}
 
 	get width () {
@@ -192,17 +214,25 @@ class GamePreview {
 	get height () {
 		if (this.game) return this.game.Game.height;
 	}
-	
+	game_paused () { return this.game ? this.game.Game.paused : null; }
+	game_pause () {
+		if (this.game) this.game.Game.pause();
+	}
+	game_resume () {
+		if (this.game) this.game.Game.resume();
+	}
+	game_step () {
+		if (this.game) this.game.Game.step();
+	}
 	pause () {
 		this.paused = true;
 		if (this.game)
-			this.game.Game.pause();
+			this.game.Game.freeze();
 	}
-
 	resume () {
 		this.paused = false;
 		if (this.game && !this.errored)
-			this.game.Game.resume();
+			this.game.Game.unfreeze();
 	}
 
 	getAssets () {
@@ -361,7 +391,8 @@ class GamePreview {
 
 		if (current_script) {
 			[ scripts, curr_script_cat ] = GamePreview.getScriptOrder(current_script);
-			contains_test_scene = nwFS.readFileSync(current_script).includes('TestScene({')
+			let file_data = nwFS.readFileSync(current_script,'utf-8');
+			contains_test_scene = file_data.includes('TestScene({')
 		} else 
 			scripts = GamePreview.getScriptOrder()
 		switch (curr_script_cat) {
@@ -414,7 +445,16 @@ var game_instance = Blanke("#game",{
 		let last_line_end = (code.match(re_new_line) || []).length + line_offset;
 		for (let path of scripts) {
 			if (nwFS.pathExists(path)) {
-				code += nwFS.readFileSync(path,'utf-8') + '\n';
+				let file_data = nwFS.readFileSync(path,'utf-8') + '\n';
+				// breakpoints
+				if (path == current_script) {
+					let lines = file_data.split('\n')
+					this.breakpoints.forEach((l)=>{
+						lines.splice(l,0,'Game.pause()');
+					})
+					code += lines.join('\n');
+				} else 
+					code += file_data;
 				onload_code += nwFS.readFileSync(path,'utf-8') + '\n';
 				// get the lines at which this piece of code starts and ends
 				this.line_ranges[path] = {
@@ -429,7 +469,7 @@ var game_instance = Blanke("#game",{
 		code += (post_load || '') + `
 	}
 });`;
-		this.container.srcdoc = getHTML(`
+		this.iframe.srcdoc = getHTML(`
 	<body>
 		<div id="game"></div>
 	</body>
@@ -469,7 +509,7 @@ var game_instance = Blanke("#game",{
 		if (!this.paused)
 			this.refreshSource(this.last_script, true);
 		/*
-		let iframe = this.container;
+		let iframe = this.iframe;
 		blanke.destroyElement(iframe.contentDocument.querySelector('script[src="../blankejs/blanke.js"]'));
 		var head= iframe.contentDocument.getElementsByTagName('head')[0];
 		var script= iframe.contentDocument.createElement('script');

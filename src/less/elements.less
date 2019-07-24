@@ -101,14 +101,24 @@
     	width: 10px;
     }
 
+	i.breakpoint {
+		color: #F44336;
+		font-style: normal;
+		border-radius: 100%;
+		font-weight: 900;
+		transform: translateX(-36px);
+		display: block;
+		pointer-events: none;
+	}
+
     .gutter-evt {
 	    cursor: pointer;
 
-    	i {
+    	i.mdi-flash {
 	    	color: rgb(83,127,126);
 	    	pointer-events: none;
 	    }
-	    &:hover i {
+	    &:hover i.mdi-flash {
     		color: lighten(rgb(83,127,126), 40%);
     	}
 	}
@@ -1530,6 +1540,37 @@
 			.description {
 				opacity: 0.75;
 				padding-top: 4px;
+			}
+		}
+	}
+}
+
+.game-preview-container {
+	width: 100%;
+	height: 100%;
+	position: relative;
+
+	iframe {
+		border: none;
+		outline: none;
+		width: 100%;
+		height: 100%;
+	}
+
+	.control-bar { 
+		position: absolute;
+		bottom: 23px;
+		left: 0px;
+		margin: 10px;
+    	border-radius: 100px;
+		background-color: rgba(0, 0, 0, 0.25);
+
+		button {
+			.btn-round();
+			margin: 0px 6px;
+
+			&:hover {
+				background-color: rgba(54, 62, 66, 1);
 			}
 		}
 	}
