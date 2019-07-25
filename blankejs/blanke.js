@@ -1185,6 +1185,8 @@ var Blanke = (selector, options) => {
             this.graphics.y = this.world_obj.y;
         }
         destroy () {
+            if (this.destroyed) return;
+            this.destroyed = true;
             Hitbox.world.remove(this);
             this.graphics.destroy();
         }
