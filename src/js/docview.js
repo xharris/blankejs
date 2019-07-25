@@ -16,8 +16,8 @@ class Docview extends Editor {
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 350;
-		this.container.height = 250;
+		this.container.width = 550;
+		this.container.height = 365;
 
 		var this_ref = this;
 

@@ -8,7 +8,7 @@ C	separate tabs from history bar
 C	implement fibonnaci-sized windows
 C	sprite sheet preview: should display image dimensions
 C	find and replace
-	GamePreview - auto insert Asset.add() method		
+C	GamePreview - auto insert Asset.add() method		
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
