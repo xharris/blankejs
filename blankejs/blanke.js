@@ -283,10 +283,12 @@ var Blanke = (selector, options) => {
         pause: () => {
             Game.paused = true;
             app.ticker.stop();
+            if (Game.onPause) Game.onPause();
         },
         resume: () => {
             Game.paused = false;
             app.ticker.start();
+            if (Game.onPause) Game.onPause();
         },
         step: () => {
             /*

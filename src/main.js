@@ -31,6 +31,7 @@ var nwZIP2 = require('adm-zip'); // used for unzipping
 var nwWATCH = require('node-watch');
 var nwREQ = require('request');
 var nwUGLY = require('uglify-es');
+var nwUTIL = require('util');
 var nwDEL = require('del');
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;

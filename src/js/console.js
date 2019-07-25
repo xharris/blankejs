@@ -28,8 +28,16 @@ class Console extends Editor {
 		this.last_line = '';
 		this.str_console = '';
 		this.last_dupe_line = '';
+		this.auto_scrolling = true;
 
-		this.el_log.appendChild(this.el_lines)
+		// auto-scroll toggle
+		this.el_autoscroll = app.createIconButton("scroll","toggle auto-scroll");
+		this.el_autoscroll.addEventListener('click',()=>{
+			this.auto_scrolling = !this.auto_scrolling;
+		})
+		//this.el_log.appendChild(this.el_autoscroll);
+		this.el_log.appendChild(this.el_lines);
+
 		this.appendChild(this.el_log);
 	}
 
@@ -44,6 +52,14 @@ class Console extends Editor {
 			checked: this_ref.pin,
 			click:function(){ this_ref.pin = !this_ref.pin; }
 		}]);
+	}
+
+	toggleVisibility () {
+		this.el_log.classList.toggle('hidden');
+	}
+
+	isVisible () {
+		return !this.el_log.classList.contains('hidden');
 	}
 
 	processClosed () {
@@ -64,7 +80,7 @@ class Console extends Editor {
 
 	parse (line) {
 		// one-liner limits object depth
-		return (JSON.stringify(line, (k, v) => !Array.isArray(v) && typeof v === 'object' ? v.constructor.name : v) || `"${line}"`).slice(1,-1);
+		return nwUTIL.inspect(line, { compact: true });// (JSON.stringify(line, (k, v) => !Array.isArray(v) && typeof v === 'object' ? v.constructor.name : v) || `"${line}"`).slice(1,-1);
 	}
 
 	log (...args) {
@@ -85,9 +101,13 @@ class Console extends Editor {
 		}
 		this.last_line = str;
 		this.el_lines.innerHTML = this.str_console;
-		blanke.cooldownFn("console.log", 100, ()=>{	
-			this.el_log.scrollTop = this.el_log.scrollHeight;
-		});
+
+		if (this.auto_scrolling) {
+			//blanke.cooldownFn("console.log", 100, ()=>{	
+				this.el_log.scrollTop = this.el_log.scrollHeight;
+				this.auto_scrolling = true;
+			//});
+		}
 	}
 
 	err (str) {

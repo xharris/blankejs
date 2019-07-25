@@ -918,6 +918,18 @@ class Code extends Editor {
 
 		app.contextMenu(e.x, e.y, [
 			split,
+			{
+				label:'show console',
+				type:'checkbox',
+				checked:this_ref.console.isVisible(),
+				click:function(){this_ref.console.toggleVisibility()}
+			},
+			{
+				label:'console auto-scroll',
+				type:'checkbox',
+				checked:this_ref.console.auto_scrolling,
+				click:function(){this_ref.console.auto_scrolling = !this_ref.console.auto_scrolling}
+			},
 			{label:'rename', click:function(){this_ref.renameModal()}},
 			{label:'delete', click:function(){this_ref.deleteModal()}}
 		]);

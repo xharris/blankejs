@@ -13,7 +13,7 @@ class Robot extends Entity {
 		this.debug = true;
 		
 		this.onCollide['main'] = (info, res) => {
-			console.log(info, res);
+			//console.log(info, res);
 		}
 	}
     update (dt) {

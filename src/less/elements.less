@@ -67,13 +67,17 @@
 		box-sizing: border-box;
 		border-radius: 4px;
 		max-height: 20%;
-		/* min-height: 25px; */
 		overflow-y: auto;
 		z-index: 0;
 		transition: ease-in-out all 0.1s;
 
 		&:hover {
     		background: rgba(0,0,0,0.8);
+		}
+
+		&.hidden {
+			opacity: 0;
+    		pointer-events: none;
 		}
 
 		.lines, .error {
@@ -94,6 +98,10 @@
 			a {
 				color: @theme-string;
 			}
+		}
+
+		button {
+			.btn-round();
 		}
 	}
 

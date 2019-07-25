@@ -171,6 +171,9 @@ class GamePreview {
 				this.last_code = null;
 			}
 			this.game = this.iframe.contentWindow.game_instance;
+			this.game.Game.onPause = ()=>{
+				this.game_checkpaused();
+			}
 			if (this.onRefresh) this.onRefresh();
 		})
 		this.refreshSource();
@@ -191,10 +194,7 @@ class GamePreview {
 		this.el_pauseplay = app.createIconButton("pause","pause");
 		this.el_pauseplay.addEventListener('click',()=>{
 			this.game_paused() ? this.game_resume() : this.game_pause();
-			if (this.game_paused())
-				this.el_pauseplay.change('run','resume preview');
-			else 
-				this.el_pauseplay.change('pause','pause preview');
+			this.game_checkpaused();
 		});
 		this.el_control_bar.appendChild(this.el_pauseplay);
 		this.el_step = app.createIconButton("step","step once");
@@ -213,6 +213,12 @@ class GamePreview {
 
 	get height () {
 		if (this.game) return this.game.Game.height;
+	}
+	game_checkpaused () {
+		if (this.game_paused())
+			this.el_pauseplay.change('run','resume preview');
+		else 
+			this.el_pauseplay.change('pause','pause preview');
 	}
 	game_paused () { return this.game ? this.game.Game.paused : null; }
 	game_pause () {
@@ -450,7 +456,8 @@ var game_instance = Blanke("#game",{
 				if (path == current_script) {
 					let lines = file_data.split('\n')
 					this.breakpoints.forEach((l)=>{
-						lines.splice(l,0,'Game.pause()');
+						lines[l] = '(()=>{Game.pause();'+lines[l]+'})();';
+						// lines.splice(l,0,'Game.pause()');
 					})
 					code += lines.join('\n');
 				} else 
