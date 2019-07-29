@@ -13,7 +13,12 @@ class Robot extends Entity {
 		this.debug = true;
 		
 		this.onCollide['main'] = (info, res) => {
-			//console.log(info, res);
+			if (!this.hit_timer) {
+				this.hit_timer = Timer.after(500,()=>{
+					console.log("OW")
+					this.hit_timer = null;
+				});
+			}
 		}
 	}
     update (dt) {

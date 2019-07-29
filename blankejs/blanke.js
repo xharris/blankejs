@@ -807,8 +807,10 @@ var Blanke = (selector, options) => {
             this.container = new PIXI.Container();
             this.container.filterArea = new PIXI.Rectangle(0,0,Game.width, Game.height);
             window.addEventListener('resize',()=>{
-                this.container.filterArea.width = Game.width;
-                this.container.filterArea.height = Game.height;
+                if (this.container.filterArea) {
+                    this.container.filterArea.width = Game.width;
+                    this.container.filterArea.height = Game.height;
+                }
             })
             this.objects = [];
             this.onStart = (scene) => {};
@@ -2080,8 +2082,18 @@ var Blanke = (selector, options) => {
     let Timer = {
         fn_after: [],
         fn_every: [],
-        after: (t, fn) => { Timer.fn_after.push({ t:t, start_t:Game.ms, end_t:Game.ms+t, fn:fn || function(){} }); },
-        every: (t, fn) => { Timer.fn_every.push({ t:t, last_t:Game.ms, curr_t:0, iter:0, fn:fn }); }
+        after: (t, fn) => { Timer.fn_after.push({ t:t, 
+            start_t:Game.ms, 
+            end_t:Game.ms+t, 
+            fn:fn || function(){},
+             
+        }); return Timer.fn_after[Timer.fn_after.length-1]; },
+        every: (t, fn) => { Timer.fn_every.push({ t:t, 
+            last_t:Game.ms, 
+            curr_t:0, 
+            iter:0, 
+            fn:fn || function(){},
+        }); return Timer.fn_every[Timer.fn_every.length-1]; }
     }
     app.ticker.add((dt)=>{
         let ms = Game.ms;

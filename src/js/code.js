@@ -559,77 +559,80 @@ class Code extends Editor {
 			*/
 
 			checkGutterEvents(editor);
-			blanke.cooldownFn('checkLineWidgets',250,()=>{otherActivity(cm,e)})
-
 			this_ref.parseFunctions();
-			this_ref.addAsterisk();
-			this_ref.refreshFnHelperTimer();
+			
+			blanke.cooldownFn('checkLineWidgets',250,()=>{
+				otherActivity(cm,e)
 
-			let hint_list = [];
-			// dot activation
-			let word_pos = editor.findWordAt(cursor);
-			let word = editor.getRange(word_pos.anchor, word_pos.head);
-			let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
-			let before_word = editor.getRange(before_word_pos.anchor, before_word_pos.head);//before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
-			let before_dot_pos = editor.findWordAt({line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1})
-			if (before_word == '.') {
-				before_dot = editor.getRange(before_dot_pos.anchor, before_dot_pos.head);
-			} else {
-				before_dot = '';
-			}
-			// word that triggered the dot
-			let keyword = (before_dot != '') ? before_dot : before_word;
-			// before_dot_pos : before_word_pos
-			let keyword_pos = (before_dot != '') ? 
-				{line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1} : 
-				{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
+				this_ref.addAsterisk();
+				this_ref.refreshFnHelperTimer();
 
-			if (before_dot == '' && before_word == '.' && word != '.') {
-				keyword_pos.ch = before_word_pos.ch - 1;
-			}
+				let hint_list = [];
+				// dot activation
+				let word_pos = editor.findWordAt(cursor);
+				let word = editor.getRange(word_pos.anchor, word_pos.head);
+				let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
+				let before_word = editor.getRange(before_word_pos.anchor, before_word_pos.head);//before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
+				let before_dot_pos = editor.findWordAt({line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1})
+				if (before_word == '.') {
+					before_dot = editor.getRange(before_dot_pos.anchor, before_dot_pos.head);
+				} else {
+					before_dot = '';
+				}
+				// word that triggered the dot
+				let keyword = (before_dot != '') ? before_dot : before_word;
+				// before_dot_pos : before_word_pos
+				let keyword_pos = (before_dot != '') ? 
+					{line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1} : 
+					{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
 
-			let token = editor.getTokenAt(keyword_pos);
-			let tokens = (token.type || '').split(' ');
-			let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
+				if (before_dot == '' && before_word == '.' && word != '.') {
+					keyword_pos.ch = before_word_pos.ch - 1;
+				}
 
-			if (keyword != '') {
-				// this -> replace with real instance type
-				if (is_key_or_var) {
-					// look at previous lines until a 'this regex' is hit
-					let loop = keyword_pos.line - 1;
-					let this_lines_keys = Object.keys(this_lines[this_ref.file]);
-					do {
-						let line = editor.getLine(loop).trim();
-						for (let l of this_lines_keys) {
-							if (line.includes(l) && 
-								(keyword == 'this' || this_lines[this_ref.file][l].includes(keyword))) {
-								tokens.push(this_lines[this_ref.file][l][0]);
+				let token = editor.getTokenAt(keyword_pos);
+				let tokens = (token.type || '').split(' ');
+				let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
+
+				if (keyword != '') {
+					// this -> replace with real instance type
+					if (is_key_or_var) {
+						// look at previous lines until a 'this regex' is hit
+						let loop = keyword_pos.line - 1;
+						let this_lines_keys = Object.keys(this_lines[this_ref.file]);
+						do {
+							let line = editor.getLine(loop).trim();
+							for (let l of this_lines_keys) {
+								if (line.includes(l) && 
+									(keyword == 'this' || this_lines[this_ref.file][l].includes(keyword))) {
+									tokens.push(this_lines[this_ref.file][l][0]);
+								}
 							}
-						}
-						loop--;
-					} while (loop > 0);
+							loop--;
+						} while (loop > 0);
+					}
+					for (let tok of tokens) {
+						hint_list = hint_list.concat(hints[tok] || []);
+					}
 				}
-				for (let tok of tokens) {
-					hint_list = hint_list.concat(hints[tok] || []);
+				// 'global scope'
+				if (word != '.' && is_key_or_var) {
+					// variable
+					if (var_list[this_ref.file].var)
+						var_list[this_ref.file].var.forEach(v => {
+							if (v.startsWith(word))
+								hint_list.push({ prop: v });
+						})
+					// function
+					if (var_list[this_ref.file].fn)
+						var_list[this_ref.file].fn.forEach(v => {
+							if (v.startsWith(word))
+								hint_list.push({ fn: v });
+						})
 				}
-			}
-			// 'global scope'
-			if (word != '.' && is_key_or_var) {
-				// variable
-				if (var_list[this_ref.file].var)
-					var_list[this_ref.file].var.forEach(v => {
-						if (v.startsWith(word))
-							hint_list.push({ prop: v });
-					})
-				// function
-				if (var_list[this_ref.file].fn)
-					var_list[this_ref.file].fn.forEach(v => {
-						if (v.startsWith(word))
-							hint_list.push({ fn: v });
-					})
-			}
-			if (hint_list.length > 0)
-				showHints(editor, hint_list, word);
+				if (hint_list.length > 0)
+					showHints(editor, hint_list, word);
+			});
 		});
 
 				
