@@ -1,4 +1,29 @@
-/*
+
+<!DOCTYPE html>
+<html>
+	<style>
+		head, body {
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+			margin: 0px;
+			overflow: hidden;
+			background: #485358;
+		}
+		#game {
+			width: 100%;
+			height: 100%;
+			background: #485358;
+		}
+		body > img {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+	<head>
+		<script type="text/javascript">/*
  SAT.js - Version 0.7.1 - Copyright 2012 - 2018 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js */
 function x(){function c(a,d){this.x=a||0;this.y=d||0}function B(a,d){this.pos=a||new c;this.r=d||0}function m(a,d){this.pos=a||new c;this.angle=0;this.offset=new c;this.u(d||[])}function p(a,d,b){this.pos=a||new c;this.w=d||0;this.h=b||0}function w(){this.b=this.a=null;this.overlapN=new c;this.overlapV=new c;this.clear()}function C(a,d,b){for(var g=Number.MAX_VALUE,c=-Number.MAX_VALUE,l=a.length,v=0;v<l;v++){var e=a[v].f(d);e<g&&(g=e);e>c&&(c=e)}b[0]=g;b[1]=c}function y(a,d,b,g,c,l){var k=q.pop(),
 e=q.pop();a=h.pop().c(d).sub(a);d=a.f(c);C(b,c,k);C(g,c,e);e[0]+=d;e[1]+=d;if(k[0]>e[1]||e[0]>k[1])return h.push(a),q.push(k),q.push(e),!0;l&&(k[0]<e[0]?(l.aInB=!1,k[1]<e[1]?(b=k[1]-e[0],l.bInA=!1):(b=k[1]-e[0],g=e[1]-k[0],b=b<g?b:-g)):(l.bInA=!1,k[1]>e[1]?(b=k[0]-e[1],l.aInB=!1):(b=k[1]-e[0],g=e[1]-k[0],b=b<g?b:-g)),g=Math.abs(b),g<l.overlap&&(l.overlap=g,l.overlapN.c(c),0>b&&l.overlapN.reverse()));h.push(a);q.push(k);q.push(e);return!1}function z(a,d){var b=a.g(),g=d.f(a);return 0>g?-1:g>b?1:0}
@@ -143,7 +168,6 @@ var Blanke = (selector, options) => {
         })
         // default fullscreen shortcut (NOT WORKING)
         Input.set('toggle-fullscreen','Alt Enter');
-        empty_sprite = new Sprite({ no_scene : true });
     }
 
     const addZOrdering = (obj) => {
@@ -786,7 +810,7 @@ var Blanke = (selector, options) => {
     }
 
     /* -CANVAS */
-    let empty_sprite;
+    let empty_sprite = new PIXI.Sprite();
     class Canvas { 
         constructor () {
             this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
@@ -802,11 +826,11 @@ var Blanke = (selector, options) => {
                 if (!this._size_changed)
                     this.resize(app.view.width, app.view.height, true);
             })
-            aliasProps(this, this.sprite, ['x','y','alpha']);
+            aliasProps(this, this.sprite, ['alpha']);
             enableEffects(this);
         }
         _getPixiObjs () { return [this.sprite]; }
-        destroy () {
+        destory () {
             this.sprite.destroy();
         }
         clear () {
@@ -816,12 +840,14 @@ var Blanke = (selector, options) => {
             this.auto_clear = old_auto_clear;
         }
         draw (obj, matrix) {
-            if (obj._getPixiObjs) {
-                obj = obj._getPixiObjs();
-            }
-            if (!Array.isArray(obj)) obj = [].concat(obj);
-            for (let p in obj) {
-                app.renderer.render(obj[p], this.rtex, this.auto_clear, matrix || null);
+            let pixi_objs = obj._getPixiObjs ? obj._getPixiObjs() : obj;
+            
+            if (Array.isArray(obj)) { 
+                matrix = matrix || [];
+                for (let p in pixi_objs)
+                    app.renderer.render(pixi_objs[p], this.rtex, this.auto_clear, matrix[p] || null);
+            } else {
+                app.renderer.render(pixi_objs, this.rtex, this.auto_clear, matrix || null);
             }
             this.sprite.texture = this.rtex;
         }
@@ -1009,13 +1035,13 @@ var Blanke = (selector, options) => {
                 this.sprite.play();
             }
             // static image
-            else if (typeof name == 'string') {
+            else if (name) {
                 let asset = Asset.get('image',name);
                 this.sprite = new PIXI.Sprite(asset.texture);
             } else {
                 this.sprite = new PIXI.Sprite();
             }
-            if (!((options && options.no_scene) || (!options && name && name.no_scene)))
+            if (!(name && !options && name.no_scene))
                 Scene.addDrawable(this.sprite);
 
             this.sprite.x = 0;
@@ -1050,10 +1076,6 @@ var Blanke = (selector, options) => {
         get frames () { return this.sprite.totalFrames; }
         get texture () { return this.sprite.texture }
         set texture (v) { this.sprite.texture = v }
-        // resets all transforms
-        reset () {
-            this.sprite.setTransform();
-        }
         crop (x, y, w, h) {
             /*
                 // copy texture
@@ -2037,92 +2059,57 @@ var Blanke = (selector, options) => {
     /* -TEXT */
     class Text {
         constructor (str, opt) {
-            if (typeof str == 'object') {
-                opt = str;
-                str = null;
-            }
             this.options = Object.assign({
                 fontFamily:'Arial',
                 fontSize:12,
                 align:"left"
             },opt || {})
             this._updateOptions();
-            this.iter = 0;
             this.pixi_text = new PIXI.Text('', this.options);
             this.pixi_text.updateText();
             this.textures = []; // texture for each letter
             this.canvas = new Canvas();
             this.canvas.auto_clear = false;
             this.temp_sprite = new Sprite({ no_scene: true });
+            this.temp_texture = this.temp_sprite.texture;
 
             let props = ['x','y']; //'alpha','anchor','angle','cursor'];
             aliasProps(this, this.canvas, props);
 
-            if (str && str != '')
+            if (str != '')
                 this.text = str;
-            Scene.addUpdatable(this);
         }
         _getPixiObjs () { return this.canvas._getPixiObjs(); }
         destroy () {
             this.pixi_text.destroy();
             this.canvas.destroy();
-            this.temp_sprite.destroy();
         }
         _updateOptions () {
             let keys = ['fontFamily','fontSize','align'];
-            delete Text.textures[this.hash];
             this.hash = keys.map(k => this.options[k] || '').join("+");
-            Text.textures[this.hash] = {};
         }
-        set onDraw (v) { this.options.onDraw = v; }
         set text (v) {
-            v = '' + v;
-            this._text = v;
-            console.log(this._text)
-            //this._text_changed = true;
-            this._updateText();
-        }
-        get text () { return this._text; }
-        _updateText () {
-            if (this.destroyed) return;
             this.canvas.clear();
-            let x = 0, y = 0, temp_texture;
-            for (let l = 0; l < this._text.length; l++) {
-                let letter = this._text.charAt(l);
-                // get cached letter texture
-                if (Text.textures[this.hash][letter]) {
-                    temp_texture = Text.textures[this.hash][letter];
-                } else {
-                    // ...or not; make one
-                    this.pixi_text.text = letter;
-                    this.pixi_text.updateText();
-                    temp_texture = this.pixi_text.texture;
-                    Text.textures[this.hash][letter] = temp_texture.clone();
-                }
-                this.temp_sprite.reset();
-                this.temp_sprite.texture = temp_texture;
+            let x = 0, y = 0;
+            for (let l = 0; l < v.length; l++) {
+                let letter = v.charAt(l);
+                this.pixi_text.text = letter;
+                this.pixi_text.updateText();
+                this.temp_texture = this.pixi_text.texture;
+                this.temp_sprite.texture = this.temp_texture;
                 // allow user to change letter appearance  
-                let props = {i:l, string:this._text, letter, x, y, sprite: this.temp_sprite, iter:this.iter};
-                if (this.options.onDraw) {
-                    this.options.onDraw(props);
-                    this.iter++;
+                let props = {l, letter, x, y, sprite: this.temp_sprite};
+                if (this.onDraw) {
+                    this.onDraw(props);
                 }
                 this.temp_sprite.x = props.x;
                 this.temp_sprite.y = props.y;
-                this.canvas.draw(this.temp_sprite);
-                // set values for next letter
-                x += this.temp_sprite.width;
+                this.canvas.draw([this.temp_sprite]);
             }
-        }
-        update (dt) {
-            if (this.destroyed) return;
-            //if (!this._text_changed && this.options.onDraw) {
-                //this._updateText();
-            //}
-            this._text_changed = false;
+            
         }
     }
-    Text.textures = {};
+    Text.textures = {} // 'opt_hash' : { 'a': baseTexture, 'd': baseTexture, ... }
 
     /* -EFFECT */
     class Effect {
@@ -2261,3 +2248,57 @@ var PIXI=function(t){"use strict";var e="undefined"!=typeof globalThis?globalThi
 //# sourceMappingURL=pixi.min.js.map
 
 
+</script>
+	</head>
+	
+		<body>
+			<div id="game"></div>
+		</body>
+		<script>
+			let app = window.parent.app;
+			window.addEventListener('dragover', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			window.addEventListener('drop', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			window.addEventListener('dragleave', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			var game_instance = Blanke("#game",{
+				config: {"ico":"src/logo.ico","icns":"src/logo.icns","first_scene":"main","size":[800,600],"enabled_plugins":{}},
+				fill_parent: false,
+				width: 800,
+				height: 600,
+				
+				assets: [
+					["config.json"],
+					
+				],
+				onLoad: function(){
+					
+		let { Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Timer, Util, View } = game_instance;
+		
+		let TestScene = () => {};
+		let TestView = () => {};
+		
+let main_text;
+
+Scene("main",{
+	onStart (scene) {
+		main_text = new Text("bob");
+		
+	}
+})
+
+
+
+Scene.start("main");
+
+				}
+			});
+		</script>
+</html>

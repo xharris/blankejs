@@ -376,7 +376,7 @@ class GamePreview {
 		`;
 	}
 	
-	refreshSource (current_script, new_doc) {
+	refreshSource (current_script) {
 		if (this.errored) {	
 			this.errored = false;
 		}
@@ -512,10 +512,15 @@ var game_instance = Blanke("#game",{
 		return onload_code;
 	}
 	
+	setSourceFile (file) {
+		this.last_script = file;
+		if (!this.paused)
+			this.refreshSource(this.last_script);
+	}
 
 	refreshEngine () {
 		if (!this.paused)
-			this.refreshSource(this.last_script, true);
+			this.refreshSource(this.last_script);
 		/*
 		let iframe = this.iframe;
 		blanke.destroyElement(iframe.contentDocument.querySelector('script[src="../blankejs/blanke.js"]'));

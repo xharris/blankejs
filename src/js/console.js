@@ -80,7 +80,7 @@ class Console extends Editor {
 
 	parse (line) {
 		// one-liner limits object depth
-		return nwUTIL.inspect(line, { compact: true });// (JSON.stringify(line, (k, v) => !Array.isArray(v) && typeof v === 'object' ? v.constructor.name : v) || `"${line}"`).slice(1,-1);
+		return line.map(l => typeof l == 'object' ? nwUTIL.inspect(l, { compact: true }) : l);
 	}
 
 	log (...args) {
@@ -100,7 +100,7 @@ class Console extends Editor {
 			this.str_console += `${str}\n`;
 		}
 		this.last_line = str;
-		this.el_lines.innerHTML = this.str_console;
+		if (this.isVisible()) this.el_lines.innerHTML = this.str_console;
 
 		if (this.auto_scrolling) {
 			//blanke.cooldownFn("console.log", 100, ()=>{	

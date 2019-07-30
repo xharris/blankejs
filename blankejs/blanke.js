@@ -125,6 +125,7 @@ var Blanke = (selector, options) => {
         })
         // default fullscreen shortcut (NOT WORKING)
         Input.set('toggle-fullscreen','Alt Enter');
+        empty_sprite = new Sprite({ no_scene : true });
     }
 
     const addZOrdering = (obj) => {
@@ -201,6 +202,7 @@ var Blanke = (selector, options) => {
     }
 
     const enableEffects = (obj) => {
+        if (obj.hasOwnProperty('effect')) return;
         Object.defineProperty(obj,'effect',{
             get: function() {
                 if (!obj._effect) 
@@ -766,6 +768,7 @@ var Blanke = (selector, options) => {
     }
 
     /* -CANVAS */
+    let empty_sprite;
     class Canvas { 
         constructor () {
             this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
@@ -781,14 +784,27 @@ var Blanke = (selector, options) => {
                 if (!this._size_changed)
                     this.resize(app.view.width, app.view.height, true);
             })
-            aliasProps(this, this.sprite, ['alpha']);
+            aliasProps(this, this.sprite, ['x','y','alpha']);
             enableEffects(this);
         }
         _getPixiObjs () { return [this.sprite]; }
+        destroy () {
+            this.sprite.destroy();
+        }
+        clear () {
+            let old_auto_clear = this.auto_clear;
+            this.auto_clear = true;
+            this.draw(empty_sprite);
+            this.auto_clear = old_auto_clear;
+        }
         draw (obj, matrix) {
-            let pixi_objs = obj._getPixiObjs ? obj._getPixiObjs() : [];
-            for (let pixi_obj of pixi_objs)
-                app.renderer.render(pixi_obj, this.rtex, this.auto_clear, matrix);
+            if (obj._getPixiObjs) {
+                obj = obj._getPixiObjs();
+            }
+            if (!Array.isArray(obj)) obj = [].concat(obj);
+            for (let p in obj) {
+                app.renderer.render(obj[p], this.rtex, this.auto_clear, matrix || null);
+            }
             this.sprite.texture = this.rtex;
         }
         resize (w, h, internal) {
@@ -965,7 +981,7 @@ var Blanke = (selector, options) => {
             this.animated = false;
             this._matrix = new Matrix(1,0,0,1,0,0);
             // animated sprite
-            if ((options && options.frames) || (!options && name.frames)) {
+            if ((options && options.frames) || (!options && name && name.frames)) {
                 if (!options)
                     options = name;
                 this.animated = true;
@@ -975,11 +991,14 @@ var Blanke = (selector, options) => {
                 this.sprite.play();
             }
             // static image
-            else {
+            else if (typeof name == 'string') {
                 let asset = Asset.get('image',name);
                 this.sprite = new PIXI.Sprite(asset.texture);
+            } else {
+                this.sprite = new PIXI.Sprite();
             }
-            Scene.addDrawable(this.sprite);
+            if (!((options && options.no_scene) || (!options && name && name.no_scene)))
+                Scene.addDrawable(this.sprite);
 
             this.sprite.x = 0;
             this.sprite.y = 0;
@@ -1013,6 +1032,10 @@ var Blanke = (selector, options) => {
         get frames () { return this.sprite.totalFrames; }
         get texture () { return this.sprite.texture }
         set texture (v) { this.sprite.texture = v }
+        // resets all transforms
+        reset () {
+            this.sprite.setTransform();
+        }
         crop (x, y, w, h) {
             /*
                 // copy texture
@@ -1993,28 +2016,95 @@ var Blanke = (selector, options) => {
     }
     Audio.sprite = (name, sprites) => Asset.audioSprite(name, sprites);
 
-    /* -TEXT on-hold */
+    /* -TEXT */
     class Text {
-        constructor (str, opt) {/*
-            opt = Object.assign({
-                font:"16px Arial",
+        constructor (str, opt) {
+            if (typeof str == 'object') {
+                opt = str;
+                str = null;
+            }
+            this.options = Object.assign({
+                fontFamily:'Arial',
+                fontSize:12,
                 align:"left"
             },opt || {})
-            this.pixi_text = new PIXI.BitmapText(str, opt);
-            //if (opt)
-            //    Object.keys(opt).forEach((k, v) => {this.pixi_text[k] = v});
-            let props = ['x','y','text',];//'alpha','anchor','angle','cursor'];
-            aliasProps(this, this.pixi_text, props);
-            Scene.addDrawable(this.pixi_text);*/
+            this._updateOptions();
+            this.iter = 0;
+            this.pixi_text = new PIXI.Text('', this.options);
+            this.pixi_text.updateText();
+            this.textures = []; // texture for each letter
+            this.canvas = new Canvas();
+            this.canvas.auto_clear = false;
+            this.temp_sprite = new Sprite({ no_scene: true });
+
+            let props = ['x','y']; //'alpha','anchor','angle','cursor'];
+            aliasProps(this, this.canvas, props);
+
+            if (str && str != '')
+                this.text = str;
+            Scene.addUpdatable(this);
         }
-        _getPixiObjs () { /* return [this.pixi_text]*/ }
+        _getPixiObjs () { return this.canvas._getPixiObjs(); }
         destroy () {
             this.pixi_text.destroy();
+            this.canvas.destroy();
+            this.temp_sprite.destroy();
         }
-        set blend_mode (v) {}
-        set button_mode (v) {} // keep? interactive=true, buttonMode=true
-        set filter_area (v) {}
+        _updateOptions () {
+            let keys = ['fontFamily','fontSize','align'];
+            delete Text.textures[this.hash];
+            this.hash = keys.map(k => this.options[k] || '').join("+");
+            Text.textures[this.hash] = {};
+        }
+        set onDraw (v) { this.options.onDraw = v; }
+        set text (v) {
+            v = '' + v;
+            this._text = v;
+            console.log(this._text)
+            //this._text_changed = true;
+            this._updateText();
+        }
+        get text () { return this._text; }
+        _updateText () {
+            if (this.destroyed) return;
+            this.canvas.clear();
+            let x = 0, y = 0, temp_texture;
+            for (let l = 0; l < this._text.length; l++) {
+                let letter = this._text.charAt(l);
+                // get cached letter texture
+                if (Text.textures[this.hash][letter]) {
+                    temp_texture = Text.textures[this.hash][letter];
+                } else {
+                    // ...or not; make one
+                    this.pixi_text.text = letter;
+                    this.pixi_text.updateText();
+                    temp_texture = this.pixi_text.texture;
+                    Text.textures[this.hash][letter] = temp_texture.clone();
+                }
+                this.temp_sprite.reset();
+                this.temp_sprite.texture = temp_texture;
+                // allow user to change letter appearance  
+                let props = {i:l, string:this._text, letter, x, y, sprite: this.temp_sprite, iter:this.iter};
+                if (this.options.onDraw) {
+                    this.options.onDraw(props);
+                    this.iter++;
+                }
+                this.temp_sprite.x = props.x;
+                this.temp_sprite.y = props.y;
+                this.canvas.draw(this.temp_sprite);
+                // set values for next letter
+                x += this.temp_sprite.width;
+            }
+        }
+        update (dt) {
+            if (this.destroyed) return;
+            //if (!this._text_changed && this.options.onDraw) {
+                //this._updateText();
+            //}
+            this._text_changed = false;
+        }
     }
+    Text.textures = {};
 
     /* -EFFECT */
     class Effect {

@@ -596,7 +596,7 @@ var app = {
 	loadSettings: function(callback){
 		if (app.isProjectOpen()) {	
 			nwFS.readFile(nwPATH.join(app.project_path,"config.json"), 'utf-8', function(err, data){
-				if (!err || data.length > 1) 
+				if (!err || (data && data.length > 1))
 					app.project_settings = JSON.parse(data);
 				else
 					app.project_settings = {};

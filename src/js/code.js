@@ -596,7 +596,7 @@ class Code extends Editor {
 
 				if (keyword != '') {
 					// this -> replace with real instance type
-					if (is_key_or_var) {
+					if (is_key_or_var && this_lines[this_ref.file]) {
 						// look at previous lines until a 'this regex' is hit
 						let loop = keyword_pos.line - 1;
 						let this_lines_keys = Object.keys(this_lines[this_ref.file]);
@@ -616,7 +616,7 @@ class Code extends Editor {
 					}
 				}
 				// 'global scope'
-				if (word != '.' && is_key_or_var) {
+				if (word != '.' && is_key_or_var && var_list[this_ref.file]) {
 					// variable
 					if (var_list[this_ref.file].var)
 						var_list[this_ref.file].var.forEach(v => {
@@ -1004,8 +1004,9 @@ class Code extends Editor {
 		var this_ref = this;
 		app.renameSafely(old_path, new_path, (success) => {
 			if (success) {
-				this_ref.file = new_path;
-				this_ref.setTitle(nwPATH.basename(this_ref.file));
+				this.file = new_path;
+				this.setTitle(nwPATH.basename(this.file));
+				if (this.game) this.game.setSourceFile(this.file);
 
 			} else
 				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
