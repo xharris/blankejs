@@ -2,20 +2,20 @@ let main_text;
 
 Scene("main",{
 	onStart (scene) {
-		let str = "abcdaaaabbbbccccddddabcd5";"jimbo";
+		Game.background_color = Draw.white;
+		let str = "jimbo";
 		main_text = new Text(str, {
-			onDraw: (info)=>{
-				//info.sprite.scale.set(0,2);
-				info.y = Util.sinusoidal(0,10,0.1,
-							Util.lerp(0,10,(info.i+1)/info.string.length)
-						);
+			wordWrap: true,
+			
+			onDraw: (i)=>{
+				i.y += Util.sinusoidal(0,10,0.1,Util.lerp(0,10,i.x/100));
 			}
 		});
 		main_text.y = 100;
-		//main_text.text = "abcd aaaa bbbb cccc dddd abcd"
-		//Timer.every(1000,(i)=>{
-			//main_text.text = 'jimbo';
-		//});
+		Timer.every(1000,(i)=>{
+			if (i < 20)
+				main_text.text = "123456 789".repeat(i*2);
+		});
 	},
 	onUpdate (scene, dt) {
 	}

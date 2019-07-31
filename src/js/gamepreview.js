@@ -156,6 +156,9 @@ class GamePreview {
 					log:  (...args) => {
 						this.onLog(...args)
 						//old_log(...args);
+					},
+					superlog: (...args) => {
+						console.log(...args);
 					}
 				}
 			}

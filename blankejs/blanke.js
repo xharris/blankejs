@@ -2026,12 +2026,17 @@ var Blanke = (selector, options) => {
             this.options = Object.assign({
                 fontFamily:'Arial',
                 fontSize:12,
-                align:"left"
+                align:"left",
+                wordWrap:false,
+                wordWrapWidth:100,
+                breakWords:true
             },opt || {})
             this._updateOptions();
+
             this.iter = 0;
+            this.max_height = 0;
+
             this.pixi_text = new PIXI.Text('', this.options);
-            this.pixi_text.updateText();
             this.textures = []; // texture for each letter
             this.canvas = new Canvas();
             this.canvas.auto_clear = false;
@@ -2057,42 +2062,46 @@ var Blanke = (selector, options) => {
             Text.textures[this.hash] = {};
         }
         set onDraw (v) { this.options.onDraw = v; }
-        set text (v) {
-            v = '' + v;
-            this._text = v;
-            //this._text_changed = true;
-            
-            for (let l = 0; l < this._text.length; l++) {
-                let letter = this._text.charAt(l);
-                // store cached letter texture
-                if (!Text.textures[this.hash][letter]) {
-                    this.pixi_text.text = letter;
-                    this.pixi_text.updateText();
-                    Text.textures[this.hash][letter] = this.pixi_text.texture.clone();
-                }
-            }
-        }
+        set text (v) { this._text = '' + v; }
         get text () { return this._text; }
         update (dt) {
             if (this.destroyed) return;
             this.canvas.clear();
-            let x = 0, y = 0;
-            for (let l = 0; l < this._text.length; l++) {
-                let letter = this._text.charAt(l);
+            let x = 0, y = 0, o = this.options, str = this._text;
+            for (let l = 0; l < str.length; l++) {
+                let letter = str.charAt(l);
                 // get cached letter texture
                 this.temp_sprite.reset();
-                this.temp_sprite.texture = Text.textures[this.hash][letter];
+                
+                // TODO: is this optimal?
+                if (Text.textures[this.hash][letter]) {
+                    this.temp_sprite.texture = Text.textures[this.hash][letter];
+                } else {
+                    let pixi_text = new PIXI.Text(letter, this.options);
+                    pixi_text.updateText();
+                    this.temp_sprite.texture = pixi_text.texture;
+                    Text.textures[this.hash][letter] = this.temp_sprite.texture.clone();
+                }
+
                 // allow user to change letter appearance  
-                let props = {i:l, string:this._text, letter, x, y, sprite: this.temp_sprite, iter:this.iter};
-                if (this.options.onDraw) {
-                    this.options.onDraw(props);
+                let props = {i:l, string:str, letter, x, y, sprite: this.temp_sprite, iter:this.iter};
+                if (o.onDraw) {
+                    o.onDraw(props);
                     this.iter++;
                 }
                 this.temp_sprite.x = props.x;
                 this.temp_sprite.y = props.y;
                 this.canvas.draw(this.temp_sprite);
+
                 // set values for next letter
                 x += this.temp_sprite.width;
+                if (this.temp_sprite.height > this.max_height)
+                    this.max_height = this.temp_sprite.height;
+                if (o.wordWrap && x > o.wordWrapWidth && (o.breakWords || letter === ' ')) {
+                    x = 0;
+                    y += this.max_height;
+                    this.max_height = 0;
+                }
             };
         }
     }
