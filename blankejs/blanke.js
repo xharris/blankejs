@@ -784,7 +784,7 @@ var Blanke = (selector, options) => {
                 if (!this._size_changed)
                     this.resize(app.view.width, app.view.height, true);
             })
-            aliasProps(this, this.sprite, ['x','y','alpha']);
+            aliasProps(this, this.sprite, ['x','y','alpha','hitArea']);
             enableEffects(this);
         }
         _getPixiObjs () { return [this.sprite]; }
@@ -1036,6 +1036,7 @@ var Blanke = (selector, options) => {
         reset () {
             this.sprite.setTransform();
         }
+        get rect () { return this.sprite.getBounds(true) }
         crop (x, y, w, h) {
             /*
                 // copy texture
@@ -1044,6 +1045,20 @@ var Blanke = (selector, options) => {
                 new_sprite.texture = new_texture;
                 return new_sprite;
             */
+        }
+        get align () { return this._align || ''; }
+        set align (v) {
+            this._align = v;
+            if (v.includes('center')) 
+                this.pivot.set(this.width/2 / this.scale.x,this.height/2 / this.scale.y);
+            if (v.includes('left'))
+                this.pivot.x = 0;
+            if (v.includes('right'))
+                this.pivot.x = this.width / this.scale.x;
+            if (v.includes('top'))
+                this.pivot.y = 0;
+            if (v.includes('bottom'))
+                this.pivot.y = this.height / this.scale.y;
         }
         destroy () {
             this.sprite.destroy();
@@ -1237,7 +1252,7 @@ var Blanke = (selector, options) => {
             // sprite
             this.sprites = {};
             this.sprite_index = '';
-            let spr_props = ['alpha','width','height','pivot','angle','scale','skew','frame','frames'];
+            let spr_props = ['alpha','width','height','pivot','angle','scale','skew','frame','frames','align'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
@@ -1399,20 +1414,6 @@ var Blanke = (selector, options) => {
                     ['circle',0,0,4]
                 )
             }  
-        }
-        get sprite_align () { return this._sprite_align || ''; }
-        set sprite_align (v) {
-            this._sprite_align = v;
-            if (v.includes('center')) 
-                this.sprite_pivot.set(this.sprite_width/2,this.sprite_height/2);
-            if (v.includes('left'))
-                this.sprite_pivot.x = 0;
-            if (v.includes('right'))
-                this.sprite_pivot.x = this.sprite_width;
-            if (v.includes('top'))
-                this.sprite_pivot.y = 0;
-            if (v.includes('bottom'))
-                this.sprite_pivot.y = this.sprite_height;
         }
         get sprite_index () { return this._sprite_index; }
         set sprite_index (v) {
@@ -2017,6 +2018,7 @@ var Blanke = (selector, options) => {
     Audio.sprite = (name, sprites) => Asset.audioSprite(name, sprites);
 
     /* -TEXT */
+    let f = Math.floor;
     class Text {
         constructor (str, opt) {
             if (typeof str == 'object') {
@@ -2033,20 +2035,22 @@ var Blanke = (selector, options) => {
             },opt || {})
             this._updateOptions();
 
+            this.x = 0;
+            this.y = 0;
             this.iter = 0;
             this.max_height = 0;
 
             this.pixi_text = new PIXI.Text('', this.options);
             this.textures = []; // texture for each letter
             this.canvas = new Canvas();
+            this.canvas.hitArea = new PIXI.Rectangle(0,0,0,0);
             this.canvas.auto_clear = false;
             this.temp_sprite = new Sprite({ no_scene: true });
 
-            let props = ['x','y']; //'alpha','anchor','angle','cursor'];
-            aliasProps(this, this.canvas, props);
+            let props = []; //'alpha','anchor','angle','cursor'];
+            //aliasProps(this, this.canvas, props);
 
-            if (str && str != '')
-                this.text = str;
+            this.text = str || '';
             Scene.addUpdatable(this);
         }
         _getPixiObjs () { return this.canvas._getPixiObjs(); }
@@ -2054,7 +2058,13 @@ var Blanke = (selector, options) => {
             this.pixi_text.destroy();
             this.canvas.destroy();
             this.temp_sprite.destroy();
+            if (this._debug) this._debug.destroy();
         }
+        set debug (v) {
+            if (!this._debug) 
+                this._debug = new Draw();
+        }
+        get debug () { this._debug != null; }
         _updateOptions () {
             let keys = ['fontFamily','fontSize','align'];
             delete Text.textures[this.hash];
@@ -2068,6 +2078,7 @@ var Blanke = (selector, options) => {
             if (this.destroyed) return;
             this.canvas.clear();
             let x = 0, y = 0, o = this.options, str = this._text;
+            let minx, miny, maxx, maxy;
             for (let l = 0; l < str.length; l++) {
                 let letter = str.charAt(l);
                 // get cached letter texture
@@ -2089,8 +2100,9 @@ var Blanke = (selector, options) => {
                     o.onDraw(props);
                     this.iter++;
                 }
-                this.temp_sprite.x = props.x;
-                this.temp_sprite.y = props.y;
+                
+                this.temp_sprite.x = this.x + props.x;
+                this.temp_sprite.y = this.y + props.y;
                 this.canvas.draw(this.temp_sprite);
 
                 // set values for next letter
@@ -2102,7 +2114,31 @@ var Blanke = (selector, options) => {
                     y += this.max_height;
                     this.max_height = 0;
                 }
-            };
+
+                // recalculate hitArea
+                let bounds = this.temp_sprite.rect;
+                if (minx == null) {
+                    minx = bounds.x; miny = bounds.y;
+                    maxx = bounds.x+bounds.width; maxy = bounds.y+bounds.height;
+                }
+                if (bounds.x < minx) minx = bounds.x;
+                if (bounds.y < miny) miny = bounds.y;
+                if (bounds.x + bounds.width > maxx) maxx = bounds.x + bounds.width;
+                if (bounds.y + bounds.height > maxy) maxy = bounds.y + bounds.height;
+            }
+            // set hitArea
+            let h = this.canvas.hitArea;
+            h.x = f(minx);
+            h.y = f(miny);
+            h.width = f(maxx - minx);
+            h.height = f(maxy - miny);
+            // 
+            if (this._debug) {
+                this._debug.draw(
+                    ['lineStyle',1,Draw.red],
+                    ['rect',h.x,h.y,h.width,h.height]
+                )
+            }
         }
     }
     Text.textures = {};
@@ -2169,6 +2205,9 @@ var Blanke = (selector, options) => {
     /* -MATRIX */
     let Matrix = PIXI.Matrix;
 
+    /* -RECTANGLE */
+    let Rectangle = PIXI.Rectangle;
+
     /* -TIMER */
     let Timer = {
         fn_after: [],
@@ -2212,7 +2251,7 @@ var Blanke = (selector, options) => {
     });
 
     engineLoaded.call(this);
-    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Timer, Util, View};
+    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View};
     return classes;
 }
 Blanke.addGame = (name, options) => {
