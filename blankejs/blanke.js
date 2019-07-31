@@ -2060,29 +2060,28 @@ var Blanke = (selector, options) => {
         set text (v) {
             v = '' + v;
             this._text = v;
-            console.log(this._text)
             //this._text_changed = true;
-            this._updateText();
+            
+            for (let l = 0; l < this._text.length; l++) {
+                let letter = this._text.charAt(l);
+                // store cached letter texture
+                if (!Text.textures[this.hash][letter]) {
+                    this.pixi_text.text = letter;
+                    this.pixi_text.updateText();
+                    Text.textures[this.hash][letter] = this.pixi_text.texture.clone();
+                }
+            }
         }
         get text () { return this._text; }
-        _updateText () {
+        update (dt) {
             if (this.destroyed) return;
             this.canvas.clear();
-            let x = 0, y = 0, temp_texture;
+            let x = 0, y = 0;
             for (let l = 0; l < this._text.length; l++) {
                 let letter = this._text.charAt(l);
                 // get cached letter texture
-                if (Text.textures[this.hash][letter]) {
-                    temp_texture = Text.textures[this.hash][letter];
-                } else {
-                    // ...or not; make one
-                    this.pixi_text.text = letter;
-                    this.pixi_text.updateText();
-                    temp_texture = this.pixi_text.texture;
-                    Text.textures[this.hash][letter] = temp_texture.clone();
-                }
                 this.temp_sprite.reset();
-                this.temp_sprite.texture = temp_texture;
+                this.temp_sprite.texture = Text.textures[this.hash][letter];
                 // allow user to change letter appearance  
                 let props = {i:l, string:this._text, letter, x, y, sprite: this.temp_sprite, iter:this.iter};
                 if (this.options.onDraw) {
@@ -2094,14 +2093,7 @@ var Blanke = (selector, options) => {
                 this.canvas.draw(this.temp_sprite);
                 // set values for next letter
                 x += this.temp_sprite.width;
-            }
-        }
-        update (dt) {
-            if (this.destroyed) return;
-            //if (!this._text_changed && this.options.onDraw) {
-                //this._updateText();
-            //}
-            this._text_changed = false;
+            };
         }
     }
     Text.textures = {};

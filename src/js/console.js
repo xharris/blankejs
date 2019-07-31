@@ -103,10 +103,9 @@ class Console extends Editor {
 		if (this.isVisible()) this.el_lines.innerHTML = this.str_console;
 
 		if (this.auto_scrolling) {
-			//blanke.cooldownFn("console.log", 100, ()=>{	
+			blanke.cooldownFn("console.log", 100, ()=>{	
 				this.el_log.scrollTop = this.el_log.scrollHeight;
-				this.auto_scrolling = true;
-			//});
+			});
 		}
 	}
 
