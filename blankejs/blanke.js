@@ -194,20 +194,46 @@ var Blanke = (selector, options) => {
 
     const aliasProps = (parent, child, props) => {
         for (let p of props) {
+            parent.stop_getset = false;
             Object.defineProperty(parent,p,{
-                get: function () { return child[p] }, 
-                set: function (v) { child[p] = v }
+                get: function () {
+                    if (parent.get && !parent.stop_getset) {
+                        parent.stop_getset = true
+                        parent.get(p);
+                        parent.stop_getset = false;
+                    }
+                    return child[p];
+                }, 
+                set: function (v) { 
+                    // TODO: allow user to change value?
+                    child[p] = v;
+                    if (parent.set && !parent.stop_getset) {
+                        parent.stop_getset = true
+                        parent.set(p,v);
+                        parent.stop_getset = false;
+                    }
+                }
             });
         }
     }
+
+    /* -ENABLERS */
 
     // hitbox (hitArea)
     const enableRect = (obj, getRect) => {
         if (obj.hasOwnProperty('rect')) return;
         Object.defineProperty(obj,'rect',{
             get: function() {
-                if (getRect) return getRect();
-                return obj.hitArea;
+                if (obj._rect) obj.hitArea = obj._rect;
+                return obj._rect || (getRect ? getRect() : new Rectangle());
+            },
+            set: function(v) {
+                obj._rect = v;
+                if (obj._getPixiObjs) {
+                    obj._getPixiObjs().forEach(pixi_obj => {
+                        pixi_obj.hitArea = v;
+                    })
+                }
             }
         })
     }
@@ -224,6 +250,20 @@ var Blanke = (selector, options) => {
                 if (!obj._effect) 
                     obj._effect = new EffectManager(obj);
                 obj._effect.add(v);
+            }
+        })
+    }
+
+    const enableTexGen = (obj) => {
+        if (!obj._getPixiObjs) return;
+        Object.defineProperty(obj,'getTexture',{
+            value: () => {
+                let temp_container = new PIXI.Container();
+                setNewParent(obj, temp_container);
+                let tex = app.renderer.generateTexture(temp_container);
+                restorePrevParent(obj);
+                temp_container.destroy();
+                return tex;
             }
         })
     }
@@ -387,6 +427,8 @@ var Blanke = (selector, options) => {
 
     /* -UTIL */
     var Util = {
+        uuid: () => uuid(),
+        aliasProps: (...args) => aliasProps(...args),
         // math
         rad: (deg) => deg * (Math.PI/180),
         deg: (rad) => rad * (180/Math.PI),
@@ -643,7 +685,8 @@ var Blanke = (selector, options) => {
             this.auto_clear = true;
             addZOrdering(this);
             enableEffects(this);
-            aliasProps(this, this.graphics, ['x','y','visible','alpha','scale','skew','angle'])
+            enableTexGen(this);
+            aliasProps(this, this.graphics, ['x','y','width','height','visible','alpha','scale','skew','angle'])
             Scene.addDrawable(this.graphics);
             this.draw(...args);
         }
@@ -784,14 +827,14 @@ var Blanke = (selector, options) => {
             this.auto_clear = true;
             addZOrdering(this);
             enableEffects(this);
+            enableRect(this);
             Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
                 if (!this._size_changed && !this.options.ide_mode)
                     this.resize(app.view.width, app.view.height, true);
             })
-            aliasProps(this, this.sprite, ['x','y','alpha','hitArea','scale']);
-            enableEffects(this);
+            aliasProps(this, this.sprite, ['x','y','alpha','hitArea','scale','width','height']);
         }
         _getPixiObjs () { return [this.sprite]; }
         destroy () {

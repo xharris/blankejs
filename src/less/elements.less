@@ -60,9 +60,9 @@
 		position: absolute;
 		bottom: 13px;
 		z-index: 10;
-		left: 2px;
+		left: 80%;
 		right: 2px;
-		overflow: auto;
+		overflow-x: hidden;
     	background: rgba(0,0,0,0.5);
 		box-sizing: border-box;
 		border-radius: 4px;
@@ -73,6 +73,8 @@
 
 		&:hover {
     		background: rgba(0,0,0,0.8);
+			left: 2px;
+			overflow: auto;
 		}
 
 		&.hidden {
