@@ -201,6 +201,17 @@ var Blanke = (selector, options) => {
         }
     }
 
+    // hitbox (hitArea)
+    const enableRect = (obj, getRect) => {
+        if (obj.hasOwnProperty('rect')) return;
+        Object.defineProperty(obj,'rect',{
+            get: function() {
+                if (getRect) return getRect();
+                return obj.hitArea;
+            }
+        })
+    }
+
     const enableEffects = (obj) => {
         if (obj.hasOwnProperty('effect')) return;
         Object.defineProperty(obj,'effect',{
@@ -632,18 +643,13 @@ var Blanke = (selector, options) => {
             this.auto_clear = true;
             addZOrdering(this);
             enableEffects(this);
+            aliasProps(this, this.graphics, ['x','y','visible','alpha','scale','skew','angle'])
             Scene.addDrawable(this.graphics);
             this.draw(...args);
         }
         _getPixiObjs () {
             return [this.graphics];
         }
-        get x () { return this.graphics.x; }
-        get y () { return this.graphics.y; }
-        set x (v){ this.graphics.x = v; }
-        set y (v){ this.graphics.y = v; }
-        get visible () { return this.graphics.visible; }
-        set visible (v){ this.graphics.visible = v; }
         draw (...args) {
             let getTex = (name) => {
                 let asset_path = Asset.getPath('image',name)
@@ -781,10 +787,10 @@ var Blanke = (selector, options) => {
             Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
-                if (!this._size_changed)
+                if (!this._size_changed && !this.options.ide_mode)
                     this.resize(app.view.width, app.view.height, true);
             })
-            aliasProps(this, this.sprite, ['x','y','alpha','hitArea']);
+            aliasProps(this, this.sprite, ['x','y','alpha','hitArea','scale']);
             enableEffects(this);
         }
         _getPixiObjs () { return [this.sprite]; }
@@ -1006,6 +1012,7 @@ var Blanke = (selector, options) => {
             let props = ['alpha','width','height','pivot','angle','scale','skew'];
         
             enableEffects(this);
+            enableRect(this, () => this.sprite.getBounds(true));
             aliasProps(this, this.sprite, props);
         }
         _getPixiObjs () { return [this.sprite]; }
@@ -1036,7 +1043,6 @@ var Blanke = (selector, options) => {
         reset () {
             this.sprite.setTransform();
         }
-        get rect () { return this.sprite.getBounds(true) }
         crop (x, y, w, h) {
             /*
                 // copy texture
@@ -2051,6 +2057,8 @@ var Blanke = (selector, options) => {
             //aliasProps(this, this.canvas, props);
 
             this.text = str || '';
+            enableRect(this, ()=> this.canvas.hitArea);
+            enableEffects(this);
             Scene.addUpdatable(this);
         }
         _getPixiObjs () { return this.canvas._getPixiObjs(); }
