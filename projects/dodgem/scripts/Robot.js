@@ -14,12 +14,19 @@ class Robot extends Entity {
 		
 		this.onCollide['main'] = (info, res) => {
 			if (!this.hit_timer) {
-				this.hit_timer = Timer.after(500,()=>{
-					console.log("OW")
+				this.hit_timer = Timer.after(250,()=>{
 					this.hit_timer = null;
+					this.d_hit.alpha = 1;
 				});
 			}
 		}
+		// red 'overlay' when player gets hit
+		this.d_hit = new Draw(
+			['fill',Draw.red],
+			['rect',0,0,Game.width,Game.height]
+		);
+		this.d_hit.z = -10;
+		this.d_hit.alpha = 0;
 	}
     update (dt) {
 		// movement
@@ -36,6 +43,9 @@ class Robot extends Entity {
 		// animation
 		if (Input('left','right').pressed.any)
 			this.sprite_scale.x = Math.sign(this.hspeed);
+		// red hit 'overlay' disappears
+		if (this.d_hit.alpha > 0)
+			this.d_hit.alpha -= 0.05;
     }
 }
 

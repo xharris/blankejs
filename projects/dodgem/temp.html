@@ -150,35 +150,7 @@ var Blanke = (selector, options) => {
         })
         // default fullscreen shortcut (NOT WORKING)
         Input.set('toggle-fullscreen','Alt Enter');
-    }
-
-    const addZOrdering = (obj) => {
-        Object.defineProperty(obj,'z',{
-            get: function () { return this._z; },
-            set: function (v)  {
-                this._z = v;
-                updateZOrder(this);
-            }
-        })
-        obj.z = 0;
-    }
-
-    const updateZOrder = (obj) => {
-        let containers = [];
-        if (obj._getPixiObjs) {
-            let objs = obj._getPixiObjs();
-            for (let o of objs) {
-                let container = o.parent;
-                o.zIndex = obj.z;
-                if (container && !containers.includes(container))
-                    containers.push(container);
-            }
-        }
-        // sort the collected containers
-        containers.forEach((cont) => {
-            cont.sortableChildren = true;
-            cont.sortChildren();
-        })
+        empty_sprite = new Sprite({ no_scene : true });
     }
 
     // Pixi object
@@ -190,54 +162,29 @@ var Blanke = (selector, options) => {
         }
     }
 
-    // Blanke object
-    const setNewParent = (child, parent_container) => {
-        if (!child._getPixiObjs) return false;
-
-        let pixi_objs = child._getPixiObjs();
-        for (let o of pixi_objs) {
-            o._last_parent = o.parent;
-            o.setParent(parent_container);
-        }
-        return true;
-    }
-
-    const restorePrevParent = (child) => {
-        if (!child._getPixiObjs) return false;
-
-        let pixi_objs = child._getPixiObjs();
-        for (let o of pixi_objs) {
-            if (o._last_parent) {
-                let curr_parent = o.parent;
-                o.setParent = o._last_parent
-                o._last_parent = curr_parent;
-            }
-        }
-        return true;
-    }
-
     const aliasProps = (parent, child, props) => {
         for (let p of props) {
+            parent.stop_getset = false;
             Object.defineProperty(parent,p,{
-                get: function () { return child[p] }, 
-                set: function (v) { child[p] = v }
+                get: function () {
+                    if (parent.get && !parent.stop_getset) {
+                        parent.stop_getset = true
+                        parent.get(p);
+                        parent.stop_getset = false;
+                    }
+                    return child[p];
+                }, 
+                set: function (v) { 
+                    // TODO: allow user to change value?
+                    child[p] = v;
+                    if (parent.set && !parent.stop_getset) {
+                        parent.stop_getset = true
+                        parent.set(p,v);
+                        parent.stop_getset = false;
+                    }
+                }
             });
         }
-    }
-
-    const enableEffects = (obj) => {
-        Object.defineProperty(obj,'effect',{
-            get: function() {
-                if (!obj._effect) 
-                    obj._effect = new EffectManager(obj);
-                return obj._effect.effects;
-            },
-            set: function(v) {
-                if (!obj._effect) 
-                    obj._effect = new EffectManager(obj);
-                obj._effect.add(v);
-            }
-        })
     }
 
     const storeInstance = (c,i) => {
@@ -269,6 +216,85 @@ var Blanke = (selector, options) => {
             return _sort(lesser).concat(pivot, _sort(greater));
         }
         return _sort (items);
+    }
+
+    /* -GAMEOBJECT */
+    class GameObject {
+        get z () { return this._z || 0; }
+        set z (v) {
+            this._z = v;
+            let containers = [];
+            if (this._getPixiObjs) {
+                let objs = this._getPixiObjs();
+                for (let o of objs) {
+                    let container = o.parent;
+                    o.zIndex = this.z;
+                    if (container && !containers.includes(container))
+                        containers.push(container);
+                }
+            }
+            // sort the collected containers
+            containers.forEach((cont) => {
+                cont.sortableChildren = true;
+                cont.sortChildren();
+            })
+        }
+        _getPixiObjs () { return []; }
+        getRect () {}
+        get visible () { return this._visible || true; }
+        set visible (v) {
+            this._visible = v;
+            this._getPixiObjs().forEach(o => { o.visible = v });
+        }
+        get rect () {
+            if (this._rect) this.hitArea = obj._rect;
+            return this._rect || this.getRect() || new Rectangle();
+        }
+        set rect (v) {
+            this._rect = v;
+            this._getPixiObjs().forEach(pixi_obj => {
+                pixi_obj.hitArea = v;
+            })
+        }
+        get effect () {
+            if (!this._effect) 
+                this._effect = new EffectManager(this);
+            return this._effect.effects;
+        }
+        set effect (v) {
+            if (!this._effect) 
+                this._effect = new EffectManager(this);
+            this._effect.add(v);
+        }
+        getTexture () {
+            let temp_container = new PIXI.Container();
+            this.setParent(temp_container);
+            let tex = app.renderer.generateTexture(temp_container);
+            this.restorePrevParent();
+            temp_container.destroy();
+            return tex;
+        }
+        restorePrevParent () {
+            if (!this._getPixiObjs) return false;
+    
+            let pixi_objs = this._getPixiObjs();
+            for (let o of pixi_objs) {
+                if (o._last_parent) {
+                    let curr_parent = o.parent;
+                    o.setParent = o._last_parent
+                    o._last_parent = curr_parent;
+                }
+            }
+            return true;
+        }
+        setParent (parent) {
+            let pixi_objs = this._getPixiObjs();
+            for (let o of pixi_objs) {
+                o._last_parent = o.parent;
+                o.setParent(parent_container);
+            }
+            return true;
+        }
     }
 
     //var cull = new Cull.SpatialHash();
@@ -399,6 +425,8 @@ var Blanke = (selector, options) => {
 
     /* -UTIL */
     var Util = {
+        uuid: () => uuid(),
+        aliasProps: (...args) => aliasProps(...args),
         // math
         rad: (deg) => deg * (Math.PI/180),
         deg: (rad) => rad * (180/Math.PI),
@@ -649,24 +677,18 @@ var Blanke = (selector, options) => {
                 ['fill']
             ]);
      */
-    class Draw {
+    class Draw extends GameObject {
         constructor (...args) {
+            super();
             this.graphics = new PIXI.Graphics();
             this.auto_clear = true;
-            addZOrdering(this);
-            enableEffects(this);
+            aliasProps(this, this.graphics, ['x','y','width','height','visible','alpha','scale','skew','angle'])
             Scene.addDrawable(this.graphics);
             this.draw(...args);
         }
         _getPixiObjs () {
             return [this.graphics];
         }
-        get x () { return this.graphics.x; }
-        get y () { return this.graphics.y; }
-        set x (v){ this.graphics.x = v; }
-        set y (v){ this.graphics.y = v; }
-        get visible () { return this.graphics.visible; }
-        set visible (v){ this.graphics.visible = v; }
         draw (...args) {
             let getTex = (name) => {
                 let asset_path = Asset.getPath('image',name)
@@ -735,9 +757,9 @@ var Blanke = (selector, options) => {
             }
         }
         clone () {
-            let new_graphics = new Draw();
-            replaceChild(new_graphics.graphics, this.graphics.clone());
-            new_graphics.graphics = new_graphics;
+            let new_draw = new Draw();
+            replaceChild(new_draw.graphics, this.graphics.clone());
+            new_draw.graphics = new_graphics;
             return 
         }
         containsPoint (x, y) {
@@ -791,29 +813,40 @@ var Blanke = (selector, options) => {
     }
 
     /* -CANVAS */
-    class Canvas { 
+    let empty_sprite;
+    class Canvas extends GameObject { 
         constructor () {
             this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
             this.sprite = new PIXI.Sprite(this.rtex);
             this.width = Game.width;
             this.height = Game.height;
             this.auto_clear = true;
-            addZOrdering(this);
-            enableEffects(this);
             Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
-                if (!this._size_changed)
+                if (!this._size_changed && !this.options.ide_mode)
                     this.resize(app.view.width, app.view.height, true);
             })
-            aliasProps(this, this.sprite, ['alpha']);
-            enableEffects(this);
+            aliasProps(this, this.sprite, ['x','y','alpha','hitArea','scale','width','height']);
         }
         _getPixiObjs () { return [this.sprite]; }
+        destroy () {
+            this.sprite.destroy();
+        }
+        clear () {
+            let old_auto_clear = this.auto_clear;
+            this.auto_clear = true;
+            this.draw(empty_sprite);
+            this.auto_clear = old_auto_clear;
+        }
         draw (obj, matrix) {
-            let pixi_objs = obj._getPixiObjs ? obj._getPixiObjs() : [];
-            for (let pixi_obj of pixi_objs)
-                app.renderer.render(pixi_obj, this.rtex, this.auto_clear, matrix);
+            if (obj._getPixiObjs) {
+                obj = obj._getPixiObjs();
+            }
+            if (!Array.isArray(obj)) obj = [].concat(obj);
+            for (let p in obj) {
+                app.renderer.render(obj[p], this.rtex, this.auto_clear, matrix || null);
+            }
             this.sprite.texture = this.rtex;
         }
         resize (w, h, internal) {
@@ -826,21 +859,23 @@ var Blanke = (selector, options) => {
     }
 
     /* -SCENE */
-    class _Scene {
+    class _Scene extends GameObject {
         constructor (name) {
+            super();
             this.name = name;
             this.container = new PIXI.Container();
             this.container.filterArea = new PIXI.Rectangle(0,0,Game.width, Game.height);
             window.addEventListener('resize',()=>{
-                this.container.filterArea.width = Game.width;
-                this.container.filterArea.height = Game.height;
+                if (this.container.filterArea) {
+                    this.container.filterArea.width = Game.width;
+                    this.container.filterArea.height = Game.height;
+                }
             })
             this.objects = [];
             this.onStart = (scene) => {};
             this.onUpdate = (scene,dt) => {};
             this.onEnd = (scene) => {};
             game_container.addChild(this.container);
-            enableEffects(this);
         }
 
         _getPixiObjs () {
@@ -943,6 +978,7 @@ var Blanke = (selector, options) => {
     Scene.addUpdatable = (obj) => {
         let old_destroy = obj.destroy;
         obj.destroy = (...args) => {
+            if (!obj.destroyed)
             obj.destroyed = true;
             if (old_destroy) old_destroy.call(obj, ...args);
         }
@@ -983,12 +1019,13 @@ var Blanke = (selector, options) => {
         speed: 1    
     }
     */
-    class Sprite {
+    class Sprite extends GameObject {
         constructor (name, options) {
+            super();
             this.animated = false;
             this._matrix = new Matrix(1,0,0,1,0,0);
             // animated sprite
-            if ((options && options.frames) || (!options && name.frames)) {
+            if ((options && options.frames) || (!options && name && name.frames)) {
                 if (!options)
                     options = name;
                 this.animated = true;
@@ -998,19 +1035,21 @@ var Blanke = (selector, options) => {
                 this.sprite.play();
             }
             // static image
-            else {
+            else if (typeof name == 'string') {
                 let asset = Asset.get('image',name);
                 this.sprite = new PIXI.Sprite(asset.texture);
+            } else {
+                this.sprite = new PIXI.Sprite();
             }
-            Scene.addDrawable(this.sprite);
 
             this.sprite.x = 0;
             this.sprite.y = 0;
-       
-            let props = ['alpha','width','height','pivot','angle','scale','skew'];
-        
-            enableEffects(this);
-            aliasProps(this, this.sprite, props);
+            aliasProps(this, this.sprite, ['x','y','texture','alpha','width','height','pivot','angle','scale','skew']);
+            //if (!((options && options.no_scene) || (!options && name && name.no_scene)))
+                Scene.addDrawable(this.sprite);
+        }
+        getRect () {
+            return this.sprite.getBounds(true)
         }
         _getPixiObjs () { return [this.sprite]; }
         get matrix () {
@@ -1021,10 +1060,6 @@ var Blanke = (selector, options) => {
             );
             return this._matrix;
         }
-        get x () { return this.sprite.x; }
-        set x (v){ this.sprite.x = v; }
-        get y () { return this.sprite.y; }
-        set y (v){ this.sprite.y = v; }
         get speed () { if (this.animated) return this.sprite.animationSpeed; }
         set speed (v){ if (this.animated) this.sprite.animationSpeed = v; }
         get frame () { return this.animated ? this.sprite.currentFrame : 0; }
@@ -1034,8 +1069,10 @@ var Blanke = (selector, options) => {
             else this.sprite.gotoAndPlay(v);
         }
         get frames () { return this.sprite.totalFrames; }
-        get texture () { return this.sprite.texture }
-        set texture (v) { this.sprite.texture = v }
+        // resets all transforms
+        reset () {
+            this.sprite.setTransform();
+        }
         crop (x, y, w, h) {
             /*
                 // copy texture
@@ -1044,6 +1081,20 @@ var Blanke = (selector, options) => {
                 new_sprite.texture = new_texture;
                 return new_sprite;
             */
+        }
+        get align () { return this._align || ''; }
+        set align (v) {
+            this._align = v;
+            if (v.includes('center')) 
+                this.pivot.set(this.width/2 / this.scale.x,this.height/2 / this.scale.y);
+            if (v.includes('left'))
+                this.pivot.x = 0;
+            if (v.includes('right'))
+                this.pivot.x = this.width / this.scale.x;
+            if (v.includes('top'))
+                this.pivot.y = 0;
+            if (v.includes('bottom'))
+                this.pivot.y = this.height / this.scale.y;
         }
         destroy () {
             this.sprite.destroy();
@@ -1162,7 +1213,7 @@ var Blanke = (selector, options) => {
                 [opt.type == 'poly' ? 'polygon' : opt.type, ...opt.shape],
                 ['fill']
             );
-            this.debug = false;  // TODO remove later
+            this.graphics.visible = false;
 
             Hitbox.world.add(this);
             Scene.addUpdatable(this);
@@ -1212,17 +1263,18 @@ var Blanke = (selector, options) => {
             this.graphics.y = this.world_obj.y;
         }
         destroy () {
-            if (this.destroyed) return;
-            this.destroyed = true;
-            Hitbox.world.remove(this);
+            if (this._destroyed) return;
+            this._destroyed = true;
             this.graphics.destroy();
+            Hitbox.world.remove(this);
         }
     }
     Hitbox.world = new SpatialHash(Math.max(Game.width, Game.height)/2);
 
     /* -ENTITY */
-    class Entity {
+    class Entity extends GameObject {
         constructor (...args) {
+            super();
             this.is_entity = true;
             this._x = 0;
             this._y = 0;
@@ -1237,7 +1289,7 @@ var Blanke = (selector, options) => {
             // sprite
             this.sprites = {};
             this.sprite_index = '';
-            let spr_props = ['alpha','width','height','pivot','angle','scale','skew','frame','frames'];
+            let spr_props = ['alpha','width','height','pivot','angle','scale','skew','frame','frames','align'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
@@ -1253,8 +1305,6 @@ var Blanke = (selector, options) => {
                     }
                 });
             }
-            addZOrdering(this);
-            enableEffects(this);
             if (this.init) this.init(...args);
             this.xprevious = this.x;
             this.yprevious = this.y;
@@ -1273,11 +1323,10 @@ var Blanke = (selector, options) => {
             for (let name in this.shapes) {
                 this.shapes[name].destroy();
             }
-            if (this._debug)
+            if (this._debug) {
                 this._debug.destroy();
+            }
         }
-        get visible () { return this._visible || false; }
-        set visible (v) { this._getPixiObjs().forEach(o => { o.visible = false }); }
         _update (dt) {
             if (this.destroyed) return;
             if (this.update)
@@ -1399,20 +1448,6 @@ var Blanke = (selector, options) => {
                     ['circle',0,0,4]
                 )
             }  
-        }
-        get sprite_align () { return this._sprite_align || ''; }
-        set sprite_align (v) {
-            this._sprite_align = v;
-            if (v.includes('center')) 
-                this.sprite_pivot.set(this.sprite_width/2,this.sprite_height/2);
-            if (v.includes('left'))
-                this.sprite_pivot.x = 0;
-            if (v.includes('right'))
-                this.sprite_pivot.x = this.sprite_width;
-            if (v.includes('top'))
-                this.sprite_pivot.y = 0;
-            if (v.includes('bottom'))
-                this.sprite_pivot.y = this.sprite_height;
         }
         get sprite_index () { return this._sprite_index; }
         set sprite_index (v) {
@@ -1631,8 +1666,9 @@ var Blanke = (selector, options) => {
     - difference between View and Canvas: View can capture input events and add specific objects to the 'view world'
     */
     let view_ref = {};
-    class _View {
+    class _View extends GameObject {
         constructor (name) { // keeping name property in case multiple views is more possible in the future
+            super();
             this.name = name;
             this.container = new PIXI.Container();
             
@@ -1645,7 +1681,6 @@ var Blanke = (selector, options) => {
             this._scale = new PIXI.Point(1,1);
             this.angle = 0;
             game_container.addChild(this.container);
-            enableEffects(this);
         }
         _getPixiObjs () { return [this.container]; }
         get x () { return this._x; }
@@ -1707,7 +1742,7 @@ var Blanke = (selector, options) => {
             for (let obj of objects) {
                 if (!obj.view || obj.view.name != this.name) {
                     obj.view = this;
-                    setNewParent(obj, this.container);
+                    this.setParent(this.container);
                 }
             }
             this.container.sortChildren();
@@ -1780,8 +1815,9 @@ var Blanke = (selector, options) => {
     },null,PIXI.UPDATE_PRIORITY.LOW+1);
 
     /* -MAP */
-    class Map {
+    class Map extends GameObject {
         constructor (name, from_file) {
+            super();
             this.name = name;
             this.tile_hash = new SpatialHash();
             this.hitboxes = [];
@@ -1796,8 +1832,6 @@ var Blanke = (selector, options) => {
             Scene.addDrawable(this.main_container);
             Scene.addUpdatable(this);
             this._debug = false;
-            addZOrdering(this);
-            enableEffects(this);
         }
         set x (v) { this.main_container.x = v }
         set y (v) { this.main_container.y = v }
@@ -2016,28 +2050,133 @@ var Blanke = (selector, options) => {
     }
     Audio.sprite = (name, sprites) => Asset.audioSprite(name, sprites);
 
-    /* -TEXT on-hold */
-    class Text {
-        constructor (str, opt) {/*
-            opt = Object.assign({
-                font:"16px Arial",
-                align:"left"
+    /* -TEXT */
+    let f = Math.floor;
+    class Text extends GameObject {
+        constructor (str, opt) {
+            super();
+            if (typeof str == 'object') {
+                opt = str;
+                str = null;
+            }
+            this.options = Object.assign({
+                fontFamily:'Arial',
+                fontSize:12,
+                align:"left",
+                wordWrap:false,
+                wordWrapWidth:100,
+                breakWords:true
             },opt || {})
-            this.pixi_text = new PIXI.BitmapText(str, opt);
-            //if (opt)
-            //    Object.keys(opt).forEach((k, v) => {this.pixi_text[k] = v});
-            let props = ['x','y','text',];//'alpha','anchor','angle','cursor'];
-            aliasProps(this, this.pixi_text, props);
-            Scene.addDrawable(this.pixi_text);*/
+            this._updateOptions();
+
+            this.x = 0;
+            this.y = 0;
+            this.iter = 0;
+            this.max_height = 0;
+
+            this.pixi_text = new PIXI.Text('', this.options);
+            this.textures = []; // texture for each letter
+            this.canvas = new Canvas();
+            this.canvas.hitArea = new PIXI.Rectangle(0,0,0,0);
+            this.canvas.auto_clear = false;
+            this.temp_sprite = new Sprite({ no_scene: true });
+
+            let props = []; //'alpha','anchor','angle','cursor'];
+            //aliasProps(this, this.canvas, props);
+
+            this.text = str || '';
+            Scene.addUpdatable(this);
         }
-        _getPixiObjs () { /* return [this.pixi_text]*/ }
+        getRect () { return this.canvas.hitArea; }
+        _getPixiObjs () { return this.canvas._getPixiObjs(); }
         destroy () {
             this.pixi_text.destroy();
+            this.canvas.destroy();
+            this.temp_sprite.destroy();
+            if (this._debug) this._debug.destroy();
         }
-        set blend_mode (v) {}
-        set button_mode (v) {} // keep? interactive=true, buttonMode=true
-        set filter_area (v) {}
+        set debug (v) {
+            if (!this._debug) 
+                this._debug = new Draw();
+        }
+        get debug () { this._debug != null; }
+        _updateOptions () {
+            let keys = ['fontFamily','fontSize','align'];
+            delete Text.textures[this.hash];
+            this.hash = keys.map(k => this.options[k] || '').join("+");
+            Text.textures[this.hash] = {};
+        }
+        set onDraw (v) { this.options.onDraw = v; }
+        set text (v) { this._text = '' + v; }
+        get text () { return this._text; }
+        update (dt) {
+            if (this.destroyed) return;
+            this.canvas.clear();
+            let x = 0, y = 0, o = this.options, str = this._text;
+            let minx, miny, maxx, maxy;
+            for (let l = 0; l < str.length; l++) {
+                let letter = str.charAt(l);
+                // get cached letter texture
+                this.temp_sprite.reset();
+                
+                // TODO: is this optimal?
+                if (Text.textures[this.hash][letter]) {
+                    this.temp_sprite.texture = Text.textures[this.hash][letter];
+                } else {
+                    let pixi_text = new PIXI.Text(letter, this.options);
+                    pixi_text.updateText();
+                    this.temp_sprite.texture = pixi_text.texture;
+                    Text.textures[this.hash][letter] = this.temp_sprite.texture.clone();
+                }
+
+                // allow user to change letter appearance  
+                let props = {i:l, string:str, letter, x, y, sprite: this.temp_sprite, iter:this.iter};
+                if (o.onDraw) {
+                    o.onDraw(props);
+                    this.iter++;
+                }
+                
+                this.temp_sprite.x = this.x + props.x;
+                this.temp_sprite.y = this.y + props.y;
+                this.canvas.draw(this.temp_sprite);
+
+                // set values for next letter
+                x += this.temp_sprite.width;
+                if (this.temp_sprite.height > this.max_height)
+                    this.max_height = this.temp_sprite.height;
+                if (o.wordWrap && x > o.wordWrapWidth && (o.breakWords || letter === ' ')) {
+                    x = 0;
+                    y += this.max_height;
+                    this.max_height = 0;
+                }
+
+                // recalculate hitArea
+                let bounds = this.temp_sprite.rect;
+                if (minx == null) {
+                    minx = bounds.x; miny = bounds.y;
+                    maxx = bounds.x+bounds.width; maxy = bounds.y+bounds.height;
+                }
+                if (bounds.x < minx) minx = bounds.x;
+                if (bounds.y < miny) miny = bounds.y;
+                if (bounds.x + bounds.width > maxx) maxx = bounds.x + bounds.width;
+                if (bounds.y + bounds.height > maxy) maxy = bounds.y + bounds.height;
+            }
+            // set hitArea
+            let h = this.canvas.hitArea;
+            h.x = f(minx);
+            h.y = f(miny);
+            h.width = f(maxx - minx);
+            h.height = f(maxy - miny);
+            // 
+            if (this._debug) {
+                this._debug.draw(
+                    ['lineStyle',1,Draw.red],
+                    ['rect',h.x,h.y,h.width,h.height]
+                )
+            }
+        }
     }
+    Text.textures = {};
 
     /* -EFFECT */
     class Effect {
@@ -2101,12 +2240,25 @@ var Blanke = (selector, options) => {
     /* -MATRIX */
     let Matrix = PIXI.Matrix;
 
+    /* -RECTANGLE */
+    let Rectangle = PIXI.Rectangle;
+
     /* -TIMER */
     let Timer = {
         fn_after: [],
         fn_every: [],
-        after: (t, fn) => { Timer.fn_after.push({ t:t, start_t:Game.ms, end_t:Game.ms+t, fn:fn || function(){} }); },
-        every: (t, fn) => { Timer.fn_every.push({ t:t, last_t:Game.ms, curr_t:0, iter:0, fn:fn }); }
+        after: (t, fn) => { Timer.fn_after.push({ t:t, 
+            start_t:Game.ms, 
+            end_t:Game.ms+t, 
+            fn:fn || function(){},
+             
+        }); return Timer.fn_after[Timer.fn_after.length-1]; },
+        every: (t, fn) => { Timer.fn_every.push({ t:t, 
+            last_t:Game.ms, 
+            curr_t:0, 
+            iter:0, 
+            fn:fn || function(){},
+        }); return Timer.fn_every[Timer.fn_every.length-1]; }
     }
     app.ticker.add((dt)=>{
         let ms = Game.ms;
@@ -2134,7 +2286,7 @@ var Blanke = (selector, options) => {
     });
 
     engineLoaded.call(this);
-    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Timer, Util, View};
+    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View};
     return classes;
 }
 Blanke.addGame = (name, options) => {
@@ -2217,7 +2369,7 @@ b.aInB=a.r<=c.r&&l<=c.r-a.r,b.bInA=c.r<=a.r&&l<=a.r-c.r);h.push(d);return!0};f.t
 				],
 				onLoad: function(){
 					
-		let { Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Scene, Sprite, Text, Timer, Util, View } = game_instance;
+		let { Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View } = game_instance;
 		
 		let TestScene = () => {};
 		let TestView = () => {};
@@ -2237,8 +2389,20 @@ class Robot extends Entity {
 		this.debug = true;
 		
 		this.onCollide['main'] = (info, res) => {
-			//console.log(info, res);
+			if (!this.hit_timer) {
+				this.hit_timer = Timer.after(250,()=>{
+					this.hit_timer = null;
+					this.d_hit.alpha = 1;
+				});
+			}
 		}
+		// red 'overlay' when player gets hit
+		this.d_hit = new Draw(
+			['fill',Draw.red],
+			['rect',0,0,Game.width,Game.height]
+		);
+		this.d_hit.z = -10;
+		this.d_hit.alpha = 0;
 	}
     update (dt) {
 		// movement
@@ -2255,6 +2419,9 @@ class Robot extends Entity {
 		// animation
 		if (Input('left','right').pressed.any)
 			this.sprite_scale.x = Math.sign(this.hspeed);
+		// red hit 'overlay' disappears
+		if (this.d_hit.alpha > 0)
+			this.d_hit.alpha -= 0.05;
     }
 }
 
@@ -2279,6 +2446,14 @@ TestScene({
 // [4] bowling ball : like beach ball, slower
 // [5] smiley : bounces, affected by gravity up/downwards
 
+/* sounds
+beach -> car door
+bowling -> cannon
+spike -> crunchy
+smile -> drip
+soccer -> switch1
+*/
+
 class Ball extends Entity {
     init () {
 		this.addSprite("ball", {image:"balls", frames:5, speed:0, frame_size:[128,128]})
@@ -2286,7 +2461,6 @@ class Ball extends Entity {
 		
 		let b_type = Util.rand_range(0,6);
 		this.b_type = b_type;
-		
 		let scale;
 		if (b_type == 4) // bowling ball
 			scale = 2;

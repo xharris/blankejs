@@ -175,9 +175,10 @@ class GamePreview {
 				this.last_code = null;
 			}
 			this.game = this.iframe.contentWindow.game_instance;
-			this.game.Game.onPause = ()=>{
-				this.game_checkpaused();
-			}
+			if (this.game)
+				this.game.Game.onPause = ()=>{
+					this.game_checkpaused();
+				}
 			if (this.onRefresh) this.onRefresh();
 		})
 		this.refreshSource();
@@ -399,7 +400,7 @@ class GamePreview {
 		let curr_script_cat = 'other';
 		let contains_test_scene = false;
 
-		if (current_script) {
+		if (current_script && nwFS.pathExistsSync(current_script)) {
 			[ scripts, curr_script_cat ] = GamePreview.getScriptOrder(current_script);
 			let file_data = nwFS.readFileSync(current_script,'utf-8');
 			contains_test_scene = file_data.includes('TestScene({')

@@ -4,6 +4,14 @@
 // [4] bowling ball : like beach ball, slower
 // [5] smiley : bounces, affected by gravity up/downwards
 
+/* sounds
+beach -> car door
+bowling -> cannon
+spike -> crunchy
+smile -> drip
+soccer -> switch1
+*/
+
 class Ball extends Entity {
     init () {
 		this.addSprite("ball", {image:"balls", frames:5, speed:0, frame_size:[128,128]})
@@ -11,7 +19,6 @@ class Ball extends Entity {
 		
 		let b_type = Util.rand_range(0,6);
 		this.b_type = b_type;
-		
 		let scale;
 		if (b_type == 4) // bowling ball
 			scale = 2;

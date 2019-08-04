@@ -452,6 +452,12 @@ class Code extends Editor {
 
 		new_editor.on('gutterClick',(cm, n) => {
 			let info = cm.lineInfo(n);
+			let containers = {'(':')', '[':']', '{':'}'};
+			for (let open in containers) {
+				if ((info.text.match(new RegExp(`\\${open}`,'g')) || []).length != 
+					(info.text.match(new RegExp(`\\${containers[open]}`,'g')) || []).length)
+					return;
+			}
 			let marker = blanke.createElement("div");
 			marker.innerHTML=`<i class="breakpoint">*</i>`;
 			let enable = !info.gutterMarkers || !info.gutterMarkers.breakpoints;
@@ -560,11 +566,11 @@ class Code extends Editor {
 
 			checkGutterEvents(editor);
 			this_ref.parseFunctions();
+			this_ref.addAsterisk();
 			
 			blanke.cooldownFn('checkLineWidgets',250,()=>{
 				otherActivity(cm,e)
 
-				this_ref.addAsterisk();
 				this_ref.refreshFnHelperTimer();
 
 				let hint_list = [];
@@ -601,7 +607,7 @@ class Code extends Editor {
 						let loop = keyword_pos.line - 1;
 						let this_lines_keys = Object.keys(this_lines[this_ref.file]);
 						do {
-							let line = editor.getLine(loop).trim();
+							let line = (editor.getLine(loop) || '').trim();
 							for (let l of this_lines_keys) {
 								if (line.includes(l) && 
 									(keyword == 'this' || this_lines[this_ref.file][l].includes(keyword))) {
@@ -863,7 +869,8 @@ class Code extends Editor {
 	}
 
 	addAsterisk () {
-		this.setSubtitle("*");
+		if (this.file_loaded)
+			this.setSubtitle("*");
 	}
 
 	removeAsterisk() {
@@ -939,6 +946,7 @@ class Code extends Editor {
 	}
 
 	edit (file_path) {
+		this.file_loaded = false;
 		var this_ref = this;
 
 		this.file = file_path;
@@ -959,6 +967,7 @@ class Code extends Editor {
 		});
 
 		this.codemirror.refresh();
+		this.file_loaded = true;
 		return this;
 	}
 

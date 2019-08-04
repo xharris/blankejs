@@ -128,35 +128,6 @@ var Blanke = (selector, options) => {
         empty_sprite = new Sprite({ no_scene : true });
     }
 
-    const addZOrdering = (obj) => {
-        Object.defineProperty(obj,'z',{
-            get: function () { return this._z; },
-            set: function (v)  {
-                this._z = v;
-                updateZOrder(this);
-            }
-        })
-        obj.z = 0;
-    }
-
-    const updateZOrder = (obj) => {
-        let containers = [];
-        if (obj._getPixiObjs) {
-            let objs = obj._getPixiObjs();
-            for (let o of objs) {
-                let container = o.parent;
-                o.zIndex = obj.z;
-                if (container && !containers.includes(container))
-                    containers.push(container);
-            }
-        }
-        // sort the collected containers
-        containers.forEach((cont) => {
-            cont.sortableChildren = true;
-            cont.sortChildren();
-        })
-    }
-
     // Pixi object
     const replaceChild = (child, new_child) => {
         let parent = child.parent;
@@ -164,32 +135,6 @@ var Blanke = (selector, options) => {
             child.destroy();
             new_child.setParent(parent);
         }
-    }
-
-    // Blanke object
-    const setNewParent = (child, parent_container) => {
-        if (!child._getPixiObjs) return false;
-
-        let pixi_objs = child._getPixiObjs();
-        for (let o of pixi_objs) {
-            o._last_parent = o.parent;
-            o.setParent(parent_container);
-        }
-        return true;
-    }
-
-    const restorePrevParent = (child) => {
-        if (!child._getPixiObjs) return false;
-
-        let pixi_objs = child._getPixiObjs();
-        for (let o of pixi_objs) {
-            if (o._last_parent) {
-                let curr_parent = o.parent;
-                o.setParent = o._last_parent
-                o._last_parent = curr_parent;
-            }
-        }
-        return true;
     }
 
     const aliasProps = (parent, child, props) => {
@@ -215,57 +160,6 @@ var Blanke = (selector, options) => {
                 }
             });
         }
-    }
-
-    /* -ENABLERS */
-
-    // hitbox (hitArea)
-    const enableRect = (obj, getRect) => {
-        if (obj.hasOwnProperty('rect')) return;
-        Object.defineProperty(obj,'rect',{
-            get: function() {
-                if (obj._rect) obj.hitArea = obj._rect;
-                return obj._rect || (getRect ? getRect() : new Rectangle());
-            },
-            set: function(v) {
-                obj._rect = v;
-                if (obj._getPixiObjs) {
-                    obj._getPixiObjs().forEach(pixi_obj => {
-                        pixi_obj.hitArea = v;
-                    })
-                }
-            }
-        })
-    }
-
-    const enableEffects = (obj) => {
-        if (obj.hasOwnProperty('effect')) return;
-        Object.defineProperty(obj,'effect',{
-            get: function() {
-                if (!obj._effect) 
-                    obj._effect = new EffectManager(obj);
-                return obj._effect.effects;
-            },
-            set: function(v) {
-                if (!obj._effect) 
-                    obj._effect = new EffectManager(obj);
-                obj._effect.add(v);
-            }
-        })
-    }
-
-    const enableTexGen = (obj) => {
-        if (!obj._getPixiObjs) return;
-        Object.defineProperty(obj,'getTexture',{
-            value: () => {
-                let temp_container = new PIXI.Container();
-                setNewParent(obj, temp_container);
-                let tex = app.renderer.generateTexture(temp_container);
-                restorePrevParent(obj);
-                temp_container.destroy();
-                return tex;
-            }
-        })
     }
 
     const storeInstance = (c,i) => {
@@ -297,6 +191,85 @@ var Blanke = (selector, options) => {
             return _sort(lesser).concat(pivot, _sort(greater));
         }
         return _sort (items);
+    }
+
+    /* -GAMEOBJECT */
+    class GameObject {
+        get z () { return this._z || 0; }
+        set z (v) {
+            this._z = v;
+            let containers = [];
+            if (this._getPixiObjs) {
+                let objs = this._getPixiObjs();
+                for (let o of objs) {
+                    let container = o.parent;
+                    o.zIndex = this.z;
+                    if (container && !containers.includes(container))
+                        containers.push(container);
+                }
+            }
+            // sort the collected containers
+            containers.forEach((cont) => {
+                cont.sortableChildren = true;
+                cont.sortChildren();
+            })
+        }
+        _getPixiObjs () { return []; }
+        getRect () {}
+        get visible () { return this._visible || true; }
+        set visible (v) {
+            this._visible = v;
+            this._getPixiObjs().forEach(o => { o.visible = v });
+        }
+        get rect () {
+            if (this._rect) this.hitArea = obj._rect;
+            return this._rect || this.getRect() || new Rectangle();
+        }
+        set rect (v) {
+            this._rect = v;
+            this._getPixiObjs().forEach(pixi_obj => {
+                pixi_obj.hitArea = v;
+            })
+        }
+        get effect () {
+            if (!this._effect) 
+                this._effect = new EffectManager(this);
+            return this._effect.effects;
+        }
+        set effect (v) {
+            if (!this._effect) 
+                this._effect = new EffectManager(this);
+            this._effect.add(v);
+        }
+        getTexture () {
+            let temp_container = new PIXI.Container();
+            this.setParent(temp_container);
+            let tex = app.renderer.generateTexture(temp_container);
+            this.restorePrevParent();
+            temp_container.destroy();
+            return tex;
+        }
+        restorePrevParent () {
+            if (!this._getPixiObjs) return false;
+    
+            let pixi_objs = this._getPixiObjs();
+            for (let o of pixi_objs) {
+                if (o._last_parent) {
+                    let curr_parent = o.parent;
+                    o.setParent = o._last_parent
+                    o._last_parent = curr_parent;
+                }
+            }
+            return true;
+        }
+        setParent (parent) {
+            let pixi_objs = this._getPixiObjs();
+            for (let o of pixi_objs) {
+                o._last_parent = o.parent;
+                o.setParent(parent_container);
+            }
+            return true;
+        }
     }
 
     //var cull = new Cull.SpatialHash();
@@ -679,13 +652,11 @@ var Blanke = (selector, options) => {
                 ['fill']
             ]);
      */
-    class Draw {
+    class Draw extends GameObject {
         constructor (...args) {
+            super();
             this.graphics = new PIXI.Graphics();
             this.auto_clear = true;
-            addZOrdering(this);
-            enableEffects(this);
-            enableTexGen(this);
             aliasProps(this, this.graphics, ['x','y','width','height','visible','alpha','scale','skew','angle'])
             Scene.addDrawable(this.graphics);
             this.draw(...args);
@@ -761,9 +732,9 @@ var Blanke = (selector, options) => {
             }
         }
         clone () {
-            let new_graphics = new Draw();
-            replaceChild(new_graphics.graphics, this.graphics.clone());
-            new_graphics.graphics = new_graphics;
+            let new_draw = new Draw();
+            replaceChild(new_draw.graphics, this.graphics.clone());
+            new_draw.graphics = new_graphics;
             return 
         }
         containsPoint (x, y) {
@@ -818,16 +789,13 @@ var Blanke = (selector, options) => {
 
     /* -CANVAS */
     let empty_sprite;
-    class Canvas { 
+    class Canvas extends GameObject { 
         constructor () {
             this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
             this.sprite = new PIXI.Sprite(this.rtex);
             this.width = Game.width;
             this.height = Game.height;
             this.auto_clear = true;
-            addZOrdering(this);
-            enableEffects(this);
-            enableRect(this);
             Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
@@ -866,8 +834,9 @@ var Blanke = (selector, options) => {
     }
 
     /* -SCENE */
-    class _Scene {
+    class _Scene extends GameObject {
         constructor (name) {
+            super();
             this.name = name;
             this.container = new PIXI.Container();
             this.container.filterArea = new PIXI.Rectangle(0,0,Game.width, Game.height);
@@ -882,7 +851,6 @@ var Blanke = (selector, options) => {
             this.onUpdate = (scene,dt) => {};
             this.onEnd = (scene) => {};
             game_container.addChild(this.container);
-            enableEffects(this);
         }
 
         _getPixiObjs () {
@@ -985,6 +953,7 @@ var Blanke = (selector, options) => {
     Scene.addUpdatable = (obj) => {
         let old_destroy = obj.destroy;
         obj.destroy = (...args) => {
+            if (!obj.destroyed)
             obj.destroyed = true;
             if (old_destroy) old_destroy.call(obj, ...args);
         }
@@ -1025,8 +994,9 @@ var Blanke = (selector, options) => {
         speed: 1    
     }
     */
-    class Sprite {
+    class Sprite extends GameObject {
         constructor (name, options) {
+            super();
             this.animated = false;
             this._matrix = new Matrix(1,0,0,1,0,0);
             // animated sprite
@@ -1046,17 +1016,15 @@ var Blanke = (selector, options) => {
             } else {
                 this.sprite = new PIXI.Sprite();
             }
-            if (!((options && options.no_scene) || (!options && name && name.no_scene)))
-                Scene.addDrawable(this.sprite);
 
             this.sprite.x = 0;
             this.sprite.y = 0;
-       
-            let props = ['alpha','width','height','pivot','angle','scale','skew'];
-        
-            enableEffects(this);
-            enableRect(this, () => this.sprite.getBounds(true));
-            aliasProps(this, this.sprite, props);
+            aliasProps(this, this.sprite, ['x','y','texture','alpha','width','height','pivot','angle','scale','skew']);
+            //if (!((options && options.no_scene) || (!options && name && name.no_scene)))
+                Scene.addDrawable(this.sprite);
+        }
+        getRect () {
+            return this.sprite.getBounds(true)
         }
         _getPixiObjs () { return [this.sprite]; }
         get matrix () {
@@ -1067,10 +1035,6 @@ var Blanke = (selector, options) => {
             );
             return this._matrix;
         }
-        get x () { return this.sprite.x; }
-        set x (v){ this.sprite.x = v; }
-        get y () { return this.sprite.y; }
-        set y (v){ this.sprite.y = v; }
         get speed () { if (this.animated) return this.sprite.animationSpeed; }
         set speed (v){ if (this.animated) this.sprite.animationSpeed = v; }
         get frame () { return this.animated ? this.sprite.currentFrame : 0; }
@@ -1080,8 +1044,6 @@ var Blanke = (selector, options) => {
             else this.sprite.gotoAndPlay(v);
         }
         get frames () { return this.sprite.totalFrames; }
-        get texture () { return this.sprite.texture }
-        set texture (v) { this.sprite.texture = v }
         // resets all transforms
         reset () {
             this.sprite.setTransform();
@@ -1226,7 +1188,7 @@ var Blanke = (selector, options) => {
                 [opt.type == 'poly' ? 'polygon' : opt.type, ...opt.shape],
                 ['fill']
             );
-            this.debug = false;  // TODO remove later
+            this.graphics.visible = false;
 
             Hitbox.world.add(this);
             Scene.addUpdatable(this);
@@ -1276,17 +1238,18 @@ var Blanke = (selector, options) => {
             this.graphics.y = this.world_obj.y;
         }
         destroy () {
-            if (this.destroyed) return;
-            this.destroyed = true;
-            Hitbox.world.remove(this);
+            if (this._destroyed) return;
+            this._destroyed = true;
             this.graphics.destroy();
+            Hitbox.world.remove(this);
         }
     }
     Hitbox.world = new SpatialHash(Math.max(Game.width, Game.height)/2);
 
     /* -ENTITY */
-    class Entity {
+    class Entity extends GameObject {
         constructor (...args) {
+            super();
             this.is_entity = true;
             this._x = 0;
             this._y = 0;
@@ -1317,8 +1280,6 @@ var Blanke = (selector, options) => {
                     }
                 });
             }
-            addZOrdering(this);
-            enableEffects(this);
             if (this.init) this.init(...args);
             this.xprevious = this.x;
             this.yprevious = this.y;
@@ -1337,11 +1298,10 @@ var Blanke = (selector, options) => {
             for (let name in this.shapes) {
                 this.shapes[name].destroy();
             }
-            if (this._debug)
+            if (this._debug) {
                 this._debug.destroy();
+            }
         }
-        get visible () { return this._visible || false; }
-        set visible (v) { this._getPixiObjs().forEach(o => { o.visible = false }); }
         _update (dt) {
             if (this.destroyed) return;
             if (this.update)
@@ -1681,8 +1641,9 @@ var Blanke = (selector, options) => {
     - difference between View and Canvas: View can capture input events and add specific objects to the 'view world'
     */
     let view_ref = {};
-    class _View {
+    class _View extends GameObject {
         constructor (name) { // keeping name property in case multiple views is more possible in the future
+            super();
             this.name = name;
             this.container = new PIXI.Container();
             
@@ -1695,7 +1656,6 @@ var Blanke = (selector, options) => {
             this._scale = new PIXI.Point(1,1);
             this.angle = 0;
             game_container.addChild(this.container);
-            enableEffects(this);
         }
         _getPixiObjs () { return [this.container]; }
         get x () { return this._x; }
@@ -1757,7 +1717,7 @@ var Blanke = (selector, options) => {
             for (let obj of objects) {
                 if (!obj.view || obj.view.name != this.name) {
                     obj.view = this;
-                    setNewParent(obj, this.container);
+                    this.setParent(this.container);
                 }
             }
             this.container.sortChildren();
@@ -1830,8 +1790,9 @@ var Blanke = (selector, options) => {
     },null,PIXI.UPDATE_PRIORITY.LOW+1);
 
     /* -MAP */
-    class Map {
+    class Map extends GameObject {
         constructor (name, from_file) {
+            super();
             this.name = name;
             this.tile_hash = new SpatialHash();
             this.hitboxes = [];
@@ -1846,8 +1807,6 @@ var Blanke = (selector, options) => {
             Scene.addDrawable(this.main_container);
             Scene.addUpdatable(this);
             this._debug = false;
-            addZOrdering(this);
-            enableEffects(this);
         }
         set x (v) { this.main_container.x = v }
         set y (v) { this.main_container.y = v }
@@ -2068,8 +2027,9 @@ var Blanke = (selector, options) => {
 
     /* -TEXT */
     let f = Math.floor;
-    class Text {
+    class Text extends GameObject {
         constructor (str, opt) {
+            super();
             if (typeof str == 'object') {
                 opt = str;
                 str = null;
@@ -2100,10 +2060,9 @@ var Blanke = (selector, options) => {
             //aliasProps(this, this.canvas, props);
 
             this.text = str || '';
-            enableRect(this, ()=> this.canvas.hitArea);
-            enableEffects(this);
             Scene.addUpdatable(this);
         }
+        getRect () { return this.canvas.hitArea; }
         _getPixiObjs () { return this.canvas._getPixiObjs(); }
         destroy () {
             this.pixi_text.destroy();

@@ -375,14 +375,21 @@
 
 .blankejs-toasts {
     position: absolute;
+    left: 0px;
     bottom: 0px;
     right: 0px;
     z-index: 1000;
+    pointer-events: none;
+
+    * {
+        pointer-events: initial;
+    }
 
     .toast-container {
         background-color: white;
         border: 1px solid black;
         margin: 2px;
+        max-width: 75%;
 
         .content {
             margin: 0px;
