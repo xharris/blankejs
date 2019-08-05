@@ -9,16 +9,14 @@ exports.autocomplete = {
 }
 
 exports.onPluginLoad = () => {
-    document.addEventListener('script_modified', scriptModified);
+    document.addEventListener('script_modified', (e) => {
+    let { path, content } = e.detail;
+        if (!app.isServerRunning() && content.includes("Net.")) {								
+            app.runServer();
+        }
+    });
 }
 
 exports.onPluginUnload = () => {
     
-}
-
-let scriptModified = (e) => {
-    let { path, content } = e.detail;
-    if (!app.isServerRunning() && content.includes("Net.")) {								
-        app.runServer();
-    }
 }

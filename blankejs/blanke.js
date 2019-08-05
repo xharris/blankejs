@@ -215,7 +215,7 @@ var Blanke = (selector, options) => {
             })
         }
         _getPixiObjs () { return []; }
-        getRect () {}
+        getRect () { return new Rectangle(); }
         get visible () { return this._visible || true; }
         set visible (v) {
             this._visible = v;
@@ -284,7 +284,6 @@ var Blanke = (selector, options) => {
 
     /* -GAME */
     var Game = {
-        paused: false,
         config: {},
         time: 0,
         ms: 0,
@@ -304,7 +303,6 @@ var Blanke = (selector, options) => {
         get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
         get background_color () { return app.renderer.backgroundColor; },
         set background_color (v) { app.renderer.backgroundColor = v; },
-        // replaces the game with a screenshot
         paused: false,
         pause: () => {
             Game.paused = true;
@@ -328,6 +326,7 @@ var Blanke = (selector, options) => {
                 },null,PIXI.UPDATE_PRIORITY.UTILITY);
             }
         },
+        // replaces the game with a screenshot
         freeze: () => {
             if (Game.frozen) return;
             Game.frozen = true;
@@ -1483,7 +1482,7 @@ var Blanke = (selector, options) => {
     class _Input {
         constructor (name, inputs) {
             this.name = name;
-            this.inputs = inputs.map(i => i.trim());
+            this.inputs = [];
             this.options = {
                 can_repeat: true
             }
@@ -1496,15 +1495,16 @@ var Blanke = (selector, options) => {
             this.pressed = false;
             this.released = false;
 
+            this.add(inputs);
+        }
+        add (inputs) {
+            inputs = [].concat(inputs);
+            this.inputs = this.inputs.concat(inputs.map(i => i.trim()));
             for (let i of this.inputs) {
                 i = i.trim();
                 this.press_count[i] = 0;
                 this.combo_count[i] = Util.str_count(i,' ')+1;
                 this.was_pressed[i] = false;
-                this.release_checked = false;
-                this.press_checked = false;
-                this.pressed = false;
-                this.released = false;
                 i.split(' ').forEach(n => {
                     n = key_translation[n] || n;
                     this.key_ref[n] = this.key_ref[n] || [];
@@ -1585,11 +1585,19 @@ var Blanke = (selector, options) => {
         if (['set','inputCheck'].includes(name)) return;
         input_ref[name] = new _Input(name, inputs);
 
-
         if (!Input[name])
             Object.defineProperty(Input,name,{
                 get: () => input_ref[name].options
             })
+    };
+    Input.add = (name, ...inputs) => {
+        let in_ref = input_ref[name];
+        if (!in_ref) {
+            Input.set(name, ...inputs);
+            return;
+        }
+        if (['set','inputCheck'].includes(name)) return;
+        in_ref.add(inputs);
     };
     /*  Input.on('touch', (e) => {})    // defaults to whole canvas
         Input.on('touch', my_entity, (e) => {})

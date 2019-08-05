@@ -391,10 +391,6 @@ var app = {
 						}
 					},
 					(win)=>{
-						win.webContents.openDevTools();
-						/*
-						win.reload();
-						*/
 						win.on('closed',function(){
 							nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
 							return true;//this.close(true);
@@ -426,11 +422,8 @@ var app = {
 		options.parent = app.window;
 		let child = new elec.remote.BrowserWindow(options)
 		child.loadFile(nwPATH.relative('',html));
-		child.once('ready-to-show', ()=>{
-			app.extra_windows.push(child);
-			if (cb) cb(child);
-			child.show();
-		});
+		app.extra_windows.push(child);
+		if (cb) cb(child);
 	},
 
 	toggleWindowVis: function() {

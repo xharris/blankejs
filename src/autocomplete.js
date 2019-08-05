@@ -16,9 +16,15 @@ let prop_xyz = [
 	...prop_xy,
 	prop_z
 ]
-let prop_effect = { prop: 'effect' };
-let prop_visible = { prop: 'visible' };
 let prop_pixi_point = (name) => ({ prop: name || 'point', info: '{ x, y, set(x, y=x) }' })
+let prop_gameobject = [
+	prop_z,
+	{ fn: 'getRect', info: 'returns a bounding box Rectangle'},
+	{ prop: 'rect', info: 'get/set Rectangle for object\'s hitArea' },
+	{ prop: 'visible' },
+	{ prop: 'effect' },
+	{ fn: 'getTexture', info: 'returns a PIXI.Teture' }
+]
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
 // used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
@@ -32,7 +38,7 @@ module.exports.keywords = [
 // TestScene is included just so it looks nice
 module.exports.class_list = [
 	'Asset','Game','Util','Draw','Scene',
-	'Map','Effect','Scene','Sprite','Input',
+	'Map','Effect','Sprite','Input',
 	'Entity','View','Timer',
 	'TestScene','TestView'
 ];
@@ -94,12 +100,22 @@ module.exports.hints = {
 		{ fn: "Scene", vars: { name:'', callbacks:'{ onStart, onUpdate, onEnd }' } }
 	],
 	"blanke-game":[
+		{ prop: 'time', info: 'elapsed dt' },
+		{ prop: 'ms', info: 'elapsed ms' },
+		{ prop: 'os', info: 'ide/win/mac/linux/android/ios' },
 		{ prop: 'width' },
 		{ prop: 'height' },
-		{ prop: 'background_color', info: 'getter/setter' },
+		{ prop: 'background_color', info: 'get/set' },
+		{ prop: 'paused', info: 'whether game is paused or not' },
+		{ fn: 'pause', info: '[!] for use in IDE' },
+		{ fn: 'resume', info: '[!] for use in IDE' },
+		{ fn: 'step', info: '[!] for use in IDE' },
+		{ prop: 'fullscreen', info: 'get/set. will not work in IDE mode'},
 		{ fn: 'end' }
 	],
 	"blanke-util":[
+		{ fn: 'uuid' },
+		{ fn: 'aliasProps', vars: { dest:'', src:'', properties:'' }, info: 'maps get/set functions that allow dest to control [properties] of src' },
 		{ fn: 'rad', vars: { deg:'' }, info: 'converts degrees to radians' },
 		{ fn: 'deg', vars: { rad:'' }, info: 'converts radians to degrees' },
 		{ fn: 'direction_x', vars: { angle:'degrees', dist:'' } },
@@ -110,7 +126,8 @@ module.exports.hints = {
 		{ fn: 'rand_choose', vars: { array:'' } },
 		{ fn: 'basename', vars: { path:'', no_ext:'' } },
 		{ fn: 'lerp', vars: { a:'', b:'', amt:'[0,1]' } },
-		{ fn: 'sinusoidal', vars: { min:'', max:'', spd:'', offset:'opt' } }
+		{ fn: 'sinusoidal', vars: { min:'', max:'', spd:'', offset:'opt' } },
+		{ fn: 'str_count', vars: { string:'', substring:'', allowOverlap:'' } }
 	],
 	"blanke-asset":[
 		{ prop: 'supported_filetypes', info: '{ type : [extensions] }' },
@@ -139,14 +156,13 @@ module.exports.hints = {
 	],
 	"blanke-draw-instance":[
 		...prop_xyz,
-		prop_effect,
-		prop_visible,
 		{ fn: 'draw', vars: { instruction:'see docs for possible drawings', etc:'' } },
 		{ prop: 'auto_clear', info: 'clear before every draw()' },
 		{ fn: 'clone', info: 'returns new Draw instance' },
 		{ fn: 'containsPoint', vars: { x:'', y:'' } },
 		{ fn: 'clear' },
-		{ fn: 'destroy' }
+		{ fn: 'destroy' },
+		...prop_gameobject
 	],
 	"blanke-scene":[
 		{ fn: 'switch', vars: { name:'' } },
@@ -157,13 +173,13 @@ module.exports.hints = {
 	],
 	"blanke-sprite-instance":[
 		...prop_xyz,
-		prop_effect,
 		{ prop: 'alpha' },
 		{ prop: 'width' },
 		{ prop: 'height' },
 		prop_pixi_point('pivot'),
 		{ prop: 'angle', info: 'degrees' },
-		{ fn: 'destroy' }
+		{ fn: 'destroy' },
+		...prop_gameobject
 	],
 	"blanke-map":[
 		{ fn: 'load', vars: { name:'map asset' } }
@@ -171,16 +187,15 @@ module.exports.hints = {
 	"blanke-map-instance":[
 		{ prop: 'debug' },
 		...prop_xyz,
-		prop_effect,
 		{ fn: 'addLayer', vars: { name:'' } },
 		{ fn: 'addTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', options:'{ layer }' } },
 		{ fn: 'addEntity', vars: { entity_class:'', x:'', y:'', options:'{ layer, align (left, right, top, bottom, center) }' } },
 		{ fn: 'addHitbox', vars: { hitbox_args:'' } },
-		{ fn: 'removeTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', layer:'' } }
+		{ fn: 'removeTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', layer:'' } },
+		...prop_gameobject
 	],
 	"blanke-entity-instance":[
 		...prop_xyz,
-		prop_visible,
 		{ prop: 'hspeed' },
 		{ prop: 'vspeed' },
 		{ prop: 'gravity' },
@@ -188,9 +203,9 @@ module.exports.hints = {
 		{ prop: 'shape_index', info:'base shape of the entity' },
 		{ prop: 'shapes', info:`{ 'shape_name' : Hitbox }`},
 		{ prop: 'sprite_align', info: `changes sprite_pivot with a combination of 'left right top bottom center'`},
-		prop_effect,
 		{ fn: 'addSprite', vars: { name: '', options: 'frames, columns, frame_size[w,h], speed, spacing[x,y], offset[x,y]' } },
-		{ fn: 'addShape', vars: { name: '',  options: 'type(circle/rect/poly), ...see docs' } }
+		{ fn: 'addShape', vars: { name: '',  options: 'type(circle/rect/poly), ...see docs' } },
+		...prop_gameobject
 	],
 	"blanke-input":[
 		{ fn: 'set', vars: { name:'', inputs:'...' } },
@@ -208,6 +223,6 @@ module.exports.hints = {
 		{ prop: 'yoffset' },
 		prop_pixi_point('scale'),
 		{ prop: 'angle', info: 'degrees' },
-		prop_effect
+		...prop_gameobject
 	]
 }

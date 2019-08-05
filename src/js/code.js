@@ -49,6 +49,12 @@ var reloadCompletions = () => {
 	class_list = autocomplete.class_list || [];
 	re_image = autocomplete.image || [];
 	re_this = autocomplete.this_ref || {};
+
+	// add classes as globals if they have properties
+	for (let c of class_list) {
+		if (hints['blanke-'+c.toLowerCase()] && !hints.global.find(p => p.prop == c || p.fn == c))
+			hints.global.push({ prop: c });
+	}
 }
 
 document.addEventListener('loadedPlugins', reloadCompletions);
@@ -577,7 +583,7 @@ class Code extends Editor {
 				// dot activation
 				let word_pos = editor.findWordAt(cursor);
 				let word = editor.getRange(word_pos.anchor, word_pos.head);
-				let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
+				let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
 				let before_word = editor.getRange(before_word_pos.anchor, before_word_pos.head);//before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
 				let before_dot_pos = editor.findWordAt({line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1})
 				if (before_word == '.') {
@@ -585,32 +591,35 @@ class Code extends Editor {
 				} else {
 					before_dot = '';
 				}
+
 				// word that triggered the dot
-				let keyword = (before_dot != '') ? before_dot : before_word;
-				// before_dot_pos : before_word_pos
-				let keyword_pos = (before_dot != '') ? 
-					{line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1} : 
-					{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1};
-
-				if (before_dot == '' && before_word == '.' && word != '.') {
-					keyword_pos.ch = before_word_pos.ch - 1;
+				let keyword = word;
+				let keyword_pos = word_pos;
+				if (word == '.') {
+					keyword = before_word;
+					keyword_pos = before_word_pos;
 				}
+				else if (before_dot != '') {
+					keyword = before_dot;
+					keyword_pos = before_dot_pos;
+				}
+				keyword = keyword.trim();
 
-				let token = editor.getTokenAt(keyword_pos);
+				let token = editor.getTokenAt(keyword_pos.head);//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
 				let tokens = (token.type || '').split(' ');
 				let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
-
+				// console.log({keyword,before_dot,word})
 				if (keyword != '') {
 					// this -> replace with real instance type
 					if (is_key_or_var && this_lines[this_ref.file]) {
 						// look at previous lines until a 'this regex' is hit
-						let loop = keyword_pos.line - 1;
+						let loop = keyword_pos.head.line - 1;
 						let this_lines_keys = Object.keys(this_lines[this_ref.file]);
 						do {
 							let line = (editor.getLine(loop) || '').trim();
 							for (let l of this_lines_keys) {
 								if (line.includes(l) && 
-									(keyword == 'this' || this_lines[this_ref.file][l].includes(keyword))) {
+									(keyword == 'this')) { // || this_lines[this_ref.file][l].includes(keyword))) { // TODO: DOESNT WORK ATM
 									tokens.push(this_lines[this_ref.file][l][0]);
 								}
 							}
@@ -622,19 +631,23 @@ class Code extends Editor {
 					}
 				}
 				// 'global scope'
-				if (word != '.' && is_key_or_var && var_list[this_ref.file]) {
-					// variable
-					if (var_list[this_ref.file].var)
-						var_list[this_ref.file].var.forEach(v => {
-							if (v.startsWith(word))
-								hint_list.push({ prop: v });
-						})
-					// function
-					if (var_list[this_ref.file].fn)
-						var_list[this_ref.file].fn.forEach(v => {
-							if (v.startsWith(word))
-								hint_list.push({ fn: v });
-						})
+				if (word != '.' && is_key_or_var) {
+					if (var_list[this_ref.file]) {
+						// variable
+						if (var_list[this_ref.file].var)
+							var_list[this_ref.file].var.forEach(v => {
+								if (v.startsWith(word))
+									hint_list.push({ prop: v });
+							})
+						// function
+						if (var_list[this_ref.file].fn)
+							var_list[this_ref.file].fn.forEach(v => {
+								if (v.startsWith(word))
+									hint_list.push({ fn: v });
+							})
+					}
+					// globals
+					hint_list = hint_list.concat(hints.global);
 				}
 				if (hint_list.length > 0)
 					showHints(editor, hint_list, word);
