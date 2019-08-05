@@ -1020,7 +1020,7 @@ var Blanke = (selector, options) => {
             this.sprite.x = 0;
             this.sprite.y = 0;
             aliasProps(this, this.sprite, ['x','y','texture','alpha','width','height','pivot','angle','scale','skew']);
-            //if (!((options && options.no_scene) || (!options && name && name.no_scene)))
+            if (!((options && options.no_scene) || (!options && name && name.no_scene)))
                 Scene.addDrawable(this.sprite);
         }
         getRect () {
