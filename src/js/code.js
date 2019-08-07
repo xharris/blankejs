@@ -300,8 +300,6 @@ class Code extends Editor {
 			return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), blankeOverlay);
 		});
 
-		this.setupEditor(this.edit_box);
-
 		let showSpritePreview = (image_name, include_img, cb) => {
 			let spr_prvw = new SpritesheetPreview(image_name);
 			spr_prvw.onCopyCode = function(vals){
@@ -332,6 +330,7 @@ class Code extends Editor {
 
 		this.gutterEvents = {
 			'\.addSpr':{
+				name:'sprite',
 				tooltip:'make a spritesheet animation',
 				fn:function(line_text, cm, cur){		
 					// get currently used image name
@@ -345,6 +344,7 @@ class Code extends Editor {
 				}
 			},
 			'new\\s+Sprite':{
+				name:'sprite',
 				tooltip:'make a spritesheet animation',
 				fn:function(line_text, cm, cur){
 					// get currently used image name
@@ -361,6 +361,8 @@ class Code extends Editor {
 
 		this.autocompleting = false;
 		this.last_word = '';
+
+		this.setupEditor(this.edit_box);
 
 		this.addCallback('onFocus', function() {
 			this_ref.game.size = this_ref.container.getSizeType();
@@ -424,13 +426,12 @@ class Code extends Editor {
 
 	setupEditor(el_container) {
 		let this_ref = this;
-
 		let new_editor = CodeMirror(el_container, {
 			mode: "blanke",
 			theme: "material",
             smartIndent : true,
             lineNumbers : true,
-            gutters:["CodeMirror-linenumbers","gutter-event","breakpoints"],
+            gutters:["CodeMirror-linenumbers","breakpoints",...Object.values(this.gutterEvents).map(v=>v.name).filter((v,k,a)=>a.indexOf(v)===k)],
             lineWrapping : false,
             indentUnit : 4,
             tabSize : 4,
@@ -456,23 +457,24 @@ class Code extends Editor {
             }
 		});
 
-		new_editor.on('gutterClick',(cm, n) => {
-			let info = cm.lineInfo(n);
-			let containers = {'(':')', '[':']', '{':'}'};
-			for (let open in containers) {
-				if ((info.text.match(new RegExp(`\\${open}`,'g')) || []).length != 
-					(info.text.match(new RegExp(`\\${containers[open]}`,'g')) || []).length)
-					return;
-			}
-			let marker = blanke.createElement("div");
-			marker.innerHTML=`<i class="breakpoint">*</i>`;
-			let enable = !info.gutterMarkers || !info.gutterMarkers.breakpoints;
-			cm.setGutterMarker(n, "breakpoints", enable ? marker : null);
+		new_editor.on('gutterClick',(cm, n, gutter) => {
 
-			if (enable) 
-				this.breakpoints[n] = true;
-			else
-				delete this.breakpoints[n];
+				let info = cm.lineInfo(n);
+				let containers = {'(':')', '[':']', '{':'}'};
+				for (let open in containers) {
+					if ((info.text.match(new RegExp(`\\${open}`,'g')) || []).length != 
+						(info.text.match(new RegExp(`\\${containers[open]}`,'g')) || []).length)
+						return;
+				}
+				let marker = blanke.createElement("div");
+				marker.innerHTML=`<i class="breakpoint">*</i>`;
+				let enable = !info.gutterMarkers || !info.gutterMarkers.breakpoints;
+				cm.setGutterMarker(n, "breakpoints", enable ? marker : null);
+
+				if (enable) 
+					this.breakpoints[n] = true;
+				else
+					delete this.breakpoints[n];
 		});
 		
 		// set up events
@@ -480,18 +482,23 @@ class Code extends Editor {
 		function checkGutterEvents(cm, obj) {
 			let cur = cm.getCursor();
 			let line_text = cm.getLine(cur.line);
-			cm.clearGutter('gutter-event');
+
+			Object.values(this_ref.gutterEvents).forEach(v => {
+				cm.clearGutter(v.name);
+			})
 			
 			for (let txt in this_ref.gutterEvents) {
+				let info = this_ref.gutterEvents[txt];
 				if (line_text.match(new RegExp(txt))) {
 					let el_gutter = blanke.createElement('div','gutter-evt');
 					el_gutter.innerHTML="<i class='mdi mdi-flash'></i>";
-					if (this_ref.gutterEvents[txt].tooltip)
-						el_gutter.title = this_ref.gutterEvents[txt].tooltip;
-					el_gutter.addEventListener('click',function(){
+					if (info.tooltip)
+						el_gutter.title = info.tooltip;
+					el_gutter.addEventListener('click',function(e){
 						this_ref.gutterEvents[txt].fn(line_text, cm, cur);
 					});
-					cm.setGutterMarker(cur.line, 'gutter-event', el_gutter);
+					cm.setGutterMarker(cur.line, info.name, el_gutter);
+					
 				}
 			}
 		}
@@ -512,7 +519,6 @@ class Code extends Editor {
 				let add = false;
 				let text = hint_opts.fn || hint_opts.prop;
 
-				//console.log(input, text)
 				if (input != '.' && !text.startsWith(input) && text != input) 
 					continue;
 
@@ -608,7 +614,6 @@ class Code extends Editor {
 				let token = editor.getTokenAt(keyword_pos.head);//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
 				let tokens = (token.type || '').split(' ');
 				let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
-				// console.log({keyword,before_dot,word})
 				if (keyword != '') {
 					// this -> replace with real instance type
 					if (is_key_or_var && this_lines[this_ref.file]) {
@@ -624,7 +629,7 @@ class Code extends Editor {
 								}
 							}
 							loop--;
-						} while (loop > 0);
+						} while (loop >= 0);
 					}
 					for (let tok of tokens) {
 						hint_list = hint_list.concat(hints[tok] || []);
@@ -1205,8 +1210,8 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'Add a scene',
 		onSelect: function() {
-			key_newScriptModal("scene",`
-Scene("<NAME>",{
+			key_newScriptModal("scene",
+`Scene("<NAME>",{
     onStart: function() {
 
     },
@@ -1226,8 +1231,8 @@ Scene("<NAME>",{
 	app.addSearchKey({
 		key: 'Add an entity',
 		onSelect: function() {
-			key_newScriptModal("entity",`
-class <NAME> extends Entity {
+			key_newScriptModal("entity",
+`class <NAME> extends Entity {
     init () {
 
     }

@@ -1,0 +1,11 @@
+{
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns",
+    "first_scene": null,
+    "size": [
+        800,
+        600
+    ],
+    "enabled_plugins": {},
+    "spritesheet_prvw": {}
+}

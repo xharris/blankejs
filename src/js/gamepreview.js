@@ -455,7 +455,7 @@ var game_instance = Blanke("#game",{
 		let line_offset = 22; // compensates for line 308 where extra code is added;
 		let last_line_end = (code.match(re_new_line) || []).length + line_offset;
 		for (let path of scripts) {
-			if (nwFS.pathExists(path)) {
+			if (nwFS.pathExistsSync(path)) {
 				let file_data = nwFS.readFileSync(path,'utf-8') + '\n';
 				// breakpoints
 				if (path == current_script) {

@@ -299,7 +299,7 @@ var Blanke = (selector, options) => {
                 return 'ios';
             return '?';
         },
-        get width () { return blanke_ref.options.resizeable ? app.view.width : blanke_ref.options.width; },
+        get width () { return blanke_ref.options.resizable ? app.view.width : blanke_ref.options.width; },
         get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
         get background_color () { return app.renderer.backgroundColor; },
         set background_color (v) { app.renderer.backgroundColor = v; },
@@ -467,7 +467,8 @@ var Blanke = (selector, options) => {
             return ['file', Util.basename(name)];
         },
         parseAssetName: (path) => {
-            return path.replace(/[\w_\\.-\/]+\/assets\/\w+\//,'').split('.').slice(0,-1).join('.');
+            console.log(path)
+            return path.replace(/[\w_\\.\-\/]+\/assets\/\w+\//,'').split('.').slice(0,-1).join('.');
         },
         // callback only used in : json
         add: (orig_path, options={}) => {
@@ -1188,6 +1189,8 @@ var Blanke = (selector, options) => {
                 ['fill']
             );
             this.graphics.visible = false;
+            if (opt.debug)
+                this.debug = opt.debug;
 
             Hitbox.world.add(this);
             Scene.addUpdatable(this);
@@ -1255,11 +1258,11 @@ var Blanke = (selector, options) => {
             this.hspeed = 0;
             this.vspeed = 0;
             this.gravity = 0;
-            this.gravity_direction = 0;
+            this.gravity_direction = 90;
             // collision
             this.shape_index = null;
             this.shapes = {};
-            this.onCollide = {};
+            this.onCollision = {};
             // sprite
             this.sprites = {};
             this.sprite_index = '';
@@ -1329,7 +1332,7 @@ var Blanke = (selector, options) => {
                 shape.move(dx*dt, dy*dt);
 
                 let coll_list = shape.collisions();
-                if (coll_list && this.onCollide[name]) {
+                if (coll_list && this.onCollision[name]) {
                     for (let info of coll_list) {
                         let res = info[1]
                         let cx = res.sep_vec.x, cy = res.sep_vec.y;
@@ -1346,7 +1349,7 @@ var Blanke = (selector, options) => {
                             resy += cy;
                             dx = 0, dy = 0;
                         }
-                        this.onCollide[name].call(this, info[0], res);
+                        this.onCollision[name].call(this, info[0], res);
                     }
                     delete this.collisionStopY;
                     delete this.collisionStopX;
@@ -1371,12 +1374,18 @@ var Blanke = (selector, options) => {
             if (precoll_vspeed == this.vspeed) this.vspeed = dy;
         }
         addSprite (name, opt) {
-            this.sprites[name] = new Sprite(name, opt);
+            let spr_name = name;
+            if (typeof opt == "string") {
+                name = opt;
+                opt = null;
+            }
+            this.sprites[spr_name] = new Sprite(name, opt);
             if (this.sprite_index == '')
-                this.sprite_index = name;
+                this.sprite_index = spr_name;
         }
         addShape (name, options) {
             if (typeof options == 'string') options = { type:options };
+            if (!options) options = { type:name };
             options.tag = this.constructor.name + (options.tag ? '.'+options.tag : '');
             if (!options.shape) {
                 switch (options.type) {
