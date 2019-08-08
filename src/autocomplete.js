@@ -205,6 +205,7 @@ module.exports.hints = {
 		{ prop: 'sprite_align', info: `changes sprite_pivot with a combination of 'left right top bottom center'`},
 		{ fn: 'addSprite', vars: { name: '', options: 'frames, columns, frame_size[w,h], speed, spacing[x,y], offset[x,y]' } },
 		{ fn: 'addShape', vars: { name: '',  options: 'type(circle/rect/poly), ...see docs' } },
+		{ prop: 'onCollision', info: `(Hitbox, { sep_vec: {x, y} }` },
 		...prop_gameobject
 	],
 	"blanke-input":[

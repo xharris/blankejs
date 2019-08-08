@@ -467,7 +467,6 @@ var Blanke = (selector, options) => {
             return ['file', Util.basename(name)];
         },
         parseAssetName: (path) => {
-            console.log(path)
             return path.replace(/[\w_\\.\-\/]+\/assets\/\w+\//,'').split('.').slice(0,-1).join('.');
         },
         // callback only used in : json
@@ -1175,19 +1174,48 @@ var Blanke = (selector, options) => {
                                 return result;
                             },[])
                         )
+                    break;
+                default:
+                    throw new Error(`Invalid Hitbox type '${opt.type}'`);
             }
             // this.world_obj.set_collision_tags(opt.tag);
             this.response = new SAT.Response();
             this.world_obj.parent = this;
             this.type = opt.type;
             this.tag = opt.tag;
+            this.shape = opt.shape;
 
+            // get point closest to 0,0
+            this.g_offset = [0,0];
+            let new_shape = opt.shape;
+            if (opt.type == 'polygon') {
+                let xoff = 0, yoff = 0, min_dist = -1;
+                for (let p = 0; p < opt.shape.length; p += 2) {
+                    let dist = Util.distance(opt.shape[p], opt.shape[p+1], 0, 0);
+                    if (min_dist == -1 || dist < min_dist) {
+                        min_dist = dist;
+                        xoff = opt.shape[p];
+                        yoff = opt.shape[p+1];
+                    }
+                }
+                for (let p = 0; p < opt.shape.length; p += 2) {
+                    new_shape[p] -= xoff;
+                    new_shape[p+1] -= yoff;
+                }
+                this.g_offset = [-xoff, -yoff];
+            }
+            if (opt.type == 'rect' || opt.type == 'circle') {
+                this.g_offset = [-new_shape[0], -new_shape[1]];
+                new_shape[0] = 0;
+                new_shape[1] = 0;
+            }
             this.graphics = new Draw(
                 ['lineStyle', 2, Draw.red, 0.5, 0],
                 ['fill', Draw.red, 0.3],
-                [opt.type == 'poly' ? 'polygon' : opt.type, ...opt.shape],
+                [opt.type == 'poly' ? 'polygon' : opt.type, ...new_shape],
                 ['fill']
             );
+
             this.graphics.visible = false;
             if (opt.debug)
                 this.debug = opt.debug;
@@ -1205,6 +1233,7 @@ var Blanke = (selector, options) => {
             this.graphics.y += dy;
         }
         position (x, y) {
+            if (this.destroyed) return;
             if (x!=null && y!=null) {
                 this.world_obj.pos = new SAT.Vector(x, y);
                 Hitbox.world.update(this);
@@ -1326,6 +1355,7 @@ var Blanke = (selector, options) => {
             let precoll_hspeed = this.hspeed, precoll_vspeed = this.vspeed;
             let resx = 0, resy = 0;
             
+            let coll_scale = 1.1;
             for (let name in this.shapes) {
                 let shape = this.shapes[name];
                 shape.debug = this.debug;
@@ -1349,6 +1379,15 @@ var Blanke = (selector, options) => {
                             resy += cy;
                             dx = 0, dy = 0;
                         }
+                        this.collisionBounce = (mult) => {
+                            resx = cx;
+                            resy = cy;
+                            coll_scale = 2;
+                            let mag = Math.sqrt(Math.pow(cx,2)+Math.pow(cy,2))
+                            let dot = (this.hspeed * (cx/mag)) + (this.vspeed * (cy/mag)) * (mult || 1.01)
+                            dx = this.hspeed - (2 * dot * (cx/mag))
+                            dy = this.vspeed - (2 * dot * (cy/mag))
+                        }
                         this.onCollision[name].call(this, info[0], res);
                     }
                     delete this.collisionStopY;
@@ -1357,7 +1396,7 @@ var Blanke = (selector, options) => {
                 }     
             }
             for (let name in this.shapes) {
-                this.shapes[name].move(-resx*1.1, -resy*1.1);
+                this.shapes[name].move(-resx*coll_scale, -resy*coll_scale);
             }
             // set position of entity
             if (this.shape_index) {
@@ -1399,6 +1438,7 @@ var Blanke = (selector, options) => {
                 options.shape[1] -= this.sprite_pivot.y;
             }
             this.shapes[name] = new Hitbox(options);
+            this.shapes[name].parent = this;
             this.shapes[name].position(this.x, this.y);
             if (!this.shape_index)
                 this.shape_index = name;
@@ -1648,6 +1688,9 @@ var Blanke = (selector, options) => {
     Input.update = () => {
        Object.values(input_ref).forEach(obj => obj.update() );
     }
+    Object.defineProperty(Input, 'mouse', {
+        get: () => app.renderer.plugins.interaction.mouse
+    });
     app.ticker.add(()=>{
         Input.update();
     },null,PIXI.UPDATE_PRIORITY.LOW);

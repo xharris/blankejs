@@ -9,10 +9,11 @@ class Ball extends Entity {
 		
 		this.addShape("main","circle")
 		
-		this.onCollision['main'] = () => {
-			this.vspeed = -Math.abs(this.vspeed*1.03);
-			//this.collisionStopY();
+		this.onCollision['main'] = (other, res) => {
+			console.log(other.tag)
+			this.collisionBounce(Util.lerp(1,1.01,this.y/Game.height))
 		}
+		
     }
     update (dt) {
 
@@ -20,15 +21,18 @@ class Ball extends Entity {
 }
 
 TestScene({
-	onStart () {
+	onStart (sc) {
 		let bob = new Ball();
-		bob.x = 20;
-		bob.y = 20;
+		bob.x = 100;
 		
-		new Hitbox({
+		sc.box = new Hitbox({
 			type: 'rect',
-			shape: [0,Game.height/2,200,10],
+			shape: [0,Game.height/2,100,10],
+			tag: 'Paddle',
 			debug: true
 		})
+	},
+	onUpdate (sc) {
+		sc.box.position(Input.mouse.global.x, Input.mouse.global.y)
 	}
 })
