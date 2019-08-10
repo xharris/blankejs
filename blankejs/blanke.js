@@ -1155,6 +1155,9 @@ var Blanke = (selector, options) => {
     class Hitbox {
         /* opt = {type (rect/circle/poly), shape, tag} */
         constructor (opt) {
+            opt = Object.assign({
+                type: 'rect'
+            }, opt || {});
             this.options = opt;
             switch (opt.type) {
                 case 'circle':
@@ -1286,6 +1289,7 @@ var Blanke = (selector, options) => {
             this._y = 0;
             this.hspeed = 0;
             this.vspeed = 0;
+            this.friction = 0;
             this.gravity = 0;
             this.gravity_direction = 90;
             // collision
@@ -1335,6 +1339,18 @@ var Blanke = (selector, options) => {
         }
         _update (dt) {
             if (this.destroyed) return;
+            // friction
+            if (this.hspeed != 0) {
+                this.hspeed -= this.hspeed * this.friction;
+                if (this.friction > 0 && this.gravity == 0 && Math.abs(this.hspeed) <= 1)
+                    this.hspeed = 0;
+            }
+            if (this.vspeed != 0) {
+                this.vspeed -= this.vspeed * this.friction;
+                if (this.friction > 0 && this.gravity == 0 && Math.abs(this.vspeed) <= 1)
+                    this.vspeed = 0;
+            }
+            let old_x = this.x, old_y = this.y;
             if (this.update)
                 this.update(dt);
             if (this.destroyed) return;
@@ -1346,9 +1362,19 @@ var Blanke = (selector, options) => {
                 dy += Util.direction_y(this.gravity_direction, this.gravity); 
             }
             // move shapes if x/y is different
-            if (this.xprevious != this.x || this.yprevious != this.y) {
+            if (old_x != this.x || old_y != this.y) {
                 for (let name in this.shapes) {
-                    this.shapes[name].position(this.x, this.y);
+                    if (this.shapes[name].type == 'rect') {
+                        this.shapes[name].position(
+                            this.x - (this.sprite_pivot.x),
+                            this.y - (this.sprite_pivot.y)
+                        )
+                    } else {
+                        this.shapes[name].position(
+                            this.x,
+                            this.y
+                        )
+                    }
                 }
             }
             // collision
@@ -1400,14 +1426,29 @@ var Blanke = (selector, options) => {
             }
             // set position of entity
             if (this.shape_index) {
-                let pos = this.shapes[this.shape_index].position();
-                this.x = pos.x, this.y = pos.y;
+                let shape = this.shapes[this.shape_index]
+                let pos = shape.position();
+                this._x = pos.x;
+                this._y = pos.y;
+                
+                if (shape.type == 'rect') {
+                    this._x = pos.x + this.sprite_pivot.x;
+                    this._y = pos.y + this.sprite_pivot.y;
+                }
+
             } else {
-                this.x += dx * dt;
-                this.y += dy * dt;
+                this._x += dx * dt;
+                this._y += dy * dt;
             }
-            this.xprevious = this.x;
-            this.ypreviuos = this.y;
+            
+            for (let s in this.sprites) {
+                this.sprites[s].x = this._x;
+                this.sprites[s].y = this._y;
+            }
+            this.updateDebug();
+
+            this.xprevious = this.x - (this.sprite_pivot.x);
+            this.ypreviuos = this.y - (this.sprite_pivot.y);
             // preserve user-set speeds
             if (precoll_hspeed == this.hspeed) this.hspeed = dx;
             if (precoll_vspeed == this.vspeed) this.vspeed = dy;
@@ -1432,11 +1473,14 @@ var Blanke = (selector, options) => {
                     case 'circle': options.shape = [0,0,Math.max(this.sprite_width,this.sprite_height)/2]; break;
                 }
             }
+            options.offset = [this.sprite_pivot.x, this.sprite_pivot.y];
+            
             // sprite pivot offset
             if (options.type == 'rect') { 
                 options.shape[0] -= this.sprite_pivot.x;
                 options.shape[1] -= this.sprite_pivot.y;
             }
+            
             this.shapes[name] = new Hitbox(options);
             this.shapes[name].parent = this;
             this.shapes[name].position(this.x, this.y);
@@ -1495,12 +1539,23 @@ var Blanke = (selector, options) => {
         set y (v) { this._y = v; this.updatePosition(); }
         updatePosition () {
             if (this.destroyed) return;
-            for (let s in this.sprites) {
-                this.sprites[s].x = this._x;// + this.sprites[s].pivot.x;
-                this.sprites[s].y = this._y;// + this.sprites[s].pivot.y;
-            }
             for (let name in this.shapes) {
-                this.shapes[name].position(this._x, this._y);
+                if (this.shapes[name].type == 'rect') {
+
+                    this.shapes[name].position(
+                        this._x - this.sprite_pivot.x,
+                        this._y - this.sprite_pivot.y
+                        );
+                } else {
+                this.shapes[name].position(
+                    this._x,
+                    this._y
+                    );
+                }
+            }
+            for (let s in this.sprites) {
+                this.sprites[s].x = this._x;
+                this.sprites[s].y = this._y;
             }
             this.updateDebug();
         }
@@ -2320,8 +2375,27 @@ var Blanke = (selector, options) => {
         }
     });
 
+    /* -EVENT */
+    let Event = {
+        ref: {}, /* { name: [ functions ] } */
+        emit (name, ...details) {
+            let ref = Event.ref[name];
+            if (ref) 
+                ref.forEach(fn => fn(...details));
+        },
+        on (name, fn) {
+            if (!Event.ref[name])
+                Event.ref[name] = [];
+            Event.ref[name].push(fn);
+        },
+        off (name, fn) {
+            if (Event.ref[name])
+                Event.ref[name] = Event.ref[name].filter(fn => fn != fn);
+        }
+    }
+
     engineLoaded.call(this);
-    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View};
+    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Event, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View};
     return classes;
 }
 Blanke.addGame = (name, options) => {

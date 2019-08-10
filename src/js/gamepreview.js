@@ -324,6 +324,7 @@ class GamePreview {
 		}
 		if (found)
 			scripts.push(curr_script);
+		console.log(scripts)
 		if (curr_script)
 			return [ scripts, curr_script_cat ];
 		return scripts;

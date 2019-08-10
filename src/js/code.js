@@ -9,10 +9,10 @@ var code_instances = {};
 
 var CODE_ASSOCIATIONS = [
 	[
-		/\bScene\s*\(\s*[\'\"](.+)[\'\"]/g,
+		/\bScene\s*\(\s*[\'\"](.+)[\'\"]/,
 		"scene"
 	],[
-		/(\w+)\s+extends\s+Entity\s*/g,
+		/(\w+)\s+extends\s+Entity\s*/,
 		"entity"
 	],
 ];
@@ -826,7 +826,7 @@ class Code extends Editor {
 			if (hint.vars) {
 				for (var arg in hint.vars) {
 					let new_description = hint.vars[arg].replace(re_optional, '');
-					if (new_description != "") 
+					if (new_description != "" && new_description != "...") 
 						arg_info += arg + " : " + new_description + "<br/>";
 				}
 			}
@@ -837,6 +837,9 @@ class Code extends Editor {
 				// is arg optional?
 				if (re_optional.test(hint.vars[value])) 
 					return '<span class="optional">['+value+']</span>';
+				// is arg a variable amount of args
+				if (hint.vars[value] == '...')
+					return '<span class="grayed-out">...</span>'+value;
 				return value;
 			}
 			// named args or listed args
@@ -1108,7 +1111,9 @@ function addScripts(folder_path) {
 				let cat, match;
 				for (let assoc of CODE_ASSOCIATIONS) {
 					match = assoc[0].exec(data);
+					console.log(full_path, assoc[0], data)
 					if (match) {
+						console.log("good")
 						cat = assoc[1];
 						tags.push(assoc[1]);
 						if (!Code.scripts[assoc[1]].includes(full_path)) {

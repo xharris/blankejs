@@ -39,7 +39,7 @@ module.exports.keywords = [
 module.exports.class_list = [
 	'Asset','Game','Util','Draw','Scene',
 	'Map','Effect','Sprite','Input',
-	'Entity','View','Timer',
+	'Entity','View','Timer','Event',
 	'TestScene','TestView'
 ];
 
@@ -211,7 +211,8 @@ module.exports.hints = {
 	"blanke-input":[
 		{ fn: 'set', vars: { name:'', inputs:'...' } },
 		{ fn: 'on', vars: { event:'', object:'opt', callback:'' }},
-		{ prop: 'stop_propagation', info: 'automatically stop event propagation? (default: true)' }
+		{ prop: 'stop_propagation', info: 'automatically stop event propagation? (default: true)' },
+		{ prop: 'mouse' }
 	],
 	"blanke-view-instance":[
 		...prop_xy,
@@ -225,5 +226,10 @@ module.exports.hints = {
 		prop_pixi_point('scale'),
 		{ prop: 'angle', info: 'degrees' },
 		...prop_gameobject
+	],
+	"blanke-event":[
+		{ fn: 'emit', vars: { name:'', args:'...' } },
+		{ fn: 'on', vars: { name:'', fn:'' }, info: 'fn(...args) will be called when emit(name, ...args) is called' },
+		{ fn: 'off', vars: { name:'', fn:'' } }
 	]
 }
