@@ -952,9 +952,12 @@ var Blanke = (selector, options) => {
     Scene.addUpdatable = (obj) => {
         let old_destroy = obj.destroy;
         obj.destroy = (...args) => {
-            if (!obj.destroyed)
             obj.destroyed = true;
             if (old_destroy) old_destroy.call(obj, ...args);
+            for (let p in obj) {
+                if (typeof obj[p] == 'function')
+                    obj[p] = () => {};
+            }
         }
         if (Scene.stack.length > 0) 
             Scene(Scene.stack[Scene.stack.length-1]).objects.push(obj);
@@ -967,9 +970,9 @@ var Blanke = (selector, options) => {
             let obj = arr[o];
             if (obj.destroyed)
                 arr.splice(o, 1);
-            else if (obj._update)
+            else if (obj._update && !obj.destroyed)
                 obj._update(dt);
-            else if (obj.update)
+            else if (obj.update && !obj.destroyed)
                 obj.update(dt);
         }
     }
@@ -1021,11 +1024,18 @@ var Blanke = (selector, options) => {
             aliasProps(this, this.sprite, ['x','y','texture','alpha','width','height','pivot','angle','scale','skew']);
             if (!((options && options.no_scene) || (!options && name && name.no_scene)))
                 Scene.addDrawable(this.sprite);
+            Scene.addUpdatable(this);
         }
         getRect () {
             return this.sprite.getBounds(true)
         }
         _getPixiObjs () { return [this.sprite]; }
+        update (dt) {
+            if (this.hspeed || this.vspeed) {
+                this.x += this.hspeed * dt;
+                this.y += this.vspeed * dt;
+            }
+        }
         get matrix () {
             this._matrix.setTransform(
                 this.x, this.y, this.pivot.x, this.pivot.y, 
@@ -1048,13 +1058,35 @@ var Blanke = (selector, options) => {
             this.sprite.setTransform();
         }
         crop (x, y, w, h) {
-            /*
-                // copy texture
-                new_texture.frame = new Rectangle(x,y,w,h);
-                let new_sprite = new Sprite();
-                new_sprite.texture = new_texture;
-                return new_sprite;
-            */
+            // copy texture
+            let new_texture = this.texture.clone();
+            if (x+w > this.width) w = this.width - x;
+            if (y+h > this.height) h = this.height - y;
+            new_texture.frame = new Rectangle(x,y,w,h);
+            let new_sprite = new Sprite();
+            new_sprite.texture = new_texture;
+            return new_sprite;
+        }
+        chop (w, h) {
+            let sprites = [];
+            let x = 0, y = 0;
+            //w *= this.scale.x;
+            //h *= this.scale.y;
+            while (x < this.width) {
+                y = 0;
+                while (y < this.height) {
+                    let spr = this.crop(x,y,w,h);
+                    spr.x = this.x+x;
+                    spr.y = this.y+y;
+                    spr.z = this.z;
+                    ['alpha','pivot','angle','scale','skew'].forEach(p => { spr[p] = this[p] })
+                    sprites.push(spr);
+
+                    y += h;
+                }
+                x += w;
+            }
+            return sprites;
         }
         get align () { return this._align || ''; }
         set align (v) {
@@ -1231,6 +1263,7 @@ var Blanke = (selector, options) => {
         get x () { return this.world_obj.pos.x; }
         get y () { return this.world_obj.pos.y; }
         move (dx, dy) {
+            if (this.destroyed) return;
             this.world_obj.pos.add(new SAT.Vector(dx, dy));
             this.graphics.x += dx;
             this.graphics.y += dy;
@@ -1366,8 +1399,8 @@ var Blanke = (selector, options) => {
                 for (let name in this.shapes) {
                     if (this.shapes[name].type == 'rect') {
                         this.shapes[name].position(
-                            this.x - (this.sprite_pivot.x),
-                            this.y - (this.sprite_pivot.y)
+                            this.x - this._getHitboxOffset('x'),
+                            this.y - this._getHitboxOffset('y')
                         )
                     } else {
                         this.shapes[name].position(
@@ -1415,6 +1448,7 @@ var Blanke = (selector, options) => {
                             dy = this.vspeed - (2 * dot * (cy/mag))
                         }
                         this.onCollision[name].call(this, info[0], res);
+                        if (this.destroyed) return;
                     }
                     delete this.collisionStopY;
                     delete this.collisionStopX;
@@ -1425,15 +1459,15 @@ var Blanke = (selector, options) => {
                 this.shapes[name].move(-resx*coll_scale, -resy*coll_scale);
             }
             // set position of entity
-            if (this.shape_index) {
-                let shape = this.shapes[this.shape_index]
+            let shape = this.shapes[this.shape_index]
+            if (shape) {
                 let pos = shape.position();
                 this._x = pos.x;
                 this._y = pos.y;
                 
                 if (shape.type == 'rect') {
-                    this._x = pos.x + this.sprite_pivot.x;
-                    this._y = pos.y + this.sprite_pivot.y;
+                    this._x = pos.x +  this._getHitboxOffset('x');
+                    this._y = pos.y +  this._getHitboxOffset('y');
                 }
 
             } else {
@@ -1447,11 +1481,14 @@ var Blanke = (selector, options) => {
             }
             this.updateDebug();
 
-            this.xprevious = this.x - (this.sprite_pivot.x);
-            this.ypreviuos = this.y - (this.sprite_pivot.y);
+            this.xprevious = this.x - this._getHitboxOffset('x');
+            this.ypreviuos = this.y - this._getHitboxOffset('y');
             // preserve user-set speeds
             if (precoll_hspeed == this.hspeed) this.hspeed = dx;
             if (precoll_vspeed == this.vspeed) this.vspeed = dy;
+        }
+        _getHitboxOffset (a) {
+            return this.sprite_pivot[a] * this.sprite_scale[a];
         }
         addSprite (name, opt) {
             let spr_name = name;
@@ -1463,6 +1500,11 @@ var Blanke = (selector, options) => {
             if (this.sprite_index == '')
                 this.sprite_index = spr_name;
         }
+        removeSprite (name) {
+            if (this.sprites[name]) {
+                this.sprites[name].destroy();
+            }
+        }
         addShape (name, options) {
             if (typeof options == 'string') options = { type:options };
             if (!options) options = { type:name };
@@ -1473,12 +1515,12 @@ var Blanke = (selector, options) => {
                     case 'circle': options.shape = [0,0,Math.max(this.sprite_width,this.sprite_height)/2]; break;
                 }
             }
-            options.offset = [this.sprite_pivot.x, this.sprite_pivot.y];
+            options.offset = [ this._getHitboxOffset('x'),  this._getHitboxOffset('y')];
             
             // sprite pivot offset
             if (options.type == 'rect') { 
-                options.shape[0] -= this.sprite_pivot.x;
-                options.shape[1] -= this.sprite_pivot.y;
+                options.shape[0] -=  this._getHitboxOffset('x');
+                options.shape[1] -=  this._getHitboxOffset('y');
             }
             
             this.shapes[name] = new Hitbox(options);
@@ -1486,6 +1528,12 @@ var Blanke = (selector, options) => {
             this.shapes[name].position(this.x, this.y);
             if (!this.shape_index)
                 this.shape_index = name;
+        }
+        removeShape (name) {
+            if (this.shapes[name]) {
+                this.shapes[name].destroy();
+                delete this.shapes[name];
+            }
         }
         get debug () { return this._debug; }
         set debug (v) {
@@ -1543,8 +1591,8 @@ var Blanke = (selector, options) => {
                 if (this.shapes[name].type == 'rect') {
 
                     this.shapes[name].position(
-                        this._x - this.sprite_pivot.x,
-                        this._y - this.sprite_pivot.y
+                        this._x -  this._getHitboxOffset('x'),
+                        this._y -  this._getHitboxOffset('y')
                         );
                 } else {
                 this.shapes[name].position(
@@ -1862,8 +1910,8 @@ var Blanke = (selector, options) => {
                 x = -f_obj.x + half_pw;
                 y = -f_obj.y + half_ph;
                 if (f_obj.is_entity) {
-                   x -= f_obj.sprite_pivot.x;
-                   y -= f_obj.sprite_pivot.y;
+                   x -= f_obj._getHitboxOffset('x');
+                   y -= f_obj._getHitboxOffset('y');
                 }
             }
             this.container.scale.copyFrom(this.scale);

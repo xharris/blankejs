@@ -1,7 +1,7 @@
 {
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
-    "first_scene": null,
+    "first_scene": "bob",
     "size": [
         800,
         600
