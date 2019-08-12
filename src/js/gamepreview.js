@@ -309,22 +309,17 @@ class GamePreview {
 		for (let cat of ['other','entity','scene']) {
 			if (Array.isArray(Code.scripts[cat])) {
 				// put current_script at end
-				let new_scripts = Code.scripts[cat];
-				if (curr_script) {
-					new_scripts = new_scripts.filter((val) => {
-						if (val == curr_script) {
-							found = true;
-							curr_script_cat = cat;
-						}
-						return val != curr_script;
-					});
-				}
-				scripts = scripts.concat(new_scripts);
+				scripts = Code.scripts[cat].filter((val) => {
+					if (val == curr_script) {
+						found = true;
+						curr_script_cat = cat;
+					}
+					return !curr_script || val != curr_script;
+				});
 			}
 		}
 		if (found)
 			scripts.push(curr_script);
-		console.log(scripts)
 		if (curr_script)
 			return [ scripts, curr_script_cat ];
 		return scripts;

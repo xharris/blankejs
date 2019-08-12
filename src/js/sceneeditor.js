@@ -117,6 +117,7 @@ class SceneEditor extends Editor {
 			['size', 'number', {'inputs':2, 'separator':'x'}],
 			['delete', 'button']
 		]);
+		this.el_object_form.container.style.display = "none";
 	
 		this.el_layer_container	= app.createElement("div","layer-container");
 		this.el_snap_container	= app.createElement("div","snap-container");
@@ -251,6 +252,9 @@ class SceneEditor extends Editor {
 					delete this_ref.obj_info[this_ref.curr_object.name];
 					this_ref.el_obj_list.renameItem(this_ref.curr_object.name, value);
 					this_ref.curr_object.name = value;
+					this_ref.iterObject(this_ref.curr_object.name, function(obj) {
+						this_ref.drawObjImage(this_ref.curr_object, obj.image, obj.points);
+					});
 					this_ref.export();
 				}
 			}
@@ -302,7 +306,9 @@ class SceneEditor extends Editor {
 						"yes": function() {
 							// remove instances
 							this_ref.iterObject(obj.name, function(obj) {
-								obj.poly.destroy()
+								consoe.log(obj)
+								obj.image.destroy();
+								obj.poly.destroy();
 							});
 
 							// remove the object
@@ -801,7 +807,6 @@ class SceneEditor extends Editor {
 		this.pixi.stage.addChild(this.grid_container);
 		this.pixi.stage.addChild(this.overlay_container);
 
-		this.drawGrid();
 		
 		// tab focus
 		this.has_focus = true;
@@ -1229,6 +1234,40 @@ class SceneEditor extends Editor {
 		return poly;
 	}
 
+	// get an image to show behind polygon
+	drawObjImage (obj, spr, points) {
+		if (!spr) spr = new PIXI.Sprite();
+		let info = Code.sprites[obj.name];;
+		if (info) {
+			spr.visible = true;
+			let tex = PIXI.Texture.from('file://'+info.path);
+			spr.texture = tex;
+
+		} else {
+			spr.visible = false;
+			return spr;
+		}
+		// change frame
+		spr.texture.frame = new PIXI.Rectangle(
+			info.offset[0], info.offset[1],
+			info.frame_size[0], info.frame_size[1]
+		);
+		// reposition sprite
+		if (points.length > 1) {
+			let min_x, min_y;
+			for (let p = 0; p < points.length; p += 2) {
+				if (min_x == null || min_x > points[p]) min_x = points[p];
+				if (min_y == null || min_y > points[p+1]) min_y = points[p+1];
+			}
+			spr.x = min_x - info.pivot[0];
+			spr.y = min_y - info.pivot[1];
+		} else {
+			spr.x = points[0] - info.pivot[0];
+			spr.y = points[1] - info.pivot[1];
+		}
+		return spr;
+	}
+
 	// when user presses enter to finish object
 	// also used when loading a file's objects
 	placeObject (points, obj_tag) {
@@ -1255,6 +1294,7 @@ class SceneEditor extends Editor {
 
 		let curr_object = this.curr_object;
 		let pixi_poly = this.drawPoly(curr_object, points);
+		let pixi_image = this.drawObjImage(curr_object, null, points);
 
 		pixi_poly.interactive = true;
 		pixi_poly.interactiveChildren = false;
@@ -1286,6 +1326,7 @@ class SceneEditor extends Editor {
 				let del_uuid = e.target.uuid;
 				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj){
 					if (del_uuid == obj.poly.uuid) {
+						obj.image.destroy();
 						if (this_ref.obj_info[curr_object.name])
 							delete this_ref.obj_info[curr_object.name];
 						e.target.destroy();
@@ -1319,6 +1360,7 @@ class SceneEditor extends Editor {
 		if (obj_tag)
 			pixi_poly.tag = obj_tag;
 		
+		this.curr_layer.container.addChild(pixi_image)
 		this.curr_layer.container.addChild(pixi_poly);
 
 		if (!this.obj_polys[curr_object.uuid]) this.obj_polys[curr_object.uuid] = {};
@@ -1326,6 +1368,7 @@ class SceneEditor extends Editor {
 		
 		this.obj_polys[curr_object.uuid][this.curr_layer.uuid].push({
 			poly: pixi_poly,
+			image: pixi_image,
 			points: points
 		});
 	}
@@ -1664,7 +1707,7 @@ class SceneEditor extends Editor {
 	loadObjectsFromSettings() {
 		let this_ref = this;
 		
-		if (app.project_settings.scene.objects) {
+		if (app.project_settings.scene && app.project_settings.scene.objects) {
 			let last_obj_name = '';
 			if (this.curr_object)
 				last_obj_name = this.curr_object.name;
@@ -1678,8 +1721,9 @@ class SceneEditor extends Editor {
 				if (!obj) continue;
 
 				this.addObject(obj);
-				this.iterObject(obj.name, function(obj_poly) {
-					this_ref.drawPoly(obj, obj_poly.points, obj_poly.poly);
+				this.iterObject(obj.name, function(i_obj) {
+					this_ref.drawPoly(obj, i_obj.points, i_obj.poly);
+					this_ref.drawObjImage(obj, i_obj.image, i_obj.points);
 				});
 			}
 			this.setObject(last_obj_name);
@@ -1698,6 +1742,7 @@ class SceneEditor extends Editor {
 				this.el_object_form.container.style.display = "block";
 
 				this.iterObjectInLayer (this.curr_layer.uuid, name, function(obj){
+					bringToFront(obj.image);
 					bringToFront(obj.poly);
 				});
 			}
@@ -1917,6 +1962,8 @@ class SceneEditor extends Editor {
 		this.setOnClick(function(){
 			openScene(this_ref.file);
 		});
+		this.refreshLayerList();
+		this.loadObjectsFromSettings();
 	}
 
 	export () {
@@ -2081,6 +2128,8 @@ document.addEventListener("closeProject", function(e){
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
 	SceneEditor.refreshSceneList(proj_path);
+	if (!app.project_settings.scene)
+		app.project_settings.scene = {};
 
 	app.addSearchKey({
 		key: 'Add a map',
@@ -2089,14 +2138,13 @@ document.addEventListener("openProject", function(e){
 			// overwrite the file if it exists. fuk it (again)!!
 			nwFS.mkdir(map_dir, function(err){
 				nwFS.readdir(map_dir, function(err, files){
-					nwFS.writeFile(nwPATH.join(map_dir, 'map'+files.length+'.map'),"");
+					let num = files.length;
+					while (nwFS.pathExistsSync(nwPATH.join(map_dir, 'map'+num+'.map')))
+						num++;
+					nwFS.writeFile(nwPATH.join(map_dir, 'map'+num+'.map'),"");
 				
 					// edit the new script
-					var new_scene_editor = new SceneEditor()
-					// add some premade objects from previous map
-					new_scene_editor.load(nwPATH.join(map_dir, 'map'+files.length+'.map'));
-					new_scene_editor.refreshLayerList();
-					new_scene_editor.loadObjectsFromSettings();
+					new SceneEditor(nwPATH.join(map_dir, 'map'+num+'.map'));
 				});
 			});	
 		},

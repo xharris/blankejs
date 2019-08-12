@@ -4,6 +4,10 @@
 */
 var re_add_sprite = /this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/;
 var re_new_sprite = /new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/;
+var re_sprite_align = /sprite_align\s*=\s*[\"\']([\s\w]+)[\"\']/;
+var re_sprite_pivot_single = /sprite_pivot\.(x|y)\s*\=\s*(\d+)/;
+var re_sprite_pivot = /sprite_pivot\.set\(\s*(\d+)\s*,\s*(\d+)\s*\)/;
+
 
 var code_instances = {};
 
@@ -22,7 +26,7 @@ var instance_list = {}; // instance (let player = new Player())
 var var_list = {};      // user_words (let player;)
 var class_list = []     // class_list (Map, Scene, Effect)
 var keywords = [];
-var this_lines = {};	// { file: {line_text : ref_type} }
+var this_lines = {};	// { file: {line_text : token_type (blanke-entity-instance) } }
 
 var autocomplete, hints;
 var re_class_extends, re_instance, re_user_words, re_image, re_this;
@@ -303,8 +307,6 @@ class Code extends Editor {
 		let showSpritePreview = (image_name, include_img, cb) => {
 			let spr_prvw = new SpritesheetPreview(image_name);
 			spr_prvw.onCopyCode = function(vals){
-				let rows = Math.floor(vals.frames/vals.columns);
-
 				let args = {};
 				args.image = '\"'+app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g,"$1"))+'\"';
 				args.frames = vals.frames;
@@ -681,86 +683,99 @@ class Code extends Editor {
 		return new_editor;
 	}
 
-	checkLineWidgets (line, editor) {
-		let this_ref = this;
-		let info = editor.lineInfo(line);
-		
+	static parseLineSprite (text, cb) {
 		let match;
 		for (let re of re_image) {
-			if (!match) match = re.exec(info.text);
+			if (!match) match = re.exec(text);
 		}
-		if (match) {
-			app.getAssetPath("image",match[1],(err, path)=>{	
-				// no asset found
-				if (err) {
-					// remove previous image
-					if (info.widgets) {
-						for (let w = 1; w < info.widgets.length; w++)
-							info.widgets[w].clear();
-						//delete this_ref.widgets[line];
-					}
-				}
-				
-				// create/set image widget
-				else  {
-					let el_image;
-					if (info.widgets) {
-						// clear extra widgets
-						for (let w = 1; w < info.widgets.length; w++)
-							info.widgets[w].clear();
-						el_image = info.widgets[0].node;
-					} else {
-						el_image = app.createElement("div","code-image");
-						editor.addLineWidget(line, el_image, {noHScroll:true});
-						el_image.style.left = Math.floor(randomRange(50,80))+'%';
-					}
+		if (!match) return;
+		// found image path
+		app.getAssetPath("image",match[1],(err, path)=>{	
+			if (err) {	// no asset found
+				cb(err, null);
+				return;
+			}
+			// sprite info
+			let info = { path:path, cropped: false, frame_size:[0,0], offset:[0,0], frames: 1};
 
-					// use the first frame
-					let match, sprite = false;
-					let frame_size = [0,0];
-					let re_frame_size = /frame_size[\s=]+{\s*(\d+)\s*,\s*(\d+)\s*}/;
-					if (match = re_frame_size.exec(info.text)) {
-						sprite = true;
-						frame_size = [parseInt(match[1]),parseInt(match[2])];
-						el_image.style.width = frame_size[0]+'px';
-						el_image.style.height = frame_size[1]+'px';
-					}
-					let offset=[0,0];
-					let re_offset = /offset[\s=]+{\s*(\d+)\s*,\s*(\d+)\s*}/;
-					if (match = re_offset.exec(info.text)) {
-						offset = [parseInt(match[1]),parseInt(match[2])];
-					}
-					let re_frame = /frames={["']?(\d)+(?:-\d+["'])?,["']?(\d)+-?/;
-					if (match = re_frame.exec(info.text.replace(/ /g,''))) {
-						let frame = [parseInt(match[1]),parseInt(match[2])];
-						offset[0] += frame_size[0] * (frame[0]-1);
-						offset[1] += frame_size[1] * (frame[1]-1);
-					}
-					let re_border = /border=(\d+)/;
-					if (match = re_border.exec(info.text.replace(/ /g,''))) {
-						offset[0] += parseInt(match[1]);
-						offset[1] += parseInt(match[1]);
-					}
-					el_image.style.backgroundPosition = '-'+offset[0]+'px -'+offset[1]+'px';
-					
-					let re_fr
-					// uncropped image
-					if (!sprite) {
-						let img = new Image();
-						img.onload = () => {
-							el_image.style.width=img.width+'px';
-							el_image.style.height=img.height+'px';
-							el_image.style.backgroundSize="cover";
-							el_image.style.backgroundRepeat="no-repeat";
-							el_image.style.backgroundPosition="center";
-						}
-						img.src="file://"+app.cleanPath(path);
-					}
-							
-					el_image.style.backgroundImage = "url('file://"+app.cleanPath(path)+"')";
+			// use the first frame
+			let re_frame_size = /frame_size\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+			let re_offset = /offset\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+			let re_frame = /frames\s*:\s*(\d+)/;
+			let re_spacing = /spacing\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+			let re_comment = /\/(?:\/|\*).*/;
+
+			let match;
+			if (match = re_frame_size.exec(text.replace(re_comment,''))) {
+				info.cropped = true;
+				info.frame_size = [parseInt(match[1]),parseInt(match[2])];
+			} else {
+				// get image size
+				let img = new Image();
+				img.onload = () => {
+					info.frame_size = [img.width, img.height];
+					cb(null, info);
 				}
-			});
-		} 
+				img.src = 'file://'+path;
+			}
+			if (match = re_offset.exec(text.replace(re_comment,''))) 
+				info.offset = [parseInt(match[1]),parseInt(match[2])];
+			
+			if (match = re_frame.exec(text.replace(re_comment,''))) 
+				info.frames = parseInt(match[1]);
+			
+			if (match = re_spacing.exec(text.replace(re_comment,''))) {
+				info.offset[0] += parseInt(match[1]);
+				info.offset[1] += parseInt(match[1]);
+			}
+			if (info.cropped) cb(null, info);
+		});
+	}
+
+	checkLineWidgets (line, editor) {
+		let l_info = editor.lineInfo(line);
+		
+		Code.parseLineSprite(l_info.text, (err, info) => {
+			if (err) {
+				// remove previous image
+				if (l_info.widgets) {
+					for (let w = 1; w < l_info.widgets.length; w++)
+						l_info.widgets[w].clear();
+				}
+			}
+			// create/set image widget
+			else  {
+				let el_image;
+				if (l_info.widgets) {
+					// clear extra widgets
+					for (let w = 1; w < l_info.widgets.length; w++)
+						l_info.widgets[w].clear();
+					el_image = l_info.widgets[0].node;
+				} else {
+					el_image = app.createElement("div","code-image");
+					editor.addLineWidget(line, el_image, {noHScroll:true});
+					el_image.style.left = Math.floor(randomRange(50,80))+'%';
+					el_image.style.backgroundPosition = '-'+info.offset[0]+'px -'+info.offset[1]+'px';
+				
+				}
+				let img = new Image();
+				img.onload = () => {
+					if (info.cropped) {
+						el_image.style.width=info.frame_size[0]+'px';
+						el_image.style.height=info.frame_size[1]+'px';
+					} else {
+						el_image.style.width=img.width+'px';
+						el_image.style.height=img.height+'px';
+					}
+					el_image.style.backgroundSize=img.width+'px '+img.height+'px';
+					el_image.style.backgroundPosition=info.offset[0]+'px '+info.offset[1]+'px';
+					el_image.style.backgroundRepeat="no-repeat";
+				}
+				img.src="file://"+app.cleanPath(info.path);
+						
+				el_image.style.backgroundImage = "url('file://"+app.cleanPath(info.path)+"')";
+			}
+		});
 	}
 
 	// TODO: not updated since hinting rework
@@ -1000,13 +1015,14 @@ class Code extends Editor {
 	}
 
 	save () {
-		let this_ref = this;
-		blanke.cooldownFn("codeSave", 200, function(){
-			nwFS.writeFileSync(this_ref.file, this_ref.codemirror.getValue());
-			getKeywords(this_ref.file, this_ref.codemirror.getValue());
-			this_ref.parseFunctions();
-			this_ref.removeAsterisk();
-			this_ref.refreshGame();
+		blanke.cooldownFn("codeSave", 200, ()=>{
+			let data = this.codemirror.getValue();
+			nwFS.writeFileSync(this.file, data);
+			getKeywords(this.file, data);
+			this.parseFunctions();
+			Code.updateSpriteList(this.file, data);
+			this.removeAsterisk();
+			this.refreshGame();
 		});
 	}
 
@@ -1061,6 +1077,7 @@ class Code extends Editor {
 	static refreshCodeList(path) {
 		app.removeSearchGroup("Scripts");
 		Code.scripts = {other:[]};
+		Code.sprites = {} // { EntitClassname: { image, crop: {x,y,w,h} } }
 		for (let assoc of CODE_ASSOCIATIONS) {
 			Code.scripts[assoc[1]] = [];
 		}
@@ -1077,6 +1094,82 @@ class Code extends Editor {
 			editor.goToLine(line);
 		blanke.cooldownFn("openScript-gamepreview", 200, function(){
 			editor.refreshGame();
+		});
+	}
+
+	static updateSpriteList(path, data) {
+		blanke.cooldownFn('updateSpriteList.'+path, 500, ()=>{
+			if (!data) data = nwFS.readFileSync(path, 'utf-8');
+			if (!Code.sprites) Code.sprites = {};
+
+			let lines = data.split("\n");
+			let entity_class, token;
+			let pivots = {};
+			for (let line of lines) {
+				// get token if passing one
+				for (let txt in this_lines[path]) {
+					if (line.includes(txt)) 
+						token = this_lines[path][txt][0];
+				}
+				// convert token to class name
+				if (token == 'blanke-entity-instance') {
+					let match;
+					for (let re of [].concat(re_class_extends.entity)) {
+						match = re.exec(line);
+						if (match) entity_class = match[1]
+					}
+				}
+				let calcPivot = (e_class) => {
+					let info = Code.sprites[e_class];
+					let pivot = pivots[e_class];
+					let x = 0, y = 0;
+					if (info && pivot) {
+						if (pivot.type == 1) { // sprite_align
+							let align = pivot.match[1];
+							if (align.includes('center')) {
+								x = info.frame_size[0]/2;
+								y = info.frame_size[1]/2;
+							}
+							if (align.includes('left'))
+								x = 0;
+							if (align.includes('right'))
+								x = info.frame_size[0];
+							if (align.includes('top'))
+								y = 0;
+							if (align.includes('bottom'))
+								y = info.frame_size[1];
+						} else if (info.type == 2) { // sprite_pivot.set(x,y)
+							x = pivot.match[1];
+							y = pivot.match[2];
+						} else if (info.type == 3) { // sprite_pivot.x = ?
+							if (pivot.match[1] == 'x') x = pivot.match[2];
+							if (pivot.match[1] == 'y') y = pivot.match[2];
+						}
+						delete pivots[entity_class];
+					}
+					if (info)
+						info.pivot = [x,y];
+				}
+				Code.parseLineSprite(line, (err, info) => {
+					if (!err) {
+						Code.sprites[entity_class] = info;
+						calcPivot(entity_class);
+					}
+				})
+				// optional: sprite alignment
+				let match1 = re_sprite_align.exec(line);
+				let match2 = re_sprite_pivot.exec(line);
+				let match3 = re_sprite_pivot_single.exec(line);
+				if (!pivots[entity_class])
+					pivots[entity_class] = [];
+				if (match1 || match2 || match3) {
+					pivots[entity_class] = {
+						type: (match1 ? 1 : match2 ? 2 : 3),
+						match: (match1 || match2 || match3)
+					};
+					calcPivot(entity_class);
+				}
+			}
 		});
 	}
 }
@@ -1111,9 +1204,7 @@ function addScripts(folder_path) {
 				let cat, match;
 				for (let assoc of CODE_ASSOCIATIONS) {
 					match = assoc[0].exec(data);
-					console.log(full_path, assoc[0], data)
 					if (match) {
-						console.log("good")
 						cat = assoc[1];
 						tags.push(assoc[1]);
 						if (!Code.scripts[assoc[1]].includes(full_path)) {
@@ -1144,6 +1235,9 @@ function addScripts(folder_path) {
 					args: [full_path],
 					group: 'Scripts'
 				});
+
+				// if script has Entity class find if it has sprite
+				Code.updateSpriteList(full_path, data)
 			}
 		};
 	});

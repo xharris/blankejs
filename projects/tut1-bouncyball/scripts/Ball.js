@@ -1,7 +1,7 @@
 class Ball extends Entity {
     init () {
 		// look like a bouncy ball
-		this.addSprite("ball")
+		this.addSprite("ball");//, {image:"ball", frames:1, speed:1, frame_size:[15,15]})
 		this.sprite_align = "center"
 		// fall towards the bottom of the screen
 		this.gravity = 0.1;

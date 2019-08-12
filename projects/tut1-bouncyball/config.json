@@ -7,5 +7,77 @@
         600
     ],
     "enabled_plugins": {},
-    "spritesheet_prvw": {}
+    "spritesheet_prvw": {
+        "image/ball.png": {
+            "name": "ball",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame_size": [
+                10,
+                10
+            ],
+            "frames": 1,
+            "selected_frames": [
+                1,
+                1
+            ],
+            "columns": 0,
+            "border": [
+                0,
+                0
+            ],
+            "image": "image/ball.png"
+        }
+    },
+    "scene": {
+        "objects": {
+            "082b0870": {
+                "name": "object0",
+                "char": "E",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "082b0870"
+            },
+            "8823d029": {
+                "name": "Ball",
+                "char": "2",
+                "color": "#fffcfe",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "8823d029"
+            },
+            "e5dc9a44": {
+                "name": "Ball",
+                "char": "4",
+                "color": "#f8a6ff",
+                "size": [
+                    30,
+                    30
+                ],
+                "uuid": "e5dc9a44"
+            },
+            "a91fb00b": {
+                "name": "Paddle",
+                "char": "Q",
+                "color": "#275dff",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "a91fb00b"
+            }
+        },
+        "object_order": [
+            "e5dc9a44",
+            "a91fb00b"
+        ]
+    }
 }
