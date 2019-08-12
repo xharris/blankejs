@@ -314,7 +314,7 @@ class GamePreview {
 						found = true;
 						curr_script_cat = cat;
 					}
-					return !curr_script || val != curr_script;
+					return (!curr_script || val != curr_script) && !scripts.includes(val);
 				}));
 			}
 		}

@@ -8,7 +8,7 @@ class Paddle extends Entity {
 		this.addShape("main","rect")
 		// explode on contact with a missile
 		this.onCollision['main'] = (other) => {
-			if (other.tag == "Ball")
+			if (other.tag == "Missile")
 				this.explode()
 		}
     }
@@ -34,7 +34,6 @@ class Paddle extends Entity {
 		this.exploded = true;
 		
 		let paddle_bits = this.sprites['paddle'].chop(5,8)
-		this.visible = false;
 		paddle_bits.forEach(b => {
 			let direction = Util.rand_range(45,135)
 			b.hspeed = Util.direction_x(direction, 10)
@@ -44,7 +43,7 @@ class Paddle extends Entity {
 	}
 }
 
-Scene("bob",{
+TestScene({
 	onStart (s) {
 		let pad = new Paddle();
 		pad.y = Game.height/2;
