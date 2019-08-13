@@ -1,6 +1,6 @@
 class Missile extends Entity {
     init () {
-		this.addSprite("ball")
+		this.addSprite("missile")
 		this.sprite_align = "center"
 		this.homing = true;
 		Timer.after(10, ()=>{
@@ -18,7 +18,9 @@ class Missile extends Entity {
 
 TestScene({
 	onStart () {
-		new Paddle()
+		let pad = new Paddle()
+		pad.x = 150
+		pad.y = 150
 		let m = new Missile()
 		m.x = 50
 		m.y = 300
