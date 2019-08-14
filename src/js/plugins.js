@@ -51,7 +51,7 @@ function inspectPlugins(silent) {
 
 			let info_keys = ['Name','Author','Description'];
 			for (let k of info_keys) {
-				let re = new RegExp(`\\*\\s*${k}\\s*:\\s*([\\w\\s\\.]+)`)
+				let re = new RegExp(`\\*\\s*${k}\\s*:\\s*(.+)`)
 				//js_plugin_info
 				let match = re.exec(data);
 				if (match) js_plugin_info[info_key][k.toLowerCase()] = match[1].trim();

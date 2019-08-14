@@ -885,6 +885,10 @@ var app = {
 		})
 	},
 
+	openURL (url) {
+		elec.shell.openExternal(url);
+	},
+
 	enableDevMode(force_search_keys) {
 		if (!DEV_MODE || force_search_keys) {
 			DEV_MODE = true;

@@ -6,7 +6,11 @@
         800,
         600
     ],
-    "enabled_plugins": {},
+    "enabled_plugins": {
+        "tween.js": true,
+        "Tween.js": true,
+        "blanke-tween.js": true
+    },
     "spritesheet_prvw": {
         "image/ball.png": {
             "name": "ball",

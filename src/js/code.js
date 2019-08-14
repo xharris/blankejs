@@ -469,7 +469,7 @@ class Code extends Editor {
 						return;
 				}
 				let marker = blanke.createElement("div");
-				marker.innerHTML=`<i class="breakpoint">*</i>`;
+				marker.innerHTML=`<i class="breakpoint">&#10148;</i>`;
 				let enable = !info.gutterMarkers || !info.gutterMarkers.breakpoints;
 				cm.setGutterMarker(n, "breakpoints", enable ? marker : null);
 
@@ -482,27 +482,29 @@ class Code extends Editor {
 		// set up events
 		//this.codemirror.setSize("100%", "100%");
 		function checkGutterEvents(cm, obj) {
-			let cur = cm.getCursor();
-			let line_text = cm.getLine(cur.line);
-
-			Object.values(this_ref.gutterEvents).forEach(v => {
-				cm.clearGutter(v.name);
-			})
-			
-			for (let txt in this_ref.gutterEvents) {
-				let info = this_ref.gutterEvents[txt];
-				if (line_text.match(new RegExp(txt))) {
-					let el_gutter = blanke.createElement('div','gutter-evt');
-					el_gutter.innerHTML="<i class='mdi mdi-flash'></i>";
-					if (info.tooltip)
-						el_gutter.title = info.tooltip;
-					el_gutter.addEventListener('click',function(e){
-						this_ref.gutterEvents[txt].fn(line_text, cm, cur);
-					});
-					cm.setGutterMarker(cur.line, info.name, el_gutter);
-					
+			blanke.cooldownFn('checkGutterEvents',250,()=>{
+				let cur = cm.getCursor();
+				let line_text = cm.getLine(cur.line);
+	
+				Object.values(this_ref.gutterEvents).forEach(v => {
+					cm.clearGutter(v.name);
+				})
+				
+				for (let txt in this_ref.gutterEvents) {
+					let info = this_ref.gutterEvents[txt];
+					if (line_text.match(new RegExp(txt))) {
+						let el_gutter = blanke.createElement('div','gutter-evt');
+						el_gutter.innerHTML="<i class='mdi mdi-flash'></i>";
+						if (info.tooltip)
+							el_gutter.title = info.tooltip;
+						el_gutter.addEventListener('click',function(e){
+							this_ref.gutterEvents[txt].fn(line_text, cm, cur);
+						});
+						cm.setGutterMarker(cur.line, info.name, el_gutter);
+						
+					}
 				}
-			}
+			})
 		}
 
 		function otherActivity(cm, e) {

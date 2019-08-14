@@ -72,7 +72,7 @@ class Docview extends Editor {
 									document.querySelectorAll('a').forEach(block => {
 										block.title = block.href;
 										block.onclick = function(){
-											elec.shell.openExternal(this.href);
+											app.openURL(this.href);
 											return false;
 										}
 									});

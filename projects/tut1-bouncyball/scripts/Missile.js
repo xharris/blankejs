@@ -2,14 +2,30 @@ class Missile extends Entity {
     init () {
 		this.addSprite("missile")
 		this.sprite_align = "center"
-		this.homing = true;
+		// after 10 seconds, stop homing in on the Paddle
+		this.homing = false;
 		Timer.after(10, ()=>{
 			this.homing = false;
 		})
+		// wait 3 seconds before moving
+		this.sprite_alpha = 0
+		let twn = new TWEEN.Tween(this)
+			.to({ sprite_alpha:1 },3000)
+			.easing(TWEEN.Easing.Quadratic.Out)
+			.onComplete(()=>{
+				this.homing = true;
+			})
+			.start()
+		
+		this.addShape('main','circle')
     }
     update (dt) {
-		this.sprite_angle = this.direction;
+		this.sprite_angle = this.direction + 90;
 		let paddle = Paddle.instances[0];
+		if (!paddle) {
+			console.log("ok no")
+			this.homing = false
+		}
 		if (this.homing) {
 			this.moveTowards(paddle.x, paddle.y, 1)
 		}

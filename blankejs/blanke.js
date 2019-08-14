@@ -22,6 +22,7 @@ PLUGINS
 var Blanke = (selector, options) => {
     let re_sep = /[\\\/]/;
     let re_no_ext = /([\/\\\.]*[\w\/\\]+)/;
+
 /*
     let elec, nwOS, eWin;
     if (typeof require === 'function' && require('electron')) {
@@ -126,6 +127,9 @@ var Blanke = (selector, options) => {
         // default fullscreen shortcut (NOT WORKING)
         Input.set('toggle-fullscreen','Alt Enter');
         empty_sprite = new Sprite({ no_scene : true });
+
+        var new_event = new CustomEvent('blankeLoaded', {'detail': { 'Blanke':classes }});
+        document.dispatchEvent(new_event);
     }
 
     // Pixi object
@@ -957,6 +961,10 @@ var Blanke = (selector, options) => {
             for (let p in obj) {
                 if (typeof obj[p] == 'function')
                     obj[p] = () => {};
+            }
+            if (obj.constructor.instances) {
+                var index = obj.constructor.instances.indexOf(obj);
+                if (index !== -1) obj.constructor.instances.splice(obj, 1);
             }
         }
         if (Scene.stack.length > 0) 
@@ -2440,18 +2448,24 @@ var Blanke = (selector, options) => {
                 ref.forEach(fn => fn(...details));
         },
         on (name, fn) {
-            if (!Event.ref[name])
-                Event.ref[name] = [];
-            Event.ref[name].push(fn);
+            if (name == 'update') {
+                app.ticker.add(fn);
+            } else {
+                if (!Event.ref[name])
+                    Event.ref[name] = [];
+                Event.ref[name].push(fn);
+            }
         },
         off (name, fn) {
-            if (Event.ref[name])
+            if (name == 'update') {
+                app.ticker.remove(fn);
+            } else if (Event.ref[name])
                 Event.ref[name] = Event.ref[name].filter(fn => fn != fn);
         }
     }
 
-    engineLoaded.call(this);
     var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Event, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View};
+    engineLoaded.call(this);
     return classes;
 }
 Blanke.addGame = (name, options) => {
