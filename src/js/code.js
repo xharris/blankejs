@@ -514,6 +514,7 @@ class Code extends Editor {
 		}
 
 		let showHints = (editor, in_list, input) => {
+			if (!this.file_loaded) return;
 			let hint_types = {};
 			let list = [];
 			let text_added = []; // hints that area already added
@@ -584,7 +585,7 @@ class Code extends Editor {
 			this_ref.parseFunctions();
 			this_ref.addAsterisk();
 			
-			blanke.cooldownFn('checkLineWidgets',250,()=>{
+			blanke.cooldownFn('checkLineWidgets',500,()=>{
 				otherActivity(cm,e)
 
 				this_ref.refreshFnHelperTimer();
@@ -1313,13 +1314,13 @@ document.addEventListener("openProject", function(e){
 		onSelect: function() {
 			key_newScriptModal("scene",
 `Scene("<NAME>",{
-    onStart: function() {
+    onStart: function(scene) {
 
     },
-    onUpdate: function() {
+    onUpdate: function(scene, dt) {
         
     },
-    onEnd: function() {
+    onEnd: function(scene) {
 
     }
 });

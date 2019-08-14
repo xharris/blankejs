@@ -116,6 +116,18 @@ var Blanke = (selector, options) => {
                 Map.obj_uuid[Game.config.scene.objects[uuid].name] = uuid;
             }
         }
+
+        // scene callback 
+        Event.on('Scene.end',(name)=>{
+            // remove Timers
+            Timer.fn_after = Timer.fn_after.filter(t => t.scene != name);
+            Timer.fn_every = Timer.fn_every.filter(t => t.scene != name);
+            // remove Events
+            for (let name in Event.ref) {
+                Event.ref[name] = Event.ref[name].filter(e => e.scene != name);
+            }
+        })
+
         Asset.add(this.options.assets);
         Asset.load(() => {
             if (this.options.onLoad)
@@ -303,8 +315,14 @@ var Blanke = (selector, options) => {
                 return 'ios';
             return '?';
         },
-        get width () { return blanke_ref.options.resizable ? app.view.width : blanke_ref.options.width; },
-        get height () { return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; },
+        get width () { 
+            if (!blanke_ref) return app.view.width;
+            return blanke_ref.options.resizable ? app.view.width : blanke_ref.options.width;
+        },
+        get height () { 
+            if (!blanke_ref) return app.view.height;
+            return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; 
+        },
         get background_color () { return app.renderer.backgroundColor; },
         set background_color (v) { app.renderer.backgroundColor = v; },
         paused: false,
@@ -794,6 +812,7 @@ var Blanke = (selector, options) => {
     let empty_sprite;
     class Canvas extends GameObject { 
         constructor () {
+            super();
             this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
             this.sprite = new PIXI.Sprite(this.rtex);
             this.width = Game.width;
@@ -841,6 +860,7 @@ var Blanke = (selector, options) => {
         constructor (name) {
             super();
             this.name = name;
+            this.skip_first_update = false;
             this.container = new PIXI.Container();
             this.container.filterArea = new PIXI.Rectangle(0,0,Game.width, Game.height);
             window.addEventListener('resize',()=>{
@@ -853,6 +873,13 @@ var Blanke = (selector, options) => {
             this.onStart = (scene) => {};
             this.onUpdate = (scene,dt) => {};
             this.onEnd = (scene) => {};
+
+            // apply given callbacks
+            let functions = Scene.fn_ref[name];
+            for (let fn in functions) {
+                this[fn] = functions[fn].bind(this,this);
+            }
+
             game_container.addChild(this.container);
         }
 
@@ -872,7 +899,8 @@ var Blanke = (selector, options) => {
         }
     
         _onEnd () {
-            app.ticker.remove(this.onUpdate, this);
+            app.ticker.remove(this.update, this);
+            delete Scene.ref[this.name];
             this.onEnd();
             for (let obj of this.objects) {
                 if (obj._destroy)
@@ -880,12 +908,14 @@ var Blanke = (selector, options) => {
                 else if (obj.destroy)
                     obj.destroy();
             }
-            this.objects = [];
-            this.container.visible = false;
-            this.container.removeChildren();
+            this.container.destroy();
         }
     
         update (dt) {
+            if (this.skip_first_update) {
+                this.skip_first_update = false;
+                return;
+            }
             this.onUpdate.call(this, dt);
             iter_scene_objects(this.objects, dt);
         }
@@ -896,42 +926,54 @@ var Blanke = (selector, options) => {
     }
     
     var Scene = (name, functions) => {
-        if (!Scene.ref[name]) {
-            Scene.ref[name] = new _Scene(name);
-            // apply given callbacks
-            for (let fn in functions) {
-                Scene.ref[name][fn] = functions[fn].bind(Scene.ref[name],Scene.ref[name]);
-            }
-        }
-        return Scene.ref[name];
+        Scene.fn_ref[name] = Object.assign(functions || {}, Scene.fn_ref[name] || {});
+        return Scene;
     }
+    Scene.fn_ref = {}; // { SceneName: { onStart:(), onUpdate:(), ...}}
+    Scene.ref = {}; // { SceneName: [Scene instance] }
+    Scene.stack = []; // [ SceneName1, SceneName2 ]
 
+    // ends all scenes, starts this one
     Scene.switch = (name) => {
         // end other scenes
         for (let s_name in Scene.ref) {
             Scene.end(s_name);
         }
         // start it
+        let scene = new _Scene(name)
+        scene.skip_first_update = true;
+        Scene.ref[name] = scene;
         Scene.stack.push(name);
-        Scene.ref[name]._onStart()
+        scene._onStart();
     }
 
+    Scene.exists = (name) => (Scene.fn_ref[name] ? true : false);
+    Scene.get = (name) => Scene.ref[name];
+
+    // ends this scene (if running), starts this one
     Scene.start = (name) => {
-        if (!Scene.ref[name]) return;
+        if (!Scene.exists(name)) return;
         // if the scene is already running, end it
-        if (Scene.ref[name].active)
-            Scene.end(name);
+        let scene = Scene.get(name);
+        if (scene) {
+            if (scene.active)
+                Scene.end(name)
+        }
         // start it
+        scene = new _Scene(name);
+        Scene.ref[name] = scene;
         Scene.stack.push(name);
-        Scene.ref[name]._onStart();
+        scene._onStart();
     }
     
     Scene.end = (name) => {
         let index = Scene.stack.indexOf(name);
-        if (index > -1 && Scene.ref[name]) {
+        let scene = Scene.get(name);
+        if (index > -1) 
             Scene.stack.splice(index,1);
-            Scene.ref[name]._onEnd();
-        }
+        if (scene) 
+            scene._onEnd();
+        Event.emit("Scene.end", name);
     }
     
     Scene.endAll = () => {
@@ -943,12 +985,13 @@ var Blanke = (selector, options) => {
     // gets last added scene
     Scene.current = () => {
         if (Scene.stack.length > 0)
-            return Scene(Scene.stack[Scene.stack.length-1]);
+            return Scene.get(Scene.stack[Scene.stack.length-1]);
+        return { name: '' }
     }
     
     Scene.addDrawable = (pixi_obj) => {
         if (Scene.stack.length > 0) 
-            Scene(Scene.stack[Scene.stack.length-1]).container.addChild(pixi_obj);
+            Scene.get(Scene.stack[Scene.stack.length-1]).container.addChild(pixi_obj);
         else
             game_container.addChild(pixi_obj);
     }
@@ -957,18 +1000,18 @@ var Blanke = (selector, options) => {
         let old_destroy = obj.destroy;
         obj.destroy = (...args) => {
             obj.destroyed = true;
+            if (obj.constructor.instances) {
+                var index = obj.constructor.instances.indexOf(obj);
+                if (index !== -1) obj.constructor.instances.splice(obj, 1);
+            }
             if (old_destroy) old_destroy.call(obj, ...args);
             for (let p in obj) {
                 if (typeof obj[p] == 'function')
                     obj[p] = () => {};
             }
-            if (obj.constructor.instances) {
-                var index = obj.constructor.instances.indexOf(obj);
-                if (index !== -1) obj.constructor.instances.splice(obj, 1);
-            }
         }
         if (Scene.stack.length > 0) 
-            Scene(Scene.stack[Scene.stack.length-1]).objects.push(obj);
+            Scene.get(Scene.stack[Scene.stack.length-1]).objects.push(obj);
         else 
             Scene.stray_objects.push(obj);    
     }
@@ -990,9 +1033,6 @@ var Blanke = (selector, options) => {
     app.ticker.add((dt) => {
         iter_scene_objects(Scene.stray_objects, dt);
     });
-    
-    Scene.ref = {};
-    Scene.stack = [];
 
     /* -SPRITE */
     /* options = {
@@ -1344,14 +1384,17 @@ var Blanke = (selector, options) => {
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
-                        if (this.sprites[this.sprite_index]) {
-                            return this.sprites[this.sprite_index][p];
+                        let spr = this.sprites[this.sprite_index];
+                        if (spr && !spr.destroyed) {
+                            return spr[p];
                         }
                         return 0;
                     },
                     set: function (v) {
                         for (let spr in this.sprites) {
-                            this.sprites[this.sprite_index][p] = v;
+                            let spr_obj = this.sprites[spr];
+                            if (spr_obj && !spr_obj.destroyed)
+                                spr_obj[p] = v;
                         }
                     }
                 });
@@ -1360,7 +1403,7 @@ var Blanke = (selector, options) => {
             this.xprevious = this.x;
             this.yprevious = this.y;
             Scene.addUpdatable(this);
-            storeInstance(Entity, this);
+            storeInstance(this.constructor, this);
         }
         _getPixiObjs () {
             return Object.values(this.sprites).map(spr => spr.sprite);
@@ -1537,6 +1580,7 @@ var Blanke = (selector, options) => {
             this.shapes[name].position(this.x, this.y);
             if (!this.shape_index)
                 this.shape_index = name;
+            this.updatePosition();
         }
         removeShape (name) {
             if (this.shapes[name]) {
@@ -1634,7 +1678,8 @@ var Blanke = (selector, options) => {
         'down':'ArrowDown',
         'left':'ArrowLeft',
         'right':'ArrowRight',
-        'up':'ArrowUp'
+        'up':'ArrowUp',
+        'space':' '
     };
     let input_ref = {};
     window.addEventListener('keyup',(e)=>{
@@ -2219,12 +2264,16 @@ var Blanke = (selector, options) => {
                 align:"left",
                 wordWrap:false,
                 wordWrapWidth:100,
-                breakWords:true
+                breakWords:true,
+                text:'',
+                x:0,
+                y:0
             },opt || {})
             this._updateOptions();
 
-            this.x = 0;
-            this.y = 0;
+            str = str || this.options.text;
+            this.x = this.options.x;
+            this.y = this.options.y;
             this.iter = 0;
             this.max_height = 0;
 
@@ -2405,13 +2454,14 @@ var Blanke = (selector, options) => {
             start_t:Game.ms, 
             end_t:Game.ms+t, 
             fn:fn || function(){},
-             
+            scene:Scene.current().name
         }); return Timer.fn_after[Timer.fn_after.length-1]; },
         every: (t, fn) => { Timer.fn_every.push({ t:t, 
             last_t:Game.ms, 
             curr_t:0, 
             iter:0, 
             fn:fn || function(){},
+            scene:Scene.current().name
         }); return Timer.fn_every[Timer.fn_every.length-1]; }
     }
     app.ticker.add((dt)=>{
@@ -2445,7 +2495,7 @@ var Blanke = (selector, options) => {
         emit (name, ...details) {
             let ref = Event.ref[name];
             if (ref) 
-                ref.forEach(fn => fn(...details));
+                ref.forEach(info => info.fn(...details));
         },
         on (name, fn) {
             if (name == 'update') {
@@ -2453,7 +2503,11 @@ var Blanke = (selector, options) => {
             } else {
                 if (!Event.ref[name])
                     Event.ref[name] = [];
-                Event.ref[name].push(fn);
+                if (!Event.ref[name].includes(fn))
+                    Event.ref[name].push({
+                        scene: Scene.current().name,
+                        fn: fn
+                    });
             }
         },
         off (name, fn) {

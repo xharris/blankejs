@@ -64,4 +64,8 @@ There are a few shorthand key values built-in:
     <td>up</td>
     <td>ArrowUp</td>
   </tr>
+  <tr>
+    <td>space</td>
+    <td>" "</td>
+  </tr>
 </table>

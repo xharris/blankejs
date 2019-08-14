@@ -51,6 +51,10 @@
 		width: 60% !important;
 		right: 0px;
 		bottom: initial;
+
+		>.fib-title {
+			background: transparent;
+		}
 	}
 }
 .content[data-type="Code"] {
@@ -209,16 +213,10 @@
 		font-size: 16px;
 		height: 100%;
 		z-index: 0;
+		background: rgba(33, 33, 33, 0.7);
 	}
-	.CodeMirror-code {
-		// display: table;
-		background-color: rgba(38,50,56,0.85);
-	}
-	.CodeMirror-linenumber {
-		background-color: rgba(38,50,56,0.85);
-	}
-	.CodeMirror-gutters {
-		background: rgba(38,50,56,0.85);
+	.CodeMirror-code,.CodeMirror-linenumber, .CodeMirror-gutters {
+		background: transparent;
 	}
 	.CodeMirror-dialog-top {
 		border: none;

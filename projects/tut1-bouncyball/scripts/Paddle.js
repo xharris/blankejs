@@ -2,15 +2,17 @@ class Paddle extends Entity {
     init () {
 		this.addSprite("paddle")
 		this.sprite_align = "center"
-		//this.sprite_scale.set(0.5)
-		
+		this.sprite_scale.set(0.5);
 		this.friction = 0.4;
 		this.addShape("main","rect")
 		// explode on contact with a missile
 		this.onCollision['main'] = (other) => {
-			if (other.tag == "Missile")
+			if (other.tag == "Missile") {
+				other.parent.destroy()
 				this.explode()
+			}
 		}
+		this.debug = true
     }
     update (dt) {
 		// Move the player presses keys
@@ -28,14 +30,20 @@ class Paddle extends Entity {
 			this.x = 0;
 		if (this.x < 0)
 			this.x = Game.width;
+		if (this.y < 0)
+			this.y = Game.height;
+		if (this.y > Game.height)
+			this.y = 0;
     }
 	explode () {
 		if (this.exploded) return;
 		this.exploded = true;
 		
+		Event.emit('paddle_explode')
+		
 		let paddle_bits = this.sprites['paddle'].chop(5,8)
 		paddle_bits.forEach(b => {
-			let direction = Util.rand_range(45,135)
+			let direction = Util.rand_range(0,360)
 			b.hspeed = Util.direction_x(direction, 10)
 			b.vspeed = Util.direction_y(direction, 10)
 		})
@@ -45,10 +53,18 @@ class Paddle extends Entity {
 
 TestScene({
 	onStart (s) {
-		let pad = new Paddle();
-		pad.y = Game.height/2;
-		pad.x = pad.sprite_width/2;
+		console.log("hi")
+		Input.set('explosion','space')
+		new Ball();
+		s.pad = new Paddle();
+		s.pad.y = Game.height/2;
+		s.pad.x = s.pad.sprite_width/2;
 		let ball = new Ball();
 		ball.x = 40
+	}, 
+	onUpdate (s, dt) {
+		if (Input('explosion').released) {
+			s.pad.explode()
+		}
 	}
 })

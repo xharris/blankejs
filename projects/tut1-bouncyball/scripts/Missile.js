@@ -14,16 +14,16 @@ class Missile extends Entity {
 			.easing(TWEEN.Easing.Quadratic.Out)
 			.onComplete(()=>{
 				this.homing = true;
+				this.addShape('main','circle')
 			})
 			.start()
 		
-		this.addShape('main','circle')
     }
     update (dt) {
 		this.sprite_angle = this.direction + 90;
 		let paddle = Paddle.instances[0];
+		
 		if (!paddle) {
-			console.log("ok no")
 			this.homing = false
 		}
 		if (this.homing) {
@@ -38,7 +38,7 @@ TestScene({
 		pad.x = 150
 		pad.y = 150
 		let m = new Missile()
-		m.x = 50
-		m.y = 300
+		m.x = 100
+		m.y = 200
 	}
 })
