@@ -1,5 +1,6 @@
 Scene("ScenePlay",{
     onStart: function(scene) {
+		Game.background_color = Draw.blue;
 		scene.paddle = new Paddle();
 		scene.ball = new Ball();
 		
