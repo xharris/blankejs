@@ -12,7 +12,6 @@ class Paddle extends Entity {
 				this.explode()
 			}
 		}
-		this.debug = true
     }
     update (dt) {
 		// Move the player presses keys

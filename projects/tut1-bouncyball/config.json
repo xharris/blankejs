@@ -1,15 +1,13 @@
 {
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
-    "first_scene": "bob",
+    "first_scene": "ScenePlay",
     "size": [
-        800,
-        600
+        200,
+        200
     ],
     "enabled_plugins": {
-        "tween.js": true,
-        "Tween.js": true,
-        "blanke-tween.js": true
+        "Tween": true
     },
     "spritesheet_prvw": {
         "image/ball.png": {
@@ -83,5 +81,9 @@
             "e5dc9a44",
             "a91fb00b"
         ]
-    }
+    },
+    "window_size": [
+        800,
+        600
+    ]
 }

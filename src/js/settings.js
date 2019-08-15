@@ -4,6 +4,7 @@ let files = ['autocomplete'];
 class Settings extends Editor {
 	constructor (...args) {
 		super(...args);
+		if (DragBox.focus("Settings")) return;
         let this_ref = this;
 
 		this.setupDragbox();

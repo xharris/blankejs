@@ -1,9 +1,9 @@
 Scene("ScenePlay",{
     onStart: function(scene) {
-		Game.background_color = Draw.blue;
+		Game.background_color = Draw.white2;
 		scene.paddle = new Paddle();
 		scene.ball = new Ball();
-		
+		console.log(Game.width, Game.height)
 		scene.ball.x = Game.width / 2
 		scene.ball.y = 50
 		

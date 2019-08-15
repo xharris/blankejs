@@ -237,7 +237,7 @@ class Code extends Editor {
 		this.appendChild(this.el_class_methods);
 
 		// add game preview
-		this.game = new GamePreview(null,{ test_scene: true });
+		this.game = new GamePreview(null,{ ide_mode: true });
 		
 		this.console = new Console();
 		this.console.appendTo(this.getContent());
@@ -1217,11 +1217,6 @@ function addScripts(folder_path) {
 						if (Object.keys(Code.classes).includes(cat)) {
 							Code.classes[cat].push(match[1]);
 						}
-						// first scene setting
-						if (cat == 'scene' && !app.project_settings.first_scene) {
-							app.project_settings.first_scene = match[1];
-							app.saveSettings();
-						}
 					}
 				}
 				if (!cat) 
@@ -1243,6 +1238,14 @@ function addScripts(folder_path) {
 				Code.updateSpriteList(full_path, data)
 			}
 		};
+
+		// first scene setting
+		let first_scene = app.project_settings.first_scene;
+		let scenes = Code.classes['scene'];
+		if (!(first_scene && scenes.includes(first_scene)) && scenes.length > 0) {
+			app.project_settings.first_scene = scenes[0];
+			app.saveSettings();
+		}
 	});
 }
 

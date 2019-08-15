@@ -1,7 +1,3 @@
-let js_plugins = [];
-let dir_plugins = [];
-let zip_plugins = [];
-
 let js_plugin_info = {};
 
 let pathJoin;
@@ -18,14 +14,13 @@ function refreshPluginList(silent) {
 function inspectPlugins(silent) {
 	function inspectFile (file) {
 		file = app.cleanPath(file);
-		let info_key = (nwPATH.dirname(file) != app.settings.plugin_path) ? nwPATH.dirname(file) : file;
-		
+		let info_key = nwPATH.relative(app.settings.plugin_path, nwPATH.dirname(file));
 		if (file.endsWith('.js')) {
 			if (!js_plugin_info[info_key]) {
 				js_plugin_info[info_key] = {
 					files: [],
 					docs: [],
-					enabled: false,
+					enabled: app.project_settings.enabled_plugins[info_key],
 					module: null
 				}
 			}
@@ -154,7 +149,6 @@ class Plugins extends Editor {
 
 	refreshList () {
 		for (let key in js_plugin_info) {
-			let info = js_plugin_info[key];
 			// create the list item elements
 			if (!this.el_reference[key]) {
 				let el_ref = {};
@@ -212,6 +206,10 @@ class Plugins extends Editor {
 					Plugins.disable(key_ref);
 			});
 		}
+		// already enabled plugins
+		for (let key in app.project_settings.enabled_plugins) {
+			Plugins.enable(key);
+		}
 	}
 
 	static getAutocomplete = () => {
@@ -226,12 +224,13 @@ class Plugins extends Editor {
 	static enable (key) {
 		nwFS.ensureDir(pathJoin(app.settings.engine_path, 'plugins'), err => {
 			if (err) return;
-			
-			for (let path of js_plugin_info[key].files) {
-				nwFS.copySync(path, pathJoin(app.settings.engine_path, 'plugins', nwPATH.basename(path)));
-				app.project_settings.enabled_plugins[nwPATH.basename(path)] = true;
+			if (js_plugin_info[key]) {
+				for (let path of js_plugin_info[key].files) {
+					nwFS.copySync(path, pathJoin(app.settings.engine_path, 'plugins', nwPATH.basename(path)));
+					app.project_settings.enabled_plugins[key] = true;
+				}
+				app.saveSettings();
 			}
-			app.saveSettings();
 		})
 	}
 
@@ -239,7 +238,7 @@ class Plugins extends Editor {
 		// remove file		
 		for (let path of js_plugin_info[key].files) {
 			nwFS.removeSync(pathJoin(app.settings.engine_path, 'plugins', nwPATH.basename(path)));
-			app.project_settings.enabled_plugins[nwPATH.basename(path)] = false;
+			app.project_settings.enabled_plugins[key] = false;
 		}
 		app.saveSettings();
 	}

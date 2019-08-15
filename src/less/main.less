@@ -4,7 +4,7 @@
 @import "markdown";
 
 @font-face {
-	font-family: ProggySquare;
+	font-family: 'ProggySquare';
     src: url('includes/ProggySquareSZ.ttf') format('truetype');
 }
 
@@ -48,6 +48,10 @@ body:before, body:after {
     right: 0px;
     height: 1px;
     z-index: 1000;
+}
+
+a {
+	color: @ide-accent;
 }
 
 .input-outline {
@@ -1285,10 +1289,6 @@ iframe {
 		    background-color: #424242;
 		    padding: 5px;
 		    color: #FAFAFA;
-
-		    a {
-		    	color: @ide-accent;
-		    }
 		}
 
 		.blanke-icon {

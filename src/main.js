@@ -375,7 +375,7 @@ var app = {
 		if (app.isProjectOpen()) {
 			let proj_set = app.project_settings;
 			let game = new GamePreview(null, {
-				test_scene: false,
+				ide_mode: false,
 				scene: proj_set.first_scene,
 				size: proj_set.size
 			});

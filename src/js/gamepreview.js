@@ -1,4 +1,19 @@
-let getHTML = (body) => {
+let getHTML = (body, ide_mode) => {
+let fonts = app.asset_list.reduce((arr, val) => {
+			if (app.findAssetType(val) == 'font')
+				arr.push(val);
+			return arr;
+		},[])
+		.map(v => `
+@font-face {
+	font-family: '${nwPATH.parse(v).name}';
+	src: url('${
+		ide_mode ? 
+		app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path))) + '/' + app.shortenAsset(v):
+		app.shortenAsset(v)
+	}');
+}
+`)
 return `
 <!DOCTYPE html>
 <html>
@@ -22,6 +37,7 @@ return `
 			width: 100%;
 			height: 100%;
 		}
+		${fonts.join('\n')}
 	</style>
 	<head>
 		<script type="text/javascript">${app.engine_code}</script>
@@ -97,7 +113,7 @@ class GamePreview {
 		this.breakpoints = [];
 
 		this.options = ifndef_obj(opt, {
-			test_scene: false,
+			ide_mode: true,
 			scene: null,
 			size: null,
 			onLoad: null
@@ -287,7 +303,7 @@ class GamePreview {
 					${this.refreshSource()}
 				}
 			});
-		</script>`);
+		</script>`, this.options.ide_mode);
 	}
 
 	getAssetStr () {
@@ -328,7 +344,7 @@ class GamePreview {
 	getExtraEngineCode () {
 		let view_size = ``;
 		// TODO: take another look at this. game viewport is cutoff
-		if (this.options.test_scene && this.size > 0) {
+		if (this.options.ide_mode && this.size > 0) {
 				view_size = `
 						view.port_width = window.innerWidth;
 						view.port_height = window.innerHeight;
@@ -347,10 +363,6 @@ class GamePreview {
 			}
 			return `
 			let TestScene = (funcs) => {
-				if (Scene.ref._test)
-					Scene.ref._test.destroy();
-				delete Scene.ref['_test'];
-				Scene.ref["_test"] = null;
 				Scene("_test", funcs);
 			}
 			let TestView = (follow_obj) => {
@@ -410,7 +422,7 @@ class GamePreview {
 			scripts = GamePreview.getScriptOrder()
 		switch (curr_script_cat) {
 			case 'entity':
-				if (this.options.test_scene && contains_test_scene)
+				if (this.options.ide_mode && contains_test_scene)
 					post_load += '\nScene.start("_test");\n';
 				break;
 			case 'scene':
@@ -418,15 +430,17 @@ class GamePreview {
 				if (match && match.length > 1) {
 					if (contains_test_scene)
 						post_load += '\nScene.start("_test");\n';
-					else
+					else {
 						post_load += `\nScene.start("${match[1]}");\n`;
+					}
 				}
 				break;
 			case 'other':
 				if (contains_test_scene)
 					post_load += '\nScene.start("_test");\n';
-				else if (this.options.scene)
+				else if (this.options.scene) {
 					post_load += '\nScene.start("'+this.options.scene+'");\n';
+				}
 				break;
 		}
 
@@ -488,7 +502,7 @@ var game_instance = Blanke("#game",{
 		<div id="game"></div>
 	</body>
 	<script class="source">
-	</script>`);
+	</script>`, this.options.ide_mode);
 
 		this.last_code = `
 		let app = window.parent.app;

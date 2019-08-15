@@ -60,8 +60,8 @@ var Blanke = (selector, options) => {
     app = new PIXI.Application({
         width: this.options.width,
         height: this.options.height,
-        resolution: this.options.resolution,
-        resizeTo: this.options.fill_parent == true ? parent : null,
+        resolution: 1,//window.devicePixelRatio || 1,
+        resizeTo: null,//this.options.fill_parent == true ? parent : null,
         backgroundColor: this.options.ide_mode ? 0x485358 : this.options.backgroundColor
     });
     PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
@@ -316,12 +316,10 @@ var Blanke = (selector, options) => {
             return '?';
         },
         get width () { 
-            if (!blanke_ref) return app.view.width;
-            return blanke_ref.options.resizable ? app.view.width : blanke_ref.options.width;
+            return blanke_ref.options.width;
         },
         get height () { 
-            if (!blanke_ref) return app.view.height;
-            return blanke_ref.options.resizable ? app.view.height : blanke_ref.options.height; 
+            return blanke_ref.options.height; 
         },
         get background_color () { return app.renderer.backgroundColor; },
         set background_color (v) { app.renderer.backgroundColor = v; },
@@ -456,7 +454,8 @@ var Blanke = (selector, options) => {
             return n;
         },
         // file
-        basename: (path, no_ext) => no_ext == true ? path.split(re_sep).slice(-1)[0].split('.')[0] : path.split(re_sep).slice(-1)[0]
+        basename: (path, no_ext) => no_ext == true ? path.split(re_sep).slice(-1)[0].split('.')[0] : path.split(re_sep).slice(-1)[0],
+        extname: (path) => path.replace(/[\w_\\.\-\/]+\./,'')
     }
     app.ticker.add((dt)=>{
         Game.time += dt;
@@ -475,7 +474,8 @@ var Blanke = (selector, options) => {
             /* options: { name, frames, frame_size, offset, columns } */
             'image':['png'],
             'audio':['wav'],
-            'map':['map']
+            'map':['map'],
+            'font':['ttf']
         },
         base_textures: {},
         getType: (path) => {
@@ -821,8 +821,11 @@ var Blanke = (selector, options) => {
             Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
-                if (!this._size_changed && !this.options.ide_mode)
-                    this.resize(app.view.width, app.view.height, true);
+                if (!this._size_changed && !blanke_ref.options.ide_mode)
+                    this.resize(
+                        app.view.width / blanke_ref.options.resolution, 
+                        app.view.height / blanke_ref.options.resolution, 
+                        true);
             })
             aliasProps(this, this.sprite, ['x','y','alpha','hitArea','scale','width','height']);
         }
@@ -926,6 +929,8 @@ var Blanke = (selector, options) => {
     }
     
     var Scene = (name, functions) => {
+        if (this.options.ide_mode && name == "_test") 
+            delete Scene.fn_ref['_test'];
         Scene.fn_ref[name] = Object.assign(functions || {}, Scene.fn_ref[name] || {});
         return Scene;
     }
@@ -2259,7 +2264,7 @@ var Blanke = (selector, options) => {
                 str = null;
             }
             this.options = Object.assign({
-                fontFamily:'Arial',
+                fontFamily:'04B_03',
                 fontSize:12,
                 align:"left",
                 wordWrap:false,
@@ -2288,6 +2293,7 @@ var Blanke = (selector, options) => {
             //aliasProps(this, this.canvas, props);
 
             this.text = str || '';
+            this.update(0);
             Scene.addUpdatable(this);
         }
         getRect () { return this.canvas.hitArea; }
@@ -2305,9 +2311,9 @@ var Blanke = (selector, options) => {
         get debug () { this._debug != null; }
         _updateOptions () {
             let keys = ['fontFamily','fontSize','align'];
-            delete Text.textures[this.hash];
             this.hash = keys.map(k => this.options[k] || '').join("+");
-            Text.textures[this.hash] = {};
+            if (!Text.textures[this.hash])
+                Text.textures[this.hash] = {};
         }
         set onDraw (v) { this.options.onDraw = v; }
         set text (v) { this._text = '' + v; }
