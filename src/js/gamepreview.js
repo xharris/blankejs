@@ -1,50 +1,3 @@
-let getHTML = (body, ide_mode) => {
-let fonts = app.asset_list.reduce((arr, val) => {
-			if (app.findAssetType(val) == 'font')
-				arr.push(val);
-			return arr;
-		},[])
-		.map(v => `
-@font-face {
-	font-family: '${nwPATH.parse(v).name}';
-	src: url('${
-		ide_mode ? 
-		app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path))) + '/' + app.shortenAsset(v):
-		app.shortenAsset(v)
-	}');
-}
-`)
-return `
-<!DOCTYPE html>
-<html>
-	<style>
-		head, body {
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			right: 0px;
-			bottom: 0px;
-			margin: 0px;
-			overflow: hidden;
-			background: #485358;
-		}
-		#game {
-			width: 100%;
-			height: 100%;
-			background: #485358;
-		}
-		body > img {
-			width: 100%;
-			height: 100%;
-		}
-		${fonts.join('\n')}
-	</style>
-	<head>
-		<script type="text/javascript">${app.engine_code}</script>
-	</head>
-	${body}
-</html>
-`};
 /* goes in refreshSource
 ${inf_loop_detector}
 		let test_code = infiniteLoopDetector.wrap(\`${code.replaceAll('\`','\\`')}\`);
@@ -274,7 +227,7 @@ class GamePreview {
 	}
 
 	getSource () {
-		return getHTML(`
+		return GamePreview.getHTML(`
 		<body>
 			<div id="game"></div>
 		</body>
@@ -450,7 +403,8 @@ class GamePreview {
 		${this.getExtraEngineCode()}\n`;
 
 		let code = `
-var game_instance = Blanke("#game",{
+var game_instance;	
+game_instance = Blanke("#game",{
 	config: ${JSON.stringify(app.project_settings)},
 	fill_parent: true,
 	ide_mode: true,
@@ -497,7 +451,7 @@ var game_instance = Blanke("#game",{
 		code += (post_load || '') + `
 	}
 });`;
-		this.iframe.srcdoc = getHTML(`
+		this.iframe.srcdoc = GamePreview.getHTML(`
 	<body>
 		<div id="game"></div>
 	</body>
@@ -551,3 +505,97 @@ var game_instance = Blanke("#game",{
 	}
 }
 GamePreview.engine_classes = '';
+GamePreview.getHTML = (body, ide_mode, engine_path) => {
+	return `
+	<!DOCTYPE html>
+	<html>
+		<style>
+			head, body {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				right: 0px;
+				bottom: 0px;
+				margin: 0px;
+				overflow: hidden;
+				background: #485358;
+			}
+			#game {
+				width: 100%;
+				height: 100%;
+				background: #485358;
+			}
+			body > img {
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+		<head>
+			<link rel="stylesheet" type="text/css" media="all" href="${ide_mode ? app.cleanPath(nwPATH.relative(__dirname,app.project_path))+'/' : ''}game.css"/>
+			${engine_path ?
+				`<script type="text/javascript" src="${engine_path}"></script>` : 
+				`<script type="text/javascript">${app.engine_code}</script>`
+			}
+		</head>
+		<div class="font_preload" style="opacity:0">
+			${font_families.map(v => `<span style="font-family:'${v}'"></span>\n`)}</div>
+		${body}
+	</html>
+	`};
+
+let font_families = [];
+let writeGameCSS = () => {
+	// create css file with font-face
+	let css_str = '';
+	let css_ide_str = '';
+	app.getAssets('font', (files)=>{
+		for (let f of files) {
+			let name = nwPATH.parse(f).name
+			font_families.push(name);
+css_str+=`@font-face {
+	font-family: '${name}';
+	src: url('${(name == '04B_03' ? '' : 'font/') + app.shortenAsset(f)}');
+}\n`,'utf-8'
+css_ide_str+=`@font-face {
+	font-family: '${name}';
+	src: url('${app.cleanPath(nwPATH.relative('',app.project_path))}/${(name == '04B_03' ? '' : 'font/') + app.shortenAsset(f)}');
+}\n`,'utf-8'
+		}
+		// replace ide game.css
+		nwFS.writeFileSync(nwPATH.join(app.project_path, 'game.css'), css_str, 'utf-8');
+		nwFS.writeFileSync(nwPATH.join(__dirname,'/ide_game.css'), css_ide_str, 'utf-8');
+		let link = document.getElementById("game-css");
+		if (link) {
+			link.href = 'ide_game.css';
+		}
+		// add game.css if not already added
+		else {
+			link = document.createElement('link');
+			link.id = "game-css";
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = 'ide_game.css';
+			link.media = 'all';
+			document.head.appendChild(link);
+		}
+		// add font preload element
+		let el_preload = document.getElementById("font-preload");
+		if (!el_preload) {
+			el_preload = document.createElement('div');
+			document.head.appendChild(el_preload);
+		}
+		el_preload.id = "font-preload";
+		el_preload.style.opacity = 0;
+		el_preload.innerHTML = font_families.map(v => `<span style="font-family:'${v}'"></span>\n`).join('\n');
+	});
+}
+
+document.addEventListener("openProject",(e)=>{
+	writeGameCSS();
+});
+
+document.addEventListener('asset_added', (e)=>{
+	let info = e.detail; // {type: res_type, path: asset_path}
+	if (info.res_type == 'font')
+		writeGameCSS();
+});

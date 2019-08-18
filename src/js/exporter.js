@@ -84,40 +84,18 @@ class Exporter extends Editor {
 		}
 		app.minifyEngine((code)=>{
 			nwFS.writeFileSync(js_path,code,'utf-8');
-			let str_html = `
-<!DOCTYPE html>
-<html>
-	<style>
-		head, body {
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			right: 0px;
-			bottom: 0px;
-			margin: 0px;
-			overflow: hidden;
-		}
-		#game {
-			width: 100%;
-			height: 100%;
-		}
-		body > img {
-			width: 100%;
-			height: 100%;
-		}
-	</style>
-	<head>
-		<script type="text/javascript" src="${nwPATH.basename(js_path)}"></script>
-	</head>
-	<body>
-		<div id="game"></div>
-	</body>
-	<script>
-		window.addEventListener('load',()=>{
-			Blanke.run('#game','${app.project_settings.export.name}');
-		})
-	</script>
-</html>`
+			let str_html = GamePreview.getHTML(
+`<body>
+<div id="game"></div>
+</body>
+<script>
+window.addEventListener('load',()=>{
+	Blanke.run('#game','${app.project_settings.export.name}');
+})
+</script>`,
+false,
+nwPATH.basename(js_path));
+
 			nwFS.writeFileSync(nwPATH.join(dir,'index.html'),str_html,'utf-8');
 			if (cb) cb(js_path);
 		},{ 
@@ -254,6 +232,8 @@ Blanke.addGame('${app.project_settings.export.name}',{
 			.then(() => {
 				// move assets
 				nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
+				for (let a of ['04B_03.ttf','gamecontrollerdb.txt','game.css','config.json'])
+					nwFS.copySync(nwPATH.join(app.project_path, a), nwPATH.join(temp_dir, a));
 				// entry.js
 				nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
 const elec = require('electron');
@@ -267,7 +247,7 @@ elec.app.on('ready', function(){
     })
 	if (main_window.setMenuBarVisibility)
 		main_window.setMenuBarVisibility(false);
-    main_window.loadFile('index.html');
+	main_window.loadFile('index.html');
 });
 				`,'utf-8');
 				// package.json

@@ -1373,6 +1373,8 @@ var Blanke = (selector, options) => {
             this.is_entity = true;
             this._x = 0;
             this._y = 0;
+            this.dx = 0;
+            this.dy = 0;
             this.hspeed = 0;
             this.vspeed = 0;
             this.friction = 0;
@@ -1382,6 +1384,9 @@ var Blanke = (selector, options) => {
             this.shape_index = null;
             this.shapes = {};
             this.onCollision = {};
+            this.resx = 0;
+            this.resy = 0;
+            this.coll_scale = 1.1;
             // sprite
             this.sprites = {};
             this.sprite_index = '';
@@ -1444,11 +1449,11 @@ var Blanke = (selector, options) => {
                 this.update(dt);
             if (this.destroyed) return;
 
-            let dx = this.hspeed, dy = this.vspeed;  
+            this.dx = this.hspeed, this.dy = this.vspeed;  
             // gravity
             if (this.gravity != 0) {
-                dx += Util.direction_x(this.gravity_direction, this.gravity);
-                dy += Util.direction_y(this.gravity_direction, this.gravity); 
+                this.dx += Util.direction_x(this.gravity_direction, this.gravity);
+                this.dy += Util.direction_y(this.gravity_direction, this.gravity); 
             }
             // move shapes if x/y is different
             if (old_x != this.x || old_y != this.y) {
@@ -1468,43 +1473,19 @@ var Blanke = (selector, options) => {
             }
             // collision
             let precoll_hspeed = this.hspeed, precoll_vspeed = this.vspeed;
-            let resx = 0, resy = 0;
             
-            let coll_scale = 1.1;
             for (let name in this.shapes) {
                 let shape = this.shapes[name];
                 shape.debug = this.debug;
-                shape.move(dx*dt, dy*dt);
+                shape.move(this.dx*dt, this.dy*dt);
 
                 let coll_list = shape.collisions();
                 if (coll_list && this.onCollision[name]) {
                     for (let info of coll_list) {
-                        let res = info[1]
-                        let cx = res.sep_vec.x, cy = res.sep_vec.y;
-                        this.collisionStopX = () => {
-                            resx += cx;
-                            dx = 0;
-                        }
-                        this.collisionStopY = () => {
-                            resy += cy;
-                            dy = 0;
-                        }
-                        this.collisionStop = () => {
-                            resx += cx;
-                            resy += cy;
-                            dx = 0, dy = 0;
-                        }
-                        // TODO: doesnt call onCollision for non-bouncing object
-                        this.collisionBounce = (mult) => {
-                            resx = cx;
-                            resy = cy;
-                            coll_scale = 2;
-                            let mag = Math.sqrt(Math.pow(cx,2)+Math.pow(cy,2))
-                            let dot = (this.hspeed * (cx/mag)) + (this.vspeed * (cy/mag)) * (mult || 1.01)
-                            dx = this.hspeed - (2 * dot * (cx/mag))
-                            dy = this.vspeed - (2 * dot * (cy/mag))
-                        }
-                        this.onCollision[name].call(this, info[0], res);
+                        this._triggerCollision(name, info);
+                        info[1].sep_vec.x = -info[1].sep_vec.x;
+                        info[1].sep_vec.y = -info[1].sep_vec.y;
+                        info[0].parent._triggerCollision(info[0].name, info)
                         if (this.destroyed) return;
                     }
                     delete this.collisionStopY;
@@ -1513,8 +1494,11 @@ var Blanke = (selector, options) => {
                 }     
             }
             for (let name in this.shapes) {
-                this.shapes[name].move(-resx*coll_scale, -resy*coll_scale);
+                this.shapes[name].move(-this.resx*this.coll_scale, -this.resy*this.coll_scale);
             }
+            this.resx = 0;
+            this.resy = 0;
+            this.coll_scale = 1.1;
             // set position of entity
             let shape = this.shapes[this.shape_index]
             if (shape) {
@@ -1528,8 +1512,8 @@ var Blanke = (selector, options) => {
                 }
 
             } else {
-                this._x += dx * dt;
-                this._y += dy * dt;
+                this._x += this.dx * dt;
+                this._y += this.dy * dt;
             }
             
             for (let s in this.sprites) {
@@ -1541,8 +1525,8 @@ var Blanke = (selector, options) => {
             this.xprevious = this.x - this._getHitboxOffset('x');
             this.ypreviuos = this.y - this._getHitboxOffset('y');
             // preserve user-set speeds
-            if (precoll_hspeed == this.hspeed) this.hspeed = dx;
-            if (precoll_vspeed == this.vspeed) this.vspeed = dy;
+            if (precoll_hspeed == this.hspeed) this.hspeed = this.dx;
+            if (precoll_vspeed == this.vspeed) this.vspeed = this.dy;
         }
         _getHitboxOffset (a) {
             return this.sprite_pivot[a] * this.sprite_scale[a];
@@ -1565,6 +1549,7 @@ var Blanke = (selector, options) => {
         addShape (name, options) {
             if (typeof options == 'string') options = { type:options };
             if (!options) options = { type:name };
+            console.log(this.constructor.name)
             options.tag = this.constructor.name + (options.tag ? '.'+options.tag : '');
             if (!options.shape) {
                 switch (options.type) {
@@ -1582,6 +1567,7 @@ var Blanke = (selector, options) => {
             
             this.shapes[name] = new Hitbox(options);
             this.shapes[name].parent = this;
+            this.shapes[name].name = name;
             this.shapes[name].position(this.x, this.y);
             if (!this.shape_index)
                 this.shape_index = name;
@@ -1592,6 +1578,40 @@ var Blanke = (selector, options) => {
                 this.shapes[name].destroy();
                 delete this.shapes[name];
             }
+        }
+        _triggerCollision (name, info) {
+            if (!this.onCollision[name]) return;
+
+            let res = info[1]
+            let other_hitbox = info[0];
+            let cx = res.sep_vec.x, cy = res.sep_vec.y;
+
+            this.collisionStopX = () => {
+                this.resx += cx;
+                this.dx = 0;
+            }
+            this.collisionStopY = () => {
+                this.resy += cy;
+                this.dy = 0;
+            }
+            this.collisionStop = () => {
+                this.resx += cx;
+                this.resy += cy;
+                this.dx = 0, this.dy = 0;
+            }
+            // TODO: doesnt call onCollision for non-bouncing object
+            this.collisionBounce = (mult) => {
+                this.resx = cx;
+                this.resy = cy;
+                this.coll_scale = 2;
+                let mag = Math.sqrt(Math.pow(cx,2)+Math.pow(cy,2))
+                let dot = (this.hspeed * (cx/mag)) + (this.vspeed * (cy/mag)) * (mult || 1.01)
+                this.dx = this.hspeed - (2 * dot * (cx/mag))
+                this.dy = this.vspeed - (2 * dot * (cy/mag))
+            }
+            this.onCollision[name].call(this, other_hitbox, res);
+
+            return true;
         }
         get debug () { return this._debug; }
         set debug (v) {
@@ -2535,7 +2555,7 @@ Blanke.addGame = (name, options) => {
 Blanke.run = (selector, name) => {
     if (!Blanke.game_options) Blanke.game_options = {};
     if (Blanke.game_options[name])
-        Blanke(selector, Blanke.game_options[name])
+        return Blanke(selector, Blanke.game_options[name]);
     else
         console.log(`BlankE game '${name}' not found!`);
 }

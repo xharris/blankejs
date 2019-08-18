@@ -3,12 +3,14 @@ Scene("ScenePlay",{
 		Game.background_color = Draw.white2;
 		scene.paddle = new Paddle();
 		scene.ball = new Ball();
-		console.log(Game.width, Game.height)
 		scene.ball.x = Game.width / 2
 		scene.ball.y = 50
 		
 		scene.paddle.x = Game.width / 2
 		scene.paddle.y = Game.height / 2
+		
+		scene.paddle.debug = true;
+		scene.ball.debug = true;
 		
 		scene.player_alive = true
 		scene.score = 0;

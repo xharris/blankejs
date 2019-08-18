@@ -349,6 +349,7 @@ var app = {
 					code = nwUGLY.minify(code_obj,{
 						ie8: true,
 						compress: opt.release ? {} : false,
+						keep_classnames: true,
 						mangle: { toplevel:false }
 					});
 				}
@@ -624,8 +625,9 @@ var app = {
 		blanke.toast("adding file \'"+nwPATH.basename(path)+"\'");
 		nwFS.ensureDir(nwPATH.join(app.project_path, 'assets', res_type), (err) => {
 			if (err) console.error(err);
-			nwFS.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
-			dispatchEvent("asset_added",{type: res_type, path: app.project_path});
+			let asset_path = nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path))
+			nwFS.copySync(path, asset_path);
+			dispatchEvent("asset_added",{type: res_type, path: asset_path});
 		});
 	},
 
@@ -953,7 +955,7 @@ var app = {
 				let file_paths = update_zip.getEntries();
 				let limit = 3;
 				let entryName;
-				let actual_src = [/love2d[\/\\]/,/src[\/\\]/,'package.json'];
+				let actual_src = [/blankejs[\/\\]/,/src[\/\\]/,'package.json'];
 				// unpack new files
 				for (let f = 0; f < file_paths.length; f++) {
 					entryName = file_paths[f].entryName;

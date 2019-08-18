@@ -210,6 +210,7 @@ class Code extends Editor {
 		var this_ref = this;
 		this.file = '';
 		this.script_folder = "/scripts";
+		this.file_loaded = false;
 
 		if (!app.settings.code) app.settings.code = {};
 		ifndef_obj(app.settings.code, {
@@ -572,7 +573,7 @@ class Code extends Editor {
 		}
 
 		let before_dot = '';
-		new_editor.on("change", function(cm, e){
+		new_editor.on("inputRead", function(cm, e){
 			let editor = cm;
 			let cursor = editor.getCursor();
 

@@ -11,6 +11,8 @@ class Paddle extends Entity {
 				other.parent.destroy()
 				this.explode()
 			}
+			if (other.tag == "Ball")
+				console.log("oh wow")
 		}
     }
     update (dt) {
@@ -52,7 +54,6 @@ class Paddle extends Entity {
 
 TestScene({
 	onStart (s) {
-		console.log("hi")
 		Input.set('explosion','space')
 		new Ball();
 		s.pad = new Paddle();
