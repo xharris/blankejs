@@ -1549,7 +1549,6 @@ var Blanke = (selector, options) => {
         addShape (name, options) {
             if (typeof options == 'string') options = { type:options };
             if (!options) options = { type:name };
-            console.log(this.constructor.name)
             options.tag = this.constructor.name + (options.tag ? '.'+options.tag : '');
             if (!options.shape) {
                 switch (options.type) {
