@@ -10,7 +10,6 @@ class Ball extends Entity {
 		this.addShape("main","circle")
 		
 		this.onCollision['main'] = (other, res) => {
-			console.log(other, res);
 			if (other.tag == "Paddle") {
 				this.collisionBounce(Util.lerp(1,1.01,this.y/Game.height))
 				Event.emit("ball_bounce")

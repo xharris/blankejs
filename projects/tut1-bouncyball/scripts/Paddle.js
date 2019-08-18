@@ -11,8 +11,6 @@ class Paddle extends Entity {
 				other.parent.destroy()
 				this.explode()
 			}
-			if (other.tag == "Ball")
-				console.log("oh wow")
 		}
     }
     update (dt) {

@@ -37,7 +37,6 @@ var Blanke = (selector, options) => {
         auto_focus: true,
         width: 600,
         height: 400,
-        resizable: false,
         resolution: 1,
         config_file: 'config.json',
         fill_parent: false,
@@ -61,7 +60,7 @@ var Blanke = (selector, options) => {
         width: this.options.width,
         height: this.options.height,
         resolution: 1,//window.devicePixelRatio || 1,
-        resizeTo: null,//this.options.fill_parent == true ? parent : null,
+        resizeTo: this.options.fill_parent == true ? parent : null,
         backgroundColor: this.options.ide_mode ? 0x485358 : this.options.backgroundColor
     });
     PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
@@ -316,10 +315,10 @@ var Blanke = (selector, options) => {
             return '?';
         },
         get width () { 
-            return blanke_ref.options.width;
+            return blanke_ref.options.fill_parent ? app.view.width : blanke_ref.options.width;
         },
         get height () { 
-            return blanke_ref.options.height; 
+            return blanke_ref.options.fill_parent ? app.view.height : blanke_ref.options.height; 
         },
         get background_color () { return app.renderer.backgroundColor; },
         set background_color (v) { app.renderer.backgroundColor = v; },
@@ -2285,7 +2284,8 @@ var Blanke = (selector, options) => {
             this.options = Object.assign({
                 fontFamily:'04B_03',
                 fontSize:12,
-                align:"left",
+                halign:"left",
+                valign:"top",
                 wordWrap:false,
                 wordWrapWidth:100,
                 breakWords:true,
@@ -2333,38 +2333,57 @@ var Blanke = (selector, options) => {
             this.hash = keys.map(k => this.options[k] || '').join("+");
             if (!Text.textures[this.hash])
                 Text.textures[this.hash] = {};
+            if (!Text.widths[this.hash])
+                Text.widths[this.hash] = {}
         }
         set onDraw (v) { this.options.onDraw = v; }
-        set text (v) { this._text = '' + v; }
+        set text (v) { this._text = '' + v;
+            let width = 0, height = 0;
+            for (let letter of this._text) {
+                if (!Text.textures[this.hash][letter]) {
+                    let pixi_text = new PIXI.Text(letter, this.options);
+                    pixi_text.updateText();
+                    this.temp_sprite.texture = pixi_text.texture;
+                    Text.textures[this.hash][letter] = this.temp_sprite.texture.clone();
+                }
+                width += this.temp_sprite.width;
+                if (this.temp_sprite.height > height) height = this.temp_sprite.height;
+            }
+            Text.widths[this.hash][this._text] = [width, height];
+        }
         get text () { return this._text; }
         update (dt) {
             if (this.destroyed) return;
             this.canvas.clear();
             let x = 0, y = 0, o = this.options, str = this._text;
             let minx, miny, maxx, maxy;
+            let align = () => {
+                if (Text.widths[this.hash][str]) {
+                    if (o.halign == 'center')
+                        x = -Text.widths[this.hash][str][0]/2;
+                    if (o.halign == 'right')
+                        x = -Text.widths[this.hash][str][0];
+                    if (o.valign == 'middle')
+                        y = -Text.widths[this.hash][str][1]/2;
+                    if (o.valign == 'bottom')
+                        y = -Text.widths[this.hash][str][1];                    
+                }
+            }
+            align();
             for (let l = 0; l < str.length; l++) {
                 let letter = str.charAt(l);
                 // get cached letter texture
                 this.temp_sprite.reset();
-                
-                // TODO: is this optimal?
-                if (Text.textures[this.hash][letter]) {
-                    this.temp_sprite.texture = Text.textures[this.hash][letter];
-                } else {
-                    let pixi_text = new PIXI.Text(letter, this.options);
-                    pixi_text.updateText();
-                    this.temp_sprite.texture = pixi_text.texture;
-                    Text.textures[this.hash][letter] = this.temp_sprite.texture.clone();
-                }
+                this.temp_sprite.texture = Text.textures[this.hash][letter];
 
                 // allow user to change letter appearance  
-                let props = {i:l, string:str, letter, x, y, sprite: this.temp_sprite, iter:this.iter};
+                let props = {i:l, string:str, letter:letter, x:x, y:y, sprite: this.temp_sprite, iter:this.iter};
                 if (o.onDraw) {
                     o.onDraw(props);
                     this.iter++;
                 }
                 
-                this.temp_sprite.x = this.x + props.x;
+                this.temp_sprite.x = this.x + props.x;//-(Text.widths[this.hash][str]/2);
                 this.temp_sprite.y = this.y + props.y;
                 this.canvas.draw(this.temp_sprite);
 
@@ -2376,6 +2395,7 @@ var Blanke = (selector, options) => {
                     x = 0;
                     y += this.max_height;
                     this.max_height = 0;
+                    align();
                 }
 
                 // recalculate hitArea
@@ -2405,6 +2425,7 @@ var Blanke = (selector, options) => {
         }
     }
     Text.textures = {};
+    Text.widths = {};
 
     /* -EFFECT */
     class Effect {

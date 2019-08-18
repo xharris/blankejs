@@ -247,7 +247,8 @@ class GamePreview {
 			});
 			var game_instance = Blanke("#game",{
 				config: ${JSON.stringify(app.project_settings)},
-				fill_parent: false,
+				fill_parent: ${this.options.ide_mode},
+				auto_resize: ${this.options.ide_mode},
 				width: ${this.options.size[0]},
 				height: ${this.options.size[1]},
 				${this.options.resizable ? 'resizable: true,' : '' }
@@ -295,25 +296,8 @@ class GamePreview {
 	}
 
 	getExtraEngineCode () {
-		let view_size = ``;
 		// TODO: take another look at this. game viewport is cutoff
-		if (this.options.ide_mode && this.size > 0) {
-				view_size = `
-						view.port_width = window.innerWidth;
-						view.port_height = window.innerHeight;
-				`;
-			if (this.size == 1) {
-				view_size = `
-						view.port_width = window.innerWidth / 2;
-						view.port_height = window.innerHeight;
-				`;
-			}
-			if (this.size == 2) {
-				view_size = `
-						view.port_width = window.innerWidth / 2;
-						view.port_height = window.innerHeight / 2;
-				`;
-			}
+		if (this.options.ide_mode) {
 			return `
 			let TestScene = (funcs) => {
 				Scene("_test", funcs);
@@ -322,13 +306,15 @@ class GamePreview {
 				let view = View();
 				if (follow_obj)
 					view.follow(follow_obj);
-				${view_size}
+					view.port_width = window.innerWidth;
+					view.port_height = window.innerHeight;
 				return view;
 			}
 			let _resizeTestView = (name) => {
 				let view = View(name);
 				if (!view.dont_resize) {
-					${view_size}
+					view.port_width = window.innerWidth;
+					view.port_height = window.innerHeight;
 				}
 			}
 			window.addEventListener('resize',()=>{

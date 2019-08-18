@@ -85,5 +85,13 @@
     "window_size": [
         800,
         600
-    ]
+    ],
+    "export": {
+        "name": "tut1-bouncyball",
+        "remove_unused": true,
+        "web_autoplay": false,
+        "frameless": false,
+        "minify": true,
+        "resizable": false
+    }
 }

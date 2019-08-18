@@ -8,10 +8,7 @@ Scene("ScenePlay",{
 		
 		scene.paddle.x = Game.width / 2
 		scene.paddle.y = Game.height / 2
-		
-		scene.paddle.debug = true;
-		scene.ball.debug = true;
-		
+				
 		scene.player_alive = true
 		scene.score = 0;
 		
@@ -27,7 +24,6 @@ Scene("ScenePlay",{
 		// every time the ball hits the paddle, increment the score
 		scene.txt_score = new Text({
 				fontSize:16,
-				align:"center",
 				x: 30,
 				y: 30,
 				text:"SCORE: 0"
@@ -41,7 +37,8 @@ Scene("ScenePlay",{
 			scene.player_alive = false;
 			new Text({
 				fontSize:16,
-				align:"center",
+				halign:"center",
+				valign:"bottom",
 				x: Game.width/2,
 				y: Game.height/2,
 				text:"Game Over"
