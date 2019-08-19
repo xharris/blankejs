@@ -31,7 +31,7 @@ function inspectPlugins(silent) {
 					module.onPluginUnload();
 					delete require.cache[file];
 				}
-				js_plugin_info[info_key].module = require(file);
+				js_plugin_info[info_key].module = require(nwPATH.join(nwPATH.relative(app.settings.plugin_path, ''), file));
 				if (js_plugin_info[info_key].module.onPluginLoad)
 					js_plugin_info[info_key].module.onPluginLoad();
 				
