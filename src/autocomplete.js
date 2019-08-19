@@ -37,9 +37,10 @@ module.exports.keywords = [
 
 // TestScene is included just so it looks nice
 module.exports.class_list = [
-	'Asset','Game','Util','Draw','Scene',
-	'Map','Effect','Sprite','Input',
-	'Entity','View','Timer','Event',
+	'Asset','Audio','Canvas','Draw','Event',
+	'Game','Hitbox','Input','Map','Matrix',
+	'Rectangle','Scene','Sprite','Text',
+	'Util','Effect','Entity','View','Timer',
 	'TestScene','TestView'
 ];
 
@@ -97,7 +98,8 @@ module.exports.this_ref = {
 */
 module.exports.hints = {
 	"global":[
-		{ fn: "Scene", vars: { name:'', callbacks:'{ onStart, onUpdate, onEnd }' } }
+		{ fn: "Scene", vars: { name:'', callbacks:'{ onStart, onUpdate, onEnd }' } },
+		{ fn: "Draw", vars: { args:'...' } }
 	],
 	"blanke-game":[
 		{ prop: 'time', info: 'elapsed dt' },
@@ -164,12 +166,26 @@ module.exports.hints = {
 		{ fn: 'destroy' },
 		...prop_gameobject
 	],
+	"blanke-canvas-instance":[
+		{ prop: 'width' },
+		{ prop: 'height' },
+		{ prop: 'auto_clear' },
+		...prop_xyz,
+		{ prop: 'alpha' },
+		{ prop: 'hitArea' },
+		prop_pixi_point('scale'),
+		{ fn: 'destroy' },
+		{ fn: 'clear' },
+		{ fn: 'draw', vars: { obj:'opt' } },
+		{ fn: 'resize', vars: { width:'', height:'' } }
+	],
 	"blanke-scene":[
 		{ fn: 'switch', vars: { name:'' } },
 		{ fn: 'start', info: 'does not end previous scene.</br>recommended: use Scene.switch()', vars: { name: '' } },
 		{ fn: 'end', vars: { name:'' } },
 		{ fn: 'endAll' },
-		{ prop: 'stack', info: 'contains list of currently active scene names' }
+		{ prop: 'stack', info: 'contains list of currently active scene names' },
+		...prop_gameobject
 	],
 	"blanke-sprite-instance":[
 		...prop_xyz,
@@ -178,8 +194,27 @@ module.exports.hints = {
 		{ prop: 'height' },
 		prop_pixi_point('pivot'),
 		{ prop: 'angle', info: 'degrees' },
+		{ prop: 'align', info: 'center/left/right center/top/bottom' },
+		{ prop: 'speed', info: 'animation speed' },
+		{ prop: 'frame', info: 'animation frame index' },
+		{ prop: 'frames' },
+		{ fn: 'reset', info: 'resets all transforms' },
+		{ fn: 'crop', vars: { x:'', y:'', w:'', h:'' }, info: 'returns a new Sprite' },
+		{ fn: 'chop', vars: { w:'', h:'' }, info: 'returns array of Sprites' },
 		{ fn: 'destroy' },
 		...prop_gameobject
+	],
+	"blanke-hitbox-instance":[
+		{ prop: 'type', info: 'circle/rect/poly' },
+		{ prop: 'tag' },
+		{ prop: 'shape' },
+		...prop_xyz,
+		...prop_gameobject,
+		{ fn: 'move', vars: { dx:'', dy:'' } },
+		{ fn: 'position', vars: { x:'', y:'' } },
+		{ fn: 'collisions', info: 'returns array of [Hitbox, {sep_vec: {x, y}}]' },
+		{ fn: 'repel', vars: { hitbox:'' } },
+		{ fn: 'destroy' }
 	],
 	"blanke-map":[
 		{ fn: 'load', vars: { name:'map asset' } }

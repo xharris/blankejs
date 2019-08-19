@@ -8,7 +8,7 @@
 
 <pre>   Copyright (C) 2012 - 2015 by Jim Riecken</pre>
 
-[HowlerJS]() Audio
+[HowlerJS](https://howlerjs.com/) Audio
 
 <pre>   Copyright (c) 2013-2019 James Simpson and GoldFire Studios, Inc.</pre>
 

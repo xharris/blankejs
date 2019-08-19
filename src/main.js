@@ -997,6 +997,9 @@ var app = {
 	}
 }
 
+app.window.webContents.on('open-file', (e, path)=>{
+	//console.log(e)
+})
 app.window.webContents.on("did-finish-load",()=>{
 	process.chdir(nwPATH.join(__dirname,'..'));
 	blanke.elec_ref = elec;
@@ -1007,6 +1010,9 @@ app.window.webContents.on("did-finish-load",()=>{
 			app.newShortcut(app.shortcut_log[name]);
 		}
 	})
+	if (process.argv[1]) {
+		console.log(process.argv);
+	}
 
 	// remove error file
 	nwFS.remove(nwPATH.join(app.getAppDataFolder(),'error.txt'));
@@ -1294,6 +1300,8 @@ app.window.webContents.on("did-finish-load",()=>{
 			
 		// setup welcome screen
 		let el_br = app.createElement("br");
+
+		elec.remote.app.clearRecentDocuments();
 		app.settings.recent_files.forEach((file) => {
 			if (nwFS.pathExistsSync(file) && nwFS.statSync(file).isDirectory()) {
 				let el_file = app.createElement("button", "file");
@@ -1305,6 +1313,8 @@ app.window.webContents.on("did-finish-load",()=>{
 
 				el_recent.appendChild(el_file);
 				el_recent.appendChild(el_br)
+
+				elec.remote.app.addRecentDocument(file);
 			}
 		})
 		

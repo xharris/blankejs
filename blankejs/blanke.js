@@ -39,11 +39,10 @@ var Blanke = (selector, options) => {
         height: 400,
         resolution: 1,
         config_file: 'config.json',
-        fill_parent: false,
-        auto_resize: false,
+        auto_resize: true,     // true: keep original canvas size and scale when game is resized
         ide_mode: false,
         root: null,
-        background_color: null,
+        background_color: 0x000,
         scale_mode: 'nearest',
         round_pixels: true,
         fps: 60,
@@ -56,21 +55,29 @@ var Blanke = (selector, options) => {
     let parent = document.querySelector(selector);
     
     PIXI.utils.skipHello();
+    PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
+    PIXI.settings.ROUND_PIXELS = this.options.round_pixels;
+    //PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[this.options.scale_mode.toUpperCase()];
+    
     app = new PIXI.Application({
         width: this.options.width,
         height: this.options.height,
-        resolution: 1,//window.devicePixelRatio || 1,
-        resizeTo: this.options.fill_parent == true ? parent : null,
-        backgroundColor: this.options.ide_mode ? 0x485358 : this.options.backgroundColor
+        resolution: 1, //window.devicePixelRatio || 1,
+        resizeTo: parent, //this.options.fill_parent == true ? parent : null,
+        backgroundColor: this.options.ide_mode ? 0x485358 : this.options.background_color
     });
-    PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
-    PIXI.settings.ROUND_PIXELS = this.options.round_pixels;
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[this.options.scale_mode.toUpperCase()];
     //parent.innerHTML = "";
     parent.appendChild(app.view);
     // add main container for game
     let game_container = new PIXI.Container();
+    let bg_sprite1 = new PIXI.Sprite(PIXI.Texture.WHITE); // goes behind game_container
+    let bg_sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE); // goes inside game_container
+    app.stage.addChild(bg_sprite1);
+    bg_sprite1.tint = 0x000000;
+    bg_sprite2.tint = app.renderer.backgroundColor;
+    game_container.addChild(bg_sprite2);
     app.stage.addChild(game_container);
+
     // focus/blur events
     this.focused = false;
     app.view.tabIndex=-1;
@@ -83,16 +90,63 @@ var Blanke = (selector, options) => {
     });
     if (this.options.auto_focus) app.view.focus();
     // resize with parent
-    if (this.options.auto_resize) {
+    //if (this.options.auto_resize) {
         app.renderer.resize(parent.clientWidth, parent.clientHeight);
+        let render_rect = new PIXI.Graphics();
+        render_rect.beginFill(0xFFFFFF);
+        render_rect.drawRect(0,0,this.options.width,this.options.height);
+        render_rect.endFill();
+
+        bg_sprite1.width = parent.clientWidth;
+        bg_sprite1.height = parent.clientHeight;
+        if (blanke_ref.options.ide_mode || blanke_ref.options.auto_resize) {
+            bg_sprite2.width = parent.clientWidth;
+            bg_sprite2.height = parent.clientHeight;
+        } else {
+            bg_sprite2.width = this.options.width;
+            bg_sprite2.height = this.options.height;
+        }
+
         window.addEventListener('resize',function(){
             app.renderer.resize(parent.clientWidth, parent.clientHeight);
+            
+            game_container.x = 0;
+            game_container.y = 0;
+            if (!blanke_ref.options.ide_mode && blanke_ref.options.auto_resize) {
+                let scale_x = parent.clientWidth / Game.width;
+                let scale_y = parent.clientHeight / Game.height;
+                let scaling = Math.min(scale_x, scale_y);
+                game_container.scale.set(scaling);
+                if (scale_x > scale_y) 
+                    game_container.x = (parent.clientWidth/2) - (game_container.width/2);
+                else
+                    game_container.y = (parent.clientHeight/2) - (game_container.height/2);
+                
+                bg_sprite1.width = parent.clientWidth;
+                bg_sprite1.height = parent.clientHeight;
+
+                // redraw mask
+                render_rect.clear();
+                render_rect.beginFill(0xFFFFFF);
+                render_rect.drawRect(
+                    game_container.x, game_container.y,
+                    game_container.width, game_container.height
+                );
+                render_rect.endFill();
+
+                game_container.mask = render_rect;
+            } else {
+                game_container.scale.set(1);
+                bg_sprite2.width = parent.clientWidth;
+                bg_sprite2.height = parent.clientHeight;
+                game_container.mask = null;
+            }
             if (app.stage.hitArea) {
                 app.stage.hitArea.width = Game.width;
                 app.stage.hitArea.height = Game.height;
             }
-        });
-    }
+        }, false);
+    //}
 
     const removeSnaps = () => {
         // remove any pause image
@@ -315,13 +369,16 @@ var Blanke = (selector, options) => {
             return '?';
         },
         get width () { 
-            return blanke_ref.options.fill_parent ? app.view.width : blanke_ref.options.width;
+            return (blanke_ref.options.resize || blanke_ref.options.ide_mode) ? app.view.width : blanke_ref.options.width;
         },
         get height () { 
-            return blanke_ref.options.fill_parent ? app.view.height : blanke_ref.options.height; 
+            return (blanke_ref.options.resize || blanke_ref.options.ide_mode) ? app.view.height : blanke_ref.options.height; 
         },
         get background_color () { return app.renderer.backgroundColor; },
-        set background_color (v) { app.renderer.backgroundColor = v; },
+        set background_color (v) { 
+            app.renderer.backgroundColor = v; 
+            bg_sprite2.tint = app.renderer.backgroundColor;
+        },
         paused: false,
         pause: () => {
             Game.paused = true;
