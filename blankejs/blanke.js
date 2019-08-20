@@ -50,6 +50,8 @@ var Blanke = (selector, options) => {
         config: {},
         onLoad: () => {}
     },options || {}); 
+    if (this.options.config.export)
+        this.options = Object.assign(this.options, this.options.config.export);
     // init PIXI
     let app;
     let parent = document.querySelector(selector);
@@ -95,7 +97,7 @@ var Blanke = (selector, options) => {
     });
     if (this.options.auto_focus) app.view.focus();
     // resize renderer with parent
-    if (this.options.config.export.resizable)
+    if (this.options.resizable)
         app.renderer.resize(parent.clientWidth, parent.clientHeight);
     // crop width/height of game (dont show stuff out of bounds)
     let render_rect = new PIXI.Graphics();
@@ -121,7 +123,7 @@ var Blanke = (selector, options) => {
     }
 
     const engineLoaded = () => {
-        if (Game.os != "web" && blanke_ref.options.config.export.resizable) {
+        if (Game.os != "web" && blanke_ref.options.resizable) {
             window.addEventListener('resize',function(){
                 app.renderer.resize(parent.clientWidth, parent.clientHeight);
                 
@@ -169,7 +171,7 @@ var Blanke = (selector, options) => {
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
-            if (this.options.config.export.resizable) {
+            if (this.options.resizable) {
                 app.resizeTo = parent;
             }
         }
@@ -371,7 +373,7 @@ var Blanke = (selector, options) => {
             if (blanke_ref.options.ide_mode) return 'ide';
             let os_list = ['win','mac','linux','android'];
             let browser_list = ['chrome','firefox','safari','opera','opr','msie'];
-            let not_browser = ['seamonkey','chromium']
+            let not_browser = ['seamonkey','chromium','blanke','electron'];
             let u_agent = navigator.userAgent.toLowerCase();
             // web browsers
             for (let a of browser_list) {

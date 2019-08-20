@@ -1,4 +1,5 @@
 {
+	"0.2.4":["small bugfix for game scaling"],
 	"0.2.3":["adds 'web' to Game.os"],
 	"0.2.2":["web export bugfix"],
 	"0.2.1":["fixes post-update relaunch bug"],
