@@ -1226,9 +1226,7 @@ var Blanke = (selector, options) => {
                 this.pivot.y = this.height / this.scale.y;
         }
         destroy () {
-            if (this.options && this.options.no_scene) console.log('oof?')
             if (this.options && this.options.no_scene) return;
-            if (this.options && this.options.no_scene) console.log('oof!')
             this.sprite.destroy();
         }
     }
