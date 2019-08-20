@@ -1116,10 +1116,17 @@ var Blanke = (selector, options) => {
             super();
             this.animated = false;
             this._matrix = new Matrix(1,0,0,1,0,0);
+            let no_name = false;
+            options = options || {};
+            if (typeof name == 'object') {
+                options = name || {};
+                name = null;
+            }
+            if (!name) 
+                no_name = true;
+            this.options = options || {};
             // animated sprite
-            if ((options && options.frames) || (!options && name && name.frames)) {
-                if (!options)
-                    options = name;
+            if (options.frames) {
                 this.animated = true;
                 let asset = Asset.texCrop(options.image || name, options)
                 this.sprite = new PIXI.AnimatedSprite(asset.tex_frames);
@@ -1127,7 +1134,7 @@ var Blanke = (selector, options) => {
                 this.sprite.play();
             }
             // static image
-            else if (typeof name == 'string') {
+            else if (!no_name) {
                 let asset = Asset.get('image',name);
                 this.sprite = new PIXI.Sprite(asset.texture);
             } else {
@@ -1137,9 +1144,10 @@ var Blanke = (selector, options) => {
             this.sprite.x = 0;
             this.sprite.y = 0;
             aliasProps(this, this.sprite, ['x','y','texture','alpha','width','height','pivot','angle','scale','skew']);
-            if (!((options && options.no_scene) || (!options && name && name.no_scene)))
+            if (!options.no_scene) {
                 Scene.addDrawable(this.sprite);
-            Scene.addUpdatable(this);
+                Scene.addUpdatable(this);
+            }
         }
         getRect () {
             return this.sprite.getBounds(true)
@@ -1218,6 +1226,9 @@ var Blanke = (selector, options) => {
                 this.pivot.y = this.height / this.scale.y;
         }
         destroy () {
+            if (this.options && this.options.no_scene) console.log('oof?')
+            if (this.options && this.options.no_scene) return;
+            if (this.options && this.options.no_scene) console.log('oof!')
             this.sprite.destroy();
         }
     }
@@ -2369,7 +2380,6 @@ var Blanke = (selector, options) => {
             this.canvas = new Canvas();
             this.canvas.hitArea = new PIXI.Rectangle(0,0,0,0);
             this.canvas.auto_clear = false;
-            Text.temp_sprite = new Sprite({ no_scene: true });
 
             let props = []; //'alpha','anchor','angle','cursor'];
             //aliasProps(this, this.canvas, props);
