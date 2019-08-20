@@ -39,7 +39,7 @@ var Blanke = (selector, options) => {
         height: 400,
         resolution: 1,
         config_file: 'config.json',
-        auto_resize: true,     // true: keep original canvas size and scale when game is resized
+        scale: true,     // true: keep original canvas size and scale when game is resized
         ide_mode: false,
         root: null,
         background_color: 0x000,
@@ -57,26 +57,32 @@ var Blanke = (selector, options) => {
     PIXI.utils.skipHello();
     PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
     PIXI.settings.ROUND_PIXELS = this.options.round_pixels;
-    //PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[this.options.scale_mode.toUpperCase()];
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[this.options.scale_mode.toUpperCase()];
     
     app = new PIXI.Application({
         width: this.options.width,
         height: this.options.height,
         resolution: 1, //window.devicePixelRatio || 1,
-        resizeTo: parent, //this.options.fill_parent == true ? parent : null,
+        resizeTo: parent,
         backgroundColor: this.options.ide_mode ? 0x485358 : this.options.background_color
     });
     //parent.innerHTML = "";
     parent.appendChild(app.view);
     // add main container for game
+    
     let game_container = new PIXI.Container();
-    let bg_sprite1 = new PIXI.Sprite(PIXI.Texture.WHITE); // goes behind game_container
-    let bg_sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE); // goes inside game_container
-    app.stage.addChild(bg_sprite1);
-    bg_sprite1.tint = 0x000000;
-    bg_sprite2.tint = app.renderer.backgroundColor;
-    game_container.addChild(bg_sprite2);
-    app.stage.addChild(game_container);
+    let bg_sprite1, bg_sprite2;
+    let createBgElements = () => {
+        bg_sprite1 = new PIXI.Sprite(PIXI.Texture.WHITE); // goes behind game_container
+        bg_sprite2 = new PIXI.Sprite(PIXI.Texture.WHITE); // goes inside game_container
+
+        app.stage.addChild(bg_sprite1);
+        bg_sprite1.tint = 0x000000;
+        bg_sprite2.tint = app.renderer.backgroundColor;
+        game_container.addChild(bg_sprite2);
+        app.stage.addChild(game_container);
+    }
+    createBgElements();
 
     // focus/blur events
     this.focused = false;
@@ -89,64 +95,63 @@ var Blanke = (selector, options) => {
         blanke_ref.focused = false;
     });
     if (this.options.auto_focus) app.view.focus();
-    // resize with parent
-    //if (this.options.auto_resize) {
-        app.renderer.resize(parent.clientWidth, parent.clientHeight);
-        let render_rect = new PIXI.Graphics();
-        render_rect.beginFill(0xFFFFFF);
-        render_rect.drawRect(0,0,this.options.width,this.options.height);
-        render_rect.endFill();
+    // resize renderer with parent
+    app.renderer.resize(parent.clientWidth, parent.clientHeight);
+    // crop width/height of game (dont show stuff out of bounds)
+    let render_rect = new PIXI.Graphics();
+    render_rect.beginFill(0xFFFFFF);
+    render_rect.drawRect(0,0,this.options.width,this.options.height);
+    render_rect.endFill();
+    // resize background sprites
+    bg_sprite1.width = parent.clientWidth;
+    bg_sprite1.height = parent.clientHeight;
+    if (blanke_ref.options.ide_mode || blanke_ref.options.scale) {
+        bg_sprite2.width = parent.clientWidth;
+        bg_sprite2.height = parent.clientHeight;
+    } else {
+        bg_sprite2.width = this.options.width;
+        bg_sprite2.height = this.options.height;
+    }
 
-        bg_sprite1.width = parent.clientWidth;
-        bg_sprite1.height = parent.clientHeight;
-        if (blanke_ref.options.ide_mode || blanke_ref.options.auto_resize) {
+    window.addEventListener('resize',function(){
+        app.renderer.resize(parent.clientWidth, parent.clientHeight);
+        
+        game_container.x = 0;
+        game_container.y = 0;
+        if (!blanke_ref.options.ide_mode && blanke_ref.options.scale) {
+            let scale_x = parent.clientWidth / Game.width;
+            let scale_y = parent.clientHeight / Game.height;
+            let scaling = Math.min(scale_x, scale_y);
+            game_container.scale.set(scaling);
+            if (scale_x > scale_y) 
+                game_container.x = (parent.clientWidth/2) - (game_container.width/2);
+            else
+                game_container.y = (parent.clientHeight/2) - (game_container.height/2);
+            
+            bg_sprite1.width = parent.clientWidth;
+            bg_sprite1.height = parent.clientHeight;
+
+            // redraw mask
+            render_rect.clear();
+            render_rect.beginFill(0xFFFFFF);
+            render_rect.drawRect(
+                game_container.x, game_container.y,
+                game_container.width, game_container.height
+            );
+            render_rect.endFill();
+
+            game_container.mask = render_rect;
+        } else {
+            game_container.scale.set(1);
             bg_sprite2.width = parent.clientWidth;
             bg_sprite2.height = parent.clientHeight;
-        } else {
-            bg_sprite2.width = this.options.width;
-            bg_sprite2.height = this.options.height;
+            game_container.mask = null;
         }
-
-        window.addEventListener('resize',function(){
-            app.renderer.resize(parent.clientWidth, parent.clientHeight);
-            
-            game_container.x = 0;
-            game_container.y = 0;
-            if (!blanke_ref.options.ide_mode && blanke_ref.options.auto_resize) {
-                let scale_x = parent.clientWidth / Game.width;
-                let scale_y = parent.clientHeight / Game.height;
-                let scaling = Math.min(scale_x, scale_y);
-                game_container.scale.set(scaling);
-                if (scale_x > scale_y) 
-                    game_container.x = (parent.clientWidth/2) - (game_container.width/2);
-                else
-                    game_container.y = (parent.clientHeight/2) - (game_container.height/2);
-                
-                bg_sprite1.width = parent.clientWidth;
-                bg_sprite1.height = parent.clientHeight;
-
-                // redraw mask
-                render_rect.clear();
-                render_rect.beginFill(0xFFFFFF);
-                render_rect.drawRect(
-                    game_container.x, game_container.y,
-                    game_container.width, game_container.height
-                );
-                render_rect.endFill();
-
-                game_container.mask = render_rect;
-            } else {
-                game_container.scale.set(1);
-                bg_sprite2.width = parent.clientWidth;
-                bg_sprite2.height = parent.clientHeight;
-                game_container.mask = null;
-            }
-            if (app.stage.hitArea) {
-                app.stage.hitArea.width = Game.width;
-                app.stage.hitArea.height = Game.height;
-            }
-        }, false);
-    //}
+        if (app.stage.hitArea) {
+            app.stage.hitArea.width = Game.width;
+            app.stage.hitArea.height = Game.height;
+        }
+    }, false);
 
     const removeSnaps = () => {
         // remove any pause image
@@ -192,6 +197,7 @@ var Blanke = (selector, options) => {
         // default fullscreen shortcut (NOT WORKING)
         Input.set('toggle-fullscreen','Alt Enter');
         empty_sprite = new Sprite({ no_scene : true });
+        Text.temp_sprite = new Sprite({ no_scene : true });
 
         var new_event = new CustomEvent('blankeLoaded', {'detail': { 'Blanke':classes }});
         document.dispatchEvent(new_event);
@@ -2363,7 +2369,7 @@ var Blanke = (selector, options) => {
             this.canvas = new Canvas();
             this.canvas.hitArea = new PIXI.Rectangle(0,0,0,0);
             this.canvas.auto_clear = false;
-            this.temp_sprite = new Sprite({ no_scene: true });
+            Text.temp_sprite = new Sprite({ no_scene: true });
 
             let props = []; //'alpha','anchor','angle','cursor'];
             //aliasProps(this, this.canvas, props);
@@ -2377,7 +2383,7 @@ var Blanke = (selector, options) => {
         destroy () {
             this.pixi_text.destroy();
             this.canvas.destroy();
-            this.temp_sprite.destroy();
+            Text.temp_sprite.destroy();
             if (this._debug) this._debug.destroy();
         }
         set debug (v) {
@@ -2394,23 +2400,26 @@ var Blanke = (selector, options) => {
                 Text.widths[this.hash] = {}
         }
         set onDraw (v) { this.options.onDraw = v; }
-        set text (v) { this._text = '' + v;
+        set text (v) { 
+            this._text = '' + v;
             let width = 0, height = 0;
+            let temp_spr = Text.temp_sprite;
             for (let letter of this._text) {
                 if (!Text.textures[this.hash][letter]) {
                     let pixi_text = new PIXI.Text(letter, this.options);
                     pixi_text.updateText();
-                    this.temp_sprite.texture = pixi_text.texture;
-                    Text.textures[this.hash][letter] = this.temp_sprite.texture.clone();
+                    temp_spr.texture = pixi_text.texture;
+                    Text.textures[this.hash][letter] = temp_spr.texture.clone();
                 }
-                width += this.temp_sprite.width;
-                if (this.temp_sprite.height > height) height = this.temp_sprite.height;
+                width += temp_spr.width;
+                if (temp_spr.height > height) height = temp_spr.height;
             }
             Text.widths[this.hash][this._text] = [width, height];
         }
         get text () { return this._text; }
         update (dt) {
             if (this.destroyed) return;
+            let temp_spr = Text.temp_sprite;
             this.canvas.clear();
             let x = 0, y = 0, o = this.options, str = this._text;
             let minx, miny, maxx, maxy;
@@ -2430,24 +2439,24 @@ var Blanke = (selector, options) => {
             for (let l = 0; l < str.length; l++) {
                 let letter = str.charAt(l);
                 // get cached letter texture
-                this.temp_sprite.reset();
-                this.temp_sprite.texture = Text.textures[this.hash][letter];
+                temp_spr.reset();
+                temp_spr.texture = Text.textures[this.hash][letter];
 
                 // allow user to change letter appearance  
-                let props = {i:l, string:str, letter:letter, x:x, y:y, sprite: this.temp_sprite, iter:this.iter};
+                let props = {i:l, string:str, letter:letter, x:x, y:y, sprite: temp_spr, iter:this.iter};
                 if (o.onDraw) {
                     o.onDraw(props);
                     this.iter++;
                 }
                 
-                this.temp_sprite.x = this.x + props.x;//-(Text.widths[this.hash][str]/2);
-                this.temp_sprite.y = this.y + props.y;
-                this.canvas.draw(this.temp_sprite);
+                temp_spr.x = this.x + props.x;//-(Text.widths[this.hash][str]/2);
+                temp_spr.y = this.y + props.y;
+                this.canvas.draw(temp_spr);
 
                 // set values for next letter
-                x += this.temp_sprite.width;
-                if (this.temp_sprite.height > this.max_height)
-                    this.max_height = this.temp_sprite.height;
+                x += temp_spr.width;
+                if (temp_spr.height > this.max_height)
+                    this.max_height = temp_spr.height;
                 if (o.wordWrap && x > o.wordWrapWidth && (o.breakWords || letter === ' ')) {
                     x = 0;
                     y += this.max_height;
@@ -2456,7 +2465,7 @@ var Blanke = (selector, options) => {
                 }
 
                 // recalculate hitArea
-                let bounds = this.temp_sprite.rect;
+                let bounds = temp_spr.rect;
                 if (minx == null) {
                     minx = bounds.x; miny = bounds.y;
                     maxx = bounds.x+bounds.width; maxy = bounds.y+bounds.height;

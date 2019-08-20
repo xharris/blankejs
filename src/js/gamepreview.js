@@ -247,8 +247,7 @@ class GamePreview {
 			});
 			var game_instance = Blanke("#game",{
 				config: ${JSON.stringify(app.project_settings)},
-				fill_parent: ${this.options.ide_mode},
-				auto_resize: ${this.options.ide_mode},
+				scale: ${this.options.ide_mode || app.project_settings.export.scale},
 				width: ${this.options.size[0]},
 				height: ${this.options.size[1]},
 				${this.options.resizable ? 'resizable: true,' : '' }
@@ -392,11 +391,9 @@ class GamePreview {
 var game_instance;	
 game_instance = Blanke("#game",{
 	config: ${JSON.stringify(app.project_settings)},
-	fill_parent: true,
 	ide_mode: true,
 	${this.options.size == null ?
-	`auto_resize: true,
-	resizable: true,`
+	`scale: true,`
 	:
 	`width: ${this.options.size[0]},
 	height: ${this.options.size[1]},`

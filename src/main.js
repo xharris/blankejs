@@ -387,6 +387,7 @@ var app = {
 						width: proj_set.size[0],
 						height: proj_set.size[1],
 						useContentSize: true,
+						resizable: app.project_settings.export.resizable,
 						webPreferences: {
 							nodeIntegration: true
 						}

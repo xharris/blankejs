@@ -46,10 +46,10 @@ class Exporter extends Editor {
 		if (!app.project_settings.export) app.project_settings.export = {};
 		ifndef_obj(app.project_settings.export, {
 			name: nwPATH.basename(app.project_path),
-			remove_unused: true,
 			web_autoplay: false,
 			frameless: false,
 			minify: true,
+			scale: true,
 			resizable: false
 		});
 
@@ -57,10 +57,11 @@ class Exporter extends Editor {
 		let form_options = [
 			['general'],
 			['name', 'text', {'default':app.project_settings.export.name}],
-			//['remove_unused','checkbox',{'default':app.project_settings.export.remove_unused,label:"remove unused classes"}],
 			['web'],
 			//['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
-			...(['minify','frameless','resizable'].map((o)=>[o,'checkbox',{'default':app.project_settings.export[o]}]))
+			['minify','checkbox',{'default':app.project_settings.export.minify}],
+			['window sizing'],
+			...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{'default':app.project_settings.export[o]}]))
 		];
 		this.el_export_form = new BlankeForm(form_options);
 		this.el_export_form.container.classList.add("dark");
@@ -82,6 +83,12 @@ class Exporter extends Editor {
 		for (let path of scripts) {
 			user_code += nwFS.readFileSync(path,'utf-8') + '\n';
 		}
+		// get copy of other engine settings
+		let new_config = JSON.parse(JSON.stringify(app.project_settings));
+		for (let k in new_config.export) {
+			new_config[k] = new_config.export[k];
+		}
+
 		app.minifyEngine((code)=>{
 			nwFS.writeFileSync(js_path,code,'utf-8');
 			let str_html = GamePreview.getHTML(
@@ -105,7 +112,7 @@ nwPATH.basename(js_path));
 			wrapper: (code) => `
 ${code}
 Blanke.addGame('${app.project_settings.export.name}',{
-	config: ${JSON.stringify(app.project_settings)},
+	config: ${JSON.stringify(new_config)},
 	width: ${app.project_settings.size[0]},
 	height: ${app.project_settings.size[1]},
 	assets: [${game.getAssetStr()}],
@@ -242,8 +249,8 @@ elec.app.on('ready', function(){
     let main_window = new elec.BrowserWindow({
         width: ${app.project_settings.size[0]},
 		height: ${app.project_settings.size[1]},
-		frame: ${!app.project_settings.frameless},
-		resizable: ${!app.project_settings.resizable}
+		frame: ${!app.project_settings.export.frameless},
+		resizable: ${app.project_settings.export.resizable}
     })
 	if (main_window.setMenuBarVisibility)
 		main_window.setMenuBarVisibility(false);
