@@ -96,8 +96,9 @@ class Exporter extends Editor {
 <div id="game"></div>
 </body>
 <script>
+var game_instance;
 window.addEventListener('load',()=>{
-	Blanke.run('#game','${app.project_settings.export.name}');
+	game_instance = Blanke.run('#game','${app.project_settings.export.name}');
 })
 </script>`,
 false,
@@ -239,9 +240,11 @@ Blanke.addGame('${app.project_settings.export.name}',{
 			.then(() => {
 				// move assets
 				nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
+				let extra_assets = ['04B_03.ttf','gamecontrollerdb.txt','game.css','config.json'];
+				for (let a of extra_assets)
+					nwFS.copySync(nwPATH.join(app.project_path, a), nwPATH.join(temp_dir, a));
+
 				if (target_os != 'web') {
-					for (let a of ['04B_03.ttf','gamecontrollerdb.txt','game.css','config.json'])
-						nwFS.copySync(nwPATH.join(app.project_path, a), nwPATH.join(temp_dir, a));
 					// entry.js
 					nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
 const elec = require('electron');
