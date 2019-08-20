@@ -1,4 +1,5 @@
 {
+	"0.2.2":["web export bugfix"],
 	"0.2.1":["fixes post-update relaunch bug"],
 	"0.2":["uses PIXI.js now"],
 	"0.1":["removed debugging code"],
