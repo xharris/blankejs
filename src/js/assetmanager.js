@@ -65,7 +65,6 @@ class AssetManager extends Editor {
 	addCategory (name) {
 		if (this.categories[name]) {
 			let el_category = this.categories[name];
-			el_category.el_count.innerHTML = el_category.el_files.childElementCount;
 
 			blanke.sortChildren(el_category.el_files, function(a,b){
 				if (a.innerHTML.toLowerCase() < b.innerHTML.toLowerCase()) return -1;
@@ -127,7 +126,9 @@ class AssetManager extends Editor {
 			this.file_elements[path] = el_file_row;
 			let asset_type = app.findAssetType(path);
 			this.addCategory(asset_type);
-			this.categories[asset_type].el_files.appendChild(el_file_row);
+			let el_category = this.categories[asset_type];
+			el_category.el_files.appendChild(el_file_row);
+			el_category.el_count.innerHTML = el_category.el_files.childElementCount;
 		}
 
 		if (!this.file_paths[file_type])
@@ -156,7 +157,12 @@ class AssetManager extends Editor {
 				el_preview_container.appendChild(el_image_size);
 			}
 			el_image.src = "file://"+path;
-		} else {
+		} 
+		/*
+		else if (file_type == 'audio') {
+
+		}*/
+		else {
 			el_preview_container.style.display = "none";
 		}
 

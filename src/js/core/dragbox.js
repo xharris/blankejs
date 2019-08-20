@@ -97,18 +97,22 @@ class DragBox {
 	}
 
 	focus () {
-		DragBox.focus(this.title);
+		let val = DragBox.focus(this.title);
+		if (val !== false && val !== true) 
+			this.history_id = val;
 	}
 
 	// focus a dragbox with a certain title if it exists
-	static focus (title) {
+	static focus (title, no_history) {
 		DragBox.showAll();
 		var handles = app.getElements('.drag-handle');
 		for (var h = 0; h < handles.length; h++) {
 			if (handles[h].innerHTML == title) {
 				handles[h].click();
-				app.addHistory(title);
-				return true;
+				if (!no_history)
+					return app.addHistory(title);
+				else
+					return true;
 			}
 		}
 		return false;

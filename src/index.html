@@ -3,9 +3,8 @@
 	<head>
 		<script type="text/javascript">
 			var DEV_MODE = false;
-			if (DEV_MODE) require('nw.gui').Window.get().showDevTools();
 		</script>
-
+		<!-- meta http-equiv="Content-Security-Policy" content="default-src 'self'" -->
 		<!-- Material Design Icons -->
 		<link rel="stylesheet" type="text/css" media="all" href="includes/mdi/css/materialdesignicons.min.css"/>
 
@@ -23,7 +22,7 @@
 		<script src="includes/codemirror/lib/codemirror.js"></script>
 		<link rel="stylesheet" href="includes/codemirror/lib/codemirror.css">
 		<link rel="stylesheet" href="includes/codemirror/theme/material.css">
-		<script src="includes/codemirror/mode/lua/lua.js"></script>
+		<script src="includes/codemirror/mode/javascript/javascript.js"></script>
 
 		<script src="includes/codemirror/addon/dialog/dialog.js"></script>
 		<link rel="stylesheet" href="includes/codemirror/addon/dialog/dialog.css">
@@ -40,29 +39,32 @@
 
 		<script src="includes/codemirror/addon/mode/overlay.js"></script>
 
-		<!-- PixiJS -->
-		<script src="includes/pixi.min.js"></script>
-		<script src="includes/pixi-display.js"></script>
-		<script src="includes/pixi-tilemap.js"></script>
-
 		<!-- IDE core -->
 		<script src="js/core/tab.js"></script>
 		<script src="js/core/dragbox.js"></script>
+		<script src="js/core/sidewindow.js"></script>
 		<script src="js/core/fibwindow.js"></script>
 		<script src="js/core/editor.js"></script>
 
 		<!-- IDE features -->
-		<script src="js/plugin.js"></script>
+		<!-- script src="js/plugin.js"></script -->
+		<script src="js/code.js"></script>
+		<script src="js/gamepreview.js"></script>
+
+		<!-- Scene Editor -->
+		<script src="includes/pixi.min.js"></script>
+		<script src="includes/pixi-display.js"></script>
+		<script src="includes/pixi-tilemap.js"></script>
+		<script src="js/sceneeditor.js"></script>
+		
 		<script src="js/docview.js"></script>
 		<script src="js/exporter.js"></script>
 		<script src="js/console.js"></script>
-		<script src="js/code.js"></script>
-		<script src="js/mapeditor.js"></script>
-		<script src="js/sceneeditor.js"></script>
 		<script src="js/spritesheet.js"></script>
 		<script src="js/assetmanager.js"></script>
 		<script src="js/find.js"></script>
 		<script src="js/settings.js"></script>
+		<script src="js/plugins.js"></script>
 		<script src="js/testview.js"></script>
 
 		<link rel="stylesheet/less" type="text/css" href="entry.less"/> 
@@ -70,7 +72,10 @@
 			var less = {
 				globalVars: {
 					"ide-accent": "#5ad9a4",
+					"ide-bold": "#4fc3f7",
+					"ide-accent-2": "green",
 					"theme-string": "#97e7c6",
+					"theme-string-dark": "#1a744f",
 					"theme-list-active-bg": "#233e2e",
 					"theme-text-sub": "#e6ee9c",
 					"theme-text-optional": "#b2dfdb"
@@ -80,7 +85,7 @@
 		</script>
 		<script src="includes/less.min.js"></script>
 		<script src="main.js"></script>
-
+		
 	</head>
 	<body>
 
@@ -89,26 +94,30 @@
 			<input id="search-input" type="text" placeholder="Search" tabindex="-1"/>
 
 			<div class="tool-container">
-				<button id="btn-play" onclick="app.play()" title="run game"><object class="blanke-icon" data="icons/run.svg" type="image/svg+xml"></object></button>
-				<button id="btn-export" onclick="new Exporter()" title="export game"><object class="blanke-icon" data="icons/package.svg" type="image/svg+xml"></object></button>
-				<button onclick="app.toggleWindowVis()" title="show/hide floating windows">
-					<object class="blanke-icon" data="icons/window_visibility.svg" type="image/svg+xml"></object>
+				<button id="btn-play" title="run game"><object class="blanke-icon" data="icons/run.svg" type="image/svg+xml">P</object></button>
+				<button id="btn-export" title="export game"><object class="blanke-icon" data="icons/package.svg" type="image/svg+xml">E</object></button>
+				<button id="btn-winvis" title="show/hide floating windows">
+					<object class="blanke-icon" data="icons/window_visibility.svg" type="image/svg+xml">V</object>
 					<p id="dragbox-badge" class="btn-badge"></p>
 				</button>
-				<button onclick="app.toggleSplit()" title="toggle window splitting">
-					<object class="blanke-icon" data="icons/window_split.svg" type="image/svg+xml"></object>
+				<button id="btn-winsplit" title="toggle window splitting">
+					<object class="blanke-icon" data="icons/window_split.svg" type="image/svg+xml">W</object>
 					<p id="fibwindow-badge" class="btn-badge"></p>
 				</button>
-				<button onclick="new Docview()" title="view documentation"><object class="blanke-icon" data="icons/notebook.svg" type="image/svg+xml"></object></button>
-				<button onclick="new Settings()" title="IDE/Game settings"><object class="blanke-icon" data="icons/wrench.svg" type="image/svg+xml"></object></button>
+				<button id="btn-docs" title="view documentation"><object class="blanke-icon" data="icons/notebook.svg" type="image/svg+xml">D</object></button>
+				<button id="btn-plugins" title="view plugins"><object class="blanke-icon" data="icons/plugin.svg" type="image/svg+xml">P</object></button>
+				<button id="btn-settings" title="IDE/Game settings"><object class="blanke-icon" data="icons/wrench.svg" type="image/svg+xml">S</object></button>
 				<!-- button id="btn-test" onclick="blanke.toast('do stuffs please')"><i class="mdi mdi-test-tube"></i></button -->
 			</div>
 		</div>
 
+		<!-- makes it easier to resize using top border of window -->
+		<div id="window-padding"></div>
+
 		<div id="window-buttons">
-			<button id="btn-close" class="ui-button" onclick="app.close()"><i class="mdi mdi-window-close"></i></button>
-			<button id="btn-maximze" class="ui-button" onclick="app.maximize()"><i class="mdi mdi-window-maximize"></i></button>
-			<button id="btn-minimize" class="ui-button" onclick="app.minimize()"><i class="mdi mdi-window-minimize"></i></button>	
+			<button id="btn-close" class="ui-button"><i class="mdi mdi-window-close"></i></button>
+			<button id="btn-maximize" class="ui-button"><i class="mdi mdi-window-maximize"></i></button>
+			<button id="btn-minimize" class="ui-button"><i class="mdi mdi-window-minimize"></i></button>	
 			<button id="btn-update" class="ui-button hidden"><i class="mdi mdi-update"></i></button>
 		</div>
 
@@ -116,12 +125,12 @@
 			<div class="title">BlankE</div>
 			<div class="left-container">
 				<div class="header-buttons">
-					<button class="new">
+					<button id="btn-new">
 						<i class="mdi mdi-plus"></i>
 						<p class="label">New project</p>
 					</button>
 					</br>
-					<button class="open">
+					<button id="btn-open">
 						<i class="mdi mdi-folder-open"></i>
 						<p class="label">Open project</p>
 					</button>
@@ -136,6 +145,11 @@
 		
 		<div id="bg-workspace"></div>
 		<div id="workspace"></div>
+		
+		<div id="sidewindow-container">
+			<div id="vscroll"></div>
+		</div>
+		<div id="game-container"></div>
 		
 		<div id="drop-zone">
 			<p>Drop files into your project!</p>

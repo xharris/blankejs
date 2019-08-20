@@ -1,0 +1,70 @@
+{
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns",
+    "first_scene": "ScenePlay",
+    "size": [
+        800,
+        600
+    ],
+    "spritesheet_prvw": {
+        "image/blue_robot.png": {
+            "name": "run",
+            "offset": [
+                38,
+                0
+            ],
+            "speed": 0.7,
+            "frame_size": [
+                38,
+                33
+            ],
+            "frames": 6,
+            "selected_frames": [
+                1,
+                1
+            ],
+            "columns": 8,
+            "border": [
+                0,
+                0
+            ],
+            "image": "image/blue_robot.png"
+        },
+        "image/balls.png": {
+            "name": "ball",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame_size": [
+                128,
+                128
+            ],
+            "frames": 5,
+            "selected_frames": [
+                1,
+                1
+            ],
+            "columns": 5,
+            "border": [
+                0,
+                0
+            ],
+            "image": "image/balls.png"
+        }
+    },
+    "enabled_plugins": {
+        "blanke-net.js": false,
+        "doing.js": false,
+        "socket.io.js": false,
+        "goober.js": false
+    },
+    "export": {
+        "name": "dodgem",
+        "remove_unused": true,
+        "web_autoplay": false,
+        "minify": true
+    },
+    "scene": {}
+}

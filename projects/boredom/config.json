@@ -221,8 +221,14 @@
         "Map",
         "Mask",
         "Net",
+        "Physics",
         "Save",
         "Steam",
         "UI"
+    ],
+    "first_scene": null,
+    "size": [
+        800,
+        600
     ]
 }

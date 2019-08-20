@@ -1,16 +1,12 @@
 class Console extends Editor {
-	constructor (...args) {
-		super(...args);
+	constructor (static_box, parent) {
+		super();
 
-		this.setupDragbox();
-		this.removeHistory()
-		this.container.width = 460;
-		this.container.height = 130;
-
-		var this_ref = this;
-
+		this.removeHistory();
 		this.pin = false;
+		this.duplicate_count = 1;
 
+		/*
 		this.process = [...args][0];
 		if (this.process) {
 			this.process.stdout.on('data', function(data){
@@ -25,10 +21,28 @@ class Console extends Editor {
 				}
 			});
 		}
+		*/
 
 		this.el_log = app.createElement("div", "log");
+		this.el_lines = app.createElement("div", "lines");
+		this.last_line = '';
+		this.str_console = '';
+		this.last_dupe_line = '';
+		this.auto_scrolling = true;
+
+		// auto-scroll toggle
+		this.el_autoscroll = app.createIconButton("scroll","toggle auto-scroll");
+		this.el_autoscroll.addEventListener('click',()=>{
+			this.auto_scrolling = !this.auto_scrolling;
+		})
+		//this.el_log.appendChild(this.el_autoscroll);
+		this.el_log.appendChild(this.el_lines);
+
 		this.appendChild(this.el_log);
-		this.el_log.focus();
+	}
+
+	appendTo (el) {
+		el.appendChild(this.el_log);
 	}
 
 	onMenuClick (e) {
@@ -40,83 +54,71 @@ class Console extends Editor {
 		}]);
 	}
 
+	toggleVisibility () {
+		this.el_log.classList.toggle('hidden');
+	}
+
+	isVisible () {
+		return !this.el_log.classList.contains('hidden');
+	}
+
 	processClosed () {
 		if (!this.had_error && !this.pin)
 			this.close();
 	}
 
-	log (str) {
-		let re_duplicate = /(.*)(\(\d+\)?)/g;
+	clear () {
+		this.el_lines.innerHTML = '';
+		blanke.removeChildClass(this.el_log, 'error');
+		// blanke.removeChildClass(this.el_log, 'separator');
+		this.str_console = '';
+		this.last_line = '';
+		this.last_dupe_line = '';
+		this.duplicate_count = 1;
+		this.had_error = false;
+	}
 
-		str = JSON.stringify(str.trim()).slice(1,-1);
-		let lines = str.split("\\n").map(line => JSON.parse("{\"str\":\""+line+"\"}").str)
+	parse (line) {
+		// one-liner limits object depth
+		return line.map(l => typeof l == 'object' ? nwUTIL.inspect(l, { compact: true }) : l);
+	}
 
-		for (let line of lines) {
-			if (line.match(re_duplicate) && this.el_log.childElementCount > 0) {
-				this.el_log.lastElementChild.innerHTML = duplicate[0];
-			} else {
-				var el_line = app.createElement("p", "line");
-				el_line.innerHTML = line;
-				this.el_log.appendChild(el_line);
-			}
+	log (...args) {
+		// parse args
+		let str = this.parse(args); 
+		if (this.last_line == str) {
+			this.duplicate_count++;
+			if (this.last_dupe_line !== '')
+				this.str_console = this.str_console.slice(0, -this.last_dupe_line.length);	
+			else 
+				this.str_console = this.str_console.slice(0, -(this.last_line+'\n').length);
+			this.last_dupe_line = `${str} (${this.duplicate_count})\n`;
+			this.str_console += this.last_dupe_line; 
+		} else {
+			this.duplicate_count = 1;
+			this.last_dupe_line = '';
+			this.str_console += `${str}\n`;
 		}
+		this.last_line = str;
+		if (this.isVisible()) this.el_lines.innerHTML = this.str_console;
 
-		this.el_log.scrollTop = this.el_log.scrollHeight;
+		if (this.auto_scrolling) {
+			blanke.cooldownFn("console.log", 100, ()=>{	
+				this.el_log.scrollTop = this.el_log.scrollHeight;
+			});
+		}
 	}
 
 	err (str) {
 		if (!this.had_error) {
 			this.had_error = true;
-			console.log(str);
-
-			let re_error = /Error:\s.*[^\\\/Blanke\.lua]?[\w\\\/\.]+\/(\w+\.lua):(\d+):\s(.+)\s*stack traceback:\s+(.*)/g;
-			let re_load_error = /:\s(.*):(\d+):\s(.*)/g
-			let re_shader_error = /.*pixel shader code:\s*([\s\S]*)stack/g
-			let re_shader_message = /(?:Line\s(\d+):\sERROR:\s*(.*)\s*(?=Line|ERROR))/g
-
-			let error_parts;
-
-			// pixel shader error
-			if (str.includes("pixel shader code")) {
-				let match,
-				message = '',
-				header = 'Shader error<br>';
-
-				while (match = re_shader_message.exec(str)) {
-					if (!match[2].includes('terminated'))
-						message += "Line "+(match[1]-22)+": "+match[2]+"<br>";
-				}
-
-				str = header+message;
-			}
-
-			// regular error
-			else if (error_parts = re_error.exec(str)) {
-				let filename = nwPATH.basename(error_parts[1])
-				let line = error_parts[2]
-				let message = error_parts[3]
-				let traceback = error_parts[4]
-
-				if (filename.includes('Blanke.lua')) {
-					// error after game is loaded
-					let message_parts = re_load_error.exec(message)
-
-					if (message_parts) {
-						filename = message_parts[1]
-						line = message_parts[2]
-						message = message_parts[3]
-					}
-				}
-				// error during runtime
-				str = filename+" ("+line+"): "+message	
-			}
 
 			var el_line = app.createElement("p", "error");
 			el_line.innerHTML = str;
 			this.el_log.appendChild(el_line);
-			this.el_log.appendChild(app.createElement("br"));
+			// this.el_log.appendChild(app.createElement("br","separator"));
 
-			this.el_log.scrollTop = this.el_log.scrollHeight
+			el_line.scrollIntoView({ behavior: 'auto' , block: 'nearest', inline: 'nearest'});
 		}
 	}
 }
@@ -132,26 +134,16 @@ document.addEventListener("openProject", function(e){
 
 
 	// shortcut: run game
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-		key: "Ctrl+B", active: function() {
+	app.newShortcut({
+		key: "CommandOrControl+B", active: function() {
 			app.play();
 		}
-	}));
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-		key: "Command+B", active: function() {
-			app.play();
-		}
-	}));
+	});
 
 	// shortcut: run recording
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-		key: "Ctrl+Shift+B", active: function() {
+	app.newShortcut({
+		key: "CommandOrControl+Shift+B", active: function() {
 			app.play('--play-record');
 		}
-	}));
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-		key: "Command+Shift+B", active: function() {
-			app.play('--play-record');
-		}
-	}));
+	});
 });

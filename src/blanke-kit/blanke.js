@@ -10,7 +10,7 @@ function ifndef_obj(obj, defaults) {
     if (obj === undefined) obj = {};
     for (let d in defaults) {
         if (obj[d] === undefined) obj[d] = defaults[d];
-    }
+    } 
     return obj;
 }
 
@@ -18,7 +18,7 @@ function guid() {
   function s4() {
     return Math.floor((1 + Math.random()) * 0x10000)
     .toString(16)
-    .substring(1);
+    .substring(1 );
 }
 return s4() + s4();
 }
@@ -350,7 +350,10 @@ class BlankeForm {
                 default = null
             }
             - number {
-                same as text
+                ...same as text,
+                step,
+                min,
+                max
             }
     */
     constructor (inputs, dark) {
@@ -424,7 +427,10 @@ class BlankeForm {
             for (var i = 0; i < input_count; i++) {
                 let el_text = blanke.createElement("input","form-text");
                 // set starting val
-                el_text.value = ifndef(extra_args.default, input_type == "text" ? "" : "0");
+                if (Array.isArray(extra_args.default)) {
+                    el_text.value = ifndef(extra_args.default[i], input_type == "text" ? "" : "0");
+                } else
+                    el_text.value = ifndef(extra_args.default, input_type == "text" ? "" : "0");
                 // set input type
                 el_text.type = input_type;
 
@@ -435,7 +441,7 @@ class BlankeForm {
                     }
                 }
 
-                this.prepareInput(el_text, input_name);
+                this.prepareInput(el_text, input_name, i);
 
                 el_text.setAttribute('data-index',i);
                 el_inputs_container.appendChild(el_text);
@@ -443,7 +449,7 @@ class BlankeForm {
                 // add separator if necessary
                 if (i < input_count - 1) {
                     let el_sep = blanke.createElement("p","form-separator");
-                    el_sep.innerHTML = extra_args.separator;
+                    el_sep.innerHTML = extra_args.separator || 'x';
                     el_inputs_container.appendChild(el_sep);
                 }
             }
@@ -508,11 +514,12 @@ class BlankeForm {
 
             // select folder dialog
             el_file_btn.addEventListener('click',(e)=>{
-                blanke.chooseFile(
-                    (input_type == 'directory')?'nwdirectory':'',
-                    function(file_path){
-                        el_input.value = file_path;
-                        el_input.dispatchEvent(new Event('input',{ bubbles: true }));
+                blanke.chooseFile({
+                    properties:[(input_type == 'directory' ? 'openDirectory' : 'openFile')]
+                },
+                function(file_path){
+                    el_input.value = file_path;
+                    el_input.dispatchEvent(new Event('input',{ bubbles: true }));
                 });
             });
         }
@@ -535,10 +542,15 @@ class BlankeForm {
     }
 
     // "private" method
-    prepareInput (element, name) {
+    prepareInput (element, name, index) {
         element.name_ref = name;
         this.input_ref[name].push(element);
-        this.input_values[name].push(0);
+        let input_type = this.input_types[name];
+        let _default = input_type == "text" ? "" : "0";
+        if (this.input_args[name].default)
+            this.input_values[name][index || 0] = (index != null ? this.input_args[name].default[index] : this.input_args[name].default);
+        else
+            this.input_values[name][index || 0] = (input_type == "text" ? "" : 0);
     }
 
     getInput (input_name) {
@@ -564,6 +576,7 @@ class BlankeForm {
     */
     onChange (input_name, func) {
         let this_ref = this;
+        if (!this.input_ref[input_name]) return;
         for (var input of this.input_ref[input_name]) {
             let event_type = 'input';
 
@@ -645,7 +658,82 @@ class BlankeForm {
     }
 }
 
+class Toast {
+    constructor (text, duration, die_cb) {
+        if (!Toast.el_toasts) {
+            Toast.el_toasts = blanke.createElement('div','blankejs-toasts');
+            document.body.appendChild(Toast.el_toasts);
+        }
+        this.el_new_toast = blanke.createElement("div","toast-container");
+        this.el_content = blanke.createElement("p","content");
+        this.el_icon = blanke.createElement("object")
+        this.el_icon.classList.add('blanke-icon');
+        this.el_icon.type = 'image/svg+xml';
+        this.el_br = blanke.createElement("br");
+
+        this.el_icon.addEventListener('click',() => { this.die(0); })
+
+        this.el_new_toast.appendChild(this.el_content);
+        this.el_new_toast.appendChild(this.el_icon);
+
+        Toast.el_toasts.appendChild(this.el_new_toast);
+        Toast.el_toasts.appendChild(this.el_br);
+
+        // animate toast appearance
+        Array.from(Toast.el_toasts.children).forEach(function(el) {
+            let animation = [
+                { transform: 'translateY('+el.offsetHeight+'px)' },
+                { transform: 'translateY(0px)' }
+            ];
+            el.animate(animation, {
+                duration: 200,
+                iterations: 1,
+                easing: 'ease-out'
+            });
+        });
+
+        // duration
+        if (duration == null || duration > 0)
+            this.die(duration, die_cb);
+
+        this.style = 'none';
+        this.text = text;
+    }
+    set text (v) {
+        this.el_content.innerHTML = v;
+    }
+    // go away after t ms
+    die (t, cb) {
+        setTimeout(()=>{
+            let animation = this.el_new_toast.animate([{ opacity:1 }, { opacity:0 }], { duration:200, iterations:1, easing:'ease-in'})
+            animation.pause();
+            animation.onfinish = () => {
+                blanke.destroyElement(this.el_new_toast);
+                blanke.destroyElement(this.el_br);
+            }
+            animation.play();
+            if (cb) cb();
+        }, t || 4000);
+    }
+    set icon (v) {
+        this.el_icon.style.display = 'inline-block';
+        this.el_icon.data = `icons/${v}.svg`;
+    }
+    set style (v) {
+        let styles = {
+            'none':'212121',
+            'wait':'fff176',
+            'good':'8BC34A',
+            'bad':'f44336'
+        }
+        if (styles[v]) 
+            this.el_icon.style.backgroundColor = '#'+styles[v];
+    }
+}
+Toast.el_toasts = null;
+
 var blanke = {
+    elec_ref: null,
     _windows: {},
 
     getElement: function(sel) {
@@ -659,7 +747,7 @@ var blanke = {
     createElement: function(el_type, el_class) {
         var ret_el = document.createElement(el_type);
         if (Array.isArray(el_class)) ret_el.classList.add(...el_class);
-        else ret_el.classList.add(el_class);
+        else if (el_class) ret_el.classList.add(el_class);
         return ret_el;
     },
 
@@ -672,6 +760,13 @@ var blanke = {
     destroyElement: function(element) {    
         if (element.parentNode) 
             element.parentNode.removeChild(element);
+    },
+
+    removeChildClass: function(element, class_name) {   
+		for (let c = element.children.length -1; c >= 0; c--) {
+			if (element.children[c].classList.contains(class_name))
+			    element.removeChild(element.children[c]);
+		}
     },
 
     sortChildren: function(element, fn_compare) {
@@ -691,7 +786,7 @@ var blanke = {
             }
         
         // reset the timer if necessary
-        if (overwrite_timer || blanke.cooldown_keys.timer == null) {
+        if (overwrite_timer || blanke.cooldown_keys[name].timer == null) {
             clearTimeout(blanke.cooldown_keys[name].timer);
             blanke.cooldown_keys[name].timer = setTimeout(function(){
                 blanke.cooldown_keys[name].func();
@@ -704,67 +799,23 @@ var blanke = {
 
     el_toasts: undefined,
     toast: function(text, duration) {
-        if (!blanke.el_toasts) {
-            blanke.el_toasts = blanke.createElement('div','blankejs-toasts');
-            document.body.appendChild(blanke.el_toasts);
-        }
-
-        let el_new_toast = blanke.createElement("div","toast-container");
-        let el_content = blanke.createElement("p","content");
-        let el_br = blanke.createElement("br");
-        el_content.innerHTML = text;
-        el_new_toast.appendChild(el_content);
-        blanke.el_toasts.appendChild(el_new_toast);
-        blanke.el_toasts.appendChild(el_br);
-
-        // animation
-        Array.from(blanke.el_toasts.children).forEach(function(el) {
-            let animation = [
-                { transform: 'translateY('+el.offsetHeight+'px)' },
-                { transform: 'translateY(0px)' }
-            ];
-            el.animate(animation, {
-                duration: 200,
-                iterations: 1,
-                easing: 'ease-out'
-            });
-        });
-
-        setTimeout(function(){
-            let animation = el_new_toast.animate([{ opacity:1 }, { opacity:0 }], { duration:200, iterations:1, easing:'ease-in'})
-            animation.pause();
-            animation.onfinish = function(){
-                blanke.destroyElement(el_new_toast);
-                blanke.destroyElement(el_br);
-            }
-            animation.play();
-        }, duration || 4000);
+        return new Toast(text, duration)
     },
     
     places: function(i, p) {
         return Math.floor(i * (Math.pow(10,p))) / (Math.pow(10,p));
     },
 
-    chooseFile: function(type, onChange, filename='', multiple=false) {
-        var chooser = document.querySelector("#_blankeFileDialog");
-        if (chooser != null) {
-           chooser.remove();
-        }
-        chooser = document.createElement("input");
-        chooser.id = "#_blankeFileDialog";
-        chooser.style.display = "none";
-        chooser.type = "file";
-        
-        if (type != '') chooser.setAttribute(type, filename)
-        if (multiple) chooser.setAttribute('multiple','');
-
-        document.body.appendChild(chooser);
-        
-        chooser.addEventListener("change", function(evt) {
-            if (onChange) onChange(this.value);
-        }, false);
-
-        chooser.click();
+    chooseFile: function(options, cb) { //type, onChange, filename='', multiple=false) {
+        if (!blanke.elec_ref) return;
+        blanke.elec_ref.remote.dialog.showOpenDialog(options,(files)=>{
+            if (!files)
+                return;
+            if (files.length == 1)
+                cb(files[0]);
+            else
+                cb(files);
+        })
     },
 
     // possible choices: yes, no (MORE TO COME LATER)
@@ -816,133 +867,6 @@ var blanke = {
                 blanke.modal_shown = false;
                 blanke.getElement("body > .ui-modal[data-uuid='"+uuid+"']").remove();
             };
-        });
-    },
-
-    // selector_parent: selector for where to put the form inputs
-    // input_info: inputs template (type, default, ...)
-    // user_val: the curret values of the inputs. can be blank object {}
-    // fn_onChange: called when an input value changes. args: type, name, value, subcategory
-    createForm: function(selector_parent, input_info, user_val, fn_onChange, grouped=false) {
-        // populate input section with inputs
-        var html_inputs = '';
-
-        for (var subcat in input_info) {
-            html_inputs += "<div class='subcategory'><p class='title'>"+subcat.replace("_"," ")+"</p>";
-
-            // get smaller group (for plugins atm)
-            if (grouped) {
-                user_val = user_val[subcat];
-            }
-
-            for (var i = 0; i < input_info[subcat].length; i++) {
-                var input = input_info[subcat][i];
-
-                if (!(input.name in user_val)) {
-                    user_val[input.name] = input.default;
-                }
-
-                var common_attr = ' data-subcategory="'+subcat+'" data-name="'+input.name+'" data-type="'+input.type+'" title="'+ifndef(input.tooltip, "")+'"';
-                
-                // remove [hidden_name]
-                var display_name = input.name.replace(/\[([^\]]+)\]/g,'');
-
-                if (input.type === "bool") {
-                    html_inputs += 
-                        '<div class="ui-checkbox-label">'+
-                            '<label>'+display_name+'</label>'+
-                            '<input class="settings-input" type="checkbox" '+common_attr+' '+(user_val[input.name] == "true" || user_val[input.name] == true ? 'checked' : '')+'>'+
-                            '<i class="mdi mdi-check"></i>'+
-                        '</div>';
-                }
-                if (input.type === "number") {
-                    html_inputs += 
-                        '<div class="ui-input-group">'+
-                            '<label>'+display_name+'</label>'+
-                            '<input class="ui-input" '+common_attr+' type="number" min="'+input.min+'" max="'+input.max+'" step="'+input.step+'" value="'+user_val[input.name]+'">'+
-                        '</div>';
-                }
-                if (input.type === "select") {
-                    var options = '';
-                    for (var o = 0; o < input.options.length; o++) {
-                        options += "<option value='"+input.options[o]+"' "+(input.options[o] === user_val[input.name] ? 'selected' : '')+">"+input.options[o]+"</option>";
-                    }
-                    html_inputs +=
-                        '<div class="ui-input-group">'+
-                            '<label>'+display_name+'</label>'+
-                            '<select class="ui-select" '+common_attr+'>'+
-                                options+
-                            '</select>'+
-                        '</div>';
-                }
-                if (input.type === "file") {
-                    html_inputs +=
-                        '<div class="ui-file">'+
-                            '<label>'+display_name+'</label>'+
-                            '<button class="ui-button-rect" onclick="'+
-                                escapeHtml('chooseFile(\'\',function(path){$(\'input[data-name=\"'+input.name+'\"\').val(path[0]).trigger(\'change\');})')+
-                            '">Choose file</button>'+
-                            '<input disabled '+common_attr+' type="text" value="'+user_val[input.name]+'">'+
-                        '</div>'
-                }
-                if (input.type === "text" || input.type === "password") {
-                    var value = user_val[input.name];
-
-                    // decrypt password
-                    if (input.type === "password")
-                        value = b_util.decrypt(value)
-
-                    html_inputs +=
-                        '<div class="ui-text">'+
-                            '<label>'+display_name+'</label>'+
-                            '<input '+common_attr+' type="'+input.type+'" value="'+value+'">'+
-                        '</div>'
-                }
-                if (input.type === "button") {
-                    if (input.shape == "rectangle") {
-                        html_inputs +=
-                            '<br>'+
-                            '<button class="ui-button-rect" onclick="'+input.function+'">'+display_name+'</button>'+
-                            '<br>';
-                    }
-                }
-                if (input.type === "color") {
-                    if (input.colors) 
-                        $.fn.colorPicker.defaults.colors = input.colors;
-                    html_inputs += 
-                        '<div class="ui-input-group">'+
-                            '<label>'+display_name+'</label>'+
-                            '<input class="ui-color" type="color" '+common_attr+' type="color" value="'+ifndef(user_val[input.name], "#ffffff")+'"/></div>'+
-                        '</div>';
-                }
-            } // for-loop
-
-            html_inputs += "</div>";
-        }
-
-        $(selector_parent).html("");
-        $(selector_parent).html(html_inputs);
-
-        // bind input change events
-        $(selector_parent).off('change', 'input,select');
-        $(selector_parent).on('change', 'input,select', function(){
-            var type = $(this).data("type"); // bool, number, password
-            var name = $(this).data("name"); // x, y, width, jump_power, etc...
-            var value = $(this).val(); // 3, 1.4, true, ****
-            var subcat = $(this).data("subcategory");
-            var group = $(this).data("group");
-
-            if (type === "bool")
-                value = $(this).is(':checked') ? true : false;
-            if (type === "number") 
-                value = parseFloat(value);
-            // encrypt password
-            if (type === "password")
-                value = b_util.encrypt(value);
-
-            dispatchEvent("blanke.form.change", {type: type, name: name, value: value, subcategory: subcat, group: group});
-            if (fn_onChange) 
-                fn_onChange(type, name, value, subcat, group);
         });
     },
 

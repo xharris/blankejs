@@ -4,7 +4,10 @@
 			"path": "."
 		},
 		{
-			"path": "D:\\Documents\\PROJECTS\\blankejs-tutorials"
+			"path": "/Users/xharris/Documents/blankejs-tutorials"
+		},
+		{
+			"path": "D:/Documents/PROJECTS/blankejs-tutorials"
 		}
 	]
 }

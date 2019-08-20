@@ -2,46 +2,27 @@
   "name": "BlankE",
   "description": "BlankE game dev",
   "version": "0.1.0",
-  "main": "src/index.html",
+  "main": "entry.js",
   "single-instance": false,
-  "window": {
-    "frame": false,
-    "transparent": true,
-    "width": 800,
-    "height": 600,
-    "icon": "src/logo.png"
-  },
-  "build": {
-    "nwVersion": "0.36.2",
-    "nwFlavor": "normal",
-    "files": [
-      "./src/**/**"
-    ],
-    "mac": {
-      "icon": "./src/logo.icns"
-    },
-    "win": {
-      "icon": "./src/logo.ico"
-    }
-  },
+  "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
   "scripts": {
-    "less": " ",
-    "nw": "nw .",
-    "dist": "build --tasks win-x86 --mirror https://dl.nwjs.io/ .",
-    "dist-linux": "build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
-    "dist-mac": "build --tasks mac-x64 --mirror https://dl.nwjs.io/ .; cp -R love2d dist/BlankE-0.1.0-mac-x64/BlankE.app/Contents/Resources/app.nw/love2d"
+    "electron": "electron .",
+    "dist": "node package.js",
+    "binaries": "node package_binaries.js"
   },
   "dependencies": {
     "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
     "commonmark": "^0.28.1",
+    "del": "^5.0.0",
+    "electron": "^5.0.3",
+    "electron-packager": "^14.0.1",
     "fs-extra": "^5.0.0",
-    "lodash": "^4.17.11",
+    "js-yaml": "^3.13.1",
+    "lodash": "^4.17.15",
     "node-watch": "^0.6.0",
     "request": "^2.88.0",
+    "uglify-es": "^3.3.9",
     "walk": "^2.3.13"
-  },
-  "devDependencies": {
-    "nwjs-builder-phoenix": "^1.14.8"
   }
 }

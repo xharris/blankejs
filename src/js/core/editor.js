@@ -1,6 +1,7 @@
 class Editor {
 	constructor () {
 		var workspace = app.getElement('#workspace');
+		var sidewindow_container = app.getElement('#sidewindow-container');
 		this.app = app;
 		this.closed = false;
 
@@ -15,11 +16,11 @@ class Editor {
 		this.content_area.classList.add('editor-content');
 	}
 
-	setupDragbox() {
+	setupDragbox(content) {
 		var this_ref = this;
 		this.container_type = 'dragbox';
 		// create drag box
-		this.container = new DragBox(this.constructor.name)
+		this.container = new DragBox(content || this.constructor.name)
 		this.container.appendTo(workspace);
 		this.container.width = 400;
 		this.container.height = 300;
@@ -32,11 +33,11 @@ class Editor {
 		return this;
 	}
 
-	setupTab() {
+	setupTab(content) {
 		var this_ref = this;
 		this.container_type = 'tab';
 		// create tab
-		this.container = new Tab(this.constructor.name);
+		this.container = new Tab(content || this.constructor.name);
 		this.container.appendChild(this.content_area);
 		app.setHistoryActive(this.container.history_id, true);
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
@@ -46,10 +47,10 @@ class Editor {
 		return this;
 	}
 
-	setupFibWindow() {
+	setupFibWindow(content) {
 		var this_ref = this;
 		this.container_type = "fibwindow";
-		this.container = new FibWindow(this.constructor.name);
+		this.container = new FibWindow(typeof content == 'string' ? content : this.constructor.name);
 		this.container.appendTo(workspace);
 		this.container.appendChild(this.content_area);
 		this.container.btn_menu.onclick = function(e) {
@@ -63,8 +64,27 @@ class Editor {
 		return this;
 	}
 
+	setupSideWindow(transparent, content) {
+		let this_ref = this;
+		this.container_type = "sidewindow";
+		this.container = new SideWindow(content || this.constructor.name);
+		this.container.appendChild(this.content_area);
+		this.container.btn_menu.onclick = function(e) {
+			this_ref.onMenuClick(e);
+		}
+		app.setHistoryActive(this.container.history_id, true);
+		app.setHistoryContextMenu(this.container.history_id, function(e) {
+			this_ref.onMenuClick(e);
+		});
+		this.container.onClose = this.onClose;
+		if (transparent) 
+			this.container.el_container.classList.add("transparent");
+		return this;
+	}
+
 	removeHistory() {
-		app.removeHistory(this.container.history_id);
+		if (this.container)
+			app.removeHistory(this.container.history_id);
 	}
 
 	// Tab ONLY	
@@ -72,6 +92,8 @@ class Editor {
 		if (this.container_type == 'tab')
 			this.container.setOnClick.apply(this.container, arguments);
 		if (this.container_type == 'fibwindow')
+			app.setHistoryClick(this.container.history_id, arguments[0]);
+		if (this.container_type == 'sidewindow')
 			app.setHistoryClick(this.container.history_id, arguments[0]);
 	}
 
@@ -100,6 +122,14 @@ class Editor {
 		return this.container.height;
 	}
 
+	set width (v) {
+		this.container.width = v;
+	}
+
+	set height (v) {
+		this.container.height = v;
+	}
+
 	get bg_width() {
 		if (this.container.in_background)
 			return app.getElement('#bg-workspace').clientWidth;
@@ -120,7 +150,7 @@ class Editor {
 	}
 
 	getContent() {
-		return this.content_area;
+		return this.container.getContent();
 	}
 
 	getContainer() {
@@ -131,13 +161,15 @@ class Editor {
 		this.content_area.appendChild(el);
 	}
 
-	isInBackground () {
-		return this.container.in_background == true;
+	appendBackground (el) {
+		if (this.container.appendBackground)
+			this.container.appendBackground(el);
+		else	
+			this.appendChild(el);
 	}
 
-	appendBackground (...args) {
-		if (this.container_type == 'fibwindow') 
-			this.container.appendBackground(...args);
+	isInBackground () {
+		return this.container.in_background == true;
 	}
 
 	setTitle (val) {
@@ -146,7 +178,7 @@ class Editor {
 	}
 
 	setSubtitle (val) {
-		if (this.container_type == 'dragbox' || this.container_type == 'fibwindow')
+		if (['dragbox','fibwindow','sidewindow'].includes(this.container_type))
 			this.container.setSubtitle(val);
 		return this;
 	}
@@ -166,9 +198,9 @@ class Editor {
 		this.asset_list.innerHTML = "";
 
 		// context menu
-		var menu = new nwGUI.Menu();
+		var menu = new elec.Menu();
 		context_menu.forEach(function(m){
-			var item = new nwGUI.MenuItem(m);
+			var item = new elec.MenuItem(m);
 			item.click = function() { on_menu_click(this.label, this_ref.list_value); }
 			menu.append(item);
 		});

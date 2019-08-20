@@ -7,7 +7,8 @@ TODO:
 C	separate tabs from history bar
 C	implement fibonnaci-sized windows
 C	sprite sheet preview: should display image dimensions
-C	find and replace		
+C	find and replace
+C	GamePreview - auto insert Asset.add() method		
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
@@ -16,12 +17,12 @@ T	sceneeditor: create new scene, remove premade layers, rename layer -> other la
 C 	sceneeditor: image search keys still remain after closing scene editor
 C	sceneeditor: re-opening opens 3 instances
 */
-var nwGUI = require('nw.gui');
+const elec = require('electron');
+
 var nwFS = require('fs-extra');
 var nwWALK = require('walk');
 var nwPATH = require('path');
 var nwOS = require('os');
-var nwWIN = nwGUI.Window.get();
 const { spawn, execFile, exec } = require('child_process')
 const { cwd, env, platform } = require('process')
 var nwNOOB = require('./js/server.js');
@@ -29,14 +30,24 @@ var nwZIP = require('archiver'); // used for zipping
 var nwZIP2 = require('adm-zip'); // used for unzipping
 var nwWATCH = require('node-watch');
 var nwREQ = require('request');
+var nwUGLY = require('uglify-es');
+var nwUTIL = require('util');
+var nwDEL = require('del');
+
+let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
 var app = {
 	project_path: "",
-	watch: null,
-	game_window: null,
+	proj_watch: null,
+	asset_watch: null,
 	maximized: false,
 	os: null, // win, mac, linux,
 	error_occured: null,
+	ignore_errors: false,
+	
+	get window() {
+		return elec.remote.getCurrentWindow()
+	},
 
 	getElement: function(sel) {
 		return document.querySelector(sel);
@@ -51,6 +62,22 @@ var app = {
 		if (Array.isArray(el_class)) ret_el.classList.add(...el_class);
 		else if (el_class != undefined) ret_el.classList.add(el_class);
 		return ret_el;
+	},
+
+	createIconButton: function(icon, title) {
+		let el_btn = app.createElement("button");
+		let el_icon = app.createElement("object","blanke-icon");
+		el_icon.data = "icons/"+icon+".svg";
+		el_icon.type = "image/svg+xml";
+		el_icon.innerHTML = icon[0].toUpperCase();
+		el_btn.appendChild(el_icon);
+		el_btn.title = title;
+		el_btn.change = (icon2, title2) => {
+			el_icon.data = "icons/"+icon2+".svg";
+			el_icon.innerHTML = icon2[0].toUpperCase();
+			el_btn.title = title2;
+		}
+		return el_btn;
 	},
 
 	clearElement: function(element) {
@@ -68,33 +95,34 @@ var app = {
 	},
 
 	contextMenu: function(x, y, items) {
-		var menu = new nwGUI.Menu();
+		var menu = new elec.remote.Menu();
 		for (var i = 0; i < items.length; i++) {
-			var menuitem = menu.append(new nwGUI.MenuItem(items[i]));
+			var menuitem = menu.append(new elec.remote.MenuItem(items[i]));
 		}
-		menu.popup(x, y);
+		menu.popup({x:x, y:y});
 	},
 
 	close: function() {
-		nwWIN.close();
+		app.window.close();
 	},
 
 	maximize: function() {
-		if (app.maximized) nwWIN.unmaximize();
-		else nwWIN.maximize();
+		if (app.maximized) app.window.unmaximize();
+		else app.window.maximize();
 		app.maximized = !app.maximized;
 	},
 
 	minimize: function() {
-		nwWIN.minimize();
+		app.window.minimize();
 	},
-
+	watch: function(path, cb) {
+		return nwWATCH(path, {
+			recursive: true,
+			filter: f => !/dist/.test(f) && !f.includes('.asar')
+		}, cb);
+	},
 	getRelativePath: function(path) {
 		return nwPATH.relative(app.project_path,path);
-	},
-
-	isProjectOpen: function() {
-		return (app.project_path && app.project_path != "");
 	},
 
 	newProject: function(path) {
@@ -109,7 +137,9 @@ var app = {
 	},
 
 	newProjectDialog: function() {
-		blanke.chooseFile('nwdirectory', function(file_path){
+		blanke.chooseFile({
+			properties:['openDirectory']
+		}, function(file_path){
 			blanke.showModal(
 				"<label style='line-height:35px'>new project name:</label></br>"+
 				"<label>"+file_path+nwPATH.sep+"</label>"+
@@ -118,7 +148,7 @@ var app = {
 				"yes": function() { app.newProject(nwPATH.join(file_path, app.getElement('#new-proj-name').value)); },
 				"no": function() {}
 			});
-		}, true);
+		});
 	},
 
 	win_title: '',
@@ -158,21 +188,40 @@ var app = {
 		app.setWinTitle("BlankE");
 	},
 
+	isProjectOpen: function() {
+		return (app.project_path && app.project_path != "");
+	},
 	openProject: function(path) {
 		// validate: only open if there's a main.lua
 		nwFS.readdir(path, 'utf8', function(err, files){
-			if (!err && files.includes('main.lua')) {
+			if (!err) { // && files.includes('main.lua')) { // TODO add project validation
 				if (app.isProjectOpen())
 					app.closeProject();
 
 				app.project_path = path;
-				app.loadSettings();
 
 				// watch for file changes
-				app.watch = nwWATCH(app.project_path, {recursive: true}, function(evt_type, file) {
+				app.proj_watch = app.watch(app.project_path, function(evt_type, file) {
 					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
 				});
 
+				// watch for asset changes
+				app.getAssets();
+				if (app.asset_watch)
+					app.asset_watch.close()
+				
+				let asset_path = app.getAssetPath();
+				nwFS.ensureDirSync(asset_path)
+				app.asset_watch = app.watch(asset_path, (evt_type, file) => {
+					if (file) { 
+						blanke.cooldownFn('asset_watch',500,()=>{
+							app.getAssets((files)=>{
+								dispatchEvent("assetsChange");
+							});
+						})
+					}
+				});
+				
 				// add to recent files
 				app.settings.recent_files = app.settings.recent_files.filter(e => !e.includes(nwPATH.basename(path)));
 				app.settings.recent_files.unshift(path);
@@ -181,7 +230,12 @@ var app = {
 				app.getElement("#search-container").classList.remove("no-project");
 				app.setWinTitle(nwPATH.basename(app.project_path));
 
-				dispatchEvent("openProject", {path: path});
+				// start first scene
+				app.loadSettings(() => {
+					app.hideWelcomeScreen();
+					//app.game = new GamePreview("#game-container");
+					dispatchEvent("openProject", {path: path});
+				});
 			} else {
 				blanke.toast(`Could not open project '${nwPATH.basename(path)}'`);
 				app.closeProject();
@@ -191,29 +245,187 @@ var app = {
 	},
 
 	openProjectDialog: function() {
-		blanke.chooseFile('nwdirectory', function(file_path){
+		blanke.chooseFile({
+			properties:['openDirectory']
+		}, function(file_path){
 			app.openProject(file_path);
+		});
+	},
+
+	refreshGameSource: function () {
+		if (app.game) app.game.refreshSource();
+	},
+
+	autocomplete: {},
+	autocomplete_loaded: false,
+	refreshAutocomplete: function() {
+		let err = false;
+		app.autocomplete_loaded = false;
+		app.ignore_errors = true;
+		try {
+			let data = app.require(app.settings.autocomplete_path)
+			if (!data)
+				throw 'autocomplete not loaded';
+			else 
+				app.autocomplete = data;
+		} catch (e) {
+			err = true;
+			blanke.toast('error in autocomplete file!')
+			console.log(e);
+		} finally {
+			app.ignore_errors = false;
+			if (!err) {
+				app.autocomplete_loaded = false;
+				console.log('autocomplete loaded');
+			}
+		}
+	},
+	autocomplete_toast: null,
+	watchAutocomplete: function() {
+        app.refreshAutocomplete();
+		if (autocomplete_watch) {
+            autocomplete_watch.close();
+            dispatchEvent("autocompleteChanged");
+        }
+		app.ignore_errors = true;
+	    autocomplete_watch = nwFS.watch(nwPATH.resolve('src',app.settings.autocomplete_path), function(e){
+            app.refreshAutocomplete();
+			dispatchEvent("autocompleteChanged");
+			if (!app.autocomplete_toast)
+				app.autocomplete_toast = blanke.toast("autocomplete reloaded!", null, () => {
+					app.autocomplete_toast = null;
+				});
+		});
+		app.ignore_errors = false;
+	},
+
+	engine_code: '',
+	minify_toast: null,
+	minifyEngine: function(cb, opt) {
+		opt = opt || {};
+		blanke.cooldownFn('minify-engine',500,function(){
+			if (!opt.silent && !app.minify_toast) {
+				app.minify_toast = blanke.toast('',-1);
+			}
+			let toast = app.minify_toast;
+			if (!opt.silent) {
+				toast.text = 'Compiling engine code. Please wait';
+				toast.icon = 'dots-horizontal';
+				toast.style = 'wait';
+			}
+
+			let code_obj = {};
+			let walker = nwWALK.walk(app.settings.engine_path);
+			walker.on('file', (path, stat, next) => {
+				// place all code in one object
+				if (stat.isFile() && stat.name.endsWith('.js'))
+					code_obj[stat.name] = nwFS.readFileSync(
+						nwPATH.join(path, stat.name)
+						,'utf-8'
+					) + '\n\n';		
+				next();
+			});
+			walker.on('errors', ()=>{
+				if (!opt.silent) {
+					toast.text = "Engine compilation failed";
+					toast.icon = 'close';
+					toast.style = "bad";
+				}
+			});
+			walker.on('end', () => {
+				// get blanke.js classes
+				GamePreview.engine_classes = re_engine_classes.exec(code_obj['blanke.js'])[1] 
+				// uglify
+				let code = {
+					error: false,
+					code: Object.values(code_obj).join('\n')
+				}
+				if (opt.wrapper) {
+					code.code = opt.wrapper(code.code);
+					code_obj.user_code = code.code;
+				}
+
+				if (opt.minify) {
+					code = nwUGLY.minify(code_obj,{
+						ie8: true,
+						compress: opt.release ? {} : false,
+						keep_classnames: true,
+						mangle: { toplevel:false }
+					});
+				}
+				if (!code.error) {
+					if (opt.save_internal)
+						app.engine_code = code.code;
+					nwFS.writeFile('blanke.min.js',code.code,'utf-8');
+					if (!opt.silent) {
+						toast.text = "Compiled engine code!";
+						toast.icon = 'check-bold';
+						toast.style = "good";
+						toast.die(1500);
+						app.minify_toast = null;
+					}
+					if (cb) cb(code.code);
+					dispatchEvent('engineChange');
+				}
+			})
 		}, true);
 	},
 
+	extra_windows: [],
 	play: function(options) { 
 		if (app.isProjectOpen()) {
-			let love_path = {
-				'win': nwPATH.join(app.settings.engine_path,'love.exe'),
-				'linux': 'love2d',
-				'mac': nwPATH.resolve(nwPATH.join(app.settings.engine_path,'love.app','Contents','MacOS','love'))
-			};
-
-			let child = spawn(love_path[app.os], [nwPATH.resolve(app.project_path),'--ide'].concat(options || []), {
-				cwd: nwPATH.join(app.settings.engine_path, 'lua')
+			let proj_set = app.project_settings;
+			let game = new GamePreview(null, {
+				ide_mode: false,
+				scene: proj_set.first_scene,
+				size: proj_set.size
 			});
-			let console_window = new Console(child);
-			child.on('close', function(){
-				console_window.processClosed()
-			})
-			//child.unref();
-			//Editor.closeAll('Console');
+			nwFS.writeFile(
+				nwPATH.join(app.project_path,'temp.html'), game.getSource(), ()=>{
+
+				app.newWindow(nwPATH.join(app.project_path,'temp.html'), {
+						width: proj_set.size[0],
+						height: proj_set.size[1],
+						useContentSize: true,
+						resizable: app.project_settings.export.resizable,
+						webPreferences: {
+							nodeIntegration: true
+						}
+					},
+					(win)=>{
+						win.on('closed',function(){
+							nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
+							return true;//this.close(true);
+						});
+						/*
+						let menu_bar = new nw.Menu({type:'menubar'});
+						menu_bar.append(new nw.MenuItem({
+							label: 'Show dev tools',
+							click: () => { win.showDevTools(); }
+						}));
+						win.menu = menu_bar;
+						*/
+				})
+			});
 		}
+	},
+
+	notify: function (opt) {
+		let notif = new elec.remote.Notification(opt.title, opt);
+		notif.onclick = opt.onclick;
+		notif.show();
+	},
+
+	newWindow: function (html, options, cb) {
+		if (!cb) {
+			cb = options;
+			options = {};
+		}
+		options.parent = app.window;
+		let child = new elec.remote.BrowserWindow(options)
+		child.loadFile(nwPATH.relative('',html));
+		app.extra_windows.push(child);
+		if (cb) cb(child);
 	},
 
 	toggleWindowVis: function() {
@@ -334,7 +546,7 @@ var app = {
 
 	settings: {},
 	getAppDataFolder: function(){
-		let path = nwPATH.join(nw.App.dataPath || (app.os == 'mac' ? nwPATH.join('~','Library','Application Support','BlankE','Default') : '/var/local'), 'Settings');
+		let path = nwPATH.join(elec.remote.app.getPath("appData"), "BlankE"); 
 		nwFS.ensureDirSync(path);
 		return path;
 	},
@@ -342,20 +554,24 @@ var app = {
 		var app_data_folder = app.getAppDataFolder();
 		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
 		nwFS.readFile(app_data_path, 'utf-8', function(err, data){
-			if (!err) 
+			if (!err && data.length > 1) 
 				app.settings = JSON.parse(data);
-			else
-				app.settings = {};
-			ifndef_obj(app.settings, {
+				
+			app.settings = Object.assign({
 				recent_files:[],
 				plugin_path:'plugins',
-				engine_path:'love2d',
+				engine_path:'blankejs',
 				themes_path:'themes',
 				autocomplete_path:'./autocomplete.js',
 				theme:'green'
-			});
+			}, app.settings || {});
 			if (callback) callback();
 		});
+	},
+
+	require: (path) => {
+		delete require.cache[require.resolve(path)];
+		return require(path);
 	},
 
 	plugin_watch:null,
@@ -367,7 +583,7 @@ var app = {
 			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
 			nwFS.writeFile(app_data_path, JSON.stringify(app.settings));
 		});
-		
+
 		dispatchEvent('appdataSave');
 	},
 
@@ -375,17 +591,19 @@ var app = {
 	loadSettings: function(callback){
 		if (app.isProjectOpen()) {	
 			nwFS.readFile(nwPATH.join(app.project_path,"config.json"), 'utf-8', function(err, data){
-				if (!err) {
-					if (!err) {
-						app.project_settings = JSON.parse(data);
-					}
-					ifndef_obj(app.project_settings, {
-						ico:nwPATH.join('src','logo.ico'),
-						icns:nwPATH.join('src','logo.icns'),
-					});
-					app.saveSettings();
-					if (callback) callback();
-				}
+				if (!err || (data && data.length > 1))
+					app.project_settings = JSON.parse(data);
+				else
+					app.project_settings = {};
+
+				ifndef_obj(app.project_settings, {
+					ico:nwPATH.join('src','logo.ico'),
+					icns:nwPATH.join('src','logo.icns'),
+					first_scene:null,
+					size:[800,600]
+				});
+				app.saveSettings();
+				if (callback) callback();
 			});
 		}
 	},
@@ -402,15 +620,15 @@ var app = {
 
 	showWelcomeScreen: function() {
 		app.getElement("#welcome").classList.remove("hidden");
-		app.getElement("#workspace").style.pointerEvents = "none";
 	},
 
 	addAsset: function(res_type, path) {
 		blanke.toast("adding file \'"+nwPATH.basename(path)+"\'");
 		nwFS.ensureDir(nwPATH.join(app.project_path, 'assets', res_type), (err) => {
 			if (err) console.error(err);
-			nwFS.copySync(path, nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path)));
-			dispatchEvent("asset_added",{type: res_type, path: app.project_path});
+			let asset_path = nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path))
+			nwFS.copySync(path, asset_path);
+			dispatchEvent("asset_added",{type: res_type, path: asset_path});
 		});
 	},
 
@@ -419,13 +637,22 @@ var app = {
 	allowed_extensions: {
 		'image':['png','jpg','jpeg'],
 		'audio':['mp3','ogg','wav'],
-		'scene':['scene'],
 		'font':['ttf','ttc','cff','woff','otf','otc','pfa','pfb','fnt','bdf','pfr'],
-		'script':['lua']
+		'script':['js'],
+		'map':['map']
 	},
 	name_to_path: {},
+	asset_list: [],
 	getAssets: function(f_type, cb) {
-		let extensions = app.allowed_extensions[f_type];
+		let extensions = [];
+		let all_assets = false;
+		if (cb)
+			extensions = app.allowed_extensions[f_type];
+		else {
+			cb = f_type;
+			all_assets = true;
+			extensions = [].concat.apply([], Object.values(app.allowed_extensions));
+		}
 		if (!extensions) return;
 		
 		let walker = nwWALK.walk(app.project_path);
@@ -433,11 +660,13 @@ var app = {
 		walker.on('file',function(path, stats, next){
 			// only add files that have an extension in allowed_extensions
 			if (stats.isFile() && !path.includes('dist') && extensions.includes(nwPATH.extname(stats.name).slice(1))) {
-				ret_files.push(nwPATH.join(path, stats.name));
+				ret_files.push(app.cleanPath(nwPATH.join(path, stats.name)));
 			}
 			next();
 		});
 		walker.on('end',function(){
+			if (all_assets)
+				app.asset_list = ret_files;
 			if (cb) cb(ret_files);
 		});
 	},
@@ -450,15 +679,24 @@ var app = {
 		return 'other';
 	},
 	shortenAsset: function(path){
-		return nwPATH.relative(app.project_path,path).replace(/assets[/\\]/,'');
+		path = app.cleanPath(path);
+		return app.cleanPath(nwPATH.relative(app.project_path,path)).replace(/assets\//,'');
 	},
 	lengthenAsset: function(path){
+		path = app.cleanPath(path);
 		return nwPATH.resolve(nwPATH.join(app.project_path,'assets',path));
 	},
 	getAssetPath: function(_type, name, cb) {
+		if (!name) {
+			if (_type == 'scripts')
+				return nwPATH.resolve(nwPATH.join(app.project_path,_type))
+			else if (_type)
+				return nwPATH.resolve(nwPATH.join(app.project_path,'assets',_type))
+			else 
+				return nwPATH.resolve(nwPATH.join(app.project_path,'assets'))
+		}
 		app.getAssets(_type, (files) => {
 			let found = false;
-			let match;
 			let re_name = /[\\\/](([\w\s.-]+)\.\w+)/;
 			files.forEach((f) => {
 				let match = re_name.exec(f);
@@ -472,7 +710,25 @@ var app = {
 		});
 	},
 	cleanPath: function(path) {
-		return nwPATH.normalize(path).replaceAll('\\\\','/');
+		if (path) return path.replaceAll(/\\/g,'/');
+	},
+	showDropZone: function() {
+		if (app.isProjectOpen())
+			app.getElement("#drop-zone").classList.add("active");
+	},
+	hideDropZone: function() {
+		app.getElement("#drop-zone").classList.remove("active");
+	},
+	dropFiles: function(files) {
+		for (let f of files) {
+			nwFS.stat(f.path, (err, stats) => {
+				if (err || !stats.isFile())
+					blanke.toast(`Could not add file ${f.path}`);
+				else 
+					app.addAsset(app.findAssetType(f.path),f.path);
+			});
+		}
+		app.hideDropZone();
 	},
 	workspace_margin_top: 34,
 	flashCrosshair: function(x, y) {
@@ -527,12 +783,15 @@ var app = {
 			entry.appendChild(tab_tri_right);
 			el_history_bar.appendChild(entry);
 
-			app.history_ref[id] = {'entry':entry, 'entry_title':entry_title, 'title':title};
+			app.history_ref[id] = {'entry':entry, 'entry_title':entry_title, 'title':title, 'active':true};
+			app.setHistoryHighlight(id);
 			return id;
 		}
 	},
 
-	setHistoryMostRecent: function(id) {
+	setHistoryMostRecent: function(id, skip_highlight) {
+		if (!app.history_ref[id]) return;
+		
 		let e = app.history_ref[id];
 		if (!e) return;
 		let el_history_bar = app.getElement("#history");
@@ -540,6 +799,8 @@ var app = {
 		// move it to front of history
 		el_history_bar.removeChild(e.entry);
 		el_history_bar.appendChild(e.entry);
+		if (!skip_highlight)
+			app.setHistoryHighlight(id);
 
 		return e.entry.dataset.guid;
 	},
@@ -548,7 +809,9 @@ var app = {
 		if (app.history_ref[id]) {
 			app.history_ref[id].entry_title.addEventListener('click',function(){
 				fn_onclick();
-				app.setHistoryMostRecent(id);
+				if (!app.history_ref[id] || !app.history_ref[id].active) {
+					app.setHistoryMostRecent(id);
+				}
 			});
 		}
 	},
@@ -559,8 +822,22 @@ var app = {
 
 	setHistoryActive: function(id, yes) {
 		if (app.history_ref[id]) {
+			app.history_ref[id].active = yes ? true : false;
 			if (yes) app.history_ref[id].entry.classList.add("open");
 			else app.history_ref[id].entry.classList.remove("open");
+		}
+	},
+
+	last_history_highlight: [],
+	setHistoryHighlight: function(id) {
+		if (app.history_ref[id]) {
+			app.last_history_highlight.unshift(id);
+			for (let other_id in app.history_ref) {
+				app.history_ref[other_id].entry.classList.remove("highlighted");
+			}
+			app.history_ref[id].entry.classList.add("highlighted");
+		} else if (app.last_history_highlight[0] && !id) {
+			app.setHistoryHighlight(app.last_history_highlight[0])
 		}
 	},
 
@@ -577,9 +854,12 @@ var app = {
 	},
 
 	removeHistory: function(id) {
+		if (!app.history_ref[id]) return;
 		blanke.destroyElement(app.history_ref[id].entry);
-		blanke.destroyElement(app.history_ref[id].entry_title);
 		delete app.history_ref[id];
+		let i = app.last_history_highlight.indexOf(id)
+		if (i > -1) app.last_history_highlight.splice(i,1);
+		app.setHistoryHighlight();
 	},
 
 	clearHistory: function() {
@@ -608,12 +888,21 @@ var app = {
 		})
 	},
 
+	openURL (url) {
+		elec.shell.openExternal(url);
+	},
+
 	enableDevMode(force_search_keys) {
 		if (!DEV_MODE || force_search_keys) {
 			DEV_MODE = true;
-			app.addSearchKey({key: 'Dev Tools', onSelect: nwWIN.showDevTools});
-			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ nwGUI.Shell.openItem(app.getAppDataFolder()); }});
-			nwGUI.Window.get().showDevTools();
+			app.addSearchKey({key: 'Dev Tools', onSelect: app.window.webContents.openDevTools});
+			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ elec.shell.openItem(app.getAppDataFolder()); }});
+			/*
+			app.addSearchKey({key: 'Restart engine', onSelect:function(){
+				this.game.refreshEngine();
+			}});
+			*/
+			app.window.webContents.openDevTools();
 			blanke.toast("Dev mode enabled");
 		} else {
 			blanke.toast("Dev mode already enabled!");
@@ -656,7 +945,9 @@ var app = {
 
 	update(ver) {
 		// download new version
-		blanke.toast('Downloading update');
+		let toast = blanke.toast('Downloading update',-1);
+		toast.icon = 'dots-horizontal';
+		toast.style = 'wait';
 		nwREQ(`https://github.com/xharris/blankejs/archive/${ver}.zip`)
 			.pipe(nwFS.createWriteStream('update.zip'))
 			.on('close',function(){
@@ -665,7 +956,7 @@ var app = {
 				let file_paths = update_zip.getEntries();
 				let limit = 3;
 				let entryName;
-				let actual_src = [/love2d[\/\\]/,/src[\/\\]/,'package.json'];
+				let actual_src = [/blankejs[\/\\]/,/src[\/\\]/,'package.json'];
 				// unpack new files
 				for (let f = 0; f < file_paths.length; f++) {
 					entryName = file_paths[f].entryName;
@@ -679,7 +970,7 @@ var app = {
 					}
 				}
 				nwFS.removeSync('update.zip');
-				blanke.toast('Done updating. Restarting...');
+				toast.text = 'Done updating. Restarting';
 				// restart app
 				chrome.runtime.reload();
 			})
@@ -690,23 +981,71 @@ var app = {
 	},
 
 	error () {
-		if (!DEV_MODE)
-			nwFS.appendFile('error.txt','[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
-				blanke.toast(`Error! See <a href="#" onclick="nwGUI.Shell.showItemInFolder(nwPATH.join(cwd(),'error.txt'));">error.txt</a> for more info`);
-			});
+		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
+			if (!app.ignore_errors)
+				blanke.toast(`Error! See <a href="#" onclick="app.openErrorFile()">error.txt</a> for more info`);
+		});
+	},
+
+	openErrorFile () {
+		elec.shell.openItem(nwPATH.join(app.getAppDataFolder(),'error.txt'));
+	},
+
+	shortcut_log: {},
+	newShortcut (options) {
+		app.shortcut_log[options.key] = options;
+		elec.remote.globalShortcut.register(options.key,options.active)
 	}
 }
 
-nwWIN.on('loaded', function() {
+app.window.webContents.on('open-file', (e, path)=>{
+	//console.log(e)
+})
+app.window.webContents.on("did-finish-load",()=>{
+	process.chdir(nwPATH.join(__dirname,'..'));
+	blanke.elec_ref = elec;
+
+	app.window.on('blur', ()=>{ elec.remote.globalShortcut.unregisterAll(); })
+	app.window.on('focus', ()=>{
+		for (let name in app.shortcut_log) {
+			app.newShortcut(app.shortcut_log[name]);
+		}
+	})
+	if (process.argv[1]) {
+		console.log(process.argv);
+	}
+
+	// remove error file
+	nwFS.remove(nwPATH.join(app.getAppDataFolder(),'error.txt'));
+
+	// index.html button events
+	app.getElement("#btn-close").addEventListener('click',()=> { app.window.close() });
+	app.getElement("#btn-maximize").addEventListener('click',()=> { app.window.isMaximized() ? app.window.unmaximize() : app.window.maximize() });
+	app.getElement("#btn-minimize").addEventListener('click',()=> { app.window.minimize() });
+	app.getElement("#btn-play").addEventListener('click',()=> { app.play() });
+	app.getElement("#btn-export").addEventListener('click',()=> { new Exporter() });
+	app.getElement("#btn-winvis").addEventListener('click',()=> { app.toggleWindowVis() });
+	app.getElement("#btn-winsplit").addEventListener('click',()=> { app.toggleSplit() });
+	app.getElement("#btn-docs").addEventListener('click',()=> { new Docview() });
+	app.getElement("#btn-plugins").addEventListener('click',()=> { new Plugins() });
+	app.getElement("#btn-settings").addEventListener('click',()=> { new Settings() });
+
 	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
 	app.os = os_names[nwOS.type()];
 	document.body.classList.add(app.os);
 
-	nwWIN.setShadow(true);
+	/*
+	window.onerror = (...args) => {
+		console.log(args);
+	}
+	*/
 
 	window.addEventListener("error", function(e){
 		app.error_occured = e;
-		app.error(e.error.stack);
+		if (e.error)
+			app.error(e.error.stack);
+		else 
+			app.error(JSON.stringify(e));
 	});
 
 	// changing searchbox placeholder between "Some title" and "Search..."
@@ -728,16 +1067,14 @@ nwWIN.on('loaded', function() {
 	// Welcome screen
 
 	// new project
-	var el_new_proj = app.getElement("#welcome .new");
-	el_new_proj.onclick = function(){ 
+	app.getElement("#btn-new").addEventListener('click',function(e){ 
 		app.newProjectDialog();
-	}
+	});
 
 	// open project
-	var el_open_proj = app.getElement("#welcome .open");
-	el_open_proj.onclick = function(){ 
+	app.getElement("#btn-open").addEventListener('click',function(e){ 
 		app.openProjectDialog();
-	}
+	});
 
 	// prepare search box
 	app.getElement("#search-input").addEventListener('input', function(e){
@@ -851,30 +1188,24 @@ nwWIN.on('loaded', function() {
 			}
 		}
 	});
-
+	
 	// shortcut: focus search box
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-		key: "Ctrl+R",
+	app.newShortcut({
+		key: "CommandOrControl+R",
 		active: function() {
 			app.getElement("#search-input").focus();
 		}
-	}));
+	});
 	// shortcut: enable dev mode
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-		key: "Ctrl+Shift+D",
+	app.newShortcut({
+		key: "CommandOrControl+Shift+D",
 		active: function() {
 			app.enableDevMode();
 		}
-	}));
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-		key: "Command+Shift+D",
-		active: function() {
-			app.enableDevMode();
-		}
-	}));
+	});
 	// shortcut: shift window focus
-	nwGUI.App.registerGlobalHotKey(new nwGUI.Shortcut({
-		key: "Ctrl+T",
+	app.newShortcut({
+		key: "CommandOrControl+T",
 		active: function() {
 			var windows = app.getElements(".drag-container");
 			if (windows.length > 1) {
@@ -889,42 +1220,42 @@ nwWIN.on('loaded', function() {
 				windows[index].click();
 			}
 		}
-	}));
+	});
+	// shortcut: PREVENT refreshing
+	app.newShortcut({
+		key: "CommandOrControl+R",
+		active: function() {}
+	})
 
-	nwWIN.on('close',function(){
+	app.window.on('closed',function(){
 		this.hide();
 		app.closeProject();
+		// close extra windows
+		for (let win of app.extra_windows) {
+			win.close(true);
+		}
 		this.close(true);
 	});
 
 	// prevents text from becoming blurry
-	nwWIN.on('resize',(w, h)=>{
-		blanke.cooldownFn('window_resize',500,()=>nwWIN.resizeTo(parseInt(w),parseInt(h)))
+	app.window.on('resize',(e)=>{
+		blanke.cooldownFn('window_resize',500,()=>{
+			let size = e.sender.getSize();
+			app.window.setSize(parseInt(size[0]), parseInt(size[1]))
+		})
 	});
 
 	// file drop zone
 	window.addEventListener('dragover', function(e) {
 		e.preventDefault();
-		console.log(e)
-		if (app.isProjectOpen())
-			app.getElement("#drop-zone").classList.add("active");
+		app.showDropZone();
 		return false;
 	});
 	window.addEventListener('drop', function(e) {
 		e.preventDefault();
 
 		if (app.isProjectOpen()) {
-			let files = e.dataTransfer.files;
-			for (let f of files) {
-				console.log('drop',f.path);
-				nwFS.stat(f.path, (err, stats) => {
-					console.log(err, stats)
-					if (err || !stats.isFile())
-						blanke.toast(`Could not add file ${f.path}`);
-					else 
-						app.addAsset(app.findAssetType(f.path),f.path);
-				});
-			}
+			app.dropFiles(e.dataTransfer.files);
 			app.getElement("#drop-zone").classList.remove("active");
 		}
 
@@ -932,8 +1263,7 @@ nwWIN.on('loaded', function() {
 	});
 	window.addEventListener('dragleave', function(e) {
 		e.preventDefault();
-		if (app.isProjectOpen())
-			app.getElement("#drop-zone").classList.remove("active");
+		app.hideDropZone();
 		return false;
 	});
 
@@ -952,10 +1282,8 @@ nwWIN.on('loaded', function() {
 	app.addSearchKey({key: 'Check for updates', onSelect: app.checkForUpdates});
 
 	document.addEventListener("openProject",function(){
-		app.hideWelcomeScreen();
-
 		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
-			nwGUI.Shell.openItem(app.project_path);
+			elec.shell.openItem(app.project_path);
 		}});
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();
@@ -973,18 +1301,21 @@ nwWIN.on('loaded', function() {
 			
 		// setup welcome screen
 		let el_br = app.createElement("br");
+
+		elec.remote.app.clearRecentDocuments();
 		app.settings.recent_files.forEach((file) => {
 			if (nwFS.pathExistsSync(file) && nwFS.statSync(file).isDirectory()) {
 				let el_file = app.createElement("button", "file");
 				el_file.innerHTML = nwPATH.basename(file);
 				el_file.title = file;
 				el_file.addEventListener('click',function(){
-					app.hideWelcomeScreen();
 					app.openProject(file);
 				});
 
 				el_recent.appendChild(el_file);
 				el_recent.appendChild(el_br)
+
+				elec.remote.app.addRecentDocument(file);
 			}
 		})
 		

@@ -3,6 +3,10 @@
 do:
 	make -B blanke
 
+web:
+	start "" http://localhost:8000 || open http://localhost:8000
+	cd blankejs && python -m SimpleHTTPServer 8000
+
 setup:
 	# npm install -g pnpm
 	pnpm install
@@ -16,19 +20,13 @@ clean:
 	make -B setup
 
 dist:
-	npm run less
 	pnpm run dist
-
-dist-mac:
-	pnpm run less
-	pnpm run dist-mac
 
 love:
 	love2d/love.exe projects/penguin
 
 blanke:
-	pnpm run less
-	pnpm run nw
+	pnpm run electron
 	
 engine:
 	cp -r love2d dist/BlankE-0.1.0-win-x86/love2d

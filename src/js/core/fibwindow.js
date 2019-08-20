@@ -1,6 +1,6 @@
 var boxes = [];
-var MAX_WINDOWS = 10; //5;
-var split_enabled = true;
+var MAX_WINDOWS = 4; //5;
+var split_enabled = false;
 var SHOW_SINGLE_BOX_TITLEBAR = true;
 
 class FibWindow {
@@ -11,6 +11,7 @@ class FibWindow {
 		this.subtitle = '';
 		this.history_id = app.addHistory(this.title);
 		this.type = content_type;
+		this.bg_first_only = false;
 
 		var this_ref = this;
 
@@ -63,6 +64,18 @@ class FibWindow {
 		FibWindow.checkBackground();
 	}
 
+	// mainly for boxes with bg_content
+	// 0 - full window, 1 - half-window, 2 - quarter window
+	getSizeType () {
+		if (this.bg_content && this.index == 0) {
+			if (boxes.length == 1)
+				return 1;
+			if (boxes.length == 2)
+				return 2;
+		}
+		return 0;
+	}
+
 	callResize () {
 		let this_ref = this;
 		blanke.cooldownFn('scene-resize-'+this.guid, 100, function(){	
@@ -100,6 +113,7 @@ class FibWindow {
 				boxes.unshift(boxes.splice(b,1)[0]);
 				FibWindow.resizeWindows();
 				FibWindow.checkBackground();
+				boxes[0]._onFocus();
 
 				return true;
 			}
@@ -133,6 +147,7 @@ class FibWindow {
 		for (let b = 0; b < boxes.length; b++) {
 			let box_ref = boxes[b];
 			box_ref.index = b;
+			box_ref.fib_container.dataset.index = b.toString();
 
 			let b2 = b+1;
 
@@ -206,6 +221,10 @@ class FibWindow {
 
 	}
 
+	getContent () {
+		return this.fib_content
+	}
+
 	setContent (element) {
 		this.fib_content.innerHTML = "";
 		this.fib_content.appendChild(element);
@@ -233,7 +252,8 @@ class FibWindow {
 				boxes[b].fib_container.classList.remove("first");
 				if (boxes[b].bg_content && boxes[b].in_background) {
 					old_first_found = true;
-					boxes[b].appendChild(el_bg_workspace.removeChild(boxes[b].bg_content));
+					if (!boxes[b].bg_first_only) 
+						boxes[b].appendChild(el_bg_workspace.removeChild(boxes[b].bg_content));
 				}
 				boxes[b].in_background = false;
 			}
@@ -244,18 +264,34 @@ class FibWindow {
 		}
 
 		// set up the first box
-		first_box.fib_container.classList.remove("single");
-		if (boxes.length == 1 || !split_enabled)
-			first_box.fib_container.classList.add("single");
-		if (first_box &&
-			first_box.bg_content && 
-			(!first_box.in_background || el_bg_workspace.focused_guid != first_box.guid)) {
-			blanke.clearElement(el_bg_workspace);
-			first_box.in_background = true;
-			first_box.fib_container.classList.add("first");
-			el_bg_workspace.dataset.type = first_box.type;
-			el_bg_workspace.focused_guid = first_box.guid;
-			el_bg_workspace.appendChild(first_box.bg_content);
+		if (first_box) {
+			first_box.fib_container.classList.remove("single");
+			
+			if (boxes.length == 1 || !split_enabled)
+				first_box.fib_container.classList.add("single");
+			if (first_box.bg_content && 
+				(!first_box.in_background || el_bg_workspace.focused_guid != first_box.guid)) {
+				blanke.clearElement(el_bg_workspace);
+				first_box.in_background = true;
+				first_box.fib_container.classList.add("first");
+				el_bg_workspace.dataset.type = first_box.type;
+				el_bg_workspace.focused_guid = first_box.guid;
+				el_bg_workspace.appendChild(first_box.bg_content);
+			}
+		}
+
+		if (boxes[0])
+			boxes[0]._onFocus();
+	}
+
+	_onFocus () {
+		if (this.onFocus) // TODO: don't focus if already focused
+			this.onFocus();
+		this.focused = true;
+		for (var b = 0; b < boxes.length; b++) {
+			if (boxes[b].title != this.title) {
+				boxes[b].focused = false;
+			}
 		}
 	}
 

@@ -20,14 +20,35 @@ class SpritesheetPreview extends Editor {
 			['name', 'text'],
 			['offset', 'number', {'inputs':2, 'separator':'x'}],
 			['speed', 'number', {'inputs':1,'step':'0.1','min':'0','default':"1.0"}],
-			['frame size', 'number', {'inputs':2, 'separator':'x'}],
+			['frame_size', 'number', {'inputs':2, 'separator':'x'}],
 			['frames','number',{'inputs':1}],
 			['columns','number',{'inputs':1}],
-			['border','number',{'inputs':1}]
+			['border','number',{'inputs':2}]
 		]);
 		this.el_sheet_form.onChange('speed',function(val){
 			if (val < 0) return 1;
 		});
+		this.frame_size_changed = false;
+		let autoFrameSize = () => {
+			let { frame_size, columns, frames } = this.getValues();
+			if (this.el_image && (!this.frame_size_changed || frame_size[0] + frame_size[1] == 0)) {
+				if (columns == 0) {
+					this.el_sheet_form.setValue("columns", frames);
+					columns = frames;
+				} 
+				this.el_sheet_form.setValue("frame_size",this.el_image.width / columns,0);
+				this.el_sheet_form.setValue("frame_size",(this.el_image.height / Math.ceil(frames / columns)) || this.el_image.height,1);
+				
+			}
+		}
+		this.el_sheet_form.onChange('frame_size',()=>{
+			this.el_sheet_form.getInput('frame_size').forEach(i => {
+				if (document.activeElement == i)
+					this.frame_size_changed = true;
+			})
+		})
+		this.el_sheet_form.onChange('frames',() => { autoFrameSize() });
+		this.el_sheet_form.onChange('columns',() => { autoFrameSize() });
 		this.el_sheet_form.container.classList.add("dark");
 		this.appendChild(this.el_sheet_form.container);
 
@@ -95,7 +116,6 @@ class SpritesheetPreview extends Editor {
 			if (img_name && img_name != '') {
 				let match;
 				for (let i = 0; i < this_ref.image_list.length; i++) {
-					console.log(this_ref.image_list[i])
 					if (match = this_ref.image_list[i].match(/image[\\/]+([/\\-\s\w]*)\./)) {
 						if (match[1] == img_name) {
 							this_ref.setImage(this_ref.image_list[i]);
@@ -156,7 +176,7 @@ class SpritesheetPreview extends Editor {
 		this.el_sheet_form.onChange("image",function(val){
 			this_ref.setImage(val);
 		});
-		for (let prop of ["name","offset","speed","border", "frame size", "frames", "columns"]) {
+		for (let prop of ["name","offset","speed","border", "frame_size", "frames", "columns"]) {
 			this.el_sheet_form.onChange(prop, function(){ this_ref.updateFrames(); });
 		}
 
@@ -181,12 +201,15 @@ class SpritesheetPreview extends Editor {
 
 			// use last used values
 			if (app.project_settings.spritesheet_prvw && app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)]) {
-				this_ref.el_sheet_form.useValues(app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)]);
+				let sheet_values = app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)];
+				this_ref.el_sheet_form.useValues(sheet_values);
+				if (sheet_values['frame_size'][0] + sheet_values['frame_size'][1] != 0)
+					this_ref.frame_size_changed = true;
 			}
 
 			// fit image into window frame
 			let container_w = this_ref.el_image_container.offsetWidth, container_h = this_ref.el_image_container.offsetHeight;
-			let calculated_scale = container_w / img_w > container_h / img_h ? container_w / img_w : container_h / img_h;
+			let calculated_scale = container_w / img_w < container_h / img_h ? container_w / img_w : container_h / img_h;
 			this_ref.setScale(calculated_scale > 1.0 ? calculated_scale / 2.0 : calculated_scale);
 
 			this_ref.updateFrames();
@@ -199,13 +222,13 @@ class SpritesheetPreview extends Editor {
 		let name = this.el_sheet_form.getValue("name");
 		let offset = [this.el_sheet_form.getValue("offset",0), this.el_sheet_form.getValue("offset",1)];
 		let speed = this.el_sheet_form.getValue("speed");
-		let frame_dims = [this.el_sheet_form.getValue("frame size",0), this.el_sheet_form.getValue("frame size",1)];
+		let frame_dims = [this.el_sheet_form.getValue("frame_size",0), this.el_sheet_form.getValue("frame_size",1)];
 		let frames = this.el_sheet_form.getValue("frames");
 		let columns = this.el_sheet_form.getValue("columns");
-		let border = this.el_sheet_form.getValue("border");
+		let border = [this.el_sheet_form.getValue("border",0), this.el_sheet_form.getValue("border",1)];
 		return {
-			'name':name,'offset':offset,'speed':speed,'frame size':frame_dims,
-			'frames':frames,'selected frames':this.frames,'columns':columns,'border':border,'image':this.selected_img
+			'name':name,'offset':offset,'speed':speed,'frame_size':frame_dims,
+			'frames':frames,'selected_frames':this.frames,'columns':columns,'border':border,'image':this.selected_img
 		}
 	}
 
@@ -222,13 +245,13 @@ class SpritesheetPreview extends Editor {
 
 		// create the rectangles
 		blanke.clearElement(this.el_frames_container);
-		let x = vals.offset[0] + vals.border, y = vals.offset[1] + vals.border;
+		let x = vals.offset[0] + vals.border[0], y = vals.offset[1] + vals.border[1];
 		for (let f = 0; f < vals.frames; f++) {
 			let el_frame = blanke.createElement("div","frame");
 			el_frame.style.left = x+'px';
 			el_frame.style.top = y+'px';
-			el_frame.style.width = vals['frame size'][0]+'px';
-			el_frame.style.height = vals['frame size'][1]+'px';
+			el_frame.style.width = vals['frame_size'][0]+'px';
+			el_frame.style.height = vals['frame_size'][1]+'px';
 			el_frame.draggable = false;
 			el_frame.addEventListener("click",function(){
 				el_frame.classList.toggle("ignore");
@@ -236,11 +259,11 @@ class SpritesheetPreview extends Editor {
 			});
 			this.el_frames_container.appendChild(el_frame);
 
-			x += vals['frame size'][0] + vals.border;
+			x += vals['frame_size'][0] + vals.border[0];
 			
-			if ( x > vals.offset[0] + ((vals.columns-1) * (vals['frame size'][0]+(vals.columns*vals.border) )) ) {
-				x = vals.offset[0] + vals.border;
-				y += (vals['frame size'][1] + vals.border);
+			if ( x > vals.offset[0] + ((vals.columns-1) * (vals['frame_size'][0]+(vals.columns*vals.border[0]) )) ) {
+				x = vals.offset[0] + vals.border[0];
+				y += (vals['frame_size'][1] + vals.border[1]);
 			}
 		}
 
@@ -286,8 +309,8 @@ class SpritesheetPreview extends Editor {
 				parseInt(el_frames[f].style.width), parseInt(el_frames[f].style.height)
 			]);
 
-			new_x = Math.floor((x-vals.offset[0]) / (vals['frame size'][0] + vals.border)) + 1;
-			new_y = Math.floor((y-vals.offset[1]) / (vals['frame size'][1] + vals.border)) + 1;
+			new_x = Math.floor((x-vals.offset[0]) / (vals['frame_size'][0] + vals.border[0])) + 1;
+			new_y = Math.floor((y-vals.offset[1]) / (vals['frame_size'][1] + vals.border[1])) + 1;
 			// moving to a new row
 			if (new_y > last_y) {
 				curr_chain = getChainCouple();
@@ -361,12 +384,14 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'Add images',
 		onSelect: function() {
-			blanke.chooseFile('file', function(files){
+			blanke.chooseFile({
+				properties:['openFile','multiSelections']
+			}, function(files){
 				files = files.split(';');
 				for (var f of files) {
 					app.addAsset('image',f);
 				}
-			}, true, true);
+			});
 		},
 		tags: ['view']
 	});

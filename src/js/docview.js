@@ -3,31 +3,28 @@ const md_parser = new commonmark.Parser();
 const md_writer = new commonmark.HtmlRenderer();
 
 let plugin_md_list = [];
-
-/*
-    monokai-sublime
-*/
+let getDocPath = () => nwPATH.join(app.settings.engine_path,'docs');
 
 class Docview extends Editor {
 	constructor (...args) {
 		super(...args);
 
-		if (DragBox.focus('Docs')) return;
+		if (DragBox.focus('Docs', true)) return;
 
 		this.setupDragbox();
 		this.setTitle('Docs');
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 640;
-		this.container.height = 350;
+		this.container.width = 550;
+		this.container.height = 365;
 
 		var this_ref = this;
 
 		this.doc_data = {};
 		this.doc_container = app.createElement("div","doc-container");
 
-		let doc_path = nwPATH.join(app.settings.engine_path,'lua','blanke','docs');
+		let doc_path = getDocPath();
 		nwFS.readFile(nwPATH.join(doc_path,'docs.json'), 'utf-8', function(err, data){
 			if (!err) {
 				this_ref.doc_sections = JSON.parse(data);
@@ -68,13 +65,14 @@ class Docview extends Editor {
 
 									// syntax highlighting
 									document.querySelectorAll('code').forEach(block => {
-										block.className = 'lua';
+										block.className = 'javascript';
 										hljs.highlightBlock(block);
 									});
 									// links
 									document.querySelectorAll('a').forEach(block => {
+										block.title = block.href;
 										block.onclick = function(){
-											nwGUI.Shell.openExternal(this.href);
+											app.openURL(this.href);
 											return false;
 										}
 									});
@@ -107,14 +105,22 @@ class Docview extends Editor {
 
 	static addPlugin(title, file) {
 		let found = false;
-		file = nwPATH.relative(nwPATH.join(app.settings.engine_path,'lua','blanke','docs'), file);
-		plugin_md_list.map((obj) => {
-			if ((obj.title) == title) {
+		file = nwPATH.relative(getDocPath(), file);
+
+		plugin_md_list.forEach((obj) => {
+			if (obj.title == title) {
 				obj.file = file;
+				found = true;
+			} else if (obj.file == file) {
+				obj.title = title;
 				found = true;
 			}
 		});
 		if (!found)
 			plugin_md_list.push({"title":title, "file":file});
+	}
+
+	static removePlugin(file) {
+		plugin_md_list = plugin_md_list.filter(p => p.file != file);
 	}
 }
