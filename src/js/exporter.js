@@ -239,10 +239,11 @@ Blanke.addGame('${app.project_settings.export.name}',{
 			.then(() => {
 				// move assets
 				nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
-				for (let a of ['04B_03.ttf','gamecontrollerdb.txt','game.css','config.json'])
-					nwFS.copySync(nwPATH.join(app.project_path, a), nwPATH.join(temp_dir, a));
-				// entry.js
-				nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
+				if (target_os != 'web') {
+					for (let a of ['04B_03.ttf','gamecontrollerdb.txt','game.css','config.json'])
+						nwFS.copySync(nwPATH.join(app.project_path, a), nwPATH.join(temp_dir, a));
+					// entry.js
+					nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
 const elec = require('electron');
 //process.noAsar = true;
 elec.app.on('ready', function(){
@@ -256,9 +257,9 @@ elec.app.on('ready', function(){
 		main_window.setMenuBarVisibility(false);
 	main_window.loadFile('index.html');
 });
-				`,'utf-8');
-				// package.json
-				nwFS.writeFileSync(nwPATH.join(temp_dir,'package.json'),`
+					`,'utf-8');
+					// package.json
+					nwFS.writeFileSync(nwPATH.join(temp_dir,'package.json'),`
 {
 	"name": "${app.project_settings.export.name}",
 	"description": "Made with BlankE",
@@ -266,7 +267,8 @@ elec.app.on('ready', function(){
 	"main": "./entry.js",
 	"chromium-args": "--enable-webgl --ignore-gpu-blacklist"
 }
-				`,'utf-8');
+					`,'utf-8');
+				}
 				// create js file
 				this_ref.createJS(temp_dir, target_os, function(){	
 					if (target_os != 'web') 
