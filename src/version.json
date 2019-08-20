@@ -1,4 +1,5 @@
 {
+	"0.2.1":["fixes post-update relaunch bug"],
 	"0.2":["uses PIXI.js now"],
 	"0.1":["removed debugging code"],
 	"0.0.1":["receive a message when there are no updates available","restart after update"],

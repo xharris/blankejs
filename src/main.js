@@ -972,7 +972,8 @@ var app = {
 				nwFS.removeSync('update.zip');
 				toast.text = 'Done updating. Restarting';
 				// restart app
-				chrome.runtime.reload();
+				elec.remote.app.relaunch();
+				elec.remote.app.exit();
 			})
 			.on('error',(err)=>{
 				app.error('Could not download update',err);
