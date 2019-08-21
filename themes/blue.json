@@ -1,8 +1,9 @@
 {
     "ide-accent": "#1bdcdc",
     "ide-bold": "#4fc3f7",
-    "ide-accent-2": "#80CBC4",
+    "ide-accent-2": "#80DEEA",
     "theme-string": "#24aef3",
+    "theme-value": "#b2ebf2",
     "theme-string-dark": "#0a85c2",
     "theme-list-active-bg": "#002738",
     "theme-text-sub": "#00B0FF",

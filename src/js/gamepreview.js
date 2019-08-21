@@ -165,12 +165,12 @@ class GamePreview {
 
 		// game controls
 		this.el_control_bar = app.createElement("div","control-bar");
+		
 		this.el_refresh = app.createIconButton("refresh","refresh");
 		this.el_refresh.addEventListener('click',()=>{
 			this.refreshSource();
 		});
 		this.el_control_bar.appendChild(this.el_refresh);
-		this.el_control_bar = app.createElement("div","control-bar");
 		this.el_pauseplay = app.createIconButton("pause","pause");
 		this.el_pauseplay.addEventListener('click',()=>{
 			this.game_paused() ? this.game_resume() : this.game_pause();

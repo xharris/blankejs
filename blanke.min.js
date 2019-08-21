@@ -89,7 +89,7 @@ var Blanke = (selector, options) => {
     this.focused = false;
     app.view.tabIndex=-1;
     app.view.style.outline="none";
-    app.view.addEventListener('focus',(e)=> {
+    app.view.addEventListener('focus',(e)=> { 
         blanke_ref.focused = true;
     });
     app.view.addEventListener('blur',(e)=> {
@@ -97,7 +97,7 @@ var Blanke = (selector, options) => {
     });
     if (this.options.auto_focus) app.view.focus();
     // resize renderer with parent
-    if (this.options.resizable)
+    if (this.options.resizable || this.options.ide_mode)
         app.renderer.resize(parent.clientWidth, parent.clientHeight);
     // crop width/height of game (dont show stuff out of bounds)
     let render_rect = new PIXI.Graphics();
@@ -123,7 +123,7 @@ var Blanke = (selector, options) => {
     }
 
     const engineLoaded = () => {
-        if (Game.os != "web" && blanke_ref.options.resizable) {
+        if (Game.os != "web" && (blanke_ref.options.resizable || blanke_ref.options.ide_mode)) {
             window.addEventListener('resize',function(){
                 app.renderer.resize(parent.clientWidth, parent.clientHeight);
                 
@@ -171,7 +171,7 @@ var Blanke = (selector, options) => {
         // load config.json
         if (this.options.config != null) {
             Game.config = this.options.config;
-            if (this.options.resizable) {
+            if (this.options.resizable || this.options.ide_mode) {
                 app.resizeTo = parent;
             }
         }
