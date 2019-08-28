@@ -483,7 +483,7 @@ class Code extends Editor {
 		// set up events
 		//this.codemirror.setSize("100%", "100%");
 		function checkGutterEvents(cm, obj) {
-			blanke.cooldownFn('checkGutterEvents',250,()=>{
+			blanke.cooldownFn('checkGutterEvents',1000,()=>{
 				let cur = cm.getCursor();
 				let line_text = cm.getLine(cur.line);
 	

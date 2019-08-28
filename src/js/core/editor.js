@@ -89,12 +89,20 @@ class Editor {
 
 	// Tab ONLY	
 	setOnClick() {
+		let fn = arguments;
+		if (this.container_type != 'tab')
+			fn = arguments[0];
+		let old_fn = fn;
+
+		if (['tab','fibwindow','sidewindow'].includes(this.container_type) && this.container.onTabFocus)
+			fn = (...args) => { this.container.onTabFocus(); old_fn(...args); };
+			
 		if (this.container_type == 'tab')
-			this.container.setOnClick.apply(this.container, arguments);
+			this.container.setOnClick.apply(this.container, fn);
 		if (this.container_type == 'fibwindow')
-			app.setHistoryClick(this.container.history_id, arguments[0]);
+			app.setHistoryClick(this.container.history_id, fn);
 		if (this.container_type == 'sidewindow')
-			app.setHistoryClick(this.container.history_id, arguments[0]);
+			app.setHistoryClick(this.container.history_id, fn);
 	}
 
 	close(...args) {

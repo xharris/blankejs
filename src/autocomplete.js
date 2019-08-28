@@ -80,8 +80,8 @@ module.exports.user_words = {
 
 module.exports.image = [
 	/Sprite\(["']([\w\s\/.-]+)["']\)/,
-	/self:addSprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/,
-	/Sprite[\s\w{(="',]+image[\s=]+['"]([\w\s\/.-]+)/
+	/this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/,
+	/new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/
 ];
 
 module.exports.this_ref = {

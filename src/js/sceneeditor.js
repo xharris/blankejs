@@ -813,6 +813,10 @@ class SceneEditor extends Editor {
 		this.addCallback("onTabFocus", function(){
 			this_ref.refreshImageList();
 			this_ref.loadObjectsFromSettings();
+			// refresh image aligns
+			this_ref.iterObject(this_ref.curr_object.name, function(obj) {
+				this_ref.drawObjImage(this_ref.curr_object, obj.image, obj.points);
+			});
 			this_ref.has_focus = true;
 		});
 		this.addCallback("onTabLostFocus", function(){
@@ -1237,7 +1241,7 @@ class SceneEditor extends Editor {
 	// get an image to show behind polygon
 	drawObjImage (obj, spr, points) {
 		if (!spr) spr = new PIXI.Sprite();
-		let info = Code.sprites[obj.name];;
+		let info = Code.sprites[obj.name];
 		if (info) {
 			spr.visible = true;
 			let tex = PIXI.Texture.from('file://'+info.path);

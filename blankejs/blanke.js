@@ -32,6 +32,10 @@ var Blanke = (selector, options) => {
     }
 */
 
+    let elec = null;
+    try {
+        elec = require('electron');
+    } catch (e) {}
     let blanke_ref = this;
     this.options = Object.assign({
         auto_focus: true,
@@ -123,7 +127,7 @@ var Blanke = (selector, options) => {
     }
 
     const engineLoaded = () => {
-        if (Game.os != "web" && (blanke_ref.options.resizable || blanke_ref.options.ide_mode)) {
+        if (Game.os != "web") {
             window.addEventListener('resize',function(){
                 app.renderer.resize(parent.clientWidth, parent.clientHeight);
                 
@@ -348,7 +352,7 @@ var Blanke = (selector, options) => {
             let pixi_objs = this._getPixiObjs();
             for (let o of pixi_objs) {
                 o._last_parent = o.parent;
-                o.setParent(parent_container);
+                o.setParent(parent);
             }
             return true;
         }
@@ -399,10 +403,10 @@ var Blanke = (selector, options) => {
             return '?';
         },
         get width () { 
-            return (blanke_ref.options.resize || blanke_ref.options.ide_mode) ? app.view.width : blanke_ref.options.width;
+            return (!blanke_ref.options.scale || blanke_ref.options.ide_mode) ? app.view.width : blanke_ref.options.width;
         },
         get height () { 
-            return (blanke_ref.options.resize || blanke_ref.options.ide_mode) ? app.view.height : blanke_ref.options.height; 
+            return (!blanke_ref.options.scale || blanke_ref.options.ide_mode) ? app.view.height : blanke_ref.options.height; 
         },
         get background_color () { return app.renderer.backgroundColor; },
         set background_color (v) { 
@@ -430,6 +434,12 @@ var Blanke = (selector, options) => {
                 app.ticker.addOnce(()=>{
                     Game.pause();
                 },null,PIXI.UPDATE_PRIORITY.UTILITY);
+            }
+        },
+        elec_win: null,
+        get window () {
+            if (['win','mac','linux'].includes(Game.os) && elec) {
+                return elec.remote.BrowserWindow.getFocusedWindow();
             }
         },
         // replaces the game with a screenshot
@@ -462,6 +472,9 @@ var Blanke = (selector, options) => {
         },
         set fullscreen (v) {
             if (Game.os != 'ide') {
+                let win = Game.window;
+                if (win)
+                    win.setResizable(true);
                 let c = app.view;
                 if (v) {
                     (
@@ -480,6 +493,9 @@ var Blanke = (selector, options) => {
                         function () {throw new Error("Can't leave fullscreen!")}
                     ).call(document);
                 }
+                
+                if (win)
+                    win.setResizable(blanke_ref.options.resizable);
             }
         },
         end: () => { 
@@ -907,7 +923,7 @@ var Blanke = (selector, options) => {
             Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
-                if (!this._size_changed && !blanke_ref.options.ide_mode)
+                if (!this._size_changed && blanke_ref.options.resizable && !blanke_ref.options.scale && !blanke_ref.options.ide_mode)
                     this.resize(
                         app.view.width / blanke_ref.options.resolution, 
                         app.view.height / blanke_ref.options.resolution, 
@@ -1459,7 +1475,7 @@ var Blanke = (selector, options) => {
             Hitbox.world.remove(this);
         }
     }
-    Hitbox.world = new SpatialHash(Math.max(Game.width, Game.height)/2);
+    Hitbox.world = new SpatialHash(Math.max(window.screen.width, window.screen.height)/2);
 
     /* -ENTITY */
     class Entity extends GameObject {
@@ -1580,7 +1596,8 @@ var Blanke = (selector, options) => {
                         this._triggerCollision(name, info);
                         info[1].sep_vec.x = -info[1].sep_vec.x;
                         info[1].sep_vec.y = -info[1].sep_vec.y;
-                        info[0].parent._triggerCollision(info[0].name, info)
+                        if (info[0].parent && info[0].parent.is_entity)
+                            info[0].parent._triggerCollision(info[0].name, info)
                         if (this.destroyed) return;
                     }
                     delete this.collisionStopY;
@@ -2186,14 +2203,17 @@ var Blanke = (selector, options) => {
                             is_name: false
                         }, true)
                         // Map.config.tile_hitboxes
-                        if (Array.isArray(Map.config.tile_hitboxes)) {
-                            let asset_name = Asset.parseAssetName(img_info.path);
-                            if (Map.config.tile_hitboxes.includes(asset_name)) {
-                                new_map.addHitbox({
-                                    type: 'rect',
-                                    shape: [c[0], c[1], c[4], c[5]],
-                                    tag: asset_name
-                                })
+                        if (Map.config.tile_hitbox) {
+                            for (let tag in Map.config.tile_hitbox) {
+                                let image_names = Map.config.tile_hitbox[tag];
+                                let asset_name = Asset.parseAssetName(img_info.path);
+                                if (image_names.includes(asset_name)) {
+                                    new_map.addHitbox({
+                                        type: 'rect',
+                                        shape: [c[0], c[1], c[4], c[5]],
+                                        tag: tag
+                                    })
+                                }
                             }
                         }
                     }
@@ -2322,12 +2342,14 @@ var Blanke = (selector, options) => {
                 let layer_obj = this.layers[0];
                 if (layer) 
                     layer_obj = this.layers.find((l) => l._name == layer);
-                etNewParent(new_ent, layer_obj);
+                new_ent.setParent(layer_obj);
             }
             return new_ent;
         }
         spawnEntity (entity_class, obj_name, opt) {
             opt = Object.assign(Map._ent_default_opt, opt || {});
+            if (!obj_name)
+                obj_name = entity_class.name;
             let {layer} = opt;
             let entities = [];
             if (!layer) {

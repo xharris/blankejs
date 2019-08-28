@@ -168,7 +168,7 @@ class GamePreview {
 		
 		this.el_refresh = app.createIconButton("refresh","refresh");
 		this.el_refresh.addEventListener('click',()=>{
-			this.refreshSource();
+			this.refreshSource(this.last_script);
 		});
 		this.el_control_bar.appendChild(this.el_refresh);
 		this.el_pauseplay = app.createIconButton("pause","pause");

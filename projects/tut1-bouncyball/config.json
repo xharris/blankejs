@@ -92,7 +92,7 @@
         "web_autoplay": false,
         "frameless": false,
         "minify": true,
-        "resizable": false,
+        "resizable": true,
         "scale": true
     }
 }

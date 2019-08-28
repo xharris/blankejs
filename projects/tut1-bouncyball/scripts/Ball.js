@@ -5,13 +5,18 @@ class Ball extends Entity {
 		this.sprite_align = "center"
 		// fall towards the bottom of the screen
 		this.gravity = 0.1;
-		this.gravity_direction = 90
+		this.gravity_direction = 90;
 		
 		this.addShape("main","circle")
 		
 		this.onCollision['main'] = (other, res) => {
 			if (other.tag == "Paddle") {
-				this.collisionBounce(Util.lerp(1,1.01,this.y/Game.height))
+				this.collisionBounce(Util.lerp(1,1.03,this.y/Game.height))
+				// this.hspeed += Math.max(
+				let dist = this.x - (other.x+(other.parent.sprite_width/2));
+				this.hspeed += dist/10;
+				this.hspeed = Math.min(2,Math.abs(this.hspeed)) * Math.sign(this.hspeed);
+				
 				Event.emit("ball_bounce")
 			}
 		}
@@ -27,15 +32,10 @@ TestScene({
 	onStart (sc) {
 		let bob = new Ball();
 		bob.x = 100;
-		
-		sc.box = new Hitbox({
-			type: 'rect',
-			shape: [0,Game.height/2,100,10],
-			tag: 'Paddle',
-			debug: true
-		})
+		sc.pad = new Paddle();
 	},
 	onUpdate (sc) {
-		sc.box.position(Input.mouse.global.x, Input.mouse.global.y)
+		sc.pad.x = Input.mouse.global.x;
+		sc.pad.y = Input.mouse.global.y;
 	}
 })
