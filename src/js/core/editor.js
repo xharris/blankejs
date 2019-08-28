@@ -30,6 +30,7 @@ class Editor {
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
+		app.refreshQuickAccess();
 		return this;
 	}
 
@@ -43,7 +44,11 @@ class Editor {
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
-		this.container.onClose = this.onClose;
+		this.container.onClose = (...args)=>{
+			this.onClose(...args);	
+			app.refreshQuickAccess();
+		}
+		app.refreshQuickAccess();
 		return this;
 	}
 
@@ -60,7 +65,11 @@ class Editor {
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
-		this.container.onClose = this.onClose;
+		this.container.onClose = (...args)=>{
+			this.onClose(...args);	
+			app.refreshQuickAccess();
+		}
+		app.refreshQuickAccess();
 		return this;
 	}
 
@@ -76,9 +85,13 @@ class Editor {
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
-		this.container.onClose = this.onClose;
+		this.container.onClose = (...args)=>{
+			this.onClose(...args);	
+			app.refreshQuickAccess();
+		}
 		if (transparent) 
 			this.container.el_container.classList.add("transparent");
+		app.refreshQuickAccess();
 		return this;
 	}
 
@@ -86,16 +99,21 @@ class Editor {
 		if (this.container)
 			app.removeHistory(this.container.history_id);
 	}
-
-	// Tab ONLY	
+	
 	setOnClick() {
 		let fn = arguments;
 		if (this.container_type != 'tab')
 			fn = arguments[0];
 		let old_fn = fn;
 
-		if (['tab','fibwindow','sidewindow'].includes(this.container_type) && this.container.onTabFocus)
-			fn = (...args) => { this.container.onTabFocus(); old_fn(...args); };
+		if (['tab','fibwindow','sidewindow'].includes(this.container_type))
+			fn = (...args) => {
+				console.log('ok',this.getTitle())
+				app.refreshQuickAccess(this.getTitle());
+				if (this.container.onTabFocus)
+					this.container.onTabFocus();
+				old_fn(...args);
+			};
 			
 		if (this.container_type == 'tab')
 			this.container.setOnClick.apply(this.container, fn);
@@ -178,6 +196,10 @@ class Editor {
 
 	isInBackground () {
 		return this.container.in_background == true;
+	}
+
+	getTitle (with_sub) {
+		return this.container.getTitle(with_sub);
 	}
 
 	setTitle (val) {

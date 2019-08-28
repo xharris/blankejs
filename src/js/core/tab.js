@@ -61,6 +61,7 @@ class Tab {
 		let contents = app.getElements("#workspace > .content");
 		for (var t = 0; t < contents.length; t++) {
 			if (contents[t].this_ref.title == title){
+				app.refreshQuickAccess(title);
 				contents[t].classList.remove("hidden");
 				found = true;
 				app.addHistory(title);

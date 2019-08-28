@@ -1,3 +1,5 @@
+// NOTE: REMOVE pointer-events: none FROM main.less#vscroll
+
 var instances = [];
 var curr_category = '';
 var MAX_WINDOWS = 10; //5;
@@ -110,6 +112,7 @@ class SideWindow {
 		for (let c in instances) {
 			// find the window
 			if (instances[c].title == title) {
+				app.refreshQuickAccess(title);
 				child = instances[c];
 			}
 		}
@@ -158,6 +161,10 @@ class SideWindow {
 			new_fill.style.minHeight = container.clientHeight+"px";
 			container.appendChild(new_fill);
 		}
+	}
+
+	getTitle (with_sub) {
+		return (with_sub ? this.title+this.subtitle : this.title);
 	}
     
 	setTitle (value) {

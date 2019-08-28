@@ -46,7 +46,7 @@ var Blanke = (selector, options) => {
         scale: true,     // true: keep original canvas size and scale when game is resized
         ide_mode: false,
         root: null,
-        background_color: 0x000,
+        background_color: 0x485358,
         scale_mode: 'nearest',
         round_pixels: true,
         fps: 60,
@@ -69,10 +69,9 @@ var Blanke = (selector, options) => {
         width: this.options.width,
         height: this.options.height,
         resolution: 1, //window.devicePixelRatio || 1,
-        backgroundColor: this.options.ide_mode ? 0x485358 : this.options.background_color
+        backgroundColor: this.options.background_color
     });
     //parent.innerHTML = "";
-    parent.appendChild(app.view);
     // add main container for game
     
     let game_container = new PIXI.Container();
@@ -169,7 +168,6 @@ var Blanke = (selector, options) => {
             }, false);
         }
 
-        removeSnaps();
         Game.time = 0;
         Game.ide_mode = this.options.ide_mode;
         // load config.json
@@ -196,6 +194,9 @@ var Blanke = (selector, options) => {
                 Event.ref[name] = Event.ref[name].filter(e => e.scene != name);
             }
         })
+
+        parent.appendChild(app.view);
+        removeSnaps();
 
         Asset.add(this.options.assets);
         Asset.load(() => {

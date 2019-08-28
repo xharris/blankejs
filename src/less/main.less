@@ -229,6 +229,70 @@ a {
 	}
 }
 
+#recent-history {
+	width: 100%;
+	margin-top: 100px;
+	transition: all ease-in-out 0.5s;
+
+	&.hidden {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.history-container {
+		width: 100%;
+		cursor: pointer;
+		opacity: 0.5;
+		transition: all ease-in-out 0.1s;
+
+		.history {
+			font-size: 20px;
+			line-height: 20px;
+		}
+		&:nth-child(1) .history {
+			font-size: 30px;
+			line-height: 30px;
+		}
+		&:nth-child(2) .history {
+			font-size: 25px;
+			line-height: 25px;
+		}
+
+		
+		&:hover {
+			opacity: 1;
+
+			.history {
+				color: @window-background;
+				background-size: 100% 100%;
+				font-weight: 900;
+			}
+		}
+	}
+
+	.history {
+		display: block;
+		color: #fafafa;
+		width: 80%;
+		margin: auto;
+		text-decoration: none;
+		transition: all ease-in-out 0.1s;
+		background: transparent;
+		text-align: left;
+		padding-top: 2.5px;
+		padding-bottom: 2.5px;
+		width: 100%;
+		padding-left: calc(15% + 38px);
+		font-weight: 100;
+
+		background: linear-gradient(to bottom, fade(@ide-accent, 50%) 0%, fade(@ide-accent, 50%) 100%) no-repeat;
+		background-position: center;
+		background-size: 100% 0%;
+
+		transition: all ease-in-out 0.1s;
+	}
+}
+
 #game-container {
 	position: absolute;
     top: 0px;
@@ -679,6 +743,7 @@ iframe {
 		overflow-y: auto;
 		z-index: 21;
 		scroll-snap-type: y mandatory;
+		pointer-events: none; /* TODO: remove this if sidewindow is used again */
 
 		.fill {
 			scroll-snap-align: start;
@@ -1090,7 +1155,8 @@ iframe {
 
 			 &:hover {
     			text-shadow: 2px 2px 0px black;
-    			background-size: 100% 100%;
+				background-size: 100% 100%;
+				opacity: 1;
 			 }
 		}
 	}

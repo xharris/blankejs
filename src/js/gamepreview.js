@@ -149,6 +149,7 @@ class GamePreview {
 					this.game_checkpaused();
 				}
 			if (this.onRefresh) this.onRefresh();
+			this.iframe.style.display = 'initial';
 		})
 		this.refreshSource();
 		this.parent.appendChild(this.iframe);
@@ -157,10 +158,6 @@ class GamePreview {
 		document.addEventListener('engineChange',(e)=>{
 			if (!this.paused || this.errored)
 				this.refreshEngine();	
-		});
-		document.addEventListener('assetsChange',(e)=>{
-			if (!this.paused || this.errored)
-				this.refreshEngine();
 		});
 
 		// game controls
@@ -333,6 +330,7 @@ class GamePreview {
 	}
 	
 	refreshSource (current_script) {
+		this.iframe.style.display = 'none';
 		if (this.errored) {	
 			this.errored = false;
 		}
@@ -399,7 +397,6 @@ game_instance = Blanke("#game",{
 	height: ${this.options.size[1]},`
 	}
 	root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
-	//background_color: 0x485358,
 	assets: [${this.getAssetStr()}],
 	onLoad: function(classes){
 		let { ${GamePreview.engine_classes} } = classes;
@@ -506,6 +503,9 @@ GamePreview.getHTML = (body, ide_mode, engine_path) => {
 			#game {
 				width: 100%;
 				height: 100%;
+				background: #485358;
+			}
+			#game canvas {
 				background: #485358;
 			}
 			body > img {

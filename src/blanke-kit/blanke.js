@@ -779,18 +779,20 @@ var blanke = {
     },
     cooldown_keys: {},
     cooldownFn: function(name, cooldown_ms, fn, overwrite_timer) {
-        if (!blanke.cooldown_keys[name]) 
+        if (!blanke.cooldown_keys[name]) {
             blanke.cooldown_keys[name] = {
                 timer: null,
                 func: fn
             }
+        }
         
         // reset the timer if necessary
         if (overwrite_timer || blanke.cooldown_keys[name].timer == null) {
             clearTimeout(blanke.cooldown_keys[name].timer);
             blanke.cooldown_keys[name].timer = setTimeout(function(){
-                blanke.cooldown_keys[name].func();
+                let fn_ref = blanke.cooldown_keys[name].func;
                 delete blanke.cooldown_keys[name];
+                fn_ref();
             },cooldown_ms);
         }
 

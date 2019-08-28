@@ -125,6 +125,10 @@ var app = {
 		return nwPATH.relative(app.project_path,path);
 	},
 
+	refreshWordCloud: function() {
+
+	},
+
 	newProject: function(path) {
 		nwFS.mkdir(path, function(err) {
 			if (!err) {
@@ -479,6 +483,7 @@ var app = {
 	search_hashvals: [],
 	search_group: {},
 	search_hash_category: {},
+	search_titles: {},
 	hashSearchVal: function(key, tags) {
 		tags = tags || [];
 		tags.push('?')
@@ -503,6 +508,18 @@ var app = {
 			if (!app.search_group[options.group]) app.search_group[options.group] = [];
 			app.search_group[options.group].push(hash_val);
 		}
+	},
+	triggerSearchKey: function(hash_val) {
+		app.search_funcs[hash_val].apply(this, app.search_args[hash_val]);
+		var el_search = app.getElement("#search-input")
+		el_search.value = "";
+		el_search.blur();
+		app.clearElement(app.getElement("#search-results"));
+
+		// move found value up in list
+		app.search_hashvals = app.search_hashvals.filter(e => e != hash_val);
+		app.search_hashvals.unshift(hash_val);
+		app.refreshQuickAccess(hash_val);
 	},
 	getSearchCategory: function(hash_val) {
 		return app.search_hash_category[hash_val];
@@ -600,7 +617,8 @@ var app = {
 					ico:nwPATH.join('src','logo.ico'),
 					icns:nwPATH.join('src','logo.icns'),
 					first_scene:null,
-					size:[800,600]
+					size:[800,600],
+					quick_access:[]
 				});
 				app.saveSettings();
 				if (callback) callback();
@@ -747,6 +765,72 @@ var app = {
 		}, 1000);
 	},
 
+	// shows when nothing is open
+	_refreshQuickAccess: (hash) => {
+		if (app.isProjectOpen()) {
+			let set = app.project_settings;
+			if (hash) {
+				let last_hash, last_title, found = false;
+				set.quick_access = set.quick_access.filter(h => {
+					if (h[0] == hash || h[1] == hash) {
+						last_hash = h[0]
+						last_title = h[1];
+						hash = last_hash;
+						found = true;
+					} else
+						return true;
+				});
+				if (found) {
+					set.quick_access.unshift([hash || last_hash, app.search_titles[hash] || last_title]);
+					app.saveSettings();
+				}
+			}
+			let el_container = app.getElement("#recent-history");
+			// check if anything needs to be changed
+			let different = false;
+			if (el_container.childElementCount == 0) {
+				different = true;
+			} else {
+				for (let h = 0; h < el_container.childElementCount; h++) {
+					let hash = set.quick_access[h][0];
+					let child = el_container.children.item(h);
+					if (!child || child.hash != hash) {
+						different = true;
+					}
+				}
+			}
+			// remake quick access list
+			if (different) {
+				app.clearElement(el_container);
+				for (let h of set.quick_access) {
+					let el_link_container = app.createElement('div','history-container');
+					let el_link = app.createElement('a','history');
+					el_link.innerHTML = h[1];
+					el_link_container.onclick = ()=>{
+						app.triggerSearchKey(h[0]);
+					}
+					el_link_container.appendChild(el_link);
+					el_link_container.hash = h[0];
+					el_container.appendChild(el_link_container);
+				}
+			}
+			// show quick access only if workspace is empty
+			if (app.getElement("#workspace").childElementCount == 0)
+				app.getElement("#recent-history").classList.remove("hidden");
+			else
+				app.getElement("#recent-history").classList.add("hidden");
+		}
+		app.refreshQuickAccess(null, true);
+	},
+
+	refreshQuickAccess: (hash, not_now) => {
+		if (!not_now) // double negative lol
+			app._refreshQuickAccess(hash);
+		blanke.cooldownFn('refreshQuickAccess',2000,()=>{
+			app._refreshQuickAccess(hash);
+		})
+	},
+
 	// TAB BAR (history)
 	history_ref: {},
 	addHistory: function(title) {
@@ -802,9 +886,10 @@ var app = {
 		if (!skip_highlight)
 			app.setHistoryHighlight(id);
 
+		app.refreshQuickAccess(app.search_titles[id]);
 		return e.entry.dataset.guid;
 	},
-
+	
 	setHistoryClick: function(id, fn_onclick) {
 		if (app.history_ref[id]) {
 			app.history_ref[id].entry_title.addEventListener('click',function(){
@@ -1013,8 +1098,10 @@ app.window.webContents.on("did-finish-load",()=>{
 		}
 	})
 	if (process.argv[1]) {
-		console.log(process.argv);
+		// console.log(process.argv);
 	}
+
+	app.refreshQuickAccess();
 
 	// remove error file
 	nwFS.remove(nwPATH.join(app.getAppDataFolder(),'error.txt'));
@@ -1088,8 +1175,9 @@ app.window.webContents.on("did-finish-load",()=>{
 
 			// add results to div
 			for (var r = 0; r < results.length; r++) {
-				let result = app.unhashSearchVal(results[r]);
-				let category = app.getSearchCategory(results[r]);
+				let hash = results[r];
+				let result = app.unhashSearchVal(hash);
+				let category = app.getSearchCategory(hash);
 
 				// add category div
 				if (category && !categories[category]) {
@@ -1109,8 +1197,9 @@ app.window.webContents.on("did-finish-load",()=>{
 
 				let el_result = app.createElement("div", "result");
 				el_result.innerHTML = result.key;
-				el_result.dataset.hashval = results[r];
-				el_result.dataset.func = app.search_funcs[results[r]];
+				app.search_titles[hash] = result.key;
+				el_result.dataset.hashval = hash;
+				el_result.dataset.func = app.search_funcs[hash];
 
 				if (category)
 					categories[category].el_children.append(el_result);
@@ -1122,16 +1211,8 @@ app.window.webContents.on("did-finish-load",()=>{
 		}
 	})
 	function selectSearchResult(hash_val) {
-		app.search_funcs[hash_val].apply(this, app.search_args[hash_val]);
-		var el_search = app.getElement("#search-input")
-		el_search.value = "";
-		el_search.blur();
-		app.clearElement(app.getElement("#search-results"));
-
-		// move found value up in list
-		app.search_hashvals = app.search_hashvals.filter(e => e != hash_val);
-		app.search_hashvals.unshift(hash_val);
 		selected_index = -1;
+		app.triggerSearchKey(hash_val);
 	}
 
 	app.getElement("#search-results").addEventListener('click', function(e){
@@ -1289,6 +1370,7 @@ app.window.webContents.on("did-finish-load",()=>{
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();
 		}});
+		app.refreshQuickAccess();
 	});
 
 	app.loadAppData(function(){

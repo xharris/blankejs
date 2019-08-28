@@ -109,6 +109,7 @@ class FibWindow {
 
 		for (var b = 0; b < boxes.length; b++) {
 			if (boxes[b].title == title) {
+				app.refreshQuickAccess(title);
 				boxes[b].fib_title.click();
 				boxes.unshift(boxes.splice(b,1)[0]);
 				FibWindow.resizeWindows();
@@ -196,6 +197,10 @@ class FibWindow {
 		// update the history bar
 		if (boxes.length > 0 && boxes[0].history_id) app.setHistoryMostRecent(boxes[0].history_id);
 		FibWindow.refreshBadgeNum();
+	}
+
+	getTitle (with_sub) {
+		return (with_sub ? this.title+this.subtitle : this.title);
 	}
 
 	setTitle (value) {
