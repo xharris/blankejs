@@ -38,13 +38,13 @@ function isReservedWord(word) {
 // called when autocomplete.js is modified
 var reloadCompletions = () => {
     // get regex from autocomplete.js
-    autocomplete = app.autocomplete;
+	autocomplete = nwCLONE(app.autocomplete);
 
 	let plugin_ac = Plugins.getAutocomplete();
 	for (let p in plugin_ac) {
 		addCompletions(plugin_ac[p]);
 	}
-
+	
     re_class_extends = autocomplete.class_extends || {};
     re_instance = autocomplete.instance || {};
     re_user_words = autocomplete.user_words || {};
@@ -62,6 +62,7 @@ var reloadCompletions = () => {
 }
 
 document.addEventListener('loadedPlugins', reloadCompletions);
+document.addEventListener('pluginChanged', reloadCompletions);
 
 var addCompletions = (data) => {
 	// add plugin autocomplete

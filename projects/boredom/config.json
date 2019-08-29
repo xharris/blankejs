@@ -23,7 +23,11 @@
             "447cd90f"
         ]
     },
-    "enabled_plugins": {},
+    "enabled_plugins": {
+        "xhh-platformer": true,
+        "xhh-tween": false,
+        "xhh-net": false
+    },
     "spritesheet_prvw": {
         "image/player_stand.png": {
             "name": "player_stand",
@@ -52,16 +56,16 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "Player.js=script+entity+?",
+            "Player.js"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
         [
             "PlayScene.js=script+scene+?",
             "PlayScene.js"
-        ],
-        [
-            "Player.js=script+entity+?",
-            "Player.js"
         ]
     ],
     "export": {

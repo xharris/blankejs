@@ -86,6 +86,7 @@ class Console extends Editor {
 	log (...args) {
 		// parse args
 		let str = this.parse(args); 
+		// TODO: add string length limiter
 		if (this.last_line == str) {
 			this.duplicate_count++;
 			if (this.last_dupe_line !== '')

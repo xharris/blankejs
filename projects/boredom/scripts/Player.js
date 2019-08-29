@@ -10,12 +10,18 @@ class Player extends Entity {
 		this.addShape("main","rect")
 		
 		this.can_jump = true;
-		this.walk_spd = 2;
+		this.walk_spd = 3;
 		this.gravity_direction = 90;
-		this.gravity = 1;
+		this.gravity = 0.5;
 		
-		this.onCollision['main'] = (other) => {
-			this.collisionStop();
+		this.onCollision['main'] = (other, info) => {
+			if (info.sep_vec.y > 0) {
+				this.collisionStopY();
+				this.can_jump = true;
+			}
+			if (info.sep_vec.x != 0) {
+				this.collisionStopX();
+			}
 		}
 	}
     update (dt) {

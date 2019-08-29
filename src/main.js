@@ -33,6 +33,7 @@ var nwREQ = require('request');
 var nwUGLY = require('uglify-es');
 var nwUTIL = require('util');
 var nwDEL = require('del');
+var nwCLONE = require('lodash.clonedeep');
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
@@ -304,20 +305,10 @@ var app = {
 	},
 
 	engine_code: '',
-	minify_toast: null,
 	minifyEngine: function(cb, opt) {
 		opt = opt || {};
 		blanke.cooldownFn('minify-engine',500,function(){
-			if (!opt.silent && !app.minify_toast) {
-				app.minify_toast = blanke.toast('',-1);
-			}
-			let toast = app.minify_toast;
-			if (!opt.silent) {
-				toast.text = 'Compiling engine code. Please wait';
-				toast.icon = 'dots-horizontal';
-				toast.style = 'wait';
-			}
-
+			app.getElement("#status-icons > .engine-status").classList.add('active');
 			let code_obj = {};
 			let walker = nwWALK.walk(app.settings.engine_path);
 			walker.on('file', (path, stat, next) => {
@@ -331,7 +322,7 @@ var app = {
 			});
 			walker.on('errors', ()=>{
 				if (!opt.silent) {
-					toast.text = "Engine compilation failed";
+					let toast = blanke.toast("Engine compilation failed",-1);
 					toast.icon = 'close';
 					toast.style = "bad";
 				}
@@ -361,13 +352,10 @@ var app = {
 					if (opt.save_internal)
 						app.engine_code = code.code;
 					nwFS.writeFile('blanke.min.js',code.code,'utf-8');
-					if (!opt.silent) {
-						toast.text = "Compiled engine code!";
-						toast.icon = 'check-bold';
-						toast.style = "good";
-						toast.die(1500);
-						app.minify_toast = null;
-					}
+					// all done
+					blanke.cooldownFn('engine-status-off',1000,function(){
+						app.getElement("#status-icons > .engine-status").classList.remove('active');
+					},true);
 					if (cb) cb(code.code);
 					dispatchEvent('engineChange');
 				}

@@ -1498,7 +1498,7 @@ var Blanke = (selector, options) => {
             this.onCollision = {};
             this.resx = 0;
             this.resy = 0;
-            this.coll_scale = 0.5;
+            this.coll_scale = 1.1;
             // sprite
             this.sprites = {};
             this.sprite_index = '';
@@ -1700,16 +1700,16 @@ var Blanke = (selector, options) => {
             let cx = res.sep_vec.x, cy = res.sep_vec.y;
 
             this.collisionStopX = () => {
-                this.resx += cx;
+                this.resx = cx;
                 this.dx = 0;
             }
             this.collisionStopY = () => {
-                this.resy += cy;
+                this.resy = cy;
                 this.dy = 0;
             }
             this.collisionStop = () => {
-                this.resx += cx;
-                this.resy += cy;
+                this.resx = cx;
+                this.resy = cy;
                 this.dx = 0, this.dy = 0;
             }
             // TODO: doesnt call onCollision for non-bouncing object

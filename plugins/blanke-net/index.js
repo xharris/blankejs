@@ -1,3 +1,10 @@
+exports.info = {
+    name: "Net.js",
+    author: "XHH",
+    description: "Simple networking plugin for BlankE. Uses socket.io",
+    id: "xhh-net"
+}
+
 exports.autocomplete = {
     class_list: 'Net',
     hints: {

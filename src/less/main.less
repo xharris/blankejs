@@ -1311,14 +1311,20 @@ iframe {
 #status-icons {
     float: right;
     margin-top: 2px;
-    padding-right: 4px;
+	padding-right: 4px;
+	
+	> * {
+		display: inline-block;
+		margin: 0px 4px;
+		color: #212121;
+	}
 
 	.server-status {
 		position: relative;
 		transition: all ease-in-out 0.2s;
 
 		&.active {
-			color: rgba(100,221,23 ,1);
+			color: @ide-accent;
 		}
 
 		.mdi {
@@ -1331,6 +1337,29 @@ iframe {
 		    left: 12px;
 		    margin: 0px;
 		    text-align: left;
+		}
+	}
+
+	.engine-status {
+		width: 16px;
+		height: 16px;
+		transition: all ease-in-out 0.2s;
+
+		&.active {
+			color: @ide-accent;
+
+			@keyframes spin {
+				from {
+					transform:rotate(0deg);
+				}
+				to {
+					transform:rotate(360deg);
+				}
+			}
+			animation-name: spin;
+			animation-duration: 400ms;
+			animation-iteration-count: infinite;
+			animation-timing-function: linear;
 		}
 	}
 }
