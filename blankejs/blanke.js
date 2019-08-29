@@ -1383,31 +1383,33 @@ var Blanke = (selector, options) => {
             this.world_obj.parent = this;
             this.type = opt.type;
             this.tag = opt.tag;
-            this.shape = opt.shape;
+            this.shape = opt.shape.slice();
 
             // get point closest to 0,0
             this.g_offset = [0,0];
-            let new_shape = opt.shape;
-            if (opt.type == 'polygon') {
-                let xoff = 0, yoff = 0, min_dist = -1;
-                for (let p = 0; p < opt.shape.length; p += 2) {
-                    let dist = Util.distance(opt.shape[p], opt.shape[p+1], 0, 0);
-                    if (min_dist == -1 || dist < min_dist) {
-                        min_dist = dist;
-                        xoff = opt.shape[p];
-                        yoff = opt.shape[p+1];
+            let new_shape = opt.shape.slice();
+            if (opt.draw_offset) {
+                if (opt.type == 'polygon') {
+                    let xoff = 0, yoff = 0, min_dist = -1;
+                    for (let p = 0; p < opt.shape.length; p += 2) {
+                        let dist = Util.distance(opt.shape[p], opt.shape[p+1], 0, 0);
+                        if (min_dist == -1 || dist < min_dist) {
+                            min_dist = dist;
+                            xoff = opt.shape[p];
+                            yoff = opt.shape[p+1];
+                        }
                     }
+                    for (let p = 0; p < opt.shape.length; p += 2) {
+                        new_shape[p] -= xoff;
+                        new_shape[p+1] -= yoff;
+                    }
+                    this.g_offset = [-xoff, -yoff];
                 }
-                for (let p = 0; p < opt.shape.length; p += 2) {
-                    new_shape[p] -= xoff;
-                    new_shape[p+1] -= yoff;
+                if (opt.type == 'rect' || opt.type == 'circle') {
+                    this.g_offset = [-new_shape[0], -new_shape[1]];
+                    new_shape[0] = 0;
+                    new_shape[1] = 0;
                 }
-                this.g_offset = [-xoff, -yoff];
-            }
-            if (opt.type == 'rect' || opt.type == 'circle') {
-                this.g_offset = [-new_shape[0], -new_shape[1]];
-                new_shape[0] = 0;
-                new_shape[1] = 0;
             }
             this.graphics = new Draw(
                 ['lineStyle', 2, Draw.red, 0.5, 0],
@@ -1415,11 +1417,9 @@ var Blanke = (selector, options) => {
                 [opt.type == 'poly' ? 'polygon' : opt.type, ...new_shape],
                 ['fill']
             );
-
             this.graphics.visible = false;
             if (opt.debug)
                 this.debug = opt.debug;
-
             Hitbox.world.add(this);
             Scene.addUpdatable(this);
         }
@@ -1498,7 +1498,7 @@ var Blanke = (selector, options) => {
             this.onCollision = {};
             this.resx = 0;
             this.resy = 0;
-            this.coll_scale = 1.1;
+            this.coll_scale = 0.5;
             // sprite
             this.sprites = {};
             this.sprite_index = '';
@@ -1663,6 +1663,7 @@ var Blanke = (selector, options) => {
             if (typeof options == 'string') options = { type:options };
             if (!options) options = { type:name };
             options.tag = this.constructor.name + (options.tag ? '.'+options.tag : '');
+            options.draw_offset = true;
             if (!options.shape) {
                 switch (options.type) {
                     case 'rect': options.shape = [0,0,this.sprite_width,this.sprite_height]; break;
@@ -2078,7 +2079,7 @@ var Blanke = (selector, options) => {
             for (let obj of objects) {
                 if (!obj.view || obj.view.name != this.name) {
                     obj.view = this;
-                    this.setParent(this.container);
+                    obj.setParent(this.container);
                 }
             }
             this.container.sortChildren();
@@ -2207,7 +2208,7 @@ var Blanke = (selector, options) => {
                         if (Map.config.tile_hitbox) {
                             for (let tag in Map.config.tile_hitbox) {
                                 let image_names = Map.config.tile_hitbox[tag];
-                                let asset_name = Asset.parseAssetName(img_info.path);
+                                let asset_name = Asset.parseAssetName(img_info.path).replace('assets/image/','');
                                 if (image_names.includes(asset_name)) {
                                     new_map.addHitbox({
                                         type: 'rect',

@@ -1005,7 +1005,7 @@ var app = {
 				let update_string = '';
 				let keys = Object.keys(updates);
 				for (let k = 0; k < keys.length; k++) {
-					if (!curr_version_list[keys[k]]) {
+					if (!keys[k].includes('skip') && !curr_version_list[keys[k]]) {
 						update_string += `<div class='version-container'><div class='number'>${keys[k]}</div><div class='notes'>${updates[keys[k]].join('\n')}</div></div>`;
 					}
 				}

@@ -9,7 +9,14 @@ class Player extends Entity {
     	this.sprite_align = "center"
 		this.addShape("main","rect")
 		
+		this.can_jump = true;
 		this.walk_spd = 2;
+		this.gravity_direction = 90;
+		this.gravity = 1;
+		
+		this.onCollision['main'] = (other) => {
+			this.collisionStop();
+		}
 	}
     update (dt) {
 		// left / right movement
@@ -18,15 +25,9 @@ class Player extends Entity {
 			this.hspeed -= this.walk_spd;
 		if (Input("right").pressed)
 			this.hspeed += this.walk_spd;
+		if (Input("up").pressed && this.can_jump) {
+			this.can_jump = false;
+			this.vspeed = -10;
+		}
     }
 }
-
-TestScene({
-	onStart () {
-		Map.config.tile_hitbox = {
-			'ground': ['ground']	
-		}
-		let map = Map.load("level1")
-		map.spawnEntity(Player)
-	}
-})
