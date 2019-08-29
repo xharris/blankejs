@@ -16,13 +16,13 @@ function inspectPlugins(silent) {
 	function inspectFile (file) {
 		file = app.cleanPath(file);
 		let info_key = nwPATH.relative(app.settings.plugin_path, nwPATH.dirname(file));
-		let info_keys = ['Name','Author','Description','ID'];
+		let info_keys = ['Name','Author','Description','ID','Enabled'];
 		
 		if (!temp_plugin_info[info_key]) {
 			temp_plugin_info[info_key] = {
 				files: [],
 				docs: [],
-				enabled: false,
+				enabled: true,
 				module: null,
 				id:''
 			}
@@ -49,7 +49,10 @@ function inspectPlugins(silent) {
 				module = temp_plugin_info[info_key].module;	
 				if (module.info) {
 					for (let k of info_keys) {
-						temp_plugin_info[info_key][k.toLowerCase()] = module.info[k.toLowerCase()];
+						if (k == 'Enabled')
+							temp_plugin_info[info_key].enabled = module.info.enabled;
+						else
+							temp_plugin_info[info_key][k.toLowerCase()] = module.info[k.toLowerCase()];
 					}
 				}
 				return;
@@ -65,7 +68,12 @@ function inspectPlugins(silent) {
 				let re = new RegExp(`\\*\\s*${k}\\s*:\\s*(.+)`)
 				//js_plugin_info
 				let match = re.exec(data);
-				if (match) temp_plugin_info[info_key][k.toLowerCase()] = match[1].trim();
+				if (match) {
+					if (k == 'Enabled')
+						temp_plugin_info[info_key].enabled = match[1].trim();
+					else
+						temp_plugin_info[info_key][k.toLowerCase()] = match[1].trim();
+				}
 			}
 			if (!temp_plugin_info[info_key].name)
 				temp_plugin_info[info_key].name = nwPATH.basename(file);
@@ -125,25 +133,24 @@ function inspectPlugins(silent) {
 				// if (!silent) blanke.toast("Plugins loaded!")
 			}
 
+			// check which plugins are valid
+			for (let key in temp_plugin_info) {
+				let info = temp_plugin_info[key];
+				if (info.id && info.enabled !== false) {
+					js_plugin_info[info.id] = info;
+				}
+			}
+
 			if (plugin_window) {
 				plugin_window.refreshList();
 			}
 
-			// check which plugins are valid
-			for (let key in temp_plugin_info) {
-				let info = temp_plugin_info[key];
-				if (info.id) {
-					js_plugin_info[info.id] = info;
-					js_plugin_info[info.id].enabled = app.project_settings.enabled_plugins[info.id];
-				}
-			}
-
 			// copy files if the plugin is already enabled
-			for (let key in js_plugin_info) {
-				if (js_plugin_info[key].enabled == true) {
-					Plugins.enable(key);
+			for (let id in js_plugin_info) {
+				if (app.project_settings.enabled_plugins[id] == true) {
+					Plugins.enable(id);
 				} else {
-					Plugins.disable(key);
+					Plugins.disable(id);
 				}
 			}
 			dispatchEvent('loadedPlugins');
@@ -195,7 +202,7 @@ class Plugins extends Editor {
 		// remove el references that are no longer a plugin
 		for (let key in this.el_reference) {
 			let exists = true;
-			if (!js_plugin_info[key])
+			if (!js_plugin_info[key] || js_plugin_info[key].enabled == false)
 				exists = false;
 			else {
 				for (let f of js_plugin_info[key].files) {
@@ -218,7 +225,7 @@ class Plugins extends Editor {
 			let info = js_plugin_info[key];
 			el_ref.el_toggle.innerHTML = `
 				<div class='form-inputs'>
-					<input type='checkbox' class='form-checkbox' ${info.enabled ? 'checked' : ''}/>
+					<input type='checkbox' class='form-checkbox' ${app.project_settings.enabled_plugins[info.id] == true ? 'checked' : ''}/>
 					<span class='checkmark'></span>
 				</div>
 				<div class='form-label'>
@@ -238,9 +245,9 @@ class Plugins extends Editor {
 		}
 		// already enabled plugins
 		for (let key in app.project_settings.enabled_plugins) {
-			if (app.project_settings.enabled_plugins[key] == true)
+			if (app.project_settings.enabled_plugins[key] == true) {
 				Plugins.enable(key);
-			else
+			} else
 				Plugins.disable(key);
 		}
 	}
@@ -249,7 +256,7 @@ class Plugins extends Editor {
 		let ret = {};
 		for (let p in js_plugin_info) {
 			let info = js_plugin_info[p];
-			if (info.module && info.enabled  && info.module.autocomplete)
+			if (info.module && info.enabled && info.module.autocomplete)
 				ret[p] = info.module.autocomplete;
 		}
 		return ret;
@@ -270,6 +277,7 @@ class Plugins extends Editor {
 	}
 
 	static disable (key) {
+		if (!js_plugin_info[key]) return;
 		// remove file		
 		for (let path of js_plugin_info[key].files) {
 			nwFS.removeSync(pathJoin(app.settings.engine_path, 'plugins', key, nwPATH.basename(path)));

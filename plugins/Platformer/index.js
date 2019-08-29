@@ -2,7 +2,8 @@ exports.info = {
     name: "Platformer",
     author: "XHH",
     description: "Quick platformer hitbox setup for Entity class",
-    id: 'xhh-platformer'
+    id: 'xhh-platformer',
+    enabled: false
 }
 
 exports.autocomplete = {
