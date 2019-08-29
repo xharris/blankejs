@@ -3,7 +3,7 @@ exports.info = {
     author: "XHH",
     description: "Quick platformer hitbox setup for Entity class",
     id: 'xhh-platformer',
-    enabled: false
+    enabled: true
 }
 
 exports.autocomplete = {

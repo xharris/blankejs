@@ -1353,7 +1353,8 @@ var Blanke = (selector, options) => {
         /* opt = {type (rect/circle/poly), shape, tag} */
         constructor (opt) {
             opt = Object.assign({
-                type: 'rect'
+                type: 'rect',
+                color: Draw.red
             }, opt || {});
             this.options = opt;
             switch (opt.type) {
@@ -1412,8 +1413,8 @@ var Blanke = (selector, options) => {
                 }
             }
             this.graphics = new Draw(
-                ['lineStyle', 2, Draw.red, 0.5, 0],
-                ['fill', Draw.red, 0.3],
+                ['lineStyle', 2, opt.color, 0.5, 0],
+                ['fill', opt.color, 0.3],
                 [opt.type == 'poly' ? 'polygon' : opt.type, ...new_shape],
                 ['fill']
             );

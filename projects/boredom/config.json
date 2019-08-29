@@ -24,7 +24,7 @@
         ]
     },
     "enabled_plugins": {
-        "xhh-platformer": false,
+        "xhh-platformer": true,
         "xhh-tween": false,
         "xhh-net": false
     },

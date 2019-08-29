@@ -440,7 +440,7 @@ class Code extends Editor {
             indentUnit : 4,
             tabSize : 4,
             indentWithTabs : true,
-            highlightSelectionMatches: {showToken: /\w{3,}/, annotateScrollbar: true},
+            highlightSelectionMatches: {/*showToken: /\w{3,}/, */annotateScrollbar: true},
             matchBrackets: true,
             completeSingle: false,
             extraKeys: {
