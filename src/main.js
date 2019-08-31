@@ -185,6 +185,7 @@ var app = {
 		if (app.isServerRunning()) 
 			app.stopServer();
 
+		app.clearElement(app.getElement("#recent-history"))
 		dispatchEvent("closeProject", {path: app.project_path});
 		app.project_path = '';
 		Editor.closeAll();
@@ -758,20 +759,17 @@ var app = {
 		if (app.isProjectOpen()) {
 			let set = app.project_settings;
 			if (hash) {
-				let last_hash, last_title, found = false;
+				let last_hash, last_title;
 				set.quick_access = set.quick_access.filter(h => {
 					if (h[0] == hash || h[1] == hash) {
 						last_hash = h[0]
 						last_title = h[1];
 						hash = last_hash;
-						found = true;
 					} else
 						return true;
 				});
-				if (found) {
-					set.quick_access.unshift([hash || last_hash, app.search_titles[hash] || last_title]);
-					app.saveSettings();
-				}
+				set.quick_access.unshift([hash || last_hash, app.search_titles[hash] || last_title]);
+				app.saveSettings();
 			}
 			let el_container = app.getElement("#recent-history");
 			// check if anything needs to be changed

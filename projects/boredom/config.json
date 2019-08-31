@@ -56,16 +56,16 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "PlayScene.js=script+scene+?",
+            "PlayScene.js"
+        ],
+        [
             "Player.js=script+entity+?",
             "Player.js"
         ],
         [
             "level1.map=map+?",
             "level1.map"
-        ],
-        [
-            "PlayScene.js=script+scene+?",
-            "PlayScene.js"
         ]
     ],
     "export": {

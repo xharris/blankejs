@@ -210,7 +210,8 @@ var Blanke = (selector, options) => {
         Input.set('toggle-fullscreen','Alt Enter');
         empty_sprite = new Sprite({ no_scene : true });
         Text.temp_sprite = new Sprite({ no_scene : true });
-
+        
+        Game.loaded = true;
         var new_event = new CustomEvent('blankeLoaded', {'detail': { 'Blanke':classes }});
         document.dispatchEvent(new_event);
     }
@@ -374,6 +375,7 @@ var Blanke = (selector, options) => {
         config: {},
         time: 0,
         ms: 0,
+        loaded: false,
         get os () { // ide, win, mac, linux, android, ios
             if (blanke_ref.options.ide_mode) return 'ide';
             let os_list = ['win','mac','linux','android'];
@@ -404,10 +406,10 @@ var Blanke = (selector, options) => {
             return '?';
         },
         get width () { 
-            return (!blanke_ref.options.scale || blanke_ref.options.ide_mode) ? app.view.width : blanke_ref.options.width;
+            return (!(blanke_ref.options && blanke_ref.options.scale) || blanke_ref.options.ide_mode) && app.view ? app.view.width : blanke_ref.options.width;
         },
         get height () { 
-            return (!blanke_ref.options.scale || blanke_ref.options.ide_mode) ? app.view.height : blanke_ref.options.height; 
+            return (!(blanke_ref.options && blanke_ref.options.scale) || blanke_ref.options.ide_mode) && app.view ? app.view.height : blanke_ref.options.height; 
         },
         get background_color () { return app.renderer.backgroundColor; },
         set background_color (v) { 
@@ -516,6 +518,7 @@ var Blanke = (selector, options) => {
             game_container.removeChildren();
             // reset input stuff
             input_ref = {};
+            Game.loaded = false;
         },
         destroy: () => { app.destroy(true); }
     };
@@ -846,10 +849,10 @@ var Blanke = (selector, options) => {
                     ];
                 }
 
-                if (!skip_call && this.graphics[name])
+                if (!skip_call && (typeof this.graphics[name]) == 'function')
                     this.graphics[name](...params);
                 else
-                    throw new Error(`${arg[0]} is not a Draw function`);
+                    throw new Error(`${name} is not a Draw function`);
                 if (extra_calls)
                     for (let call of extra_calls)
                         this.graphics[call[0]](...call.slice(1));
@@ -1184,7 +1187,7 @@ var Blanke = (selector, options) => {
 
             this.sprite.x = 0;
             this.sprite.y = 0;
-            aliasProps(this, this.sprite, ['x','y','texture','alpha','width','height','pivot','angle','scale','skew']);
+            aliasProps(this, this.sprite, ['x','y','texture','alpha','width','height','pivot','angle','scale','skew','anchor']);
             if (!options.no_scene) {
                 Scene.addDrawable(this.sprite);
                 Scene.addUpdatable(this);
@@ -1255,16 +1258,21 @@ var Blanke = (selector, options) => {
         get align () { return this._align || ''; }
         set align (v) {
             this._align = v;
-            if (v.includes('center')) 
-                this.pivot.set(this.width/2 / this.scale.x,this.height/2 / this.scale.y);
-            if (v.includes('left'))
-                this.pivot.x = 0;
-            if (v.includes('right'))
-                this.pivot.x = this.width / this.scale.x;
-            if (v.includes('top'))
-                this.pivot.y = 0;
-            if (v.includes('bottom'))
-                this.pivot.y = this.height / this.scale.y;
+            if (v.includes('center')) {
+                this.anchor.set(0.5);
+            }
+            if (v.includes('left')) {
+                this.anchor.x = 0;
+            }
+            if (v.includes('right')) {
+                this.anchor.x = 1;
+            }
+            if (v.includes('top')) {
+                this.anchor.y = 0;
+            }
+            if (v.includes('bottom')) {
+                this.anchor.y = 1;
+            }
         }
         destroy () {
             if (this.options && this.options.no_scene) return;
@@ -1500,10 +1508,11 @@ var Blanke = (selector, options) => {
             this.resx = 0;
             this.resy = 0;
             this.coll_scale = 1.1;
+            this.collision_order = [];
             // sprite
             this.sprites = {};
             this.sprite_index = '';
-            let spr_props = ['alpha','width','height','pivot','angle','scale','skew','frame','frames','align'];
+            let spr_props = ['alpha','width','height','pivot','angle','scale','skew','frame','frames','align','anchor'];
             for (let p of spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
@@ -1562,6 +1571,7 @@ var Blanke = (selector, options) => {
                 this.update(dt);
             if (this.destroyed) return;
 
+            let main_shape = this.shapes[this.shape_index]
             this.dx = this.hspeed, this.dy = this.vspeed;  
             // gravity
             if (this.gravity != 0) {
@@ -1571,29 +1581,45 @@ var Blanke = (selector, options) => {
             // move shapes if x/y is different
             if (old_x != this.x || old_y != this.y) {
                 for (let name in this.shapes) {
+                    let off = this.shapes[name].offset;
+                    /*
                     if (this.shapes[name].type == 'rect') {
                         this.shapes[name].position(
-                            this.x - this._getHitboxOffset('x'),
-                            this.y - this._getHitboxOffset('y')
+                            this.x + off[0] - this._getHitboxOffset('x'),
+                            this.y + off[1] - this._getHitboxOffset('y')
                         )
                     } else {
                         this.shapes[name].position(
-                            this.x,
-                            this.y
+                            this.x + off[0],
+                            this.y + off[1]
+                        )
+                    }*/
+                    if (main_shape && main_shape.name == name) {
+                        this.shapes[name].position(
+                            this._x + off[0] - this._getHitboxOffset('x'),
+                            this._y + off[1] - this._getHitboxOffset('y')
+                        )
+                    } else {
+                        this.shapes[name].position(
+                            this._x + off[0],
+                            this._y + off[1]
                         )
                     }
                 }
             }
             // collision
             let precoll_hspeed = this.hspeed, precoll_vspeed = this.vspeed;
-            
-            for (let name in this.shapes) {
+            if (!this.collision_order) {
+                this.collision_order = Object.keys(this.shapes);
+            }
+            this._collisions = {};
+            for (let name of this.collision_order) {
                 let shape = this.shapes[name];
                 shape.debug = this.debug;
                 shape.move(this.dx*dt, this.dy*dt);
 
                 let coll_list = shape.collisions();
-                if (coll_list && this.onCollision[name]) {
+                if (coll_list) {
                     for (let info of coll_list) {
                         this._triggerCollision(name, info);
                         info[1].sep_vec.x = -info[1].sep_vec.x;
@@ -1602,38 +1628,46 @@ var Blanke = (selector, options) => {
                             info[0].parent._triggerCollision(info[0].name, info)
                         if (this.destroyed) return;
                     }
-                    delete this.collisionStopY;
-                    delete this.collisionStopX;
-                    delete this.collisionStop;
+                    if (this.onCollision[name]) {
+                        delete this.collisionStopY;
+                        delete this.collisionStopX;
+                        delete this.collisionStop;
+                    }
                 }     
             }
-            for (let name in this.shapes) {
-                this.shapes[name].move(-this.resx*this.coll_scale, -this.resy*this.coll_scale);
+            if (main_shape) {
+                main_shape.move(-this.resx*this.coll_scale, -this.resy*this.coll_scale);
+                for (let name in this.shapes) {
+                    let off = (name == this.shape_index) ? [0,0] : this.shapes[name].offset;
+                    this.shapes[name].position(
+                        main_shape.x + off[0],
+                        main_shape.y + off[1]
+                    );
+                }
+            } else {
+                for (let name in this.shapes) {
+                    this.shapes[name].move(-this.resx*this.coll_scale, -this.resy*this.coll_scale);
+                }
             }
             this.resx = 0;
             this.resy = 0;
             this.coll_scale = 1.1;
             // set position of entity
-            let shape = this.shapes[this.shape_index]
-            if (shape) {
-                let pos = shape.position();
+            if (main_shape) {
+                let pos = main_shape.position();
                 this._x = pos.x;
                 this._y = pos.y;
                 
-                if (shape.type == 'rect') {
-                    this._x = pos.x +  this._getHitboxOffset('x');
-                    this._y = pos.y +  this._getHitboxOffset('y');
+                if (main_shape.type == 'rect') {
+                    this._x = pos.x - main_shape.offset[0] + this._getHitboxOffset('x');
+                    this._y = pos.y - main_shape.offset[1] + this._getHitboxOffset('y');
                 }
 
             } else {
                 this._x += this.dx * dt;
                 this._y += this.dy * dt;
             }
-            
-            for (let s in this.sprites) {
-                this.sprites[s].x = this._x;
-                this.sprites[s].y = this._y;
-            }
+            this.updateSpritePosition();
             this.updateDebug();
 
             this.xprevious = this.x - this._getHitboxOffset('x');
@@ -1643,7 +1677,7 @@ var Blanke = (selector, options) => {
             if (precoll_vspeed == this.vspeed) this.vspeed = this.dy;
         }
         _getHitboxOffset (a) {
-            return this.sprite_pivot[a] * this.sprite_scale[a];
+            return (this.sprite_pivot[a] + (this.sprite_anchor[a] * this['sprite_'+(a=='x'?'width':'height')]))// * this.sprite_scale[a];
         }
         addSprite (name, opt) {
             let spr_name = name;
@@ -1670,19 +1704,14 @@ var Blanke = (selector, options) => {
                     case 'rect': options.shape = [0,0,this.sprite_width,this.sprite_height]; break;
                     case 'circle': options.shape = [0,0,Math.max(this.sprite_width,this.sprite_height)/2]; break;
                 }
-            }
-            options.offset = [ this._getHitboxOffset('x'),  this._getHitboxOffset('y')];
-            
-            // sprite pivot offset
-            if (options.type == 'rect') { 
-                options.shape[0] -=  this._getHitboxOffset('x');
-                options.shape[1] -=  this._getHitboxOffset('y');
-            }
-            
-            this.shapes[name] = new Hitbox(options);
-            this.shapes[name].parent = this;
-            this.shapes[name].name = name;
-            this.shapes[name].position(this.x, this.y);
+            }            
+            let new_shape = new Hitbox(options);
+            new_shape.parent = this;
+            new_shape.name = name;
+            new_shape.offset = [new_shape.x, new_shape.y]
+            new_shape.position(this.x, this.y);
+            this.shapes[name] = new_shape;
+            this.collision_order.push(name);
             if (!this.shape_index)
                 this.shape_index = name;
             this.updatePosition();
@@ -1691,40 +1720,49 @@ var Blanke = (selector, options) => {
             if (this.shapes[name]) {
                 this.shapes[name].destroy();
                 delete this.shapes[name];
+                this.collision_order = this.collision_order.filter(v => v != name);
             }
         }
+        collisions (name) {
+            return this._collisions[name] || [];
+        }
         _triggerCollision (name, info) {
-            if (!this.onCollision[name]) return;
+            if (!this._collisions[name]) 
+                this._collisions[name] = [];
 
             let res = info[1]
             let other_hitbox = info[0];
             let cx = res.sep_vec.x, cy = res.sep_vec.y;
 
-            this.collisionStopX = () => {
-                this.resx = cx;
-                this.dx = 0;
+            if (this.onCollision[name]) {
+                this.collisionStopX = () => {
+                    this.resx = cx;
+                    this.dx = 0;
+                }
+                this.collisionStopY = () => {
+                    this.resy = cy;
+                    this.dy = 0;
+                }
+                this.collisionStop = () => {
+                    this.resx = cx;
+                    this.resy = cy;
+                    this.dx = 0, this.dy = 0;
+                }
+                // TODO: doesnt call onCollision for non-bouncing object
+                this.collisionBounce = (mult) => {
+                    this.resx = cx;
+                    this.resy = cy;
+                    this.coll_scale = 2;
+                    let mag = Math.sqrt(Math.pow(cx,2)+Math.pow(cy,2))
+                    let dot = (this.hspeed * (cx/mag)) + (this.vspeed * (cy/mag)) * (mult || 1.01)
+                    this.dx = this.hspeed - (2 * dot * (cx/mag))
+                    this.dy = this.vspeed - (2 * dot * (cy/mag))
+                }
+                let ret = this.onCollision[name].call(this, other_hitbox, res);
+                if (ret) return true;
             }
-            this.collisionStopY = () => {
-                this.resy = cy;
-                this.dy = 0;
-            }
-            this.collisionStop = () => {
-                this.resx = cx;
-                this.resy = cy;
-                this.dx = 0, this.dy = 0;
-            }
-            // TODO: doesnt call onCollision for non-bouncing object
-            this.collisionBounce = (mult) => {
-                this.resx = cx;
-                this.resy = cy;
-                this.coll_scale = 2;
-                let mag = Math.sqrt(Math.pow(cx,2)+Math.pow(cy,2))
-                let dot = (this.hspeed * (cx/mag)) + (this.vspeed * (cy/mag)) * (mult || 1.01)
-                this.dx = this.hspeed - (2 * dot * (cx/mag))
-                this.dy = this.vspeed - (2 * dot * (cy/mag))
-            }
-            this.onCollision[name].call(this, other_hitbox, res);
-
+            this._collisions[name].push(other_hitbox.tag + (other_hitbox.name ? other_hitbox.name : ''));
+            
             return true;
         }
         get debug () { return this._debug; }
@@ -1779,25 +1817,43 @@ var Blanke = (selector, options) => {
         set y (v) { this._y = v; this.updatePosition(); }
         updatePosition () {
             if (this.destroyed) return;
+            /*
             for (let name in this.shapes) {
                 if (this.shapes[name].type == 'rect') {
-
                     this.shapes[name].position(
-                        this._x -  this._getHitboxOffset('x'),
-                        this._y -  this._getHitboxOffset('y')
+                        this._x - this._getHitboxOffset('x'),
+                        this._y - this._getHitboxOffset('y')
                         );
                 } else {
-                this.shapes[name].position(
-                    this._x,
-                    this._y
-                    );
+                    this.shapes[name].position(
+                        this._x,
+                        this._y
+                        );
+                }
+            }*/
+            
+            for (let name in this.shapes) {
+                let off = this.shapes[name].offset;
+                if (this.shapes[name].type == 'rect') {
+                    this.shapes[name].position(
+                        this._x + off[0] - this._getHitboxOffset('x'),
+                        this._y + off[1] - this._getHitboxOffset('y')
+                    )
+                } else {
+                    this.shapes[name].position(
+                        this._x,
+                        this._y
+                    )
                 }
             }
+            this.updateSpritePosition();
+            this.updateDebug();
+        }
+        updateSpritePosition () {
             for (let s in this.sprites) {
                 this.sprites[s].x = this._x;
                 this.sprites[s].y = this._y;
             }
-            this.updateDebug();
         }
         moveDirection (angle, speed) {
             this.hspeed = Util.direction_x(angle, speed);

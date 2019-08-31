@@ -130,8 +130,7 @@ class AssetManager extends Editor {
 			el_category.el_files.appendChild(el_file_row);
 			el_category.el_count.innerHTML = el_category.el_files.childElementCount;
 		}
-
-		if (!this.file_paths[file_type])
+		if (!Array.isArray(this.file_paths[file_type]))
 			this.file_paths[file_type] = [];
 		this.file_paths[file_type].push(path);
 	}

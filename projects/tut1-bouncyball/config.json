@@ -7,7 +7,9 @@
         200
     ],
     "enabled_plugins": {
-        "Tween": true
+        "Tween": true,
+        "xhh-platformer": false,
+        "xhh-tween": true
     },
     "spritesheet_prvw": {
         "image/ball.png": {
@@ -94,5 +96,19 @@
         "minify": true,
         "resizable": true,
         "scale": true
-    }
+    },
+    "quick_access": [
+        [
+            "Paddle.js=script+entity+?",
+            "Paddle.js"
+        ],
+        [
+            "Ball.js=script+entity+?",
+            "Ball.js"
+        ],
+        [
+            "ScenePlay.js=script+scene+?",
+            "ScenePlay.js"
+        ]
+    ]
 }

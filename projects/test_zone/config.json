@@ -1,0 +1,33 @@
+{
+    "ico": "src\\logo.ico",
+    "icns": "src\\logo.icns",
+    "first_scene": "Hitboxes",
+    "size": [
+        800,
+        600
+    ],
+    "quick_access": [
+        [
+            "Hitboxes.js=script+scene+?",
+            "Hitboxes.js"
+        ],
+        [
+            "Add an entity=new+?",
+            "Add an entity"
+        ],
+        [
+            "Shapes.js=script+entity+?",
+            "Shapes.js"
+        ],
+        [
+            "Add a scene=new+?",
+            "Add a scene"
+        ]
+    ],
+    "scene": {},
+    "enabled_plugins": {
+        "xhh-platformer": false,
+        "xhh-tween": false
+    },
+    "spritesheet_prvw": {}
+}

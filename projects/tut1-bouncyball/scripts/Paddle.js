@@ -59,7 +59,9 @@ TestScene({
 		s.pad.y = Game.height/2;
 		s.pad.x = s.pad.sprite_width/2;
 		let ball = new Ball();
+		ball.debug = true;
 		ball.x = 40
+		console.log(ball._getHitboxOffset('x'),ball._getHitboxOffset('y'))
 	}, 
 	onUpdate (s, dt) {
 		if (Input('explosion').released) {

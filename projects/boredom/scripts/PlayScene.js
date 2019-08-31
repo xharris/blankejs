@@ -4,10 +4,9 @@ Scene("PlayScene",{
 			'ground': ['ground']	
 		}
 		let map = Map.load("level1")
-		map.debug = true;
+		//map.debug = true;
 		sc.player = map.spawnEntity(Player)[0]
-		sc.player.debug = true;
-		View(sc.player)
+		//View(sc.player)
     },
     onUpdate: function(scene, dt) {
         

@@ -2070,7 +2070,7 @@ class SceneEditor extends Editor {
 			}
 		}
 
-		if (!app.error_occured) {
+		if (!(app.error_occured && app.error_occured.error.stack.includes('sceneeditor'))) {
 			app.saveSettings();
 			nwFS.writeFileSync(this.file, JSON.stringify(export_data));
 		} else {

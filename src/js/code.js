@@ -398,9 +398,17 @@ class Code extends Editor {
 				this.console.log(...msgs);
 		}
 		this.game.onRefresh = () => {
-			this.console.clear();
 			this.enableFnHelper();
-			this.codemirror.focus();
+			if (this.focus_after_save) {
+				this.focus_after_save = false;
+				this.codemirror.focus();
+			}
+		}
+		this.game.onErrorResolved = () => {
+			this.console.clear();
+		}
+		this.game.onRefreshButton = () => {
+			this.console.clear();
 		}
 
 		this.addCallback('onEnterView',()=>{
@@ -1015,7 +1023,8 @@ class Code extends Editor {
 	refreshGame () {
 		if (!this.deleted) {
 			this.game.breakpoints = Object.keys(this.breakpoints).map(parseInt);
-			this.game.refreshSource(this.file);
+			this.game.refreshSource(this.file, true);
+			this.console.clear();
 		}
 	}
 
@@ -1027,7 +1036,9 @@ class Code extends Editor {
 			this.parseFunctions();
 			Code.updateSpriteList(this.file, data);
 			this.removeAsterisk();
+			this.focus_after_save = true;
 			this.refreshGame();
+
 		});
 	}
 
@@ -1098,7 +1109,7 @@ class Code extends Editor {
 		if (line != null) 
 			editor.goToLine(line);
 		blanke.cooldownFn("openScript-gamepreview", 200, function(){
-			editor.refreshGame();
+			//editor.refreshGame();
 		});
 	}
 

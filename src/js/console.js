@@ -78,6 +78,10 @@ class Console extends Editor {
 		this.had_error = false;
 	}
 
+	clearError () {
+
+	}
+
 	parse (line) {
 		// one-liner limits object depth
 		return line.map(l => typeof l == 'object' ? nwUTIL.inspect(l, { compact: true }) : l);

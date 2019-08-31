@@ -84,6 +84,8 @@ class GamePreview {
 			
 			if (this.errored) {
 				return;
+			} else if (this.error_status == 'error') {
+				this.error_status = 'resolving';
 			}
 
 			if (this.refresh_file) {
@@ -95,6 +97,7 @@ class GamePreview {
 			iframe.contentWindow.onerror = (msg, url, lineNo, columnNo, error) => {
 				this.pause();
 				this.errored = true;
+				this.error_status = 'error';
 				// get line and col
 				let match = re_error_line.exec(error.stack);
 				if (match) {
@@ -114,8 +117,8 @@ class GamePreview {
 					if (file)
 						this.onError(msg, file, lineNo - range.start, columnNo);
 
-				}
-				console.error(msg, url, lineNo, columnNo, error)
+				} else 
+					console.error(msg, url, lineNo, columnNo, error)
 				return true;
 			}
 			if (this.onLog) {
@@ -144,10 +147,17 @@ class GamePreview {
 				this.last_code = null;
 			}
 			this.game = this.iframe.contentWindow.game_instance;
-			if (this.game)
+			if (this.game) {
 				this.game.Game.onPause = ()=>{
 					this.game_checkpaused();
 				}
+				if (this.error_status == 'resolving') {
+					this.error_status = 'none';
+					if (this.onErrorResolved) {
+						this.onErrorResolved();
+					}
+				}
+			}
 			if (this.onRefresh) this.onRefresh();
 			this.iframe.style.display = 'initial';
 		})
@@ -165,6 +175,7 @@ class GamePreview {
 		
 		this.el_refresh = app.createIconButton("refresh","refresh");
 		this.el_refresh.addEventListener('click',()=>{
+			if (this.onRefreshButton) this.onRefreshButton();
 			this.refreshSource(this.last_script);
 		});
 		this.el_control_bar.appendChild(this.el_refresh);
@@ -520,7 +531,7 @@ GamePreview.getHTML = (body, ide_mode, engine_path) => {
 				`<script type="text/javascript">${app.engine_code}</script>`
 			}
 		</head>
-		<div class="font_preload" style="opacity:0">
+		<div class="font_preload" style="opacity:0;width:0px;height:0px;overflow:none">
 			${font_families.map(v => `<span style="font-family:'${v}'"></span>\n`)}</div>
 		${body}
 	</html>

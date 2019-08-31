@@ -9,7 +9,7 @@ exports.info = {
 exports.autocomplete = {
     hints:{
         "blanke-entity-instance":[
-            { fn: 'addPlatforming', vars: { w:'opt', h:'opt' } }
+            { fn: 'addPlatforming', vars: { options:'{ width, height, callbacks{head, body, feet} }' } }
         ]
     }
 }

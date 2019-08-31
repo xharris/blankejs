@@ -6,6 +6,7 @@ class Ball extends Entity {
 		// fall towards the bottom of the screen
 		this.gravity = 0.1;
 		this.gravity_direction = 90;
+		this.debug = true;
 		
 		this.addShape("main","circle")
 		
@@ -20,6 +21,7 @@ class Ball extends Entity {
 				Event.emit("ball_bounce")
 			}
 		}
+		console.log([this._getHitboxOffset('x'),this._getHitboxOffset('y')])
 		
     }
     update (dt) {
