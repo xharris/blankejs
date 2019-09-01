@@ -1,4 +1,5 @@
 {
+	"0.2.8":["bugfixes for scene editor layers","adds spawnHitbox to Map (Map docs will come soon)","bugfixes for Hitbox (poly)"],
 	"0.2.7":["new Platformer plugin","adds sprite_anchor","fixes for hitbox/sprite alignment"],
 	"0.2.6":["new recent project files list","bugfixes for game preview layout"],
 	"0.2.5":["small theme changes, reload button in game preview"],
