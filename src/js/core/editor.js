@@ -108,7 +108,6 @@ class Editor {
 
 		if (['tab','fibwindow','sidewindow'].includes(this.container_type))
 			fn = (...args) => {
-				console.log('ok',this.getTitle())
 				app.refreshQuickAccess(this.getTitle());
 				if (this.container.onTabFocus)
 					this.container.onTabFocus();

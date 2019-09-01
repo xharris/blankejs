@@ -407,7 +407,7 @@ class BlankeForm {
             show_label = false;
 
         el_container.setAttribute("data-type", input_type);
-        el_label.innerHTML = (show_label || input_name);
+        el_label.innerHTML = (show_label || input_name.replaceAll('_',' '));
         if (show_label !== false) 
             el_container.appendChild(el_label);
 

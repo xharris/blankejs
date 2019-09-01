@@ -419,6 +419,7 @@ class SceneEditor extends Editor {
 		}
 		this.el_layer_list.onItemSelect = function(text) {
 			this_ref.setLayer(text);
+			this_ref.export();
 		}
 		this.el_layer_list.onItemAdd = function(text) {
 			this_ref.addLayer({name:text});
@@ -902,6 +903,7 @@ class SceneEditor extends Editor {
 
 	delete () {
 		nwFS.remove(this.file);
+		//app.onFileRemoved(this.file);
 		this.deleted = true;
 		SceneEditor.refreshSceneList();
 		this.close(true);
@@ -1102,8 +1104,10 @@ class SceneEditor extends Editor {
 
 		let layer_list = this.layers.map(layer => layer.name);
 		this.el_layer_list.setItems(layer_list);
-		if (this.curr_layer)
+		if (this.curr_layer) {
 			this.el_layer_list.selectItem(this.curr_layer.name);
+			this.setLayer(this.curr_layer.name);
+		}
 	}
 
 	// refreshes object list items
@@ -1850,13 +1854,22 @@ class SceneEditor extends Editor {
 	}
 
 	removeLayer (name) {
+		let layer_index = 0;
 		for (let l = 0; l < this.layers.length; l++) {
 			if (this.layers[l].name == name) {
+				layer_index = l;
+				this.layers[l].container.destroy();
+				// remove objects
+
 				this.layers.splice(l,1);
 			}
 		}
 		this.el_layer_list.removeItem(name,true);
+		if (this.layers.length > 0) {
+			this.curr_layer = this.layers[Math.max(layer_index-1,0)];
+		}
 		this.refreshLayerList();
+		this.export();
 	}
 
 	getLayer (name, is_uuid) {
@@ -1983,6 +1996,7 @@ class SceneEditor extends Editor {
 			app.project_settings.scene = {};
 
 		let layer_names = {};
+		let layer_uuids = {};
 
 		// layers
 		for (let l = 0; l < this.layers.length; l++) {
@@ -1995,6 +2009,7 @@ class SceneEditor extends Editor {
 				uuid: layer.uuid
 			})
 			layer_names[layer.name] = true;
+			layer_uuids[layer.uuid] = true;
 		}
 
 		// objects
@@ -2011,17 +2026,19 @@ class SceneEditor extends Editor {
 			let polygons = {};
 
 			// save object coordinates
-			for (let layer_name in this.obj_polys[obj_uuid]) { 
-				let polys = this.obj_polys[obj_uuid][layer_name];
-				if (polys.length > 0) {
-					polygons[layer_name] = [];
-				
-					for (let p in polys) {
-						polygons[layer_name].push(
-							[ifndef(polys[p].poly.tag,'')].concat(polys[p].points.slice())
-						);
+			for (let layer_uuid in this.obj_polys[obj_uuid]) {
+				if (layer_uuids[layer_uuid] == true) {
+					let polys = this.obj_polys[obj_uuid][layer_uuid];
+					if (polys.length > 0) {
+						polygons[layer_uuid] = [];
+					
+						for (let p in polys) {
+							polygons[layer_uuid].push(
+								[ifndef(polys[p].poly.tag,'')].concat(polys[p].points.slice())
+							);
+						}
+						export_data.objects[obj.uuid] = polygons;
 					}
-					export_data.objects[obj.uuid] = polygons;
 				}
 			}
 		}
@@ -2086,7 +2103,7 @@ class SceneEditor extends Editor {
 }
 
 document.addEventListener('fileChange', function(e){
-	if (e.detail.type == 'change') {
+	if (e.detail.file.includes("maps")) {
 		SceneEditor.refreshSceneList();
 	}
 });
@@ -2129,6 +2146,7 @@ document.addEventListener("closeProject", function(e){
 	app.removeSearchGroup("scene_image");
 });
 
+let last_new;
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
 	SceneEditor.refreshSceneList(proj_path);
@@ -2148,6 +2166,7 @@ document.addEventListener("openProject", function(e){
 					nwFS.writeFile(nwPATH.join(map_dir, 'map'+num+'.map'),"");
 				
 					// edit the new script
+					app.addPendingQuickAccess('map'+num+'.map');
 					new SceneEditor(nwPATH.join(map_dir, 'map'+num+'.map'));
 				});
 			});	

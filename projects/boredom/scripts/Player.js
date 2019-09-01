@@ -21,6 +21,7 @@ class Player extends Entity {
 			width: this.sprite_width-8,
 			height: this.sprite_height-4,
 			on:{
+				head: () => { console.log("um ok"); },
 				foot: () => { this.can_jump = true }	
 			}
 		})

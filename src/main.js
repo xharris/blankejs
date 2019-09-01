@@ -208,6 +208,8 @@ var app = {
 
 				// watch for file changes
 				app.proj_watch = app.watch(app.project_path, function(evt_type, file) {
+					if (evt_type == 'remove')
+						app.removeQuickAccess(nwPATH.basename(file));
 					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
 				});
 
@@ -490,12 +492,18 @@ var app = {
 		app.search_funcs[hash_val] = options.onSelect;
 		app.search_args[hash_val] = options.args;
 		app.search_hash_category[hash_val] = options.category ? options.category.toLowerCase() : null;
+		app.search_titles[hash_val] = options.key;
 
 		if (!app.search_hashvals.includes(hash_val))
 			app.search_hashvals.push(hash_val);
 		if (options.group) {
 			if (!app.search_group[options.group]) app.search_group[options.group] = [];
 			app.search_group[options.group].push(hash_val);
+		}
+		// quick access pending
+		if (app.pending_quick_access.includes(options.key)) {
+			app.refreshQuickAccess(options.key);
+			app.pending_quick_access = app.pending_quick_access.filter(p => p != options.key);
 		}
 	},
 	triggerSearchKey: function(hash_val) {
@@ -569,7 +577,8 @@ var app = {
 				engine_path:'blankejs',
 				themes_path:'themes',
 				autocomplete_path:'./autocomplete.js',
-				theme:'green'
+				theme:'green',
+				quick_access_size:5
 			}, app.settings || {});
 			if (callback) callback();
 		});
@@ -768,9 +777,15 @@ var app = {
 					} else
 						return true;
 				});
+				for (let key in app.search_titles) {
+					val = app.search_titles[key];
+					if (val == hash) // switch them around here
+						hash = key;
+				}
 				set.quick_access.unshift([hash || last_hash, app.search_titles[hash] || last_title]);
-				app.saveSettings();
 			}
+			set.quick_access = set.quick_access.slice(0,app.settings.quick_access_size);
+			app.saveSettings();
 			let el_container = app.getElement("#recent-history");
 			// check if anything needs to be changed
 			let different = false;
@@ -778,10 +793,16 @@ var app = {
 				different = true;
 			} else {
 				for (let h = 0; h < el_container.childElementCount; h++) {
-					let hash = set.quick_access[h][0];
-					let child = el_container.children.item(h);
-					if (!child || child.hash != hash) {
+					if (!set.quick_access[h])
 						different = true;
+					else {
+						let hash = set.quick_access[h][0];
+						let child = el_container.children.item(h);
+						if (!child || child.hash != hash) {
+							different = true;
+						}
+						if (!child.text || child.text.trim() == "")
+							blanke.destroyElement(child);
 					}
 				}
 			}
@@ -797,6 +818,7 @@ var app = {
 					}
 					el_link_container.appendChild(el_link);
 					el_link_container.hash = h[0];
+					el_link_container.text = h[1];
 					el_container.appendChild(el_link_container);
 				}
 			}
@@ -815,6 +837,34 @@ var app = {
 		blanke.cooldownFn('refreshQuickAccess',2000,()=>{
 			app._refreshQuickAccess(hash);
 		})
+	},
+
+	removeQuickAccess: (text) => {
+		// remove element 
+		let hash;
+		let el_container = app.getElement("#recent-history");
+		// check if anything needs to be changed
+		let different = false;
+		if (el_container.childElementCount > 0) {
+			for (let h = 0; h < el_container.childElementCount; h++) {
+				let child = el_container.children.item(h);
+				if (child.text == text) {
+					hash = child.hash;
+					blanke.destroyElement(child);
+				}
+			}
+		}
+		// change settings
+		if (hash) {
+			app.project_settings.quick_access = app.project_settings.quick_access.filter(h => h[0] != hash);
+			app.saveSettings();
+		}
+		app.refreshQuickAccess();
+	},
+
+	pending_quick_access: [],
+	addPendingQuickAccess: (file) => {
+		app.pending_quick_access.push(file);
 	},
 
 	// TAB BAR (history)
@@ -1183,7 +1233,6 @@ app.window.webContents.on("did-finish-load",()=>{
 
 				let el_result = app.createElement("div", "result");
 				el_result.innerHTML = result.key;
-				app.search_titles[hash] = result.key;
 				el_result.dataset.hashval = hash;
 				el_result.dataset.func = app.search_funcs[hash];
 

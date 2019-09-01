@@ -1292,6 +1292,7 @@ document.addEventListener("openProject", function(e){
 					nwFS.writeFile(nwPATH.join(script_dir, file_name), content, function(err){
 						if (!err) {
 							// edit the new script
+							app.addPendingQuickAccess(file_name);
 							Code.openScript(nwPATH.join(script_dir, file_name));
 						}
 					});

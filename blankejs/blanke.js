@@ -1375,14 +1375,19 @@ var Blanke = (selector, options) => {
                 case 'poly':
                     let start_x = opt.shape[0];
                     let start_y = opt.shape[1];
+                    
+                    this.world_obj = new SAT.Polygon(new SAT.Vector(0, 0),
+                            opt.shape
+                        )
+                    /*
                     this.world_obj = new SAT.Polygon(new SAT.Vector(start_x, start_y),
-                            opt.shape.slice(2).reduce((result, point, p) => {
+                            opt.shape.reduce((result, point, p) => {
                                 if ((p+1)%2 == 0) {
                                     result.push(new SAT.Vector(opt.shape[p]-start_x, opt.shape[p-1]-start_y));
                                 }
                                 return result;
                             },[])
-                        )
+                        )*/
                     break;
                 default:
                     throw new Error(`Invalid Hitbox type '${opt.type}'`);
@@ -1447,8 +1452,8 @@ var Blanke = (selector, options) => {
             if (x!=null && y!=null) {
                 this.world_obj.pos = new SAT.Vector(x, y);
                 Hitbox.world.update(this);
-                this.graphics.x = x;
-                this.graphics.y = y;
+                this.graphics.x = this.world_obj.pos.x;
+                this.graphics.y = this.world_obj.pos.y;
             } else {
                 return this.world_obj.pos;
             }
@@ -2217,6 +2222,7 @@ var Blanke = (selector, options) => {
             this.hitboxes = [];
             this.layers = []; // PIXI.Containers
             this.layer_uuid = {}; // layer_name --> layer_uuid
+            this.entities = {}; // { classname: [instances] }
             this.main_container = new PIXI.Container();
             this.data = {};
 
@@ -2261,7 +2267,6 @@ var Blanke = (selector, options) => {
                             frame_size: [c[4], c[5]],
                             is_name: false
                         }, true)
-                        // Map.config.tile_hitboxes
                         if (Map.config.tile_hitbox) {
                             for (let tag in Map.config.tile_hitbox) {
                                 let image_names = Map.config.tile_hitbox[tag];
@@ -2279,9 +2284,18 @@ var Blanke = (selector, options) => {
                 } 
             }
             // ** PLACE ENTITIES **
+            if (Map.config.entities) {
+                for (let entity_class of Map.config.entities) {
+                    new_map.spawnEntity(entity_class);
+                }
+            }
 
-            // ** SET HITBOX COLORS ** 
-            
+            // ** PLACE OTHER HITBOXES ** 
+            if (Map.config.hitboxes) {
+                for (let name of Map.config.hitboxes) {
+                    new_map.spawnHitbox(name);
+                }
+            }
             
             new_map.redrawTiles();
             return new_map;
@@ -2371,7 +2385,32 @@ var Blanke = (selector, options) => {
             let hit = new Hitbox(opt)
             hit.debug = this.debug;
             this.hitboxes.push(hit);
-            //return hit;
+            return hit;
+        }
+        spawnHitbox (name, layer) {
+            if (!layer) {
+                let layer_names = Object.keys(this.layer_uuid);
+                for (let l_name of layer_names) {
+                    this.spawnHitbox(name, l_name);
+                }
+                return;
+            }
+            let obj_uuid = Map.obj_uuid[name];
+            let layer_uuid = this.layer_uuid[layer];
+            if (!(obj_uuid && layer_uuid)) return;
+            if (this.data.objects[obj_uuid] && this.data.objects[obj_uuid][layer_uuid]) {
+                for (let coords of this.data.objects[obj_uuid][layer_uuid]) {
+                    console.log('in',coords.slice(1))
+                    let hit = this.addHitbox({
+                        type:'poly',
+                        shape:coords.slice(1),
+                        tag:name,
+                        color:parseInt(Game.config.scene.objects[obj_uuid].color.replace('#','0x'))
+                    });
+                    hit.position(0,0);//coords[0], coords[1])
+                    console.log('out',hit.world_obj.points)
+                }
+            }
         }
         addEntity (entity_class, x, y, opt) {
             opt = Object.assign(Map._ent_default_opt, opt || {});
@@ -2403,6 +2442,10 @@ var Blanke = (selector, options) => {
                     layer_obj = this.layers.find((l) => l._name == layer);
                 new_ent.setParent(layer_obj);
             }
+            // store added entities for possible future reference
+            if (!this.entities[new_ent.constructor.name])
+                this.entities[new_ent.constructor.name] = [];
+            this.entities[new_ent.constructor.name].push(new_ent);
             return new_ent;
         }
         spawnEntity (entity_class, obj_name, opt) {
@@ -2423,9 +2466,11 @@ var Blanke = (selector, options) => {
             let layer_uuid = this.layer_uuid[layer];
             if (!obj_uuid || !layer_uuid) return;
             // spawn entity_class at every occurrence of obj_name
-            for (let coords of this.data.objects[obj_uuid][layer_uuid]) {
-                opt.from_spawn = obj_uuid;
-                entities.push(this.addEntity(entity_class, coords[1], coords[2], opt));
+            if (this.data.objects[obj_uuid] && this.data.objects[obj_uuid][layer_uuid]) {
+                for (let coords of this.data.objects[obj_uuid][layer_uuid]) {
+                    opt.from_spawn = obj_uuid;
+                    entities.push(this.addEntity(entity_class, coords[1], coords[2], opt));
+                }
             }
             return entities;
         }

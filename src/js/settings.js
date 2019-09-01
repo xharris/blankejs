@@ -19,9 +19,10 @@ class Settings extends Editor {
         this.el_settings = new BlankeForm([
             ['GAME'],
             ['first_scene','select',{'choices':Code.classes.scene,'default':app.project_settings.first_scene}],
-            ['game_size','number',{'inputs':2, 'separator':'x', 'step':1, 'main':1, 'default':app.project_settings.size}],
+            ['game_size','number',{'inputs':2, 'separator':'x', 'step':1, 'min':1, 'default':app.project_settings.size}],
 			['IDE'],
             ['theme','select',{'choices':app.themes,'default':app.settings.theme}],
+            ['quick_access_size','number',{'min':1,'default':app.settings.quick_access_size}],
             ['Paths'],
             ...paths.map((path)=>[path,'directory',{default:app.settings[path+'_path']}]),
             ...files.map((path)=>[path,'file',{default:app.settings[path+'_path']}])
@@ -36,7 +37,12 @@ class Settings extends Editor {
         });
 		this.el_settings.onChange('theme',(value)=>{
 			app.setTheme(value);
-		});
+        });
+        this.el_settings.onChange('quick_access_size',(value)=>{
+            app.settings.quick_access_size = value;
+            app.saveSettings();
+            app.refreshQuickAccess();
+        });
         // add onChange event listener for paths
         paths.forEach((path)=>{
             this_ref.el_settings.onChange(path,(value)=>{
