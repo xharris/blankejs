@@ -8,9 +8,9 @@ Scene("PlayScene",{
 			hitboxes: ["ground"]
 		};
 		let map = Map.load("level1")
-		map.debug = true;
+		//map.debug = true;
 		sc.player = map.entities['Player'][0]
-		//View(sc.player)
+		View(sc.player)
     },
     onUpdate: function(scene, dt) {
         

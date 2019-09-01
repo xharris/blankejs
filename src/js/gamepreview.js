@@ -422,7 +422,7 @@ game_instance = Blanke("#game",{
 				if (path == current_script) {
 					let lines = file_data.split('\n')
 					this.breakpoints.forEach((l)=>{
-						lines[l] = '(()=>{Game.pause();'+lines[l]+'})();';
+						lines[l] = '(()=>{Game.pause();})();'+lines[l];
 						// lines.splice(l,0,'Game.pause()');
 					})
 					code += lines.join('\n');

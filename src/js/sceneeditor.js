@@ -1858,9 +1858,17 @@ class SceneEditor extends Editor {
 		for (let l = 0; l < this.layers.length; l++) {
 			if (this.layers[l].name == name) {
 				layer_index = l;
-				this.layers[l].container.destroy();
 				// remove objects
-
+				this.layers[l].container.destroy();
+				// remove images
+				for (let obj of this.images) {
+					if (obj.pixi_tilemap[this.layers[l].uuid])
+						obj.pixi_tilemap[this.layers[l].uuid].destroy();
+					for (let key in obj.pixi_images) {
+						if (obj.pixi_images[key].layer_name == name)
+							delete obj.pixi_images[key];
+					}
+				}
 				this.layers.splice(l,1);
 			}
 		}
@@ -1981,6 +1989,7 @@ class SceneEditor extends Editor {
 		});
 		this.refreshLayerList();
 		this.loadObjectsFromSettings();
+		this.resizeEditor();
 	}
 
 	export () {

@@ -1375,19 +1375,14 @@ var Blanke = (selector, options) => {
                 case 'poly':
                     let start_x = opt.shape[0];
                     let start_y = opt.shape[1];
-                    
-                    this.world_obj = new SAT.Polygon(new SAT.Vector(0, 0),
-                            opt.shape
-                        )
-                    /*
                     this.world_obj = new SAT.Polygon(new SAT.Vector(start_x, start_y),
-                            opt.shape.reduce((result, point, p) => {
-                                if ((p+1)%2 == 0) {
-                                    result.push(new SAT.Vector(opt.shape[p]-start_x, opt.shape[p-1]-start_y));
-                                }
-                                return result;
-                            },[])
-                        )*/
+                        opt.shape.reduce((result, point, p) => {
+                            if ((p+1)%2 == 0) {
+                                result.push(new SAT.Vector(opt.shape[p-1]-start_x, opt.shape[p]-start_y));
+                            }
+                            return result;
+                        },[])
+                    )
                     break;
                 default:
                     throw new Error(`Invalid Hitbox type '${opt.type}'`);
@@ -1403,6 +1398,7 @@ var Blanke = (selector, options) => {
             this.g_offset = [0,0];
             let new_shape = opt.shape.slice();
             if (opt.draw_offset) {
+                new_shape = opt.shape.slice();
                 if (opt.type == 'polygon') {
                     let xoff = 0, yoff = 0, min_dist = -1;
                     for (let p = 0; p < opt.shape.length; p += 2) {
@@ -2400,15 +2396,12 @@ var Blanke = (selector, options) => {
             if (!(obj_uuid && layer_uuid)) return;
             if (this.data.objects[obj_uuid] && this.data.objects[obj_uuid][layer_uuid]) {
                 for (let coords of this.data.objects[obj_uuid][layer_uuid]) {
-                    console.log('in',coords.slice(1))
                     let hit = this.addHitbox({
                         type:'poly',
                         shape:coords.slice(1),
                         tag:name,
                         color:parseInt(Game.config.scene.objects[obj_uuid].color.replace('#','0x'))
                     });
-                    hit.position(0,0);//coords[0], coords[1])
-                    console.log('out',hit.world_obj.points)
                 }
             }
         }

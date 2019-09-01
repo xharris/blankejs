@@ -14,14 +14,12 @@ class Player extends Entity {
 		this.walk_spd = 2.25;
 		this.gravity_direction = 90;
 		this.gravity = 0.2;
-		this.debug = true;
 		
 		this.addPlatforming({
 			tag: 'ground',
 			width: this.sprite_width-8,
-			height: this.sprite_height-4,
+			height: this.sprite_height,
 			on:{
-				head: () => { console.log("um ok"); },
 				foot: () => { this.can_jump = true }	
 			}
 		})
