@@ -62,6 +62,29 @@
                 0
             ],
             "image": "image/player_stand.png"
+        },
+        "image/player_walk.png": {
+            "name": "walk",
+            "offset": [
+                0,
+                0
+            ],
+            "speed": 1,
+            "frame_size": [
+                21,
+                32
+            ],
+            "frames": 2,
+            "selected_frames": [
+                "\"1-2\"",
+                1
+            ],
+            "columns": 2,
+            "border": [
+                0,
+                0
+            ],
+            "image": "image/player_walk.png"
         }
     },
     "history_clicks": [],
@@ -69,6 +92,10 @@
         [
             "Player.js=script+entity+?",
             "Player.js"
+        ],
+        [
+            "Plugins",
+            null
         ],
         [
             "PlayScene.js=script+scene+?",
@@ -81,10 +108,6 @@
         [
             "View assets=?",
             "View assets"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
         ]
     ],
     "export": {

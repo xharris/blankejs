@@ -226,6 +226,8 @@ module.exports.hints = {
 		{ fn: 'addTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', options:'{ layer }' } },
 		{ fn: 'addEntity', vars: { entity_class:'', x:'', y:'', options:'{ layer, align (left, right, top, bottom, center) }' } },
 		{ fn: 'addHitbox', vars: { hitbox_args:'' } },
+		{ fn: 'spawnEntity', vars: { entity_class:'', object_name:'' } },
+		{ fn: 'spawnHitbox', vars: { object_name:'', layer:'opt' } },
 		{ fn: 'removeTile', vars: { name:'image asset', position:'[x, y, x, y, ...]', layer:'' } },
 		...prop_gameobject
 	],

@@ -6,8 +6,10 @@ Input.set("action","space","j")
 
 class Player extends Entity {
     init () {
-		this.addSprite("player_stand", {image:"player_stand", frames:1, speed:1, frame_size:[21,32]})
-    	this.sprite_align = "center"
+		this.addSprite("stand", {image:"player_stand", frames:1, speed:1, frame_size:[21,32]})
+    	this.addSprite("walk", {image:"player_walk", frames:2, speed:0.15, frame_size:[21,32]})
+		this.sprite_align = "center"
+		this.sprite_index = "walk"
 		
 		this.can_jump = true;
 		this.jump_height = 6;
@@ -20,18 +22,15 @@ class Player extends Entity {
 			width: this.sprite_width-8,
 			height: this.sprite_height,
 			on:{
-				foot: () => { this.can_jump = true }	
+				foot: () => { 
+					this.grounded = true;
+					this.can_jump = true
+				}	
 			}
 		})
 	}
     update (dt) {
-		// left / right movement
-		/*
-		if (Input("down").pressed) this.y += 1.5;
-		if (Input("up").pressed) this.y -= 1.5;
-		if (Input("left").pressed) this.x -= 1.5;
-		if (Input("right").pressed) this.x += 1.5;
-		*/
+		// left / right / jump movement
 		this.hspeed = 0;
 		if (Input("left").pressed)
 			this.hspeed -= this.walk_spd;
@@ -41,8 +40,20 @@ class Player extends Entity {
 			this.can_jump = false;
 			this.vspeed = -this.jump_height;
 		}
+		// animation index
+		if (!this.grounded) {
+			this.sprite_index = 'walk';
+			this.sprite_frame = 1;
+		} else if ((Input("left").pressed || Input("right").pressed) && this.grounded) {
+			this.sprite_index = 'walk';
+			this.sprite_speed = 0.15;
+		} else {
+			this.sprite_index = 'stand';
+		}
+		
+		this.grounded = false;
 		// animation direction
-		if (this.hspeed < 0) this.sprite_scale.x = -1;
-		else if (this.hspeed > 0) this.sprite_scale.x = 1;
+		if (Input("left").pressed) this.sprite_scale.x = -1;
+		else if (Input("right").pressed) this.sprite_scale.x = 1;
 	}
 }

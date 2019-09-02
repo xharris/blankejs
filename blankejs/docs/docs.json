@@ -11,6 +11,9 @@
     "Scene":[
         {"title":"Usage","file":"scene.md"}
     ],
+    "Map":[
+        {"title":"Usage","file":"map.md"}
+    ],
     "View":[
         {"title":"Usage","file":"view.md"}
     ]

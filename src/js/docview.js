@@ -104,6 +104,7 @@ class Docview extends Editor {
 	}
 
 	static addPlugin(title, file) {
+		console.log('add',file)
 		let found = false;
 		file = nwPATH.relative(getDocPath(), file);
 
@@ -121,6 +122,7 @@ class Docview extends Editor {
 	}
 
 	static removePlugin(file) {
+		console.log('remove',file)
 		plugin_md_list = plugin_md_list.filter(p => p.file != file);
 	}
 }

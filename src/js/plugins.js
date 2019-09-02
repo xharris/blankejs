@@ -89,7 +89,10 @@ function inspectPlugins(silent) {
 				if (match) info[k] = match[1].trim();
 			}
 			temp_plugin_info[info_key].docs.push(file);
-			Docview.addPlugin(info.Name+(info.Author ? ' ('+info.Author+')' : ''), file);
+			if (temp_plugin_info[info_key].enabled)
+				Docview.addPlugin(info.Name+(info.Author ? ' ('+info.Author+')' : ''), file);
+			else
+				Docview.removePlugin(file);
 		}
 	}
 
@@ -136,8 +139,15 @@ function inspectPlugins(silent) {
 			// check which plugins are valid
 			for (let key in temp_plugin_info) {
 				let info = temp_plugin_info[key];
-				if (info.id && info.enabled !== false) {
-					js_plugin_info[info.id] = info;
+				if (info.id) {
+					if (info.enabled !== false) {
+						js_plugin_info[info.id] = info;
+					} else {
+						// disabled and remove docs
+						for (let file of info.docs) {
+							Docview.removePlugin(file);
+						}
+					}
 				}
 			}
 
