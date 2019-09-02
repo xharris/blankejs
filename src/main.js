@@ -37,6 +37,24 @@ var nwCLONE = require('lodash.clonedeep');
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
+const DEFAULT_IDE_SETTINGS = {
+	recent_files:[],
+	plugin_path:'plugins',
+	engine_path:'blankejs',
+	themes_path:'themes',
+	autocomplete_path:'./autocomplete.js',
+	theme:'green',
+	quick_access_size:5
+};
+
+const DEFAULT_PROJECT_SETTINGS =  {
+	ico:nwPATH.join('src','logo.ico'),
+	icns:nwPATH.join('src','logo.icns'),
+	first_scene:null,
+	size:[800,600],
+	quick_access:[]
+};
+
 var app = {
 	project_path: "",
 	proj_watch: null,
@@ -379,14 +397,14 @@ var app = {
 				nwPATH.join(app.project_path,'temp.html'), game.getSource(), ()=>{
 
 				app.newWindow(nwPATH.join(app.project_path,'temp.html'), {
-						width: proj_set.size[0],
-						height: proj_set.size[1],
-						useContentSize: true,
-						resizable: app.project_settings.export.resizable,
-						webPreferences: {
-							nodeIntegration: true
-						}
-					},
+					width: proj_set.size[0],
+					height: proj_set.size[1],
+					useContentSize: true,
+					resizable: app.project_settings.export.resizable,
+					webPreferences: {
+						nodeIntegration: true
+					}
+				},
 					(win)=>{
 						win.on('closed',function(){
 							nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
@@ -571,15 +589,7 @@ var app = {
 			if (!err && data.length > 1) 
 				app.settings = JSON.parse(data);
 				
-			app.settings = Object.assign({
-				recent_files:[],
-				plugin_path:'plugins',
-				engine_path:'blankejs',
-				themes_path:'themes',
-				autocomplete_path:'./autocomplete.js',
-				theme:'green',
-				quick_access_size:5
-			}, app.settings || {});
+			app.settings = Object.assign(DEFAULT_IDE_SETTINGS, app.settings || {});
 			if (callback) callback();
 		});
 	},
@@ -611,13 +621,7 @@ var app = {
 				else
 					app.project_settings = {};
 
-				ifndef_obj(app.project_settings, {
-					ico:nwPATH.join('src','logo.ico'),
-					icns:nwPATH.join('src','logo.icns'),
-					first_scene:null,
-					size:[800,600],
-					quick_access:[]
-				});
+				ifndef_obj(app.project_settings, DEFAULT_PROJECT_SETTINGS);
 				app.saveSettings();
 				if (callback) callback();
 			});

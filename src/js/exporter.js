@@ -1,4 +1,13 @@
 var re_resolution = /resolution[\s=]*(?:(\d+)|{([\d\s]+),([\s\d]+)})/;
+const DEFAULT_EXPORT_SETTINGS = () => ({
+	name: nwPATH.basename(app.project_path),
+	web_autoplay: false,
+	scale_mode: 'linear',
+	frameless: false,
+	minify: true,
+	scale: true,
+	resizable: false
+});
 
 class Exporter extends Editor {
 	constructor (...args) {
@@ -44,14 +53,7 @@ class Exporter extends Editor {
 
 		// setup default settings
 		if (!app.project_settings.export) app.project_settings.export = {};
-		ifndef_obj(app.project_settings.export, {
-			name: nwPATH.basename(app.project_path),
-			web_autoplay: false,
-			frameless: false,
-			minify: true,
-			scale: true,
-			resizable: false
-		});
+		ifndef_obj(app.project_settings.export, DEFAULT_EXPORT_SETTINGS());
 
 		// extra options
 		let form_options = [
@@ -60,6 +62,8 @@ class Exporter extends Editor {
 			['web'],
 			//['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
 			['minify','checkbox',{'default':app.project_settings.export.minify}],
+			['rendering'],
+			['scale_mode','select',{'choices':['linear','nearest'],'default':app.project_settings.export.scale_mode}],
 			['window sizing'],
 			...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{'default':app.project_settings.export[o]}]))
 		];

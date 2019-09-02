@@ -90,16 +90,16 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "PlayScene.js=script+scene+?",
+            "PlayScene.js"
+        ],
+        [
             "Player.js=script+entity+?",
             "Player.js"
         ],
         [
             "Plugins",
             null
-        ],
-        [
-            "PlayScene.js=script+scene+?",
-            "PlayScene.js"
         ],
         [
             "level1.map=map+?",
@@ -115,7 +115,8 @@
         "web_autoplay": false,
         "frameless": false,
         "minify": true,
-        "scale": false,
-        "resizable": true
+        "scale": true,
+        "resizable": true,
+        "scale_mode": "linear"
     }
 }

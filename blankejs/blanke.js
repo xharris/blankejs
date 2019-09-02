@@ -1824,21 +1824,6 @@ var Blanke = (selector, options) => {
         set y (v) { this._y = v; this.updatePosition(); }
         updatePosition () {
             if (this.destroyed) return;
-            /*
-            for (let name in this.shapes) {
-                if (this.shapes[name].type == 'rect') {
-                    this.shapes[name].position(
-                        this._x - this._getHitboxOffset('x'),
-                        this._y - this._getHitboxOffset('y')
-                        );
-                } else {
-                    this.shapes[name].position(
-                        this._x,
-                        this._y
-                        );
-                }
-            }*/
-            
             for (let name in this.shapes) {
                 let off = this.shapes[name].offset;
                 if (this.shapes[name].type == 'rect') {
