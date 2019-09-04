@@ -1,7 +1,3 @@
-const commonmark = require('commonmark');
-const md_parser = new commonmark.Parser();
-const md_writer = new commonmark.HtmlRenderer();
-
 let plugin_md_list = [];
 let getDocPath = () => nwPATH.join(app.settings.engine_path,'docs');
 
@@ -55,8 +51,7 @@ class Docview extends Editor {
 								if (!err) {
 
 									// el_subbody.innerHTML = markdown.toHTML(data);
-									let md_data = md_parser.parse(data);
-									el_subbody.innerHTML = md_writer.render(md_data);
+									el_subbody.innerHTML = nwMD.render(data);
 
 									if (el_subbody.innerHTML.trim() == "")
 										el_subbody.innerHTML = "No information on this topic found";
@@ -104,7 +99,6 @@ class Docview extends Editor {
 	}
 
 	static addPlugin(title, file) {
-		console.log('add',file)
 		let found = false;
 		file = nwPATH.relative(getDocPath(), file);
 
@@ -122,7 +116,6 @@ class Docview extends Editor {
 	}
 
 	static removePlugin(file) {
-		console.log('remove',file)
 		plugin_md_list = plugin_md_list.filter(p => p.file != file);
 	}
 }

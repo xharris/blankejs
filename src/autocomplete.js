@@ -268,5 +268,9 @@ module.exports.hints = {
 		{ fn: 'emit', vars: { name:'', args:'...' } },
 		{ fn: 'on', vars: { name:'', fn:'' }, info: 'fn(...args) will be called when emit(name, ...args) is called' },
 		{ fn: 'off', vars: { name:'', fn:'' } }
+	],
+	"blanke-timer":[
+		{ fn: 'after', vars: { ms:'', func:'' } },
+		{ fn: 'every', vars: { ms:'', func:'return true to stop this from running' } }
 	]
 }

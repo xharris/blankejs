@@ -34,6 +34,7 @@ var nwUGLY = require('uglify-es');
 var nwUTIL = require('util');
 var nwDEL = require('del');
 var nwCLONE = require('lodash.clonedeep');
+var nwMD = require('markdown-it')();
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 

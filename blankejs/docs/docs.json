@@ -16,5 +16,8 @@
     ],
     "View":[
         {"title":"Usage","file":"view.md"}
+    ],
+    "Text":[
+        {"title":"Usage","file":"text.md"}
     ]
 }

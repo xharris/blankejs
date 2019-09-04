@@ -1,23 +1,27 @@
 {
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns",
-    "first_scene": "Hitboxes",
+    "first_scene": "BunnyMark",
     "size": [
         800,
         600
     ],
     "quick_access": [
         [
-            "Hitboxes.js=script+scene+?",
-            "Hitboxes.js"
+            "BunnyMark.js=script+scene+?",
+            "BunnyMark.js"
+        ],
+        [
+            "Bunny.js=script+entity+?",
+            "Bunny.js"
+        ],
+        [
+            "View assets=?",
+            "View assets"
         ],
         [
             "Add an entity=new+?",
             "Add an entity"
-        ],
-        [
-            "Shapes.js=script+entity+?",
-            "Shapes.js"
         ],
         [
             "Add a scene=new+?",
