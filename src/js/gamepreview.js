@@ -440,6 +440,8 @@ game_instance = Blanke("#game",{
 		}
 		onload_code += (post_load || '');
 		code += (post_load || '') + `
+		
+		${app.project_settings.autoplay_preview && this.options.ide_mode ? '' : 'Game.pause();Game.step();'}
 	}
 });`;
 		this.iframe.srcdoc = GamePreview.getHTML(`

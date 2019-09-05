@@ -20,7 +20,8 @@ class Settings extends Editor {
             ['GAME'],
             ['first_scene','select',{'choices':Code.classes.scene,'default':app.project_settings.first_scene}],
             ['game_size','number',{'inputs':2, 'separator':'x', 'step':1, 'min':1, 'default':app.project_settings.size}],
-			['IDE'],
+            ['autoplay_preview','checkbox',{'default':app.project_settings.autoplay_preview}],
+            ['IDE'],
             ['theme','select',{'choices':app.themes,'default':app.settings.theme}],
             ['quick_access_size','number',{'min':1,'default':app.settings.quick_access_size}],
             ['Paths'],
@@ -34,6 +35,9 @@ class Settings extends Editor {
         this.el_settings.onChange('game_size',(value)=>{
             app.project_settings.size = value; 
             app.saveSettings();
+        });
+        this.el_settings.onChange('autoplay_preview',(value)=>{
+            app.project_settings.autoplay_preview = value;
         });
 		this.el_settings.onChange('theme',(value)=>{
 			app.setTheme(value);

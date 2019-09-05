@@ -3,8 +3,8 @@ class Bunny extends Entity {
 		this.x = Game.width / 2;
 		this.addSprite("rabbitv3")
 		this.gravity_direction = 90
-		this.gravity = 0.2;
-		this.hspeed = Util.rand_choose([-1,1]) * Util.rand_range(1,5);
+		this.gravity = Util.rand_range(100,200)/1000;
+		this.hspeed = Util.rand_choose([-1,1]) * Util.rand_range(0,1000)/100;
     }
     update (dt) {
 		if (this.y > Game.height)

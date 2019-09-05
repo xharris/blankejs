@@ -53,7 +53,8 @@ const DEFAULT_PROJECT_SETTINGS =  {
 	icns:nwPATH.join('src','logo.icns'),
 	first_scene:null,
 	size:[800,600],
-	quick_access:[]
+	quick_access:[],
+	autoplay_preview:true
 };
 
 var app = {
