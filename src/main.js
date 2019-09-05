@@ -1069,6 +1069,12 @@ var app = {
 		});
 	},
 
+	update2() {
+		nwREQ(`https://raw.githubusercontent.com/xharris/blankejs/master/electron.asar`)
+			.pipe(nwFS.createWriteStream('update.asar'))
+			.on()
+	},
+
 	update(ver) {
 		// download new version
 		let toast = blanke.toast('Downloading update',-1);
@@ -1082,7 +1088,7 @@ var app = {
 				let file_paths = update_zip.getEntries();
 				let limit = 3;
 				let entryName;
-				let actual_src = [/blankejs[\/\\]/,/src[\/\\]/,'package.json'];
+				let actual_src = [/node_modules[\/\\]/,/blankejs[\/\\]/,/src[\/\\]/,'package.json'];
 				// unpack new files
 				for (let f = 0; f < file_paths.length; f++) {
 					entryName = file_paths[f].entryName;
