@@ -33,5 +33,16 @@
         "xhh-platformer": false,
         "xhh-tween": false
     },
-    "spritesheet_prvw": {}
+    "spritesheet_prvw": {},
+    "export": {
+        "name": "test_zone",
+        "web_autoplay": false,
+        "scale_mode": "linear",
+        "frameless": false,
+        "minify": true,
+        "scale": true,
+        "resizable": true
+    },
+    "os": "windows",
+    "autoplay_preview": false
 }

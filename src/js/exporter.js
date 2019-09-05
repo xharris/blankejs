@@ -314,5 +314,5 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({key: 'Export game', group:"Exporter", onSelect: function() {
 		new Exporter(app);
 	}});
-	app.project_settings.export = Object.assign(DEFAULT_EXPORT_SETTINGS, app.project_settings.export);
+	app.project_settings.export = Object.assign(DEFAULT_EXPORT_SETTINGS(), app.project_settings.export);
 });

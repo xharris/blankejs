@@ -117,6 +117,7 @@ module.exports.hints = {
 	],
 	"blanke-util":[
 		{ fn: 'uuid' },
+		{ fn: 'repeat', vars: { i:'', function:'return true to stop early' } },
 		{ fn: 'aliasProps', vars: { dest:'', src:'', properties:'' }, info: 'maps get/set functions that allow dest to control [properties] of src' },
 		{ fn: 'rad', vars: { deg:'' }, info: 'converts degrees to radians' },
 		{ fn: 'deg', vars: { rad:'' }, info: 'converts radians to degrees' },

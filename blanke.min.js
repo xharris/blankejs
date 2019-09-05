@@ -288,13 +288,12 @@ var Blanke = (selector, options) => {
             this._z = v;
             let containers = [];
             if (this._getPixiObjs) {
-                let objs = this._getPixiObjs();
-                for (let o of objs) {
+                this._getPixiObjs().forEach(o => {
                     let container = o.parent;
                     o.zIndex = this.z;
                     if (container && !containers.includes(container))
                         containers.push(container);
-                }
+                });
             }
             // sort the collected containers
             containers.forEach((cont) => {
@@ -303,6 +302,7 @@ var Blanke = (selector, options) => {
             })
         }
         _getPixiObjs () { return []; }
+        destroyPixiObjs () { this._getPixiObjs().forEach(o => o.destroy() )}
         getRect () { return new Rectangle(); }
         get visible () { return this._visible || true; }
         set visible (v) {
@@ -328,6 +328,16 @@ var Blanke = (selector, options) => {
             if (!this._effect) 
                 this._effect = new EffectManager(this);
             this._effect.add(v);
+        }
+        get particle () {
+            return this._particle == true;
+        }
+        set particle (v) {
+            this._particle = v;
+            if (this._particle == true)
+                this._getPixiObjs().forEach(o => Scene.addParticle(o));
+            else
+                this._getPixiObjs().forEach(o => Scene.addDrawable(o));
         }
         getTexture () {
             let temp_container = new PIXI.Container();
@@ -559,13 +569,18 @@ var Blanke = (selector, options) => {
             }
             return n;
         },
+        // programming helper
+        repeat: (i, fn) => {
+            while (i-- > 0)
+                if (fn() == true) i = 0;
+        },
         // file
         basename: (path, no_ext) => no_ext == true ? path.split(re_sep).slice(-1)[0].split('.')[0] : path.split(re_sep).slice(-1)[0],
         extname: (path) => path.replace(/[\w_\\.\-\/]+\./,'')
     }
     app.ticker.add((dt)=>{
         Game.time += dt;
-        Game.ms += app.ticker.elapsedMS;
+        Game.ms += app.ticker.deltaMS;
         if (Input('toggle-fullscreen').released) {
             Game.fullscreen = !Game.fullscreen;
         }
@@ -748,9 +763,8 @@ var Blanke = (selector, options) => {
             Asset.loader.load();
         },
         get: (type, name) => {
-            if (!(Asset.data[type] && Asset.data[type][name]))
-                return;
-            return Asset.data[type][name];
+            if (Asset.data[type] && Asset.data[type][name])
+                return Asset.data[type][name];
         },
         getName: (type, path) => {
             if (Asset.path_name[type] && Asset.path_name[type][path])
@@ -969,8 +983,16 @@ var Blanke = (selector, options) => {
         constructor (name) {
             super();
             this.name = name;
+            let scene_info = Scene.fn_ref[name];
             this.skip_first_update = false;
             this.container = new PIXI.Container();
+            this.particle_container = new PIXI.ParticleContainer(200000,{
+                vertices:true,
+                position:true,
+                rotation:true,
+                uvs:true,
+                tint:true
+            });
             this.container.filterArea = new PIXI.Rectangle(0,0,Game.width, Game.height);
             window.addEventListener('resize',()=>{
                 if (this.container.filterArea) {
@@ -984,24 +1006,36 @@ var Blanke = (selector, options) => {
             this.onEnd = (scene) => {};
 
             // apply given callbacks
-            let functions = Scene.fn_ref[name];
-            for (let fn in functions) {
-                this[fn] = functions[fn].bind(this,this);
+            for (let fn in scene_info) {
+                if (scene_info[fn].bind)
+                    this[fn] = scene_info[fn].bind(this,this);
             }
 
             game_container.addChild(this.container);
+            game_container.addChild(this.particle_container);
+            if (scene_info.particle_z != null) {
+                this.particle_z = scene_info.particle_z;
+            }
+        }
+
+        set particle_z (v) {
+            this.particle_container.zIndex = v;
+            this.particle_container.parent.sortableChildren = true;
+            this.particle_container.parent.sortChildren();
         }
 
         _getPixiObjs () {
-            return [this.container];
+            return [this.container, this.particle_container];
         }
 
         destroy () {
-            this.container.destroy();
+            this.destroyPixiObjs();
         }
     
         _onStart () {
             this.container.visible = true;
+            this.particle_container.visible = true;
+
             this.onStart.call(this);
             // start update loop
             app.ticker.add(this.update, this);
@@ -1017,7 +1051,7 @@ var Blanke = (selector, options) => {
                 else if (obj.destroy)
                     obj.destroy();
             }
-            this.container.destroy();
+            this.destroyPixiObjs();
         }
     
         update (dt) {
@@ -1100,11 +1134,29 @@ var Blanke = (selector, options) => {
         return { name: '' }
     }
     
+    Scene.stray_container = new PIXI.Container();
+    Scene.stray_particles = new PIXI.ParticleContainer(10000,{
+        vertices:true,
+        position:true,
+        rotation:true,
+        uvs:true,
+        tint:true
+    });
+    game_container.addChild(Scene.stray_container);
+    game_container.addChild(Scene.stray_particles);
+
     Scene.addDrawable = (pixi_obj) => {
         if (Scene.stack.length > 0) 
             Scene.get(Scene.stack[Scene.stack.length-1]).container.addChild(pixi_obj);
         else
-            game_container.addChild(pixi_obj);
+            Scene.stray_container.addChild(pixi_obj);
+    }
+
+    Scene.addParticle = (pixi_obj) => {
+        if (Scene.stack.length > 0)
+            Scene.get(Scene.stack[Scene.stack.length-1]).particle_container.addChild(pixi_obj);
+        else
+            Scene.stray_particles.addChild(pixi_obj);
     }
 
     Scene.addUpdatable = (obj) => {
@@ -1191,7 +1243,8 @@ var Blanke = (selector, options) => {
             aliasProps(this, this.sprite, ['x','y','texture','alpha','width','height','pivot','angle','scale','skew','anchor']);
             if (!options.no_scene) {
                 Scene.addDrawable(this.sprite);
-                Scene.addUpdatable(this);
+                if (!options.from_entity)
+                    Scene.addUpdatable(this);
             }
         }
         getRect () {
@@ -1536,8 +1589,6 @@ var Blanke = (selector, options) => {
                 });
             }
             if (this.init) this.init(...args);
-            this.xprevious = this.x;
-            this.yprevious = this.y;
             Scene.addUpdatable(this);
             storeInstance(this.constructor, this);
         }
@@ -1560,15 +1611,17 @@ var Blanke = (selector, options) => {
         _update (dt) {
             if (this.destroyed) return;
             // friction
-            if (this.hspeed != 0) {
-                this.hspeed -= this.hspeed * this.friction;
-                if (this.friction > 0 && this.gravity == 0 && Math.abs(this.hspeed) <= 1)
-                    this.hspeed = 0;
-            }
-            if (this.vspeed != 0) {
-                this.vspeed -= this.vspeed * this.friction;
-                if (this.friction > 0 && this.gravity == 0 && Math.abs(this.vspeed) <= 1)
-                    this.vspeed = 0;
+            if (this.friction != 0) {
+                if (this.hspeed != 0) {
+                    this.hspeed -= this.hspeed * this.friction;
+                    if (this.gravity == 0 && Math.abs(this.hspeed) <= 1)
+                        this.hspeed = 0;
+                }
+                if (this.vspeed != 0) {
+                    this.vspeed -= this.vspeed * this.friction;
+                    if (this.gravity == 0 && Math.abs(this.vspeed) <= 1)
+                        this.vspeed = 0;
+                }
             }
             let old_x = this.x, old_y = this.y;
             if (this.update)
@@ -1586,79 +1639,68 @@ var Blanke = (selector, options) => {
                 this.dy += Util.direction_y(this.gravity_direction, this.gravity); 
             }
             // move shapes if x/y is different
-            if (old_x != this.x || old_y != this.y) {
-                for (let name in this.shapes) {
-                    let off = this.shapes[name].offset;
-                    /*
-                    if (this.shapes[name].type == 'rect') {
-                        this.shapes[name].position(
-                            this.x + off[0] - this._getHitboxOffset('x'),
-                            this.y + off[1] - this._getHitboxOffset('y')
-                        )
-                    } else {
-                        this.shapes[name].position(
-                            this.x + off[0],
-                            this.y + off[1]
-                        )
-                    }*/
-                    if (main_shape && main_shape.name == name) {
-                        this.shapes[name].position(
-                            this._x + off[0] - this._getHitboxOffset('x'),
-                            this._y + off[1] - this._getHitboxOffset('y')
-                        )
-                    } else {
-                        this.shapes[name].position(
-                            this._x + off[0],
-                            this._y + off[1]
-                        )
+            if (this.shapes.length > 0) {
+                if (old_x != this.x || old_y != this.y) {
+                    for (let name in this.shapes) {
+                        let off = this.shapes[name].offset;
+                        if (main_shape && main_shape.name == name) {
+                            this.shapes[name].position(
+                                this._x + off[0] - this._getHitboxOffset('x'),
+                                this._y + off[1] - this._getHitboxOffset('y')
+                            )
+                        } else {
+                            this.shapes[name].position(
+                                this._x + off[0],
+                                this._y + off[1]
+                            )
+                        }
                     }
                 }
-            }
-            // collision
-            let precoll_hspeed = this.hspeed, precoll_vspeed = this.vspeed;
-            if (!this.collision_order) {
-                this.collision_order = Object.keys(this.shapes);
-            }
-            this._collisions = {};
-            for (let name of this.collision_order) {
-                let shape = this.shapes[name];
-                shape.debug = this.debug;
-                shape.move(this.dx*dt, this.dy*dt);
+                // collision
+                if (!this.collision_order) {
+                    this.collision_order = Object.keys(this.shapes);
+                }
+                this._collisions = {};
+                for (let name of this.collision_order) {
+                    let shape = this.shapes[name];
+                    shape.debug = this.debug;
+                    shape.move(this.dx*dt, this.dy*dt);
 
-                let coll_list = shape.collisions();
-                if (coll_list) {
-                    for (let info of coll_list) {
-                        this._triggerCollision(name, info);
-                        info[1].sep_vec.x = -info[1].sep_vec.x;
-                        info[1].sep_vec.y = -info[1].sep_vec.y;
-                        if (info[0].parent && info[0].parent.is_entity)
-                            info[0].parent._triggerCollision(info[0].name, info)
-                        if (this.destroyed) return;
-                    }
-                    if (this.onCollision[name]) {
-                        delete this.collisionStopY;
-                        delete this.collisionStopX;
-                        delete this.collisionStop;
-                    }
-                }     
-            }
-            if (main_shape) {
-                main_shape.move(-this.resx*this.coll_scale, -this.resy*this.coll_scale);
-                for (let name in this.shapes) {
-                    let off = (name == this.shape_index) ? [0,0] : this.shapes[name].offset;
-                    this.shapes[name].position(
-                        main_shape.x + off[0],
-                        main_shape.y + off[1]
-                    );
+                    let coll_list = shape.collisions();
+                    if (coll_list) {
+                        for (let info of coll_list) {
+                            this._triggerCollision(name, info);
+                            info[1].sep_vec.x = -info[1].sep_vec.x;
+                            info[1].sep_vec.y = -info[1].sep_vec.y;
+                            if (info[0].parent && info[0].parent.is_entity)
+                                info[0].parent._triggerCollision(info[0].name, info)
+                            if (this.destroyed) return;
+                        }
+                        if (this.onCollision[name]) {
+                            delete this.collisionStopY;
+                            delete this.collisionStopX;
+                            delete this.collisionStop;
+                        }
+                    }     
                 }
-            } else {
-                for (let name in this.shapes) {
-                    this.shapes[name].move(-this.resx*this.coll_scale, -this.resy*this.coll_scale);
+                if (main_shape) {
+                    main_shape.move(-this.resx*this.coll_scale, -this.resy*this.coll_scale);
+                    for (let name in this.shapes) {
+                        let off = (name == this.shape_index) ? [0,0] : this.shapes[name].offset;
+                        this.shapes[name].position(
+                            main_shape.x + off[0],
+                            main_shape.y + off[1]
+                        );
+                    }
+                } else {
+                    for (let name in this.shapes) {
+                        this.shapes[name].move(-this.resx*this.coll_scale, -this.resy*this.coll_scale);
+                    }
                 }
+                this.resx = 0;
+                this.resy = 0;
+                this.coll_scale = 1.1;
             }
-            this.resx = 0;
-            this.resy = 0;
-            this.coll_scale = 1.1;
             // set position of entity
             if (main_shape) {
                 let pos = main_shape.position();
@@ -1677,11 +1719,9 @@ var Blanke = (selector, options) => {
             this.updateSpritePosition();
             this.updateDebug();
 
-            this.xprevious = this.x - this._getHitboxOffset('x');
-            this.ypreviuos = this.y - this._getHitboxOffset('y');
             // preserve user-set speeds
-            if (precoll_hspeed == this.hspeed) this.hspeed = this.dx;
-            if (precoll_vspeed == this.vspeed) this.vspeed = this.dy;
+            this.hspeed = this.dx;
+            this.vspeed = this.dy;
         }
         _getHitboxOffset (a) {
             return (this.sprite_pivot[a] + (this.sprite_anchor[a] * this['sprite_'+(a=='x'?'width':'height')]))// * this.sprite_scale[a];
@@ -1692,6 +1732,9 @@ var Blanke = (selector, options) => {
                 name = opt;
                 opt = null;
             }
+            opt = Object.assign({
+                from_entity: true
+            }, opt || {});
             this.sprites[spr_name] = new Sprite(name, opt);
             if (this.sprite_index == '')
                 this.sprite_index = spr_name;
@@ -1849,7 +1892,7 @@ var Blanke = (selector, options) => {
         }
         updateSpriteProps () {
             let main_spr = this.sprites[this.sprite_index];
-            if (main_spr) {
+            if (main_spr && this._update_spr_props.length > 0) {
                 this._update_spr_props.forEach(p => {
                     for (let s in this.sprites) {
                         this.sprites[s][p] = main_spr[p];
