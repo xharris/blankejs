@@ -1,4 +1,5 @@
 {
+	"0.2.10":["bugfixes for game preview refreshing"],
 	"0.2.9":["bugfixes for Entity sprite control","updated docs for Map and View"],
 	"0.2.8":["bugfixes for scene editor layers","adds spawnHitbox to Map (Map docs will come soon)","bugfixes for Hitbox (poly)"],
 	"0.2.7":["new Platformer plugin","adds sprite_anchor","fixes for hitbox/sprite alignment"],
