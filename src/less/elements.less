@@ -147,12 +147,10 @@
 
 	&.horizontal .code.split {
 		width: 50%;
-		display: inline-block;
 	}
 	
 	&.vertical .code.split {
 		height: 50%;
-		display: inline-block;
 	}
 
 	.methods {
@@ -1548,6 +1546,12 @@
 	.container {
 		padding: 5px;
 		padding-bottom: 0px;
+
+		.form-label {
+			float: right;
+			width: 100%;
+			box-sizing: border-box;
+		}
 
 		.toggle {
 			width: 100%;

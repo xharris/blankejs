@@ -90,33 +90,30 @@
     "history_clicks": [],
     "quick_access": [
         [
-            "PlayScene.js=script+scene+?",
-            "PlayScene.js"
-        ],
-        [
             "Player.js=script+entity+?",
             "Player.js"
         ],
         [
-            "Plugins",
-            null
+            "PlayScene.js=script+scene+?",
+            "PlayScene.js"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
             "level1.map=map+?",
             "level1.map"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "export": {
         "name": "boredom",
         "web_autoplay": false,
+        "scale_mode": "linear",
         "frameless": false,
         "minify": true,
         "scale": true,
-        "resizable": true,
-        "scale_mode": "linear"
-    }
+        "resizable": true
+    },
+    "autoplay_preview": true
 }

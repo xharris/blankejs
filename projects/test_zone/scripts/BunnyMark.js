@@ -2,7 +2,7 @@ Scene("BunnyMark",{
 	particle_z:0,
     onStart: function(scene) {
 		scene.txt_count = new Text('0', {
-			fontSize: 150,
+			fontSize: 75,
 			fill: Draw.white,
 			stroke: Draw.black,
 			strokeThickness: 4
@@ -11,16 +11,16 @@ Scene("BunnyMark",{
 		scene.txt_count.y = 100;
 		scene.txt_count.z = 1000;
 		
-		//Timer.every(1000,function(){
-			Util.repeat(10000 /*20000*/,()=>{
+		Input.set("action","space");
+    },
+    onUpdate: function(scene, dt) {
+		if (Input("action").released) {
+			Util.repeat(5000,()=>{
 				let b = new Bunny();
 				b.particle = true;
 			});
 			scene.txt_count.text = Bunny.instances.length;
-		//});
-    },
-    onUpdate: function(scene, dt) {
-		
+		}
     },
     onEnd: function(scene) {
 

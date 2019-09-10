@@ -245,8 +245,6 @@ class Code extends Editor {
 		this.console.appendTo(this.getContent());
 		this.getContainer().bg_first_only = true;
 		this.appendBackground(this.game.container);
-		
-		this.game.size = this.container.getSizeType();
 
 		var this_ref = this;
 		CodeMirror.defineMode("blanke", (config, parserConfig) => {
@@ -1023,7 +1021,7 @@ class Code extends Editor {
 	refreshGame () {
 		if (!this.deleted) {
 			this.game.breakpoints = Object.keys(this.breakpoints).map(parseInt);
-			this.game.refreshSource(this.file, true);
+			this.game.refreshSource(this.file);
 			this.console.clear();
 		}
 	}
@@ -1037,6 +1035,7 @@ class Code extends Editor {
 			Code.updateSpriteList(this.file, data);
 			this.removeAsterisk();
 			this.focus_after_save = true;
+			this.game.clearErrors();
 			this.refreshGame();
 
 		});
@@ -1068,7 +1067,7 @@ class Code extends Editor {
 			if (success) {
 				this.file = new_path;
 				this.setTitle(nwPATH.basename(this.file));
-				if (this.game) this.game.setSourceFile(this.file);
+				this.refreshGame();
 
 			} else
 				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
@@ -1108,9 +1107,6 @@ class Code extends Editor {
 		}
 		if (line != null) 
 			editor.goToLine(line);
-		blanke.cooldownFn("openScript-gamepreview", 200, function(){
-			//editor.refreshGame();
-		});
 	}
 
 	static updateSpriteList(path, data) {

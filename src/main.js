@@ -261,7 +261,6 @@ var app = {
 				// start first scene
 				app.loadSettings(() => {
 					app.hideWelcomeScreen();
-					//app.game = new GamePreview("#game-container");
 					dispatchEvent("openProject", {path: path});
 				});
 			} else {
@@ -527,6 +526,7 @@ var app = {
 		}
 	},
 	triggerSearchKey: function(hash_val) {
+		if (!app.search_funcs[hash_val]) return;
 		app.search_funcs[hash_val].apply(this, app.search_args[hash_val]);
 		var el_search = app.getElement("#search-input")
 		el_search.value = "";
@@ -788,7 +788,12 @@ var app = {
 					if (val == hash) // switch them around here
 						hash = key;
 				}
-				set.quick_access.unshift([hash || last_hash, app.search_titles[hash] || last_title]);
+				hash = hash || last_hash;
+				let title =  app.search_titles[hash] || last_title;
+				if (hash && title) {
+					console.log(hash, title)
+					set.quick_access.unshift([hash,title]);
+				}
 			}
 			set.quick_access = set.quick_access.slice(0,app.settings.quick_access_size);
 			app.saveSettings();
@@ -816,16 +821,18 @@ var app = {
 			if (different) {
 				app.clearElement(el_container);
 				for (let h of set.quick_access) {
-					let el_link_container = app.createElement('div','history-container');
-					let el_link = app.createElement('a','history');
-					el_link.innerHTML = h[1];
-					el_link_container.onclick = ()=>{
-						app.triggerSearchKey(h[0]);
+					if (h[0] && h[1]) {
+						let el_link_container = app.createElement('div','history-container');
+						let el_link = app.createElement('a','history');
+						el_link.innerHTML = h[1];
+						el_link_container.onclick = ()=>{
+							app.triggerSearchKey(h[0]);
+						}
+						el_link_container.appendChild(el_link);
+						el_link_container.hash = h[0];
+						el_link_container.text = h[1];
+						el_container.appendChild(el_link_container);
 					}
-					el_link_container.appendChild(el_link);
-					el_link_container.hash = h[0];
-					el_link_container.text = h[1];
-					el_container.appendChild(el_link_container);
 				}
 			}
 			// show quick access only if workspace is empty
@@ -1024,11 +1031,6 @@ var app = {
 			DEV_MODE = true;
 			app.addSearchKey({key: 'Dev Tools', onSelect: app.window.webContents.openDevTools});
 			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ elec.shell.openItem(app.getAppDataFolder()); }});
-			/*
-			app.addSearchKey({key: 'Restart engine', onSelect:function(){
-				this.game.refreshEngine();
-			}});
-			*/
 			app.window.webContents.openDevTools();
 			blanke.toast("Dev mode enabled");
 		} else {

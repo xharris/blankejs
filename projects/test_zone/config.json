@@ -3,8 +3,8 @@
     "icns": "src\\logo.icns",
     "first_scene": "BunnyMark",
     "size": [
-        800,
-        600
+        400,
+        300
     ],
     "quick_access": [
         [
@@ -44,5 +44,5 @@
         "resizable": true
     },
     "os": "windows",
-    "autoplay_preview": false
+    "autoplay_preview": true
 }

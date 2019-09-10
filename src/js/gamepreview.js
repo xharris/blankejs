@@ -71,56 +71,25 @@ class GamePreview {
 			size: null,
 			onLoad: null
 		});
-		
+
 		// engine loaded
 		this.refresh_file = null;
-		this.errored = false;
+		this.clearErrors();
 		this.last_code = null;
 		this.iframe.addEventListener('load', () => {
 			let iframe = this.iframe;
 			let doc = iframe.contentDocument;
 			let canvas = doc.querySelectorAll("#game canvas");
 			canvas.forEach(el => el.remove());
-			
-			if (this.errored) {
+			if (this.error_status == 'error') {
+				this.reportError(...this.errored)
 				return;
-			} else if (this.error_status == 'error') {
-				this.error_status = 'resolving';
 			}
-
-			if (this.refresh_file) {
+			if (this.refresh_file && this.error_status == 'none') 
 				this.refreshSource(this.refresh_file);
-			}
 			if (this.options.onLoad)
 				this.options.onLoad(this);
 
-			iframe.contentWindow.onerror = (msg, url, lineNo, columnNo, error) => {
-				this.pause();
-				this.errored = true;
-				this.error_status = 'error';
-				// get line and col
-				let match = re_error_line.exec(error.stack);
-				if (match) {
-					lineNo = parseInt(match[1]);
-					columnNo = parseInt(match[2]);
-				}
-				msg = msg.replace("Uncaught Error: ","");
-				if (this.onError) {
-					let file, range;
-					for (let f in this.line_ranges) {
-						range = this.line_ranges[f];
-						if (lineNo > range.start && lineNo < range.end) {
-							file = f;
-							break;
-						}
-					}
-					if (file)
-						this.onError(msg, file, lineNo - range.start, columnNo);
-
-				} else 
-					console.error(msg, url, lineNo, columnNo, error)
-				return true;
-			}
 			if (this.onLog) {
 				let old_warn = iframe.contentWindow.console.warn;
 				iframe.contentWindow.console = {
@@ -134,7 +103,6 @@ class GamePreview {
 					}
 				}
 			}
-
 			if (this.last_code) {
 				let old_script = doc.querySelectorAll('script.source');
 				if (old_script)
@@ -142,7 +110,10 @@ class GamePreview {
 				let parent= doc.getElementsByTagName('body')[0];
 				let script= doc.createElement('script');
 				script.classList.add("source");
+				iframe.onerror = this.reportError.bind(this);
+				iframe.contentWindow.onerror = this.reportError.bind(this);
 				script.innerHTML= this.last_code;
+				//console.log(this.last_code)
 				parent.appendChild(script);
 				this.last_code = null;
 			}
@@ -167,7 +138,7 @@ class GamePreview {
 		this.paused = false;
 		document.addEventListener('engineChange',(e)=>{
 			if (!this.paused || this.errored)
-				this.refreshEngine();	
+				this.refreshSource(this.last_script);
 		});
 
 		// game controls
@@ -176,6 +147,7 @@ class GamePreview {
 		this.el_refresh = app.createIconButton("refresh","refresh");
 		this.el_refresh.addEventListener('click',()=>{
 			if (this.onRefreshButton) this.onRefreshButton();
+			this.clearErrors();
 			this.refreshSource(this.last_script);
 		});
 		this.el_control_bar.appendChild(this.el_refresh);
@@ -339,21 +311,53 @@ class GamePreview {
 		let TestView = () => {};
 		`;
 	}
+
+	reportError (msg, url, lineNo, columnNo, error) {
+		if (!msg || this.errored) return;
+		this.pause();
+		this.errored = [msg, url, lineNo, columnNo, error];
+		this.error_status = 'error';
+		// get line and col
+		let match = re_error_line.exec(error.stack);
+		if (match) {
+			lineNo = parseInt(match[1]);
+			columnNo = parseInt(match[2]);
+		}
+		msg = msg.replace("Uncaught Error: ","");
+		if (this.onError) {
+			let file, range;
+			for (let f in this.line_ranges) {
+				range = this.line_ranges[f];
+				if (lineNo > range.start && lineNo < range.end) {
+					file = f;
+					break;
+				}
+			}
+			if (file)
+				this.onError(msg, file, lineNo - range.start, columnNo);
+		}
+		console.log("(Engine Error) "+msg, url, lineNo, columnNo, error)
+		return true;
+	}
+
+	clearErrors () {
+		this.error_status = 'resolving';
+		this.errored = false;
+	}
 	
 	refreshSource (current_script) {
 		this.iframe.style.display = 'none';
-		if (this.errored) {	
-			this.errored = false;
-		}
 		this.last_script = current_script;
 		if (!this.game) 
 			this.refresh_file = app.cleanPath(current_script);
-		if (this.refresh_file) {
+		if (this.refresh_file && !current_script) {
 			current_script = this.refresh_file
 			this.refresh_file = null;
 		}
-		if (this.game)
-			this.game.Game.end();
+		if (this.error_status == 'error')
+			return;
+		//if (this.game)
+			//this.game.Game.end();
 
 		let post_load = '';
 		// get all the scripts
@@ -483,18 +487,6 @@ game_instance = Blanke("#game",{
 		this.last_script = file;
 		if (!this.paused)
 			this.refreshSource(this.last_script);
-	}
-
-	refreshEngine () {
-		if (!this.paused)
-			this.refreshSource(this.last_script);
-		/*
-		let iframe = this.iframe;
-		blanke.destroyElement(iframe.contentDocument.querySelector('script[src="../blankejs/blanke.js"]'));
-		var head= iframe.contentDocument.getElementsByTagName('head')[0];
-		var script= iframe.contentDocument.createElement('script');
-		script.src= '../blankejs/blanke.js';
-		head.appendChild(script);*/
 	}
 }
 GamePreview.engine_classes = '';

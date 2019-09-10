@@ -519,12 +519,7 @@ var Blanke = (selector, options) => {
             Scene.endAll();
             Scene.ref = {};
             // remove leftover game objects 
-            for (let obj of Scene.stray_objects) {
-                if (obj._destroy)
-                    obj._destroy();
-                else if (obj.destroy)
-                    obj.destroy();
-            }
+            Scene.destroyStrays();
             game_container.removeChildren();
             // reset input stuff
             input_ref = {};
@@ -1016,12 +1011,13 @@ var Blanke = (selector, options) => {
             if (scene_info.particle_z != null) {
                 this.particle_z = scene_info.particle_z;
             }
+            this.tick = 0;
         }
 
         set particle_z (v) {
             this.particle_container.zIndex = v;
-            this.particle_container.parent.sortableChildren = true;
-            this.particle_container.parent.sortChildren();
+            game_container.sortableChildren = true;
+            game_container.sortChildren();
         }
 
         _getPixiObjs () {
@@ -1059,6 +1055,7 @@ var Blanke = (selector, options) => {
                 this.skip_first_update = false;
                 return;
             }
+            this.tick += 0.1;
             this.onUpdate.call(this, dt);
             iter_scene_objects(this.objects, dt);
         }
@@ -1177,6 +1174,18 @@ var Blanke = (selector, options) => {
             Scene.get(Scene.stack[Scene.stack.length-1]).objects.push(obj);
         else 
             Scene.stray_objects.push(obj);    
+    }
+
+    Scene.destroyStrays = () => {
+        for (let obj of Scene.stray_objects) {
+            if (obj._destroy)
+                obj._destroy();
+            else if (obj.destroy)
+                obj.destroy();
+        }
+        Scene.stray_container.removeChildren();
+        Scene.stray_particles.removeChildren();
+        Scene.stray_objects = [];
     }
 
     let iter_scene_objects = (arr, dt) => {
@@ -1573,7 +1582,9 @@ var Blanke = (selector, options) => {
                 Object.defineProperty(this,'sprite_'+p,{
                     get: function () {
                         let spr = this.sprites[this.sprite_index];
-                        if (spr && !spr.destroyed) {
+                        if (!spr || spr.destroyed) {
+                            this.removeSprite(this.sprite_index);
+                        } else {
                             this._update_spr_props.push(p);
                             return spr[p];
                         }
@@ -1581,9 +1592,11 @@ var Blanke = (selector, options) => {
                     },
                     set: function (v) {
                         for (let spr in this.sprites) {
-                            let spr_obj = this.sprites[spr];
-                            if (spr_obj && !spr_obj.destroyed)
-                                spr_obj[p] = v;
+                            if (!spr || spr.destroyed) {
+                                this.removeSprite(spr);
+                            } else {
+                                this.sprites[spr][p] = v;
+                            }
                         }
                     }
                 });
@@ -1639,7 +1652,7 @@ var Blanke = (selector, options) => {
                 this.dy += Util.direction_y(this.gravity_direction, this.gravity); 
             }
             // move shapes if x/y is different
-            if (this.shapes.length > 0) {
+            if (Object.keys(this.shapes).length) {
                 if (old_x != this.x || old_y != this.y) {
                     for (let name in this.shapes) {
                         let off = this.shapes[name].offset;
@@ -1743,6 +1756,12 @@ var Blanke = (selector, options) => {
             if (this.sprites[name]) {
                 this.sprites[name].destroy();
             }
+            delete this.sprites[name];
+            other_sprites = Object.keys(this.sprites);
+            if (other_sprites.length > 0)
+                this.sprite_index = other_sprites[0];
+            else
+                this.sprite_index = '';
         }
         addShape (name, options) {
             if (typeof options == 'string') options = { type:options };
