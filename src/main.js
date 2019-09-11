@@ -1022,8 +1022,9 @@ var app = {
 		})
 	},
 
-	openURL (url) {
-		elec.shell.openExternal(url);
+	// makes all urls open in external window
+	sanitizeURLs () {
+		Array.from(document.getElementsByTagName("a")).forEach(a => {if (a.href.length > 0) a.target="_blank"})
 	},
 
 	enableDevMode(force_search_keys) {
@@ -1137,7 +1138,7 @@ var app = {
 app.window.webContents.on('open-file', (e, path)=>{
 	//console.log(e)
 })
-app.window.webContents.on("did-finish-load",()=>{
+app.window.webContents.once('dom-ready', ()=>{
 	process.chdir(nwPATH.join(__dirname,'..'));
 	blanke.elec_ref = elec;
 

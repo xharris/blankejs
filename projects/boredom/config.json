@@ -47,7 +47,7 @@
     },
     "enabled_plugins": {
         "xhh-platformer": true,
-        "xhh-tween": false,
+        "xhh-tween": true,
         "xhh-net": false
     },
     "spritesheet_prvw": {

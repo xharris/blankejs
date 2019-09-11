@@ -163,6 +163,8 @@ function inspectPlugins(silent) {
 					Plugins.disable(id);
 				}
 			}
+
+			app.sanitizeURLs();
 			dispatchEvent('loadedPlugins');
 		})
 	});
