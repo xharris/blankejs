@@ -1049,9 +1049,12 @@ var app = {
 				let updates = JSON.parse(body);
 				let update_string = '';
 				let keys = Object.keys(updates);
-				for (let k = 0; k < keys.length; k++) {
+				for (let k = keys.length-1; k >= 0; k--) {
 					if (!keys[k].includes('skip') && !curr_version_list[keys[k]]) {
 						update_string += `<div class='version-container'><div class='number'>${keys[k]}</div><div class='notes'>${updates[keys[k]].join('\n')}</div></div>`;
+					}
+					if (keys[k].includes('wait') && !curr_version_list[keys[k]]) {
+						k = -1;
 					}
 				}
 				if (update_string != '') {
@@ -1092,7 +1095,7 @@ var app = {
 				let file_paths = update_zip.getEntries();
 				let limit = 3;
 				let entryName;
-				let actual_src = [/node_modules[\/\\]/,/blankejs[\/\\]/,/src[\/\\]/,'package.json'];
+				let actual_src = [/node_modules[\/\\]/,/blankejs[\/\\]/,/src[\/\\]/,/themes[\/\\]/,'package.json','entry.js'];
 				// unpack new files
 				for (let f = 0; f < file_paths.length; f++) {
 					entryName = file_paths[f].entryName;
