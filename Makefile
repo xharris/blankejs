@@ -4,7 +4,7 @@ do:
 	make -B blanke
 
 version:
-	git -d ${v}
+	git tag -d ${v}
 	git tag -a ${v} -m"setting latest version to ${v}"
 	git push origin ${v} -f
 
