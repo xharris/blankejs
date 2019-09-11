@@ -1043,22 +1043,32 @@ var app = {
 	checkForUpdates(silent) {
 		let curr_version_list = JSON.parse(nwFS.readFileSync(nwPATH.join('src','version.json')));
 		app.curr_version = Object.keys(curr_version_list)[0];
+		let is_newer = (ver_str) => {
+			curr_ver = app.curr_version.split('-')[0].split('.');
+			new_ver = ver_str.split('-')[0].split('.');
+			for (let p in new_ver) { 
+				if (parseInt(curr_ver[p]) < parseInt(new_ver[p]))
+					return true;
+			}
+			return false;
+		}
 		// check latest version
 		nwREQ.get('https://raw.githubusercontent.com/xharris/blankejs/master/src/version.json', (err, res, body)=>{
 			if (!err && res.statusCode == 200) {
 				let updates = JSON.parse(body);
 				let update_string = '';
 				let keys = Object.keys(updates);
+				let latest_version = '';
 				for (let k = keys.length-1; k >= 0; k--) {
-					if (!keys[k].includes('skip') && !curr_version_list[keys[k]]) {
+					latest_version = keys[k];
+					if (!keys[k].includes('skip') && is_newer(keys[k])) {
 						update_string += `<div class='version-container'><div class='number'>${keys[k]}</div><div class='notes'>${updates[keys[k]].join('\n')}</div></div>`;
 					}
-					if (keys[k].includes('wait') && !curr_version_list[keys[k]]) {
+					if (keys[k].includes('wait') && is_newer([keys[k]])) {
 						k = -1;
 					}
 				}
 				if (update_string != '') {
-					let latest_version = keys[0];
 					blanke.toast('An update is available! ('+latest_version+')');
 					app.getElement('#btn-update').classList.remove('hidden');
 
