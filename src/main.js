@@ -1064,7 +1064,7 @@ var app = {
 					if (!keys[k].includes('skip') && is_newer(keys[k])) {
 						update_string += `<div class='version-container'><div class='number'>${keys[k]}</div><div class='notes'>${updates[keys[k]].join('\n')}</div></div>`;
 					}
-					if (keys[k].includes('wait') && is_newer([keys[k]])) {
+					if (keys[k].includes('wait') && is_newer(keys[k])) {
 						k = -1;
 					}
 				}
