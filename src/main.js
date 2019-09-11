@@ -1060,7 +1060,7 @@ var app = {
 				let keys = Object.keys(updates);
 				let latest_version = '';
 				for (let k = keys.length-1; k >= 0; k--) {
-					latest_version = keys[k];
+					latest_version = keys[k].split('-')[0];
 					if (!keys[k].includes('skip') && is_newer(keys[k])) {
 						update_string += `<div class='version-container'><div class='number'>${keys[k]}</div><div class='notes'>${updates[keys[k]].join('\n')}</div></div>`;
 					}

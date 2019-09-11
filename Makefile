@@ -3,6 +3,11 @@
 do:
 	make -B blanke
 
+version:
+	git -d ${v}
+	git tag -a ${v} -m"setting latest version to ${v}"
+	git push origin ${v} -f
+
 web:
 	start "" http://localhost:8000 || open http://localhost:8000
 	cd blankejs && python -m SimpleHTTPServer 8000
