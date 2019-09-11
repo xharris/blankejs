@@ -1,4 +1,5 @@
 {
+	"0.2.14":["just a test update"],
 	"0.2.13":["updater changes (2/2)"],
 	"0.2.12-wait":["updater changes (1/2)"],
 	"0.2.11":["links open in browser and avoid crashing blanke","new Platformer callback (any) and docs","scene editor tile align bugfix"],

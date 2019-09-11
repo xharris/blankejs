@@ -101,6 +101,10 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "Check for updates=?",
+            "Check for updates"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
@@ -115,10 +119,6 @@
         [
             "PlayScene.js=script+scene+?",
             "PlayScene.js"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
         ]
     ],
     "export": {
