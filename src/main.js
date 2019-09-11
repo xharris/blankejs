@@ -1097,7 +1097,6 @@ var app = {
 		let toast = blanke.toast('Downloading update',-1);
 		toast.icon = 'dots-horizontal';
 		toast.style = 'wait';
-		console.log(`https://github.com/xharris/blankejs/archive/${ver}.zip`)
 		nwREQ(`https://github.com/xharris/blankejs/archive/${ver}.zip`)
 			.pipe(nwFS.createWriteStream('update.zip'))
 			.on('close',function(){
@@ -1112,7 +1111,6 @@ var app = {
 					entryName = file_paths[f].entryName;
 					for (let src of actual_src) {
 						if (entryName.match(src) && !entryName.endsWith('\/') && !nwPATH.basename(entryName).startsWith('.')){
-							console.log(entryName)
 							update_zip.extractEntryTo(entryName, nwPATH.dirname(nwPATH.join(cwd(), entryName.replace(/^[^\/\\]*[\/\\]/,''))), false, true);
 						} 
 					}

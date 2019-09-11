@@ -101,12 +101,12 @@
     "history_clicks": [],
     "quick_access": [
         [
-            "Check for updates=?",
-            "Check for updates"
-        ],
-        [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "Check for updates=?",
+            "Check for updates"
         ],
         [
             "View assets=?",
