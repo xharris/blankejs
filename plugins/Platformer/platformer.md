@@ -40,7 +40,7 @@ class MyEntity extends Entity {
 
 `margin` default: 3. how much space is between the head/feet hitboxes and the left/right sides of the entity. recommended not to alter this value.
 
-`on` object to set callbacks for each hitbox. addPlatforming creates 3 hitboxes (head/feet/body). The corresponding callback is run when a collision happens.
+`on` object to set callbacks for each hitbox. addPlatforming creates 3 hitboxes (head/feet/body). The corresponding callback is run when a collision happens. Another, `any` is called when any of the 3 are triggered by ANY other hitbox (not just the given tag).
 
 Example:
 ```
@@ -52,6 +52,9 @@ Example:
 
         },
         body: (other, info) => {
+
+        },
+        any: (other, info) => {
 
         }
     }

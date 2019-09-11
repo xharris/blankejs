@@ -24,9 +24,11 @@ document.addEventListener('blankeLoaded',(e) => {
         this.collision_order = ['head','feet','body'];
 
 		this.onCollision['body'] = (other, info) => {
+            if (opt.on.any ? opt.on.any(other, info) : false) return true;
 			if (other.tag == opt.tag) {
                 coll_head = this.collisions('head').includes(opt.tag);
                 coll_feet = this.collisions('feet').includes(opt.tag);
+
                 if (coll_head || coll_feet) {
                     if (coll_head && opt.on.head ? opt.on.head(other, info) : false) return true;
                     if (coll_feet && opt.on.foot ? opt.on.foot(other, info) : false) return true;

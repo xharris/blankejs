@@ -1627,13 +1627,13 @@ var Blanke = (selector, options) => {
             if (this.friction != 0) {
                 if (this.hspeed != 0) {
                     this.hspeed -= this.hspeed * this.friction;
-                    if (this.gravity == 0 && Math.abs(this.hspeed) <= 1)
-                        this.hspeed = 0;
+                    //if (this.gravity == 0) && Math.abs(this.hspeed) <= Math.abs(this.friction))
+                    //    this.hspeed = 0;
                 }
                 if (this.vspeed != 0) {
                     this.vspeed -= this.vspeed * this.friction;
-                    if (this.gravity == 0 && Math.abs(this.vspeed) <= 1)
-                        this.vspeed = 0;
+                    //if (this.gravity == 0) && Math.abs(this.vspeed) <= Math.abs(this.friction))
+                    //    this.vspeed = 0;
                 }
             }
             let old_x = this.x, old_y = this.y;
@@ -2326,20 +2326,7 @@ var Blanke = (selector, options) => {
                             offset: [c[2], c[3]],
                             frame_size: [c[4], c[5]],
                             is_name: false
-                        }, true)
-                        if (Map.config.tile_hitbox) {
-                            for (let tag in Map.config.tile_hitbox) {
-                                let image_names = Map.config.tile_hitbox[tag];
-                                let asset_name = Asset.parseAssetName(img_info.path).replace('assets/image/','');
-                                if (image_names.includes(asset_name)) {
-                                    new_map.addHitbox({
-                                        type: 'rect',
-                                        shape: [c[0], c[1], c[4], c[5]],
-                                        tag: tag
-                                    })
-                                }
-                            }
-                        }
+                        }, true);
                     }
                 } 
             }
@@ -2404,6 +2391,7 @@ var Blanke = (selector, options) => {
             }
             // update graphics
             if (!skip_redraw) this.redrawTiles(opt.layer);
+            this.checkTileHitbox(name, [pos[0], pos[1], opt.frame_size[0], opt.frame_size[1]]);
         } 
         redrawTiles (layer) {
             let tiles = this.tile_hash.getAll();
@@ -2440,6 +2428,22 @@ var Blanke = (selector, options) => {
             }
             // update graphics
             this.redrawTiles();
+        }
+        // frame [x, y, width, height]
+        checkTileHitbox (img_path, frame) {
+            if (Map.config.tile_hitbox) {
+                for (let tag in Map.config.tile_hitbox) {
+                    let image_names = Map.config.tile_hitbox[tag];
+                    let asset_name = Asset.parseAssetName(img_path).replace('assets/image/','');
+                    if (image_names.includes(asset_name)) {
+                        this.addHitbox({
+                            type: 'rect',
+                            shape: [frame[0], frame[1], frame[2], frame[3]],
+                            tag: tag
+                        })
+                    }
+                }
+            }
         }
         addHitbox (opt) {
             let hit = new Hitbox(opt)

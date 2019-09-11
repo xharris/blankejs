@@ -1,5 +1,6 @@
 {
     "General / BlankE":[
+        {"title":"GameObject","file":"gameobject.md"},
         {"title":"Credits","file":"credits.md"}
     ],
     "Draw":[

@@ -27,11 +27,22 @@
                     32
                 ],
                 "uuid": "4c0354ff"
+            },
+            "df9b3831": {
+                "name": "Dialog",
+                "char": "N",
+                "color": "#f6ff66",
+                "size": [
+                    33,
+                    33
+                ],
+                "uuid": "df9b3831"
             }
         },
         "object_order": [
             "447cd90f",
-            "4c0354ff"
+            "4c0354ff",
+            "df9b3831"
         ]
     },
     "enabled_plugins": {
@@ -90,6 +101,14 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
+            "View assets=?",
+            "View assets"
+        ],
+        [
             "Player.js=script+entity+?",
             "Player.js"
         ],
@@ -100,10 +119,6 @@
         [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "level1.map=map+?",
-            "level1.map"
         ]
     ],
     "export": {

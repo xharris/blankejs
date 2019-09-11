@@ -1158,13 +1158,13 @@ class Code extends Editor {
 							if (pivot.match[1] == 'y') y = pivot.match[2];
 						}
 						delete pivots[entity_class];
-					}
-					if (info)
+						
 						info.pivot = [x,y];
+					}
 				}
 				Code.parseLineSprite(line, (err, info) => {
 					if (!err) {
-						Code.sprites[entity_class] = info;
+						Code.sprites[entity_class] = Object.assign(Code.sprites[entity_class] || {},info);
 						calcPivot(entity_class);
 					}
 				})

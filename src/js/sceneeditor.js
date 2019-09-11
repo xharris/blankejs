@@ -209,7 +209,7 @@ class SceneEditor extends Editor {
 
 		this.el_image_form.onChange('align', function(value){
 			if (this_ref.curr_image) {
-				this_ref.curr_image.align = value[0];
+				this_ref.curr_image.align = value;
 			}
 		});
 
@@ -1540,13 +1540,10 @@ class SceneEditor extends Editor {
 				y -= y % layer.snap[1];
 				new_tile.snapped = true;
 			}
-
 			if (align.includes("right"))
 				x -= this.selected_width;
 			if (align.includes("bottom"))
 				y -= this.selected_height;
-
-			
 		}
 
 		let text_key = Math.floor(x).toString()+','+Math.floor(y).toString()+'.'+layer.uuid;

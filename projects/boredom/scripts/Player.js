@@ -8,6 +8,7 @@ class Player extends Entity {
     init () {
 		this.addSprite("stand", {image:"player_stand", frames:1, speed:1, frame_size:[21,32]})
     	this.addSprite("walk", {image:"player_walk", frames:2, speed:0.15, frame_size:[21,32]})
+		this.addSprite("dead", "player_dead")
 		this.sprite_align = "center"
 		this.sprite_index = "walk"
 		
@@ -22,6 +23,10 @@ class Player extends Entity {
 			width: this.sprite_width-8,
 			height: this.sprite_height,
 			on:{
+				any: (other) => {
+					if (other.tag == 'death')
+						this.die(other.tag);
+				},
 				foot: () => { 
 					this.grounded = true;
 					this.can_jump = true
@@ -29,7 +34,16 @@ class Player extends Entity {
 			}
 		})
 	}
+	die (tag) {
+		if (!this.dead) {
+			this.dead = true;
+			this.sprite_index = "dead";
+			this.friction = 0.01;
+		}
+	}
     update (dt) {
+		if (this.dead) return;
+		
 		// left / right / jump movement
 		this.hspeed = 0;
 		if (Input("left").pressed)
