@@ -182,11 +182,13 @@ var app = {
 		app.getElement("#search-input").placeholder = title;
 	},
 	themes: {},
+	theme_data: {},
 	setTheme: function(name) {
 		// get theme variables from file
 		nwFS.readFile(nwPATH.join(app.settings.themes_path,name+'.json'),'utf-8',(err, data)=>{
 			if (err) return;
 			let theme_data = JSON.parse(data);
+			app.theme_data = theme_data;
 			// change theme variables
 			less.modifyVars(theme_data);
 			app.settings.theme = name;
@@ -790,10 +792,8 @@ var app = {
 				}
 				hash = hash || last_hash;
 				let title =  app.search_titles[hash] || last_title;
-				if (hash && title) {
-					console.log(hash, title)
+				if (hash && title) 
 					set.quick_access.unshift([hash,title]);
-				}
 			}
 			set.quick_access = set.quick_access.slice(0,app.settings.quick_access_size);
 			app.saveSettings();

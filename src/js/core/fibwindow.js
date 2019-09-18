@@ -290,8 +290,9 @@ class FibWindow {
 	}
 
 	_onFocus () {
-		if (this.onFocus) // TODO: don't focus if already focused
+		if (this.onFocus) {// TODO: don't focus if already focused
 			this.onFocus();
+		}
 		this.focused = true;
 		for (var b = 0; b < boxes.length; b++) {
 			if (boxes[b].title != this.title) {

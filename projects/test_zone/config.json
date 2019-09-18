@@ -8,8 +8,8 @@
     ],
     "quick_access": [
         [
-            "BunnyMark.js=script+scene+?",
-            "BunnyMark.js"
+            "map0.map=map+?",
+            "map0.map"
         ],
         [
             "Bunny.js=script+entity+?",
@@ -20,15 +20,31 @@
             "View assets"
         ],
         [
-            "Add an entity=new+?",
-            "Add an entity"
+            "Add a map=new+?",
+            "Add a map"
         ],
         [
-            "Add a scene=new+?",
-            "Add a scene"
+            "BunnyMark.js=script+scene+?",
+            "BunnyMark.js"
         ]
     ],
-    "scene": {},
+    "scene": {
+        "objects": {
+            "7a1d385c": {
+                "name": "Bunny",
+                "char": "<",
+                "color": "#000000",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "7a1d385c"
+            }
+        },
+        "object_order": [
+            "7a1d385c"
+        ]
+    },
     "enabled_plugins": {
         "xhh-platformer": false,
         "xhh-tween": false

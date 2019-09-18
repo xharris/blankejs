@@ -129,7 +129,7 @@ class SceneEditor extends Editor {
 		this.el_sel_placetype 	= app.createElement("select","select-placetype");
 		this.el_input_object	= app.createElement("input","input-object");
 		// add object types
-		let obj_types = ['image','object','tag'];
+		let obj_types = ['none','image','object','tag'];
 		for (var o = 0; o < obj_types.length; o++) {
 			var new_option = app.createElement("option");
 			new_option.value = obj_types[o];
@@ -245,16 +245,27 @@ class SceneEditor extends Editor {
 
 		// object name
 		this.el_object_form.onChange('name', function(value){
+			value = value.trim();
 			if (this_ref.curr_object) {
 				if (value == '')
 					return this_ref.curr_object.name;
 				else {
-					delete this_ref.obj_info[this_ref.curr_object.name];
-					this_ref.el_obj_list.renameItem(this_ref.curr_object.name, value);
-					this_ref.curr_object.name = value;
-					this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-						this_ref.drawObjImage(this_ref.curr_object, obj.image, obj.points);
+					let curr_obj = this_ref.curr_object;
+					delete this_ref.obj_info[curr_obj.name];
+					this_ref.el_obj_list.renameItem(curr_obj.name, value);
+					curr_obj.name = value;
+					this_ref.iterObject(curr_obj.name, function(obj) {
+						this_ref.drawObjImage(curr_obj, obj.image, obj.points);
 					});
+
+					if (Code.sprites[curr_obj.name]) {
+						this_ref.el_object_form.setValue('size', Code.sprites[curr_obj.name].frame_size[0], 0);
+						this_ref.el_object_form.setValue('size', Code.sprites[curr_obj.name].frame_size[1], 1);
+					} else {
+						this_ref.el_object_form.setValue('size', curr_obj.size[0], 0);
+						this_ref.el_object_form.setValue('size', curr_obj.size[1], 1);
+					}
+
 					this_ref.export();
 				}
 			}
@@ -273,26 +284,7 @@ class SceneEditor extends Editor {
 		});
 
 		// object size
-		this.el_object_form.onChange('size', function(value){
-			let sizex = value[0];
-			let sizey = value[1];
-
-			if (this_ref.curr_object) {
-				if (isNaN(sizex) || isNaN(sizey))
-					return this_ref.curr_object.size.slice();
-
-				if (sizex < 0) sizex = 0;
-				if (sizey < 0) sizey = 0;
-				this_ref.curr_object.size[0] = sizex;
-				this_ref.curr_object.size[1] = sizey;
-
-				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-					this_ref.drawPoly(this_ref.curr_object, obj.points, obj.poly);
-				});
-
-				this_ref.export();
-			}
-		});
+		this.el_object_form.onChange('size', (value) => this.setObjectSize(this.curr_object.uuid, value));
 
 		// object deletion
 		this.el_object_form.onChange('delete', function(){
@@ -306,7 +298,6 @@ class SceneEditor extends Editor {
 						"yes": function() {
 							// remove instances
 							this_ref.iterObject(obj.name, function(obj) {
-								consoe.log(obj)
 								obj.image.destroy();
 								obj.poly.destroy();
 							});
@@ -484,7 +475,11 @@ class SceneEditor extends Editor {
 				var mouse = this_ref.pixi.renderer.plugins.interaction.mouse.global;
 				this_ref.mouse_start = {x:mouse.x, y:mouse.y};
 				this_ref.camera_start = this_ref.camera;
-				this_ref.dragging = true;
+				this_ref.dragging = true; // this is true when dragging the camera (holding alt/middle btn)
+				// selecting tiles
+				if (this_ref.obj_type == 'image') {
+
+				}
 			}
 		}
 		function dragStop() {
@@ -496,14 +491,17 @@ class SceneEditor extends Editor {
 		window.addEventListener('keydown', function(e){
 			var keyCode = e.keyCode || e.which;
 
-			// nothing atm
+			// CTRL
+			if (keyCode == 17) {
+				this_ref.snap_on = true;
+			}
 		});
 		window.addEventListener('keyup', function(e){
 			var keyCode = e.keyCode || e.which;
 
 			// CTRL
 			if (keyCode == 17) {
-				this_ref.snap_on = true;
+				this_ref.snap_on = false;
 			}
 
 			// ENTER
@@ -535,8 +533,8 @@ class SceneEditor extends Editor {
 		});
 		
 		this.tile_start = [0,0];
-		this.tile_straightedge = new PIXI.Graphics();
-		this.map_container.addChild(this.tile_straightedge);
+		this.scene_graphic = new PIXI.Graphics();
+		this.map_container.addChild(this.scene_graphic);
 
         this.pointer_down = -1;
 		this.pixi.stage.on('pointerdown',function(e){
@@ -557,12 +555,12 @@ class SceneEditor extends Editor {
 			if (!alt && !this_ref.dragging) {
 				// placing object
 				if (btn == 0) {
+					this_ref.tile_start = [this_ref.mouse[0], this_ref.mouse[1]];
 					if(this_ref.obj_type == 'object') 
 						this_ref.placeObjectPoint(this_ref.half_mouse[0], this_ref.half_mouse[1]);
 					
 					if(this_ref.obj_type == 'image') {
-						this_ref.tile_start = [x,y];
-						bringToFront(this.tile_straightedge)
+						bringToFront(this.scene_graphic)
 					}
 				}
 
@@ -601,7 +599,8 @@ class SceneEditor extends Editor {
 
 			if (!alt && !this_ref.dragging) {
 				if (btn == 0) {
-					this_ref.tile_straightedge.clear()
+					if (!this_ref.selecting)
+						this_ref.scene_graphic.clear()
 
 					// place tiles in a snapped line
 					if (this_ref.placeImageReady()) {
@@ -648,6 +647,8 @@ class SceneEditor extends Editor {
 			}
 		});
 
+		let getThemeColor = () => parseInt(app.theme_data['ide-accent'].replace('#','0x'),16);
+
 		this.place_mouse = [0,0];
 		this.half_mouse = [0,0];
 		this.half_place_mouse = [0,0];
@@ -689,7 +690,7 @@ class SceneEditor extends Editor {
 			this_ref.half_mouse = [Math.floor(mx), Math.floor(my)];
 			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
 
-			if ((!e.data.originalEvent.ctrlKey || this_ref.obj_type == "object") && !this_ref.dragging) {
+			if ((!e.data.originalEvent.ctrlKey || ["object","image"].includes(this_ref.obj_type)) && !this_ref.dragging) {
 				if (mx < 0) { mx -= snapx; x -= snapx; }
 				if (my < 0) { my -= snapy; y -= snapy; }
 
@@ -724,8 +725,8 @@ class SceneEditor extends Editor {
 				if (btn == 0) {
 					// placing tiles in a snapped line
 					if (this_ref.placeImageReady()) {
-						this_ref.tile_straightedge.clear()
-						this_ref.tile_straightedge.lineStyle(2, 0xBDBDBD)
+						this_ref.scene_graphic.clear()
+						this_ref.scene_graphic.lineStyle(2, getThemeColor(), 0.8)
 							.moveTo(this_ref.tile_start[0], this_ref.tile_start[1])
 							.lineTo(this_ref.mouse[0], this_ref.mouse[1]);
 					}
@@ -738,7 +739,20 @@ class SceneEditor extends Editor {
                         this_ref.deleteTile(mx, my);                                
                     //});
 				}
-            }
+			}
+			
+			// making selection
+			if (btn == 0 && ['image'].includes(this_ref.obj_type) && e.data.originalEvent.ctrlKey) {
+				this_ref.selecting = true;
+				this_ref.scene_graphic.clear()
+				this_ref.scene_graphic.lineStyle(2, getThemeColor(), 0.75, 1.5)
+				this_ref.scene_graphic.beginFill(getThemeColor(), 0.25)
+				this_ref.scene_graphic.drawRoundedRect(
+					this_ref.tile_start[0], this_ref.tile_start[1],
+					this_ref.mouse[0] - this_ref.tile_start[0], this_ref.mouse[1] - this_ref.tile_start[1],
+					2
+				)
+			}
 
 			this_ref.drawDotPreview();
 		});
@@ -781,6 +795,13 @@ class SceneEditor extends Editor {
 			if (document.activeElement === document.body) {
 				this_ref.pixi.view.style.cursor = "auto";
 
+				if (e.key == "Escape") {
+					if (this_ref.selecting) {
+						this_ref.selecting = false;
+						this_ref.scene_graphic.clear();
+					}
+				}
+
 				if (e.key == "Alt") {
 					// release mouse
 					dragStop();
@@ -811,15 +832,17 @@ class SceneEditor extends Editor {
 		
 		// tab focus
 		this.has_focus = true;
-		this.addCallback("onTabFocus", function(){
-			this_ref.refreshImageList();
-			this_ref.loadObjectsFromSettings();
+		let focus = () => {
+			this.refreshImageList();
+			this.loadObjectsFromSettings();
 			// refresh image aligns
-			this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-				this_ref.drawObjImage(this_ref.curr_object, obj.image, obj.points);
+			this.iterObject(this.curr_object.name, (obj) => {
+				this.drawObjImage(this.curr_object, obj.image, obj.points);
 			});
-			this_ref.has_focus = true;
-		});
+			this.has_focus = true;
+		}
+		this.addCallback("onFocus", () => focus());
+		this.addCallback("onTabFocus", ()=> focus());
 		this.addCallback("onTabLostFocus", function(){
 			this_ref.export();
 			this_ref.has_focus = false;
@@ -1758,6 +1781,26 @@ class SceneEditor extends Editor {
 		} else {
 			// no object of that name found
 			this.el_object_form.container.style.display = "none";	
+		}
+	}
+
+	setObjectSize (uuid, size) {
+		let [sizex, sizey] = size;
+		let obj = this.objects[uuid]
+		if (obj) {
+			if (isNaN(sizex) || isNaN(sizey))
+				return obj.size.slice(); // reject new size, return old size
+
+			if (sizex < 0) sizex = 0;
+			if (sizey < 0) sizey = 0;
+			obj.size[0] = sizex;
+			obj.size[1] = sizey;
+
+			this.iterObject(obj.name, function(obj) {
+				this.drawPoly(obj, obj.points, obj.poly);
+			});
+
+			this.export();
 		}
 	}
 

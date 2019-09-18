@@ -14,9 +14,9 @@ web:
 
 setup:
 	# npm install -g pnpm
-	pnpm install
-	sudo pnpm install -g less
-	sudo pnpm install -g nw@^0.36.2-sdk
+	npm install
+	sudo npm install -g less
+	sudo npm install -g nw@^0.36.2-sdk
 
 clean:
 	-rm -rf node_modules
@@ -25,13 +25,13 @@ clean:
 	make -B setup
 
 dist:
-	pnpm run dist
+	npm run dist
 
 love:
 	love2d/love.exe projects/penguin
 
 blanke:
-	pnpm run electron
+	npm run electron
 	
 engine:
 	cp -r love2d dist/BlankE-0.1.0-win-x86/love2d

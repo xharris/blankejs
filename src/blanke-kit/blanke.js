@@ -636,7 +636,7 @@ class BlankeForm {
     }
 
     setValue (input_name, value, index) {
-        if (!this.input_ref[input_name]) return;
+        if (!this.input_ref[input_name] || value == null) return;
         index = index || 0;
         if (this.input_types[input_name] == "checkbox")
             this.input_ref[input_name][index].checked = value;
