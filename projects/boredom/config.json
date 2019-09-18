@@ -21,7 +21,7 @@
             "4c0354ff": {
                 "name": "ground",
                 "char": "F",
-                "color": "#ffff00",
+                "color": "#a26829",
                 "size": [
                     32,
                     32
@@ -101,8 +101,16 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "Player.js=script+entity+?",
+            "Player.js"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "PlayScene.js=script+scene+?",
+            "PlayScene.js"
         ],
         [
             "Check for updates=?",
@@ -111,14 +119,6 @@
         [
             "View assets=?",
             "View assets"
-        ],
-        [
-            "Player.js=script+entity+?",
-            "Player.js"
-        ],
-        [
-            "PlayScene.js=script+scene+?",
-            "PlayScene.js"
         ]
     ],
     "export": {
