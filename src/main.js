@@ -1059,12 +1059,14 @@ var app = {
 				let update_string = '';
 				let keys = Object.keys(updates);
 				let latest_version = '';
+				let manual = false;
 				for (let k = keys.length-1; k >= 0; k--) {
 					latest_version = keys[k].split('-')[0];
 					if (!keys[k].includes('skip') && is_newer(keys[k])) {
 						update_string += `<div class='version-container'><div class='number'>${latest_version}</div><div class='notes'>${updates[keys[k]].join('\n')}</div></div>`;
 					}
 					if (keys[k].includes('wait') && is_newer(keys[k])) {
+						manual = true
 						k = -1;
 					}
 				}
@@ -1074,8 +1076,13 @@ var app = {
 
 					// ask if it can be installed now
 					app.getElement('#btn-update').addEventListener('click',(e)=>{
-						blanke.showModal(`<div class="update-title">Download, Install, and Restart?</div><div class='info'>${update_string}</div>`,{
-							"yes":function(){ app.update(latest_version); },
+						blanke.showModal(`<div class="update-title">${manual ? 'Manual install required. Go to donwload page' : 'Download, Install, and Restart'}?</div><div class='info'>${update_string}</div>`,{
+							"yes":function(){ 
+								if (manual)
+									elec.shell.openExternal('https://xhh.itch.io/blanke')
+								else
+									app.update(latest_version);
+							},
 							"no":function(){}
 						});
 					});
@@ -1105,7 +1112,7 @@ var app = {
 				let file_paths = update_zip.getEntries();
 				let limit = 3;
 				let entryName;
-				let actual_src = [/node_modules[\/\\]/,/blankejs[\/\\]/,/src[\/\\]/,/themes[\/\\]/,'package.json','entry.js'];
+				let actual_src = [/blankejs[\/\\]/,/src[\/\\]/,/themes[\/\\]/,'package.json','entry.js'];
 				// unpack new files
 				for (let f = 0; f < file_paths.length; f++) {
 					entryName = file_paths[f].entryName;
