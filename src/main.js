@@ -704,7 +704,7 @@ var app = {
 	},
 	shortenAsset: function(path){
 		path = app.cleanPath(path);
-		return app.cleanPath(nwPATH.relative(app.project_path,path)).replace(/assets\//,'');
+		return app.cleanPath(nwPATH.relative(app.project_path,path)).replace(/assets[/\\]/,'');
 	},
 	lengthenAsset: function(path){
 		path = app.cleanPath(path);
@@ -795,6 +795,7 @@ var app = {
 				if (hash && title) 
 					set.quick_access.unshift([hash,title]);
 			}
+			if (!set.quick_access) return;
 			set.quick_access = set.quick_access.slice(0,app.settings.quick_access_size);
 			app.saveSettings();
 			let el_container = app.getElement("#recent-history");
