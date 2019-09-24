@@ -1076,7 +1076,7 @@ var app = {
 
 					// ask if it can be installed now
 					app.getElement('#btn-update').addEventListener('click',(e)=>{
-						blanke.showModal(`<div class="update-title">${manual ? 'Manual install required. Go to donwload page' : 'Download, Install, and Restart'}?</div><div class='info'>${update_string}</div>`,{
+						blanke.showModal(`<div class="update-title">${manual ? 'Manual install required. Go to download page' : 'Download, Install, and Restart'}?</div><div class='info'>${update_string}</div>`,{
 							"yes":function(){ 
 								if (manual)
 									elec.shell.openExternal('https://xhh.itch.io/blanke')
