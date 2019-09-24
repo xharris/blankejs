@@ -586,6 +586,26 @@ class SceneEditor extends Editor {
 			let alt = e.data.originalEvent.altKey; 
         	this_ref.pointer_down = -1;
 
+			if (this_ref.selecting) {
+				// tile selection FINISH (making rect)
+				let g = this_ref.scene_graphic;
+
+				// click-drag tile selector
+				let mouse_start = [this_ref.mouse[0], this_ref.mouse[1]];
+				g.on('pointerdown', (e2) => {
+					g.dragging = true;
+				})
+				g.on('pointermove', (e2) => {
+					let [ start_x, start_y ] = this_ref.selecting;
+					
+					console.log(this_ref.mouse[0] - start_x, this_ref.mouse[1] - start_y)
+				})
+				let pointerup = (e2) => {
+					
+				}
+				g.on('pointerup', pointerup);
+				g.on('pointerupoutside', pointerup);
+			}
 
 			if (btn == 1 && this_ref.dragging) {
 				this_ref.can_drag = true;
@@ -599,8 +619,6 @@ class SceneEditor extends Editor {
 
 			if (!alt && !this_ref.dragging) {
 				if (btn == 0) {
-					if (!this_ref.selecting)
-						this_ref.scene_graphic.clear()
 
 					// place tiles in a snapped line
 					if (this_ref.placeImageReady()) {
@@ -743,11 +761,17 @@ class SceneEditor extends Editor {
 			
 			// making selection
 			if (btn == 0 && ['image'].includes(this_ref.obj_type) && e.data.originalEvent.ctrlKey) {
+				// tile selection START
 				this_ref.selecting = true;
-				this_ref.scene_graphic.clear()
-				this_ref.scene_graphic.lineStyle(2, getThemeColor(), 0.75, 1.5)
-				this_ref.scene_graphic.beginFill(getThemeColor(), 0.25)
-				this_ref.scene_graphic.drawRoundedRect(
+				let g = this_ref.scene_graphic;
+				if (!g.interactive) {
+					g.interactive = true;
+					g.buttonMode = true;
+				}
+				g.clear()
+				g.lineStyle(2, getThemeColor(), 0.75, 1.5)
+				g.beginFill(getThemeColor(), 0.25)
+				g.drawRoundedRect(
 					this_ref.tile_start[0], this_ref.tile_start[1],
 					this_ref.mouse[0] - this_ref.tile_start[0], this_ref.mouse[1] - this_ref.tile_start[1],
 					2
@@ -796,9 +820,12 @@ class SceneEditor extends Editor {
 				this_ref.pixi.view.style.cursor = "auto";
 
 				if (e.key == "Escape") {
-					if (this_ref.selecting) {
+					if (this_ref.selecting) { // tile selection STOP
 						this_ref.selecting = false;
-						this_ref.scene_graphic.clear();
+						let g = this_ref.scene_graphic;
+						g.interactive = false;
+						g.buttonMode = false;
+						g.clear();
 					}
 				}
 
