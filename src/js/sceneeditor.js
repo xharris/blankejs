@@ -78,11 +78,9 @@ class SceneEditor extends Editor {
 		this.coord_text_style = {font:{size:16, name:"proggy_scene"}};
 
 		this.coord_text = new PIXI.extras.BitmapText('x 0 y 0', this.coord_text_style);
-		this.obj_info_text = new PIXI.extras.BitmapText('', this.coord_text_style);
 		this.obj_info = {};
 
 		this.overlay_container.addChild(this.coord_text);
-		this.overlay_container.addChild(this.obj_info_text);
 
 		// this.grid_container.addChild(this.origin_graphics);
 		this.grid_container.addChild(this.grid_graphics);
@@ -1216,11 +1214,18 @@ class SceneEditor extends Editor {
 			this.coord_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
 			this.coord_text.y = parseInt(center[1] + 8);
 			this.coord_text.text = 'x '+parseInt(this.mouse[0])+' y '+parseInt(this.mouse[1]);
+			// which mouse coordinates to display
 			if (this.obj_type == "object") {
 				this.coord_text.text = 'x '+parseInt(this.half_mouse[0])+' y '+parseInt(this.half_mouse[1]);
 			}
+			// zoom level
 			if (this.zoom != 1) 
 				this.coord_text.text += ` zoom: ${blanke.places(this.zoom, 2)}`;
+			// object being hovered
+			let obj_names = Object.values(this.obj_info);
+			if (obj_names.length > 0)
+				this.coord_text.text += '\n'+obj_names.join(', ');
+			// tile selection info
 			if (this.selecting) {
 				let g = this.scene_graphic;
 				let a = g.selection_area;
@@ -1229,10 +1234,6 @@ class SceneEditor extends Editor {
 				if (this.selected_tiles.length > 0)
 					this.coord_text.text += `\n${this.selected_tile_info}`;
 			}
-
-			this.obj_info_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
-			this.obj_info_text.y = parseInt(center[1] + 20);
-			this.obj_info_text.text = Object.values(this.obj_info).join('\n');
 
 			// line style
 			this.crosshair_graphics.clear()
