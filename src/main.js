@@ -207,7 +207,7 @@ var app = {
 		if (app.isServerRunning()) 
 			app.stopServer();
 
-		app.clearElement(app.getElement("#recent-history"))
+		app.clearElement(app.getElement("#recents-container"))
 		dispatchEvent("closeProject", {path: app.project_path});
 		app.project_path = '';
 		Editor.closeAll();
@@ -772,6 +772,7 @@ var app = {
 	},
 
 	// shows when nothing is open
+	last_quick_access: '',
 	_refreshQuickAccess: (hash) => {
 		if (app.isProjectOpen()) {
 			let set = app.project_settings;
@@ -798,20 +799,20 @@ var app = {
 			if (!set.quick_access) return;
 			set.quick_access = set.quick_access.slice(0,app.settings.quick_access_size);
 			app.saveSettings();
-			let el_container = app.getElement("#recent-history");
+			let el_container = app.getElement("#recents-container");
 			// check if anything needs to be changed
-			let different = false;
+			//let different = false;
 			if (el_container.childElementCount == 0) {
-				different = true;
+				//different = true;
 			} else {
 				for (let h = 0; h < el_container.childElementCount; h++) {
 					if (!set.quick_access[h])
-						different = true;
+						;//different = true;
 					else {
 						let hash = set.quick_access[h][0];
 						let child = el_container.children.item(h);
 						if (!child || child.hash != hash) {
-							different = true;
+							//different = true;
 						}
 						if (!child.text || child.text.trim() == "")
 							blanke.destroyElement(child);
@@ -819,8 +820,17 @@ var app = {
 				}
 			}
 			// remake quick access list
+			let different = JSON.stringify(set.quick_access) !== app.last_quick_access
 			if (different) {
+				app.last_quick_access = JSON.stringify(set.quick_access)
 				app.clearElement(el_container);
+
+				let el_title = app.getElement("#recent-history > .title-container")
+				if (set.quick_access.length == 0)
+					el_title.classList.add('hidden');
+				else
+					el_title.classList.remove('hidden');
+				
 				for (let h of set.quick_access) {
 					if (h[0] && h[1]) {
 						let el_link_container = app.createElement('div','history-container');
@@ -1025,7 +1035,13 @@ var app = {
 
 	// makes all urls open in external window
 	sanitizeURLs () {
-		Array.from(document.getElementsByTagName("a")).forEach(a => {if (a.href.length > 0) a.target="_blank"})
+		Array.from(document.getElementsByTagName("a")).forEach(a => {
+			if (a.href.length > 0) {
+				a.target="_blank"
+				if (!a.title && a.href.length > 1)
+					a.title = a.href;
+			}
+		})
 	},
 
 	enableDevMode(force_search_keys) {
@@ -1140,8 +1156,10 @@ var app = {
 
 	error () {
 		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
-			if (!app.ignore_errors)
+			if (!app.ignore_errors) {
 				blanke.toast(`Error! See <a href="#" onclick="app.openErrorFile()">error.txt</a> for more info`);
+				app.sanitizeURLs();
+			}
 		});
 	},
 

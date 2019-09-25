@@ -1526,7 +1526,7 @@ class SceneEditor extends Editor {
 		// add mouse enter/out events
 		const polyHover = function (e) {
 			let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);
-			if (obj_ref) {
+			if (obj_ref && e.currentTarget.layer_uuid == this_ref.curr_layer.uuid) {
 				if (e.type == "mouseover") {
 					if (e.target.tag)
 						this_ref.obj_info[obj_ref.name] = obj_ref.name+" ("+e.target.tag+")";
@@ -1544,6 +1544,7 @@ class SceneEditor extends Editor {
 
 		pixi_poly.uuid = guid();
 		pixi_poly.obj_uuid = this.curr_object.uuid;
+		pixi_poly.layer_uuid = this.curr_layer.uuid;
 		if (obj_tag)
 			pixi_poly.tag = obj_tag;
 		

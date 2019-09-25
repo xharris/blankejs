@@ -22,7 +22,8 @@ elec.app.on('ready', function(){
     main_window.loadFile(`src/index.html`);
     main_window.webContents.on('new-window', function(e, url) {
         e.preventDefault();
-        require('electron').shell.openExternal(url);
+        if (url.length > 1)
+            require('electron').shell.openExternal(url);
     });
     // main_window.webContents.openDevTools();
 });
