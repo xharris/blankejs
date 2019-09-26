@@ -29,16 +29,21 @@ install_butler_mac:
 	curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
 	unzip butler.zip -d butler
 	rm butler.zip
-	chmod +x ./butler/butler
+	-chmod +x ./butler/butler
 	./butler/butler login
 
+install_butler_win:
+	node ./getbutler.js
+
 upload:
-	-rm ./dist/BlankE.zip
-	cd ./dist && tar cf - BlankE-${os} | zip -9 -X BlankE -
 	./butler/butler push ./dist/BlankE.zip xhh/blanke:${channel} --userversion ${v}
 
 upload_mac:
+	-rm ./dist/BlankE.zip
+	cd ./dist && tar cf - BlankE-${os} | zip -9 -X BlankE -
 	make -B upload v=${v} os=darwin-x64 channel=osx-univeral
 
 upload_win:
+	-rm ./dist/BlankE.zip
+	powershell -ExecutionPolicy ByPass ./zip.ps1
 	make -B upload v=${v} os=win32-x64 channel=win-universal

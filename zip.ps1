@@ -1,0 +1,1 @@
+Compress-Archive -Path ./dist/BlankE-win32-x64 -CompressionLevel Optimal -DestinationPath ./dist/BlankE.zip
