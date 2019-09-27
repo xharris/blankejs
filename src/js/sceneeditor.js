@@ -75,12 +75,16 @@ class SceneEditor extends Editor {
 		this.grid_graphics = new PIXI.Graphics();		// position wraps based on layer snap
 		this.origin_graphics = new PIXI.Graphics();
 		this.crosshair_graphics = new PIXI.Graphics();
-		this.coord_text_style = {font:{size:16, name:"proggy_scene"}};
 
-		this.coord_text = new PIXI.extras.BitmapText('x 0 y 0', this.coord_text_style);
+		this.coord_text_styleL = {font:{size:16, name:"proggy_scene", align:'right'}};
+		this.coord_text_styleR = {font:{size:16, name:"proggy_scene", align:'left'}};
+
+		this.coord_textL = new PIXI.extras.BitmapText('x 0 y 0', this.coord_text_styleL);
+		this.coord_textR = new PIXI.extras.BitmapText('x 0 y 0', this.coord_text_styleR);
 		this.obj_info = {};
 
-		this.overlay_container.addChild(this.coord_text);
+		this.overlay_container.addChild(this.coord_textL);
+		this.overlay_container.addChild(this.coord_textR);
 
 		// this.grid_container.addChild(this.origin_graphics);
 		this.grid_container.addChild(this.grid_graphics);
@@ -591,7 +595,6 @@ class SceneEditor extends Editor {
 				// tile selection FINISH (making rect)
 				let g = this_ref.scene_graphic;
 				let a = g.selection_area;
-				let sel_mouse = [this_ref.snap_mouse[0], this_ref.snap_mouse[1]];
 
 				// selection area big enough to continue?
 				if (a[2] <= 0 || a[3] <= 0) {
@@ -740,8 +743,8 @@ class SceneEditor extends Editor {
 
 			// use: selecting images
 			this_ref.snap_mouse = [
-				mx - (mx%snapx),
-				my - (my%snapy)
+				mx < 0 ? (mx - snapx - ((mx - snapx) % snapx)) : mx - (mx%snapx),
+				my < 0 ? (my - snapy - ((my - snapy) % snapy)) : my - (my%snapy)
 			]
 
 			if ((!e.data.originalEvent.ctrlKey || ["object","image"].includes(this_ref.obj_type)) && !this_ref.dragging) {
@@ -1200,6 +1203,28 @@ class SceneEditor extends Editor {
 			var stage_width =  this.game_width;
 			var stage_height = this.game_height;
 
+			let text = 'x '+parseInt(this.mouse[0])+' y '+parseInt(this.mouse[1]);
+			// which mouse coordinates to display
+			if (this.obj_type == "object") {
+				text = 'x '+parseInt(this.half_mouse[0])+' y '+parseInt(this.half_mouse[1]);
+			}
+			// zoom level
+			if (this.zoom != 1) 
+				text += ` zoom: ${blanke.places(this.zoom, 2)}`;
+			// object being hovered
+			let obj_names = Object.values(this.obj_info);
+			if (obj_names.length > 0)
+				text += '\n'+obj_names.join(', ');
+			// tile selection info
+			if (this.selecting) {
+				let g = this.scene_graphic;
+				let a = g.selection_area;
+				if (a) 
+					text += `\nselected x ${a[0]+g.x} y ${a[1]+g.y} w ${a[2]} h ${a[3]}`;
+				if (this.selected_tiles.length > 0)
+					text += `\n${this.selected_tile_info}`;
+			}
+
 			let center = [
 				this.place_mouse[0],
 				this.place_mouse[1]
@@ -1211,30 +1236,40 @@ class SceneEditor extends Editor {
 				];
 			}
 
-			this.coord_text.x = parseInt((this.game_width - center[0]) / 5 + center[0]);
-			this.coord_text.y = parseInt(center[1] + 8);
-			this.coord_text.text = 'x '+parseInt(this.mouse[0])+' y '+parseInt(this.mouse[1]);
-			// which mouse coordinates to display
-			if (this.obj_type == "object") {
-				this.coord_text.text = 'x '+parseInt(this.half_mouse[0])+' y '+parseInt(this.half_mouse[1]);
-			}
-			// zoom level
-			if (this.zoom != 1) 
-				this.coord_text.text += ` zoom: ${blanke.places(this.zoom, 2)}`;
-			// object being hovered
-			let obj_names = Object.values(this.obj_info);
-			if (obj_names.length > 0)
-				this.coord_text.text += '\n'+obj_names.join(', ');
-			// tile selection info
-			if (this.selecting) {
-				let g = this.scene_graphic;
-				let a = g.selection_area;
-				if (a) 
-					this.coord_text.text += `\nselected x ${a[0]+g.x} y ${a[1]+g.y} w ${a[2]} h ${a[3]}`;
-				if (this.selected_tiles.length > 0)
-					this.coord_text.text += `\n${this.selected_tile_info}`;
+			let text_center = center.slice();
+			this.coord_textL.text = text;
+			this.coord_textR.text = text;
+			if (this.place_mouse[0] < stage_width / 2) {
+				// display on left
+				this.coord_textL.alpha = 0;
+				this.coord_textR.alpha = 1;
+			} else {
+				// display on right
+				this.coord_textL.alpha = 1;
+				this.coord_textR.alpha = 0;
 			}
 
+			// change center based on mouse position
+			if (this.place_mouse[0] >= stage_width / 2)
+				text_center[0] -= this.coord_textR.width;
+			if (this.place_mouse[1] >= stage_height / 2)
+				text_center[1] -= this.coord_textL.height;
+
+			// place text
+			if (this.place_mouse[0] < stage_width / 2) 
+				this.coord_textR.x = parseInt((this.game_width - text_center[0]) / 5 + text_center[0]);
+			else	
+				this.coord_textL.x = parseInt(-(text_center[0] / 5) + text_center[0]);
+			
+			if (this.place_mouse[1] < stage_height / 2) {
+				this.coord_textL.y = parseInt(text_center[1] + 8);
+				this.coord_textR.y = parseInt(text_center[1] + 8);
+			} else {
+				this.coord_textL.y = parseInt(text_center[1] - 8);
+				this.coord_textR.y = parseInt(text_center[1] - 8);
+			}
+
+			
 			// line style
 			this.crosshair_graphics.clear()
 			this.crosshair_graphics.lineStyle(2, 0xffffff, this.grid_opacity);

@@ -44,6 +44,6 @@ upload_mac:
 	make -B upload v=${v} os=darwin-x64 channel=osx-univeral
 
 upload_win:
-	-rm ./dist/BlankE.zip
-	powershell -ExecutionPolicy ByPass ./zip.ps1
+	node ./zip.js
 	make -B upload v=${v} os=win32-x64 channel=win-universal
+
