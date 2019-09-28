@@ -101,12 +101,12 @@
     "history_clicks": [],
     "quick_access": [
         [
-            "Player.js=script+entity+?",
-            "Player.js"
-        ],
-        [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "Player.js=script+entity+?",
+            "Player.js"
         ],
         [
             "PlayScene.js=script+scene+?",

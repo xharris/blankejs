@@ -654,6 +654,8 @@ class SceneEditor extends Editor {
 
 					// place tiles in a snapped line
 					if (this_ref.placeImageReady()) {
+						this_ref.clearTileSelection();
+						
 						let start_x = this_ref.tile_start[0],
 						    start_y = this_ref.tile_start[1];
 						if (x == this_ref.tile_start[0] && y == this_ref.tile_start[1]) {
@@ -838,14 +840,12 @@ class SceneEditor extends Editor {
 			}
 
 			if (!alt && !this_ref.dragging && !this_ref.selecting) {
-				if (btn == 0) {
+				if (btn == 0 && this_ref.placeImageReady()) {
 					// placing tiles in a snapped line
-					if (this_ref.placeImageReady()) {
-						this_ref.scene_graphic.clear()
-						this_ref.scene_graphic.lineStyle(2, getThemeColor(), 0.8)
-							.moveTo(this_ref.tile_start[0], this_ref.tile_start[1])
-							.lineTo(this_ref.mouse[0], this_ref.mouse[1]);
-					}
+					this_ref.scene_graphic.clear()
+					this_ref.scene_graphic.lineStyle(2, getThemeColor(), 0.8)
+						.moveTo(this_ref.tile_start[0], this_ref.tile_start[1])
+						.lineTo(this_ref.mouse[0], this_ref.mouse[1]);
 				}           
 			}
 
@@ -961,18 +961,20 @@ class SceneEditor extends Editor {
 		if (file_path) this.load(file_path);
 	}
 
+	
+
 	clearTileSelection () {
+		let g = this.scene_graphic;
+		g.clear();
 		if (this.selecting) { // tile selection STOP
 			this.selecting = false;
 			this.selection_finish = false;
 			this.selected_tiles = [];
 			this.selected_tile_info = '';
-			let g = this.scene_graphic;
 			g.x = 0;
 			g.y = 0;
 			g.interactive = false;
 			g.buttonMode = false;
-			g.clear();
 		}
 	}
 
@@ -1750,11 +1752,13 @@ class SceneEditor extends Editor {
 		let new_tile_texture;
 
 		try {
-			new_tile_texture = new PIXI.Texture(
-	            place_image.texture,
-	            new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
-	        );
-       		new_tile_texture.layer_uuid = layer.uuid;
+			if (frame.x + frame.width <= place_image.texture.width && frame.y + frame.height <= place_image.texture.height) {
+				new_tile_texture = new PIXI.Texture(
+					place_image.texture,
+					new PIXI.Rectangle(frame.x, frame.y, frame.width, frame.height)
+				);
+				new_tile_texture.layer_uuid = layer.uuid;
+			}
        	} catch (error) {
        		console.error(error);
        		blanke.toast("Error loading '"+img_ref.path+"'");
