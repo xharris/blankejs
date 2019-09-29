@@ -429,7 +429,7 @@ class Code extends Editor {
 		/* tab click
 		this.setOnClick(function(self){
 			Code.openScript(self.file);
-			this_ref.setFontSize(font_size);
+			Code.setFontSize(font_size);
 		}, this);
 		*/
 	}
@@ -689,7 +689,7 @@ class Code extends Editor {
 
 		if (this.codemirror == undefined) this.codemirror = new_editor;
 		this.editors.push(new_editor);
-		this.setFontSize(app.settings.code.font_size);
+		Code.setFontSize(app.settings.code.font_size);
 
 		return new_editor;
 	}
@@ -926,19 +926,22 @@ class Code extends Editor {
 
 	fontSizeUp () {
 		app.settings.code.font_size += 1;
-		this.setFontSize(app.settings.code.font_size);
+		Code.setFontSize(app.settings.code.font_size);
 	}
 
 	fontSizeDown () {
 		app.settings.code.font_size -= 1;
-		this.setFontSize(app.settings.code.font_size);
+		Code.setFontSize(app.settings.code.font_size);
 	}
 
-	setFontSize (num) {
-		for (let editor of this.editors) {
-			editor.display.wrapper.style['line-height'] = (num-2).toString()+"px";
-			editor.display.wrapper.style.fontSize = num.toString()+"px";
-			editor.refresh();
+	static setFontSize (num) {
+		for (let i in code_instances) {
+			let editors = code_instances[i].editors;
+			for (let editor of editors) {
+				editor.display.wrapper.style['line-height'] = (num-2).toString()+"px";
+				editor.display.wrapper.style.fontSize = num.toString()+"px";
+				editor.refresh();
+			}
 		}
 
 		app.settings.code.font_size = num;

@@ -544,6 +544,7 @@ var Blanke = (selector, options) => {
         rand_choose: (arr) => arr[Util.rand_range(0,arr.length)],
         lerp: (a, b, amt) => a + amt * (b - a),
         sinusoidal: (min, max, spd, off=0) => min + -Math.cos(Util.lerp(0,Math.PI/2,off) + Game.time * spd) * ((max - min)/2) + ((max - min)/2), 
+        clamp: (x, min, max) => x < min ? min : x > max ? max : x,
         // string
         str_count: (string, subString, allowOverlapping) => {
             // author: Vitim.us https://gist.github.com/victornpb/7736865
@@ -1609,6 +1610,8 @@ var Blanke = (selector, options) => {
             return Object.values(this.sprites).map(spr => spr.sprite);
         }
         destroy () {
+            if (this.onDestroy) this.onDestroy();
+            
             // destroy sprites
             for (let name in this.sprites) {
                 this.sprites[name].destroy();
@@ -1920,9 +1923,14 @@ var Blanke = (selector, options) => {
                 this._update_spr_props = [];
             }  
         }
-        moveDirection (angle, speed) {
-            this.hspeed = Util.direction_x(angle, speed);
-            this.vspeed = Util.direction_y(angle, speed);
+        moveDirection (angle, speed, add) {
+            if (add) {
+                this.hspeed += Util.direction_x(angle, speed);
+                this.vspeed += Util.direction_y(angle, speed);
+            } else {
+                this.hspeed = Util.direction_x(angle, speed);
+                this.vspeed = Util.direction_y(angle, speed);
+            }
         }
         moveTowards (x, y, speed) {
             let angle = Util.direction(this.x,this.y,x,y);
@@ -1930,6 +1938,9 @@ var Blanke = (selector, options) => {
         }
         get direction () {
             return Util.direction(this.x,this.y,this.x+this.hspeed,this.y+this.vspeed);
+        }
+        get speed () {
+            return Util.distance(0,0,this.hspeed,this.vspeed)
         }
     }
 
