@@ -157,7 +157,7 @@ class GamePreview {
 			this.game_checkpaused();
 		});
 		this.el_control_bar.appendChild(this.el_pauseplay);
-		this.el_step = app.createIconButton("step","step once");
+		this.el_step = app.createIconButton("step","next frame");
 		this.el_step.addEventListener('click',()=>{
 			this.game_step();
 		});

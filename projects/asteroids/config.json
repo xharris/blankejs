@@ -8,20 +8,20 @@
     ],
     "quick_access": [
         [
-            "Bullet.js=script+entity+?",
-            "Bullet.js"
-        ],
-        [
-            "Add an entity=new+?",
-            "Add an entity"
-        ],
-        [
             "PlayScene.js=script+scene+?",
             "PlayScene.js"
         ],
         [
             "Ship.js=script+entity+?",
             "Ship.js"
+        ],
+        [
+            "Bullet.js=script+entity+?",
+            "Bullet.js"
+        ],
+        [
+            "Add an entity=new+?",
+            "Add an entity"
         ],
         [
             "Add a scene=new+?",
