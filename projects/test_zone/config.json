@@ -1,31 +1,31 @@
 {
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns",
-    "first_scene": "BunnyMark",
+    "first_scene": "Particles",
     "size": [
         400,
         300
     ],
     "quick_access": [
         [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
-            "Bunny.js=script+entity+?",
-            "Bunny.js"
+            "Particles.js=script+scene+?",
+            "Particles.js"
         ],
         [
             "View assets=?",
             "View assets"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
+            "Player.js=script+entity+?",
+            "Player.js"
         ],
         [
-            "BunnyMark.js=script+scene+?",
-            "BunnyMark.js"
+            "Add a scene=new+?",
+            "Add a scene"
+        ],
+        [
+            "map0.map=map+?",
+            "map0.map"
         ]
     ],
     "scene": {
@@ -47,9 +47,34 @@
     },
     "enabled_plugins": {
         "xhh-platformer": false,
-        "xhh-tween": false
+        "xhh-tween": false,
+        "xhh-particle": true
     },
-    "spritesheet_prvw": {},
+    "spritesheet_prvw": {
+        "image/bluerobot.png": {
+            "name": "robot_walk",
+            "offset": [
+                38,
+                0
+            ],
+            "speed": 1,
+            "frame_size": [
+                38,
+                33
+            ],
+            "frames": 7,
+            "selected_frames": [
+                "\"1-7\"",
+                1
+            ],
+            "columns": 8,
+            "border": [
+                0,
+                0
+            ],
+            "image": "image/bluerobot.png"
+        }
+    },
     "export": {
         "name": "test_zone",
         "web_autoplay": false,

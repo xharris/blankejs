@@ -335,6 +335,7 @@ var app = {
 			app.getElement("#status-icons > .engine-status").classList.add('active');
 			let code_obj = {};
 			let walker = nwWALK.walk(app.settings.engine_path);
+			let plugin_code = '';
 			walker.on('file', (path, stat, next) => {
 				// place all code in one object
 				if (stat.isFile() && stat.name.endsWith('.js'))
@@ -353,7 +354,10 @@ var app = {
 			});
 			walker.on('end', () => {
 				// get blanke.js classes
-				GamePreview.engine_classes = re_engine_classes.exec(code_obj['blanke.js'])[1] 
+				GamePreview.engine_classes = re_engine_classes.exec(code_obj['blanke.js'])[1]
+				let other_classes = Plugins.getClassNames();
+				if (other_classes.length > 0)
+					GamePreview.engine_classes += ', '+other_classes.join(', ')
 				// uglify
 				let code = {
 					error: false,
@@ -1145,13 +1149,17 @@ var app = {
 				nwFS.removeSync('update.zip');
 				toast.text = 'Done updating. Restarting';
 				// restart app
-				elec.remote.app.relaunch();
-				elec.remote.app.exit();
+				app.restart();
 			})
 			.on('error',(err)=>{
 				app.error('Could not download update',err);
 
 			});
+	},
+
+	restart () {
+		elec.remote.app.relaunch();
+		elec.remote.app.exit();
 	},
 
 	error () {
@@ -1374,6 +1382,13 @@ app.window.webContents.once('dom-ready', ()=>{
 			app.enableDevMode();
 		}
 	});
+	// shortcut: relaunch app
+	app.newShortcut({
+		key: "CommandOrControl+Shift+R",
+		active: function() {
+			app.restart();
+		}
+	})
 	// shortcut: shift window focus
 	app.newShortcut({
 		key: "CommandOrControl+T",
@@ -1460,6 +1475,10 @@ app.window.webContents.once('dom-ready', ()=>{
 			app.closeProject();
 		}});
 		app.refreshQuickAccess();
+	});
+
+	document.addEventListener("pluginChanged",function(){
+		app.minifyEngine();
 	});
 
 	app.loadAppData(function(){

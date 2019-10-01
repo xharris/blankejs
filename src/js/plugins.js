@@ -24,7 +24,8 @@ function inspectPlugins(silent) {
 				docs: [],
 				enabled: true,
 				module: null,
-				id:''
+				id:'',
+				classes: []
 			}
 		}
 		if (file.endsWith('.js')) {
@@ -54,6 +55,8 @@ function inspectPlugins(silent) {
 						else
 							temp_plugin_info[info_key][k.toLowerCase()] = module.info[k.toLowerCase()];
 					}
+					if (Array.isArray(module.info.classes)) 
+						temp_plugin_info[info_key].classes = module.info.classes;
 				}
 				return;
 			}
@@ -297,6 +300,16 @@ class Plugins extends Editor {
 		app.project_settings.enabled_plugins[key] = false;
 		dispatchEvent('pluginChanged',{ key: key, info: js_plugin_info[key] });
 		app.saveSettings();
+	}
+
+	static getClassNames () {
+		let classnames = [];
+		for (let p in js_plugin_info) {
+			let info = js_plugin_info[p];
+			if (info.enabled)
+				classnames = classnames.concat(info.classes);
+		}
+		return classnames;
 	}
 
 	static clearPlugins() {

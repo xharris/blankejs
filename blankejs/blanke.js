@@ -2860,7 +2860,19 @@ var Blanke = (selector, options) => {
         }
     }
 
-    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Event, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View};
+    var classes = {Asset, Audio, Canvas, Draw, Effect, Entity, Event, GameObject, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View};
+    
+    // load plugins
+    if (Array.isArray(Blanke.plugins)) {
+        for (let p_func of Blanke.plugins) {
+            let ret_classes = [].concat(p_func(classes));
+            for (let new_class of ret_classes) {
+                if (new_class.constructor)
+                    classes[new_class.name] = new_class;
+            }
+        }
+    }
+    
     engineLoaded.call(this);
     return classes;
 }
@@ -2874,4 +2886,8 @@ Blanke.run = (selector, name) => {
         return Blanke(selector, Blanke.game_options[name]);
     else
         console.log(`BlankE game '${name}' not found!`);
+}
+Blanke.addPlugin = (load_fn) => {
+    if (!Blanke.plugins) Blanke.plugins = [];
+    Blanke.plugins.push(load_fn)
 }
