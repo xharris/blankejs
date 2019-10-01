@@ -159,11 +159,13 @@ function inspectPlugins(silent) {
 			}
 
 			// copy files if the plugin is already enabled
-			for (let id in js_plugin_info) {
-				if (app.project_settings.enabled_plugins[id] == true) {
-					Plugins.enable(id);
-				} else {
-					Plugins.disable(id);
+			if (app.project_settings.enabled_plugins) {
+				for (let id in js_plugin_info) {
+					if (app.project_settings.enabled_plugins[id] == true) {
+						Plugins.enable(id);
+					} else {
+						Plugins.disable(id);
+					}
 				}
 			}
 

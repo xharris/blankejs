@@ -129,6 +129,7 @@ class GamePreview {
 					}
 				}
 			}
+			this.game_checkpaused();
 			if (this.onRefresh) this.onRefresh();
 			this.iframe.style.display = 'initial';
 		})

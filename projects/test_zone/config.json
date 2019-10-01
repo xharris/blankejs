@@ -8,12 +8,16 @@
     ],
     "quick_access": [
         [
+            "View assets=?",
+            "View assets"
+        ],
+        [
             "Particles.js=script+scene+?",
             "Particles.js"
         ],
         [
-            "View assets=?",
-            "View assets"
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
             "Player.js=script+entity+?",
@@ -22,10 +26,6 @@
         [
             "Add a scene=new+?",
             "Add a scene"
-        ],
-        [
-            "map0.map=map+?",
-            "map0.map"
         ]
     ],
     "scene": {

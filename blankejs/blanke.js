@@ -210,8 +210,9 @@ var Blanke = (selector, options) => {
         Input.set('toggle-fullscreen','Alt Enter');
         empty_sprite = new Sprite({ no_scene : true });
         Text.temp_sprite = new Sprite({ no_scene : true });
-        
+
         Game.loaded = true;
+        empty_canvas = new Canvas({ no_scene : true });
         var new_event = new CustomEvent('blankeLoaded', {'detail': { 'Blanke':classes }});
         document.dispatchEvent(new_event);
     }
@@ -282,7 +283,11 @@ var Blanke = (selector, options) => {
     }
 
     /* -GAMEOBJECT */
+    let gobject_tex_cache = {};
     class GameObject {
+        constructor () {
+            this.uuid = Util.uuid();
+        }
         get z () { return this._z || 0; }
         set z (v) {
             this._z = v;
@@ -340,12 +345,33 @@ var Blanke = (selector, options) => {
                 this._getPixiObjs().forEach(o => Scene.addDrawable(o));
         }
         getTexture () {
-            let temp_container = new PIXI.Container();
-            this.setParent(temp_container);
-            let tex = app.renderer.generateTexture(temp_container);
-            this.restorePrevParent();
-            temp_container.destroy();
-            return tex;
+            let cache_id = this.uuid;
+            let offx = 0, offy = 0;
+            if (this.is_entity) {
+                cache_id += this.sprite_index + this.sprite_frame;
+            }
+            if (!gobject_tex_cache[cache_id]) {
+                let max_w = 0, max_h = 0, rect;
+                this._getPixiObjs().forEach((obj) => {
+                    rect = obj.getBounds();
+                    if (rect.width > max_w) max_w = rect.width;
+                    if (rect.height > max_h) max_h = rect.height;
+                })
+                let new_canvas = PIXI.RenderTexture.create(max_w, max_h);
+                //new_canvas.resize(max_w, max_h);
+                let { x: bx, y: by } = this.sprites[this.sprite_index].sprite.getBounds();
+                offx = bx - this.x;
+                offy = by - this.y;
+                this._getPixiObjs().forEach(obj => {
+                    app.renderer.render(obj, new_canvas, true, new Matrix(1,0,0,1,-bx,-by));
+                })
+                gobject_tex_cache[cache_id] = [new_canvas, offx, offy];
+            }
+            let cache = gobject_tex_cache[cache_id];   
+            var new_spr = new PIXI.Sprite(cache[0]);
+            new_spr.pivot.copyFrom(this.sprite_pivot);
+            new_spr.anchor.copyFrom(this.sprite_anchor);
+            return new_spr;
         }
         restorePrevParent () {
             if (!this._getPixiObjs) return false;
@@ -354,7 +380,7 @@ var Blanke = (selector, options) => {
             for (let o of pixi_objs) {
                 if (o._last_parent) {
                     let curr_parent = o.parent;
-                    o.setParent = o._last_parent
+                    o.setParent(o._last_parent)
                     o._last_parent = curr_parent;
                 }
             }
@@ -868,12 +894,6 @@ var Blanke = (selector, options) => {
                         this.graphics[call[0]](...call.slice(1));
             }
         }
-        clone () {
-            let new_draw = new Draw();
-            replaceChild(new_draw.graphics, this.graphics.clone());
-            new_draw.graphics = new_graphics;
-            return 
-        }
         containsPoint (x, y) {
             return this.graphics.containsPoint(new PIXI.Point(x,y));
         }
@@ -925,16 +945,22 @@ var Blanke = (selector, options) => {
     }
 
     /* -CANVAS */
-    let empty_sprite;
+    let empty_sprite, empty_canvas;
     class Canvas extends GameObject { 
-        constructor () {
+        constructor (opt) {
             super();
-            this.rtex = PIXI.RenderTexture.create(Game.width, Game.height);
+            opt = Object.assign({
+                width: Game.width,
+                height: Game.height,
+                no_scene: false
+            }, opt || {})
+            this.rtex = PIXI.RenderTexture.create(opt.width, opt.height);
             this.sprite = new PIXI.Sprite(this.rtex);
-            this.width = Game.width;
-            this.height = Game.height;
+            this.width = opt.width;
+            this.height = opt.height;
             this.auto_clear = true;
-            Scene.addDrawable(this.sprite);
+            if (!opt.no_scene)
+                Scene.addDrawable(this.sprite);
             this._size_changed = false;
             window.addEventListener('resize',()=>{
                 if (!this._size_changed && blanke_ref.options.resizable && !blanke_ref.options.scale && !blanke_ref.options.ide_mode)
@@ -1257,6 +1283,10 @@ var Blanke = (selector, options) => {
                     Scene.addUpdatable(this);
             }
         }
+        clone () {
+            let new_spr = new PIXI.Sprite(this.sprite.texture);
+
+        }
         getRect () {
             return this.sprite.getBounds(true)
         }
@@ -1578,6 +1608,7 @@ var Blanke = (selector, options) => {
             this.sprites = {};
             this.sprite_index = '';
             this._update_spr_props = [];
+            let spr_prop_vecs = ['pivot','angle','scale','skew','align','anchor']
             this.spr_props = ['alpha','width','height','pivot','angle','scale','skew','frame','frames','align','anchor'];
             for (let p of this.spr_props) {
                 Object.defineProperty(this,'sprite_'+p,{
@@ -1586,7 +1617,8 @@ var Blanke = (selector, options) => {
                         if (!spr || spr.destroyed) {
                             this.removeSprite(this.sprite_index);
                         } else {
-                            this._update_spr_props.push(p);
+                            if (spr_prop_vecs.indexOf(p) >= 0)
+                                this._update_spr_props.push(p);
                             return spr[p];
                         }
                         return 0;
@@ -2796,6 +2828,7 @@ var Blanke = (selector, options) => {
             start_t:Game.ms, 
             end_t:Game.ms+t, 
             fn:fn || function(){},
+            disabled:false,
             scene:Scene.current().name
         }); return Timer.fn_after[Timer.fn_after.length-1]; },
         every: (t, fn) => { Timer.fn_every.push({ t:t, 
@@ -2803,6 +2836,7 @@ var Blanke = (selector, options) => {
             curr_t:0, 
             iter:0, 
             fn:fn || function(){},
+            disabled:false,
             scene:Scene.current().name
         }); return Timer.fn_every[Timer.fn_every.length-1]; }
     }
@@ -2811,7 +2845,7 @@ var Blanke = (selector, options) => {
         // after
         for (let f = Timer.fn_after.length - 1; f >= 0; f--) {
             let info = Timer.fn_after[f];
-            if (!info.done && ms >= info.end_t) {
+            if (!info.disabled && !info.done && ms >= info.end_t) {
                 info.fn();
                 // remove timer
                 Timer.fn_after.splice(f, 1);
@@ -2820,7 +2854,7 @@ var Blanke = (selector, options) => {
         // every
         for (let f = Timer.fn_every.length - 1; f >= 0; f--) {
             let info = Timer.fn_every[f];
-            if (!info.done && info.curr_t > info.t) {
+            if (!info.disabled && !info.done && info.curr_t > info.t) {
                 info.last_t = ms;
                 info.iter++;
                 // remove the timer if user returns true
