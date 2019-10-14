@@ -48,7 +48,8 @@
     "enabled_plugins": {
         "xhh-platformer": true,
         "xhh-tween": true,
-        "xhh-net": false
+        "xhh-net": false,
+        "xhh-particle": false
     },
     "spritesheet_prvw": {
         "image/player_stand.png": {
@@ -101,12 +102,12 @@
     "history_clicks": [],
     "quick_access": [
         [
-            "level1.map=map+?",
-            "level1.map"
-        ],
-        [
             "Player.js=script+entity+?",
             "Player.js"
+        ],
+        [
+            "level1.map=map+?",
+            "level1.map"
         ],
         [
             "PlayScene.js=script+scene+?",

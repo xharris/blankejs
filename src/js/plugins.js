@@ -280,17 +280,16 @@ class Plugins extends Editor {
 	}
 
 	static enable (key) {
-		nwFS.ensureDir(pathJoin(app.settings.engine_path, 'plugins'), err => {
-			if (err) return;
-			if (js_plugin_info[key]) {
-				for (let path of js_plugin_info[key].files) {
-					nwFS.copySync(path, pathJoin(app.settings.engine_path, 'plugins', key, nwPATH.basename(path)));
-				}
-				app.project_settings.enabled_plugins[key] = true;
-				dispatchEvent('pluginChanged',{ key: key, info: js_plugin_info[key] });
-				app.saveSettings();
+		nwFS.ensureDir(pathJoin(app.settings.engine_path, 'plugins'))
+		
+		if (js_plugin_info[key]) {
+			for (let path of js_plugin_info[key].files) {
+				nwFS.copySync(path, pathJoin(app.settings.engine_path, 'plugins', key, nwPATH.basename(path)));
 			}
-		})
+			app.project_settings.enabled_plugins[key] = true;
+			dispatchEvent('pluginChanged',{ key: key, info: js_plugin_info[key] });
+			app.saveSettings();
+		}
 	}
 
 	static disable (key) {

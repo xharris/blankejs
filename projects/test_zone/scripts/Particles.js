@@ -5,7 +5,7 @@ Scene("Particles",{
 		scene.player.y = 200;
 		
 		let part = new Particles()
-		part.rate = 55;
+		part.rate = 200;
 		part.graphic = scene.player;
 		
 		//View(scene.player)
