@@ -78,7 +78,7 @@ void main()
 
     // get the mod..
     vec2 modd = getMod(coord, vec2(pixelSize));
-
+	vTextureCoord.x = vTextureCoord.x + 2;
     gl_FragColor = texture2D(uSampler, vTextureCoord); //color * character( n, vec2(-1.0) + modd * 2.0);
 }
 `

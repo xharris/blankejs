@@ -107,11 +107,13 @@ class Tab {
 
 	static moveBack () {
 		var contents = app.getElements("#tabs > .tab");
-		var curr_title = app.getElement("#tabs > .tab:not(.hidden)").title;
-		for (var t = 0; t < contents.length; t++) {
-			if (contents[t].title == curr_title && t >= 1) {
-				Tab.focus(contents[t-1].title);
-				return;
+		if (contents) {
+			var curr_title = app.getElement("#tabs > .tab:not(.hidden)").title;
+			for (var t = 0; t < contents.length; t++) {
+				if (contents[t].title == curr_title && t >= 1) {
+					Tab.focus(contents[t-1].title);
+					return;
+				}
 			}
 		}
 	}
