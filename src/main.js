@@ -1031,8 +1031,18 @@ var app = {
 				nwFS.rename(old_path, new_path, (err) => {
 					if (err)
 						fn_done(false);
-					else
+					else {
+						// rename in quick access if it's there
+						let old_name = nwPATH.basename(old_path);
+						let new_name = nwPATH.basename(new_path);
+						for (let pair of app.project_settings.quick_access) {
+							for (let p in pair) {
+								pair[p] = pair[p].replace(old_name, new_name)
+							}
+						}
+						app.saveSettings();
 						fn_done(true);
+					}
 				})
 			}
 		})

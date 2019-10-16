@@ -8,8 +8,12 @@
     ],
     "quick_access": [
         [
-            "Particles.js=script+scene+?",
-            "Particles.js"
+            "Player.js=script+entity+?",
+            "Player.js"
+        ],
+        [
+            "Effect.js=script+scene+?",
+            "Effect.js"
         ],
         [
             "Player.js=script+entity+?",

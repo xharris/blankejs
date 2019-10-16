@@ -20,5 +20,8 @@
     ],
     "Text":[
         {"title":"Usage","file":"text.md"}
+    ],
+    "Effect":[
+        {"title":"Usage","file":"effect.md"}
     ]
 }

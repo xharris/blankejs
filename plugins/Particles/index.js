@@ -3,6 +3,6 @@ exports.info = {
     author: "XHH",
     description: "Particle effects for GameObjects",
     id: 'xhh-particle',
-    enabled: true,
+    enabled: false,
     classes: ['Particles']
 }

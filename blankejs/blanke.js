@@ -355,7 +355,7 @@ var Blanke = (selector, options) => {
             if (this.is_entity) {
                 cache_id += this.sprite_index + this.sprite_frame;
             }
-           // if (!gobject_tex_cache[cache_id]) {
+           if (!gobject_tex_cache[cache_id]) {
                 let max_w = 0, max_h = 0, rect;
                 this._getPixiObjs().forEach((obj) => {
                     rect = obj.getBounds();
@@ -363,7 +363,7 @@ var Blanke = (selector, options) => {
                     if (rect.height > max_h) max_h = rect.height;
                 })
                 let new_canvas = PIXI.RenderTexture.create(max_w, max_h);
-                //new_canvas.resize(max_w, max_h);
+                
                 let { x: bx, y: by } = this.sprites[this.sprite_index].sprite.getBounds();
                 offx = bx - this.x;
                 offy = by - this.y;
@@ -371,7 +371,7 @@ var Blanke = (selector, options) => {
                     app.renderer.render(obj, new_canvas, true, new Matrix(1,0,0,1,-bx,-by));
                 })
                 gobject_tex_cache[cache_id] = [new_canvas, offx, offy];
-            //}
+            }
             let cache = gobject_tex_cache[cache_id];   
             var new_spr = new PIXI.Sprite(cache[0]);
             new_spr.pivot.copyFrom(this.sprite_pivot);
