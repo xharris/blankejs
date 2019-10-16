@@ -48,7 +48,7 @@
     "enabled_plugins": {
         "xhh-platformer": false,
         "xhh-tween": false,
-        "xhh-particle": true
+        "xhh-particle": false
     },
     "spritesheet_prvw": {
         "image/bluerobot.png": {

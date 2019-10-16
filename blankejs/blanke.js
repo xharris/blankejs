@@ -334,6 +334,11 @@ var Blanke = (selector, options) => {
                 this._effect = new EffectManager(this);
             this._effect.add(v);
         }
+        set effectArea (v) {
+            this._getPixiObjs().forEach(pixi_obj => {
+                pixi_obj.filterArea = v;
+            })
+        }
         get particle () {
             return this._particle == true;
         }
@@ -2800,9 +2805,13 @@ var Blanke = (selector, options) => {
             }
         }
         updateParentFilters () {
-            this.parent._getPixiObjs().forEach((obj)=>{
-                obj.filters = Object.values(this.effects).map(e => e.filter);
-            });
+            try {
+                this.parent._getPixiObjs().forEach((obj)=>{
+                    obj.filters = Object.values(this.effects).map(e => e.filter);
+                });
+            } catch (e) {
+                console.superlog("OJK")
+            }
         }
         remove (name) {
             if (this.effects[name]) {

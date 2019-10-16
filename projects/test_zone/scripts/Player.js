@@ -4,7 +4,6 @@ class Player extends Entity {
 		if (align) this.sprite_align = align;
 		this.addShape("main","rect")
 		this.sprite_scale.x = 1
-		this.debug = true;
 		
 		Input.set("move_l","left","a")
 		Input.set("move_r","right","d")

@@ -47,9 +47,12 @@ var infiniteLoopDetector = (function() {
 }())
 `;
 
+const SHADER_ERR = '[Shader]';
+
 let re_scene_name = /\bScene\s*\(\s*[\'\"](.+)[\'\"]/;
 let re_new_line = /(\r\n|\r|\n)/g;
 let re_error_line = /<anonymous>:(\d+):(\d+)\)/;
+let re_shader_error = /ERROR: \d+:(\d+): (.*)/;
 
 class GamePreview {
 	constructor (parent, opt) {
@@ -91,9 +94,15 @@ class GamePreview {
 				this.options.onLoad(this);
 
 			if (this.onLog) {
-				let old_warn = iframe.contentWindow.console.warn;
+				let old_console = iframe.contentWindow.console;
 				iframe.contentWindow.console = {
-					warn: old_warn,
+					error: (...args) => {
+						this.reportError(args[0], SHADER_ERR)
+						old_console.error(...args)
+					},
+					warn: (...args) => {
+						old_console.warn(...args)
+					},
 					log:  (...args) => {
 						this.onLog(...args)
 						//old_log(...args);
@@ -113,7 +122,6 @@ class GamePreview {
 				iframe.onerror = this.reportError.bind(this);
 				iframe.contentWindow.onerror = this.reportError.bind(this);
 				script.innerHTML= this.last_code;
-				//console.log(this.last_code)
 				parent.appendChild(script);
 				this.last_code = null;
 			}
@@ -315,27 +323,37 @@ class GamePreview {
 
 	reportError (msg, url, lineNo, columnNo, error) {
 		if (!msg || this.errored) return;
+		let shader_err = (url === SHADER_ERR) ? url : null;
 		this.pause();
 		this.errored = [msg, url, lineNo, columnNo, error];
 		this.error_status = 'error';
 		// get line and col
-		let match = re_error_line.exec(error.stack);
-		if (match) {
-			lineNo = parseInt(match[1]);
-			columnNo = parseInt(match[2]);
+		if (!shader_err) {
+			let match = re_error_line.exec(error.stack);
+			if (match) {
+				lineNo = parseInt(match[1]);
+				columnNo = parseInt(match[2]);
+			}
 		}
 		msg = msg.replace("Uncaught Error: ","");
 		if (this.onError) {
 			let file, range;
-			for (let f in this.line_ranges) {
-				range = this.line_ranges[f];
-				if (lineNo > range.start && lineNo < range.end) {
-					file = f;
-					break;
+			if (shader_err) {
+				let match = re_shader_error.exec(msg)
+				if (match) {
+					this.onError(match[2], shader_err, match[1], '-');
 				}
-			}
-			if (file)
-				this.onError(msg, file, lineNo - range.start, columnNo);
+			} else {
+				for (let f in this.line_ranges) {
+					range = this.line_ranges[f];
+					if (lineNo > range.start && lineNo < range.end) {
+						file = f;
+						break;
+					}
+				}
+				if (file)
+					this.onError(msg, file, lineNo - range.start, columnNo);
+			} 
 		}
 		console.log("(Engine Error) "+msg, url, lineNo, columnNo, error)
 		return true;
