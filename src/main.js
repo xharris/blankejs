@@ -532,6 +532,9 @@ var app = {
 			app.pending_quick_access = app.pending_quick_access.filter(p => p != options.key);
 		}
 	},
+	isSearchKey: function(hash) {
+		return (hash in app.search_funcs);
+	},
 	triggerSearchKey: function(hash_val) {
 		if (!app.search_funcs[hash_val]) return;
 		app.search_funcs[hash_val].apply(this, app.search_args[hash_val]);
@@ -561,6 +564,7 @@ var app = {
 	removeSearchKey: function(key, tags) {
 		var hash_val = app.hashSearchVal(key, tags);
 		app.removeSearchHash(hash_val);
+		app.removeQuickAccess(hash_val);
 	},
 
 	removeSearchHash: function(hash) {
@@ -798,7 +802,7 @@ var app = {
 				}
 				hash = hash || last_hash;
 				let title =  app.search_titles[hash] || last_title;
-				if (hash && title) 
+				if (hash && title && app.isSearchKey(hash)) 
 					set.quick_access.unshift([hash,title]);
 			}
 			if (!set.quick_access) return;
@@ -859,7 +863,13 @@ var app = {
 		}
 		app.refreshQuickAccess(null, true);
 	},
-
+/*
+	removeQuickAccess: (hash) => {
+		app.project_settings.quick_access = app.project_settings.quick_access.filter(q => q[0] !== hash)
+		app.saveSettings();
+		app.refreshQuickAccess();
+	},
+*/
 	refreshQuickAccess: (hash, not_now) => {
 		if (!not_now) // double negative lol
 			app._refreshQuickAccess(hash);
@@ -884,10 +894,10 @@ var app = {
 			}
 		}
 		// change settings
-		if (hash) {
-			app.project_settings.quick_access = app.project_settings.quick_access.filter(h => h[0] != hash);
+		//if (hash) {
+			app.project_settings.quick_access = app.project_settings.quick_access.filter(h => (!hash || h[0] != hash) && h[1] != text);
 			app.saveSettings();
-		}
+		//}
 		app.refreshQuickAccess();
 	},
 

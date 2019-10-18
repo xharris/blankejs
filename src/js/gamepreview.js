@@ -112,6 +112,7 @@ class GamePreview {
 					}
 				}
 			}
+			
 			if (this.last_code) {
 				let old_script = doc.querySelectorAll('script.source');
 				if (old_script)

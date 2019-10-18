@@ -81,8 +81,7 @@ void main()
 	vTextureCoord.x = vTextureCoord.x + 2;
     gl_FragColor = texture2D(uSampler, vTextureCoord); //color * character( n, vec2(-1.0) + modd * 2.0);
 }
-`
-		})
+`})
 		scene.effect = "eff"
     },
     onUpdate: function(scene, dt) {

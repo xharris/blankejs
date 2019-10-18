@@ -26,10 +26,6 @@
         [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "Add a scene=new+?",
-            "Add a scene"
         ]
     ],
     "scene": {

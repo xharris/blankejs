@@ -126,6 +126,13 @@ var Blanke = (selector, options) => {
     }
 
     const engineLoaded = () => {
+        // EFFECT init
+        Effect.library = {};
+        // SCENE init
+        Scene.fn_ref = {}; // { SceneName: { onStart:(), onUpdate:(), ...}}
+        Scene.ref = {}; // { SceneName: [Scene instance] }
+        Scene.stack = []; // [ SceneName1, SceneName2 ]
+
         if (Game.os != "web") {
             window.addEventListener('resize',function(){
                 app.renderer.resize(parent.clientWidth, parent.clientHeight);
@@ -554,6 +561,7 @@ var Blanke = (selector, options) => {
             game_container.removeChildren();
             // reset input stuff
             input_ref = {};
+            Effect.library = {};
             Game.loaded = false;
         },
         destroy: () => { app.destroy(true); }
@@ -1103,9 +1111,6 @@ var Blanke = (selector, options) => {
         Scene.fn_ref[name] = Object.assign(functions || {}, Scene.fn_ref[name] || {});
         return Scene;
     }
-    Scene.fn_ref = {}; // { SceneName: { onStart:(), onUpdate:(), ...}}
-    Scene.ref = {}; // { SceneName: [Scene instance] }
-    Scene.stack = []; // [ SceneName1, SceneName2 ]
 
     // ends all scenes, starts this one
     Scene.switch = (name) => {
@@ -2791,7 +2796,6 @@ var Blanke = (selector, options) => {
             Effect.library[opt.name] = opt;
         }
     }
-    Effect.library = {};
     class EffectManager {
         constructor (parent) {
             this.effects = {};

@@ -389,6 +389,8 @@ class Code extends Editor {
 		this.game.onError = (msg, file, lineNo, columnNo) => {
 			this.disableFnHelper();
 			let file_link = `<a href='#' onclick="Code.openScript('${file}',${lineNo})">${nwPATH.basename(file)}</a>`;
+			if (!nwFS.existsSync(file))
+				file_link = `<a>${nwPATH.basename(file)}</a>`;
 			this.console.err(`${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`);
 		}
 		this.game.onLog = (...msgs) => {
