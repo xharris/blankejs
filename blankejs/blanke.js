@@ -897,7 +897,6 @@ var Blanke = (selector, options) => {
                         ['endFill']
                     ];
                 }
-
                 if (!skip_call && (typeof this.graphics[name]) == 'function')
                     this.graphics[name](...params);
                 else

@@ -1,19 +1,19 @@
 {
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns",
-    "first_scene": "Particles",
+    "first_scene": "BunnyMark",
     "size": [
         400,
         300
     ],
     "quick_access": [
         [
-            "Player.js=script+entity+?",
-            "Player.js"
-        ],
-        [
             "Effect.js=script+scene+?",
             "Effect.js"
+        ],
+        [
+            "Player.js=script+entity+?",
+            "Player.js"
         ],
         [
             "Player.js=script+entity+?",
@@ -48,7 +48,8 @@
     "enabled_plugins": {
         "xhh-platformer": false,
         "xhh-tween": false,
-        "xhh-particle": false
+        "xhh-particle": false,
+        "xhh-effect": true
     },
     "spritesheet_prvw": {
         "image/bluerobot.png": {

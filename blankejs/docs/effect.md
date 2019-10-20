@@ -20,6 +20,7 @@ Effect.create({
 	frag: `
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
+uniform vec4 filterArea;
 uniform float val;
 
 void main(void)
