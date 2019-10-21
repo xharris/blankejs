@@ -8,12 +8,12 @@
     ],
     "quick_access": [
         [
-            "Player.js=script+entity+?",
-            "Player.js"
-        ],
-        [
             "Effect.js=script+scene+?",
             "Effect.js"
+        ],
+        [
+            "Player.js=script+entity+?",
+            "Player.js"
         ],
         [
             "View assets=?",

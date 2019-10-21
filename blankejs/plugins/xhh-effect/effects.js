@@ -16,6 +16,40 @@ void main(void) {
 `})
 
     Effect.create({
+        name: "shadertoy",
+        defaults: { center: [0, 0] },
+        frag:`
+precision mediump float;
+    
+varying vec2 vTextureCoord;
+uniform sampler2D uSampler;
+uniform vec3 iResolution;
+uniform vec2 center;
+
+void main()
+{
+	float focusPower = 10.0;
+    const float focusDetail = 7.0;
+
+    vec2 uv = vTextureCoord.xy / iResolution.xy;
+    vec2 mousePos = center.xy / iResolution.xy;
+	vec2 focus = uv - mousePos;
+
+    vec4 outColor;
+    outColor = vec4(0, 0, 0, 1);
+
+    for (float i=0.0; i<focusDetail; i++) {
+        float power = 1.0 - focusPower * (1.0/iResolution.x) * float(i);
+        outColor.rgb += texture2D(uSampler, focus * power + mousePos).rgb;
+    }
+    
+    outColor.rgb *= 1.0 / float(focusDetail);
+
+	gl_FragColor = outColor;
+}   
+`})
+
+    Effect.create({
         name: "zoomblur",
         defaults: { center: [0, 0], strength: 0.5, innerRadius: 0, radius: -1 },
         set: {

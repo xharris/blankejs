@@ -2780,11 +2780,14 @@ var Blanke = (selector, options) => {
                 Object.defineProperty(this,def,{
                     get: function () { return this.filter.uniforms[def]; },
                     set: function (v){
+                        let skip = false;
                         if (set[def]) {
                             ret = set[def](v)
                             if (ret != null) v = ret;
+                            if (ret === false) skip = true;
                         }
-                        this.filter.uniforms[def] = v;
+                        if (!skip)
+                            this.filter.uniforms[def] = v;
                     }
                 })
             }

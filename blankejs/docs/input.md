@@ -1,3 +1,9 @@
+# mouse
+
+`Input.mouse`
+
+* x, y
+
 # named inputs
 
 `Input.set(name, ...type)`

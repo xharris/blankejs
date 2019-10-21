@@ -10,10 +10,11 @@ Scene("Effect",{
 			['star',100,100,5,50]
 		)
 		
-		scene.effect = "zoomblur"
+		scene.effect = "shadertoy"
     },
     onUpdate: function(scene, dt) {
-		
+		scene.effect.shadertoy.center = [Game.width/2, Game.height/2]
+			//[Input.mouse.global.x, Input.mouse.global.y];
     },
     onEnd: function(scene) {
 
