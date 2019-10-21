@@ -18,6 +18,13 @@ void main(void) {
     Effect.create({
         name: "zoomblur",
         defaults: { center: [0, 0], strength: 0.5, innerRadius: 0, radius: -1 },
+        set: {
+            radius: (v) => {
+                if (v < 0 || v === Infinity) {
+                    return -1;
+                }
+            }
+        },
         frag:`
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;

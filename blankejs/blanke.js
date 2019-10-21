@@ -2770,7 +2770,7 @@ var Blanke = (selector, options) => {
         constructor (_name) {
             if (!Effect.library[_name]) 
                 throw new Error(`Effect '${_name}' not found!`);
-            let { name, frag, vert, defaults } = Effect.library[_name];
+            let { name, frag, vert, defaults, set } = Effect.library[_name];
 
             this.name = name;
             this.filter = new PIXI.Filter(vert, frag, defaults);
@@ -2780,7 +2780,12 @@ var Blanke = (selector, options) => {
                 Object.defineProperty(this,def,{
                     get: function () { return this.filter.uniforms[def]; },
                     set: function (v){
-                         this.filter.uniforms[def] = v; }
+                        if (set[def]) {
+                            ret = set[def](v)
+                            if (ret != null) v = ret;
+                        }
+                        this.filter.uniforms[def] = v;
+                    }
                 })
             }
         }
@@ -2790,7 +2795,8 @@ var Blanke = (selector, options) => {
         static create (opt) {
             opt = Object.assign({
                 name:'new_effect',
-                defaults:{}
+                defaults:{},
+                set:{}
             }, opt || {})
             Effect.library[opt.name] = opt;
         }
