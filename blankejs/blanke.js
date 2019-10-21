@@ -1027,7 +1027,7 @@ var Blanke = (selector, options) => {
                 uvs:true,
                 tint:true
             });
-            this.container.filterArea = new PIXI.Rectangle(0,0,Game.width, Game.height);
+            this.container.filterArea = app.renderer.screen
             window.addEventListener('resize',()=>{
                 if (this.container.filterArea) {
                     this.container.filterArea.width = Game.width;

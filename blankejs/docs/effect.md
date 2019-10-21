@@ -57,7 +57,7 @@ fragColor -> gl_FragColor
 
 iMouse - mouse coordinates, need to be passed in as a uniform
 
-iResolution -> resolution
+vec3 iResolution -> vec2 dimensions
 
 iChannel -> can be `uSampler`
 [+] uniform sampler2D uSampler;
