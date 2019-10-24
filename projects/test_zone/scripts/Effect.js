@@ -9,7 +9,6 @@ Scene("Effect",{
 			['lineStyle',3,Draw.black2],
 			['star',100,100,5,50]
 		)
-		
 		Effect.create({
 			name: "shadertoy",
 			defaults: { uCenter: [0, 0], uStrength: 0.1, uInnerRadius: -1, uRadius: -1 },

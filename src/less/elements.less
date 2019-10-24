@@ -42,13 +42,18 @@
     bottom: 24px;
     top: 40px;
 }
-.fib-container[data-index="0"][data-type="Code"] {
+#workspace[data-bg-type="Code"] .fib-container[data-type="Code"][data-index="0"] {
 	height: 50% !important;
+
+	&.single {
+		width: 60% !important;
+		height: 100% !important;
+	}
+}
+.fib-container[data-index="0"][data-type="Code"] {
 	bottom: 0px;
 
 	&.single {
-		height: 100% !important;
-		width: 60% !important;
 		right: 0px;
 		bottom: initial;
 

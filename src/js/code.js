@@ -239,12 +239,15 @@ class Code extends Editor {
 		this.appendChild(this.el_class_methods);
 
 		// add game preview
-		this.game = new GamePreview(null,{ ide_mode: true });
+		this.game = null;
+		if (app.settings.game_preview_enabled)
+			this.game = new GamePreview(null,{ ide_mode: true });
 		
 		this.console = new Console();
 		this.console.appendTo(this.getContent());
 		this.getContainer().bg_first_only = true;
-		this.appendBackground(this.game.container);
+		if (this.game)
+			this.appendBackground(this.game.container);
 
 		var this_ref = this;
 		CodeMirror.defineMode("blanke", (config, parserConfig) => {
@@ -366,13 +369,16 @@ class Code extends Editor {
 
 		this.setupEditor(this.edit_box);
 
-		this.addCallback('onFocus', function() {
-			this_ref.game.size = this_ref.container.getSizeType();
-			this_ref.refreshGame();
+		this.addCallback('onFocus', () => {
+			if (this.game) {
+				this.game.size = this.container.getSizeType();
+				this.refreshGame();
+			}
 		});
 
 		this.addCallback('onResize', function(w, h) {
-			this_ref.game.size = this_ref.container.getSizeType();
+			if (this_ref.game)
+				this_ref.game.size = this_ref.container.getSizeType();
 			
 			if (!this_ref.container.in_background)
 				this_ref.console.clear();
@@ -386,37 +392,39 @@ class Code extends Editor {
 			this_ref.codemirror.refresh();
 		});
 
-		this.game.onError = (msg, file, lineNo, columnNo) => {
-			this.disableFnHelper();
-			let file_link = `<a href='#' onclick="Code.openScript('${file}',${lineNo})">${nwPATH.basename(file)}</a>`;
-			if (!nwFS.existsSync(file))
-				file_link = `<a>${nwPATH.basename(file)}</a>`;
-			this.console.err(`${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`);
-		}
-		this.game.onLog = (...msgs) => {
-			if (this.container.in_background)
-				this.console.log(...msgs);
-		}
-		this.game.onRefresh = () => {
-			this.enableFnHelper();
-			if (this.focus_after_save) {
-				this.focus_after_save = false;
-				this.codemirror.focus();
+		if (this.game) {
+			this.game.onError = (msg, file, lineNo, columnNo) => {
+				this.disableFnHelper();
+				let file_link = `<a href='#' onclick="Code.openScript('${file}',${lineNo})">${nwPATH.basename(file)}</a>`;
+				if (!nwFS.existsSync(file))
+					file_link = `<a>${nwPATH.basename(file)}</a>`;
+				this.console.err(`${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`);
 			}
-		}
-		this.game.onErrorResolved = () => {
-			this.console.clear();
-		}
-		this.game.onRefreshButton = () => {
-			this.console.clear();
-		}
+			this.game.onLog = (...msgs) => {
+				if (this.container.in_background)
+					this.console.log(...msgs);
+			}
+			this.game.onRefresh = () => {
+				this.enableFnHelper();
+				if (this.focus_after_save) {
+					this.focus_after_save = false;
+					this.codemirror.focus();
+				}
+			}
+			this.game.onErrorResolved = () => {
+				this.console.clear();
+			}
+			this.game.onRefreshButton = () => {
+				this.console.clear();
+			}
 
-		this.addCallback('onEnterView',()=>{
-			this.game.resume();
-		});
-		this.addCallback('onExitView',()=>{
-			this.game.pause();
-		});
+			this.addCallback('onEnterView',()=>{
+				this.game.resume();
+			});
+			this.addCallback('onExitView',()=>{
+				this.game.pause();
+			});
+		}
 
 		this.codemirror.refresh();
 
@@ -1024,7 +1032,7 @@ class Code extends Editor {
 	}
 
 	refreshGame () {
-		if (!this.deleted) {
+		if (this.game && !this.deleted) {
 			this.game.breakpoints = Object.keys(this.breakpoints).map(parseInt);
 			this.game.refreshSource(this.file);
 			this.console.clear();
@@ -1040,9 +1048,10 @@ class Code extends Editor {
 			Code.updateSpriteList(this.file, data);
 			this.removeAsterisk();
 			this.focus_after_save = true;
-			this.game.clearErrors();
+			if (this.game)
+				this.game.clearErrors();
 			this.refreshGame();
-
+			dispatchEvent("codeSaved");
 		});
 	}
 

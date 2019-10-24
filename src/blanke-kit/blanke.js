@@ -547,8 +547,13 @@ class BlankeForm {
         this.input_ref[name].push(element);
         let input_type = this.input_types[name];
         let _default = input_type == "text" ? "" : "0";
-        if (this.input_args[name].default)
-            this.input_values[name][index || 0] = (index != null ? this.input_args[name].default[index] : this.input_args[name].default);
+        let args = this.input_args[name];
+        // tooltip
+        if (args.desc)
+            element.title = args.desc;
+        // default value
+        if (args.default)
+            this.input_values[name][index || 0] = (index != null ? args.default[index] : args.default);
         else
             this.input_values[name][index || 0] = (input_type == "text" ? "" : 0);
     }

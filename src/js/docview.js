@@ -89,8 +89,8 @@ class Docview extends Editor {
 					this_ref.doc_container.appendChild(el_section);
 				}
 
-				app.sanitizeURLs();
 				this_ref.appendChild(this_ref.doc_container);
+				app.sanitizeURLs();
 			}
 		});
 	}

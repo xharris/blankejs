@@ -45,7 +45,9 @@ const DEFAULT_IDE_SETTINGS = {
 	themes_path:'themes',
 	autocomplete_path:'./autocomplete.js',
 	theme:'green',
-	quick_access_size:5
+	quick_access_size:5,
+	game_preview_enabled:true,
+	autoreload_external_run:false
 };
 
 const DEFAULT_PROJECT_SETTINGS =  {
@@ -401,9 +403,10 @@ var app = {
 				scene: proj_set.first_scene,
 				size: proj_set.size
 			});
-			nwFS.writeFile(
-				nwPATH.join(app.project_path,'temp.html'), game.getSource(), ()=>{
-
+			let writeTempHTML = (cb) => {
+				nwFS.writeFile(nwPATH.join(app.project_path,'temp.html'), game.getSource(), cb);
+			}
+			writeTempHTML(()=>{
 				app.newWindow(nwPATH.join(app.project_path,'temp.html'), {
 					width: proj_set.size[0],
 					height: proj_set.size[1],
@@ -414,10 +417,20 @@ var app = {
 					}
 				},
 					(win)=>{
+						let src_watch;
 						win.on('closed',function(){
 							nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
 							return true;//this.close(true);
 						});
+						let reloadWindow = () => {
+							writeTempHTML(() => {
+								win.reload();
+							})
+						}
+						if (app.settings.autoreload_external_run) {
+							document.addEventListener("codeSaved", reloadWindow)
+						}
+						
 						/*
 						let menu_bar = new nw.Menu({type:'menubar'});
 						menu_bar.append(new nw.MenuItem({
@@ -1186,7 +1199,7 @@ var app = {
 	error () {
 		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
 			if (!app.ignore_errors) {
-				blanke.toast(`Error! See <a href="#" onclick="app.openErrorFile()">error.txt</a> for more info`);
+				blanke.toast(`Error! See <a href="#" role="button" onclick="app.openErrorFile()">error.txt</a> for more info`);
 				app.sanitizeURLs();
 			}
 		});
@@ -1205,6 +1218,14 @@ var app = {
 
 app.window.webContents.on('open-file', (e, path)=>{
 	//console.log(e)
+})
+document.addEventListener('click', function (event) {
+	if (event.target.tagName === 'A') {
+		event.preventDefault()
+		if (event.target.href.startsWith('http')) {
+			elec.shell.openExternal(event.target.href)
+		}
+	}
 })
 app.window.webContents.once('dom-ready', ()=>{
 	process.chdir(nwPATH.join(__dirname,'..'));

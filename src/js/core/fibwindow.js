@@ -247,6 +247,8 @@ class FibWindow {
 	// which fibwindow should have content in the background
 	static checkBackground () {
 		let el_bg_workspace = app.getElement('#bg-workspace');
+		let el_workspace = app.getElement('#workspace');
+		
 		let first_box = boxes[0];
 		// remove class from other boxes NOTE!!! This loops iterates 1 -> boxes.length
 		let old_first_found = false;
@@ -282,8 +284,14 @@ class FibWindow {
 				el_bg_workspace.dataset.type = first_box.type;
 				el_bg_workspace.focused_guid = first_box.guid;
 				el_bg_workspace.appendChild(first_box.bg_content);
+
+				if (el_bg_workspace.childElementCount > 0)
+					el_workspace.dataset.bgType = first_box.type;
 			}
 		}
+
+		if (el_bg_workspace.childElementCount == 0)
+			el_workspace.dataset.bgType = null;
 
 		if (boxes[0])
 			boxes[0]._onFocus();

@@ -12,6 +12,10 @@
             "Effect.js"
         ],
         [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
             "Player.js=script+entity+?",
             "Player.js"
         ],
@@ -42,7 +46,7 @@
         ]
     },
     "enabled_plugins": {
-        "xhh-platformer": false,
+        "xhh-platformer": true,
         "xhh-tween": false,
         "xhh-particle": false,
         "xhh-effect": true
