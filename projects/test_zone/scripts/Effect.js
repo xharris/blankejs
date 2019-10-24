@@ -7,7 +7,7 @@ Scene("Effect",{
 		scene.graphic = new Draw(
 			['fill',Draw.green],
 			['lineStyle',3,Draw.black2],
-			['star',100,100,5,50]
+			['star',100,Game.height/2,5,50]
 		)
 		Effect.create({
 			name: "shadertoy",
