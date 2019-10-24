@@ -40,7 +40,7 @@ upload:
 
 upload_mac:
 	-rm ./dist/BlankE.zip
-	cd ./dist && tar cf - BlankE-${os} | zip -9 -X BlankE -
+	cd ./dist && tar cf - BlankE-darwin-x64 | zip -9 -X BlankE -
 	make -B upload v=${v} os=darwin-x64 channel=osx-univeral
 
 upload_win:
