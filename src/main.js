@@ -419,16 +419,21 @@ var app = {
 					(win)=>{
 						let src_watch;
 						win.on('closed',function(){
+							document.removeEventListener("codeSaved", reloadWindow);
+							document.removeEventListener("engineChange", reloadWindow);
 							nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
 							return true;//this.close(true);
 						});
 						let reloadWindow = () => {
 							writeTempHTML(() => {
-								win.reload();
+								try {
+									win.reload();
+								} catch (e) {}
 							})
 						}
 						if (app.settings.autoreload_external_run) {
-							document.addEventListener("codeSaved", reloadWindow)
+							document.addEventListener("codeSaved", reloadWindow);
+							document.addEventListener("engineChange", reloadWindow);
 						}
 						
 						/*

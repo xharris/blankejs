@@ -14,8 +14,6 @@ class Player extends Entity {
 		let spd = 2;
 		this.hspeed = 0;
 		this.vspeed = 0;
-		if (Input("move_l").pressed)
-			console.log("left")
 		if (Input("move_l").pressed) {
 			this.hspeed -= spd;
 			this.sprite_scale.x = -1;
