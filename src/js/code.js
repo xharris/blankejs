@@ -8,6 +8,8 @@ var re_sprite_align = /sprite_align\s*=\s*[\"\']([\s\w]+)[\"\']/;
 var re_sprite_pivot_single = /sprite_pivot\.(x|y)\s*\=\s*(\d+)/;
 var re_sprite_pivot = /sprite_pivot\.set\(\s*(\d+)\s*,\s*(\d+)\s*\)/;
 
+var main_file = 'main.js';
+var file_ext = 'js';
 
 var code_instances = {};
 
@@ -127,7 +129,7 @@ var getCompletionList = (_type) => {
 // ** called when a file is modified
 var script_list = [];
 var getKeywords = (file, content) => {
-	if (file.includes('main.js')) return; // main.js makes while loop freeze for some reason
+	if (file.includes(main_file)) return; // main file makes while loop freeze for some reason
     blanke.cooldownFn('getKeywords.'+file, 500, ()=>{
         ext_class_list[file] = {};
         instance_list[file] = {};
@@ -1096,7 +1098,7 @@ class Code extends Editor {
             "<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
         {
             "yes": function() { 
-                let new_path = nwPATH.join(nwPATH.dirname(filename), app.getElement('#new-file-name').value+".js");
+                let new_path = nwPATH.join(nwPATH.dirname(filename), app.getElement('#new-file-name').value+"."+file_ext);
                 this_ref.rename(filename, new_path);
             },
             "no": function() {}
@@ -1221,7 +1223,7 @@ function addScripts(folder_path) {
 			var full_path = app.cleanPath(nwPATH.join(folder_path, file));
 			
 			// is a script?
-			if (file.endsWith('.js')) {
+			if (file.endsWith('.'+file_ext)) {
 				// get what kind of script it is
 				let data = nwFS.readFileSync(full_path, 'utf-8');
 				getKeywords(full_path, data);
@@ -1290,7 +1292,7 @@ document.addEventListener("openProject", function(e){
 			if (err) nwFS.mkdirSync(script_dir);
 
 			nwFS.readdir(script_dir, function(err, files){
-				let file_name = ifndef(name,'script'+files.length)+'.js';
+				let file_name = ifndef(name,'script'+files.length)+'.'+file_ext;
 				content = content.replaceAll("<NAME>", name);
 
 				// the file already exists. open it
