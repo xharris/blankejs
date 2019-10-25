@@ -46,26 +46,42 @@ void main(void)
 
 Go to the docs for General / BlankE > GameObject > Properties (effect)
 
+Basically it says:
+
+* Set effect on GameObject
+
+```
+var bob = new Player(); // an Entity class
+bob.effect = "zoomblur"
+bob.effect.zoomblur.center = [Game.width/2, Game.height/2]
+```
+
+* Remove an effect
+
+`bob.effect.zoomblur.destroy()`
+
 # Convert from ShaderToy
 
-mainImage ( ... ) -> main (void)
+mainImage ( ... ) -> main ( )
 
-fragCoord -> vTextureCoord
+vec2 fragCoord = vTextureCoord;
 [+] varying vec2 vTextureCoord; (at top)
 
-fragColor -> gl_FragColor
+vec4 fragColor;
+gl_FragColor = fragColor; (at end)
 
 iMouse - mouse coordinates, need to be passed in as a uniform
 
-vec3 iResolution -> vec2 dimensions
+iResolution -> inputSize
+[+] uniform vec4 inputSize;
 
 iChannel -> can be `uSampler`
 [+] uniform sampler2D uSampler;
 
-texture() -> texture2D
+texture(...) -> texture2D(...)
 
 # Common Errors
 
 ## Loop index cannot be compared with non-constant expression
 
-change `int i = 2;` to `const float i = 2.0;`
+change `int i = 2;` to `const int i = 2;`

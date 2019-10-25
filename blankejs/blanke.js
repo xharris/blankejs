@@ -60,7 +60,7 @@ var Blanke = (selector, options) => {
     let app;
     let parent = document.querySelector(selector);
     
-    PIXI.utils.skipHello();
+    // PIXI.utils.skipHello();
     PIXI.settings.TARGET_FPMS = this.options.fps / 1000;
     PIXI.settings.ROUND_PIXELS = this.options.round_pixels;
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES[this.options.scale_mode.toUpperCase()];
@@ -132,6 +132,8 @@ var Blanke = (selector, options) => {
         Scene.fn_ref = {}; // { SceneName: { onStart:(), onUpdate:(), ...}}
         Scene.ref = {}; // { SceneName: [Scene instance] }
         Scene.stack = []; // [ SceneName1, SceneName2 ]
+
+        Game.obj = new GameRef(game_container);
 
         if (Game.os != "web") {
             window.addEventListener('resize',function(){
@@ -332,13 +334,16 @@ var Blanke = (selector, options) => {
             })
         }
         get effect () {
-            if (!this._effect) 
+            if (!this._effect) {
                 this._effect = new EffectManager(this);
+            }
             return this._effect.effects;
         }
         set effect (v) {
-            if (!this._effect) 
+            if (!this._effect) {
+                this.effectArea = app.renderer.screen
                 this._effect = new EffectManager(this);
+            }
             this._effect.add(v);
         }
         set effectArea (v) {
@@ -419,11 +424,21 @@ var Blanke = (selector, options) => {
     function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b)}
 
     /* -GAME */
+    class GameRef extends GameObject {
+        constructor (g_container) {
+            super();
+            this.container = g_container
+        }
+        _getPixiObjs () {
+            return [this.container];
+        }
+    }
     var Game = {
         config: {},
         time: 0,
         ms: 0,
         loaded: false,
+        obj: null,
         get os () { // ide, win, mac, linux, android, ios
             if (blanke_ref.options.ide_mode) return 'ide';
             let os_list = ['win','mac','linux','android'];
@@ -463,6 +478,12 @@ var Blanke = (selector, options) => {
         set background_color (v) { 
             app.renderer.backgroundColor = v; 
             bg_sprite2.tint = app.renderer.backgroundColor;
+        },
+        get effect () {
+            return Game.obj.effect;
+        },
+        set effect (v) {
+            Game.obj.effect = v;
         },
         paused: false,
         pause: () => {
@@ -2822,7 +2843,7 @@ var Blanke = (selector, options) => {
                     obj.filters = Object.values(this.effects).map(e => e.filter);
                 });
             } catch (e) {
-                console.superlog("OJK")
+                
             }
         }
         remove (name) {
