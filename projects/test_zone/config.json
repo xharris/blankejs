@@ -8,16 +8,16 @@
     ],
     "quick_access": [
         [
+            "Player.js=script+entity+?",
+            "Player.js"
+        ],
+        [
             "Effect.js=script+scene+?",
             "Effect.js"
         ],
         [
             "map0.map=map+?",
             "map0.map"
-        ],
-        [
-            "Player.js=script+entity+?",
-            "Player.js"
         ],
         [
             "View assets=?",
