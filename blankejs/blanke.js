@@ -2353,10 +2353,11 @@ var Blanke = (selector, options) => {
             this.name = name;
             this.tile_hash = new SpatialHash();
             this.hitboxes = [];
-            this.layers = []; // PIXI.Containers
+            this.layers = []; // Draw
             this.layer_uuid = {}; // layer_name --> layer_uuid
             this.entities = {}; // { classname: [instances] }
             this.main_container = new PIXI.Container();
+            this.main_container.sortableChildren = true;
             this.data = {};
 
             if (!from_file)
@@ -2391,13 +2392,14 @@ var Blanke = (selector, options) => {
             // ** PLACE TILES **
             for (let img_info of data.images) {
                 // get layer image belongs to
-                for (let lay_name in img_info.coords) {
-                    let layer = new_map.getLayer(lay_name);
-                    for (let c of img_info.coords[lay_name]) {
+                for (let lay_uuid in img_info.coords) {
+                    let layer = new_map.getLayer(lay_uuid, true);
+                    for (let c of img_info.coords[lay_uuid]) {
                         // place them
                         let asset_info = new_map.addTile(img_info.path, [c[0], c[1]], {
                             offset: [c[2], c[3]],
                             frame_size: [c[4], c[5]],
+                            layer: lay_uuid,
                             is_name: false
                         }, true);
                     }
@@ -2421,18 +2423,16 @@ var Blanke = (selector, options) => {
             return new_map;
         }
         addLayer (name, _uuid) {
-            let new_cont = new PIXI.Container();
-            new_cont._uuid = _uuid || uuid();
-            new_cont._name = name;
-            new_cont._graphics = new Draw();
-            new_cont._graphics._getPixiObjs()[0].setParent(new_cont);
-            this.main_container.addChild(new_cont);
-            this.layers.push(new_cont);
-            this.layer_uuid[name] = new_cont._uuid;
-            return new_cont;
+            let new_draw = new Draw();
+            new_draw.map_uuid = _uuid || uuid();
+            new_draw.map_name = name;
+            new_draw.setParent(this.main_container);
+            new_draw.auto_clear = false;
+            this.layers.push(new_draw)
+            this.layer_uuid[name] = new_draw.map_uuid;
         }
         getLayer (name, is_uuid) {
-            let ret_layer = this.layers.find((l) => is_uuid == true ? l._uuid = name : l._name == name);  
+            let ret_layer = this.layers.find(l => is_uuid == true ? l.map_uuid = name : l.map_name == name);  
             if (!ret_layer)
                 return this.addLayer(name);
             return ret_layer;
@@ -2483,16 +2483,25 @@ var Blanke = (selector, options) => {
                 }
             }
             // layer order
-            let layer_order = Map.config.layer_order || this.data.layers.reducde((arr, l) => { arr.push(l.name); return arr; }, []) || [];
+            let layer_order = Map.config.layer_order || this.data.layers.reduce((arr, l) => { arr.push(l.uuid); return arr; }, []) || [];
 
-            Object.keys(draw_isntr).forEach(l => {
+            Object.keys(draw_instr).forEach(l => {
                 if (!layer_order.includes(l))
                     layer_order.push(l);
             })
+            console.log(layer_order)
+            console.log(this.layers.map(l => [l._name, l.map_uuid]))
             // redraw all layers
-            for (let l_name in draw_instr)
-                if (l_name in draw_instr)
-                    this.getLayer(l_name)._graphics.draw(...draw_instr[l_name]);
+            layer_order.forEach((l_name, l) => {
+                if (draw_instr.hasOwnProperty(l_name)) {
+                    let g = this.getLayer(l_name, true);
+                    g.draw(...draw_instr[l_name]);
+                    g.z = (layer_order.length - l) - 1;
+                    console.log(g, g.z)
+                }
+            })
+            console.log(this.layers)
+            this.main_container.sortChildren();
         }
         removeTile (name, pos, layer) {
             let x, y;

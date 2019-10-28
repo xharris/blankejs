@@ -1,31 +1,31 @@
 {
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns",
-    "first_scene": "Effect",
+    "first_scene": "Map",
     "size": [
         400,
         300
     ],
     "quick_access": [
         [
-            "Effect.js=script+scene+?",
-            "Effect.js"
-        ],
-        [
             "map0.map=map+?",
             "map0.map"
         ],
         [
+            "Map.js=script+scene+?",
+            "Map.js"
+        ],
+        [
+            "Add a scene=new+?",
+            "Add a scene"
+        ],
+        [
+            "Effect.js=script+scene+?",
+            "Effect.js"
+        ],
+        [
             "Player.js=script+entity+?",
             "Player.js"
-        ],
-        [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
         ]
     ],
     "scene": {

@@ -2218,9 +2218,9 @@ class SceneEditor extends Editor {
 					pixi_tilemap: {}
 				});
 				this_ref.setImage(full_path, function(img_ref){
-					for (var layer_name in img.coords) {
-						let layer = this_ref.getLayer(layer_name);
-						for (var coord of img.coords[layer_name]) {
+					for (var layer_uuid in img.coords) {
+						let layer = this_ref.getLayer(layer_uuid, true);
+						for (var coord of img.coords[layer_uuid]) {
 							this_ref.placeImageFrame(coord[0], coord[1], {
 								'x':coord[2], 'y':coord[3], 'width':coord[4], 'height':coord[5]
 							}, img_ref, layer, true);
@@ -2248,7 +2248,7 @@ class SceneEditor extends Editor {
 
 			// settings
 			if (data.settings) {
-				this.setLayer(data.settings.last_active_layer);
+				this.setLayer(data.settings.last_active_layer, true);
 				this.refreshObjectType(data.settings.last_object_type);
 				this.setObject(data.settings.last_object_name);
 				this.setCameraPosition(data.settings.camera[0], data.settings.camera[1]);
@@ -2268,7 +2268,7 @@ class SceneEditor extends Editor {
 
 		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
 			camera:this.camera,
-			last_active_layer:this.curr_layer.name,
+			last_active_layer:this.curr_layer.uuid,
 			last_object_type:this.obj_type,
 			last_object_name:ifndef(this.curr_object, {name:null}).name
 		}};
@@ -2347,13 +2347,13 @@ class SceneEditor extends Editor {
 
 			for (let i in obj.pixi_images) { 
 				let img = obj.pixi_images[i];
-				if (img && layer_names[img.layer_name]) {
+				if (img && layer_uuids[img.layer_uuid]) {
 
-					if (!exp_img.coords[img.layer_name]) {
-						exp_img.coords[img.layer_name] = [];
+					if (!exp_img.coords[img.layer_uuid]) {
+						exp_img.coords[img.layer_uuid] = [];
 					}
 
-					exp_img.coords[img.layer_name].push([
+					exp_img.coords[img.layer_uuid].push([
 						img.x, img.y,
 						img.frame.x, img.frame.y, img.frame.width, img.frame.height,
 						img.snapped

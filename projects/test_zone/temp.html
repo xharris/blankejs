@@ -1,4 +1,33 @@
-/*
+
+	<!DOCTYPE html>
+	<html>
+		<style>
+			head, body {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				right: 0px;
+				bottom: 0px;
+				margin: 0px;
+				overflow: hidden;
+				background: #485358;
+			}
+			#game {
+				width: 100%;
+				height: 100%;
+				background: #485358;
+			}
+			#game canvas {
+				background: #485358;
+			}
+			body > img {
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+		<head>
+			<link rel="stylesheet" type="text/css" media="all" href="game.css"/>
+			<script type="text/javascript">/*
  SAT.js - Version 0.7.1 - Copyright 2012 - 2018 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js */
 function x(){function c(a,d){this.x=a||0;this.y=d||0}function B(a,d){this.pos=a||new c;this.r=d||0}function m(a,d){this.pos=a||new c;this.angle=0;this.offset=new c;this.u(d||[])}function p(a,d,b){this.pos=a||new c;this.w=d||0;this.h=b||0}function w(){this.b=this.a=null;this.overlapN=new c;this.overlapV=new c;this.clear()}function C(a,d,b){for(var g=Number.MAX_VALUE,c=-Number.MAX_VALUE,l=a.length,v=0;v<l;v++){var e=a[v].f(d);e<g&&(g=e);e>c&&(c=e)}b[0]=g;b[1]=c}function y(a,d,b,g,c,l){var k=q.pop(),
 e=q.pop();a=h.pop().c(d).sub(a);d=a.f(c);C(b,c,k);C(g,c,e);e[0]+=d;e[1]+=d;if(k[0]>e[1]||e[0]>k[1])return h.push(a),q.push(k),q.push(e),!0;l&&(k[0]<e[0]?(l.aInB=!1,k[1]<e[1]?(b=k[1]-e[0],l.bInA=!1):(b=k[1]-e[0],g=e[1]-k[0],b=b<g?b:-g)):(l.bInA=!1,k[1]>e[1]?(b=k[0]-e[1],l.aInB=!1):(b=k[1]-e[0],g=e[1]-k[0],b=b<g?b:-g)),g=Math.abs(b),g<l.overlap&&(l.overlap=g,l.overlapN.c(c),0>b&&l.overlapN.reverse()));h.push(a);q.push(k);q.push(e);return!1}function z(a,d){var b=a.g(),g=d.f(a);return 0>g?-1:g>b?1:0}
@@ -3200,3 +3229,226 @@ void main()
 `})
 })
 
+</script>
+		</head>
+		<div class="font_preload" style="opacity:0;width:0px;height:0px;overflow:none">
+			<span style="font-family:'04B_03'"></span>
+,<span style="font-family:'04B_03'"></span>
+</div>
+		
+		<body>
+			<div id="game"></div>
+		</body>
+		<script>
+			let app = window.parent.app;
+			window.addEventListener('dragover', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			window.addEventListener('drop', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			window.addEventListener('dragleave', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			var game_instance = Blanke("#game",{
+				config: {"ico":"src\\logo.ico","icns":"src\\logo.icns","first_scene":"Map","size":[400,300],"quick_access":[["map0.map=map+?","map0.map"],["Map.js=script+scene+?","Map.js"],["Add a scene=new+?","Add a scene"],["Effect.js=script+scene+?","Effect.js"],["Player.js=script+entity+?","Player.js"]],"scene":{"objects":{"7a1d385c":{"name":"Bunny","char":"<","color":"#000000","size":[32,32],"uuid":"7a1d385c"}},"object_order":["7a1d385c"]},"enabled_plugins":{"xhh-platformer":true,"xhh-tween":false,"xhh-particle":false,"xhh-effect":true},"spritesheet_prvw":{"image/bluerobot.png":{"name":"robot_walk","offset":[38,0],"speed":1,"frame_size":[38,33],"frames":7,"selected_frames":["\"1-7\"",1],"columns":8,"border":[0,0],"image":"image/bluerobot.png"}},"export":{"name":"test_zone","web_autoplay":false,"scale_mode":"linear","frameless":false,"minify":true,"scale":true,"resizable":true},"os":"windows","autoplay_preview":true},
+				scale: true,
+				width: 400,
+				height: 300,
+				
+				assets: [
+					["config.json"],
+					["assets/maps/map0.map"],
+					["assets/image/bluerobot.png"],
+					["assets/image/circle.png"],
+					["assets/image/player_stand.png"],
+					["assets/image/rabbitv3.png"],
+					["assets/image/rect.png"]
+				],
+				onLoad: function(){
+					
+		let { Asset, Audio, Canvas, Draw, Effect, Entity, Event, GameObject, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View } = game_instance;
+		
+		let TestScene = () => {};
+		let TestView = () => {};
+		
+class Bunny extends Entity {
+    init () {
+		this.x = Game.width / 2;
+		this.addSprite("rabbitv3")
+		this.sprite_align = "center"
+		this.gravity_direction = 90
+		this.gravity = Util.rand_range(100,200)/1000;
+		this.hspeed = Util.rand_choose([-1,1]) * Util.rand_range(0,1000)/100;
+    }
+    update (dt) {
+		if (this.y > Game.height)
+			this.vspeed = -this.vspeed;
+		if (this.x > Game.width) {
+			this.hspeed = -this.hspeed;
+			this.x = Game.width - 1;
+		}
+		if (this.x < 0) {
+			this.hspeed = -this.hspeed;
+			this.x = 1;
+		}
+    }
+}
+
+class Player extends Entity {
+    init (align) {
+		this.addSprite("robot_walk", {image:"bluerobot", frames:6, speed:0.2, frame_size:[38,33], offset:[38,0]})
+		if (align) this.sprite_align = align;
+		this.addShape("main","rect")
+		this.sprite_scale.x = 1
+		
+		Input.set("move_l","left","a")
+		Input.set("move_r","right","d")
+		Input.set("move_u","up","w")
+		Input.set("move_d","down","s")
+    }
+    update (dt) {
+		let spd = 2;
+		this.hspeed = 0;
+		this.vspeed = 0;
+		if (Input("move_l").pressed) {
+			this.hspeed -= spd;
+			this.sprite_scale.x = -1;
+		}
+		if (Input("move_r").pressed) {
+			this.hspeed += spd;
+			this.sprite_scale.x = 1;
+		}
+		if (Input("move_u").pressed) this.vspeed -= spd;
+		if (Input("move_d").pressed) this.vspeed += spd;
+    }
+}
+
+class Circle extends Entity {
+    init (align) {
+		this.addSprite("main","circle")
+		if (align) this.sprite_align = align;
+		this.addShape("main","circle")
+		this.debug = true;
+    }
+    update (dt) {
+
+    }
+}
+
+class Rect extends Entity {
+	init (align) {
+		this.addSprite("main","rect")
+		if (align) this.sprite_align = align;
+		this.addShape("main","rect")
+		this.debug = true;
+	}
+}
+Scene("BunnyMark",{
+	particle_z:0,
+    onStart: function(scene) {
+		scene.txt_count = new Text('0', {
+			fontSize: 75,
+			fill: Draw.white,
+			stroke: Draw.black,
+			strokeThickness: 4
+		})
+		scene.txt_count.x = 100;
+		scene.txt_count.y = 100;
+		scene.txt_count.z = 1000;
+		
+		Input.set("action","space");
+    },
+    onUpdate: function(scene, dt) {
+		if (Input("action").released) {
+			Util.repeat(5000,()=>{
+				let b = new Bunny();
+				b.particle = true;
+			});
+			scene.txt_count.text = Bunny.instances.length;
+		}
+    },
+    onEnd: function(scene) {
+
+    }
+});
+
+Scene("Effect",{
+    onStart: function(scene) {
+		scene.player = new Player('center')
+		scene.player.x = Game.width / 4;
+		scene.player.y = 200;
+		
+		Game.background_color = Draw.white2
+		scene.graphic = new Draw(
+			['fill',Draw.green],
+			['lineStyle',3,Draw.black2],
+			['star',100,Game.height/2,5,50]
+		)
+		scene.graphic.effect = "zoomblur"
+    },
+    onUpdate: function(scene, dt) {
+		scene.graphic.effect.zoomblur.center = [Input.mouse.global.x, Input.mouse.global.y];
+    },
+    onEnd: function(scene) {
+
+    }
+});
+
+Scene("Hitboxes",{
+    onStart: function(scene) {
+		let c = new Circle("center");
+		c.x = Game.width / 4;
+		c.y = 100;
+		console.log(c._getHitboxOffset('x'), c._getHitboxOffset('y'))
+		
+		let r = new Rect("center");
+		r.x = Game.width / 4;
+		r.y = 200;
+		console.log(r._getHitboxOffset('x'), r._getHitboxOffset('y'))
+    
+		let p = new Player("center");
+		p.x = Game.width / 4;
+		p.y = 280;
+		
+		new Draw(
+			['lineStyle',2,Draw.black],
+			['moveTo',Game.width/4,0],
+			['lineTo',Game.width/4,Game.height]
+		);
+		
+		scene.c = c;
+		scene.r = r;
+	},
+    onUpdate: function(scene, dt) {
+        scene.c.sprite_angle += 0.25;
+        scene.r.sprite_angle += 0.25;
+    },
+    onEnd: function(scene) {
+
+    }
+});
+
+Scene("Map",{
+    onStart: function(scene) {
+		Map.load('map0')
+    },
+    onUpdate: function(scene, dt) {
+        
+    },
+    onEnd: function(scene) {
+
+    }
+});
+
+
+Scene.start("Map");
+
+				}
+			});
+		</script>
+	</html>
+	
