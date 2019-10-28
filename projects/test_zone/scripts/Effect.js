@@ -10,10 +10,10 @@ Scene("Effect",{
 			['lineStyle',3,Draw.black2],
 			['star',100,Game.height/2,5,50]
 		)
-		scene.graphic.effect = "ascii"
+		scene.graphic.effect = "zoomblur"
     },
     onUpdate: function(scene, dt) {
-		//scene.graphic.effect.zoomblur.center = [Input.mouse.global.x, Input.mouse.global.y];
+		scene.graphic.effect.zoomblur.center = [Input.mouse.global.x, Input.mouse.global.y];
     },
     onEnd: function(scene) {
 

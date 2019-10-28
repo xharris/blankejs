@@ -49,7 +49,8 @@
         "xhh-platformer": true,
         "xhh-tween": true,
         "xhh-net": false,
-        "xhh-particle": false
+        "xhh-particle": false,
+        "xhh-effect": false
     },
     "spritesheet_prvw": {
         "image/player_stand.png": {
@@ -102,12 +103,12 @@
     "history_clicks": [],
     "quick_access": [
         [
-            "Player.js=script+entity+?",
-            "Player.js"
-        ],
-        [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "Player.js=script+entity+?",
+            "Player.js"
         ],
         [
             "PlayScene.js=script+scene+?",
