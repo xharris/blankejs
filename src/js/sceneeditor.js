@@ -1332,8 +1332,6 @@ class SceneEditor extends Editor {
 		}
 	}
 
-
-
 	// add all images in project to the search bar
 	refreshImageList() {
 		var this_ref = this;
@@ -1346,7 +1344,8 @@ class SceneEditor extends Editor {
 				let full_path = nwPATH.join(path, stat.name);
 				var img_path = app.shortenAsset(full_path);
 				this_ref.el_image_sel.innerHTML += `<option value="${full_path}" ${this_ref.curr_image && this_ref.curr_image.path == img_path ? 'selected' : ''}>${img_path}</option>`;
-				this_ref.image_list.push(full_path);
+				if (!this_ref.image_list.includes(full_path))
+					this_ref.image_list.push(full_path);
 			}
 			next();
 		});

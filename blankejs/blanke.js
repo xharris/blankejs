@@ -2482,9 +2482,17 @@ var Blanke = (selector, options) => {
                     )
                 }
             }
+            // layer order
+            let layer_order = Map.config.layer_order || this.data.layers.reducde((arr, l) => { arr.push(l.name); return arr; }, []) || [];
+
+            Object.keys(draw_isntr).forEach(l => {
+                if (!layer_order.includes(l))
+                    layer_order.push(l);
+            })
             // redraw all layers
             for (let l_name in draw_instr)
-                this.getLayer(l_name)._graphics.draw(...draw_instr[l_name]);
+                if (l_name in draw_instr)
+                    this.getLayer(l_name)._graphics.draw(...draw_instr[l_name]);
         }
         removeTile (name, pos, layer) {
             let x, y;

@@ -1,6 +1,10 @@
 Scene("PlayScene",{
     onStart: function(sc) {
+		Game.background_color = Draw.white;
 		Map.config = {
+			z_index: {
+				'ground':-5
+			},
 			tile_hitbox: {
 				'ground': ['ground'],
 				'death': ['spike']

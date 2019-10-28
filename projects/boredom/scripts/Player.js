@@ -16,7 +16,7 @@ class Player extends Entity {
 		this.jump_height = 6;
 		this.walk_spd = 2.25;
 		this.gravity_direction = 90;
-		this.gravity = 0.2;
+		this.gravity = 0.15;
 		
 		this.addPlatforming({
 			tag: 'ground',
