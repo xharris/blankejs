@@ -8,12 +8,12 @@
     ],
     "quick_access": [
         [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
             "Map.js=script+scene+?",
             "Map.js"
+        ],
+        [
+            "map0.map=map+?",
+            "map0.map"
         ],
         [
             "Add a scene=new+?",

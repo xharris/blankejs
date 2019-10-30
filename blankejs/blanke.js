@@ -2393,7 +2393,7 @@ var Blanke = (selector, options) => {
             for (let img_info of data.images) {
                 // get layer image belongs to
                 for (let lay_uuid in img_info.coords) {
-                    let layer = new_map.getLayer(lay_uuid, true);
+                    let layer = new_map.getLayer(lay_uuid, true)._draw;
                     for (let c of img_info.coords[lay_uuid]) {
                         // place them
                         let asset_info = new_map.addTile(img_info.path, [c[0], c[1]], {
@@ -2423,16 +2423,20 @@ var Blanke = (selector, options) => {
             return new_map;
         }
         addLayer (name, _uuid) {
+            let new_cont = new PIXI.Container();
+            new_cont.map_uuid = _uuid || uuid();
+            new_cont.map_name = name;
+            this.main_container.addChild(new_cont);
+            this.layers.push(new_cont)
+            this.layer_uuid[name] = new_cont.map_uuid;
+
             let new_draw = new Draw();
-            new_draw.map_uuid = _uuid || uuid();
-            new_draw.map_name = name;
-            new_draw.setParent(this.main_container);
             new_draw.auto_clear = false;
-            this.layers.push(new_draw)
-            this.layer_uuid[name] = new_draw.map_uuid;
+            new_draw.setParent(new_cont);
+            new_cont._draw = new_draw;
         }
         getLayer (name, is_uuid) {
-            let ret_layer = this.layers.find(l => is_uuid == true ? l.map_uuid = name : l.map_name == name);  
+            let ret_layer = this.layers.find(l => is_uuid == true ? l.map_uuid == name : l.map_name == name);  
             if (!ret_layer)
                 return this.addLayer(name);
             return ret_layer;
@@ -2483,24 +2487,23 @@ var Blanke = (selector, options) => {
                 }
             }
             // layer order
-            let layer_order = Map.config.layer_order || this.data.layers.reduce((arr, l) => { arr.push(l.uuid); return arr; }, []) || [];
-
+            let layer_order;
+            if (Map.config.layer_order)
+                layer_order = Map.config.layer_order.filter(name => name in this.layer_uuid).map(name => this.layer_uuid[name])
+            else
+                layer_order = this.data.layers.reduce((arr, l) => { arr.push(l.uuid); return arr; }, []) || []
             Object.keys(draw_instr).forEach(l => {
                 if (!layer_order.includes(l))
                     layer_order.push(l);
             })
-            console.log(layer_order)
-            console.log(this.layers.map(l => [l._name, l.map_uuid]))
             // redraw all layers
-            layer_order.forEach((l_name, l) => {
-                if (draw_instr.hasOwnProperty(l_name)) {
-                    let g = this.getLayer(l_name, true);
-                    g.draw(...draw_instr[l_name]);
+            layer_order.forEach((id, l) => {
+                if (draw_instr.hasOwnProperty(id)) {
+                    let g = this.getLayer(id, true)._draw;
+                    g.draw(...draw_instr[id]);
                     g.z = (layer_order.length - l) - 1;
-                    console.log(g, g.z)
                 }
             })
-            console.log(this.layers)
             this.main_container.sortChildren();
         }
         removeTile (name, pos, layer) {
@@ -2590,7 +2593,7 @@ var Blanke = (selector, options) => {
             if (keep) {
                 let layer_obj = this.layers[0];
                 if (layer) 
-                    layer_obj = this.layers.find((l) => l._name == layer);
+                    layer_obj = this.getLayer(layer);
                 new_ent.setParent(layer_obj);
             }
             // store added entities for possible future reference
