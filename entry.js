@@ -35,6 +35,8 @@ elec.app.on('ready', function(){
     // main_window.webContents.openDevTools();
 });
 
+elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');
+
 process.on('uncaughtException', (err) => {
     console.log(err);
 })

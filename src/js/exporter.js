@@ -264,6 +264,7 @@ elec.app.on('ready', function(){
 		main_window.setMenuBarVisibility(false);
 	main_window.loadFile('index.html');
 });
+elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');
 					`,'utf-8');
 					// package.json
 					nwFS.writeFileSync(nwPATH.join(temp_dir,'package.json'),`

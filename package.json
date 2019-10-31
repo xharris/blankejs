@@ -6,9 +6,8 @@
   "single-instance": false,
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
   "scripts": {
-    "electron": "electron . --ignore-gpu-blacklist",
-    "dist": "node package.js",
-    "binaries": "node package_binaries.js"
+    "electron": "electron .",
+    "dist": "node package.js"
   },
   "dependencies": {
     "adm-zip": "^0.4.13",
