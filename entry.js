@@ -14,7 +14,11 @@ elec.app.on('ready', function(){
         titleBarStyle: 'hidden',
         backgroundColor: '#fff',
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            webgl: true,
+            webSecurity: false,
+            experimentalFeatures: true,
+            experimentalCanvasFeatures: true
         }
     })
     if (main_window.setWindowButtonVisibility)

@@ -413,8 +413,12 @@ var app = {
 					useContentSize: true,
 					resizable: app.project_settings.export.resizable,
 					webPreferences: {
-						nodeIntegration: true
-					}
+						nodeIntegration: true,
+						webgl: true,
+						webSecurity: false,
+						experimentalFeatures: true,
+						experimentalCanvasFeatures: true
+					  }
 				},
 					(win)=>{
 						let src_watch;

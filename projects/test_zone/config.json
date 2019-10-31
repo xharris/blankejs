@@ -1,27 +1,27 @@
 {
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns",
-    "first_scene": "Map",
+    "first_scene": "Effect",
     "size": [
         400,
         300
     ],
     "quick_access": [
         [
-            "Map.js=script+scene+?",
-            "Map.js"
+            "Effect.js=script+scene+?",
+            "Effect.js"
         ],
         [
             "map0.map=map+?",
             "map0.map"
         ],
         [
-            "Add a scene=new+?",
-            "Add a scene"
+            "Map.js=script+scene+?",
+            "Map.js"
         ],
         [
-            "Effect.js=script+scene+?",
-            "Effect.js"
+            "Add a scene=new+?",
+            "Add a scene"
         ],
         [
             "Player.js=script+entity+?",
