@@ -1,0 +1,8 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=BlankE
+Comment=2D game development software
+Exec="/home/xharris/Documents/blankejs/dist/BlankE-linux-x64/BlankE"
+Icon=blanke
+Terminal=false
+Type=Application
