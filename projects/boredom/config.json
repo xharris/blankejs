@@ -13,7 +13,7 @@
                 "char": "E",
                 "color": "#ffffff",
                 "size": [
-                    32,
+                    21,
                     32
                 ],
                 "uuid": "447cd90f"
@@ -107,6 +107,10 @@
             "level1.map"
         ],
         [
+            "View assets=?",
+            "View assets"
+        ],
+        [
             "PlayScene.js=script+scene+?",
             "PlayScene.js"
         ],
@@ -117,10 +121,6 @@
         [
             "Check for updates=?",
             "Check for updates"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "export": {

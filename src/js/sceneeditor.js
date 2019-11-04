@@ -2027,8 +2027,8 @@ class SceneEditor extends Editor {
 			obj.size[0] = sizex;
 			obj.size[1] = sizey;
 
-			this.iterObject(obj.name, function(obj) {
-				this.drawPoly(obj, obj.points, obj.poly);
+			this.iterObject(obj.name, (_obj) => {
+				this.drawPoly(obj, _obj.points, _obj.poly);
 			});
 
 			this.export();
