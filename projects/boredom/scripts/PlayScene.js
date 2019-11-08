@@ -9,7 +9,7 @@ Scene("PlayScene",{
 				'ground': ['ground'],
 				'death': ['spike']
 			},
-			entities: [Player],
+			entities: [Player,MovingBlock],
 			hitboxes: ["ground"]
 		};
 		let map = Map.load("level1")

@@ -8,12 +8,12 @@
     ],
     "quick_access": [
         [
-            "Effect.js=script+scene+?",
-            "Effect.js"
-        ],
-        [
             "map0.map=map+?",
             "map0.map"
+        ],
+        [
+            "Effect.js=script+scene+?",
+            "Effect.js"
         ],
         [
             "Map.js=script+scene+?",
@@ -30,19 +30,19 @@
     ],
     "scene": {
         "objects": {
-            "7a1d385c": {
+            "d4ecd89e": {
                 "name": "Bunny",
                 "char": "<",
                 "color": "#000000",
                 "size": [
-                    32,
+                    25,
                     32
                 ],
-                "uuid": "7a1d385c"
+                "uuid": "d4ecd89e"
             }
         },
         "object_order": [
-            "7a1d385c"
+            "d4ecd89e"
         ]
     },
     "enabled_plugins": {

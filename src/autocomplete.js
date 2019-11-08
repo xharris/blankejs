@@ -252,7 +252,7 @@ module.exports.hints = {
 		{ prop: 'sprite_frames' },
 		prop_pixi_point('sprite_anchor'),
 		{ fn: 'addSprite', vars: { name: '', options: 'frames, columns, frame_size[w,h], speed, spacing[x,y], offset[x,y]' } },
-		{ fn: 'addShape', vars: { name: '',  options: 'type(circle/rect/poly), ...see docs' } },
+		{ fn: 'addShape', vars: { name: '',  options: `type ('circle/rect/poly') || { type, tag, shape ([x,y,w,h]/[x,y,r]) }` } },
 		{ prop: 'onCollision', info: `(Hitbox, { sep_vec: {x, y} }` },
 		...prop_gameobject
 	],

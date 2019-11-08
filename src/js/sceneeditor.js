@@ -262,15 +262,8 @@ class SceneEditor extends Editor {
 						this_ref.drawObjImage(curr_obj, obj.image, obj.points);
 					});
 
-					if (Code.sprites[curr_obj.name]) {
-						this_ref.el_object_form.setValue('size', Code.sprites[curr_obj.name].frame_size[0], 0);
-						this_ref.el_object_form.setValue('size', Code.sprites[curr_obj.name].frame_size[1], 1);
-					} else {
-						this_ref.el_object_form.setValue('size', curr_obj.size[0], 0);
-						this_ref.el_object_form.setValue('size', curr_obj.size[1], 1);
-					}
-
-					this_ref.export();
+					if (!this_ref.checkObjectSize(curr_obj.uuid))
+						this_ref.export();
 				}
 			}
 		});
@@ -1989,14 +1982,30 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	// check if Code.sprites has an image size for this object
+	checkObjectSize (uuid) {
+		let obj = this.objects[uuid];
+		if (!obj.size_changed && Code.sprites.hasOwnProperty(obj.name)) {
+			let spr_ref = Code.sprites[obj.name];
+			obj.size[0] = spr_ref.frame_size[0];
+			obj.size[1] = spr_ref.frame_size[1];
+			if (uuid === this.curr_object.uuid) {
+				this.el_object_form.setValue('size', obj.size[0], 0);
+				this.el_object_form.setValue('size', obj.size[1], 1);
+			}	
+			this.export();
+			return true;
+		}
+	}
+
 	setObject (name) {
 		for (let uuid in this.objects) {
 			if (this.objects[uuid].name === name) {
+
 				this.curr_object = this.objects[uuid];
 				this.el_object_form.setValue('name', this.curr_object.name);
 				this.el_object_form.setValue('color', this.curr_object.color);
-				this.el_object_form.setValue('size', this.curr_object.size[0], 0);
-				this.el_object_form.setValue('size', this.curr_object.size[1], 1);
+				this.checkObjectSize(uuid);
 
 				this.el_object_form.container.style.display = "block";
 
@@ -2026,6 +2035,7 @@ class SceneEditor extends Editor {
 			if (sizey < 0) sizey = 0;
 			obj.size[0] = sizex;
 			obj.size[1] = sizey;
+			obj.size_changed = true;
 
 			this.iterObject(obj.name, (_obj) => {
 				this.drawPoly(obj, _obj.points, _obj.poly);

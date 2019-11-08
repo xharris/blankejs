@@ -37,12 +37,23 @@
                     33
                 ],
                 "uuid": "df9b3831"
+            },
+            "5f6c7bc1": {
+                "name": "MovingBlock",
+                "char": "@",
+                "color": "#84ffff",
+                "size": [
+                    99,
+                    33
+                ],
+                "uuid": "5f6c7bc1"
             }
         },
         "object_order": [
             "447cd90f",
             "4c0354ff",
-            "df9b3831"
+            "df9b3831",
+            "5f6c7bc1"
         ]
     },
     "enabled_plugins": {
@@ -103,6 +114,10 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "PlayScene.js=script+scene+?",
+            "PlayScene.js"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
@@ -111,16 +126,12 @@
             "View assets"
         ],
         [
-            "PlayScene.js=script+scene+?",
-            "PlayScene.js"
+            "MovingBlock.js=script+entity+?",
+            "MovingBlock.js"
         ],
         [
-            "Player.js=script+entity+?",
-            "Player.js"
-        ],
-        [
-            "Check for updates=?",
-            "Check for updates"
+            "Add an entity=new+?",
+            "Add an entity"
         ]
     ],
     "export": {
