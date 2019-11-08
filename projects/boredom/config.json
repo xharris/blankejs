@@ -114,6 +114,14 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "MovingBlock.js=script+entity+?",
+            "MovingBlock.js"
+        ],
+        [
+            "Player.js=script+entity+?",
+            "Player.js"
+        ],
+        [
             "PlayScene.js=script+scene+?",
             "PlayScene.js"
         ],
@@ -124,14 +132,6 @@
         [
             "View assets=?",
             "View assets"
-        ],
-        [
-            "MovingBlock.js=script+entity+?",
-            "MovingBlock.js"
-        ],
-        [
-            "Add an entity=new+?",
-            "Add an entity"
         ]
     ],
     "export": {
