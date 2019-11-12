@@ -1538,7 +1538,11 @@ class SceneEditor extends Editor {
 			}
 
 			// remove from array
-			if (!this_ref.placing_object && this_ref.curr_layer && this_ref.obj_type == 'object' && this_ref.curr_object.name == curr_object.name) {
+			if (!this_ref.placing_object && this_ref.curr_layer && 
+				this_ref.obj_type == 'object' && 
+				this_ref.curr_object.name === curr_object.name &&
+				this_ref.curr_layer.uuid === e.target.layer_uuid) {
+
 				let del_uuid = e.target.uuid;
 				this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, curr_object.name, function(obj){
 					if (del_uuid == obj.poly.uuid) {
@@ -1900,14 +1904,14 @@ class SceneEditor extends Editor {
 	// return true if object should be removed
 	iterObjectInLayer (layer_uuid, name, func) {
 		for (let obj_uuid in this.objects) {
-			if (this.objects[obj_uuid].name === name) {
-				for (let layer_name in this.obj_polys[obj_uuid]) {
+			if ((name === true || this.objects[obj_uuid].name === name) && this.obj_polys[obj_uuid]) {
+				if (this.obj_polys[obj_uuid][layer_uuid]) {
 					let new_array = [];
-					for (let obj in this.obj_polys[obj_uuid][layer_name]) {
-						let remove_obj = func(this.obj_polys[obj_uuid][layer_name][obj]);
-						if (!remove_obj) new_array.push(this.obj_polys[obj_uuid][layer_name][obj]);
+					for (let obj in this.obj_polys[obj_uuid][layer_uuid]) {
+						let remove_obj = func(this.obj_polys[obj_uuid][layer_uuid][obj]);
+						if (!remove_obj) new_array.push(this.obj_polys[obj_uuid][layer_uuid][obj]);
 					}
-					this.obj_polys[obj_uuid][layer_name] = new_array;
+					this.obj_polys[obj_uuid][layer_uuid] = new_array;
 				}
 				return;
 			}
@@ -2168,6 +2172,8 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	
+
 	setLayer (name, is_uuid) {
 		for (var l = 0; l < this.layers.length; l++) {
 			if ((is_uuid && this.layers[l].uuid == name) || this.layers[l].name == name) {
@@ -2177,6 +2183,18 @@ class SceneEditor extends Editor {
 				this.el_layer_form.setValue('snap', this.curr_layer.snap[1], 1);
 								
 				this.el_layer_list.selectItem(name);
+
+				// only objects on this layer can be interacted with
+				this.iterObjectInLayer(this.layers[l].uuid, true, (obj) => {
+					obj.poly.interactive = true;
+					//obj.poly.hitArea = null;
+				});
+			} else {			
+				// only objects on this layer can be interacted with
+				this.iterObjectInLayer(this.layers[l].uuid, true, (obj) => {
+					obj.poly.interactive = false;
+					//obj.poly.hitArea = new PIXI.Rectangle(0,0,0,0);
+				});
 			}
 		}
 		this.refreshLayers()

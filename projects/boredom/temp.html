@@ -1,4 +1,33 @@
-/*
+
+	<!DOCTYPE html>
+	<html>
+		<style>
+			head, body {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				right: 0px;
+				bottom: 0px;
+				margin: 0px;
+				overflow: hidden;
+				background: #485358;
+			}
+			#game {
+				width: 100%;
+				height: 100%;
+				background: #485358;
+			}
+			#game canvas {
+				background: #485358;
+			}
+			body > img {
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+		<head>
+			<link rel="stylesheet" type="text/css" media="all" href="game.css"/>
+			<script type="text/javascript">/*
 Common class methods:
     _getPixiObjs() : if available, returns an array of DisplayObjects that is used for rendering
 
@@ -4027,3 +4056,176 @@ document.addEventListener('blankeLoaded',(e) => {
     }
 })
 
+</script>
+		</head>
+		<div class="font_preload" style="opacity:0;width:0px;height:0px;overflow:none">
+			<span style="font-family:'04B_03'"></span>
+,<span style="font-family:'04B_03'"></span>
+</div>
+		
+		<body>
+			<div id="game"></div>
+		</body>
+		<script>
+			let app = window.parent.app;
+			window.addEventListener('dragover', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			window.addEventListener('drop', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			window.addEventListener('dragleave', function(e) {
+				e.preventDefault();
+				return false;
+			});
+			var game_instance = Blanke("#game",{
+				config: {"ico":"src\\logo.ico","icns":"src\\logo.icns","first_scene":"PlayScene","size":[800,600],"scene":{"objects":{"447cd90f":{"name":"Player","char":"E","color":"#ffffff","size":[21,32],"uuid":"447cd90f"},"4c0354ff":{"name":"ground","char":"F","color":"#a26829","size":[32,32],"uuid":"4c0354ff"},"df9b3831":{"name":"Dialog","char":"N","color":"#f6ff66","size":[33,33],"uuid":"df9b3831"},"5f6c7bc1":{"name":"MovingBlock","char":"@","color":"#84ffff","size":[99,33],"uuid":"5f6c7bc1"}},"object_order":["447cd90f","4c0354ff","df9b3831","5f6c7bc1"]},"enabled_plugins":{"xhh-platformer":true,"xhh-tween":true,"xhh-net":false,"xhh-particle":false,"xhh-effect":false},"spritesheet_prvw":{"image/player_stand.png":{"name":"player_stand","offset":[0,0],"speed":1,"frame_size":[21,32],"frames":1,"selected_frames":[1,1],"columns":1,"border":[0,0],"image":"image/player_stand.png"},"image/player_walk.png":{"name":"walk","offset":[0,0],"speed":1,"frame_size":[21,32],"frames":2,"selected_frames":["\"1-2\"",1],"columns":2,"border":[0,0],"image":"image/player_walk.png"}},"history_clicks":[],"quick_access":[["level1.map=map+?","level1.map"],["PlayScene.js=script+scene+?","PlayScene.js"],["MovingBlock.js=script+entity+?","MovingBlock.js"],["Player.js=script+entity+?","Player.js"],["View assets=?","View assets"]],"export":{"name":"boredom","web_autoplay":false,"scale_mode":"linear","frameless":false,"minify":true,"scale":true,"resizable":true},"autoplay_preview":true},
+				scale: true,
+				width: 800,
+				height: 600,
+				
+				assets: [
+					["config.json"],
+					["assets/maps/level1.map"],
+					["assets/image/boss1_idle.png"],
+					["assets/image/boss1_sleep.png"],
+					["assets/image/boss1_walk1.png"],
+					["assets/image/door.png"],
+					["assets/image/door_button.png"],
+					["assets/image/ground.png"],
+					["assets/image/moving_block.png"],
+					["assets/image/player_dead.png"],
+					["assets/image/player_stand.png"],
+					["assets/image/player_walk.png"],
+					["assets/image/spike.png"]
+				],
+				onLoad: function(){
+					
+		let { Asset, Audio, Canvas, Draw, Effect, Entity, Event, GameObject, Game, Hitbox, Input, Map, Matrix, Rectangle, Scene, Sprite, Text, Timer, Util, View } = game_instance;
+		
+		let TestScene = () => {};
+		let TestView = () => {};
+		
+class MovingBlock extends Entity {
+    init () {
+		this.addSprite("moving_block")
+		this.sprite_align = "center"
+		
+		this.addShape("main","rect")
+    }
+    update (dt) {
+
+    }
+}
+
+Input.set("left","a","left")
+Input.set("right","d","right")
+Input.set("up","w","up")
+Input.set("down","s","down")
+Input.set("action","space","j")
+
+class Player extends Entity {
+    init () {
+		this.addSprite("stand", {image:"player_stand", frames:1, speed:1, frame_size:[21,32]})
+    	this.addSprite("walk", {image:"player_walk", frames:2, speed:0.15, frame_size:[21,32]})
+		this.addSprite("dead", "player_dead")
+		this.sprite_align = "center"
+		this.sprite_index = "walk"
+		
+		this.can_jump = true;
+		this.jump_height = 6;
+		this.walk_spd = 2.25;
+		this.gravity_direction = 90;
+		this.gravity = 0.15;
+		
+		this.addPlatforming({
+			tag: 'ground',
+			width: this.sprite_width-8,
+			height: this.sprite_height,
+			on:{
+				any: (other) => {
+					if (other.tag == 'death')
+						this.die(other.tag);
+				},
+				foot: () => { 
+					this.grounded = true;
+					this.can_jump = true
+				}	
+			}
+		})
+	}
+	die (tag) {
+		if (!this.dead) {
+			this.dead = true;
+			this.sprite_index = "dead";
+			this.friction = 0.01;
+		}
+	}
+    update (dt) {
+		if (this.dead) return;
+		
+		// left / right / jump movement
+		this.hspeed = 0;
+		if (Input("left").pressed)
+			this.hspeed -= this.walk_spd;
+		if (Input("right").pressed)
+			this.hspeed += this.walk_spd;
+		if (Input("up").pressed && this.can_jump) {
+			this.can_jump = false;
+			this.vspeed = -this.jump_height;
+		}
+		// animation index
+		if (!this.grounded) {
+			this.sprite_index = 'walk';
+			this.sprite_frame = 1;
+		} else if ((Input("left").pressed || Input("right").pressed) && this.grounded) {
+			this.sprite_index = 'walk';
+			this.sprite_speed = 0.15;
+		} else {
+			this.sprite_index = 'stand';
+		}
+		
+		this.grounded = false;
+		// animation direction
+		if (Input("left").pressed) this.sprite_scale.x = -1;
+		else if (Input("right").pressed) this.sprite_scale.x = 1;
+	}
+}
+Scene("PlayScene",{
+    onStart: function(sc) {
+		Game.background_color = Draw.white;
+		Map.config = {
+			z_index: {
+				'ground':-5
+			},
+			tile_hitbox: {
+				'ground': ['ground'],
+				'death': ['spike']
+			},
+			entities: [Player,MovingBlock],
+			hitboxes: ["ground"]
+		};
+		let map = Map.load("level1")
+		//map.debug = true;
+		sc.player = map.entities['Player'][0]
+		sc.player.z = 20;
+		View(sc.player)
+    },
+    onUpdate: function(scene, dt) {
+        
+    },
+    onEnd: function(scene) {
+
+    }
+});
+
+
+Scene.start("PlayScene");
+
+				}
+			});
+		</script>
+	</html>
+	
