@@ -1,11 +1,12 @@
 const elec = require('electron');
 
+
 let main_window;
 elec.app.on('open-file', (e, path)=>{
     if (main_window)
         ;//main_window.webContents.send('open-file', path);
 })
-
+elec.app.commandLine.appendSwitch('enable-gpu-rasterization', 'true')
 elec.app.on('ready', function(){
     main_window = new elec.BrowserWindow({
         width: 800,

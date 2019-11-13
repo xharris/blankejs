@@ -465,7 +465,7 @@ var app = {
 			options = {};
 		}
 		options.parent = app.window;
-		let child = new elec.remote.BrowserWindow(options)
+		let child = new elec.remote.BrowserWindow(options);
 		child.loadFile(nwPATH.relative('',html));
 		app.extra_windows.push(child);
 		if (cb) cb(child);
@@ -477,6 +477,7 @@ var app = {
 
 	toggleSplit: function() {
 		FibWindow.toggleSplit();
+		app.getElement("#btn-winsplit").title = "toggle window splitting "+(split_enabled == true ? '(ON)' : '(OFF)');
 	},
 
 	isServerRunning: function() {
@@ -1266,6 +1267,9 @@ app.window.webContents.once('dom-ready', ()=>{
 	app.getElement("#btn-docs").addEventListener('click',()=> { new Docview() });
 	app.getElement("#btn-plugins").addEventListener('click',()=> { new Plugins() });
 	app.getElement("#btn-settings").addEventListener('click',()=> { new Settings() });
+
+	app.getElement("#btn-winsplit").title = "toggle window splitting "+(split_enabled == true ? '(ON)' : '(OFF)');
+	
 
 	let os_names = {"Linux":"linux", "Darwin":"mac", "Windows_NT":"win"};
 	app.os = os_names[nwOS.type()];
