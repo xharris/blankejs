@@ -190,7 +190,7 @@ class BlankeListView {
     hasItem (text) {
         let children = this.el_items_container.children;
         for (let c = 0; c < children.length; c++) {
-            if (children[c].el_text.innerHTML == text) return true;
+            if (children[c].title == text) return true;
         }
         return false;
     }
@@ -207,7 +207,6 @@ class BlankeListView {
     }
 
     addItem (text) {
-        let this_ref = this;
         if (this.hasItem(text)) return;
         if (!text) text = this._getNewItemName();
 
@@ -225,9 +224,9 @@ class BlankeListView {
                 let el_icon = blanke.createElement("i",["mdi","mdi-"+opt]);
 
                 el_action.title = opt;
-                el_action.addEventListener('click', function(e){
+                el_action.addEventListener('click', e => {
                     e.stopPropagation();
-                    this_ref.onItemAction(opt, text);
+                    this.onItemAction(opt, text);
                 });
 
                 el_action.appendChild(el_icon);
@@ -238,9 +237,9 @@ class BlankeListView {
         // add item click event
         el_item_container.el_text = el_item_text;
         el_item_container.title = text;
-        el_item_container.addEventListener('click', function(){
-            this_ref.selectItem(this.el_text.innerHTML);
-            this_ref.onItemSelect(this.el_text.innerHTML);
+        el_item_container.addEventListener('click', e => {
+            this.selectItem(e.target.el_text.innerHTML);
+            this.onItemSelect(e.target.el_text.innerHTML);
         });
 
         el_item_container.appendChild(el_item_text);

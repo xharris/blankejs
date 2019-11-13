@@ -1,31 +1,31 @@
 {
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns",
-    "first_scene": "Effect",
+    "first_scene": "Map",
     "size": [
         400,
         300
     ],
     "quick_access": [
         [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
-            "Effect.js=script+scene+?",
-            "Effect.js"
-        ],
-        [
             "Map.js=script+scene+?",
             "Map.js"
         ],
         [
-            "Add a scene=new+?",
-            "Add a scene"
-        ],
-        [
             "Player.js=script+entity+?",
             "Player.js"
+        ],
+        [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
+            "View assets=?",
+            "View assets"
+        ],
+        [
+            "Find in files=?",
+            "Find in files"
         ]
     ],
     "scene": {
@@ -39,10 +39,21 @@
                     32
                 ],
                 "uuid": "d4ecd89e"
+            },
+            "eec001b5": {
+                "name": "Player",
+                "char": "%",
+                "color": "#000000",
+                "size": [
+                    38,
+                    33
+                ],
+                "uuid": "eec001b5"
             }
         },
         "object_order": [
-            "d4ecd89e"
+            "d4ecd89e",
+            "eec001b5"
         ]
     },
     "enabled_plugins": {

@@ -2613,7 +2613,6 @@ var Blanke = (selector, options) => {
                 for (let name of layer_names) {
                     let new_opt = Object.assign({}, opt);
                     new_opt.layer = name;
-                    console.log(obj_name, new_opt)
                     entities = entities.concat(this.spawnEntity(entity_class, obj_name, new_opt));
                 }
                 return entities;
