@@ -3,7 +3,8 @@ class MovingBlock extends Entity {
 		this.addSprite("moving_block")
 		this.sprite_align = "center"
 		
-		this.addShape("main","rect")
+		this.addShape("main","rect","ground")
+		this.debug=true
     }
     update (dt) {
 

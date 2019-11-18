@@ -114,16 +114,16 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "MovingBlock.js=script+entity+?",
+            "MovingBlock.js"
+        ],
+        [
             "Dev Tools=?",
             "Dev Tools"
         ],
         [
             "Player.js=script+entity+?",
             "Player.js"
-        ],
-        [
-            "MovingBlock.js=script+entity+?",
-            "MovingBlock.js"
         ],
         [
             "level1.map=map+?",
