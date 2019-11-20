@@ -1330,17 +1330,21 @@ class SceneEditor extends Editor {
 		var this_ref = this;
 		app.removeSearchGroup('scene_image');
 		let walker = nwWALK.walk(nwPATH.join(app.project_path,'assets'));
-		this.el_image_sel.innerHTML = `<option class="placeholder" value="" disabled ${this.curr_image ? '' : 'selected'}>Select an image</option>`;
+		let sel_str = `<option class="placeholder" value="" disabled ${this.curr_image ? '' : 'selected'}>Select an image</option>`;
 		this.image_list = [];
-		walker.on('file', function(path, stat, next){
+		walker.on('file', (path, stat, next) => {
 			if (stat.isFile() && !stat.name.startsWith(".") && app.findAssetType(stat.name) == 'image') {
 				let full_path = nwPATH.join(path, stat.name);
 				var img_path = app.shortenAsset(full_path);
-				this_ref.el_image_sel.innerHTML += `<option value="${full_path}" ${this_ref.curr_image && this_ref.curr_image.path == img_path ? 'selected' : ''}>${img_path}</option>`;
-				if (!this_ref.image_list.includes(full_path))
-					this_ref.image_list.push(full_path);
+				sel_str += `<option value="${full_path}" ${this.curr_image && this.curr_image.path == img_path ? 'selected' : ''}>${img_path}</option>`;
+				if (!this.image_list.includes(full_path)) {
+					this.image_list.push(full_path);
+				}
 			}
 			next();
+		});
+		walker.on('end', () => {
+			this.el_image_sel.innerHTML = sel_str;
 		});
 	}
 
