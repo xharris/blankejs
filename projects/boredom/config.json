@@ -114,6 +114,10 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "MovingBlock.js=script+entity+?",
+            "MovingBlock.js"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
@@ -124,10 +128,6 @@
         [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "MovingBlock.js=script+entity+?",
-            "MovingBlock.js"
         ],
         [
             "PlayScene.js=script+scene+?",
