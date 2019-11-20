@@ -336,120 +336,28 @@ var app = {
 		opt = opt || {};
 		blanke.cooldownFn('minify-engine',500,function(){
 			app.getElement("#status-icons > .engine-status").classList.add('active');
-			let code_obj = {};
-			let walker = nwWALK.walk(app.settings.engine_path);
-			let plugin_code = '';
-			walker.on('file', (path, stat, next) => {
-				// place all code in one object
-				if (stat.isFile() && stat.name.endsWith('.js'))
-					code_obj[stat.name] = nwFS.readFileSync(
-						nwPATH.join(path, stat.name)
-						,'utf-8'
-					) + '\n\n';		
-				next();
-			});
-			walker.on('errors', ()=>{
+			let cb_done = (...args) => {
+				if (cb) cb(...args);
+				blanke.cooldownFn('engine-status-off',1000,function(){
+					app.getElement("#status-icons > .engine-status").classList.remove('active');
+				},true);
+				dispatchEvent('engineChange');
+			}
+			let cb_err = () => {
 				if (!opt.silent) {
 					let toast = blanke.toast("Engine compilation failed",-1);
 					toast.icon = 'close';
 					toast.style = "bad";
 				}
-			});
-			walker.on('end', () => {
-				// get blanke.js classes
-				GamePreview.engine_classes = re_engine_classes.exec(code_obj['blanke.js'])[1]
-				let other_classes = Plugins.getClassNames();
-				if (other_classes.length > 0)
-					GamePreview.engine_classes += ', '+other_classes.join(', ')
-				// uglify
-				let code = {
-					error: false,
-					code: Object.values(code_obj).join('\n')
-				}
-				if (opt.wrapper) {
-					code.code = opt.wrapper(code.code);
-					code_obj.user_code = code.code;
-				}
-
-				if (opt.minify) {
-					code = nwUGLY.minify(code_obj,{
-						ie8: true,
-						compress: opt.release ? {} : false,
-						keep_classnames: true,
-						mangle: { toplevel:false }
-					});
-				}
-				if (!code.error) {
-					if (opt.save_internal)
-						app.engine_code = code.code;
-					nwFS.writeFile('blanke.min.js',code.code,'utf-8');
-					// all done
-					blanke.cooldownFn('engine-status-off',1000,function(){
-						app.getElement("#status-icons > .engine-status").classList.remove('active');
-					},true);
-					if (cb) cb(code.code);
-					dispatchEvent('engineChange');
-				}
-			})
+			}
+			engine.minifyEngine(cb_err, cb_done, opt);
 		}, true);
 	},
 
 	extra_windows: [],
 	play: function(options) { 
-		if (app.isProjectOpen()) {
-			let proj_set = app.project_settings;
-			let game = new GamePreview(null, {
-				ide_mode: false,
-				scene: proj_set.first_scene,
-				size: proj_set.size
-			});
-			let writeTempHTML = (cb) => {
-				nwFS.writeFile(nwPATH.join(app.project_path,'temp.html'), game.getSource(), cb);
-			}
-			writeTempHTML(()=>{
-				app.newWindow(nwPATH.join(app.project_path,'temp.html'), {
-					width: proj_set.size[0],
-					height: proj_set.size[1],
-					useContentSize: true,
-					resizable: app.project_settings.export.resizable,
-					webPreferences: {
-						nodeIntegration: true,
-						webgl: true,
-						webSecurity: false,
-						experimentalFeatures: true,
-						experimentalCanvasFeatures: true
-					  }
-				},
-					(win)=>{
-						let src_watch;
-						win.on('closed',function(){
-							document.removeEventListener("codeSaved", reloadWindow);
-							document.removeEventListener("engineChange", reloadWindow);
-							nwFS.remove(nwPATH.join(app.project_path,'temp.html'));
-							return true;//this.close(true);
-						});
-						let reloadWindow = () => {
-							writeTempHTML(() => {
-								try {
-									win.reload();
-								} catch (e) {}
-							})
-						}
-						if (app.settings.autoreload_external_run) {
-							document.addEventListener("codeSaved", reloadWindow);
-							document.addEventListener("engineChange", reloadWindow);
-						}
-						
-						/*
-						let menu_bar = new nw.Menu({type:'menubar'});
-						menu_bar.append(new nw.MenuItem({
-							label: 'Show dev tools',
-							click: () => { win.showDevTools(); }
-						}));
-						win.menu = menu_bar;
-						*/
-				})
-			});
+        if (app.isProjectOpen()) {
+			engine.play(options);
 		}
 	},
 

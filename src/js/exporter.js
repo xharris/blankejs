@@ -25,7 +25,7 @@ class Exporter extends Editor {
 		this.container.height = 370;
 
 		// diplay list of target platforms
-		this.platforms = ['web','windows','mac','linux'];
+		this.platforms = Object.keys(engine.export_targets);
 
 		this.el_platforms = app.createElement("div","platforms");
 		let el_title1 = app.createElement("p","title1");
@@ -76,60 +76,9 @@ class Exporter extends Editor {
 		this.appendChild(this.el_export_form.container);
 	}
 
-	createJS (dir, target_os, cb) {
-		let js_path = nwPATH.join(dir, app.project_settings.export.name+".js");
-		let engine_path = app.settings.engine_path;
-
-		this.toast.text = `Building JS file`
-		let game = new GamePreview();
-		let scripts = GamePreview.getScriptOrder();
-		let user_code = '';
-		for (let path of scripts) {
-			user_code += nwFS.readFileSync(path,'utf-8') + '\n';
-		}
-		// get copy of other engine settings
-		let new_config = JSON.parse(JSON.stringify(app.project_settings));
-		for (let k in new_config.export) {
-			new_config[k] = new_config.export[k];
-		}
-
-		app.minifyEngine((code)=>{
-			nwFS.writeFileSync(js_path,code,'utf-8');
-			let str_html = GamePreview.getHTML(
-`<body>
-<div id="game"></div>
-</body>
-<script>
-var game_instance;
-window.addEventListener('load',()=>{
-	game_instance = Blanke.run('#game','${app.project_settings.export.name}');
-})
-</script>`,
-false,
-nwPATH.basename(js_path));
-
-			nwFS.writeFileSync(nwPATH.join(dir,'index.html'),str_html,'utf-8');
-			if (cb) cb(js_path);
-		},{ 
-			silent: true,
-			release: true,
-			minify: app.project_settings.export.minify, // true,
-			wrapper: (code) => `
-${code}
-Blanke.addGame('${app.project_settings.export.name}',{
-	config: ${JSON.stringify(new_config)},
-	width: ${app.project_settings.size[0]},
-	height: ${app.project_settings.size[1]},
-	assets: [${game.getAssetStr()}],
-	onLoad: function(classes){
-		let { ${GamePreview.engine_classes} } = classes;
-		let TestScene = () => {};
-		${user_code}
-	}
-});
-`	 
-		})
-		app.project_settings.os = target_os; // why ?
+	// dir : target directory to write bundled files to 
+	bundle (dir, target_os, cb_done) {
+		engine.bundle(dir, target_os, cb_done);
 	}
 
 	static openDistFolder(os) {
@@ -191,11 +140,8 @@ Blanke.addGame('${app.project_settings.export.name}',{
 
 	export (target_os) {
 		let this_ref = this;
-		let bin_dir = nwPATH.join('src','binaries');
 		let os_dir = nwPATH.join(app.project_path,"dist",target_os);
 		let temp_dir = target_os == 'web' ? os_dir : nwPATH.join(app.project_path,'dist','temp');
-		let engine_path = app.settings.engine_path;
-		let project_name = app.project_settings.export.name;
 
 		if (target_os != 'web') {
 			this.temp_dir = temp_dir;
@@ -205,7 +151,7 @@ Blanke.addGame('${app.project_settings.export.name}',{
 
 		blanke.toast("Starting export for "+target_os);
 
-		let setupBinary = async (...binary_list) => {
+		let setupBinary = async (binary_list) => {
 			let platforms = binary_list.reduce((a, c) => {
 				let [ plat, arch ] = c.split('-');
 				if (!a[plat]) a[plat] = [];
@@ -217,21 +163,15 @@ Blanke.addGame('${app.project_settings.export.name}',{
 				if (!platforms[c[0]].includes(c[1])) platforms[c[0]].push(c[1]);
 			});
 			// iterate platforms
+			let cb_done = () => {
+				this.doneToast(target_os);
+			};
+			let cb_err = (err) => {
+				app.error(err)
+				this.errToast();
+			}
 			for (let platform in platforms) {
-				let packager = require('electron-packager');
-				packager({
-					dir: temp_dir,
-					out: os_dir,
-					platform: platform,
-					arch: platforms[platform],
-					overwrite: true,
-					icon: 'src/logo',
-				}).then(err => {
-					this.doneToast(target_os);
-				}).catch(err => {
-					app.error(err)
-					this.errToast();
-				});
+				engine.setupBinary(os_dir, temp_dir, platform, platforms[platform], cb_done, cb_err);
 			}
 		}
 
@@ -244,62 +184,25 @@ Blanke.addGame('${app.project_settings.export.name}',{
 			.then(() => {
 				// move assets
 				nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
-				let extra_assets = ['04B_03.ttf','gamecontrollerdb.txt','game.css','config.json'];
+				let extra_assets = engine.extra_bundle_assets || [];
 				for (let a of extra_assets)
 					nwFS.copySync(nwPATH.join(app.project_path, a), nwPATH.join(temp_dir, a));
 
-				if (target_os != 'web') {
-					// entry.js
-					nwFS.writeFileSync(nwPATH.join(temp_dir,'entry.js'),`
-const elec = require('electron');
-//process.noAsar = true;
-elec.app.on('ready', function(){
-    let main_window = new elec.BrowserWindow({
-        width: ${app.project_settings.size[0]},
-		height: ${app.project_settings.size[1]},
-		frame: ${!app.project_settings.export.frameless},
-		resizable: ${app.project_settings.export.resizable}
-    })
-	if (main_window.setMenuBarVisibility)
-		main_window.setMenuBarVisibility(false);
-	main_window.loadFile('index.html');
-});
-elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');
-					`,'utf-8');
-					// package.json
-					nwFS.writeFileSync(nwPATH.join(temp_dir,'package.json'),`
-{
-	"name": "${app.project_settings.export.name}",
-	"description": "Made with BlankE",
-	"version": "1.0",
-	"main": "./entry.js",
-	"chromium-args": "--enable-webgl --ignore-gpu-blacklist"
-}
-					`,'utf-8');
-				}
-				// create js file
-				this_ref.createJS(temp_dir, target_os, function(){	
-					if (target_os != 'web') 
-						this_ref.toast.text = "Building app";
+				if (engine.preBundle)
+					engine.preBundle(temp_dir, target_os);
+				// create js file		
+				this.toast.text = `Bundling files`
+				this_ref.bundle(temp_dir, target_os, function(){	
+					this_ref.toast.text = "Building app";
 
-					// export to WINDOWS
-					// TODO NOTE: on non-windows platforms requires Wine
-					if (target_os == "windows") 
-						setupBinary('win32-x64')
-					
-					// exporting to MAC
-					if (target_os == "mac") 
-						setupBinary('darwin-x64');
-
-					// exporting to LINUX
-					if (target_os == "linux") {
-						// linux-arm64, linux-ia32, linux-armv7l, linux-x64
-						setupBinary('linux-arm64')
-					}
-
-					// exporting to WEB
-					if (target_os == "web") {
-						this_ref.doneToast('web');
+					for (let target in engine.export_targets) {
+						if (target_os == target) {
+							let platforms = engine.export_targets[target]
+							if (platforms === false)
+								this_ref.doneToast('web');
+							else
+								setupBinary(platforms);
+						}
 					}
 				});
 			})

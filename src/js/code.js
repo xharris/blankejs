@@ -8,20 +8,12 @@ var re_sprite_align = /sprite_align\s*=\s*[\"\']([\s\w]+)[\"\']/;
 var re_sprite_pivot_single = /sprite_pivot\.(x|y)\s*\=\s*(\d+)/;
 var re_sprite_pivot = /sprite_pivot\.set\(\s*(\d+)\s*,\s*(\d+)\s*\)/;
 
-var main_file = 'main.js';
-var file_ext = 'js';
+var main_file = engine.main_file;
+var file_ext = engine.file_ext;
 
 var code_instances = {};
 
-var CODE_ASSOCIATIONS = [
-	[
-		/\bScene\s*\(\s*[\'\"](.+)[\'\"]/,
-		"scene"
-	],[
-		/(\w+)\s+extends\s+Entity\s*/,
-		"entity"
-	],
-];
+var CODE_ASSOCIATIONS = engine.code_associations;
 
 var ext_class_list = {};// class_extends (Player)
 var instance_list = {}; // instance (let player = new Player())
@@ -242,7 +234,7 @@ class Code extends Editor {
 
 		// add game preview
 		this.game = null;
-		if (app.settings.game_preview_enabled)
+		if (app.settings.game_preview_enabled && engine.game_preview_enabled)
 			this.game = new GamePreview(null,{ ide_mode: true });
 		
 		this.console = new Console();
@@ -306,7 +298,7 @@ class Code extends Editor {
 					return null;
 				}
 			};
-			return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || "javascript"), blankeOverlay);
+			return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || engine.language), blankeOverlay);
 		});
 
 		let showSpritePreview = (image_name, include_img, cb) => {
@@ -1338,43 +1330,17 @@ document.addEventListener("openProject", function(e){
 		tags: ['new'],
 		group: 'Code'
 	});
-	app.addSearchKey({
-		key: 'Add a scene',
-		onSelect: function() {
-			key_newScriptModal("scene",
-`Scene("<NAME>",{
-    onStart: function(scene) {
 
-    },
-    onUpdate: function(scene, dt) {
-        
-    },
-    onEnd: function(scene) {
-
-    }
-});
-`);
-		},
-		tags: ['new'],
-		category: 'scene',
-		group: 'Code'
-	});
-	app.addSearchKey({
-		key: 'Add an entity',
-		onSelect: function() {
-			key_newScriptModal("entity",
-`class <NAME> extends Entity {
-    init () {
-
-    }
-    update (dt) {
-
-    }
-}
-`);
-		},
-		tags: ['new'],
-		category: 'entity',
-		group: 'Code'
-	});
+	for (let s_type in engine.add_script_templates) {
+		let template = engine.add_script_templates[s_type];
+		app.addSearchKey({
+			key: "Add a"+("aeiou".includes(s_type.substring(0,1)) ? 'n ' : ' ')+s_type,
+			onSelect: function() {
+				key_newScriptModal(s_type, template)
+			},
+			tags: ['new'],
+			category: s_type,
+			group: 'Code'
+		});
+	}
 });

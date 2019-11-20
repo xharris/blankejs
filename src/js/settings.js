@@ -26,12 +26,15 @@ class Settings extends Editor {
             ['autoplay_preview','checkbox',{'default':proj_set.autoplay_preview}],
             ['theme','select',{'choices':app.themes,'default':app_set.theme}],
             ['quick_access_size','number',{'min':1,'default':app_set.quick_access_size}],
-            ['game_preview_enabled','checkbox',{'default':app_set.game_preview_enabled,'label':'show preview of game while coding'}],
             ['autoreload_external_run','checkbox',{'default':app_set.autoreload_external_run,'label':'auto-reload external run','desc':'when a game is run using the Play button, it can be automatically refreshed when the code changes'}],
             ['Paths'],
             ...paths.map((path)=>[path,'directory',{default:app_set[path+'_path']}]),
             ...files.map((path)=>[path,'file',{default:app_set[path+'_path']}])
         ],true);
+        if (engine.game_preview_enabled) {
+            this.el_settings.addInput(['game_preview_enabled','checkbox',{'default':app_set.game_preview_enabled,'label':'show preview of game while coding'}])
+        }
+        //console.log(JSON.parse(JSON.stringify(app.project_settings)))
         ['first_scene','game_size','autoplay_preview'].forEach(s => {
             this.el_settings.onChange(s, v => {
                 app.project_settings[s] = v;

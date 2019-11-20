@@ -41,6 +41,7 @@
     },
     "enabled_plugins": {
         "xhh-platformer": false,
-        "xhh-tween": false
+        "xhh-tween": false,
+        "xhh-effect": false
     }
 }
