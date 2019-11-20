@@ -27,9 +27,10 @@ class Player extends Entity {
 					if (other.tag == 'death')
 						this.die(other.tag);
 				},
-				foot: () => { 
-					this.grounded = true;
+				foot: (other) => { 
+					this.grounded = true
 					this.can_jump = true
+					console.log(other.tag);
 				}	
 			}
 		})

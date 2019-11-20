@@ -114,6 +114,14 @@
     "history_clicks": [],
     "quick_access": [
         [
+            "PlayScene.js=script+scene+?",
+            "PlayScene.js"
+        ],
+        [
+            "Player.js=script+entity+?",
+            "Player.js"
+        ],
+        [
             "MovingBlock.js=script+entity+?",
             "MovingBlock.js"
         ],
@@ -122,16 +130,8 @@
             "level1.map"
         ],
         [
-            "Player.js=script+entity+?",
-            "Player.js"
-        ],
-        [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "PlayScene.js=script+scene+?",
-            "PlayScene.js"
         ]
     ],
     "export": {
