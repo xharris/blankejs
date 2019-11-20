@@ -372,6 +372,7 @@ class BlankeForm {
     }
 
     addInput (input) {
+        if (input.length < 1) return;
 
         let input_name = input[0];
         let input_type = input[1];

@@ -19,13 +19,11 @@ class Settings extends Editor {
         let proj_set = app.project_settings;
         let app_set = app.settings;
 
-        let autoplay_settings;
-        if (engine.game_preview_enabled) {
-            autoplay_settings = [
-                ['game_preview_enabled','checkbox',{'default':app_set.game_preview_enabled,'label':'show preview of game while coding'}]),
+        let autoplay_settings = engine.game_preview_enabled ? [
+                ['game_preview_enabled','checkbox',{'default':app_set.game_preview_enabled,'label':'show preview of game while coding'}],
                 ['autoplay_preview','checkbox',{'default':proj_set.autoplay_preview}]
-            ];
-        }
+            ] : [];
+            
         this.el_settings = new BlankeForm([
             ['GAME'],
             ['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
