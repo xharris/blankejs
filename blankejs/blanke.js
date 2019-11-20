@@ -1828,8 +1828,8 @@ var Blanke = (selector, options) => {
             else
                 this.sprite_index = '';
         }
-        addShape (name, options) {
-            if (typeof options == 'string') options = { type:options };
+        addShape (name, options, tag) {
+            if (typeof options == 'string') options = { type:options, tag:tag };
             if (!options) options = { type:name };
             options.tag = this.constructor.name + (options.tag ? '.'+options.tag : '');
             options.draw_offset = true;

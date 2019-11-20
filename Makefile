@@ -25,6 +25,10 @@ dist:
 blanke:
 	npm run electron
 
+linux_desktop:
+	sed -e "s|~|${home}|g" BlankE.desktop > /usr/share/applications/BlankE.desktop
+	cp ./src/logo.png /usr/share/icons/blanke.png
+
 install_butler_mac:
 	curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
 	unzip butler.zip -d butler
