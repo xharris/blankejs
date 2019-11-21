@@ -36,7 +36,9 @@ class Game
         if obj_info ~= nil and obj_info.spawn_class
             instance = obj_info.spawn_class(obj_info.args)
             if obj_info.updatable then table.insert(@@updatables, instance)
-            if obj_info.drawables then table.insert(@@drawables, instance)
+            if obj_info.drawables then 
+                table.insert(@@drawables, instance)
+                table.sort(@@drawables, (a, b) -> a.z < b.z)
         
             return instance
 
@@ -45,6 +47,7 @@ class Game
 --ENTITY
 class _Entity
     new: (args) =>
+        @z = 0
         table.update(@, args)
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, { 
