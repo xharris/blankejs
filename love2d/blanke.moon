@@ -6,43 +6,59 @@ table.update = (old_t, new_t, keys) ->
         for k in *keys do if new_t[k] ~= nil then old_t[k] = new_t[k]
 
 --GAME
-_Game = {
-    -- mutable
-    res: '',
-    load: () ->
-    -- immutable
-    objects: {},
-    updatables: {},
-    drawables: {},
-    addObject: (name, _type, args, opt) ->
-        -- store in object 'library' and update initial props
-        if _Game.objects[_type][name] == nil then _Game.objects[_type][name] = {}
-        table.update(_Game.objects[_type][name], args)
-        -- extra options
-        if opt.spawn_class then 
-            _Game.spawn_class[name] = opt.spawn_class
-    spawn_class: {},
-    spawn: (name) ->
-        if _Game.spawn_class[name] ~= nil
+class Game
+    options = {
+        res: '',
+        load: () ->
+    }
+    objects = {}
+    @updatables = {}
+    @drawables = {}
 
-}
-Game = (args) ->
-    table.update(_Game, args, {'res','load'})
-Game.spawn = (name) ->
-    print name
-    
+    new: (args) =>
+        table.update(options, args, {'res','load'})
+        return nil
+
+    @load = () ->
+        if options.load then options.load()
+
+    @addObject = (name, _type, args, opt) ->
+        -- store in object 'library' and update initial props
+        if objects[name] == nil then 
+            objects[name] = {
+                type: _type,
+                args: args
+            }
+        table.update(objects[name], opt)
+
+    @spawn: (name) ->
+        obj_info = objects[name]
+        if obj_info ~= nil and obj_info.spawn_class
+            instance = obj_info.spawn_class(obj_info.args)
+            if obj_info.updatable then table.insert(@@updatables, instance)
+            if obj_info.drawables then table.insert(@@drawables, instance)
+        
+            return instance
+
 --IMAGE
 
 --ENTITY
 class _Entity
-    new: =>
+    new: (args) =>
+        table.update(@, args)
 Entity = (name, args) ->
-    _Game.addObject(name, "Entity", args, { spawn_class: _Entity })
+    Game.addObject(name, "Entity", args, { 
+        spawn_class: _Entity
+        updatable: true,
+        drawable: true
+    })
 
 --BLANKE
 BlankeLoad = () ->
-    _Game.load!
-BlankeUpdate = () ->
+    Game.load!
+BlankeUpdate = (dt) ->
+    for obj in *Game.updatables
+        if obj.update then obj\update(dt)
 BlankeDraw = () ->
 
 { :BlankeLoad, :BlankeUpdate, :BlankeDraw, :Game, :Entity }
