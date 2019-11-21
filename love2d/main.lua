@@ -1,3 +1,4 @@
+io.stdout:setvbuf('no')
 Blanke = require "blanke"
 require "game"
 

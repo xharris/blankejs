@@ -4,6 +4,7 @@ runw:
 
 runl:
 	moon game.moon blanke.moon
+	moonc game.moon blanke.moon
 	love .
 
 install_linux:

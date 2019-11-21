@@ -1,9 +1,13 @@
+-- TODO: , Canvas, Input, Draw, Physics, Sound, Effect, Camera, Map (uses Canvas)
+import is_object, p from require "moon"
+
 -- UTIL
 table.update = (old_t, new_t, keys) -> 
     if keys == nil then
         for k, v in pairs new_t do old_t[k] = v
     else
         for k in *keys do if new_t[k] ~= nil then old_t[k] = new_t[k]
+table.keys = (t) -> [k for k, v in pairs t]
 uuid = require "uuid"
 require "printr"
 
@@ -12,17 +16,22 @@ class Game
     @options = {
         res: '',
         load: () ->
+        update: (dt) ->
+        draw: () ->
     }
     objects = {}
     @updatables = {}
     @drawables = {}
+    @width = 0
+    @height = 0
 
     new: (args) =>
-        table.update(@@options, args, {'res','load'})
+        table.update(@@options, args, {'res','load','draw','update'})
         return nil
 
     @load = () ->
-        if @@options.load then @@options.load()
+        @width, @height = love.graphics.getDimensions()
+        if @options.load then @options.load()
 
     @addObject = (name, _type, args, spawn_class) ->
         -- store in object 'library' and update initial props
@@ -33,6 +42,8 @@ class Game
                 :spawn_class
             }
 
+    @isSpawnable: (name) -> objects[name] ~= nil
+
     @spawn: (name) ->
         obj_info = objects[name]
         if obj_info ~= nil and obj_info.spawn_class
@@ -41,9 +52,18 @@ class Game
 
 --GAMEOBJECT
 class GameObject 
-    new: () =>
+    new: (args) =>
         @uuid = uuid()
         @x, @y, @z = 0, 0, 0
+        @child_keys = {}
+        if args then
+            for k, v in pairs args
+                if type(v) == "string" and Game.isSpawnable(v)
+                    self[k] = Game.spawn(v)
+                else if is_object(v)
+                    table.insert(@child_keys, k)
+                    @[k] = v!
+                    args[k] = nil
         if @_spawn then @\_spawn()
         if @spawn then @\spawn()
     addUpdatable: () =>
@@ -53,36 +73,69 @@ class GameObject
         @drawable = true
         table.insert(Game.drawables, @)
         table.sort(Game.drawables, (a, b) -> a.z < b.z)
+    remUpdatable: () =>
+        @updatable = false
+    remDrawable: () =>
+        @drawable = false
+    _draw: () => if @draw then @draw!
+    _update: (dt) => if @update then @update dt
     destroy: () =>
         @destroyed = true
+        for k in *@child_keys
+            self[k]\destroy() 
+
+--CANVAS
+class Canvas extends GameObject
+    new: (args) =>
+        super!
+        @angle = 0
+        @canvas = love.graphics.newCanvas(Game.width, Game.height)
+        @addDrawable!
+    _draw: () =>
+        love.graphics.draw(@canvas, @x, @y, math.rad(@angle))
+    drawTo: (obj) =>
+        last_canvas = love.graphics.getCanvas()
+        love.graphics.setCanvas(@canvas)
+        if type(obj) == "function"
+            obj()
+        else if is_object(obj) and obj._draw
+            obj\_draw()
+        love.graphics.setCanvas(last_canvas)
 
 --IMAGE
-class _Image extends GameObject
+class Image extends GameObject
     new: (args) =>
         super!
         @image = love.graphics.newImage(Game.options.res..'/'..args.file)
-        @addDrawable!
+        if @_spawn then @\_spawn()
+        if @spawn then @\spawn()cs.newImage(Game.options.res..'/'..args.file)
+        if args.drawable ~= false
+            @addDrawable!
     _draw: () =>
         love.graphics.draw(@image, @x, @y)
 
 --ENTITY
 class _Entity extends GameObject
     new: (args) =>
-        super!
+        super args
         table.update(@, args)
         @imageList = {}
 
         if args.image then
             if type(args.image) == 'table' then
-                @imageList = [_Image {file: img} for img in *args.image]
+                @imageList = [Image {file: img, drawable: false} for img in *args.image]
             else 
-                @imageList = {_Image {file: args.image}}
+                @imageList = {Image {file: args.image, drawable: false}}
         @addUpdatable!
         @addDrawable!
+        if @spawn then @spawn!
     _update: (dt) =>
         if @update then @update(dt)
         for img in *@imageList
             img.x, img.y = @x, @y
+    _draw: () =>
+        for img in *@imageList
+            img\_draw!
 
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, _Entity)
@@ -92,19 +145,28 @@ BlankeLoad = () ->
     Game.load!
 
 BlankeUpdate = (dt) ->
+    if Game.options.update(dt) == true then return
+
     len = #Game.updatables
     for o = 1, len
         obj = Game.updatables[o]
-        if obj.destroyed
+        if obj.destroyed or not obj.updatable
             Game.updatables[o] = nil
         else if obj._update then obj\_update(dt)
 
 BlankeDraw = () ->
+    if Game.options.draw! == true then return
+
     len = #Game.drawables
     for o = 1, len
         obj = Game.drawables[o]
-        if obj.destroyed
+        if obj.destroyed or not obj.drawable
             Game.drawables[o] = nil
-        else if obj._draw then obj\_draw()
+        
+        if obj.draw ~= false 
+            if obj.draw
+                obj\draw()
+            else if obj._draw
+                obj\_draw()
 
-{ :BlankeLoad, :BlankeUpdate, :BlankeDraw, :Game, :Entity }
+{ :BlankeLoad, :BlankeUpdate, :BlankeDraw, :Game, :Canvas, :Image, :Entity }
