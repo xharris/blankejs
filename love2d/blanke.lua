@@ -38,6 +38,7 @@ do
     __init = function(self, args)
       table.update(self.__class.options, args, {
         'res',
+        'filter',
         'load',
         'draw',
         'update'
@@ -58,6 +59,7 @@ do
   local self = _class_0
   self.options = {
     res = '',
+    filter = 'linear',
     load = function() end,
     update = function(dt) end,
     draw = function() end
@@ -67,8 +69,18 @@ do
   self.drawables = { }
   self.width = 0
   self.height = 0
+  self.graphics = {
+    clear = function(...)
+      return love.graphics.clear(...)
+    end
+  }
   self.load = function()
     self.width, self.height = love.graphics.getDimensions()
+    if type(Game.filter) == 'table' then
+      love.graphics.setDefaultFilter(unpack(Game.options.filter))
+    else
+      love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
+    end
     if self.options.load then
       return self.options.load()
     end
@@ -80,6 +92,15 @@ do
         args = args,
         spawn_class = spawn_class
       }
+    end
+  end
+  self.drawObject = function(gobj, ...)
+    local _list_0 = {
+      ...
+    }
+    for _index_0 = 1, #_list_0 do
+      local lobj = _list_0[_index_0]
+      love.graphics.draw(lobj, gobj.x, gobj.y, math.rad(gobj.angle), gobj.scalex, gobj.scaley, gobj.offx, gobj.offy, gobj.shearx, gobj.sheary)
     end
   end
   self.isSpawnable = function(name)
@@ -138,7 +159,8 @@ do
   _class_0 = setmetatable({
     __init = function(self, args)
       self.uuid = uuid()
-      self.x, self.y, self.z = 0, 0, 0
+      self.x, self.y, self.z, self.angle, self.scalex, self.scaley = 0, 0, 0, 0, 1, nil
+      self.offx, self.offy, self.shearx, self.sheary = 0, 0, 0, 0
       self.child_keys = { }
       if args then
         for k, v in pairs(args) do
@@ -179,11 +201,14 @@ do
   local _parent_0 = GameObject
   local _base_0 = {
     _draw = function(self)
-      return love.graphics.draw(self.canvas, self.x, self.y, math.rad(self.angle))
+      return Game.drawObject(self, self.canvas)
     end,
     drawTo = function(self, obj)
       local last_canvas = love.graphics.getCanvas()
       love.graphics.setCanvas(self.canvas)
+      if self.auto_clear then
+        Game.graphics.clear()
+      end
       if type(obj) == "function" then
         obj()
       else
@@ -200,6 +225,7 @@ do
     __init = function(self, args)
       _class_0.__parent.__init(self)
       self.angle = 0
+      self.auto_clear = true
       self.canvas = love.graphics.newCanvas(Game.width, Game.height)
       return self:addDrawable()
     end,
@@ -236,7 +262,7 @@ do
   local _parent_0 = GameObject
   local _base_0 = {
     _draw = function(self)
-      return love.graphics.draw(self.image, self.x, self.y)
+      return Game.drawObject(self, self.image)
     end
   }
   _base_0.__index = _base_0

@@ -11,6 +11,7 @@ end
 local bob, my_canv
 Game({
   res = 'data',
+  filter = 'nearest',
   load = function()
     bob = Game.spawn("Player")
   end
@@ -20,7 +21,7 @@ Entity("Player", {
   canv = Canvas,
   update = function(self, dt)
     self.x = self.x + (5 * dt)
-    self.canv.angle = self.canv.angle + (2 * dt)
+    self.canv.scalex = self.canv.scalex + (2 * dt)
     return self.canv:drawTo(self)
   end,
   draw = false

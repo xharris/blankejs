@@ -15,22 +15,32 @@ require "printr"
 class Game
     @options = {
         res: '',
+        filter: 'linear'
         load: () ->
         update: (dt) ->
         draw: () ->
     }
+    
     objects = {}
     @updatables = {}
     @drawables = {}
     @width = 0
     @height = 0
 
+    @graphics = {
+        clear: (...) -> love.graphics.clear(...)
+    }
+
     new: (args) =>
-        table.update(@@options, args, {'res','load','draw','update'})
+        table.update(@@options, args, {'res','filter','load','draw','update'})
         return nil
 
     @load = () ->
         @width, @height = love.graphics.getDimensions()
+        if type(Game.filter) == 'table'
+            love.graphics.setDefaultFilter(unpack(Game.options.filter))
+        else 
+            love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
         if @options.load then @options.load()
 
     @addObject = (name, _type, args, spawn_class) ->
@@ -41,6 +51,11 @@ class Game
                 :args
                 :spawn_class
             }
+
+    @drawObject = (gobj, ...) ->
+        for lobj in *{...}
+            love.graphics.draw(lobj, gobj.x, gobj.y, math.rad(gobj.angle), gobj.scalex, gobj.scaley,
+                gobj.offx, gobj.offy, gobj.shearx, gobj.sheary)
 
     @isSpawnable: (name) -> objects[name] ~= nil
 
@@ -54,7 +69,8 @@ class Game
 class GameObject 
     new: (args) =>
         @uuid = uuid()
-        @x, @y, @z = 0, 0, 0
+        @x, @y, @z, @angle, @scalex, @scaley = 0, 0, 0, 0, 1, nil
+        @offx, @offy, @shearx, @sheary = 0, 0, 0, 0
         @child_keys = {}
         if args then
             for k, v in pairs args
@@ -89,13 +105,14 @@ class Canvas extends GameObject
     new: (args) =>
         super!
         @angle = 0
+        @auto_clear = true
         @canvas = love.graphics.newCanvas(Game.width, Game.height)
         @addDrawable!
-    _draw: () =>
-        love.graphics.draw(@canvas, @x, @y, math.rad(@angle))
+    _draw: () => Game.drawObject(@, @canvas)
     drawTo: (obj) =>
         last_canvas = love.graphics.getCanvas()
         love.graphics.setCanvas(@canvas)
+        if @auto_clear then Game.graphics.clear()
         if type(obj) == "function"
             obj()
         else if is_object(obj) and obj._draw
@@ -111,8 +128,7 @@ class Image extends GameObject
         if @spawn then @\spawn()cs.newImage(Game.options.res..'/'..args.file)
         if args.drawable ~= false
             @addDrawable!
-    _draw: () =>
-        love.graphics.draw(@image, @x, @y)
+    _draw: () => Game.drawObject(@, @image)
 
 --ENTITY
 class _Entity extends GameObject
@@ -163,10 +179,8 @@ BlankeDraw = () ->
         if obj.destroyed or not obj.drawable
             Game.drawables[o] = nil
         
-        if obj.draw ~= false 
-            if obj.draw
-                obj\draw()
-            else if obj._draw
-                obj\_draw()
+        if obj.draw ~= false
+            if obj.draw then obj\draw!
+            else if obj._draw then obj\_draw!
 
 { :BlankeLoad, :BlankeUpdate, :BlankeDraw, :Game, :Canvas, :Image, :Entity }
