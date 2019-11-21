@@ -60,7 +60,7 @@ class Docview extends Editor {
 
 									// syntax highlighting
 									document.querySelectorAll('code').forEach(block => {
-										block.className = engine.language;
+										block.className = engine.language || '';
 										hljs.highlightBlock(block);
 									});
 									// links

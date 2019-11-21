@@ -1,0 +1,26 @@
+{
+    "ico": "src\\logo.ico",
+    "icns": "src\\logo.icns",
+    "first_scene": null,
+    "size": [
+        800,
+        600
+    ],
+    "quick_access": [],
+    "autoplay_preview": true,
+    "scene": {},
+    "export": {
+        "name": "test_zone_love",
+        "web_autoplay": false,
+        "scale_mode": "linear",
+        "frameless": false,
+        "minify": true,
+        "scale": true,
+        "resizable": false
+    },
+    "enabled_plugins": {
+        "xhh-platformer": false,
+        "xhh-tween": false,
+        "xhh-effect": false
+    }
+}

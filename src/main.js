@@ -333,6 +333,8 @@ var app = {
 
 	engine_code: '',
 	minifyEngine: function(cb, opt) {
+		if (!engine.minifyEngine) return;
+		
 		opt = opt || {};
 		blanke.cooldownFn('minify-engine',500,function(){
 			app.getElement("#status-icons > .engine-status").classList.add('active');
@@ -350,13 +352,14 @@ var app = {
 					toast.style = "bad";
 				}
 			}
-			engine.minifyEngine(cb_err, cb_done, opt);
+			if (engine.minifyEngine)
+				engine.minifyEngine(cb_err, cb_done, opt);
 		}, true);
 	},
 
 	extra_windows: [],
 	play: function(options) { 
-        if (app.isProjectOpen()) {
+        if (app.isProjectOpen() && engine.play) {
 			engine.play(options);
 		}
 	},
