@@ -1,4 +1,3 @@
-require "printr"
 Blanke = require "blanke"
 require "game"
 
