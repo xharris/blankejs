@@ -17,3 +17,9 @@ end
 love.keyreleased = function(key, scancode)
   return Blanke.keyreleased(key, scancode)
 end
+love.mousepressed = function(x, y, button, istouch, presses)
+  return Blanke.mousepressed(x, y, buttons, istouch, presses)
+end
+love.mousereleased = function(x, y, button, istouch, presses)
+  return Blanke.mousereleased(x, y, button, istouch, presses)
+end

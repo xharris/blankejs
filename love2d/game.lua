@@ -35,7 +35,10 @@ Input({
 })
 Entity("Player", {
   image = 'soldier.png',
-  canv = Canvas,
+  fake = {
+    "FakePlayer",
+    "ok"
+  },
   update = function(self, dt)
     local hspeed = 20
     if Input.pressed('right') then
@@ -44,16 +47,12 @@ Entity("Player", {
     if Input.pressed('left') then
       self.x = self.x - (hspeed * dt)
     end
-    if Input.released('up') then
-      self.y = self.y - (100 * dt)
-    end
-    return self.canv:drawTo(self)
-  end,
-  draw = false
+  end
 })
 return Entity("FakePlayer", {
   image = 'soldier.png',
-  spawn = function(self)
+  spawn = function(self, boop)
+    print(boop)
     self.x = Game.width / 2
   end
 })

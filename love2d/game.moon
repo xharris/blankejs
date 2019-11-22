@@ -16,15 +16,12 @@ Input {
 
 Entity "Player", {
     image: 'soldier.png'
-    canv: Canvas
     update: (dt) =>
         hspeed = 20
         if Input.pressed('right')
             @x += hspeed * dt
         if Input.pressed('left')
             @x -= hspeed * dt
-        @canv\drawTo(@)
-    draw: false
 }
 
 Entity "FakePlayer", {

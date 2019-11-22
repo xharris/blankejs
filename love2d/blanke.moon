@@ -1,4 +1,4 @@
--- TODO: , Canvas, Input, Draw, Physics, Sound, Effect, Camera, Map (uses Canvas)
+-- TODO: Canvas, Draw, Physics, Sound, Effect, Camera, Map (uses Canvas)
 import is_object, p from require "moon"
 
 -- UTIL
@@ -21,6 +21,12 @@ table.len = (t) ->
 table.hasValue = (t, val) ->
     for k,v in pairs(t) do if v == val return true 
     return false
+table.slice = (t, start, finish) ->
+    i, res, finish = 1, {}, finish or table.len(t)
+    for j = start, finish
+        res[i] = t[j]
+        i += 1
+    return res
 uuid = require "uuid"
 require "printr"
 
@@ -72,10 +78,10 @@ class Game
 
     @isSpawnable: (name) -> objects[name] ~= nil
 
-    @spawn: (name) ->
+    @spawn: (name, args) ->
         obj_info = objects[name]
         if obj_info ~= nil and obj_info.spawn_class
-            instance = obj_info.spawn_class(obj_info.args)
+            instance = obj_info.spawn_class(obj_info.args, args)
             return instance
 
 --GAMEOBJECT
@@ -87,12 +93,25 @@ class GameObject
         @child_keys = {}
         if args then
             for k, v in pairs args
-                if type(v) == "string" and Game.isSpawnable(v)
-                    self[k] = Game.spawn(v)
+                arg_type = type(v)
+                new_obj = nil
+                -- instantiation w/o args
+                if arg_type == "string" and Game.isSpawnable(v)
+                    new_obj = Game.spawn(v)
                 else if is_object(v)
                     table.insert(@child_keys, k)
-                    @[k] = v!
+                    new_obj = v!
+                else if arg_type == "table" then
+                    -- instantiation with args
+                    if type(v[1]) == "string"
+                        new_obj = Game.spawn(v[1], table.slice(v, 2))
+                    else if is_object(v[1])
+                        table.insert(@child_keys, k)
+                        new_obj = v[1](unpack(table.slice(v, 2)))
+                if new_obj
+                    @[k] = new_obj
                     args[k] = nil
+                    
         if @_spawn then @\_spawn()
         if @spawn then @\spawn()
     addUpdatable: () =>
@@ -115,11 +134,14 @@ class GameObject
 
 --CANVAS
 class Canvas extends GameObject
-    new: (args) =>
+    new: (w=Game.width, h=Game.height) =>
         super!
         @angle = 0
         @auto_clear = true
-        @canvas = love.graphics.newCanvas(Game.width, Game.height)
+        @width = w
+        @height = h
+        print(@width, @height)
+        @canvas = love.graphics.newCanvas(@width, @height)
         @addDrawable!
     _draw: () => Game.drawObject(@, @canvas)
     drawTo: (obj) =>
@@ -145,7 +167,7 @@ class Image extends GameObject
 
 --ENTITY
 class _Entity extends GameObject
-    new: (args) =>
+    new: (args, spawn_args) =>
         super args
         table.update(@, args)
         @imageList = {}
@@ -157,7 +179,10 @@ class _Entity extends GameObject
                 @imageList = {Image {file: args.image, drawable: false}}
         @addUpdatable!
         @addDrawable!
-        if @spawn then @spawn!
+        -- p(@)
+        if @spawn then 
+            if spawn_args then @spawn unpack(spawn_args)
+            else @spawn!
     _update: (dt) =>
         if @update then @update(dt)
         for img in *@imageList
@@ -196,16 +221,16 @@ class Input
 
     @released = (name) -> released[name]
 
-    @press = (key, scancode, isrepeat) ->
+    @press = (key, extra) ->
         if input_to_name[key] 
             for name in *input_to_name[key]
                 name_to_input[name][key] = true
                 -- is input pressed now?
                 combo = table.hasValue(options.combo, name)
                 if (combo and table.every(name_to_input[name])) or (not combo and table.some(name_to_input[name]))
-                        pressed[name] = true
+                        pressed[name] = extra
 
-    @release = (key, scancode, isrepeat) ->
+    @release = (key, extra) ->
         if input_to_name[key]
             for name in *input_to_name[key]
                 name_to_input[name][key] = false
@@ -213,7 +238,7 @@ class Input
                 combo = table.hasValue(options.combo, name)
                 if pressed[name] == true and (combo or not table.some(name_to_input[name]))
                         pressed[name] = false
-                        released[name] = true
+                        released[name] = extra
     
     @releaseCheck = () ->
         released = {}
@@ -248,9 +273,10 @@ Blanke = {
                 if obj.draw then obj\draw!
                 else if obj._draw then obj\_draw!
 
-    keypressed: (key, scancode, isrepeat) -> Input.press(key, scancode, isrepeat)
-
-    keyreleased: (key, scancode) -> Input.release(key, scancode)
+    keypressed: (key, scancode, isrepeat) -> Input.press(key, {:scancode, :isrepeat})
+    keyreleased: (key, scancode) -> Input.release(key, {:scancode})
+    mousepressed: (x, y, button, istouch, presses) -> Input.press('mouse', {:x, :y, :button, :istouch, :presses})
+    mousereleased: (x, y, button, istouch, presses) -> Input.release('mouse', {:x, :y, :button, :istouch, :presses})
 }
 
 

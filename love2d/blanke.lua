@@ -57,6 +57,15 @@ table.hasValue = function(t, val)
   end
   return false
 end
+table.slice = function(t, start, finish)
+  local i, res
+  i, res, finish = 1, { }, finish or table.len(t)
+  for j = start, finish do
+    res[i] = t[j]
+    i = i + 1
+  end
+  return res
+end
 local uuid = require("uuid")
 require("printr")
 local Game
@@ -137,10 +146,10 @@ do
   self.isSpawnable = function(name)
     return objects[name] ~= nil
   end
-  self.spawn = function(name)
+  self.spawn = function(name, args)
     local obj_info = objects[name]
     if obj_info ~= nil and obj_info.spawn_class then
-      local instance = obj_info.spawn_class(obj_info.args)
+      local instance = obj_info.spawn_class(obj_info.args, args)
       return instance
     end
   end
@@ -195,14 +204,30 @@ do
       self.child_keys = { }
       if args then
         for k, v in pairs(args) do
-          if type(v) == "string" and Game.isSpawnable(v) then
-            self[k] = Game.spawn(v)
+          local arg_type = type(v)
+          local new_obj = nil
+          if arg_type == "string" and Game.isSpawnable(v) then
+            new_obj = Game.spawn(v)
           else
             if is_object(v) then
               table.insert(self.child_keys, k)
-              self[k] = v()
-              args[k] = nil
+              new_obj = v()
+            else
+              if arg_type == "table" then
+                if type(v[1]) == "string" then
+                  new_obj = Game.spawn(v[1], table.slice(v, 2))
+                else
+                  if is_object(v[1]) then
+                    table.insert(self.child_keys, k)
+                    new_obj = v[1](unpack(table.slice(v, 2)))
+                  end
+                end
+              end
             end
+          end
+          if new_obj then
+            self[k] = new_obj
+            args[k] = nil
           end
         end
       end
@@ -253,11 +278,20 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   _class_0 = setmetatable({
-    __init = function(self, args)
+    __init = function(self, w, h)
+      if w == nil then
+        w = Game.width
+      end
+      if h == nil then
+        h = Game.height
+      end
       _class_0.__parent.__init(self)
       self.angle = 0
       self.auto_clear = true
-      self.canvas = love.graphics.newCanvas(Game.width, Game.height)
+      self.width = w
+      self.height = h
+      print(self.width, self.height)
+      self.canvas = love.graphics.newCanvas(self.width, self.height)
       return self:addDrawable()
     end,
     __base = _base_0,
@@ -365,7 +399,7 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   _class_0 = setmetatable({
-    __init = function(self, args)
+    __init = function(self, args, spawn_args)
       _class_0.__parent.__init(self, args)
       table.update(self, args)
       self.imageList = { }
@@ -397,7 +431,11 @@ do
       self:addUpdatable()
       self:addDrawable()
       if self.spawn then
-        return self:spawn()
+        if spawn_args then
+          return self:spawn(unpack(spawn_args))
+        else
+          return self:spawn()
+        end
       end
     end,
     __base = _base_0,
@@ -490,7 +528,7 @@ do
   self.released = function(name)
     return released[name]
   end
-  self.press = function(key, scancode, isrepeat)
+  self.press = function(key, extra)
     if input_to_name[key] then
       local _list_0 = input_to_name[key]
       for _index_0 = 1, #_list_0 do
@@ -498,12 +536,12 @@ do
         name_to_input[name][key] = true
         local combo = table.hasValue(options.combo, name)
         if (combo and table.every(name_to_input[name])) or (not combo and table.some(name_to_input[name])) then
-          pressed[name] = true
+          pressed[name] = extra
         end
       end
     end
   end
-  self.release = function(key, scancode, isrepeat)
+  self.release = function(key, extra)
     if input_to_name[key] then
       local _list_0 = input_to_name[key]
       for _index_0 = 1, #_list_0 do
@@ -512,7 +550,7 @@ do
         local combo = table.hasValue(options.combo, name)
         if pressed[name] == true and (combo or not table.some(name_to_input[name])) then
           pressed[name] = false
-          released[name] = true
+          released[name] = extra
         end
       end
     end
@@ -565,10 +603,33 @@ local Blanke = {
     end
   end,
   keypressed = function(key, scancode, isrepeat)
-    return Input.press(key, scancode, isrepeat)
+    return Input.press(key, {
+      scancode = scancode,
+      isrepeat = isrepeat
+    })
   end,
   keyreleased = function(key, scancode)
-    return Input.release(key, scancode)
+    return Input.release(key, {
+      scancode = scancode
+    })
+  end,
+  mousepressed = function(x, y, button, istouch, presses)
+    return Input.press('mouse', {
+      x = x,
+      y = y,
+      button = button,
+      istouch = istouch,
+      presses = presses
+    })
+  end,
+  mousereleased = function(x, y, button, istouch, presses)
+    return Input.release('mouse', {
+      x = x,
+      y = y,
+      button = button,
+      istouch = istouch,
+      presses = presses
+    })
   end
 }
 return {
