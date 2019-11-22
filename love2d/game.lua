@@ -20,7 +20,7 @@ Entity("Player", {
   image = 'soldier.png',
   canv = Canvas,
   update = function(self, dt)
-    self.x = self.x + (5 * dt)
+    self.x = self.x + (1 * dt)
     self.canv.scalex = self.canv.scalex + (2 * dt)
     return self.canv:drawTo(self)
   end,

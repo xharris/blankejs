@@ -30,11 +30,10 @@ local uuid = require("uuid")
 require("printr")
 local Game
 do
-  local _class_0
   local objects
   local _base_0 = { }
   _base_0.__index = _base_0
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args)
       table.update(self.__class.options, args, {
         'res',
@@ -117,7 +116,6 @@ do
 end
 local GameObject
 do
-  local _class_0
   local _base_0 = {
     addUpdatable = function(self)
       self.updatable = true
@@ -156,7 +154,7 @@ do
     end
   }
   _base_0.__index = _base_0
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args)
       self.uuid = uuid()
       self.x, self.y, self.z, self.angle, self.scalex, self.scaley = 0, 0, 0, 0, 1, nil
@@ -197,7 +195,6 @@ do
 end
 local Canvas
 do
-  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _draw = function(self)
@@ -221,9 +218,9 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args)
-      _class_0.__parent.__init(self)
+      _parent_0.__init(self)
       self.angle = 0
       self.auto_clear = true
       self.canvas = love.graphics.newCanvas(Game.width, Game.height)
@@ -236,10 +233,7 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        local parent = rawget(cls, "__parent")
-        if parent then
-          return parent[name]
-        end
+        return _parent_0[name]
       else
         return val
       end
@@ -258,7 +252,6 @@ do
 end
 local Image
 do
-  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _draw = function(self)
@@ -267,9 +260,9 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args)
-      _class_0.__parent.__init(self)
+      _parent_0.__init(self)
       self.image = love.graphics.newImage(Game.options.res .. '/' .. args.file)
       if self._spawn then
         self:_spawn()
@@ -288,10 +281,7 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        local parent = rawget(cls, "__parent")
-        if parent then
-          return parent[name]
-        end
+        return _parent_0[name]
       else
         return val
       end
@@ -310,7 +300,6 @@ do
 end
 local _Entity
 do
-  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _update = function(self, dt)
@@ -333,9 +322,9 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args)
-      _class_0.__parent.__init(self, args)
+      _parent_0.__init(self, args)
       table.update(self, args)
       self.imageList = { }
       if args.image then
@@ -376,10 +365,7 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        local parent = rawget(cls, "__parent")
-        if parent then
-          return parent[name]
-        end
+        return _parent_0[name]
       else
         return val
       end

@@ -8,6 +8,9 @@ table.update = (old_t, new_t, keys) ->
     else
         for k in *keys do if new_t[k] ~= nil then old_t[k] = new_t[k]
 table.keys = (t) -> [k for k, v in pairs t]
+table.every = (t) ->
+    result = false
+    for 
 uuid = require "uuid"
 require "printr"
 
@@ -54,8 +57,8 @@ class Game
 
     @drawObject = (gobj, ...) ->
         for lobj in *{...}
-            love.graphics.draw(lobj, gobj.x, gobj.y, math.rad(gobj.angle), gobj.scalex, gobj.scaley,
-                gobj.offx, gobj.offy, gobj.shearx, gobj.sheary)
+            love.graphics.draw lobj, gobj.x, gobj.y, math.rad(gobj.angle), gobj.scalex, gobj.scaley,
+                gobj.offx, gobj.offy, gobj.shearx, gobj.sheary
 
     @isSpawnable: (name) -> objects[name] ~= nil
 
@@ -156,6 +159,26 @@ class _Entity extends GameObject
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, _Entity)
 
+--INPUT
+class Input
+    @keys = {}
+    @pressed = {}
+    @released = {}
+
+    new: (keys, options) =>
+       -- Input.keys[]
+        return nil
+
+    @addInput = () ->
+        print 'hi'
+
+    @pressed = (name) -> @@pressed[name]
+
+    @released = (name) -> @@released[name]
+
+love.keypressed = (key, scancode, isrepeat) ->
+    Input.pressed 
+
 --BLANKE
 BlankeLoad = () ->
     Game.load!
@@ -183,4 +206,4 @@ BlankeDraw = () ->
             if obj.draw then obj\draw!
             else if obj._draw then obj\_draw!
 
-{ :BlankeLoad, :BlankeUpdate, :BlankeDraw, :Game, :Canvas, :Image, :Entity }
+{ :BlankeLoad, :BlankeUpdate, :BlankeDraw, :Game, :Canvas, :Image, :Entity, :Input }

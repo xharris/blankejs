@@ -1,7 +1,5 @@
-import Entity, Game, Canvas from require "blanke"
+import Entity, Game, Canvas, Input from require "blanke"
 import is_object, p from require "moon"
-
-local bob, my_canv
 
 Game {
     res: 'data',
@@ -10,11 +8,19 @@ Game {
         bob = Game.spawn("Player")
 }
 
+Input {
+    left: { "left", "a" },
+    right: { "right", "d" },
+    up: { "up", "w" }
+},
+{ no_repeat: { "up" } }
+
 Entity "Player", {
     image: 'soldier.png'
     canv: Canvas
     update: (dt) =>
-        @x += 5 * dt
+        if Input.pressed('right') then
+            @x += 1 * dt
         @canv.scalex += 2 * dt
         @canv\drawTo(@)
     draw: false

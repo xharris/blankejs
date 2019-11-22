@@ -1,10 +1,10 @@
 runw:
-	./moon/moonc game.moon blanke.moon
+	./moon/bin/moonc main.moon game.moon blanke.moon
 	./lovec .
 
 runl:
-	moon game.moon blanke.moon
-	moonc game.moon blanke.moon
+	moon main.moon game.moon blanke.moon
+	moonc main.moon game.moon blanke.moon
 	love .
 
 install_linux:
