@@ -1,11 +1,17 @@
-import Entity, Game, Canvas, Input from require "blanke"
+import Entity, Game, Canvas, Input, Draw from require "blanke"
 import is_object, p from require "moon"
 
 Game {
     res: 'data'
     filter: 'nearest'
     load: () ->
-        bob = Game.spawn("Player")
+        Game.spawn("Player")
+    draw: () ->
+        Draw {
+            {'color', 1, 0, 0},
+            {'line', 0, 0, Game.width/2, Game.height/2},
+            {'color'}
+        }
 }
 
 Input {
@@ -16,6 +22,10 @@ Input {
 
 Entity "Player", {
     image: 'soldier.png'
+    testdraw: {
+        { color: {1, 0, 0, 0.5} },
+        { line: {0, 0, Game.width/2, Game.height/2} }
+    }
     update: (dt) =>
         hspeed = 20
         if Input.pressed('right')

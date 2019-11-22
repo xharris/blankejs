@@ -278,20 +278,22 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   _class_0 = setmetatable({
-    __init = function(self, w, h)
+    __init = function(self, w, h, settings)
       if w == nil then
         w = Game.width
       end
       if h == nil then
         h = Game.height
       end
+      if settings == nil then
+        settings = { }
+      end
       _class_0.__parent.__init(self)
       self.angle = 0
       self.auto_clear = true
       self.width = w
       self.height = h
-      print(self.width, self.height)
-      self.canvas = love.graphics.newCanvas(self.width, self.height)
+      self.canvas = love.graphics.newCanvas(self.width, self.height, settings)
       return self:addDrawable()
     end,
     __base = _base_0,
@@ -548,7 +550,7 @@ do
         local name = _list_0[_index_0]
         name_to_input[name][key] = false
         local combo = table.hasValue(options.combo, name)
-        if pressed[name] == true and (combo or not table.some(name_to_input[name])) then
+        if pressed[name] and (combo or not table.some(name_to_input[name])) then
           pressed[name] = false
           released[name] = extra
         end
@@ -559,6 +561,63 @@ do
     released = { }
   end
   Input = _class_0
+end
+local Draw
+do
+  local _class_0
+  local _base_0 = { }
+  _base_0.__index = _base_0
+  _class_0 = setmetatable({
+    __init = function(self, instructions)
+      for _index_0 = 1, #instructions do
+        local instr = instructions[_index_0]
+        local name, args = instr[1], table.slice(instr, 2)
+        Draw[name](unpack(args))
+      end
+    end,
+    __base = _base_0,
+    __name = "Draw"
+  }, {
+    __index = _base_0,
+    __call = function(cls, ...)
+      local _self_0 = setmetatable({}, _base_0)
+      cls.__init(_self_0, ...)
+      return _self_0
+    end
+  })
+  _base_0.__class = _class_0
+  local self = _class_0
+  self.color = function(...)
+    if #{
+      ...
+    } == 0 then
+      return love.graphics.setColor(1, 1, 1, 1)
+    else
+      return love.graphics.setColor(...)
+    end
+  end
+  Draw = _class_0
+end
+local draw_functions = {
+  'arc',
+  'circle',
+  'clear',
+  'discard',
+  'ellipse',
+  'line',
+  'points',
+  'polygon',
+  'rectangle'
+}
+local draw_aliases = {
+  polygon = 'poly',
+  rectangle = 'rect'
+}
+for _index_0 = 1, #draw_functions do
+  local fn = draw_functions[_index_0]
+  Draw[draw_aliases[fn] or fn] = function(...)
+    return love.graphics[fn](...)
+  end
 end
 local Blanke = {
   load = function()
@@ -638,5 +697,6 @@ return {
   Canvas = Canvas,
   Image = Image,
   Entity = Entity,
-  Input = Input
+  Input = Input,
+  Draw = Draw
 }

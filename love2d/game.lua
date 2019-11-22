@@ -1,7 +1,7 @@
-local Entity, Game, Canvas, Input
+local Entity, Game, Canvas, Input, Draw
 do
   local _obj_0 = require("blanke")
-  Entity, Game, Canvas, Input = _obj_0.Entity, _obj_0.Game, _obj_0.Canvas, _obj_0.Input
+  Entity, Game, Canvas, Input, Draw = _obj_0.Entity, _obj_0.Game, _obj_0.Canvas, _obj_0.Input, _obj_0.Draw
 end
 local is_object, p
 do
@@ -12,7 +12,27 @@ Game({
   res = 'data',
   filter = 'nearest',
   load = function()
-    local bob = Game.spawn("Player")
+    return Game.spawn("Player")
+  end,
+  draw = function()
+    return Draw({
+      {
+        'color',
+        1,
+        0,
+        0
+      },
+      {
+        'line',
+        0,
+        0,
+        Game.width / 2,
+        Game.height / 2
+      },
+      {
+        'color'
+      }
+    })
   end
 })
 Input({
@@ -35,9 +55,23 @@ Input({
 })
 Entity("Player", {
   image = 'soldier.png',
-  fake = {
-    "FakePlayer",
-    "ok"
+  testdraw = {
+    {
+      color = {
+        1,
+        0,
+        0,
+        0.5
+      }
+    },
+    {
+      line = {
+        0,
+        0,
+        Game.width / 2,
+        Game.height / 2
+      }
+    }
   },
   update = function(self, dt)
     local hspeed = 20
@@ -51,8 +85,7 @@ Entity("Player", {
 })
 return Entity("FakePlayer", {
   image = 'soldier.png',
-  spawn = function(self, boop)
-    print(boop)
+  spawn = function(self)
     self.x = Game.width / 2
   end
 })

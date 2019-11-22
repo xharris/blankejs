@@ -1,4 +1,4 @@
--- TODO: Canvas, Draw, Physics, Sound, Effect, Camera, Map (uses Canvas)
+-- TODO: Physics, Sound, Effect, Camera, Map (uses Canvas)
 import is_object, p from require "moon"
 
 -- UTIL
@@ -91,6 +91,8 @@ class GameObject
         @x, @y, @z, @angle, @scalex, @scaley = 0, 0, 0, 0, 1, nil
         @offx, @offy, @shearx, @sheary = 0, 0, 0, 0
         @child_keys = {}
+        -- custom properties were provided
+        -- so far only allowed from Entity
         if args then
             for k, v in pairs args
                 arg_type = type(v)
@@ -134,14 +136,13 @@ class GameObject
 
 --CANVAS
 class Canvas extends GameObject
-    new: (w=Game.width, h=Game.height) =>
+    new: (w=Game.width, h=Game.height, settings={}) =>
         super!
         @angle = 0
         @auto_clear = true
         @width = w
         @height = h
-        print(@width, @height)
-        @canvas = love.graphics.newCanvas(@width, @height)
+        @canvas = love.graphics.newCanvas(@width, @height, settings)
         @addDrawable!
     _draw: () => Game.drawObject(@, @canvas)
     drawTo: (obj) =>
@@ -236,12 +237,31 @@ class Input
                 name_to_input[name][key] = false
                 -- is input released now?
                 combo = table.hasValue(options.combo, name)
-                if pressed[name] == true and (combo or not table.some(name_to_input[name]))
+                if pressed[name] and (combo or not table.some(name_to_input[name]))
                         pressed[name] = false
                         released[name] = extra
     
     @releaseCheck = () ->
         released = {}
+
+--DRAW
+class Draw
+    new: (instructions) =>
+        for instr in *instructions
+            name, args = instr[1], table.slice(instr,2)
+            Draw[name](unpack(args))
+    @color = (...) ->
+        if #{...} == 0 then
+            love.graphics.setColor(1,1,1,1)
+        else 
+            love.graphics.setColor(...)
+
+draw_functions = {'arc','circle','clear','discard','ellipse','line','points','polygon','rectangle'}
+draw_aliases = {
+    polygon: 'poly',
+    rectangle: 'rect'
+}
+for fn in *draw_functions do Draw[draw_aliases[fn] or fn] = (...) -> love.graphics[fn](...)
 
 --BLANKE
 Blanke = {
@@ -280,4 +300,4 @@ Blanke = {
 }
 
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input }
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw }
