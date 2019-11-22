@@ -1,7 +1,9 @@
 io.stdout\setvbuf('no')
-import BlankeLoad, BlankeUpdate, BlankeDraw from require "blanke"
+import Blanke from require "blanke"
 require "game"
 
-love.load = () -> BlankeLoad()
-love.update = (dt) -> BlankeUpdate(dt)
-love.draw = () -> BlankeDraw()
+love.load = () -> Blanke.load!
+love.update = (dt) -> Blanke.update dt
+love.draw = () -> Blanke.draw!
+love.keypressed = (key, scancode, isrepeat) -> Blanke.keypressed key, scancode, isrepeat
+love.keyreleased = (key, scancode) -> Blanke.keyreleased key, scancode

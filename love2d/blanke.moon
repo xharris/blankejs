@@ -9,8 +9,18 @@ table.update = (old_t, new_t, keys) ->
         for k in *keys do if new_t[k] ~= nil then old_t[k] = new_t[k]
 table.keys = (t) -> [k for k, v in pairs t]
 table.every = (t) ->
-    result = false
-    for 
+    for k,v in pairs(t) do if not v then return false
+    return true
+table.some = (t) ->
+    for k,v in pairs(t) do if v then return true
+    return false
+table.len = (t) -> 
+    c = 0
+    for k,v in pairs(t) do c += 1
+    return c
+table.hasValue = (t, val) ->
+    for k,v in pairs(t) do if v == val return true 
+    return false
 uuid = require "uuid"
 require "printr"
 
@@ -161,49 +171,87 @@ Entity = (name, args) ->
 
 --INPUT
 class Input
-    @keys = {}
-    @pressed = {}
-    @released = {}
+    name_to_input = {} -- name -> { key1: t/f, mouse1: t/f }
+    input_to_name = {} -- key -> { name1, name2, ... }
+    options = {
+        norepeat: {}
+        combo: {}
+    }
+    pressed = {}
+    released = {}
 
-    new: (keys, options) =>
-       -- Input.keys[]
+    new: (inputs, _options) =>
+        for name, inputs in pairs(inputs)
+            Input.addInput(name, inputs, _options)
+        table.update(options, _options)
         return nil
 
-    @addInput = () ->
-        print 'hi'
+    @addInput = (name, inputs, options) ->
+        name_to_input[name] = { i,false for i in *inputs }
+        for i in *inputs
+            if not input_to_name[i] then input_to_name[i] = {}
+            if not table.hasValue(input_to_name[i], name) then table.insert(input_to_name[i], name)
 
-    @pressed = (name) -> @@pressed[name]
+    @pressed = (name) -> pressed[name]
 
-    @released = (name) -> @@released[name]
+    @released = (name) -> released[name]
 
-love.keypressed = (key, scancode, isrepeat) ->
-    Input.pressed 
+    @press = (key, scancode, isrepeat) ->
+        if input_to_name[key] 
+            for name in *input_to_name[key]
+                name_to_input[name][key] = true
+                -- is input pressed now?
+                combo = table.hasValue(options.combo, name)
+                if (combo and table.every(name_to_input[name])) or (not combo and table.some(name_to_input[name]))
+                        pressed[name] = true
+
+    @release = (key, scancode, isrepeat) ->
+        if input_to_name[key]
+            for name in *input_to_name[key]
+                name_to_input[name][key] = false
+                -- is input released now?
+                combo = table.hasValue(options.combo, name)
+                if pressed[name] == true and (combo or not table.some(name_to_input[name]))
+                        pressed[name] = false
+                        released[name] = true
+    
+    @releaseCheck = () ->
+        released = {}
 
 --BLANKE
-BlankeLoad = () ->
-    Game.load!
+Blanke = {
+    load: () ->
+        Game.load!
 
-BlankeUpdate = (dt) ->
-    if Game.options.update(dt) == true then return
+    update: (dt) ->
+        if Game.options.update(dt) == true then return
 
-    len = #Game.updatables
-    for o = 1, len
-        obj = Game.updatables[o]
-        if obj.destroyed or not obj.updatable
-            Game.updatables[o] = nil
-        else if obj._update then obj\_update(dt)
-
-BlankeDraw = () ->
-    if Game.options.draw! == true then return
-
-    len = #Game.drawables
-    for o = 1, len
-        obj = Game.drawables[o]
-        if obj.destroyed or not obj.drawable
-            Game.drawables[o] = nil
+        len = #Game.updatables
+        for o = 1, len
+            obj = Game.updatables[o]
+            if obj.destroyed or not obj.updatable
+                Game.updatables[o] = nil
+            else if obj._update then obj\_update(dt)
         
-        if obj.draw ~= false
-            if obj.draw then obj\draw!
-            else if obj._draw then obj\_draw!
+        Input.releaseCheck!
 
-{ :BlankeLoad, :BlankeUpdate, :BlankeDraw, :Game, :Canvas, :Image, :Entity, :Input }
+    draw: () ->
+        if Game.options.draw! == true then return
+
+        len = #Game.drawables
+        for o = 1, len
+            obj = Game.drawables[o]
+            if obj.destroyed or not obj.drawable
+                Game.drawables[o] = nil
+            
+            if obj.draw ~= false
+                if obj.draw then obj\draw!
+                else if obj._draw then obj\_draw!
+
+    keypressed: (key, scancode, isrepeat) -> Input.press(key, scancode, isrepeat)
+
+    keyreleased: (key, scancode) -> Input.release(key, scancode)
+}
+
+
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input }

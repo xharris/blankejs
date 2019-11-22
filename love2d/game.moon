@@ -2,26 +2,27 @@ import Entity, Game, Canvas, Input from require "blanke"
 import is_object, p from require "moon"
 
 Game {
-    res: 'data',
+    res: 'data'
     filter: 'nearest'
     load: () ->
         bob = Game.spawn("Player")
 }
 
 Input {
-    left: { "left", "a" },
-    right: { "right", "d" },
+    left: { "left", "a" }
+    right: { "right", "d" }
     up: { "up", "w" }
-},
-{ no_repeat: { "up" } }
+}, { no_repeat: { "up" } }
 
 Entity "Player", {
     image: 'soldier.png'
     canv: Canvas
     update: (dt) =>
-        if Input.pressed('right') then
-            @x += 1 * dt
-        @canv.scalex += 2 * dt
+        hspeed = 20
+        if Input.pressed('right')
+            @x += hspeed * dt
+        if Input.pressed('left')
+            @x -= hspeed * dt
         @canv\drawTo(@)
     draw: false
 }

@@ -26,14 +26,46 @@ table.keys = function(t)
   end
   return _accum_0
 end
+table.every = function(t)
+  for k, v in pairs(t) do
+    if not v then
+      return false
+    end
+  end
+  return true
+end
+table.some = function(t)
+  for k, v in pairs(t) do
+    if v then
+      return true
+    end
+  end
+  return false
+end
+table.len = function(t)
+  local c = 0
+  for k, v in pairs(t) do
+    c = c + 1
+  end
+  return c
+end
+table.hasValue = function(t, val)
+  for k, v in pairs(t) do
+    if v == val then
+      return true
+    end
+  end
+  return false
+end
 local uuid = require("uuid")
 require("printr")
 local Game
 do
+  local _class_0
   local objects
   local _base_0 = { }
   _base_0.__index = _base_0
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self, args)
       table.update(self.__class.options, args, {
         'res',
@@ -116,6 +148,7 @@ do
 end
 local GameObject
 do
+  local _class_0
   local _base_0 = {
     addUpdatable = function(self)
       self.updatable = true
@@ -154,7 +187,7 @@ do
     end
   }
   _base_0.__index = _base_0
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self, args)
       self.uuid = uuid()
       self.x, self.y, self.z, self.angle, self.scalex, self.scaley = 0, 0, 0, 0, 1, nil
@@ -195,6 +228,7 @@ do
 end
 local Canvas
 do
+  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _draw = function(self)
@@ -218,9 +252,9 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self, args)
-      _parent_0.__init(self)
+      _class_0.__parent.__init(self)
       self.angle = 0
       self.auto_clear = true
       self.canvas = love.graphics.newCanvas(Game.width, Game.height)
@@ -233,7 +267,10 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        return _parent_0[name]
+        local parent = rawget(cls, "__parent")
+        if parent then
+          return parent[name]
+        end
       else
         return val
       end
@@ -252,6 +289,7 @@ do
 end
 local Image
 do
+  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _draw = function(self)
@@ -260,9 +298,9 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self, args)
-      _parent_0.__init(self)
+      _class_0.__parent.__init(self)
       self.image = love.graphics.newImage(Game.options.res .. '/' .. args.file)
       if self._spawn then
         self:_spawn()
@@ -281,7 +319,10 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        return _parent_0[name]
+        local parent = rawget(cls, "__parent")
+        if parent then
+          return parent[name]
+        end
       else
         return val
       end
@@ -300,6 +341,7 @@ do
 end
 local _Entity
 do
+  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _update = function(self, dt)
@@ -322,9 +364,9 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self, args)
-      _parent_0.__init(self, args)
+      _class_0.__parent.__init(self, args)
       table.update(self, args)
       self.imageList = { }
       if args.image then
@@ -365,7 +407,10 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        return _parent_0[name]
+        local parent = rawget(cls, "__parent")
+        if parent then
+          return parent[name]
+        end
       else
         return val
       end
@@ -386,55 +431,151 @@ local Entity
 Entity = function(name, args)
   return Game.addObject(name, "Entity", args, _Entity)
 end
-local BlankeLoad
-BlankeLoad = function()
-  return Game.load()
-end
-local BlankeUpdate
-BlankeUpdate = function(dt)
-  if Game.options.update(dt) == true then
-    return 
-  end
-  local len = #Game.updatables
-  for o = 1, len do
-    local obj = Game.updatables[o]
-    if obj.destroyed or not obj.updatable then
-      Game.updatables[o] = nil
-    else
-      if obj._update then
-        obj:_update(dt)
+local Input
+do
+  local _class_0
+  local name_to_input, input_to_name, options, pressed, released
+  local _base_0 = { }
+  _base_0.__index = _base_0
+  _class_0 = setmetatable({
+    __init = function(self, inputs, _options)
+      for name, inputs in pairs(inputs) do
+        Input.addInput(name, inputs, _options)
+      end
+      table.update(options, _options)
+      return nil
+    end,
+    __base = _base_0,
+    __name = "Input"
+  }, {
+    __index = _base_0,
+    __call = function(cls, ...)
+      local _self_0 = setmetatable({}, _base_0)
+      cls.__init(_self_0, ...)
+      return _self_0
+    end
+  })
+  _base_0.__class = _class_0
+  local self = _class_0
+  name_to_input = { }
+  input_to_name = { }
+  options = {
+    norepeat = { },
+    combo = { }
+  }
+  pressed = { }
+  released = { }
+  self.addInput = function(name, inputs, options)
+    do
+      local _tbl_0 = { }
+      for _index_0 = 1, #inputs do
+        local i = inputs[_index_0]
+        _tbl_0[i] = false
+      end
+      name_to_input[name] = _tbl_0
+    end
+    for _index_0 = 1, #inputs do
+      local i = inputs[_index_0]
+      if not input_to_name[i] then
+        input_to_name[i] = { }
+      end
+      if not table.hasValue(input_to_name[i], name) then
+        table.insert(input_to_name[i], name)
       end
     end
   end
-end
-local BlankeDraw
-BlankeDraw = function()
-  if Game.options.draw() == true then
-    return 
+  self.pressed = function(name)
+    return pressed[name]
   end
-  local len = #Game.drawables
-  for o = 1, len do
-    local obj = Game.drawables[o]
-    if obj.destroyed or not obj.drawable then
-      Game.drawables[o] = nil
-    end
-    if obj.draw ~= false then
-      if obj.draw then
-        obj:draw()
-      else
-        if obj._draw then
-          obj:_draw()
+  self.released = function(name)
+    return released[name]
+  end
+  self.press = function(key, scancode, isrepeat)
+    if input_to_name[key] then
+      local _list_0 = input_to_name[key]
+      for _index_0 = 1, #_list_0 do
+        local name = _list_0[_index_0]
+        name_to_input[name][key] = true
+        local combo = table.hasValue(options.combo, name)
+        if (combo and table.every(name_to_input[name])) or (not combo and table.some(name_to_input[name])) then
+          pressed[name] = true
         end
       end
     end
   end
+  self.release = function(key, scancode, isrepeat)
+    if input_to_name[key] then
+      local _list_0 = input_to_name[key]
+      for _index_0 = 1, #_list_0 do
+        local name = _list_0[_index_0]
+        name_to_input[name][key] = false
+        local combo = table.hasValue(options.combo, name)
+        if pressed[name] == true and (combo or not table.some(name_to_input[name])) then
+          pressed[name] = false
+          released[name] = true
+        end
+      end
+    end
+  end
+  self.releaseCheck = function()
+    released = { }
+  end
+  Input = _class_0
 end
+local Blanke = {
+  load = function()
+    return Game.load()
+  end,
+  update = function(dt)
+    if Game.options.update(dt) == true then
+      return 
+    end
+    local len = #Game.updatables
+    for o = 1, len do
+      local obj = Game.updatables[o]
+      if obj.destroyed or not obj.updatable then
+        Game.updatables[o] = nil
+      else
+        if obj._update then
+          obj:_update(dt)
+        end
+      end
+    end
+    return Input.releaseCheck()
+  end,
+  draw = function()
+    if Game.options.draw() == true then
+      return 
+    end
+    local len = #Game.drawables
+    for o = 1, len do
+      local obj = Game.drawables[o]
+      if obj.destroyed or not obj.drawable then
+        Game.drawables[o] = nil
+      end
+      if obj.draw ~= false then
+        if obj.draw then
+          obj:draw()
+        else
+          if obj._draw then
+            obj:_draw()
+          end
+        end
+      end
+    end
+  end,
+  keypressed = function(key, scancode, isrepeat)
+    return Input.press(key, scancode, isrepeat)
+  end,
+  keyreleased = function(key, scancode)
+    return Input.release(key, scancode)
+  end
+}
 return {
-  BlankeLoad = BlankeLoad,
-  BlankeUpdate = BlankeUpdate,
-  BlankeDraw = BlankeDraw,
+  Blanke = Blanke,
   Game = Game,
   Canvas = Canvas,
   Image = Image,
-  Entity = Entity
+  Entity = Entity,
+  Input = Input
 }

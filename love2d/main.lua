@@ -1,16 +1,19 @@
 io.stdout:setvbuf('no')
-local BlankeLoad, BlankeUpdate, BlankeDraw
-do
-  local _obj_0 = require("blanke")
-  BlankeLoad, BlankeUpdate, BlankeDraw = _obj_0.BlankeLoad, _obj_0.BlankeUpdate, _obj_0.BlankeDraw
-end
+local Blanke
+Blanke = require("blanke").Blanke
 require("game")
 love.load = function()
-  return BlankeLoad()
+  return Blanke.load()
 end
 love.update = function(dt)
-  return BlankeUpdate(dt)
+  return Blanke.update(dt)
 end
 love.draw = function()
-  return BlankeDraw()
+  return Blanke.draw()
+end
+love.keypressed = function(key, scancode, isrepeat)
+  return Blanke.keypressed(key, scancode, isrepeat)
+end
+love.keyreleased = function(key, scancode)
+  return Blanke.keyreleased(key, scancode)
 end
