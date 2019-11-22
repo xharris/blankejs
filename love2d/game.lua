@@ -13,26 +13,6 @@ Game({
   filter = 'nearest',
   load = function()
     return Game.spawn("Player")
-  end,
-  draw = function()
-    return Draw({
-      {
-        'color',
-        1,
-        0,
-        0
-      },
-      {
-        'line',
-        0,
-        0,
-        Game.width / 2,
-        Game.height / 2
-      },
-      {
-        'color'
-      }
-    })
   end
 })
 Input({
@@ -81,6 +61,27 @@ Entity("Player", {
     if Input.pressed('left') then
       self.x = self.x - (hspeed * dt)
     end
+  end,
+  draw = function(self, d)
+    Draw({
+      {
+        'color',
+        1,
+        0,
+        0
+      },
+      {
+        'line',
+        self.x,
+        self.y,
+        Game.width / 2,
+        Game.height / 2
+      },
+      {
+        'color'
+      }
+    })
+    return d()
   end
 })
 return Entity("FakePlayer", {

@@ -652,7 +652,11 @@ local Blanke = {
       end
       if obj.draw ~= false then
         if obj.draw then
-          obj:draw()
+          obj:draw(function()
+            if obj._draw then
+              return obj:_draw()
+            end
+          end)
         else
           if obj._draw then
             obj:_draw()

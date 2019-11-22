@@ -290,7 +290,7 @@ Blanke = {
                 Game.drawables[o] = nil
             
             if obj.draw ~= false
-                if obj.draw then obj\draw!
+                if obj.draw then obj\draw(() -> if obj._draw then obj\_draw!)
                 else if obj._draw then obj\_draw!
 
     keypressed: (key, scancode, isrepeat) -> Input.press(key, {:scancode, :isrepeat})

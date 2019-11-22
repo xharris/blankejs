@@ -6,12 +6,6 @@ Game {
     filter: 'nearest'
     load: () ->
         Game.spawn("Player")
-    draw: () ->
-        Draw {
-            {'color', 1, 0, 0},
-            {'line', 0, 0, Game.width/2, Game.height/2},
-            {'color'}
-        }
 }
 
 Input {
@@ -32,6 +26,13 @@ Entity "Player", {
             @x += hspeed * dt
         if Input.pressed('left')
             @x -= hspeed * dt
+    draw: (d) =>
+        Draw {
+            {'color', 1, 0, 0},
+            {'line', @x, @y, Game.width/2, Game.height/2},
+            {'color'}
+        }
+        d!
 }
 
 Entity "FakePlayer", {
