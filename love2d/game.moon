@@ -1,4 +1,4 @@
-import Entity, Game, Canvas, Input, Draw from require "blanke"
+import Entity, Game, Canvas, Input, Draw, Audio from require "blanke"
 import is_object, p from require "moon"
 
 Game {
@@ -6,6 +6,13 @@ Game {
     filter: 'nearest'
     load: () ->
         Game.spawn("Player")
+        Audio.play('manyfire')
+}
+
+Audio 'fire.ogg', {
+    name: 'manyfire'
+    looping: true,
+    volume: 0.2
 }
 
 Input {

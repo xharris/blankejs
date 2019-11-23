@@ -1,5 +1,5 @@
--- TODO: Physics, Sound, Effect, Camera, Map (uses Canvas)
-import is_object, p from require "moon"
+-- TODO: Sound, Effect, Camera, Map (uses Canvas), Physics
+import is_object, p, copy from require "moon"
 
 -- UTIL
 table.update = (old_t, new_t, keys) -> 
@@ -84,6 +84,9 @@ class Game
             instance = obj_info.spawn_class(obj_info.args, args)
             return instance
 
+    @res: (_type, file) -> "#{Game.options.res}/#{file}"
+    -- "#{Game.options.res}/#{_type}/#{file}"
+
 --GAMEOBJECT
 class GameObject 
     new: (args) =>
@@ -159,9 +162,9 @@ class Canvas extends GameObject
 class Image extends GameObject
     new: (args) =>
         super!
-        @image = love.graphics.newImage(Game.options.res..'/'..args.file)
+        @image = love.graphics.newImage(Game.res('image',args.file))
         if @_spawn then @\_spawn()
-        if @spawn then @\spawn()cs.newImage(Game.options.res..'/'..args.file)
+        if @spawn then @\spawn()cs.newImage(Game.res('image',args.file))
         if args.drawable ~= false
             @addDrawable!
     _draw: () => Game.drawObject(@, @image)
@@ -241,8 +244,7 @@ class Input
                         pressed[name] = false
                         released[name] = extra
     
-    @releaseCheck = () ->
-        released = {}
+    @releaseCheck = () -> released = {}
 
 --DRAW
 class Draw
@@ -262,6 +264,42 @@ draw_aliases = {
     rectangle: 'rect'
 }
 for fn in *draw_functions do Draw[draw_aliases[fn] or fn] = (...) -> love.graphics[fn](...)
+
+--AUDIO
+class Audio
+    default_opt = {
+        type: 'static',
+        looping: false,
+        volume: 1
+    }
+    defaults = {}
+    sources = {}
+
+    opt = (name, overrides) ->
+        if not defaults[name] then Audio name, {}
+        return defaults[name]
+
+    new: (file, ...) =>
+        option_list = {...}
+        for options in *option_list
+            store_name = options.name or file
+            options.file = file
+            if not defaults[store_name] then defaults[store_name] = {}
+            new_tbl = copy(default_opt)
+            table.update(new_tbl, options)
+            table.update(defaults[store_name], new_tbl)
+    
+    @source = (name, options) ->
+        o = opt(name)
+        if not sources[name] then
+            sources[name] = love.audio.newSource(Game.res('audio',o.file), o.type)
+        src = sources[name]\clone()
+        src\setLooping(o.looping)
+        src\setVolume(o.volume)
+        return src
+
+    @play = (...) ->
+        love.audio.play(unpack([ Audio.source(name) for name in *{...} ]))
 
 --BLANKE
 Blanke = {
@@ -300,4 +338,4 @@ Blanke = {
 }
 
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw }
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio }

@@ -1,7 +1,7 @@
-local is_object, p
+local is_object, p, copy
 do
   local _obj_0 = require("moon")
-  is_object, p = _obj_0.is_object, _obj_0.p
+  is_object, p, copy = _obj_0.is_object, _obj_0.p, _obj_0.copy
 end
 table.update = function(old_t, new_t, keys)
   if keys == nil then
@@ -70,11 +70,10 @@ local uuid = require("uuid")
 require("printr")
 local Game
 do
-  local _class_0
   local objects
   local _base_0 = { }
   _base_0.__index = _base_0
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args)
       table.update(self.__class.options, args, {
         'res',
@@ -153,11 +152,13 @@ do
       return instance
     end
   end
+  self.res = function(_type, file)
+    return tostring(Game.options.res) .. "/" .. tostring(file)
+  end
   Game = _class_0
 end
 local GameObject
 do
-  local _class_0
   local _base_0 = {
     addUpdatable = function(self)
       self.updatable = true
@@ -196,7 +197,7 @@ do
     end
   }
   _base_0.__index = _base_0
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args)
       self.uuid = uuid()
       self.x, self.y, self.z, self.angle, self.scalex, self.scaley = 0, 0, 0, 0, 1, nil
@@ -253,7 +254,6 @@ do
 end
 local Canvas
 do
-  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _draw = function(self)
@@ -277,7 +277,7 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, w, h, settings)
       if w == nil then
         w = Game.width
@@ -288,7 +288,7 @@ do
       if settings == nil then
         settings = { }
       end
-      _class_0.__parent.__init(self)
+      _parent_0.__init(self)
       self.angle = 0
       self.auto_clear = true
       self.width = w
@@ -303,10 +303,7 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        local parent = rawget(cls, "__parent")
-        if parent then
-          return parent[name]
-        end
+        return _parent_0[name]
       else
         return val
       end
@@ -325,7 +322,6 @@ do
 end
 local Image
 do
-  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _draw = function(self)
@@ -334,15 +330,15 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args)
-      _class_0.__parent.__init(self)
-      self.image = love.graphics.newImage(Game.options.res .. '/' .. args.file)
+      _parent_0.__init(self)
+      self.image = love.graphics.newImage(Game.res('image', args.file))
       if self._spawn then
         self:_spawn()
       end
       if self.spawn then
-        self:spawn()(cs.newImage(Game.options.res .. '/' .. args.file))
+        self:spawn()(cs.newImage(Game.res('image', args.file)))
       end
       if args.drawable ~= false then
         return self:addDrawable()
@@ -355,10 +351,7 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        local parent = rawget(cls, "__parent")
-        if parent then
-          return parent[name]
-        end
+        return _parent_0[name]
       else
         return val
       end
@@ -377,7 +370,6 @@ do
 end
 local _Entity
 do
-  local _class_0
   local _parent_0 = GameObject
   local _base_0 = {
     _update = function(self, dt)
@@ -400,9 +392,9 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, args, spawn_args)
-      _class_0.__parent.__init(self, args)
+      _parent_0.__init(self, args)
       table.update(self, args)
       self.imageList = { }
       if args.image then
@@ -447,10 +439,7 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        local parent = rawget(cls, "__parent")
-        if parent then
-          return parent[name]
-        end
+        return _parent_0[name]
       else
         return val
       end
@@ -473,11 +462,10 @@ Entity = function(name, args)
 end
 local Input
 do
-  local _class_0
   local name_to_input, input_to_name, options, pressed, released
   local _base_0 = { }
   _base_0.__index = _base_0
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, inputs, _options)
       for name, inputs in pairs(inputs) do
         Input.addInput(name, inputs, _options)
@@ -564,10 +552,9 @@ do
 end
 local Draw
 do
-  local _class_0
   local _base_0 = { }
   _base_0.__index = _base_0
-  _class_0 = setmetatable({
+  local _class_0 = setmetatable({
     __init = function(self, instructions)
       for _index_0 = 1, #instructions do
         local instr = instructions[_index_0]
@@ -618,6 +605,80 @@ for _index_0 = 1, #draw_functions do
   Draw[draw_aliases[fn] or fn] = function(...)
     return love.graphics[fn](...)
   end
+end
+local Audio
+do
+  local default_opt, defaults, sources, opt
+  local _base_0 = { }
+  _base_0.__index = _base_0
+  local _class_0 = setmetatable({
+    __init = function(self, file, ...)
+      local option_list = {
+        ...
+      }
+      for _index_0 = 1, #option_list do
+        local options = option_list[_index_0]
+        local store_name = options.name or file
+        options.file = file
+        if not defaults[store_name] then
+          defaults[store_name] = { }
+        end
+        local new_tbl = copy(default_opt)
+        table.update(new_tbl, options)
+        table.update(defaults[store_name], new_tbl)
+      end
+    end,
+    __base = _base_0,
+    __name = "Audio"
+  }, {
+    __index = _base_0,
+    __call = function(cls, ...)
+      local _self_0 = setmetatable({}, _base_0)
+      cls.__init(_self_0, ...)
+      return _self_0
+    end
+  })
+  _base_0.__class = _class_0
+  local self = _class_0
+  default_opt = {
+    type = 'static',
+    looping = false,
+    volume = 1
+  }
+  defaults = { }
+  sources = { }
+  opt = function(name, overrides)
+    if not defaults[name] then
+      Audio(name, { })
+    end
+    return defaults[name]
+  end
+  self.source = function(name, options)
+    local o = opt(name)
+    if not sources[name] then
+      sources[name] = love.audio.newSource(Game.res('audio', o.file), o.type)
+    end
+    local src = sources[name]:clone()
+    src:setLooping(o.looping)
+    src:setVolume(o.volume)
+    return src
+  end
+  self.play = function(...)
+    return love.audio.play(unpack((function(...)
+      local _accum_0 = { }
+      local _len_0 = 1
+      local _list_0 = {
+        ...
+      }
+      for _index_0 = 1, #_list_0 do
+        local name = _list_0[_index_0]
+        _accum_0[_len_0] = Audio.source(name)
+        _len_0 = _len_0 + 1
+      end
+      return _accum_0
+    end)(...)))
+  end
+  Audio = _class_0
 end
 local Blanke = {
   load = function()
@@ -702,5 +763,6 @@ return {
   Image = Image,
   Entity = Entity,
   Input = Input,
-  Draw = Draw
+  Draw = Draw,
+  Audio = Audio
 }

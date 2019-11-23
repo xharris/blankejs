@@ -1,7 +1,7 @@
-local Entity, Game, Canvas, Input, Draw
+local Entity, Game, Canvas, Input, Draw, Audio
 do
   local _obj_0 = require("blanke")
-  Entity, Game, Canvas, Input, Draw = _obj_0.Entity, _obj_0.Game, _obj_0.Canvas, _obj_0.Input, _obj_0.Draw
+  Entity, Game, Canvas, Input, Draw, Audio = _obj_0.Entity, _obj_0.Game, _obj_0.Canvas, _obj_0.Input, _obj_0.Draw, _obj_0.Audio
 end
 local is_object, p
 do
@@ -12,8 +12,14 @@ Game({
   res = 'data',
   filter = 'nearest',
   load = function()
-    return Game.spawn("Player")
+    Game.spawn("Player")
+    return Audio.play('manyfire')
   end
+})
+Audio('fire.ogg', {
+  name = 'manyfire',
+  looping = true,
+  volume = 0.2
 })
 Input({
   left = {

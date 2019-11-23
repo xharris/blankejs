@@ -1,6 +1,9 @@
 io.stdout:setvbuf('no')
 local Blanke
-Blanke = require("blanke").Blanke
+do
+  local _obj_0 = require("blanke")
+  Blanke = _obj_0.Blanke
+end
 require("game")
 love.load = function()
   return Blanke.load()
