@@ -1,4 +1,4 @@
--- TODO: Effect, Camera, Map (uses Canvas), Physics
+-- TODO: Camera, Map (uses Canvas), Physics
 import is_object, p, copy from require "moon"
 
 --UTIL.table
@@ -76,15 +76,25 @@ export class Game
             }
 
     @drawObject = (gobj, ...) ->
-        last_blend = nil
-        if gobj.blendmode then
-            last_blend = Draw.getBlendMode()
-            Draw.setBlendMode(unpack(gobj.blendmode))
-        for lobj in *{...}
-            love.graphics.draw lobj, gobj.x, gobj.y, math.rad(gobj.angle), gobj.scalex, gobj.scaley,
-                gobj.offx, gobj.offy, gobj.shearx, gobj.sheary
-        if last_blend
-            Draw.setBlendMode(last_blend)
+        props = gobj
+        if gobj.parent then props = gobj.parent
+        lobjs = {...}
+        
+        draw = () ->
+            last_blend = nil
+            if props.blendmode then
+                last_blend = Draw.getBlendMode()
+                Draw.setBlendMode(unpack(props.blendmode))
+            for lobj in *lobjs
+                love.graphics.draw lobj, props.x, props.y, math.rad(props.angle), props.scalex, props.scaley,
+                    props.offx, props.offy, props.shearx, props.sheary
+            if last_blend
+                Draw.setBlendMode(last_blend)
+
+        if props.effect then 
+            props.effect\draw draw 
+        else 
+            draw!
 
     @isSpawnable: (name) -> objects[name] ~= nil
 
@@ -107,6 +117,7 @@ export class GameObject
         @offx, @offy, @shearx, @sheary = 0, 0, 0, 0
         @blendmode = nil
         @child_keys = {}
+        @parent = nil
         -- custom properties were provided
         -- so far only allowed from Entity
         if args then
@@ -143,6 +154,8 @@ export class GameObject
         @updatable = false
     remDrawable: () =>
         @drawable = false
+    setEffect: (...) => 
+        @effect = Effect(...)
     draw: () => if @_draw then @\_draw!
     _update: (dt) => if @update then @update dt
     destroy: () =>
@@ -197,9 +210,17 @@ export class _Entity extends GameObject
                 @imageList = [Image {file: img, drawable: false} for img in *args.image]
             else 
                 @imageList = {Image {file: args.image, drawable: false}}
+        for img in *@imageList 
+            img.parent = @
+
+        if args.effect then
+            if type(args.effect) == 'table'
+                @setEffect unpack(args.effect)
+            else 
+                @setEffect args.effect
+
         @addUpdatable!
         @addDrawable!
-        -- p(@)
         if @spawn then 
             if spawn_args then @spawn unpack(spawn_args)
             else @spawn!
@@ -464,8 +485,6 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
 
         @main_canvas\draw!
 
-
-
 --BLANKE
 Blanke = {
     load: () ->
@@ -488,7 +507,7 @@ Blanke = {
             len = #Game.drawables
             for o = 1, len
                 obj = Game.drawables[o]
-                if obj.destroyed or not obj.drawable
+                if not obj or obj.destroyed or not obj.drawable
                     Game.drawables[o] = nil
                 
                 else if obj.draw ~= false

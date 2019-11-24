@@ -18,13 +18,10 @@ Game({
     eff = Effect("chroma shift")
   end,
   draw = function(d)
-    eff:set("chroma shift", "radius", (love.mouse.getX() / Game.width) * 20)
-    return eff:draw(function()
-      Draw.color(0, 1, 0)
-      Draw.rect('fill', 50, 50, 200, 200)
-      Draw.color()
-      return d()
-    end)
+    Draw.color(0, 1, 0)
+    Draw.rect('fill', 50, 50, 200, 200)
+    Draw.color()
+    return d()
   end
 })
 Audio('fire.ogg', {
@@ -79,6 +76,8 @@ Input({
 })
 Entity("Player", {
   image = 'soldier.png',
+  scalex = 4,
+  effect = "chroma shift",
   testdraw = {
     {
       color = {
@@ -98,6 +97,7 @@ Entity("Player", {
     }
   },
   update = function(self, dt)
+    self.effect:set("chroma shift", "radius", (love.mouse.getX() / Game.width) * 20)
     local hspeed = 20
     if Input.pressed('right') then
       self.x = self.x + (hspeed * dt)

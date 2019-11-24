@@ -136,20 +136,32 @@ do
     end
   end
   self.drawObject = function(gobj, ...)
-    local last_blend = nil
-    if gobj.blendmode then
-      last_blend = Draw.getBlendMode()
-      Draw.setBlendMode(unpack(gobj.blendmode))
+    local props = gobj
+    if gobj.parent then
+      props = gobj.parent
     end
-    local _list_0 = {
+    local lobjs = {
       ...
     }
-    for _index_0 = 1, #_list_0 do
-      local lobj = _list_0[_index_0]
-      love.graphics.draw(lobj, gobj.x, gobj.y, math.rad(gobj.angle), gobj.scalex, gobj.scaley, gobj.offx, gobj.offy, gobj.shearx, gobj.sheary)
+    local draw
+    draw = function()
+      local last_blend = nil
+      if props.blendmode then
+        last_blend = Draw.getBlendMode()
+        Draw.setBlendMode(unpack(props.blendmode))
+      end
+      for _index_0 = 1, #lobjs do
+        local lobj = lobjs[_index_0]
+        love.graphics.draw(lobj, props.x, props.y, math.rad(props.angle), props.scalex, props.scaley, props.offx, props.offy, props.shearx, props.sheary)
+      end
+      if last_blend then
+        return Draw.setBlendMode(last_blend)
+      end
     end
-    if last_blend then
-      return Draw.setBlendMode(last_blend)
+    if props.effect then
+      return props.effect:draw(draw)
+    else
+      return draw()
     end
   end
   self.isSpawnable = function(name)
@@ -189,6 +201,9 @@ do
     remDrawable = function(self)
       self.drawable = false
     end,
+    setEffect = function(self, ...)
+      self.effect = Effect(...)
+    end,
     draw = function(self)
       if self._draw then
         return self:_draw()
@@ -216,6 +231,7 @@ do
       self.offx, self.offy, self.shearx, self.sheary = 0, 0, 0, 0
       self.blendmode = nil
       self.child_keys = { }
+      self.parent = nil
       if args then
         for k, v in pairs(args) do
           local arg_type = type(v)
@@ -436,6 +452,18 @@ do
               drawable = false
             })
           }
+        end
+      end
+      local _list_0 = self.imageList
+      for _index_0 = 1, #_list_0 do
+        local img = _list_0[_index_0]
+        img.parent = self
+      end
+      if args.effect then
+        if type(args.effect) == 'table' then
+          self:setEffect(unpack(args.effect))
+        else
+          self:setEffect(args.effect)
         end
       end
       self:addUpdatable()
@@ -969,7 +997,7 @@ local Blanke = {
       local len = #Game.drawables
       for o = 1, len do
         local obj = Game.drawables[o]
-        if obj.destroyed or not obj.drawable then
+        if not obj or obj.destroyed or not obj.drawable then
           Game.drawables[o] = nil
         else
           if obj.draw ~= false then

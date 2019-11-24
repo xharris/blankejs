@@ -11,12 +11,12 @@ Game {
         Game.spawn("Player")
         eff = Effect "chroma shift"
     draw: (d) ->
-        eff\set "chroma shift", "radius", (love.mouse.getX() / Game.width) * 20
-        eff\draw () ->
-            Draw.color(0,1,0)
-            Draw.rect('fill',50,50,200,200)
-            Draw.color()
-            d!
+        --eff\set "chroma shift", "radius", (love.mouse.getX() / Game.width) * 20
+        --eff\draw () ->
+        Draw.color(0,1,0)
+        Draw.rect('fill',50,50,200,200)
+        Draw.color()
+        d!
 }
 
 Audio 'fire.ogg', {
@@ -56,6 +56,7 @@ Input {
 
 Entity "Player", {
     image: 'soldier.png'
+    scalex: 4,
     testdraw: {
         { color: {1, 0, 0, 0.5} },
         { line: {0, 0, Game.width/2, Game.height/2} }
