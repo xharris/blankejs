@@ -56,7 +56,7 @@ Input {
 
 Entity "Player", {
     image: 'soldier.png'
-    scalex: 4,
+    scalex: 2,
     testdraw: {
         { color: {1, 0, 0, 0.5} },
         { line: {0, 0, Game.width/2, Game.height/2} }

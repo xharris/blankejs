@@ -14,7 +14,7 @@ table.every = (t) ->
 table.some = (t) ->
     for k,v in pairs(t) do if v then return true
     return false
-table.len = (t) -> 
+table.len = (t) ->
     c = 0
     for k,v in pairs(t) do c += 1
     return c
@@ -485,6 +485,9 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
 
         @main_canvas\draw!
 
+--CAMERA
+
+
 --BLANKE
 Blanke = {
     load: () ->
@@ -523,5 +526,13 @@ Blanke = {
     mousereleased: (x, y, button, istouch, presses) -> Input.release('mouse', {:x, :y, :button, :istouch, :presses})
 }
 
+love.load = () -> Blanke.load!
+love.update = (dt) -> 
+    Blanke.update dt
+love.draw = () -> Blanke.draw!
+love.keypressed = (key, scancode, isrepeat) -> Blanke.keypressed key, scancode, isrepeat
+love.keyreleased = (key, scancode) -> Blanke.keyreleased key, scancode
+love.mousepressed = (x, y, button, istouch, presses) -> Blanke.mousepressed x, y, buttons, istouch, presses
+love.mousereleased = (x, y, button, istouch, presses) -> Blanke.mousereleased x, y, button, istouch, presses
 
 { :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect }
