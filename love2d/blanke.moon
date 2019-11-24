@@ -1,7 +1,7 @@
--- TODO: Sound, Effect, Camera, Map (uses Canvas), Physics
+-- TODO: Effect, Camera, Map (uses Canvas), Physics
 import is_object, p, copy from require "moon"
 
--- UTIL
+--UTIL.table
 table.update = (old_t, new_t, keys) -> 
     if keys == nil then
         for k, v in pairs new_t do old_t[k] = v
@@ -27,11 +27,15 @@ table.slice = (t, start, finish) ->
         res[i] = t[j]
         i += 1
     return res
+
+--UTIL.string
+string.contains = (str,q) -> (string.match(str, q) ~= nil)
+
 uuid = require "uuid"
 require "printr"
 
 --GAME
-class Game
+export class Game
     @options = {
         res: '',
         filter: 'linear'
@@ -72,9 +76,15 @@ class Game
             }
 
     @drawObject = (gobj, ...) ->
+        last_blend = nil
+        if gobj.blendmode then
+            last_blend = Draw.getBlendMode()
+            Draw.setBlendMode(unpack(gobj.blendmode))
         for lobj in *{...}
             love.graphics.draw lobj, gobj.x, gobj.y, math.rad(gobj.angle), gobj.scalex, gobj.scaley,
                 gobj.offx, gobj.offy, gobj.shearx, gobj.sheary
+        if last_blend
+            Draw.setBlendMode(last_blend)
 
     @isSpawnable: (name) -> objects[name] ~= nil
 
@@ -85,14 +95,17 @@ class Game
             return instance
 
     @res: (_type, file) -> "#{Game.options.res}/#{file}"
+
+    @setBackgroundColor: (...) -> love.graphics.setBackgroundColor(...)
     -- "#{Game.options.res}/#{_type}/#{file}"
 
 --GAMEOBJECT
-class GameObject 
+export class GameObject 
     new: (args) =>
         @uuid = uuid()
         @x, @y, @z, @angle, @scalex, @scaley = 0, 0, 0, 0, 1, nil
         @offx, @offy, @shearx, @sheary = 0, 0, 0, 0
+        @blendmode = nil
         @child_keys = {}
         -- custom properties were provided
         -- so far only allowed from Entity
@@ -130,7 +143,7 @@ class GameObject
         @updatable = false
     remDrawable: () =>
         @drawable = false
-    _draw: () => if @draw then @draw!
+    draw: () => if @_draw then @\_draw!
     _update: (dt) => if @update then @update dt
     destroy: () =>
         @destroyed = true
@@ -138,7 +151,7 @@ class GameObject
             self[k]\destroy() 
 
 --CANVAS
-class Canvas extends GameObject
+export class Canvas extends GameObject
     new: (w=Game.width, h=Game.height, settings={}) =>
         super!
         @angle = 0
@@ -148,18 +161,21 @@ class Canvas extends GameObject
         @canvas = love.graphics.newCanvas(@width, @height, settings)
         @addDrawable!
     _draw: () => Game.drawObject(@, @canvas)
+    resize: (w,h) => @canvas\resize(w,h)
     drawTo: (obj) =>
         last_canvas = love.graphics.getCanvas()
-        love.graphics.setCanvas(@canvas)
-        if @auto_clear then Game.graphics.clear()
-        if type(obj) == "function"
-            obj()
-        else if is_object(obj) and obj._draw
-            obj\_draw()
-        love.graphics.setCanvas(last_canvas)
+        Draw.stack () ->
+            Draw.setBlendMode('alpha')
+            love.graphics.setCanvas(@canvas)
+            if @auto_clear then Draw.clear()
+            if type(obj) == "function"
+                obj!
+            else if is_object(obj) and obj.draw
+                obj\draw!
+            love.graphics.setCanvas(last_canvas)
 
 --IMAGE
-class Image extends GameObject
+export class Image extends GameObject
     new: (args) =>
         super!
         @image = love.graphics.newImage(Game.res('image',args.file))
@@ -170,7 +186,7 @@ class Image extends GameObject
     _draw: () => Game.drawObject(@, @image)
 
 --ENTITY
-class _Entity extends GameObject
+export class _Entity extends GameObject
     new: (args, spawn_args) =>
         super args
         table.update(@, args)
@@ -193,13 +209,13 @@ class _Entity extends GameObject
             img.x, img.y = @x, @y
     _draw: () =>
         for img in *@imageList
-            img\_draw!
+            img\draw!
 
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, _Entity)
 
 --INPUT
-class Input
+export class Input
     name_to_input = {} -- name -> { key1: t/f, mouse1: t/f }
     input_to_name = {} -- key -> { name1, name2, ... }
     options = {
@@ -247,7 +263,7 @@ class Input
     @releaseCheck = () -> released = {}
 
 --DRAW
-class Draw
+export class Draw
     new: (instructions) =>
         for instr in *instructions
             name, args = instr[1], table.slice(instr,2)
@@ -258,6 +274,26 @@ class Draw
         else 
             love.graphics.setColor(...)
 
+    @getBlendMode = () -> love.graphics.getBlendMode()
+    @setBlendMode = (...) -> love.graphics.setBlendMode(...)
+    @reset = (only) ->
+        if only == 'color' or not only
+            Draw.color(1,1,1,1)
+            -- Draw.setLineWidth
+            --if only == 'transform' or not only
+            -- Draw.origin()
+        if (only == 'crop' or not only) and Draw.crop_used
+            -- Draw.crop_used = false
+            love.graphics.setStencilTest()
+    @push = () -> love.graphics.push('all')
+    @pop = () -> 
+        Draw.reset('crop')
+        love.graphics.pop()
+    @stack = (fn) ->
+        Draw.push()
+        fn!
+        Draw.pop()
+
 draw_functions = {'arc','circle','clear','discard','ellipse','line','points','polygon','rectangle'}
 draw_aliases = {
     polygon: 'poly',
@@ -266,14 +302,13 @@ draw_aliases = {
 for fn in *draw_functions do Draw[draw_aliases[fn] or fn] = (...) -> love.graphics[fn](...)
 
 --AUDIO
-class Audio
+export class Audio
     default_opt = {
-        type: 'static',
-        looping: false,
-        volume: 1
+        type: 'static'
     }
     defaults = {}
     sources = {}
+    new_sources = {}
 
     opt = (name, overrides) ->
         if not defaults[name] then Audio name, {}
@@ -293,13 +328,143 @@ class Audio
         o = opt(name)
         if not sources[name] then
             sources[name] = love.audio.newSource(Game.res('audio',o.file), o.type)
+        if not new_sources[name] then new_sources[name] = {}
         src = sources[name]\clone()
-        src\setLooping(o.looping)
-        src\setVolume(o.volume)
+        table.insert(new_sources[name], src)
+        props = {'looping','volume','airAbsorption','pitch','relative','rolloff'}
+        t_props = {'position','attenuationDistances','cone','direction','velocity','filter','effect','volumeLimits'}
+        for n in *props
+            if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,o[n])
+        for n in *t_props
+            if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,unpack(o[n]))
         return src
 
-    @play = (...) ->
-        love.audio.play(unpack([ Audio.source(name) for name in *{...} ]))
+    @play = (...) -> love.audio.play(unpack([ Audio.source(name) for name in *{...} ]))
+    @stop = (...) -> 
+        names = {...}
+        if #names == 0 then love.audio.stop()
+        else
+            for n in *names
+                if new_sources[n] then for src in *new_sources[n] do love.audio.stop(src) 
+
+--EFFECT
+export class Effect
+    love_replacements = {
+        float: "number",
+        sampler2D: "Image",
+        uniform: "extern",
+        texture2D: "Texel",
+        gl_FragColor: "pixel",
+        gl_FragCoord: "screen_coords"
+    }
+    library = {}
+    @new = (name, in_opt) ->
+        opt = { vars:{}, unused_vars:{}, integers:{}, code:nil, effect:'', vertex:'' }
+        table.update(opt, in_opt)
+        code = ""
+        -- create var string
+        var_str = ""
+        for key, val in pairs(opt.vars)
+            -- unused vars?
+            if not string.contains(opt.code or (opt.effect..' '..opt.vertex), key) then
+                opt.unused_vars[key] = true
+            -- get var type
+            switch type(val)
+                when 'table'
+                    var_str ..= "uniform vec"..tostring(#val).." "..key..";\n"
+                when 'number'
+                    if table.hasValue(opt.integers, key)
+                        var_str ..= "uniform int "..key..";\n"
+                    else
+                        var_str ..= "uniform float "..key..";\n"
+                when 'string'
+                    if val == "Image"
+                        var_str ..= "uniform Image "..key..";\n"
+        helper_fns = "
+/* From glfx.js : https://github.com/evanw/glfx.js */
+float random(vec2 scale, vec2 pixelcoord, float seed) {
+    /* use the fragment position for a different seed per-pixel */
+    return fract(sin(dot(pixelcoord + seed, scale)) * 43758.5453 + seed);
+}
+float getX(float amt) { return amt / love_ScreenSize.x; }
+float getY(float amt) { return amt / love_ScreenSize.y; }
+"
+        if opt.code then
+            code = var_str.."
+"..helper_fns.."
+"..opt.code
+        
+        else
+            code = var_str.."
+"..helper_fns.."
+#ifdef VERTEX
+vec4 position(mat4 transform_projection, vec4 vertex_position) {
+"..opt.vertex.."
+    return transform_projection * vertex_position;
+}
+
+#endif
+
+#ifdef PIXEL
+vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
+    vec4 pixel = Texel(texture, texCoord);
+"..opt.effect.."
+    return pixel * in_color;
+}
+#endif"
+        for old, new in pairs(love_replacements)
+            code, r = string.gsub(code, old, new)
+       -- print code
+        library[name] = {
+            opt: copy(opt)
+            shader: love.graphics.newShader(code)
+        }
+    
+    new: (...) =>
+        @names = {...}
+        assert(library[name], "Effect \'#{name}\' not found") for name in *@names
+        @vars = { name, copy(library[name].opt.vars) for name in *@names }
+        @unused_vars = { name, copy(library[name].opt.unused_vars) for name in *@names }
+        @disabled = {}
+
+        @spare_canvas = Canvas!
+        @main_canvas = Canvas!
+        @spare_canvas.blendmode = {"alpha","premultiplied"}
+        @main_canvas.blendmode = {"alpha","premultiplied"}
+        @spare_canvas\remDrawable!
+        @main_canvas\remDrawable!
+
+    disable: (...) => for name in *{...} do @disabled[name] = true
+    enable: (...) => for name in *{...} do @disabled[name] = false
+    set: (name,k,v) =>
+        @vars[name][k] = v
+    send: (name,k,v) =>
+        library[name].shader\send(k,v) if not @unused_vars[name][k]
+    sendVars: (name) =>
+        for k,v in pairs(@vars[name])
+            @send(name, k, v)
+    draw: (fn) =>
+        @spare_canvas\drawTo fn
+        for name in *@names
+            if not @disabled[name]
+                info = library[name]
+                
+                applyShader = () ->
+                    if info.opt.blend
+                        @spare_canvas.blendmode = info.opt.blend
+                    last_shader = love.graphics.getShader()
+                    love.graphics.setShader(info.shader)
+                    @main_canvas\drawTo @spare_canvas
+                    love.graphics.setShader(last_shader)
+
+                if info.opt.draw
+                    info.opt.draw(@vars[name], applyShader)
+                @sendVars name
+                applyShader!
+
+        @main_canvas\draw!
+
+
 
 --BLANKE
 Blanke = {
@@ -317,19 +482,21 @@ Blanke = {
             else if obj._update then obj\_update(dt)
         
         Input.releaseCheck!
-
+    
     draw: () ->
-        if Game.options.draw! == true then return
+        _draw = () ->
+            len = #Game.drawables
+            for o = 1, len
+                obj = Game.drawables[o]
+                if obj.destroyed or not obj.drawable
+                    Game.drawables[o] = nil
+                
+                else if obj.draw ~= false
+                    if obj.draw then obj\draw(() -> if obj._draw then obj\_draw!)
+                    else if obj._draw then obj\_draw!
 
-        len = #Game.drawables
-        for o = 1, len
-            obj = Game.drawables[o]
-            if obj.destroyed or not obj.drawable
-                Game.drawables[o] = nil
-            
-            if obj.draw ~= false
-                if obj.draw then obj\draw(() -> if obj._draw then obj\_draw!)
-                else if obj._draw then obj\_draw!
+        if Game.options.draw then Game.options.draw(_draw)
+        else _draw!
 
     keypressed: (key, scancode, isrepeat) -> Input.press(key, {:scancode, :isrepeat})
     keyreleased: (key, scancode) -> Input.release(key, {:scancode})
@@ -338,4 +505,4 @@ Blanke = {
 }
 
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio }
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect }
