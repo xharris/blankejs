@@ -1,11 +1,5 @@
-install:
-	cd luarocks-3.2.1-win32 && cmd /c INSTALL /P D:\Documents\PROJECTS\blankejs\love2d\luarocks /SELFCONTAINED /L /F
-
 runw:
-	.\luarocks-3.2.1-windows-32\luarocks.exe --lua-dir 'D:/Documents/PROJECTS/blankejs/love2d' --lua-version=5.1
-
-buildw:
-	./moon/bin/moon game.moon
+	./lovec .
 
 runl:
 	moon main.moon game.moon blanke.moon
