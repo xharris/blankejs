@@ -1,4 +1,4 @@
--- TODO: Camera, Map (uses Canvas), Physics
+-- TODO: Map (uses Canvas), Physics
 import is_object, p, copy from require "moon"
 
 --UTIL.table
@@ -31,6 +31,11 @@ table.slice = (t, start, finish) ->
 --UTIL.string
 string.contains = (str,q) -> (string.match(str, q) ~= nil)
 
+--UTIL.math
+export Math = {
+    random: (...) -> love.math.random(...)
+}
+
 uuid = require "uuid"
 require "printr"
 
@@ -41,7 +46,8 @@ export class Game
         filter: 'linear'
         load: () ->
         update: (dt) ->
-        draw: () ->
+        draw: nil
+        postDraw: nil
     }
     
     objects = {}
@@ -55,11 +61,14 @@ export class Game
     }
 
     new: (args) =>
-        table.update(@@options, args, {'res','filter','load','draw','update'})
+        table.update(@@options, args, {'res','filter','load','draw','update','postDraw'})
         return nil
 
-    @load = () ->
+    @updateWinSize = () ->
         @width, @height = love.graphics.getDimensions()
+
+    @load = () ->
+        @@updateWinSize!
         if type(Game.filter) == 'table'
             love.graphics.setDefaultFilter(unpack(Game.options.filter))
         else 
@@ -111,7 +120,7 @@ export class Game
 
 --GAMEOBJECT
 export class GameObject 
-    new: (args) =>
+    new: (args, user_args) =>
         @uuid = uuid()
         @x, @y, @z, @angle, @scalex, @scaley = 0, 0, 0, 0, 1, nil
         @offx, @offy, @shearx, @sheary = 0, 0, 0, 0
@@ -140,6 +149,7 @@ export class GameObject
                 if new_obj
                     @[k] = new_obj
                     args[k] = nil
+        if user_args then table.update(@,user_args)
                     
         if @_spawn then @\_spawn()
         if @spawn then @\spawn()
@@ -191,25 +201,29 @@ export class Canvas extends GameObject
 export class Image extends GameObject
     new: (args) =>
         super!
+        if type(args) == 'string' then 
+            args = {file:args}
         @image = love.graphics.newImage(Game.res('image',args.file))
+        @width = @image\getWidth()
+        @height = @image\getHeight()
         if @_spawn then @\_spawn()
         if @spawn then @\spawn()cs.newImage(Game.res('image',args.file))
-        if args.drawable ~= false
+        if args.draw == true
             @addDrawable!
     _draw: () => Game.drawObject(@, @image)
 
 --ENTITY
 export class _Entity extends GameObject
     new: (args, spawn_args) =>
-        super args
+        super args, spawn_args  
         table.update(@, args)
         @imageList = {}
 
         if args.image then
             if type(args.image) == 'table' then
-                @imageList = [Image {file: img, drawable: false} for img in *args.image]
+                @imageList = [Image {file: img} for img in *args.image]
             else 
-                @imageList = {Image {file: args.image, drawable: false}}
+                @imageList = {Image {file: args.image}}
         for img in *@imageList 
             img.parent = @
 
@@ -218,6 +232,14 @@ export class _Entity extends GameObject
                 @setEffect unpack(args.effect)
             else 
                 @setEffect args.effect
+
+        if @camera then
+            @cam_type = type @camera
+            if @cam_type == 'table' then
+                for name in *@camera do
+                    Camera.get(name).follow = @
+            else
+                Camera.get(@camera).follow = @
 
         @addUpdatable!
         @addDrawable!
@@ -285,9 +307,12 @@ export class Input
 
 --DRAW
 export class Draw
+    crop_used = false
     new: (instructions) =>
+
         for instr in *instructions
             name, args = instr[1], table.slice(instr,2)
+            assert(Draw[name], "bad draw instruction '#{name}'")
             Draw[name](unpack(args))
     @color = (...) ->
         if #{...} == 0 then
@@ -297,14 +322,19 @@ export class Draw
 
     @getBlendMode = () -> love.graphics.getBlendMode()
     @setBlendMode = (...) -> love.graphics.setBlendMode(...)
+    @crop = (x,y,w,h) ->
+        stencilFn = () -> Draw.rect('fill',x,y,w,h)
+        love.graphics.stencil(stencilFn,"replace",1)
+        love.graphics.setStencilTest("greater",0)
+        crop_used = true
     @reset = (only) ->
         if only == 'color' or not only
             Draw.color(1,1,1,1)
-            -- Draw.setLineWidth
-            --if only == 'transform' or not only
-            -- Draw.origin()
-        if (only == 'crop' or not only) and Draw.crop_used
-            -- Draw.crop_used = false
+            Draw.lineWidth(1)
+        if only == 'transform' or not only
+            Draw.origin()
+        if (only == 'crop' or not only) and crop_used
+            crop_used = false
             love.graphics.setStencilTest()
     @push = () -> love.graphics.push('all')
     @pop = () -> 
@@ -315,10 +345,11 @@ export class Draw
         fn!
         Draw.pop()
 
-draw_functions = {'arc','circle','clear','discard','ellipse','line','points','polygon','rectangle'}
+draw_functions = {'arc','circle','clear','discard','ellipse','line','points','polygon','rectangle','setLineWidth','origin'}
 draw_aliases = {
     polygon: 'poly',
-    rectangle: 'rect'
+    rectangle: 'rect',
+    setLineWidth: 'lineWidth'
 }
 for fn in *draw_functions do Draw[draw_aliases[fn] or fn] = (...) -> love.graphics[fn](...)
 
@@ -486,10 +517,46 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
         @main_canvas\draw!
 
 --CAMERA
+export class Camera
+    default_opt = { x:0, y:0, dx:0, dy:0, angle:0, scalex:1, scaley:nil, top:0, left:0, width:nil, height:nil, follow:nil, enabled:true }
+    attach_count = 0
+    options = {}
+    new: (name, opt={}) =>
+        options[name] = copy(default_opt)
+        options[name].transform = love.math.newTransform()
+        table.update(options[name], opt)
+    @get = (name) -> assert(options[name], "Camera \'#{name}\' not found")
+    @attach = (name) ->
+        o = Camera.get name
+        Draw.push()
+        if o.enabled == false then return
+        w, h = o.width or Game.width, o.height or Game.height
+        if o 
+            if o.follow then
+                o.x = o.follow.x or o.x
+                o.y = o.follow.y or o.y
+            half_w, half_h = w/2, h/2
+            Draw.crop(o.left, o.top, w, h)
+            o.transform\reset!
+            o.transform\translate half_w, half_h
+            o.transform\scale o.scalex, o.scaley or o.scalex
+            o.transform\rotate math.rad(o.angle)
+            o.transform\translate(-(o.x - o.left + o.dx), -(o.y - o.top + o.dy))
 
+            love.graphics.replaceTransform(o.transform)
+    @detach = () ->
+        Draw.pop()
+    @use = (name, fn) ->
+        Camera.attach(name)
+        fn!
+        Camera.detach()
+    @count = () -> table.len(options)
+    @useAll = (fn) ->
+        for name, opt in pairs(options)
+            Camera.use name, fn 
 
 --BLANKE
-Blanke = {
+export Blanke = {
     load: () ->
         Game.load!
 
@@ -506,19 +573,27 @@ Blanke = {
         Input.releaseCheck!
     
     draw: () ->
-        _draw = () ->
+        actual_draw = () ->
             len = #Game.drawables
             for o = 1, len
                 obj = Game.drawables[o]
                 if not obj or obj.destroyed or not obj.drawable
                     Game.drawables[o] = nil
-                
                 else if obj.draw ~= false
                     if obj.draw then obj\draw(() -> if obj._draw then obj\_draw!)
                     else if obj._draw then obj\_draw!
+            if Game.options.postDraw then Game.options.postDraw!
+       
+        _draw = () ->
+            if Camera.count! > 0
+                Camera.useAll actual_draw
+            else 
+                actual_draw!
 
-        if Game.options.draw then Game.options.draw(_draw)
-        else _draw!
+        if Game.options.draw   
+            Game.options.draw _draw
+        else 
+            _draw!
 
     keypressed: (key, scancode, isrepeat) -> Input.press(key, {:scancode, :isrepeat})
     keyreleased: (key, scancode) -> Input.release(key, {:scancode})
@@ -534,5 +609,40 @@ love.keypressed = (key, scancode, isrepeat) -> Blanke.keypressed key, scancode, 
 love.keyreleased = (key, scancode) -> Blanke.keyreleased key, scancode
 love.mousepressed = (x, y, button, istouch, presses) -> Blanke.mousepressed x, y, buttons, istouch, presses
 love.mousereleased = (x, y, button, istouch, presses) -> Blanke.mousereleased x, y, button, istouch, presses
+-- from https://github.com/adnzzzzZ/STALKER-X
+love.run = () ->
+  if love.math then love.math.setRandomSeed(os.time())
+  if love.load then love.load(arg)
+  if love.timer then love.timer.step()
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect }
+  dt = 0
+  fixed_dt = 1/60
+  accumulator = 0
+
+  while true
+    if love.event
+      love.event.pump()
+      for name, a, b, c, d, e, f in love.event.poll() do
+        if name == "quit"
+          if not love.quit or not love.quit()
+            return a
+        love.handlers[name](a, b, c, d, e, f)
+
+    if love.timer
+      love.timer.step()
+      dt = love.timer.getDelta()
+
+    accumulator += dt
+    while accumulator >= fixed_dt do
+      if love.update then love.update(fixed_dt)
+      accumulator -= fixed_dt
+
+    if love.graphics and love.graphics.isActive()
+      love.graphics.clear(love.graphics.getBackgroundColor())
+      love.graphics.origin()
+      if love.draw then love.draw()
+      love.graphics.present()
+
+    if love.timer then love.timer.sleep(0.0001)
+
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math }

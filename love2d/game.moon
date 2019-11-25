@@ -1,4 +1,4 @@
-import Entity, Game, Canvas, Input, Draw, Audio, Effect from require "blanke"
+import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math from require "blanke"
 import is_object, p from require "moon"
 
 local eff
@@ -9,42 +9,19 @@ Game {
     load: () ->
         Game.setBackgroundColor(1,1,1,1)
         Game.spawn("Player")
-        eff = Effect "chroma shift"
-    draw: (d) ->
-        --eff\set "chroma shift", "radius", (love.mouse.getX() / Game.width) * 20
-        --eff\draw () ->
-        Draw.color(0,1,0)
-        Draw.rect('fill',50,50,200,200)
-        Draw.color()
-        d!
+        for i = 1,10
+            Game.spawn("Box", { x: Math.random(-200,200), y: Math.random(-200,200) })
+    postDraw: () ->
+        Draw {
+            { 'color', 0,0,0 }
+            { 'rect', 'line', 2, 2, Game.width-4, Game.height-4}
+            {'color'}
+        }
 }
 
 Audio 'fire.ogg', {
     looping: false,
     volume: 0.2
-}
-
-    -- vec4 px_minus = Texel(texture, texCoord - direction);
-    --     vec4 px_plus = Texel(texture, texCoord + direction);
-    --     pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);
-    --     if ((px_minus.a == 0 || px_plus.a == 0) && pixel.a > 0) {
-    --         pixel.a = 1.0;
-    --     }
-Effect.new "chroma shift", {
-    vars: { angle:0, radius:2, direction:{0,0} },
-    blend: {"replace", "alphamultiply"},
-    effect: "
-        pixel = pixel * vec4(
-        Texel(texture, texCoord - direction).r,
-        Texel(texture, texCoord).g,
-        Texel(texture, texCoord + direction).b,
-        1.0);
-    ",
-    draw: (vars, applyShader) ->
-        {:angle, :radius} = vars
-        dx = (math.cos(math.rad(angle)) * radius) / Game.width
-        dy = (math.sin(math.rad(angle)) * radius) / Game.height
-        vars.direction = {dx,dy}
 }
 
 Input {
@@ -54,21 +31,36 @@ Input {
     action: { 'space' }
 }, { no_repeat: { "up" } }
 
+Camera "player", { scalex: 2, left: 0, top: 0, width: Image('soldier.png').width*4, height: Image('soldier.png').height*4 }
+Camera "mini", { scalex: 1, left: 200, top:200, width: 600, height: 300}
+
+Entity "Box", {
+    draw: (d) =>
+        Draw {
+            { 'color', 1, 0, 0 },
+            { 'rect', 'fill', @x, @y, 50, 50 },
+            { 'color' }
+        }
+}
+
 Entity "Player", {
     image: 'soldier.png'
     scalex: 2,
+    camera: {"player", "mini"},
     testdraw: {
         { color: {1, 0, 0, 0.5} },
         { line: {0, 0, Game.width/2, Game.height/2} }
     }
     update: (dt) =>
-        hspeed = 20
+        hspeed = 100
+        Camera.get("player").enabled = @x > 50
         if Input.pressed('right')
             @x += hspeed * dt
         if Input.pressed('left')
             @x -= hspeed * dt
         if Input.released('action')
             Audio.stop('fire.ogg')
+        Camera.get("player").angle = (@x/Game.width)*90
     draw: (d) =>
         Draw {
             {'color', 1, 0, 0},

@@ -1,5 +1,5 @@
 runw:
-	./lovec .
+	./love .
 
 runl:
 	moon main.moon game.moon blanke.moon
