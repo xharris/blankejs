@@ -15,7 +15,7 @@ let temp_plugin_info = {};
 function inspectPlugins(silent) {
 	function inspectFile (file) {
 		file = app.cleanPath(file);
-		let info_key = nwPATH.relative(app.settings.plugin_path, nwPATH.dirname(file));
+		let info_key = nwPATH.relative(app.ideSetting("plugin_path"), nwPATH.dirname(file));
 		let info_keys = ['Name','Author','Description','ID','Enabled'];
 		
 		if (!temp_plugin_info[info_key]) {
@@ -34,7 +34,7 @@ function inspectPlugins(silent) {
 				let module = temp_plugin_info[info_key].module;
 				let module_path = file;
 				if (!nwPATH.isAbsolute(file))
-					module_path = nwPATH.join(nwPATH.relative(app.settings.plugin_path, ''), file);
+					module_path = nwPATH.join(nwPATH.relative(app.ideSetting("plugin_path"), ''), file);
 				module_path = require.resolve(module_path);
 				
 				if (module) {
@@ -106,24 +106,24 @@ function inspectPlugins(silent) {
 		}
 	}
 
-	nwFS.ensureDir(app.settings.plugin_path, err => {
+	nwFS.ensureDir(app.ideSetting("plugin_path"), err => {
 		if (err) return console.error(err);
 		
-		nwFS.readdir(app.settings.plugin_path, (err, files) => {
+		nwFS.readdir(app.ideSetting("plugin_path"), (err, files) => {
 			if (err) return;
 
 			Plugins.clearPlugins();
 			for (let f of files) {
-				let full_path = pathJoin(app.settings.plugin_path,f);
+				let full_path = pathJoin(app.ideSetting("plugin_path"),f);
 				// .js
 				if (f.endsWith('.js')) {
 					inspectFile(full_path);
-					//nwFS.copyFileSync(pathJoin(app.settings.plugin_path,f), pathJoin(eng_plugin_dir,f));
+					//nwFS.copyFileSync(pathJoin(app.ideSetting("plugin_path"),f), pathJoin(eng_plugin_dir,f));
 				}
 
 				// .zip/.rar/.blex
 				if (f.endsWith('.blex') || f.endsWith('.zip') || f.endsWith('.rar')) {
-					let dir_path = pathJoin(app.settings.plugin_path,f.split('.')[0]);
+					let dir_path = pathJoin(app.ideSetting("plugin_path"),f.split('.')[0]);
 					if (!nwFS.statSync(dir_path).isDirectory())
 						nwZIP2(full_path).extractAllTo(dir_path, true);
 					inspectFolder(dir_path);
@@ -132,8 +132,8 @@ function inspectPlugins(silent) {
 				// dir
 				if (nwFS.statSync(full_path).isDirectory()) {
 					d = nwPATH.basename(f);
-					//nwFS.copySync(pathJoin(app.settings.plugin_path,d), pathJoin(eng_plugin_dir,d))
-					inspectFolder(pathJoin(app.settings.plugin_path,d));
+					//nwFS.copySync(pathJoin(app.ideSetting("plugin_path"),d), pathJoin(eng_plugin_dir,d))
+					inspectFolder(pathJoin(app.ideSetting("plugin_path"),d));
 				}
 
 				// if (!silent) blanke.toast("Plugins loaded!")
@@ -159,9 +159,9 @@ function inspectPlugins(silent) {
 			}
 
 			// copy files if the plugin is already enabled
-			if (app.project_settings.enabled_plugins) {
+			if (app.projSetting("enabled_plugins")) {
 				for (let id in js_plugin_info) {
-					if (app.project_settings.enabled_plugins[id] == true) {
+					if (app.projSetting("enabled_plugins")[id] == true) {
 						Plugins.enable(id);
 					} else {
 						Plugins.disable(id);
@@ -242,7 +242,7 @@ class Plugins extends Editor {
 			let info = js_plugin_info[key];
 			el_ref.el_toggle.innerHTML = `
 				<div class='form-inputs'>
-					<input type='checkbox' class='form-checkbox' ${app.project_settings.enabled_plugins[info.id] == true ? 'checked' : ''}/>
+					<input type='checkbox' class='form-checkbox' ${app.projSetting("enabled_plugins")[info.id] == true ? 'checked' : ''}/>
 					<span class='checkmark'></span>
 				</div>
 				<div class='form-label'>
@@ -261,8 +261,8 @@ class Plugins extends Editor {
 			});
 		}
 		// already enabled plugins
-		for (let key in app.project_settings.enabled_plugins) {
-			if (app.project_settings.enabled_plugins[key] == true) {
+		for (let key in app.projSetting("enabled_plugins")) {
+			if (app.projSetting("enabled_plugins")[key] == true) {
 				Plugins.enable(key);
 			} else
 				Plugins.disable(key);
@@ -280,13 +280,13 @@ class Plugins extends Editor {
 	}
 
 	static enable (key) {
-		nwFS.ensureDir(pathJoin(app.settings.engine_path, 'plugins'))
+		nwFS.ensureDir(pathJoin(app.ideSetting("engine_path"), 'plugins'))
 		
 		if (js_plugin_info[key]) {
 			for (let path of js_plugin_info[key].files) {
-				nwFS.copySync(path, pathJoin(app.settings.engine_path, 'plugins', key, nwPATH.basename(path)));
+				nwFS.copySync(path, pathJoin(app.ideSetting("engine_path"), 'plugins', key, nwPATH.basename(path)));
 			}
-			app.project_settings.enabled_plugins[key] = true;
+			app.projSetting("enabled_plugins")[key] = true;
 			dispatchEvent('pluginChanged',{ key: key, info: js_plugin_info[key] });
 			app.saveSettings();
 		}
@@ -296,9 +296,9 @@ class Plugins extends Editor {
 		if (!js_plugin_info[key]) return;
 		// remove file		
 		for (let path of js_plugin_info[key].files) {
-			nwFS.removeSync(pathJoin(app.settings.engine_path, 'plugins', key, nwPATH.basename(path)));
+			nwFS.removeSync(pathJoin(app.ideSetting("engine_path"), 'plugins', key, nwPATH.basename(path)));
 		}
-		app.project_settings.enabled_plugins[key] = false;
+		app.projSetting("enabled_plugins")[key] = false;
 		dispatchEvent('pluginChanged',{ key: key, info: js_plugin_info[key] });
 		app.saveSettings();
 	}
@@ -314,13 +314,13 @@ class Plugins extends Editor {
 	}
 
 	static clearPlugins() {
-		nwFS.emptyDirSync(pathJoin(app.settings.engine_path, 'plugins'));
+		nwFS.emptyDirSync(pathJoin(app.ideSetting("engine_path"), 'plugins'));
 	}
 }
 
 document.addEventListener("openProject",function(e){
-	if (!app.project_settings.enabled_plugins)
-		app.project_settings.enabled_plugins = {};
+	if (!app.projSetting("enabled_plugins"))
+		app.projSetting("enabled_plugins",{})
 	app.saveSettings();
 	refreshPluginList(true);
 });
@@ -339,10 +339,10 @@ document.addEventListener("ideReady",function(e){
 
 document.addEventListener("appdataSave", (e) => {
 	// watch for updates to plugins
-	nwFS.ensureDir(app.settings.plugin_path, (err) => {
+	nwFS.ensureDir(app.ideSetting("plugin_path"), (err) => {
 		if (plugin_watch) 
 			plugin_watch.close();
-		plugin_watch = app.watch(app.settings.plugin_path, function(evt_type, file) {
+		plugin_watch = app.watch(app.ideSetting("plugin_path"), function(evt_type, file) {
 			refreshPluginList();
 		});
 	});

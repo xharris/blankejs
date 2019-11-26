@@ -1,27 +1,15 @@
 class Console extends Editor {
-	constructor (static_box, parent) {
+	constructor (windowed) {
 		super();
+		if (windowed) {
+			this.setupDragbox();
+			this.width = 400;
+			this.height = 160;
+		}
 
 		this.removeHistory();
 		this.pin = false;
 		this.duplicate_count = 1;
-
-		/*
-		this.process = [...args][0];
-		if (this.process) {
-			this.process.stdout.on('data', function(data){
-				data = data.toString();
-
-				if (!data.includes("attempt to call global") && !data.includes("attempt to call a string value")) {
-					if (data.includes("error") || data.includes("Error"))  {
-						this_ref.err(data);
-					} else {
-						this_ref.log(data);
-					}
-				}
-			});
-		}
-		*/
 
 		this.el_log = app.createElement("div", "log");
 		this.el_lines = app.createElement("div", "lines");
@@ -39,6 +27,11 @@ class Console extends Editor {
 		this.el_log.appendChild(this.el_lines);
 
 		this.appendChild(this.el_log);
+	}
+
+	tryClose () {
+		if (!this.had_error && !this.pin)
+			this.close();
 	}
 
 	appendTo (el) {

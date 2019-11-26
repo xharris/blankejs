@@ -8,8 +8,8 @@ var re_sprite_align = /sprite_align\s*=\s*[\"\']([\s\w]+)[\"\']/;
 var re_sprite_pivot_single = /sprite_pivot\.(x|y)\s*\=\s*(\d+)/;
 var re_sprite_pivot = /sprite_pivot\.set\(\s*(\d+)\s*,\s*(\d+)\s*\)/;
 
-var file_ext = engine.file_ext || 'lua';
-var main_file = engine.main_file || 'main.'+file_ext;
+var file_ext = engine.file_ext || ['lua'];
+var main_file = engine.main_file || 'main.'+file_ext[0];
 
 var code_instances = {};
 
@@ -207,8 +207,8 @@ class Code extends Editor {
 		this.script_folder = "/scripts";
 		this.file_loaded = false;
 
-		if (!app.settings.code) app.settings.code = {};
-		ifndef_obj(app.settings.code, {
+		if (!app.ideSetting("code")) app.ideSetting("code",{})
+		ifndef_obj(app.ideSetting("code"), {
 			font_size:16
 		});
 
@@ -234,7 +234,7 @@ class Code extends Editor {
 
 		// add game preview
 		this.game = null;
-		if (app.settings.game_preview_enabled && engine.game_preview_enabled)
+		if (app.ideSetting("game_preview_enabled") && engine.game_preview_enabled)
 			this.game = new GamePreview(null,{ ide_mode: true });
 		
 		this.console = new Console();
@@ -693,7 +693,7 @@ class Code extends Editor {
 
 		if (this.codemirror == undefined) this.codemirror = new_editor;
 		this.editors.push(new_editor);
-		Code.setFontSize(app.settings.code.font_size);
+		Code.setFontSize(app.ideSetting("code").font_size);
 
 		return new_editor;
 	}
@@ -929,13 +929,13 @@ class Code extends Editor {
 	}
 
 	fontSizeUp () {
-		app.settings.code.font_size += 1;
-		Code.setFontSize(app.settings.code.font_size);
+		app.ideSetting("code").font_size += 1;
+		Code.setFontSize(app.ideSetting("code").font_size);
 	}
 
 	fontSizeDown () {
-		app.settings.code.font_size -= 1;
-		Code.setFontSize(app.settings.code.font_size);
+		app.ideSetting("code").font_size -= 1;
+		Code.setFontSize(app.ideSetting("code").font_size);
 	}
 
 	static setFontSize (num) {
@@ -948,7 +948,7 @@ class Code extends Editor {
 			}
 		}
 
-		app.settings.code.font_size = num;
+		app.ideSetting("code").font_size = num;
 		app.saveAppData();
 	}
 
@@ -1090,7 +1090,7 @@ class Code extends Editor {
             "<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
         {
             "yes": function() { 
-                let new_path = nwPATH.join(nwPATH.dirname(filename), app.getElement('#new-file-name').value+"."+file_ext);
+                let new_path = nwPATH.join(nwPATH.dirname(filename), app.getElement('#new-file-name').value+nwPATH.extname(filename));
                 this_ref.rename(filename, new_path);
             },
             "no": function() {}
@@ -1192,11 +1192,14 @@ class Code extends Editor {
 			}
 		});
 	}
+	static isScript (file) {
+		return file_ext.map(ext => file.endsWith('.'+ext)).some(v=>v)
+	}
 }
 
 Code.scripts = {};
 document.addEventListener('fileChange', function(e){
-	if (e.detail.file.includes("scripts")) {
+	if (Code.isScript(e.detail.file)) {
 		Code.refreshCodeList();
 	}
 });
@@ -1210,12 +1213,12 @@ function addScripts(folder_path) {
 	
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
-		script_list = files.map(f => app.cleanPath(nwPATH.join(folder_path,f)));
+		script_list = files.map(f => app.cleanPath(nwPATH.join(folder_path,f))).filter(f => Code.isScript(f));
 		for (let file of files) {
 			var full_path = app.cleanPath(nwPATH.join(folder_path, file));
 			
 			// is a script?
-			if (file.endsWith('.'+file_ext)) {
+			if (Code.isScript(file)) {
 				// get what kind of script it is
 				let data = nwFS.readFileSync(full_path, 'utf-8');
 				getKeywords(full_path, data);
@@ -1257,10 +1260,10 @@ function addScripts(folder_path) {
 		};
 
 		// first scene setting
-		let first_scene = app.project_settings.first_scene;
+		let first_scene = app.projSetting("first_scene");
 		let scenes = Code.classes['scene'];
 		if (!(first_scene && scenes.includes(first_scene)) && scenes.length > 0) {
-			app.project_settings.first_scene = scenes[0];
+			app.projSetting("first_scene",scenes[0])
 			app.saveSettings();
 		}
 	});
@@ -1279,12 +1282,12 @@ document.addEventListener("openProject", function(e){
 	Code.refreshCodeList();
 
 	function key_addScript(content,name) {
-		var script_dir = nwPATH.join(app.project_path,'scripts');
+		var script_dir = nwPATH.join(app.getAssetPath('scripts'));
 		nwFS.stat(script_dir, function(err, stat) {
 			if (err) nwFS.mkdirSync(script_dir);
 
 			nwFS.readdir(script_dir, function(err, files){
-				let file_name = ifndef(name,'script'+files.length)+'.'+file_ext;
+				let file_name = ifndef(name,'script'+files.length)+'.'+file_ext[0];
 				content = content.replaceAll("<NAME>", name);
 
 				// the file already exists. open it
@@ -1322,17 +1325,12 @@ document.addEventListener("openProject", function(e){
 		});
 	}
 
-	app.addSearchKey({
-		key: 'Add a script',
-		onSelect: function() {
-			key_addScript("");
-		},
-		tags: ['new'],
-		group: 'Code'
-	});
+	let script_templates = Object.assign({
+		'script':''
+	}, engine.add_script_templates || {})
 
-	for (let s_type in engine.add_script_templates || {}) {
-		let template = engine.add_script_templates[s_type];
+	for (let s_type in script_templates) {
+		let template = script_templates[s_type];
 		app.addSearchKey({
 			key: "Add a"+("aeiou".includes(s_type.substring(0,1)) ? 'n ' : ' ')+s_type,
 			onSelect: function() {

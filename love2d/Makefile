@@ -2,8 +2,7 @@ runw:
 	./love .
 
 runl:
-	moon main.moon game.moon blanke.moon
-	moonc main.moon
+	love .
 
 install_linux:
 	sudo add-apt-repository ppa:bartbes/love-stable

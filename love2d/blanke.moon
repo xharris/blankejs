@@ -43,12 +43,15 @@ json = require "json"
 --GAME
 export class Game
     @options = {
-        res: '',
+        res: 'assets',
         filter: 'linear'
         load: () ->
         update: (dt) ->
         draw: nil
         postDraw: nil
+    }
+    @config = {
+
     }
     
     objects = {}
@@ -69,6 +72,9 @@ export class Game
         @width, @height = love.graphics.getDimensions()
 
     @load = () ->
+        -- load config.json
+        config_data = love.filesystem.read('config.json')
+        if config_data then @@config = json.decode(config_data)
         @@updateWinSize!
         if type(Game.filter) == 'table'
             love.graphics.setDefaultFilter(unpack(Game.options.filter))
@@ -114,10 +120,9 @@ export class Game
             instance = obj_info.spawn_class(obj_info.args, args)
             return instance
 
-    @res: (_type, file) -> "#{Game.options.res}/#{file}"
+    @res: (_type, file) -> "#{Game.options.res}/#{_type}/#{file}"
 
     @setBackgroundColor: (...) -> love.graphics.setBackgroundColor(...)
-    -- "#{Game.options.res}/#{_type}/#{file}"
 
 --GAMEOBJECT
 export class GameObject 
@@ -150,8 +155,18 @@ export class GameObject
                 if new_obj
                     @[k] = new_obj
                     args[k] = nil
+                    
+            if args.camera then
+                @cam_type = type args.camera
+                if @cam_type == 'table' then
+                    for name in *@camera do
+                        Camera.get(name).follow = @
+                else
+                    Camera.get(args.camera).follow = @
         if user_args then table.update(@,user_args)
                     
+        
+
         if @_spawn then @\_spawn()
         if @spawn then @\spawn()
     addUpdatable: () =>
@@ -233,14 +248,6 @@ export class _Entity extends GameObject
                 @setEffect unpack(args.effect)
             else 
                 @setEffect args.effect
-
-        if @camera then
-            @cam_type = type @camera
-            if @cam_type == 'table' then
-                for name in *@camera do
-                    Camera.get(name).follow = @
-            else
-                Camera.get(@camera).follow = @
 
         @addUpdatable!
         @addDrawable!
@@ -560,32 +567,75 @@ export class Camera
 class Map extends GameObject
     options = {}
     images = {} -- { name: Image }
-    batches = {} -- { layer: { img_name: SpriteBatch } }
     quads = {} -- { hash: Quad }
+    getObjInfo = (uuid, is_name) -> 
+        if Game.config.scene and Game.config.scene.objects then 
+            if is_name then
+                for uuid, info in pairs(Game.config.scene.objects)
+                    if info.name == uuid then
+                        return info
+            else
+                return Game.config.scene.objects[uuid]
     @load = (name) ->
         data = love.filesystem.read(Game.res('map',name))
         assert(data,"Error loading map '#{name}'")
+        new_map = Map!
         data = json.decode(data)
         layer_name = {}
+        -- get layer names
+        if not options.layer_order then options.layer_order = {}
         for info in *data.layers
             layer_name[info.uuid] = info.name
+            table.insert(options.layer_order, info.name)
+        -- place tiles
+        for img_info in *data.images
+            for l_uuid, coord_list in pairs(img_info.coords)
+                l_name = layer_name[l_uuid]
+                for c in *coord_list
+                    new_map\addTile(img_info.path,c[1],c[2],c[3],c[4],c[5],c[6],l_name)
+        -- spawn entities
+        for obj_uuid, info in pairs(data.objects)
+            obj_info = getObjInfo(obj_uuid)
+            if obj_info
+                for l_uuid, coord_list in pairs(info)
+                    for c in *coord_list
+                        new_map\_spawnEntity(obj_info.name,{
+                            x:c[2], y:c[3], layer:layer_name[l_uuid]
+                        })
+        new_map.data = data
+        return new_map
     @config = (opt) -> options = opt
     new: () =>
+        super!
+        @batches = {} -- { layer: { img_name: SpriteBatch } }
+        @addDrawable!
     addTile: (file,x,y,tx,ty,tw,th,layer) =>
         -- get image
-        if not images[file] then image[file] = love.graphics.newImage(Game.res('image',file))
+        if not images[file] then images[file] = love.graphics.newImage(file)
         img = images[file]
         -- get spritebatch
-        if not batches[layer..'.'..file] then batches[layer..'.'..file] = love.graphics.newSpriteBatch(img)
-        sb = batches[layer..'.'..file]
+        if not @batches[layer] then @batches[layer] = {}
+        if not @batches[layer][file] then @batches[layer][file] = love.graphics.newSpriteBatch(img)
+        sb = @batches[layer][file]
         -- get quad
         quad_hash = "#{tx},#{ty},#{tw},#{ty}"
         if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img\getWidth!,img\getHeight!)
         quad = quads[quad_hash]
-        id = sb\add(quadx,x,y,0)
-
-    spawnEntity: (ent_name) =>
-    _draw: () => Game.drawObject(@, unpack(batches))
+        id = sb\add(quad,x,y,0)
+    _spawnEntity: (ent_name, opt) =>
+        Game.spawn(ent_name, opt)
+    spawnEntity: (ent_name, x, y, layer) =>
+        obj_info = getObjInfo(ent_name, true)
+        if obj_info then
+            obj_info.x = x
+            obj_info.y = y 
+            obj_info.layer = layer
+            @_spawnEntity ent_name, obj_info
+    _draw: () => 
+        for l_name in *options.layer_order
+            if @batches[l_name]
+                for f_name, batch in pairs(@batches[l_name])
+                    Game.drawObject(@, batch)
 
 --BLANKE
 export Blanke = {

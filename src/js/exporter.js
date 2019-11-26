@@ -52,26 +52,26 @@ class Exporter extends Editor {
 		this.appendChild(this.el_platforms);
 
 		// setup default settings
-		if (!app.project_settings.export) app.project_settings.export = {};
-		ifndef_obj(app.project_settings.export, DEFAULT_EXPORT_SETTINGS());
+		if (!app.projSetting("export")) app.projSetting("export",{})
+		ifndef_obj(app.projSetting("export"), DEFAULT_EXPORT_SETTINGS());
 
 		// extra options
 		let form_options = [
 			['general'],
-			['name', 'text', {'default':app.project_settings.export.name}],
+			['name', 'text', {'default':app.projSetting("export").name}],
 			['web'],
-			//['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
-			['minify','checkbox',{'default':app.project_settings.export.minify}],
+			//['web_autoplay','checkbox',{'default':app.projSetting("export").web_autoplay,label:"autoplay"}],
+			['minify','checkbox',{'default':app.projSetting("export").minify}],
 			['rendering'],
-			['scale_mode','select',{'choices':['linear','nearest'],'default':app.project_settings.export.scale_mode}],
+			['scale_mode','select',{'choices':['linear','nearest'],'default':app.projSetting("export").scale_mode}],
 			['window sizing'],
-			...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{'default':app.project_settings.export[o]}]))
+			...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{'default':app.projSetting("export")[o]}]))
 		];
 		this.el_export_form = new BlankeForm(form_options);
 		this.el_export_form.container.classList.add("dark");
 		form_options.forEach((s)=>{
 			if (s.length > 1)
-				this_ref.el_export_form.onChange(s[0],(val)=>app.project_settings.export[s[0]] = val);
+				this_ref.el_export_form.onChange(s[0],(val)=>app.projSetting("export")[s[0]] = val);
 		});
 		this.appendChild(this.el_export_form.container);
 	}
@@ -220,5 +220,5 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({key: 'Export game', group:"Exporter", onSelect: function() {
 		new Exporter(app);
 	}});
-	app.project_settings.export = Object.assign(DEFAULT_EXPORT_SETTINGS(), app.project_settings.export);
+	app.projSetting("export",Object.assign(DEFAULT_EXPORT_SETTINGS(), app.projSetting("export")))
 });
