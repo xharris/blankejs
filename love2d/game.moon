@@ -1,27 +1,19 @@
-import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math from require "blanke"
+import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map from require "blanke"
 import is_object, p from require "moon"
-
-local eff
 
 Game {
     res: 'data'
     filter: 'nearest'
     load: () ->
         Game.setBackgroundColor(1,1,1,1)
-        Game.spawn("Player")
+        Map.load('level1.map')
         for i = 1,10
             Game.spawn("Box", { x: Math.random(-200,200), y: Math.random(-200,200) })
-    postDraw: () ->
-        Draw {
-            { 'color', 0,0,0 }
-            { 'rect', 'line', 2, 2, Game.width-4, Game.height-4}
-            {'color'}
-        }
 }
 
-Audio 'fire.ogg', {
-    looping: false,
-    volume: 0.2
+Map.config {
+    tile_hitbox: { 'ground' },
+    entities: { 'Player' }
 }
 
 Input {
@@ -30,18 +22,6 @@ Input {
     up: { "up", "w" }
     action: { 'space' }
 }, { no_repeat: { "up" } }
-
-Camera "player", { scalex: 2, left: 0, top: 0, width: Image('soldier.png').width*4, height: Image('soldier.png').height*4 }
-Camera "mini", { scalex: 1, left: 200, top:200, width: 600, height: 300}
-
-Entity "Box", {
-    draw: (d) =>
-        Draw {
-            { 'color', 1, 0, 0 },
-            { 'rect', 'fill', @x, @y, 50, 50 },
-            { 'color' }
-        }
-}
 
 Entity "Player", {
     image: 'soldier.png'
@@ -68,10 +48,4 @@ Entity "Player", {
             {'color'}
         }
         d!
-}
-
-Entity "FakePlayer", {
-    image: 'soldier.png'
-    spawn: () =>
-        @x = Game.width / 2
 }

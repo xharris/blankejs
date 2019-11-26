@@ -1,4 +1,4 @@
--- TODO: Map (uses Canvas), Physics
+-- TODO: Map, Physics
 import is_object, p, copy from require "moon"
 
 --UTIL.table
@@ -38,6 +38,7 @@ export Math = {
 
 uuid = require "uuid"
 require "printr"
+json = require "json"
 
 --GAME
 export class Game
@@ -207,7 +208,7 @@ export class Image extends GameObject
         @width = @image\getWidth()
         @height = @image\getHeight()
         if @_spawn then @\_spawn()
-        if @spawn then @\spawn()cs.newImage(Game.res('image',args.file))
+        if @spawn then @\spawn()
         if args.draw == true
             @addDrawable!
     _draw: () => Game.drawObject(@, @image)
@@ -555,6 +556,37 @@ export class Camera
         for name, opt in pairs(options)
             Camera.use name, fn 
 
+--MAP
+class Map extends GameObject
+    options = {}
+    images = {} -- { name: Image }
+    batches = {} -- { layer: { img_name: SpriteBatch } }
+    quads = {} -- { hash: Quad }
+    @load = (name) ->
+        data = love.filesystem.read(Game.res('map',name))
+        assert(data,"Error loading map '#{name}'")
+        data = json.decode(data)
+        layer_name = {}
+        for info in *data.layers
+            layer_name[info.uuid] = info.name
+    @config = (opt) -> options = opt
+    new: () =>
+    addTile: (file,x,y,tx,ty,tw,th,layer) =>
+        -- get image
+        if not images[file] then image[file] = love.graphics.newImage(Game.res('image',file))
+        img = images[file]
+        -- get spritebatch
+        if not batches[layer..'.'..file] then batches[layer..'.'..file] = love.graphics.newSpriteBatch(img)
+        sb = batches[layer..'.'..file]
+        -- get quad
+        quad_hash = "#{tx},#{ty},#{tw},#{ty}"
+        if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img\getWidth!,img\getHeight!)
+        quad = quads[quad_hash]
+        id = sb\add(quadx,x,y,0)
+
+    spawnEntity: (ent_name) =>
+    _draw: () => Game.drawObject(@, unpack(batches))
+
 --BLANKE
 export Blanke = {
     load: () ->
@@ -645,4 +677,4 @@ love.run = () ->
 
     if love.timer then love.timer.sleep(0.0001)
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math }
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map }
