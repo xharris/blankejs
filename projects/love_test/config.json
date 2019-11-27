@@ -8,6 +8,14 @@
     ],
     "quick_access": [
         [
+            "View assets=?",
+            "View assets"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
+        ],
+        [
             "game.moon=script+entity+?",
             "game.moon"
         ],
@@ -18,14 +26,6 @@
         [
             "level1.map=map+?",
             "level1.map"
-        ],
-        [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
         ]
     ],
     "autoplay_preview": true,

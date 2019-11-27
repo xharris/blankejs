@@ -34,6 +34,7 @@ string.contains = (str,q) -> (string.match(str, q) ~= nil)
 --UTIL.math
 export Math = {
     random: (...) -> love.math.random(...)
+    indexTo2d: (i, col) -> math.floor((i-1)%col)+1, math.floor((i-1)/col)+1
 }
 
 floor = (x) -> math.floor(x+0.5)
@@ -104,8 +105,25 @@ export class Game
                 last_blend = Draw.getBlendMode()
                 Draw.setBlendMode(unpack(props.blendmode))
             for lobj in *lobjs
-                love.graphics.draw lobj, props.x, props.y, math.rad(props.angle), props.scalex, props.scaley,
-                    props.offx, props.offy, props.shearx, props.sheary
+                ax, ay = 0, 0
+                if props.align then
+                    if string.contains(props.align, 'center')
+                        ax = -props.width/2 
+                        ay = -props.height/2
+                    if string.contains(props.align,'left')
+                        ax = 0
+                    if string.contains(props.align, 'right')
+                        ax = -props.width
+                    if string.contains(props.align, 'top')
+                        ay = 0
+                    if string.contains(props.align, 'bottom')
+                        ay = -props.height
+                if gobj.quad then 
+                    love.graphics.draw lobj, props.quad, props.x, props.y, math.rad(props.angle), props.scalex, props.scaley,
+                        props.offx + ax, props.offy + ay, props.shearx, props.sheary
+                else
+                    love.graphics.draw lobj, props.x, props.y, math.rad(props.angle), props.scalex, props.scaley,
+                        props.offx + ax, props.offy + ay, props.shearx, props.sheary
             if last_blend
                 Draw.setBlendMode(last_blend)
 
@@ -131,7 +149,8 @@ export class GameObject
     new: (args, user_args) =>
         @uuid = uuid()
         @x, @y, @z, @angle, @scalex, @scaley = 0, 0, 0, 0, 1, nil
-        @offx, @offy, @shearx, @sheary = 0, 0, 0, 0
+        @width, @height, @offx, @offy, @shearx, @sheary = 0, 0, 0, 0, 0, 0
+        @align = nil
         @blendmode = nil
         @child_keys = {}
         @parent = nil
@@ -167,8 +186,6 @@ export class GameObject
                     Camera.get(args.camera).follow = @
         if user_args then table.update(@,user_args)
                     
-        
-
         if @_spawn then @\_spawn()
         if @spawn then @\spawn()
     addUpdatable: () =>
@@ -217,17 +234,67 @@ export class Canvas extends GameObject
 
 --IMAGE
 export class Image extends GameObject
+    animations = {}
+    @animation = (file, anims, all_opt={}) ->
+        img = love.graphics.newImage(Game.res('image',file))
+        for anim in *anims
+            o = (k) -> anim[k] or all_opt[k]
+            quads, durations = {}, {}
+            fw, fh = img\getWidth! / o('cols'), img\getHeight! / o('rows')
+            offx, offy = o('offx') or 0, o('offy') or 0
+            -- calculate frame list
+            frame_list = {}
+            for f in *o('frames')
+                f_type = type(f)
+                if f_type == 'number'
+                    table.insert(frame_list, f)
+                else if f_type == 'string'
+                    a,b = string.match(f,'%s*(%d+)%s*-%s*(%d+)%s*')
+                    for i = a,b
+                        table.insert(frame_list, i)
+            -- make quads
+            for f in *frame_list
+                x,y = Math.indexTo2d(f, o('cols'))
+                table.insert(quads, love.graphics.newQuad(
+                    (x-1)*fw,(y-1)*fh,
+                    fw,fh,img\getWidth!,img\getHeight!))
+            animations[anim.name] = {file:file, duration:o('duration'), durations:o('durations') or {}, quads:quads, frame_size:{fw,fh}}
     new: (args) =>
         super!
-        if type(args) == 'string' then 
+        -- animation?
+        anim_info = nil
+        if type(args) == 'string' then
+            anim_info = animations[args]
+        else if args.animation
+            anim_info = animations[args.animation]
+
+        if anim_info then 
+            args = {file:anim_info.file}
+            @animated = anim_info
+            @t, @frame_index, @frame_len = 0, 1, anim_info.durations[1] or anim_info.duration
+            @quads = anim_info.quads
+        else
             args = {file:args}
         @image = love.graphics.newImage(Game.res('image',args.file))
         @width = @image\getWidth()
         @height = @image\getHeight()
         if @_spawn then @\_spawn()
         if @spawn then @\spawn()
+        if not args.skip_update then 
+            @addUpdatable!
         if args.draw == true
             @addDrawable!
+    update: (dt) => 
+        -- update animation
+        if @animated
+            @t += dt
+            if @t > @frame_len
+                @frame_index += 1
+                if @frame_index > #@quads then @frame_index = 1
+                info = @animated
+                @frame_len = info.durations[tostring(@frame_index)] or info.duration
+                @t = 0
+            @quad = @quads[@frame_index]
     _draw: () => 
         @x, @y = floor(@x), floor(@y)
         Game.drawObject(@, @image)
@@ -238,15 +305,23 @@ export class _Entity extends GameObject
         super args, spawn_args  
         table.update(@, args)
         @imageList = {}
-
-        if args.image then
-            if type(args.image) == 'table' then
-                @imageList = [Image {file: img} for img in *args.image]
+        @animList = {}
+        -- image
+        if args.images then
+            if type(args.images) == 'table' then
+                @imageList = {img, Image {file: img, skip_update: true} for img in *args.images}
             else 
-                @imageList = {Image {file: args.image}}
-        for img in *@imageList 
-            img.parent = @
-
+                @imageList = {[args.images]: Image {file: args.images, skip_update: true}}
+            @images = args.images
+        -- animation
+        if args.animations then
+            if type(args.animations) == 'table' then
+                @animList = {anim_name, Image {file: args, animation: anim_name, skip_update: true} for anim_name in *args.animations}
+            else 
+                @animList = {[args.animations]: Image {file: args, animation: args.animations, skip_update: true} }
+        for img in *@imageList do img.parent = @
+        for anim in *@animList do anim.parent = @
+        -- effect
         if args.effect then
             if type(args.effect) == 'table'
                 @setEffect unpack(args.effect)
@@ -261,11 +336,18 @@ export class _Entity extends GameObject
     _update: (dt) =>
         if @update then @update(dt)
         @x, @y = floor(@x), floor(@y)
-        for img in *@imageList
-            img.x, img.y = @x, @y
+        for name, img in pairs(@imageList)
+            img.x, img.y, img.align = @x, @y, @align
+            img\update dt
+        for name, anim in pairs(@animList)
+            anim.x, anim.y, anim.align = @x, @y, @align
+            anim\update dt
     _draw: () =>
-        for img in *@imageList
-            img\draw!
+        if @imageList
+            for name, img in pairs(@imageList)
+                img\draw!
+        if @animation and @animList[@animation]
+            @animList[@animation]\draw!
 
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, _Entity)
@@ -410,7 +492,9 @@ export class Audio
         if #names == 0 then love.audio.stop()
         else
             for n in *names
-                if new_sources[n] then for src in *new_sources[n] do love.audio.stop(src) 
+                if new_sources[n] then for src in *new_sources[n] do love.audio.stop(src)
+    @isPlaying = (name) -> 
+        if new_sources[name] then return table.some([ src\isPlaying! for src in *new_sources[name] ])
 
 --EFFECT
 export class Effect
@@ -685,7 +769,7 @@ export Blanke = {
     keypressed: (key, scancode, isrepeat) -> Input.press(key, {:scancode, :isrepeat})
     keyreleased: (key, scancode) -> Input.release(key, {:scancode})
     mousepressed: (x, y, button, istouch, presses) -> 
-        Input.press('mouse'), {:x, :y, :button, :istouch, :presses})
+        Input.press('mouse', {:x, :y, :button, :istouch, :presses})
         Input.press('mouse'..tostring(button), {:x, :y, :button, :istouch, :presses})
     mousereleased: (x, y, button, istouch, presses) -> 
         Input.press('mouse', {:x, :y, :button, :istouch, :presses})
