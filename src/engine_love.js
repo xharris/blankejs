@@ -25,16 +25,17 @@ const engine = {
     ],
     play: (options) => {
         writeConf();
-        if (app.os == 'linux') {
-            let child = spawn('love', ['.'], { cwd: app.getAssetPath('scripts') });
-            let con = new Console(true);
-            child.stdout.on('data', data => {
-                data = data.toString().replace(/Could not open device.\s*/,"");
-                con.log(data);
-            });
-            child.on('close', () => {
-                con.tryClose();
-            })
-        }
+        let eng_path = 'love'; // linux, mac?
+        if (app.os == 'win') eng_path = nwPATH.join(app.ideSetting('engine_path'), 'lovec');
+
+        let child = spawn(eng_path, ['.'], { cwd: app.getAssetPath('scripts') });
+        let con = new Console(true);
+        child.stdout.on('data', data => {
+            data = data.toString().replace(/Could not open device.\s*/,"");
+            con.log(data);
+        });
+        child.on('close', () => {
+            con.tryClose();
+        })
     }
 }

@@ -36,6 +36,8 @@ export Math = {
     random: (...) -> love.math.random(...)
 }
 
+floor = (x) -> math.floor(x+0.5)
+
 uuid = require "uuid"
 require "printr"
 json = require "json"
@@ -226,7 +228,9 @@ export class Image extends GameObject
         if @spawn then @\spawn()
         if args.draw == true
             @addDrawable!
-    _draw: () => Game.drawObject(@, @image)
+    _draw: () => 
+        @x, @y = floor(@x), floor(@y)
+        Game.drawObject(@, @image)
 
 --ENTITY
 export class _Entity extends GameObject
@@ -256,6 +260,7 @@ export class _Entity extends GameObject
             else @spawn!
     _update: (dt) =>
         if @update then @update(dt)
+        @x, @y = floor(@x), floor(@y)
         for img in *@imageList
             img.x, img.y = @x, @y
     _draw: () =>
@@ -549,7 +554,7 @@ export class Camera
             o.transform\translate half_w, half_h
             o.transform\scale o.scalex, o.scaley or o.scalex
             o.transform\rotate math.rad(o.angle)
-            o.transform\translate(-(o.x - o.left + o.dx), -(o.y - o.top + o.dy))
+            o.transform\translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
 
             love.graphics.replaceTransform(o.transform)
     @detach = () ->
@@ -592,7 +597,7 @@ class Map extends GameObject
             for l_uuid, coord_list in pairs(img_info.coords)
                 l_name = layer_name[l_uuid]
                 for c in *coord_list
-                    new_map\addTile(img_info.path,c[1],c[2],c[3],c[4],c[5],c[6],l_name)
+                    new_map\addTile(img_info.path,floor(c[1]),floor(c[2]),c[3],c[4],c[5],c[6],l_name)
         -- spawn entities
         for obj_uuid, info in pairs(data.objects)
             obj_info = getObjInfo(obj_uuid)
@@ -679,8 +684,12 @@ export Blanke = {
 
     keypressed: (key, scancode, isrepeat) -> Input.press(key, {:scancode, :isrepeat})
     keyreleased: (key, scancode) -> Input.release(key, {:scancode})
-    mousepressed: (x, y, button, istouch, presses) -> Input.press('mouse', {:x, :y, :button, :istouch, :presses})
-    mousereleased: (x, y, button, istouch, presses) -> Input.release('mouse', {:x, :y, :button, :istouch, :presses})
+    mousepressed: (x, y, button, istouch, presses) -> 
+        Input.press('mouse'), {:x, :y, :button, :istouch, :presses})
+        Input.press('mouse'..tostring(button), {:x, :y, :button, :istouch, :presses})
+    mousereleased: (x, y, button, istouch, presses) -> 
+        Input.press('mouse', {:x, :y, :button, :istouch, :presses})
+        Input.release('mouse'..tostring(button), {:x, :y, :button, :istouch, :presses})
 }
 
 love.load = () -> Blanke.load!
@@ -689,7 +698,7 @@ love.update = (dt) ->
 love.draw = () -> Blanke.draw!
 love.keypressed = (key, scancode, isrepeat) -> Blanke.keypressed key, scancode, isrepeat
 love.keyreleased = (key, scancode) -> Blanke.keyreleased key, scancode
-love.mousepressed = (x, y, button, istouch, presses) -> Blanke.mousepressed x, y, buttons, istouch, presses
+love.mousepressed = (x, y, button, istouch, presses) -> Blanke.mousepressed x, y, button, istouch, presses
 love.mousereleased = (x, y, button, istouch, presses) -> Blanke.mousereleased x, y, button, istouch, presses
 -- from https://github.com/adnzzzzZ/STALKER-X
 love.run = () ->

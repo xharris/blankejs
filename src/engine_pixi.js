@@ -188,7 +188,7 @@ elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');
 			user_code += nwFS.readFileSync(path,'utf-8') + '\n';
 		}
 		// get copy of other engine settings
-		let new_config = JSON.parse(JSON.stringify(app.project_settings));
+		let new_config = JSON.parse(JSON.stringify(app.projSetting()));
 		for (let k in new_config.export) {
 			new_config[k] = new_config.export[k];
 		}

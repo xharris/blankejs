@@ -95,7 +95,7 @@ class Console extends Editor {
 		} else {
 			this.duplicate_count = 1;
 			this.last_dupe_line = '';
-			this.str_console += `${str}\n`;
+			this.str_console += `${str}`+(engine.console_new_line ? '\n' : '');
 		}
 		this.last_line = str;
 		if (this.isVisible()) this.el_lines.innerHTML = this.str_console;

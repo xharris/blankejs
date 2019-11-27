@@ -20,7 +20,7 @@ Input {
     left: { "left", "a" }
     right: { "right", "d" }
     up: { "up", "w" }
-    action: { 'space' }
+    action: { 'space', 'mouse1' }
 }, { no_repeat: { "up" } }
 
 Camera "player"
@@ -40,12 +40,5 @@ Entity "Player", {
         if Input.pressed('left')
             @x -= hspeed * dt
         if Input.released('action')
-            Audio.stop('fire.ogg')
-    draw: (d) =>
-        Draw {
-            {'color', 1, 0, 0},
-            {'line', @x, @y, Game.width/2, Game.height/2},
-            {'color'}
-        }
-        d!
+            Audio.play('fire.ogg')
 }

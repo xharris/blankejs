@@ -12,6 +12,10 @@
             "game.moon"
         ],
         [
+            "Export game=?",
+            "Export game"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
@@ -22,10 +26,6 @@
         [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ]
     ],
     "autoplay_preview": true,

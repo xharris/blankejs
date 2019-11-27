@@ -736,7 +736,7 @@ var app = {
 	last_quick_access: '',
 	_refreshQuickAccess: (hash) => {
 		if (app.isProjectOpen()) {
-			let set = app.project_settings;
+			let set = app.projSetting();
 			if (hash) {
 				let last_hash, last_title;
 				set.quick_access = set.quick_access.filter(h => {
