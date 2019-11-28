@@ -1,5 +1,6 @@
--- TODO: Map, Physics
+-- TODO: Physics
 import is_object, p, copy from require "moon"
+HC = require "HC"
 
 --UTIL.table
 table.update = (old_t, new_t, keys) -> 
@@ -14,7 +15,7 @@ table.every = (t) ->
 table.some = (t) ->
     for k,v in pairs(t) do if v then return true
     return false
-table.len = (t) ->
+table.len = (t) -> 
     c = 0
     for k,v in pairs(t) do c += 1
     return c
@@ -108,21 +109,21 @@ export class Game
                 ax, ay = 0, 0
                 if props.align then
                     if string.contains(props.align, 'center')
-                        ax = -props.width/2 
-                        ay = -props.height/2
+                        ax = gobj.width/2 
+                        ay = gobj.height/2
                     if string.contains(props.align,'left')
                         ax = 0
                     if string.contains(props.align, 'right')
-                        ax = -props.width
+                        ax = gobj.width
                     if string.contains(props.align, 'top')
                         ay = 0
                     if string.contains(props.align, 'bottom')
-                        ay = -props.height
+                        ay = gobj.height
                 if gobj.quad then 
-                    love.graphics.draw lobj, props.quad, props.x, props.y, math.rad(props.angle), props.scalex, props.scaley,
+                    love.graphics.draw lobj, gobj.quad, props.x, props.y, math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
                         props.offx + ax, props.offy + ay, props.shearx, props.sheary
                 else
-                    love.graphics.draw lobj, props.x, props.y, math.rad(props.angle), props.scalex, props.scaley,
+                    love.graphics.draw lobj, props.x, props.y, math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
                         props.offx + ax, props.offy + ay, props.shearx, props.sheary
             if last_blend
                 Draw.setBlendMode(last_blend)
@@ -137,6 +138,7 @@ export class Game
     @spawn: (name, args) ->
         obj_info = objects[name]
         if obj_info ~= nil and obj_info.spawn_class
+            --obj_info.args.classname = name
             instance = obj_info.spawn_class(obj_info.args, args)
             return instance
 
@@ -148,7 +150,7 @@ export class Game
 export class GameObject 
     new: (args, user_args) =>
         @uuid = uuid()
-        @x, @y, @z, @angle, @scalex, @scaley = 0, 0, 0, 0, 1, nil
+        @x, @y, @z, @angle, @scalex, @scaley, @scale = 0, 0, 0, 0, 1, 1, 1
         @width, @height, @offx, @offy, @shearx, @sheary = 0, 0, 0, 0, 0, 0
         @align = nil
         @blendmode = nil
@@ -255,9 +257,7 @@ export class Image extends GameObject
             -- make quads
             for f in *frame_list
                 x,y = Math.indexTo2d(f, o('cols'))
-                table.insert(quads, love.graphics.newQuad(
-                    (x-1)*fw,(y-1)*fh,
-                    fw,fh,img\getWidth!,img\getHeight!))
+                table.insert(quads, love.graphics.newQuad((x-1)*fw,(y-1)*fh,fw,fh,img\getWidth!,img\getHeight!))
             animations[anim.name] = {file:file, duration:o('duration'), durations:o('durations') or {}, quads:quads, frame_size:{fw,fh}}
     new: (args) =>
         super!
@@ -297,37 +297,47 @@ export class Image extends GameObject
             @quad = @quads[@frame_index]
     _draw: () => 
         @x, @y = floor(@x), floor(@y)
+        @width, @height = @animated.frame_size[1], @animated.frame_size[2]
         Game.drawObject(@, @image)
 
 --ENTITY
 export class _Entity extends GameObject
     new: (args, spawn_args) =>
-        super args, spawn_args  
+        super args, spawn_args
         table.update(@, args)
         @imageList = {}
         @animList = {}
         -- image
-        if args.images then
-            if type(args.images) == 'table' then
+        if args.images
+            if type(args.images) == 'table'
                 @imageList = {img, Image {file: img, skip_update: true} for img in *args.images}
             else 
                 @imageList = {[args.images]: Image {file: args.images, skip_update: true}}
             @images = args.images
         -- animation
-        if args.animations then
-            if type(args.animations) == 'table' then
+        if args.animations
+            if type(args.animations) == 'table'
                 @animList = {anim_name, Image {file: args, animation: anim_name, skip_update: true} for anim_name in *args.animations}
             else 
                 @animList = {[args.animations]: Image {file: args, animation: args.animations, skip_update: true} }
-        for img in *@imageList do img.parent = @
-        for anim in *@animList do anim.parent = @
+        for _,img in pairs(@imageList) do img.parent = @
+        for _,anim in pairs(@animList) do anim.parent = @
         -- effect
-        if args.effect then
+        if args.effect
             if type(args.effect) == 'table'
                 @setEffect unpack(args.effect)
             else 
                 @setEffect args.effect
-
+        -- hitbox
+        if args.hitboxes
+            @hitboxes = {}
+            for name, info in pairs(args.hitboxes)
+                if type(info) == 'string'
+                    if info == 'rect' then info = { @x, @y, @width, @height }
+                    if info == 'circle' then info = { @x, @y, math.max(@width,@height) }
+                print @classname
+                print name
+                @hitboxes[name] = Hitbox(name, info, 'ok')
         @addUpdatable!
         @addDrawable!
         if @spawn then 
@@ -337,10 +347,10 @@ export class _Entity extends GameObject
         if @update then @update(dt)
         @x, @y = floor(@x), floor(@y)
         for name, img in pairs(@imageList)
-            img.x, img.y, img.align = @x, @y, @align
+            img.x, img.y = @x, @y
             img\update dt
         for name, anim in pairs(@animList)
-            anim.x, anim.y, anim.align = @x, @y, @align
+            anim.x, anim.y = @x, @y
             anim\update dt
     _draw: () =>
         if @imageList
@@ -653,7 +663,7 @@ export class Camera
             Camera.use name, fn 
 
 --MAP
-class Map extends GameObject
+export class Map extends GameObject
     options = {}
     images = {} -- { name: Image }
     quads = {} -- { hash: Quad }
@@ -725,6 +735,22 @@ class Map extends GameObject
             if @batches[l_name]
                 for f_name, batch in pairs(@batches[l_name])
                     Game.drawObject(@, batch)
+
+--HITBOX
+export class Hitbox extends GameObject
+    translate = { rect: 'rectangle' }
+    new: (shape,dims,tag) =>
+        @hitbhox = HC[translate[shape] or shape](unpack(dims))
+        @hitbox.ref = @
+        @hitbox.tags = tags
+        @addUpdatable!
+    update: (dt) =>
+        for shape, delta in pairs(HC.collisions(@hitbox))
+            print shape, delta
+    _draw: () =>
+        Draw.stack () ->
+            Draw.color(1,0,0,0.25)
+            @hitbox\draw('fill')
 
 --BLANKE
 export Blanke = {

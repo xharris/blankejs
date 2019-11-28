@@ -1,6 +1,6 @@
 import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map from require "blanke"
 
-import is_object, p from require "moon"
+import p from require "moon"
 
 Game {
     res: 'assets'
@@ -8,7 +8,6 @@ Game {
     load: () ->
         Game.setBackgroundColor(1,1,1,1)
         Map.load('level1.map')
-		
 }
 
 Map.config {
@@ -33,7 +32,11 @@ Image.animation 'soldier_full.png', {
 Entity "Player", {
 	camera: 'player',
 	animations: {'soldier_stand','soldier_walk'},
-    scalex: 2,
+	align: "center",
+	scale: 0.5,
+	hitboxes: {
+		'main': 'rect'
+	},	
     testdraw: {
         { color: {1, 0, 0, 0.5} },
         { line: {0, 0, Game.width/2, Game.height/2} }
@@ -42,8 +45,10 @@ Entity "Player", {
         hspeed = 100
         if Input.pressed('right')
             @x += hspeed * dt
+			@scalex = 1
         if Input.pressed('left')
             @x -= hspeed * dt
+			@scalex = -1
 			
 		if Input.pressed('right') or Input.pressed('left')
 			@animation = 'soldier_walk'

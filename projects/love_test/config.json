@@ -8,16 +8,16 @@
     ],
     "quick_access": [
         [
+            "game.moon=script+entity+?",
+            "game.moon"
+        ],
+        [
             "View assets=?",
             "View assets"
         ],
         [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "game.moon=script+entity+?",
-            "game.moon"
         ],
         [
             "Export game=?",

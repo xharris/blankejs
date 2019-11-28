@@ -23,6 +23,9 @@ const engine = {
             "entity"
         ],
     ],
+	add_script_templates: {
+		'script': `import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map from require "blanke"`
+    },
     play: (options) => {
         writeConf();
         let eng_path = 'love'; // linux, mac?
