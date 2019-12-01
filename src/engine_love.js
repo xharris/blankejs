@@ -2,7 +2,7 @@ const writeConf = () => {
     nwFS.writeFileSync(
         nwPATH.join(app.getAssetPath('scripts'),'conf.lua'),
 `io.stdout:setvbuf('no')
-package.path = package.path .. ";${app.ideSetting('engine_path')}/?.lua"
+package.path = package.path .. ";${['/?.lua','/lua/?/init.lua','/lua/?.lua'].map(p => app.ideSetting('engine_path')+p).join(';')}"
 require 'moonscript'
 package.moonpath = package.moonpath .. ";${app.ideSetting('engine_path')}/?.moon"
 function love.conf(t)

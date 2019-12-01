@@ -1,6 +1,5 @@
 -- TODO: Physics
 import is_object, p, copy from require "moon"
-HC = require "HC"
 
 --UTIL.table
 table.update = (old_t, new_t, keys) -> 
@@ -38,11 +37,19 @@ export Math = {
     indexTo2d: (i, col) -> math.floor((i-1)%col)+1, math.floor((i-1)/col)+1
 }
 
-floor = (x) -> math.floor(x+0.5)
+export FS = {
+    basename: (str) -> string.gsub(str, "(.*/)(.*)", "%2")
+    dirname: (str) -> if string.match(str,".-/.-") then return string.gsub(str, "(.*/)(.*)", "%1") else return ''
+    extname: (str) -> if str = string.match(str,"^.+(%..+)$") then return string.sub(str,2)
+}
 
+floor = (x) -> math.floor(x+0.5)
+import sin, cos, rad, deg from math
+
+-- needed extra libraries
 uuid = require "uuid"
-require "printr"
 json = require "json"
+HC = require "HC"
 
 --GAME
 export class Game
@@ -90,7 +97,7 @@ export class Game
         -- store in object 'library' and update initial props
         if objects[name] == nil then 
             objects[name] = {
-                type: _type,
+                type: _type
                 :args
                 :spawn_class
             }
@@ -138,8 +145,7 @@ export class Game
     @spawn: (name, args) ->
         obj_info = objects[name]
         if obj_info ~= nil and obj_info.spawn_class
-            --obj_info.args.classname = name
-            instance = obj_info.spawn_class(obj_info.args, args)
+            instance = obj_info.spawn_class(obj_info.args, args, name)
             return instance
 
     @res: (_type, file) -> "#{Game.options.res}/#{_type}/#{file}"
@@ -237,6 +243,18 @@ export class Canvas extends GameObject
 --IMAGE
 export class Image extends GameObject
     animations = {}
+    info_cache = {}
+    @info = (name) ->
+        if animations[name] then return animations[name]
+        else
+            info = info_cache[name]
+            if not info
+                info = {}
+                info.img = love.graphics.newImage(Game.res('image',file))
+                info.w = info.img\getWidth!
+                info.h = info.img\getHeight!
+                info_cache[name] = info
+            return info_cache[name]
     @animation = (file, anims, all_opt={}) ->
         img = love.graphics.newImage(Game.res('image',file))
         for anim in *anims
@@ -258,7 +276,7 @@ export class Image extends GameObject
             for f in *frame_list
                 x,y = Math.indexTo2d(f, o('cols'))
                 table.insert(quads, love.graphics.newQuad((x-1)*fw,(y-1)*fh,fw,fh,img\getWidth!,img\getHeight!))
-            animations[anim.name] = {file:file, duration:o('duration'), durations:o('durations') or {}, quads:quads, frame_size:{fw,fh}}
+            animations[anim.name] = {file:file, duration:o('duration'), durations:o('durations') or {}, quads:quads, w:fw, h:fh, frame_size:{fw,fh}}
     new: (args) =>
         super!
         -- animation?
@@ -276,14 +294,19 @@ export class Image extends GameObject
         else
             args = {file:args}
         @image = love.graphics.newImage(Game.res('image',args.file))
-        @width = @image\getWidth()
-        @height = @image\getHeight()
+        @updateSize!
         if @_spawn then @\_spawn()
         if @spawn then @\spawn()
         if not args.skip_update then 
             @addUpdatable!
         if args.draw == true
             @addDrawable!
+    updateSize: () =>
+        if @animated then 
+            @width, @height = @animated.frame_size[1] * @scalex * @scale, @animated.frame_size[2] * @scaley * @scale
+        else
+            @width = @image\getWidth() * @scalex * @scale
+            @height = @image\getHeight() * @scaly * @scale
     update: (dt) => 
         -- update animation
         if @animated
@@ -297,29 +320,37 @@ export class Image extends GameObject
             @quad = @quads[@frame_index]
     _draw: () => 
         @x, @y = floor(@x), floor(@y)
-        @width, @height = @animated.frame_size[1], @animated.frame_size[2]
+        @updateSize!
         Game.drawObject(@, @image)
 
 --ENTITY
 export class _Entity extends GameObject
-    new: (args, spawn_args) =>
+    new: (args, spawn_args, classname) =>
         super args, spawn_args
+
+        @hspeed, @vspeed, @gravity, @gravity_direction = 0, 0, 0, 90
+
         table.update(@, args)
+        @classname = classname
         @imageList = {}
         @animList = {}
         -- image
         if args.images
             if type(args.images) == 'table'
                 @imageList = {img, Image {file: img, skip_update: true} for img in *args.images}
+                @_updateSize(@imageList[args.images[1]])
             else 
                 @imageList = {[args.images]: Image {file: args.images, skip_update: true}}
+                @_updateSize(@imageList[args.images])
             @images = args.images
         -- animation
         if args.animations
             if type(args.animations) == 'table'
                 @animList = {anim_name, Image {file: args, animation: anim_name, skip_update: true} for anim_name in *args.animations}
+                @_updateSize(@animList[args.animations[1]])
             else 
                 @animList = {[args.animations]: Image {file: args, animation: args.animations, skip_update: true} }
+                @_updateSize(@animList[args.animations])
         for _,img in pairs(@imageList) do img.parent = @
         for _,anim in pairs(@animList) do anim.parent = @
         -- effect
@@ -330,34 +361,87 @@ export class _Entity extends GameObject
                 @setEffect args.effect
         -- hitbox
         if args.hitboxes
-            @hitboxes = {}
+            @hbList = {}
             for name, info in pairs(args.hitboxes)
+                shape = info
                 if type(info) == 'string'
-                    if info == 'rect' then info = { @x, @y, @width, @height }
-                    if info == 'circle' then info = { @x, @y, math.max(@width,@height) }
-                print @classname
-                print name
-                @hitboxes[name] = Hitbox(name, info, 'ok')
+                    @addHitbox(name, info)
+                else
+                    @addHitbox(name, unpack(info))
         @addUpdatable!
         @addDrawable!
         if @spawn then 
             if spawn_args then @spawn unpack(spawn_args)
             else @spawn!
+    addHitbox: (name, shape, dims, tag) =>
+        if not @hbList then @hbList = {}
+
+        if not dims
+            if shape == 'rect' then dims = { 0, 0, @width, @height }
+            if shape == 'circle' then dims = { 0, 0, math.max(@width,@height) }
+        if not tag
+            tag = name
+            
+        @hb = Hitbox(shape, dims, tag)
+        @hb.parent = @
+        @hb.offx = dims[1]
+        @hb.offy = dims[2]
+        @hb\moveTo @x, @y
+        if not @hbList[main_hitbox]
+            @main_hitbox = name
+        @hbList[name] = @hb
+    _updateSize: (obj) =>
+        @width, @height = obj.width * @scalex*@scale, obj.height * @scaley*@scale
     _update: (dt) =>
+        last_x, last_y = @x, @y
+        if @animation 
+            @_updateSize(@animList[@animation])
         if @update then @update(dt)
         @x, @y = floor(@x), floor(@y)
+        dx, dy = @hspeed, @vspeed
+        if @gravity ~= 0
+            dx += @gravity * cos(rad(@gravity_direction))
+            dy += @gravity * sin(rad(@gravity_direction))
+
+        -- image/animation update
         for name, img in pairs(@imageList)
             img.x, img.y = @x, @y
             img\update dt
         for name, anim in pairs(@animList)
             anim.x, anim.y = @x, @y
             anim\update dt
+        -- hitbox collisions
+        for name, hb in pairs(@hbList)
+            hb\move(dx*dt, dy*dt)
+            if @collision and @collision[name]
+                hb\collisions (other, vec) -> 
+                    @collisionStopX = () =>
+                        dx = 0
+                        hb\move(vec.x,0)
+                    @collisionStopY = () =>
+                        dy = 0
+                        hb\move(0,vec.y)
+                    @collisionStop = () =>
+                        dx, dy = 0, 0
+                        hb\move(vec.x,vec.y)
+                    @collision[name](@,other,vec)
+        if @main_hitbox
+            @x, @y = @hbList[@main_hitbox]\center()
+        else
+            @x += dx * dt
+            @y += dy * dt
+        @hspeed = dx
+        @vspeed = dy
     _draw: () =>
         if @imageList
             for name, img in pairs(@imageList)
                 img\draw!
         if @animation and @animList[@animation]
             @animList[@animation]\draw!
+            @width, @height = @animList[@animation].width, @animList[@animation].height
+        if @hitboxes
+            for name, hb in pairs(@hbList)
+                hb\draw!
 
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, _Entity)
@@ -450,7 +534,7 @@ export class Draw
         fn!
         Draw.pop()
 
-draw_functions = {'arc','circle','clear','discard','ellipse','line','points','polygon','rectangle','setLineWidth','origin'}
+draw_functions = {'arc','circle','clear','discard','ellipse','line','points','polygon','rectangle','setLineWidth','origin','print','printf'}
 draw_aliases = {
     polygon: 'poly',
     rectangle: 'rect',
@@ -691,7 +775,7 @@ export class Map extends GameObject
             for l_uuid, coord_list in pairs(img_info.coords)
                 l_name = layer_name[l_uuid]
                 for c in *coord_list
-                    new_map\addTile(img_info.path,floor(c[1]),floor(c[2]),c[3],c[4],c[5],c[6],l_name)
+                    new_map\addTile(img_info.path,c[1],c[2],c[3],c[4],c[5],c[6],l_name)
         -- spawn entities
         for obj_uuid, info in pairs(data.objects)
             obj_info = getObjInfo(obj_uuid)
@@ -707,6 +791,7 @@ export class Map extends GameObject
     new: () =>
         super!
         @batches = {} -- { layer: { img_name: SpriteBatch } }
+        @hbList = {}
         @addDrawable!
     addTile: (file,x,y,tx,ty,tw,th,layer) =>
         -- get image
@@ -720,7 +805,11 @@ export class Map extends GameObject
         quad_hash = "#{tx},#{ty},#{tw},#{ty}"
         if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img\getWidth!,img\getHeight!)
         quad = quads[quad_hash]
-        id = sb\add(quad,x,y,0)
+        id = sb\add(quad,floor(x),floor(y),0)
+        -- hitbox?
+        hb_name = if options.tile_hitbox then options.tile_hitbox[string.gsub(FS.basename(file), '.'..FS.extname(file), '')]
+        if hb_name
+            table.insert(@hbList, Hitbox('rect',{x,y,tw,th},hb_name))
     _spawnEntity: (ent_name, opt) =>
         Game.spawn(ent_name, opt)
     spawnEntity: (ent_name, x, y, layer) =>
@@ -735,22 +824,44 @@ export class Map extends GameObject
             if @batches[l_name]
                 for f_name, batch in pairs(@batches[l_name])
                     Game.drawObject(@, batch)
+        --for hb in *@hbList 
+        --    hb\draw!
 
 --HITBOX
 export class Hitbox extends GameObject
     translate = { rect: 'rectangle' }
+
+    @at: (x,y) -> HC.shapesAt(x,y)   
+
+    @test: (x,y,tag) ->
+        boxes = Hitbox.at(x,y)
+        for hb in *boxes
+            if hb.tag == tag then return true 
+        return false
+
     new: (shape,dims,tag) =>
-        @hitbhox = HC[translate[shape] or shape](unpack(dims))
-        @hitbox.ref = @
-        @hitbox.tags = tags
-        @addUpdatable!
-    update: (dt) =>
-        for shape, delta in pairs(HC.collisions(@hitbox))
-            print shape, delta
+        super!
+        shape = translate[shape] or shape
+        @hb = HC[shape](unpack(dims))
+        @hb.ref = @
+        @hb.tag = tag
+        @offx = 0
+        @offy = 0
+    scaleTo: (s) => 
+        if @_last_scale then 
+            @hb\scale 1/@_last_scale
+        @hb\scale s
+        @_last_scale = s
+    move: (x,y) => @hb\move(x,y)
+    moveTo: (x,y) => @hb\moveTo(x + @offx,y + @offy)
+    center: () => @hb\center!
+    collisions: (fn) =>
+        for shape, delta in pairs(HC.collisions(@hb))
+            fn shape, delta
     _draw: () =>
         Draw.stack () ->
             Draw.color(1,0,0,0.25)
-            @hitbox\draw('fill')
+            @hb\draw('fill')
 
 --BLANKE
 export Blanke = {
@@ -846,4 +957,4 @@ love.run = () ->
 
     if love.timer then love.timer.sleep(0.0001)
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map }
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map, :Hitbox }

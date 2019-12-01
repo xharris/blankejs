@@ -1,4 +1,4 @@
-import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map from require "blanke"
+import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map, Hitbox from require "blanke"
 
 import p from require "moon"
 
@@ -11,14 +11,14 @@ Game {
 }
 
 Map.config {
-    tile_hitbox: { 'ground' },
+    tile_hitbox: { ground:'ground' },
     entities: { 'Player' }
 }
 
 Input {
     left: { "left", "a" }
     right: { "right", "d" }
-    up: { "up", "w" }
+    jump: { "up", "w" }
     action: { 'space', 'mouse1' }
 }, { no_repeat: { "up" } }
 
@@ -34,27 +34,44 @@ Entity "Player", {
 	animations: {'soldier_stand','soldier_walk'},
 	align: "center",
 	scale: 0.5,
+	gravity: 5,
 	hitboxes: {
-		'main': 'rect'
-	},	
-    testdraw: {
-        { color: {1, 0, 0, 0.5} },
-        { line: {0, 0, Game.width/2, Game.height/2} }
-    }
+		main: 'rect',
+		foot: { 'rect', { 0, Image.info('soldier_walk').h, Image.info('soldier_walk').w, 2 } }
+	},
+	collision: {
+		main: (other, vec) =>
+			if other.tag == 'ground'
+				if Hitbox.test(@x, @y + (@height / 2), 'ground')
+					@collisionStopY!
+				@collisionStopX!
+		foot: (other, vec) =>
+			print 'foot'
+	},
+	draw: (d) =>
+		d!
+		Draw {
+			{ 'color', 0, 0, 1 },
+			{ 'print', @width .. ', ' .. @height, @x, @y - 40 },
+			{ 'rect', 'fill', @x, @y + (@height / 2), 2, 2 },
+			{ 'color' }
+		}
     update: (dt) =>
-        hspeed = 100
+		-- left/right
+        dx = 100
+		@hspeed = 0
         if Input.pressed('right')
-            @x += hspeed * dt
+			@hspeed = dx
 			@scalex = 1
         if Input.pressed('left')
-            @x -= hspeed * dt
+			@hspeed = -dx
 			@scalex = -1
 			
 		if Input.pressed('right') or Input.pressed('left')
 			@animation = 'soldier_walk'
 		else
 			@animation = 'soldier_stand'
-			
-        if Input.released('action')
-            Audio.play('fire.ogg')
+		-- jumping
+        if Input.released('jump')
+			@vspeed = -200
 }

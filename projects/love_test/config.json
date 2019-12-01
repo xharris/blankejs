@@ -12,20 +12,20 @@
             "game.moon"
         ],
         [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
-        ],
-        [
-            "Export game=?",
-            "Export game"
-        ],
-        [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "View assets=?",
+            "View assets"
         ]
     ],
     "autoplay_preview": true,

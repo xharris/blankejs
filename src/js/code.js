@@ -452,7 +452,8 @@ class Code extends Editor {
             indentWithTabs : true,
             highlightSelectionMatches: {/*showToken: /\w{3,}/, */annotateScrollbar: false},
             matchBrackets: true,
-            completeSingle: false,
+			completeSingle: false,
+			cursorScrollMargin: 40,
             extraKeys: {
             	"Cmd-S": function(cm) {
 					this_ref.save();
