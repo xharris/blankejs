@@ -1,5 +1,6 @@
--- TODO: Physics
+-- Hitbox, Physics (contact, masks)
 import is_object, p, copy from require "moon"
+bump = require 'bump'
 
 --UTIL.table
 table.update = (old_t, new_t, keys) -> 
@@ -27,14 +28,22 @@ table.slice = (t, start, finish) ->
         res[i] = t[j]
         i += 1
     return res
-
+table.defaults = (t,defaults) ->
+    for k,v in pairs(defaults)
+        if t[k] == nil then t[k] = v
+        else if type(v) == 'table' then table.defaults(t[k],defaults[k])
+         
 --UTIL.string
 string.contains = (str,q) -> (string.match(str, q) ~= nil)
+string.capitalize = (str) -> string.upper(string.sub(str,1,1))..string.sub(str,2)
 
 --UTIL.math
+import sin, cos, rad, deg from math
+floor = (x) -> math.floor(x+0.5)
 export Math = {
     random: (...) -> love.math.random(...)
     indexTo2d: (i, col) -> math.floor((i-1)%col)+1, math.floor((i-1)/col)+1
+    getXY: (angle, dist) -> dist * cos(rad(angle)), dist * sin(rad(angle))
 }
 
 export FS = {
@@ -42,9 +51,6 @@ export FS = {
     dirname: (str) -> if string.match(str,".-/.-") then return string.gsub(str, "(.*/)(.*)", "%1") else return ''
     extname: (str) -> if str = string.match(str,"^.+(%..+)$") then return string.sub(str,2)
 }
-
-floor = (x) -> math.floor(x+0.5)
-import sin, cos, rad, deg from math
 
 -- needed extra libraries
 uuid = require "uuid"
@@ -328,7 +334,8 @@ export class _Entity extends GameObject
     new: (args, spawn_args, classname) =>
         super args, spawn_args
 
-        @hspeed, @vspeed, @gravity, @gravity_direction = 0, 0, 0, 90
+        @gravity = 0
+        @gravity_direction = 90
 
         table.update(@, args)
         @classname = classname
@@ -359,37 +366,22 @@ export class _Entity extends GameObject
                 @setEffect unpack(args.effect)
             else 
                 @setEffect args.effect
-        -- hitbox
-        if args.hitboxes
-            @hbList = {}
-            for name, info in pairs(args.hitboxes)
-                shape = info
-                if type(info) == 'string'
-                    @addHitbox(name, info)
-                else
-                    @addHitbox(name, unpack(info))
+        -- physics
+        assert(not (args.body and args.fixture), "Entity can have body or fixture. Not both!")
+        if args.body
+            Physics.body @classname, args.body
+            @body = Physics.body @classname
+        if args.joint
+            Physics.joint @classname, args.joint
+            @joint = Physics.joint @classname
+
         @addUpdatable!
         @addDrawable!
         if @spawn then 
             if spawn_args then @spawn unpack(spawn_args)
             else @spawn!
-    addHitbox: (name, shape, dims, tag) =>
-        if not @hbList then @hbList = {}
-
-        if not dims
-            if shape == 'rect' then dims = { 0, 0, @width, @height }
-            if shape == 'circle' then dims = { 0, 0, math.max(@width,@height) }
-        if not tag
-            tag = name
-            
-        @hb = Hitbox(shape, dims, tag)
-        @hb.parent = @
-        @hb.offx = dims[1]
-        @hb.offy = dims[2]
-        @hb\moveTo @x, @y
-        if not @hbList[main_hitbox]
-            @main_hitbox = name
-        @hbList[name] = @hb
+        if @body then @body\setPosition @x, @y
+    
     _updateSize: (obj) =>
         @width, @height = obj.width * @scalex*@scale, obj.height * @scaley*@scale
     _update: (dt) =>
@@ -397,12 +389,12 @@ export class _Entity extends GameObject
         if @animation 
             @_updateSize(@animList[@animation])
         if @update then @update(dt)
-        @x, @y = floor(@x), floor(@y)
-        dx, dy = @hspeed, @vspeed
-        if @gravity ~= 0
-            dx += @gravity * cos(rad(@gravity_direction))
-            dy += @gravity * sin(rad(@gravity_direction))
-
+        if @body
+            new_x, new_y = @body\getPosition!
+            if @x == last_x then @x = new_x
+            if @y == last_y then @y = new_y
+            if @x ~= last_x or @y ~= last_y
+                @body\setPosition @x, @y
         -- image/animation update
         for name, img in pairs(@imageList)
             img.x, img.y = @x, @y
@@ -410,28 +402,6 @@ export class _Entity extends GameObject
         for name, anim in pairs(@animList)
             anim.x, anim.y = @x, @y
             anim\update dt
-        -- hitbox collisions
-        for name, hb in pairs(@hbList)
-            hb\move(dx*dt, dy*dt)
-            if @collision and @collision[name]
-                hb\collisions (other, vec) -> 
-                    @collisionStopX = () =>
-                        dx = 0
-                        hb\move(vec.x,0)
-                    @collisionStopY = () =>
-                        dy = 0
-                        hb\move(0,vec.y)
-                    @collisionStop = () =>
-                        dx, dy = 0, 0
-                        hb\move(vec.x,vec.y)
-                    @collision[name](@,other,vec)
-        if @main_hitbox
-            @x, @y = @hbList[@main_hitbox]\center()
-        else
-            @x += dx * dt
-            @y += dy * dt
-        @hspeed = dx
-        @vspeed = dy
     _draw: () =>
         if @imageList
             for name, img in pairs(@imageList)
@@ -439,9 +409,6 @@ export class _Entity extends GameObject
         if @animation and @animList[@animation]
             @animList[@animation]\draw!
             @width, @height = @animList[@animation].width, @animList[@animation].height
-        if @hitboxes
-            for name, hb in pairs(@hbList)
-                hb\draw!
 
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, _Entity)
@@ -498,7 +465,6 @@ export class Input
 export class Draw
     crop_used = false
     new: (instructions) =>
-
         for instr in *instructions
             name, args = instr[1], table.slice(instr,2)
             assert(Draw[name], "bad draw instruction '#{name}'")
@@ -806,10 +772,29 @@ export class Map extends GameObject
         if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img\getWidth!,img\getHeight!)
         quad = quads[quad_hash]
         id = sb\add(quad,floor(x),floor(y),0)
-        -- hitbox?
+        -- hitbox
         hb_name = if options.tile_hitbox then options.tile_hitbox[string.gsub(FS.basename(file), '.'..FS.extname(file), '')]
+        body = nil
         if hb_name
-            table.insert(@hbList, Hitbox('rect',{x,y,tw,th},hb_name))
+            if options.use_physics
+                hb_key = hb_name..'.'..tw..'.'..th
+                if not Physics.getBodyConfig(hb_key)
+                    Physics.body hb_key, {
+                        shapes: {
+                            {
+                                type: 'rect'
+                                width: tw
+                                height: th
+                                offx: tw/2
+                                offy: th/2
+                            }
+                        }
+                    }
+                body = Physics.body hb_key
+                body\setPosition(x,y)
+            else 
+                5
+        tile_info = { :id, :body }
     _spawnEntity: (ent_name, opt) =>
         Game.spawn(ent_name, opt)
     spawnEntity: (ent_name, x, y, layer) =>
@@ -824,44 +809,165 @@ export class Map extends GameObject
             if @batches[l_name]
                 for f_name, batch in pairs(@batches[l_name])
                     Game.drawObject(@, batch)
-        --for hb in *@hbList 
-        --    hb\draw!
 
---HITBOX
-export class Hitbox extends GameObject
-    translate = { rect: 'rectangle' }
+--PHYSICS
+export class Physics 
+    world_config = {}
+    body_config = {}
+    joint_config = {}
 
-    @at: (x,y) -> HC.shapesAt(x,y)   
+    worlds = {}
+    @custom_grav_helpers = {}
+    @debug = false
+    @update = (dt) ->
+        for name, world in pairs(worlds)
+            world\update dt
+        for helper in *Physics.custom_grav_helpers
+            helper\update dt
 
-    @test: (x,y,tag) ->
-        boxes = Hitbox.at(x,y)
-        for hb in *boxes
-            if hb.tag == tag then return true 
-        return false
+    @getWorldConfig = (name) -> world_config[name]
+    @world = (name, opt) ->
+        if type(name) == 'table'
+            opt = name 
+            name = '_default'
+        if opt 
+            world_config[name] = opt 
+            table.defaults world_config[name], {
+                gravity: 0
+                gravity_direction: 90
+                sleep: true
+            }
+        if not worlds[name]
+            worlds[name] = love.physics.newWorld()
+        w = worlds[name]
+        c = world_config[name]
+        -- set properties
+        w\setGravity(Math.getXY(c.gravity_direction, c.gravity))
+        w\setSleepingAllowed(c.sleep)
+        return worlds[name]
+        
+    @getJointConfig = (name) -> joint_config[name]
+    @joint = (name, opt) -> 
+        if not worlds['_default'] then Physics.world('_default', {})
+        if opt
+            joint_config[name] = opt
+            return
 
-    new: (shape,dims,tag) =>
-        super!
-        shape = translate[shape] or shape
-        @hb = HC[shape](unpack(dims))
-        @hb.ref = @
-        @hb.tag = tag
-        @offx = 0
-        @offy = 0
-    scaleTo: (s) => 
-        if @_last_scale then 
-            @hb\scale 1/@_last_scale
-        @hb\scale s
-        @_last_scale = s
-    move: (x,y) => @hb\move(x,y)
-    moveTo: (x,y) => @hb\moveTo(x + @offx,y + @offy)
-    center: () => @hb\center!
-    collisions: (fn) =>
-        for shape, delta in pairs(HC.collisions(@hb))
-            fn shape, delta
-    _draw: () =>
-        Draw.stack () ->
+    @getBodyConfig = (name) -> body_config[name]
+    @body = (name, opt) ->
+        if not worlds['_default'] then Physics.world('_default', {})
+        if opt
+            body_config[name] = opt
+            table.defaults body_config[name], {
+                x: 0
+                y: 0
+                angularDamping: 0
+                gravity: 0
+                gravity_direction: 0
+                type: 'static'
+                fixedRotation: false
+                bullet: false
+                inertia: 0
+                linearDamping: 0
+                shapes: {}
+            }
+            return
+        assert(body_config[name], "Physics config missing for '#{name}'")
+        c = body_config[name]
+        if not c.world then c.world = '_default'
+        assert(worlds[c.world], "Physics world '#{c.world}' config missing (for body '#{name}')")
+        -- create the body
+        body = love.physics.newBody(worlds[c.world], c.x, c.y, c.type)
+        helper = BodyHelper body
+        -- set props
+        props = {'angularDamping','fixedRotation','bullet','inertia','linearDamping'}
+        for p in *props do body['set'..string.capitalize(p)](body,c[p])
+        helper\setGravity c.gravity, c.gravity_direction
+        shapes = {}
+        for s in *c.shapes
+            shape = nil
+            table.defaults s, {
+                density: 0
+            }
+            switch s.type
+                when "rect"
+                    table.defaults s, {
+                        width: 1
+                        height: 1
+                        offx: 0
+                        offy: 0
+                        angle: 0
+                    }
+                    shape = love.physics.newRectangleShape(s.offx,s.offy,s.width,s.height,s.angle)
+                when "circle"
+                    table.defaults s, {
+                        offx: 0
+                        offy: 0
+                        radius: 1
+                    }
+                    shape = love.physics.newCircleShape(s.offx,s.offy,s.radius)
+                when "polygon"
+                    table.defaults s, {
+                        points: {}
+                    }
+                    assert(#s.points >= 6, "Physics polygon must have 3 or more vertices (for body '#{name}')")
+                    shape = love.physics.newPolygonShape(s.points)
+                when "chain"
+                    table.defaults s, {
+                        loop: false
+                        points: {}
+                    }
+                    assert(#s.points >= 4, "Physics polygon must have 2 or more vertices (for body '#{name}')")
+                    shape = love.physics.newChainShape(s.loop, s.points)
+                when "edge"
+                    table.defaults s, {
+                        points: {}
+                    }
+                    assert(#s.points >= 4, "Physics polygon must have 2 or more vertices (for body '#{name}')")
+                    shape = love.physics.newEdgeShape(unpack(s.points))
+            if shape then 
+                fix = love.physics.newFixture(body,shape,s.density)
+                table.insert(shapes, shape)
+        return body, shapes
+    
+    @setGravity = (body, angle, dist) ->
+        helper = body\getUserData!
+        helper\setGravity(angle, dist)
+
+    @draw = (world_name='_default') ->
+        if Physics.debug
+            world = worlds[world_name]
             Draw.color(1,0,0,0.25)
-            @hb\draw('fill')
+            for _, body in pairs(world\getBodies!)
+                for _, fixture in pairs(body\getFixtures!)
+                    shape = fixture\getShape!
+                    if shape\typeOf("CircleShape")
+                        cx, cy = body\getWorldPoints shape\getPoint!
+                        Draw.circle 'fill', cx, cy, shape\getRadius!
+                    elseif shape\typeOf("PolygonShape")
+                        Draw.poly 'fill', body\getWorldPoints(shape\getPoints!)
+                    else 
+                        Draw.line body\getWorldPoints shape\getPoints!
+            Draw.color()
+
+--PHYSICS.BODYHELPER
+export class BodyHelper
+    new: (body) =>
+        @body = body
+        @body\setUserData(helper)
+
+        @gravx, @gravy = 0, 0
+        @grav_added = false
+    update: (dt) =>
+        if @grav_added
+            @body\applyForce(@gravx,@gravy)
+    setGravity: (angle, dist) =>
+        if dist > 0
+            @gravx, @gravy = Math.getXY(angle, dist)
+            @body\setGravityScale(0)
+            if not @grav_added
+                table.insert(Physics.custom_grav_helpers, @)
+                @grav_added = true
 
 --BLANKE
 export Blanke = {
@@ -870,6 +976,8 @@ export Blanke = {
 
     update: (dt) ->
         if Game.options.update(dt) == true then return
+
+        Physics.update dt
 
         len = #Game.updatables
         for o = 1, len
@@ -891,6 +999,7 @@ export Blanke = {
                     if obj.draw then obj\draw(() -> if obj._draw then obj\_draw!)
                     else if obj._draw then obj\_draw!
             if Game.options.postDraw then Game.options.postDraw!
+            Physics.draw!
        
         _draw = () ->
             if Camera.count! > 0
@@ -957,4 +1066,4 @@ love.run = () ->
 
     if love.timer then love.timer.sleep(0.0001)
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map, :Hitbox }
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map, :Physics }

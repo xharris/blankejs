@@ -16,16 +16,12 @@
             "level1.map"
         ],
         [
+            "Add a map=new+?",
+            "Add a map"
+        ],
+        [
             "conf.lua=script+?",
             "conf.lua"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "autoplay_preview": true,
