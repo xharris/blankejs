@@ -20,7 +20,7 @@ Input {
     right: { "right", "d" }
     jump: { "up", "w" }
     action: { 'space', 'mouse1' }
-}, { no_repeat: { "up" } }
+}, { no_repeat: { "jump" } }
 
 Camera "player"
 
@@ -35,26 +35,30 @@ Entity "Player", {
 	animations: {'soldier_stand','soldier_walk'},
 	align: "center",
 	scale: 0.5,
-	gravity: 20
+	gravity: 20,
+	hitbox: true,
+	margin: 3,
+	collision: (other) =>
+		if other.y > @y
+			@vspeed = 0
+		return 'slide'
 	draw: (d) =>
 		d!
 		Draw {
 			{ 'color', 0, 0, 1 },
-			{ 'print', @x .. ', ' .. @y, @x, @y - 40 },
+			{ 'print', @hspeed .. ', ' .. @vspeed, @x, @y - 40 },
 			{ 'rect', 'fill', @x, @y + (@height / 2), 2, 2 },
 			{ 'color' }
 		}
-	hspeed: 0,
-	vpseed: 0,
     update: (dt) =>
 		-- left/right
-        dx = 800
+        dx = 150
 		@hspeed = 0
         if Input.pressed('right')
 			@hspeed = dx
 			@scalex = 1
         if Input.pressed('left')
-			@hspeed = dx
+			@hspeed = -dx
 			@scalex = -1
 			
 		if Input.pressed('right') or Input.pressed('left')
@@ -62,6 +66,6 @@ Entity "Player", {
 		else
 			@animation = 'soldier_stand'
 		-- jumping
-        if Input.released('jump')
-			@vspeed = -50
+        if Input.pressed('jump')
+			@vspeed = -300
 }

@@ -38,7 +38,7 @@ string.contains = (str,q) -> (string.match(str, q) ~= nil)
 string.capitalize = (str) -> string.upper(string.sub(str,1,1))..string.sub(str,2)
 
 --UTIL.math
-import sin, cos, rad, deg from math
+import sin, cos, rad, deg, abs from math
 floor = (x) -> math.floor(x+0.5)
 export Math = {
     random: (...) -> love.math.random(...)
@@ -334,8 +334,11 @@ export class _Entity extends GameObject
     new: (args, spawn_args, classname) =>
         super args, spawn_args
 
+        @hspeed = 0
+        @vspeed = 0
         @gravity = 0
         @gravity_direction = 90
+        @margin = 0
 
         table.update(@, args)
         @classname = classname
@@ -374,6 +377,9 @@ export class _Entity extends GameObject
         if args.joint
             Physics.joint @classname, args.joint
             @joint = Physics.joint @classname
+        -- hitbox
+        if args.hitbox
+            Hitbox.add(@)
 
         @addUpdatable!
         @addDrawable!
@@ -389,6 +395,14 @@ export class _Entity extends GameObject
         if @animation 
             @_updateSize(@animList[@animation])
         if @update then @update(dt)
+        if @gravity ~= 0
+            gravx, gravy = Math.getXY(@gravity_direction, @gravity)
+            @hspeed += gravx
+            @vspeed += gravy
+        @x += @hspeed * dt
+        @y += @vspeed * dt
+        if @hasHitbox
+            @x, @y = Hitbox.move(@)
         if @body
             new_x, new_y = @body\getPosition!
             if @x == last_x then @x = new_x
@@ -775,7 +789,9 @@ export class Map extends GameObject
         -- hitbox
         hb_name = if options.tile_hitbox then options.tile_hitbox[string.gsub(FS.basename(file), '.'..FS.extname(file), '')]
         body = nil
+        tile_info = { :id, x:x, y:y, width:tw, height:th }
         if hb_name
+            tile_info.tag = hb_name
             if options.use_physics
                 hb_key = hb_name..'.'..tw..'.'..th
                 if not Physics.getBodyConfig(hb_key)
@@ -792,9 +808,10 @@ export class Map extends GameObject
                     }
                 body = Physics.body hb_key
                 body\setPosition(x,y)
-            else 
-                5
-        tile_info = { :id, :body }
+                tile_info.body = body
+        if not options.use_physics and tile_info.tag
+            Hitbox.add(tile_info)
+
     _spawnEntity: (ent_name, opt) =>
         Game.spawn(ent_name, opt)
     spawnEntity: (ent_name, x, y, layer) =>
@@ -969,6 +986,41 @@ export class BodyHelper
                 table.insert(Physics.custom_grav_helpers, @)
                 @grav_added = true
 
+--HITBOX
+export class Hitbox
+    world = bump.newWorld()
+    @add = (obj) ->
+        if obj.x and obj.y and obj.width and obj.height
+            if obj.classname then obj.tag = obj.classname
+            table.defaults obj, {
+                alignx: 0
+                aligny: 0
+                margin: 0
+            }
+            m = obj.margin
+            world\add(obj, obj.x + m, obj.y + m, abs(obj.width) - (m*2), abs(obj.height) - (m*2))
+            obj.hasHitbox = true
+    -- ignore collisions
+    @teleport = (obj) -> 
+        m = obj.margin
+        world\update(obj, obj.x + m, obj.y + m, abs(obj.width) - (m/2), abs(obj.height) - (m/2))
+    @move = (obj) -> 
+        filter = nil
+        if obj.collision
+            filter = (item, other) ->
+                return obj.collision item, other
+        m = obj.margin
+        return world\move(obj, obj.x, obj.y, filter)
+    @remove = (obj) ->
+        world\remove(obj)
+    @draw = () ->
+        items, len = world\getItems!
+        --print 'items',len
+        Draw.color(1,0,0,0.25)
+        for i in *items
+            Draw.rect('fill',world\getRect(i))
+        Draw.color()
+
 --BLANKE
 export Blanke = {
     load: () ->
@@ -1000,6 +1052,7 @@ export Blanke = {
                     else if obj._draw then obj\_draw!
             if Game.options.postDraw then Game.options.postDraw!
             Physics.draw!
+            Hitbox.draw!
        
         _draw = () ->
             if Camera.count! > 0
