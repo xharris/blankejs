@@ -26,6 +26,41 @@ const engine = {
 	add_script_templates: {
 		'script': `import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map from require "blanke"`
     },
+    entity_sprite_parse: (str_line, cb) => {
+		// use the first frame
+		let re_frame_size = /frame_size\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+		let re_offset = /offset\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+		let re_frame = /frames\s*:\s*(\d+)/;
+		let re_spacing = /spacing\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+		let re_comment = /\/(?:\/|\*).*/;
+
+        /*
+		let match;
+		if (match = re_frame_size.exec(text.replace(re_comment,''))) {
+			info.cropped = true;
+			info.frame_size = [parseInt(match[1]),parseInt(match[2])];
+		} else {
+			// get image size
+			let img = new Image();
+			img.onload = () => {
+				info.frame_size = [img.width, img.height];
+				cb(null, info);
+			}
+			img.src = 'file://'+info.path;
+		}
+		if (match = re_offset.exec(text.replace(re_comment,''))) 
+			info.offset = [parseInt(match[1]),parseInt(match[2])];
+
+		if (match = re_frame.exec(text.replace(re_comment,''))) 
+			info.frames = parseInt(match[1]);
+
+		if (match = re_spacing.exec(text.replace(re_comment,''))) {
+			info.offset[0] += parseInt(match[1]);
+			info.offset[1] += parseInt(match[1]);
+		}
+        if (info.cropped) cb(info);
+        */
+    },
     play: (options) => {
         writeConf();
         let eng_path = 'love'; // linux, mac?

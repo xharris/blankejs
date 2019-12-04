@@ -1,4 +1,4 @@
-import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map, Physics from require "blanke"
+import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map, Physics, Hitbox from require "blanke"
 
 import p from require "moon"
 
@@ -24,20 +24,17 @@ Input {
 
 Camera "player"
 
-Image.animation 'soldier_full.png', {
-	{ name: 'soldier_walk', frames:{ '1-6' }, rows:2, cols:3 },
-	{ name: 'soldier_stand', frames:{ 3 } }
-}, { rows:2, cols:3, duration:0.1 }
+Image.animation 'player_stand.png'
+Image.animation 'player_walk.png', { { rows:1, cols:2, duration: 0.2 } }
 
+Hitbox.debug = true
 
 Entity "Player", {
 	camera: 'player',
-	animations: {'soldier_stand','soldier_walk'},
+	animations: {'player_stand','player_walk'},
 	align: "center",
-	scale: 0.5,
 	gravity: 10,
 	hitbox: true,
-	margin: 2,
 	can_jump: true,
 	collFilter: (other) =>
 		return 'slide'
@@ -47,6 +44,9 @@ Entity "Player", {
 			@vspeed = 0
     update: (dt) =>
 		-- left/right
+		--p @hitArea
+		print @alignx, @aligny, @animList['player_walk'].frame_len
+		p @hitArea
         dx = 150
 		@hspeed = 0
         if Input.pressed('right')
@@ -57,9 +57,9 @@ Entity "Player", {
 			@scalex = -1
 			
 		if Input.pressed('right') or Input.pressed('left')
-			@animation = 'soldier_walk'
+			@animation = 'player_walk'
 		else
-			@animation = 'soldier_stand'
+			@animation = 'player_stand'
 		-- jumping
         if Input.pressed('jump') and @can_jump
 			@vspeed = -300

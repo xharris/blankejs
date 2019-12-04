@@ -50,6 +50,7 @@ export FS = {
     basename: (str) -> string.gsub(str, "(.*/)(.*)", "%2")
     dirname: (str) -> if string.match(str,".-/.-") then return string.gsub(str, "(.*/)(.*)", "%1") else return ''
     extname: (str) -> if str = string.match(str,"^.+(%..+)$") then return string.sub(str,2)
+    removeExt: (str) -> string.gsub(str, '.'..FS.extname(str), '')
 }
 
 -- needed extra libraries
@@ -107,7 +108,21 @@ export class Game
                 :args
                 :spawn_class
             }
-
+    @checkAlign = (obj) ->
+        ax, ay = 0, 0
+        if obj.align then
+            if string.contains(obj.align, 'center')
+                ax = obj.width/2 
+                ay = obj.height/2
+            if string.contains(obj.align,'left')
+                ax = 0
+            if string.contains(obj.align, 'right')
+                ax = obj.width
+            if string.contains(obj.align, 'top')
+                ay = 0
+            if string.contains(obj.align, 'bottom')
+                ay = obj.height
+        obj.alignx, obj.aligny = ax, ay
     @drawObject = (gobj, ...) ->
         props = gobj
         if gobj.parent then props = gobj.parent
@@ -119,26 +134,14 @@ export class Game
                 last_blend = Draw.getBlendMode()
                 Draw.setBlendMode(unpack(props.blendmode))
             for lobj in *lobjs
-                ax, ay = 0, 0
-                if props.align then
-                    if string.contains(props.align, 'center')
-                        ax = gobj.width/2 
-                        ay = gobj.height/2
-                    if string.contains(props.align,'left')
-                        ax = 0
-                    if string.contains(props.align, 'right')
-                        ax = gobj.width
-                    if string.contains(props.align, 'top')
-                        ay = 0
-                    if string.contains(props.align, 'bottom')
-                        ay = gobj.height
-                props.alignx, props.aligny = ax/2, ay/2
+                Game.checkAlign props
+                ax, ay = props.alignx, props.aligny
                 if gobj.quad then 
-                    love.graphics.draw lobj, gobj.quad, props.x, props.y, math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
-                        props.offx + ax, props.offy + ay, props.shearx, props.sheary
+                    love.graphics.draw lobj, gobj.quad, floor(props.x), floor(props.y), math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
+                        floor(props.offx + props.alignx), floor(props.offy + props.aligny), props.shearx, props.sheary
                 else
-                    love.graphics.draw lobj, props.x, props.y, math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
-                        props.offx + ax, props.offy + ay, props.shearx, props.sheary
+                    love.graphics.draw lobj, floor(props.x), floor(props.y), math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
+                        floor(props.offx + props.alignx), floor(props.offy + props.aligny), props.shearx, props.sheary
             if last_blend
                 Draw.setBlendMode(last_blend)
 
@@ -262,8 +265,12 @@ export class Image extends GameObject
                 info.h = info.img\getHeight!
                 info_cache[name] = info
             return info_cache[name]
+    -- options: cols, rows, offx, offy, frames ('1-3',4,5), duration, durations
     @animation = (file, anims, all_opt={}) ->
         img = love.graphics.newImage(Game.res('image',file))
+        if not anims then anims = {
+            { name:FS.removeExt(FS.basename(file)), cols:1, rows:1, frames:{1} }
+        }
         for anim in *anims
             o = (k) -> anim[k] or all_opt[k]
             quads, durations = {}, {}
@@ -271,7 +278,7 @@ export class Image extends GameObject
             offx, offy = o('offx') or 0, o('offy') or 0
             -- calculate frame list
             frame_list = {}
-            for f in *o('frames')
+            for f in *o('frames') or {'1-'..(o('cols')*o('rows'))}
                 f_type = type(f)
                 if f_type == 'number'
                     table.insert(frame_list, f)
@@ -283,7 +290,7 @@ export class Image extends GameObject
             for f in *frame_list
                 x,y = Math.indexTo2d(f, o('cols'))
                 table.insert(quads, love.graphics.newQuad((x-1)*fw,(y-1)*fh,fw,fh,img\getWidth!,img\getHeight!))
-            animations[anim.name] = {file:file, duration:o('duration'), durations:o('durations') or {}, quads:quads, w:fw, h:fh, frame_size:{fw,fh}}
+            animations[anim.name or FS.removeExt(FS.basename(file))] = {file:file, duration:o('duration') or 1, durations:o('durations') or {}, quads:quads, w:fw, h:fh, frame_size:{fw,fh}}
     new: (args) =>
         super!
         -- animation?
@@ -326,7 +333,6 @@ export class Image extends GameObject
                 @t = 0
             @quad = @quads[@frame_index]
     _draw: () => 
-        @x, @y = floor(@x), floor(@y)
         @updateSize!
         Game.drawObject(@, @image)
 
@@ -364,6 +370,7 @@ export class _Entity extends GameObject
                 @_updateSize(@animList[args.animations])
         for _,img in pairs(@imageList) do img.parent = @
         for _,anim in pairs(@animList) do anim.parent = @
+        Game.checkAlign @
         -- effect
         if args.effect
             if type(args.effect) == 'table'
@@ -390,7 +397,7 @@ export class _Entity extends GameObject
         if @body then @body\setPosition @x, @y
     
     _updateSize: (obj) =>
-        @width, @height = obj.width * @scalex*@scale, obj.height * @scaley*@scale
+        @width, @height = abs(obj.width * @scalex*@scale), abs(obj.height * @scaley*@scale)
     _update: (dt) =>
         last_x, last_y = @x, @y
         if @animation 
@@ -789,7 +796,7 @@ export class Map extends GameObject
         quad = quads[quad_hash]
         id = sb\add(quad,floor(x),floor(y),0)
         -- hitbox
-        hb_name = if options.tile_hitbox then options.tile_hitbox[string.gsub(FS.basename(file), '.'..FS.extname(file), '')]
+        hb_name = if options.tile_hitbox then options.tile_hitbox[FS.removeExt(FS.basename(file))]
         body = nil
         tile_info = { :id, x:x, y:y, width:tw, height:th }
         if hb_name
@@ -995,30 +1002,34 @@ export class Hitbox
     @add = (obj) ->
         if obj.x and obj.y and obj.width and obj.height
             if obj.classname then obj.tag = obj.classname
-            table.defaults obj, {
-                alignx: 0
-                aligny: 0
-                margin: 0
-            }
-            m = obj.margin
-            world\add(obj, obj.x - m + obj.alignx, obj.y - m + obj.aligny, abs(obj.width) - (m*2), abs(obj.height) - (m*2))
+            if not obj.hitArea
+                if obj.classname == "Player"
+                    print obj.alignx, obj.aligny
+                obj.hitArea = {
+                    left: obj.alignx or 0
+                    top: obj.aligny or 0
+                    right: 0
+                    bottom: 0
+                }
+            ha = obj.hitArea
+            world\add(obj, obj.x - ha.left, obj.y - ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
             obj.hasHitbox = true
     -- ignore collisions
-    @teleport = (obj) -> 
-        m = obj.margin
-        world\update(obj, obj.x - m + obj.alignx, obj.y - m + obj.aligny, abs(obj.width) - (m/2), abs(obj.height) - (m/2))
+    @teleport = (obj) ->
+        ha = obj.hitArea
+        world\update(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
     @move = (obj) -> 
         filter = nil
         if obj.collFilter
             filter = (item, other) ->
                 return obj.collFilter item, other
-        m = -obj.margin
-        new_x, new_y, cols = world\move(obj, obj.x - m - obj.alignx, obj.y - m - obj.aligny, filter)
+        ha = obj.hitArea
+        new_x, new_y, cols = world\move(obj, obj.x - ha.left, obj.y - ha.top, filter)
         if obj.collision and #cols > 0
             for col in *cols 
                 obj\collision col 
-        obj.x = new_x + m + obj.alignx
-        obj.y = new_y + m + obj.aligny
+        obj.x = new_x + ha.left
+        obj.y = new_y + ha.top
     @remove = (obj) ->
         world\remove(obj)
     @draw = () ->
@@ -1128,4 +1139,4 @@ love.run = () ->
 
     if love.timer then love.timer.sleep(0.0001)
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map, :Physics }
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map, :Physics, :Hitbox }
