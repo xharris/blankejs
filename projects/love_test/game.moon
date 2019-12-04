@@ -34,8 +34,12 @@ Entity "Player", {
 	animations: {'player_stand','player_walk'},
 	align: "center",
 	gravity: 10,
-	hitbox: true,
 	can_jump: true,
+	hitbox: true,
+	hitArea: {
+		left: -5
+		right: -10
+	},
 	collFilter: (other) =>
 		return 'slide'
 	collision: (v) =>
@@ -43,10 +47,7 @@ Entity "Player", {
 			@can_jump = true
 			@vspeed = 0
     update: (dt) =>
-		-- left/right
-		--p @hitArea
-		print @alignx, @aligny, @animList['player_walk'].frame_len
-		p @hitArea
+		-- left/right\
         dx = 150
 		@hspeed = 0
         if Input.pressed('right')

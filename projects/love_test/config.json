@@ -1,0 +1,64 @@
+{
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns",
+    "first_scene": null,
+    "size": [
+        800,
+        600
+    ],
+    "quick_access": [
+        [
+            "View assets=?",
+            "View assets"
+        ],
+        [
+            "game.moon=script+entity+?",
+            "game.moon"
+        ],
+        [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
+            "Add a map=new+?",
+            "Add a map"
+        ],
+        [
+            "conf.lua=script+?",
+            "conf.lua"
+        ]
+    ],
+    "autoplay_preview": true,
+    "scene": {
+        "objects": {
+            "e6d1877c": {
+                "name": "Player",
+                "char": ">",
+                "color": "#47abe0",
+                "size": [
+                    33,
+                    33
+                ],
+                "uuid": "e6d1877c",
+                "size_changed": true
+            }
+        },
+        "object_order": [
+            "e6d1877c"
+        ]
+    },
+    "export": {
+        "name": "love_test",
+        "web_autoplay": false,
+        "scale_mode": "linear",
+        "frameless": false,
+        "minify": true,
+        "scale": true,
+        "resizable": false
+    },
+    "enabled_plugins": {
+        "xhh-platformer": false,
+        "xhh-tween": false,
+        "xhh-effect": false
+    }
+}

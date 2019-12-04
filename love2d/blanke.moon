@@ -1002,17 +1002,17 @@ export class Hitbox
     @add = (obj) ->
         if obj.x and obj.y and obj.width and obj.height
             if obj.classname then obj.tag = obj.classname
-            if not obj.hitArea
-                if obj.classname == "Player"
-                    print obj.alignx, obj.aligny
-                obj.hitArea = {
-                    left: obj.alignx or 0
-                    top: obj.aligny or 0
-                    right: 0
-                    bottom: 0
-                }
+            if not obj.hitArea then obj.hitArea = {}
+            if not obj.alignx then obj.alignx = 0
+            if not obj.aligny then obj.aligny = 0
+            table.defaults obj.hitArea, {
+                left: -obj.alignx
+                top: -obj.aligny
+                right: 0
+                bottom: 0
+            }
             ha = obj.hitArea
-            world\add(obj, obj.x - ha.left, obj.y - ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
+            world\add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
             obj.hasHitbox = true
     -- ignore collisions
     @teleport = (obj) ->
@@ -1024,12 +1024,12 @@ export class Hitbox
             filter = (item, other) ->
                 return obj.collFilter item, other
         ha = obj.hitArea
-        new_x, new_y, cols = world\move(obj, obj.x - ha.left, obj.y - ha.top, filter)
+        new_x, new_y, cols = world\move(obj, obj.x + ha.left, obj.y + ha.top, filter)
         if obj.collision and #cols > 0
             for col in *cols 
                 obj\collision col 
-        obj.x = new_x + ha.left
-        obj.y = new_y + ha.top
+        obj.x = new_x - ha.left
+        obj.y = new_y - ha.top
     @remove = (obj) ->
         world\remove(obj)
     @draw = () ->
