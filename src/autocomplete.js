@@ -18,61 +18,54 @@ let prop_xyz = [
 ]
 let prop_pixi_point = (name) => ({ prop: name || 'point', info: '{ x, y, set(x, y=x) }' })
 let prop_gameobject = [
-	prop_z,
-	{ fn: 'getRect', info: 'returns a bounding box Rectangle'},
-	{ prop: 'rect', info: 'get/set Rectangle for object\'s hitArea' },
-	{ prop: 'visible' },
+	...prop_xyz,
+	...(['angle','scalex','scaley','scale','width','height','offx','offy','shearx','sheary'].map(p => ({ prop:p }))),
+	{ prop: 'align', info: 'left/right top/bottom center'},
+	{ prop: 'blendmode', info: '{ mode, alphamode }'},
+	{ prop: 'uuid' },
+	{ fn: 'setEffect', vars: { name:'...' } },
 	{ prop: 'effect' },
-	{ fn: 'getTexture', info: 'returns a PIXI.Teture' }
+	{ fn: 'destroy' }
 ]
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
 // used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
 module.exports.keywords = [
-	'break','case','catch','class','const','continue','debugger','default','delete',
-	'do','else','export','extends','finally','for','function','if','import','in',
-	'instanceof','new','return','super','switch','this','throw','try','typeof',
-	'var','void','while','with','yield'
+	"class", "extends", "if", "then", "super", "do", "with",
+	"import", "export", "while", "elseif", "return", "for",
+	"in", "from", "when", "using", "else", "and", "or", "not",
+	"switch", "break"
 ]
 
 // TestScene is included just so it looks nice
 module.exports.class_list = [
-	'Asset','Audio','Canvas','Draw','Event',
-	'Game','Hitbox','Input','Map','Matrix',
-	'Rectangle','Scene','Sprite','Text',
-	'Util','Effect','Entity','View','Timer',
-	'TestScene','TestView'
+	'Blanke','Game','Canvas','Image','Entity',
+	'Inputs','Draw','Audio','Effect','Math',
+	'Map','Physics','Hitbox'
 ];
 
 module.exports.class_extends = {
-    'entity': /\bclass\s+(\w+)\s+extends\s+Entity/g
+    'entity': /\bEntity\s+[\'\"](\w+)[\'\"]\s*,/g
 }
 
 module.exports.instance = {
-	'entity': [
-		/\b(\w+)\s*=\s*new\s+<class_name>\s*\(/g,
-		/\b(\w+)\s*=\s*(?:\w+)\s*\.\s*spawnEntity\s*\(\s*<class_name>\s*,/g
-	],
-	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)\s+?/g,
-	'draw': /\b(\w+)\s*=\s*new\s+Draw\s*\(/g,
-	'sprite': /\b(\w+)\s*=\s*new\s+Sprite\s*\(\s*\{[\s\w\[\]:"',.]+\}\s*\)/g,
-	'view': [
-		/\b(\w+)\s*=\s*View\s*\([\s\w"']+\)/g,
-		/\b(\w+)\s*=\s*TestView\s*\([\s\w"',]+\)/g
-	]
+	'entity': /\b(\w+)\s*=\s*Game\.spawn\(\s*[\'\"]<class_name>[\'\"]\s*\)/g,
+	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)/g,
+	'sprite': /\b(\w+)\s*=\s*new\s+Sprite\s*\(\s*\{[\s\w\[\]:"',.]+\}\s*\)/g
 }
 
 module.exports.user_words = {
 	'var':[
 		// single var
-		/([a-zA-Z_]\w+?)\s*=\s(?!function|\(\)\s*=>)/g,
-		/(?:let|var)\s+([a-zA-Z_]\w+)/g,
+		/([a-zA-Z_]\w+?)\s*=\s(?!function|\(\)\s*[-|=]>)/g,
+		/(?:local)\s+([a-zA-Z_]\w+)/g,
+		/(@?[a-zA-Z_]\w+)/g,
 		// comma separated var list
 		/(?:let|var)\s+(?:[a-zA-Z_]+[\w\s=]+?,\s*)+([a-zA-Z_]\w+)(?!\s*=)/g
 	],
 	'fn':[
 		// var = function
-		/([a-zA-Z_]\w+?)\s*=\s(?:function|\(\)\s*=>)/g,
+		/([a-zA-Z_]\w+?)\s*=\s(?:function|\(\)\s*[-|=]>)/g,
 		// function var()
 		/function\s+([a-zA-Z_]\w+)\s*\(/g
 	]
@@ -100,20 +93,6 @@ module.exports.hints = {
 	"global":[
 		{ fn: "Scene", vars: { name:'', callbacks:'{ onStart, onUpdate, onEnd }' } },
 		{ fn: "Draw", vars: { args:'...' } }
-	],
-	"blanke-game":[
-		{ prop: 'time', info: 'elapsed dt' },
-		{ prop: 'ms', info: 'elapsed ms' },
-		{ prop: 'os', info: 'ide/win/mac/linux/android/ios' },
-		{ prop: 'width' },
-		{ prop: 'height' },
-		{ prop: 'background_color', info: 'get/set' },
-		{ prop: 'paused', info: 'whether game is paused or not' },
-		{ fn: 'pause', info: '[!] for use in IDE' },
-		{ fn: 'resume', info: '[!] for use in IDE' },
-		{ fn: 'step', info: '[!] for use in IDE' },
-		{ prop: 'fullscreen', info: 'get/set. will not work in IDE mode'},
-		{ fn: 'end' }
 	],
 	"blanke-util":[
 		{ fn: 'uuid' },
@@ -283,5 +262,18 @@ module.exports.hints = {
 	"blanke-timer":[
 		{ fn: 'after', vars: { ms:'', func:'' } },
 		{ fn: 'every', vars: { ms:'', func:'return true to stop this from running' } }
+	],
+
+	"blanke-math":[
+		{ fn: 'random', vars: { min:'opt', max:'opt' } },
+		{ fn: 'indexTo2d', vars: { i:'', col:'' } },
+		{ fn: 'getXY', vars: { angle:'', dist:'' } }
+	],
+	"blanke-game":[
+		{ prop: 'options' },
+		{ prop: 'config' },
+		{ fn: 'res', vars: { type:'image/audio/map', file:'' } },
+		{ fn: 'spawn', vars: { classname:'', args:'opt' } },
+		{ fn: 'setBackgroundColor', vars: { r:'', g:'', b:'', a:'' } }
 	]
 }

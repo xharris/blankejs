@@ -78,10 +78,6 @@ export class Game
     @width = 0
     @height = 0
 
-    @graphics = {
-        clear: (...) -> love.graphics.clear(...)
-    }
-
     new: (args) =>
         table.update(@@options, args, {'res','filter','load','draw','update','postDraw'})
         return nil
@@ -160,7 +156,7 @@ export class Game
 
     @res: (_type, file) -> "#{Game.options.res}/#{_type}/#{file}"
 
-    @setBackgroundColor: (...) -> love.graphics.setBackgroundColor(...)
+    @setBackgroundColor: (...) -> love.graphics.setBackgroundColor(Draw.parseColor(...))
 
 --GAMEOBJECT
 export class GameObject 
@@ -492,11 +488,19 @@ export class Draw
             name, args = instr[1], table.slice(instr,2)
             assert(Draw[name], "bad draw instruction '#{name}'")
             Draw[name](unpack(args))
+
+    @parseColor = (...) ->
+        args = {...}
+        if Color[args[1]] then 
+            args = Color[args[1]]
+            for a,arg in ipairs(args) do 
+                if arg > 1 then args[a] = arg / 255
+        if #args == 0 then args = {1,1,1,1}
+        if not args[4] then args[4] = 1
+        return args[1], args[2], args[3], args[4]
+
     @color = (...) ->
-        if #{...} == 0 then
-            love.graphics.setColor(1,1,1,1)
-        else 
-            love.graphics.setColor(...)
+        love.graphics.setColor(Draw.parseColor(...))
 
     @getBlendMode = () -> love.graphics.getBlendMode()
     @setBlendMode = (...) -> love.graphics.setBlendMode(...)
@@ -530,6 +534,32 @@ draw_aliases = {
     setLineWidth: 'lineWidth'
 }
 for fn in *draw_functions do Draw[draw_aliases[fn] or fn] = (...) -> love.graphics[fn](...)
+
+export Color = {
+    red:        {244,67,54},
+    pink:       {240,98,146},
+    purple:     {156,39,176},
+    deeppurple: {103,58,183},
+    indigo:     {63,81,181},
+    blue:       {33,150,243},
+    lightblue:  {3,169,244},
+    cyan:       {0,188,212},
+    teal:       {0,150,136},
+    green:      {76,175,80},
+    lightgreen: {139,195,74},
+    lime:       {205,220,57},
+    yellow:     {255,235,59},
+    amber:      {255,193,7},
+    orange:     {255,152,0},
+    deeporange: {255,87,34},
+    brown:      {121,85,72},
+    grey:       {158,158,158},
+    bluegray:   {96,125,139},
+    white:      {255,255,255},
+    white2:     {250,250,250},
+    black:      {0,0,0},
+    black2:     {33,33,3}
+}
 
 --AUDIO
 export class Audio

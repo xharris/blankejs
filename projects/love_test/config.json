@@ -8,12 +8,12 @@
     ],
     "quick_access": [
         [
-            "View assets=?",
-            "View assets"
-        ],
-        [
             "game.moon=script+entity+?",
             "game.moon"
+        ],
+        [
+            "View assets=?",
+            "View assets"
         ],
         [
             "level1.map=map+?",

@@ -8,6 +8,11 @@ Game {
     load: () ->
         Game.setBackgroundColor(1,1,1,1)
         Map.load('level1.map')
+	draw: (d) ->
+		Draw {
+			{ 'color', 'pink' }
+			{ 'rect', 'fill', 50, 50, 100, 100 }
+		}
 }
 
 Map.config {
@@ -43,7 +48,7 @@ Entity "Player", {
 	collFilter: (other) =>
 		return 'slide'
 	collision: (v) =>
-		if v.normal.y ~= 0
+		if v.normal.y < 0
 			@can_jump = true
 			@vspeed = 0
     update: (dt) =>
@@ -65,4 +70,8 @@ Entity "Player", {
         if Input.pressed('jump') and @can_jump
 			@vspeed = -300
 			@can_jump = false
+			
+		if @vspeed ~= 0 or not @can_jump
+			@animation = 'player_walk'
+			@animList['player_walk'].frame_index = 2
 }
