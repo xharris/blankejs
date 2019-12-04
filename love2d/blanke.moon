@@ -132,6 +132,7 @@ export class Game
                         ay = 0
                     if string.contains(props.align, 'bottom')
                         ay = gobj.height
+                props.alignx, props.aligny = ax/2, ay/2
                 if gobj.quad then 
                     love.graphics.draw lobj, gobj.quad, props.x, props.y, math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
                         props.offx + ax, props.offy + ay, props.shearx, props.sheary
@@ -402,7 +403,8 @@ export class _Entity extends GameObject
         @x += @hspeed * dt
         @y += @vspeed * dt
         if @hasHitbox
-            @x, @y = Hitbox.move(@)
+            new_x, new_y = Hitbox.move(@)
+
         if @body
             new_x, new_y = @body\getPosition!
             if @x == last_x then @x = new_x
@@ -989,6 +991,7 @@ export class BodyHelper
 --HITBOX
 export class Hitbox
     world = bump.newWorld()
+    @debug = false
     @add = (obj) ->
         if obj.x and obj.y and obj.width and obj.height
             if obj.classname then obj.tag = obj.classname
@@ -998,28 +1001,34 @@ export class Hitbox
                 margin: 0
             }
             m = obj.margin
-            world\add(obj, obj.x + m, obj.y + m, abs(obj.width) - (m*2), abs(obj.height) - (m*2))
+            world\add(obj, obj.x - m + obj.alignx, obj.y - m + obj.aligny, abs(obj.width) - (m*2), abs(obj.height) - (m*2))
             obj.hasHitbox = true
     -- ignore collisions
     @teleport = (obj) -> 
         m = obj.margin
-        world\update(obj, obj.x + m, obj.y + m, abs(obj.width) - (m/2), abs(obj.height) - (m/2))
+        world\update(obj, obj.x - m + obj.alignx, obj.y - m + obj.aligny, abs(obj.width) - (m/2), abs(obj.height) - (m/2))
     @move = (obj) -> 
         filter = nil
-        if obj.collision
+        if obj.collFilter
             filter = (item, other) ->
-                return obj.collision item, other
-        m = obj.margin
-        return world\move(obj, obj.x, obj.y, filter)
+                return obj.collFilter item, other
+        m = -obj.margin
+        new_x, new_y, cols = world\move(obj, obj.x - m - obj.alignx, obj.y - m - obj.aligny, filter)
+        if obj.collision and #cols > 0
+            for col in *cols 
+                obj\collision col 
+        obj.x = new_x + m + obj.alignx
+        obj.y = new_y + m + obj.aligny
     @remove = (obj) ->
         world\remove(obj)
     @draw = () ->
-        items, len = world\getItems!
-        --print 'items',len
-        Draw.color(1,0,0,0.25)
-        for i in *items
-            Draw.rect('fill',world\getRect(i))
-        Draw.color()
+        if Hitbox.debug
+            items, len = world\getItems!
+            --print 'items',len
+            Draw.color(1,0,0,0.25)
+            for i in *items
+                Draw.rect('fill',world\getRect(i))
+            Draw.color()
 
 --BLANKE
 export Blanke = {

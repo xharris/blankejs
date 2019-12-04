@@ -35,21 +35,16 @@ Entity "Player", {
 	animations: {'soldier_stand','soldier_walk'},
 	align: "center",
 	scale: 0.5,
-	gravity: 20,
+	gravity: 10,
 	hitbox: true,
-	margin: 3,
-	collision: (other) =>
-		if other.y > @y
-			@vspeed = 0
+	margin: 2,
+	can_jump: true,
+	collFilter: (other) =>
 		return 'slide'
-	draw: (d) =>
-		d!
-		Draw {
-			{ 'color', 0, 0, 1 },
-			{ 'print', @hspeed .. ', ' .. @vspeed, @x, @y - 40 },
-			{ 'rect', 'fill', @x, @y + (@height / 2), 2, 2 },
-			{ 'color' }
-		}
+	collision: (v) =>
+		if v.normal.y ~= 0
+			@can_jump = true
+			@vspeed = 0
     update: (dt) =>
 		-- left/right
         dx = 150
@@ -66,6 +61,7 @@ Entity "Player", {
 		else
 			@animation = 'soldier_stand'
 		-- jumping
-        if Input.pressed('jump')
+        if Input.pressed('jump') and @can_jump
 			@vspeed = -300
+			@can_jump = false
 }
