@@ -215,9 +215,10 @@ export class GameObject
         @drawable = false
     setEffect: (...) => 
         @effect = Effect(...)
-    draw: () => if @_draw then @\_draw!
+    draw: () => if @_draw then @_draw!
     _update: (dt) => if @update then @update dt
     destroy: () =>
+        if @_destroy then @_destroy!
         @destroyed = true
         for k in *@child_keys
             self[k]\destroy() 
@@ -226,7 +227,6 @@ export class GameObject
 export class Canvas extends GameObject
     new: (w=Game.width, h=Game.height, settings={}) =>
         super!
-        @angle = 0
         @auto_clear = true
         @width = w
         @height = h
@@ -301,6 +301,7 @@ export class Image extends GameObject
             @animated = anim_info
             @t, @frame_index, @frame_len = 0, 1, anim_info.durations[1] or anim_info.duration
             @quads = anim_info.quads
+            @frame_count = #@quads
         else
             args = {file:args}
         @image = love.graphics.newImage(Game.res('image',args.file))
@@ -313,17 +314,17 @@ export class Image extends GameObject
             @addDrawable!
     updateSize: () =>
         if @animated then 
-            @width, @height = @animated.frame_size[1] * @scalex * @scale, @animated.frame_size[2] * @scaley * @scale
+            @width, @height = abs(@animated.frame_size[1] * @scalex * @scale), abs(@animated.frame_size[2] * @scaley * @scale)
         else
-            @width = @image\getWidth() * @scalex * @scale
-            @height = @image\getHeight() * @scaly * @scale
+            @width = abs(@image\getWidth() * @scalex * @scale)
+            @height = abs(@image\getHeight() * @scaly * @scale)
     update: (dt) => 
         -- update animation
         if @animated
             @t += dt
             if @t > @frame_len
                 @frame_index += 1
-                if @frame_index > #@quads then @frame_index = 1
+                if @frame_index > @frame_count then @frame_index = 1
                 info = @animated
                 @frame_len = info.durations[tostring(@frame_index)] or info.duration
                 @t = 0
@@ -341,7 +342,6 @@ export class _Entity extends GameObject
         @vspeed = 0
         @gravity = 0
         @gravity_direction = 90
-        @margin = 0
 
         table.update(@, args)
         @classname = classname
@@ -407,7 +407,6 @@ export class _Entity extends GameObject
         @y += @vspeed * dt
         if @hasHitbox
             new_x, new_y = Hitbox.move(@)
-
         if @body
             new_x, new_y = @body\getPosition!
             if @x == last_x then @x = new_x
@@ -428,6 +427,8 @@ export class _Entity extends GameObject
         if @animation and @animList[@animation]
             @animList[@animation]\draw!
             @width, @height = @animList[@animation].width, @animList[@animation].height
+    _destroy: () =>
+        Hitbox.remove(@)
 
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, _Entity)
@@ -554,6 +555,7 @@ export Color = {
     deeporange: {255,87,34},
     brown:      {121,85,72},
     grey:       {158,158,158},
+    gray:       {158,158,158},
     bluegray:   {96,125,139},
     white:      {255,255,255},
     white2:     {250,250,250},
@@ -599,7 +601,11 @@ export class Audio
             if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,unpack(o[n]))
         return src
 
-    @play = (...) -> love.audio.play(unpack([ Audio.source(name) for name in *{...} ]))
+    @play = (...) -> 
+        src_list = [ Audio.source(name) for name in *{...} ]
+        love.audio.play(unpack(src_list))
+        if #src_list == 1 then return src_list[1]
+        else return src_list
     @stop = (...) -> 
         names = {...}
         if #names == 0 then love.audio.stop()
@@ -812,7 +818,7 @@ export class Map extends GameObject
         @batches = {} -- { layer: { img_name: SpriteBatch } }
         @hbList = {}
         @addDrawable!
-    addTile: (file,x,y,tx,ty,tw,th,layer) =>
+    addTile: (file,x,y,tx,ty,tw,th,layer='_') =>
         -- get image
         if not images[file] then images[file] = love.graphics.newImage(file)
         img = images[file]
@@ -853,7 +859,7 @@ export class Map extends GameObject
 
     _spawnEntity: (ent_name, opt) =>
         Game.spawn(ent_name, opt)
-    spawnEntity: (ent_name, x, y, layer) =>
+    spawnEntity: (ent_name, x, y, layer="_") =>
         obj_info = getObjInfo(ent_name, true)
         if obj_info then
             obj_info.x = x
@@ -1061,7 +1067,7 @@ export class Hitbox
         obj.x = new_x - ha.left
         obj.y = new_y - ha.top
     @remove = (obj) ->
-        world\remove(obj)
+        if obj.hasHitbox then world\remove(obj)
     @draw = () ->
         if Hitbox.debug
             items, len = world\getItems!

@@ -12,8 +12,8 @@ class Docview extends Editor {
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 550;
-		this.container.height = 365;
+		this.container.width = 400;
+		this.container.height = 448;
 
 		var this_ref = this;
 
@@ -33,8 +33,8 @@ class Docview extends Editor {
 					let el_header = app.createElement("p","header");
 					let el_body = app.createElement("div",["body","hidden"]);
 
+					let num_sections = Object.keys(this_ref.doc_sections[category]).length;
 					for (let subsection in this_ref.doc_sections[category]) {
-						// SUBSECTION
 						let info = this_ref.doc_sections[category][subsection];
 
 						let el_subsection = app.createElement("div","subsection");
@@ -45,7 +45,7 @@ class Docview extends Editor {
 						el_subsection._tags = info.tags;
 						el_subheader.innerHTML = info.title;
 						
-						el_subheader.addEventListener('click',function(){
+						el_subbody.reveal = () => {
 							// get .md content
 							nwFS.readFile(md_path,'utf-8',function(err,data){
 								if (!err) {
@@ -69,22 +69,34 @@ class Docview extends Editor {
 									});
 								}
 							});	
-						});
+						}
 
-						el_subsection.appendChild(el_subheader);
-						el_subsection.appendChild(el_subbody);
+						if (num_sections == 1) {
+							// ONLY 1 SUBSECTION
+							el_body.appendChild(el_subbody);
+							el_body.classList.add("single");
+							el_header.addEventListener('click',el_subbody.reveal);
 
-						el_body.appendChild(el_subsection);
+						} else {
+							// SUBSECTION
+							el_subsection.appendChild(el_subheader);
+							el_subsection.appendChild(el_subbody);
+
+							el_body.appendChild(el_subsection);
+
+							el_subheader.addEventListener('click',el_subbody.reveal);
+						}
 					}
 
 					el_header.innerHTML = category;
 					el_header.title = category;
-					el_header.addEventListener('click',function(){
-						el_body.classList.toggle('hidden');
-					});
 
 					el_section.appendChild(el_header);
 					el_section.appendChild(el_body);
+					
+					el_header.addEventListener('click',function(){
+						el_body.classList.toggle('hidden');
+					});
 
 					this_ref.doc_container.appendChild(el_section);
 				}

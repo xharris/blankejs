@@ -1104,6 +1104,10 @@
 				padding: 0px;
 				border-width: 0px;
 			}
+
+			&.single {
+				padding: 0px;
+			}
 		}
 	}
 	.subsection {
@@ -1116,30 +1120,32 @@
 			.input-outline();
 			background: #414a58;
 		}
+	}
+	.subheader {
+		.no-select();
 
-		.subheader {
-			.no-select();
+		margin: 0px;
+		font-style: italic;
+		cursor: pointer;
+		padding: 5px;
+	}
 
-			margin: 0px;
-			font-style: italic;
-			cursor: pointer;
-			padding: 5px;
+	.subbody {
+		overflow-x: auto;
+		background: #212121;
+		padding: 5px;
+		border-radius: 3px;
+
+		transition: all ease-in-out 0.1s;
+
+		&.hidden {
+			height: 0px;
+			padding: 0px;
+			overflow: hidden;
 		}
-
-		.subbody {
-			overflow-x: auto;
-			background: #212121;
-			padding: 5px;
-			border-radius: 3px;
-
-			transition: all ease-in-out 0.1s;
-
-			&.hidden {
-				height: 0px;
-				padding: 0px;
-				overflow: hidden;
-			}
-		}
+	}
+	.section .body.single .subbody {
+		border-radius: 0px;
 	}
 }
 
