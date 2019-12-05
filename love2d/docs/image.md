@@ -22,6 +22,7 @@
     * `frames` ex. { '1-3', 5, 6 }
     * `duration` ms duration of each frame
     * `durations{}` ms duration of certain frames ex. { '2': 1.5 }
+* `global_options` table of default options for all given animations
 
 # Props
 

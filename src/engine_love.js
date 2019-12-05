@@ -7,6 +7,8 @@ require 'moonscript'
 package.moonpath = package.moonpath .. ";${app.ideSetting('engine_path')}/?.moon"
 function love.conf(t)
     t.console = true
+    t.window.width = ${app.projSetting('size')[0]}
+    t.window.height = ${app.projSetting('size')[1]}
 end
 `)
 }

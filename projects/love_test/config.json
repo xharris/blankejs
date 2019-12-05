@@ -3,10 +3,14 @@
     "icns": "src/logo.icns",
     "first_scene": null,
     "size": [
-        800,
-        600
+        300,
+        300
     ],
     "quick_access": [
+        [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
         [
             "game.moon=script+entity+?",
             "game.moon"
@@ -22,10 +26,6 @@
         [
             "Add a map=new+?",
             "Add a map"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
         ]
     ],
     "autoplay_preview": true,

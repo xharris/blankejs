@@ -4,4 +4,6 @@ require 'moonscript'
 package.moonpath = package.moonpath .. ";/home/xhh/Documents/blankejs/love2d/?.moon"
 function love.conf(t)
     t.console = true
+    t.window.width = 300
+    t.window.height = 300
 end

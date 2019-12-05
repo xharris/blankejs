@@ -1,4 +1,4 @@
--- Hitbox, Physics (contact, masks)
+-- Physics (contact, masks)
 import is_object, p, copy from require "moon"
 bump = require 'bump'
 
