@@ -83,17 +83,19 @@ export class Game
         table.update(@@options, args, {'res','filter','load','draw','update','postDraw'})
         return nil
 
-    @updateWinSize = (update_size) ->
+    @updateWinSize = () ->
         @win_width, @win_height, flags = love.window.getMode!
-        if update_size or not Blanke.config.scale
+        if not Blanke.config.scale
             @width, @height = @win_width, @win_height
         
 
     @load = () ->
         -- load config.json
-        Game.updateWinSize true
         config_data = love.filesystem.read('config.json')
         if config_data then @@config = json.decode(config_data)
+        -- load settings
+        @width, @height = Blanke.config.width or 0, Blanke.config.height or 0
+        Game.updateWinSize!
         if type(Game.filter) == 'table'
             love.graphics.setDefaultFilter(unpack(Game.options.filter))
         else 
@@ -222,10 +224,11 @@ export class GameObject
     draw: () => if @_draw then @_draw!
     _update: (dt) => if @update then @update dt
     destroy: () =>
-        if @_destroy then @_destroy!
-        @destroyed = true
-        for k in *@child_keys
-            self[k]\destroy() 
+        if not @destroyed
+            if @_destroy then @_destroy!
+            @destroyed = true
+            for k in *@child_keys
+                self[k]\destroy() 
 
 --CANVAS
 export class Canvas extends GameObject
@@ -415,16 +418,17 @@ export class _Entity extends GameObject
     _update: (dt) =>
         last_x, last_y = @x, @y
         if @animation 
+            assert(@animList[@animation], "#{@classname} missing animation '#{@animation}'")
             @_updateSize(@animList[@animation])
         if @update then @update(dt)
+        if @destroyed then return
         if @gravity ~= 0
             gravx, gravy = Math.getXY(@gravity_direction, @gravity)
             @hspeed += gravx
             @vspeed += gravy
         @x += @hspeed * dt
         @y += @vspeed * dt
-        if @hasHitbox
-            new_x, new_y = Hitbox.move(@)
+        Hitbox.move(@)
         if @body
             new_x, new_y = @body\getPosition!
             if @x == last_x then @x = new_x
@@ -445,8 +449,6 @@ export class _Entity extends GameObject
         if @animation and @animList[@animation]
             @animList[@animation]\draw!
             @width, @height = @animList[@animation].width, @animList[@animation].height
-    _destroy: () =>
-        Hitbox.remove(@)
 
 Entity = (name, args) ->
     Game.addObject(name, "Entity", args, _Entity)
@@ -653,6 +655,8 @@ export class Effect
     @new = (name, in_opt) ->
         opt = { vars:{}, unused_vars:{}, integers:{}, code:nil, effect:'', vertex:'' }
         table.update(opt, in_opt)
+        print name 
+        p opt
         code = ""
         -- create var string
         var_str = ""
@@ -1076,20 +1080,24 @@ export class Hitbox
             obj.hasHitbox = true
     -- ignore collisions
     @teleport = (obj) ->
-        ha = obj.hitArea
-        world\update(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
-    @move = (obj) -> 
-        filter = nil
-        if obj.collFilter
-            filter = (item, other) ->
-                return obj.collFilter item, other
-        ha = obj.hitArea
-        new_x, new_y, cols = world\move(obj, obj.x + ha.left, obj.y + ha.top, filter)
-        if obj.collision and #cols > 0
-            for col in *cols 
-                obj\collision col 
-        obj.x = new_x - ha.left
-        obj.y = new_y - ha.top
+        if obj.hasHitbox
+            ha = obj.hitArea
+            world\update(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
+    @move = (obj) ->
+        if obj.hasHitbox
+            filter = nil
+            if obj.collFilter
+                filter = (item, other) ->
+                    return obj.collFilter item, other
+            ha = obj.hitArea
+            new_x, new_y, cols = world\move(obj, obj.x + ha.left, obj.y + ha.top, filter)
+            if obj.destroyed then return
+            if obj.collision and #cols > 0
+                for col in *cols 
+                    if obj.destroyed then return
+                    obj\collision col 
+            obj.x = new_x - ha.left
+            obj.y = new_y - ha.top
     @remove = (obj) ->
         if obj.hasHitbox then world\remove(obj)
     @draw = () ->
@@ -1098,7 +1106,8 @@ export class Hitbox
             --print 'items',len
             Draw.color(1,0,0,0.25)
             for i in *items
-                Draw.rect('fill',world\getRect(i))
+                if i.hasHitbox and not i.destroyed
+                    Draw.rect('fill',world\getRect(i))
             Draw.color()
 
 --BLANKE
@@ -1118,9 +1127,10 @@ export Blanke = {
         len = #Game.updatables
         for o = 1, len
             obj = Game.updatables[o]
-            if obj.destroyed or not obj.updatable
+            if not obj or obj.destroyed or not obj.updatable
+                Hitbox.remove(obj)
                 Game.updatables[o] = nil
-            else if obj._update then obj\_update(dt)
+            else if obj and obj._update then obj\_update(dt)
         
         Input.releaseCheck!
     
@@ -1133,7 +1143,7 @@ export Blanke = {
                     Game.drawables[o] = nil
                 else if obj.draw ~= false
                     if obj.draw then obj\draw(() -> if obj._draw then obj\_draw!)
-                    else if obj._draw then obj\_draw!
+                    else if obj and obj._draw then obj\_draw!
             if Game.options.postDraw then Game.options.postDraw!
             Physics.draw!
             Hitbox.draw!

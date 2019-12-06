@@ -6,10 +6,12 @@ package.path = package.path .. ";${['/?.lua','/lua/?/init.lua','/lua/?.lua','/pl
 require 'moonscript'
 local blanke = require "blanke"
 blanke.Blanke.config.scale = ${app.projSetting('export').scale}
+blanke.Blanke.config.width = ${app.projSetting('game_size')[0]}
+blanke.Blanke.config.height = ${app.projSetting('game_size')[1]}
 function love.conf(t)
     t.console = true
-    t.window.width = ${app.projSetting('size')[0]}
-    t.window.height = ${app.projSetting('size')[1]}
+    t.window.width = ${app.projSetting('window_size')[0]}
+    t.window.height = ${app.projSetting('window_size')[1]}
     t.window.borderless = ${app.projSetting('export').frameless}
     t.window.resizable = ${app.projSetting('export').resizable}
 end

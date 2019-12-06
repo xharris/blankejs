@@ -1,4 +1,4 @@
-let js_plugin_info = {};
+let plugin_info = {};
 
 let pathJoin;
 let plugin_watch;
@@ -70,7 +70,7 @@ function inspectPlugins(silent) {
 
 			for (let k of info_keys) {
 				let re = new RegExp(engine.plugin_info_key(k))
-				//js_plugin_info
+				//plugin_info
 				let match = re.exec(data);
 				if (match) {
 					if (k == 'Enabled')
@@ -145,7 +145,7 @@ function inspectPlugins(silent) {
 				let info = temp_plugin_info[key];
 				if (info.id) {
 					if (info.enabled !== false) {
-						js_plugin_info[info.id] = info;
+						plugin_info[info.id] = info;
 					} else {
 						// disabled and remove docs
 						for (let file of info.docs) {
@@ -161,7 +161,7 @@ function inspectPlugins(silent) {
 
 			// copy files if the plugin is already enabled
 			if (app.projSetting("enabled_plugins")) {
-				for (let id in js_plugin_info) {
+				for (let id in plugin_info) {
 					if (app.projSetting("enabled_plugins")[id] == true) {
 						Plugins.enable(id);
 					} else {
@@ -203,7 +203,7 @@ class Plugins extends Editor {
 	}
 
 	refreshList () {
-		for (let key in js_plugin_info) {
+		for (let key in plugin_info) {
 			// create the list item elements
 			if (!this.el_reference[key]) {
 				let el_ref = {};
@@ -220,17 +220,17 @@ class Plugins extends Editor {
 		// remove el references that are no longer a plugin
 		for (let key in this.el_reference) {
 			let exists = true;
-			if (!js_plugin_info[key] || js_plugin_info[key].enabled == false)
+			if (!plugin_info[key] || plugin_info[key].enabled == false)
 				exists = false;
 			else {
-				for (let f of js_plugin_info[key].files) {
+				for (let f of plugin_info[key].files) {
 					if (!nwFS.pathExistsSync(f))
 						exists = false;
 				}
 			}
 			if (!exists) {
 				Plugins.disable(key);
-				for (let doc of js_plugin_info[key].docs) {
+				for (let doc of plugin_info[key].docs) {
 					Docview.removePlugin(doc);
 				}
 				this.el_reference[key].el_container.remove();
@@ -240,7 +240,7 @@ class Plugins extends Editor {
 		// edit values of plugin elements
 		for (let key in this.el_reference) {
 			let el_ref = this.el_reference[key];
-			let info = js_plugin_info[key];
+			let info = plugin_info[key];
 			el_ref.el_toggle.innerHTML = `
 				<div class='form-inputs'>
 					<input type='checkbox' class='form-checkbox' ${app.projSetting("enabled_plugins")[info.id] == true ? 'checked' : ''}/>
@@ -254,7 +254,7 @@ class Plugins extends Editor {
 			`;
 			el_ref.el_toggle.querySelector('.form-checkbox').addEventListener('change', e => {
 				let key_ref = el_ref.el_toggle.key_ref;
-				js_plugin_info[key_ref].enabled = e.target.checked;
+				plugin_info[key_ref].enabled = e.target.checked;
 				if (e.target.checked)
 					Plugins.enable(key_ref);
 				else 
@@ -272,8 +272,8 @@ class Plugins extends Editor {
 
 	static getAutocomplete = () => {
 		let ret = {};
-		for (let p in js_plugin_info) {
-			let info = js_plugin_info[p];
+		for (let p in plugin_info) {
+			let info = plugin_info[p];
 			if (info.module && info.enabled && info.module.autocomplete)
 				ret[p] = info.module.autocomplete;
 		}
@@ -283,31 +283,31 @@ class Plugins extends Editor {
 	static enable (key) {
 		nwFS.ensureDir(pathJoin(app.ideSetting("engine_path"), 'plugins'))
 		
-		if (js_plugin_info[key]) {
-			for (let path of js_plugin_info[key].files) {
+		if (plugin_info[key]) {
+			for (let path of plugin_info[key].files) {
 				nwFS.copySync(path, pathJoin(app.ideSetting("engine_path"), 'plugins', key, nwPATH.basename(path)));
 			}
 			app.projSetting("enabled_plugins")[key] = true;
-			dispatchEvent('pluginChanged',{ key: key, info: js_plugin_info[key] });
+			dispatchEvent('pluginChanged',{ key: key, info: plugin_info[key] });
 			app.saveSettings();
 		}
 	}
 
 	static disable (key) {
-		if (!js_plugin_info[key]) return;
+		if (!plugin_info[key]) return;
 		// remove file		
-		for (let path of js_plugin_info[key].files) {
+		for (let path of plugin_info[key].files) {
 			nwFS.removeSync(pathJoin(app.ideSetting("engine_path"), 'plugins', key, nwPATH.basename(path)));
 		}
 		app.projSetting("enabled_plugins")[key] = false;
-		dispatchEvent('pluginChanged',{ key: key, info: js_plugin_info[key] });
+		dispatchEvent('pluginChanged',{ key: key, info: plugin_info[key] });
 		app.saveSettings();
 	}
 
 	static getClassNames () {
 		let classnames = [];
-		for (let p in js_plugin_info) {
-			let info = js_plugin_info[p];
+		for (let p in plugin_info) {
+			let info = plugin_info[p];
 			if (info.enabled)
 				classnames = classnames.concat(info.classes);
 		}

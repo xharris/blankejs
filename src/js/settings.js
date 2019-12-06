@@ -38,7 +38,7 @@ class Settings extends Editor {
             ...paths.map((path)=>[path,'directory',{default:app_set[path+'_path']}]),
             ...files.map((path)=>[path,'file',{default:app_set[path+'_path']}])
         ],true);
-        ['first_scene','game_size','autoplay_preview'].forEach(s => {
+        ['first_scene','game_size','window_size','autoplay_preview'].forEach(s => {
             this.el_settings.onChange(s, v => {
                 app.projSetting(s, v);
                 app.saveSettings();
