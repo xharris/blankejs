@@ -34,6 +34,10 @@ grey, gray, bluegray, white, white2, black, black2
 
 `getBlendMode(), setBlendMode(mode, [alphamode])`
 
+`pointSize(size)`
+
+`lineWidth(size)`
+
 `crop(x,y,w,h)`
 
 `reset([only])`
@@ -54,20 +58,22 @@ grey, gray, bluegray, white, white2, black, black2
 
 ## drawing
 
-`print`
+__mode__: fill / line
 
-`printf`
+`print (text, [x, y, r, sx, sy, ox, oy, kx, ky])` s=scale, o=offset, k=shear
 
-`line`
+`printf (text, x, y, limit, align, [r, sx, sy, ox, oy, kx, ky])` limit is horizontal width limit, align=center/left/right/justify
 
-`points`
+`line (x1, y1, x2, y2, ...)` can also be a table of lines
 
-`rect`
+`points (x, y, ...)` can also be a table of points
 
-`polygon`
+`rect (mode, x, y, w, h, [rx, ry, segments])` rx/ry rounds corners
 
-`circle`
+`polygon (mode, x, y, ...)` vertices can also be a table
 
-`ellipse`
+`circle (mode, x, y, r, [segments])`
 
-`arc`
+`ellipse (mode, x, y, rx, ry, [segments])`
+
+`arc (mode, x, y, r, angle1, angle2, [segments])`

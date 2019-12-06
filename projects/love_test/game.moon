@@ -1,6 +1,8 @@
-import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map, Physics, Hitbox from require "blanke"
+import Blanke, Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map, Physics, Hitbox from require "blanke"
 
 import p from require "moon"
+
+require "xhh-effect"
 
 Game {
     res: 'assets'
@@ -8,11 +10,6 @@ Game {
     load: () ->
         Game.setBackgroundColor(1,1,1,1)
         Map.load('level1.map')
-	draw: (d) ->
-		Draw {
-			{ 'color', 'pink' }
-			{ 'rect', 'fill', 50, 50, 100, 100 }
-		}
 }
 
 Map.config {
@@ -71,7 +68,10 @@ Entity "Player", {
 			@vspeed = -300
 			@can_jump = false
 			
+		
+		@animList['player_walk'].speed = 1
 		if @vspeed ~= 0 or not @can_jump
 			@animation = 'player_walk'
+			@animList['player_walk'].speed = 0
 			@animList['player_walk'].frame_index = 2
 }

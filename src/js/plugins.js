@@ -28,39 +28,40 @@ function inspectPlugins(silent) {
 				classes: []
 			}
 		}
-		if (file.endsWith('.js')) {
-			if (nwPATH.basename(file) == 'index.js') {
-				// it's a module
-				let module = temp_plugin_info[info_key].module;
-				let module_path = file;
-				if (!nwPATH.isAbsolute(file))
-					module_path = nwPATH.join(nwPATH.relative(app.ideSetting("plugin_path"), ''), file);
-				module_path = require.resolve(module_path);
-				
-				if (module) {
-					if (module.onPluginUnload) 
-						module.onPluginUnload();
-					delete require.cache[module_path];
-				}
 
-				temp_plugin_info[info_key].module = require(module_path);
-				if (temp_plugin_info[info_key].module.onPluginLoad)
-					temp_plugin_info[info_key].module.onPluginLoad();
-				
-				module = temp_plugin_info[info_key].module;	
-				if (module.info) {
-					for (let k of info_keys) {
-						if (k == 'Enabled')
-							temp_plugin_info[info_key].enabled = module.info.enabled;
-						else
-							temp_plugin_info[info_key][k.toLowerCase()] = module.info[k.toLowerCase()];
-					}
-					if (Array.isArray(module.info.classes)) 
-						temp_plugin_info[info_key].classes = module.info.classes;
-				}
-				return;
+		if (nwPATH.basename(file) == 'index.js') {
+			// it's a module
+			let module = temp_plugin_info[info_key].module;
+			let module_path = file;
+			if (!nwPATH.isAbsolute(file))
+				module_path = nwPATH.join(nwPATH.relative(app.ideSetting("plugin_path"), ''), file);
+			module_path = require.resolve(module_path);
+			
+			if (module) {
+				if (module.onPluginUnload) 
+					module.onPluginUnload();
+				delete require.cache[module_path];
 			}
 
+			temp_plugin_info[info_key].module = require(module_path);
+			if (temp_plugin_info[info_key].module.onPluginLoad)
+				temp_plugin_info[info_key].module.onPluginLoad();
+			
+			module = temp_plugin_info[info_key].module;	
+			if (module.info) {
+				for (let k of info_keys) {
+					if (k == 'Enabled')
+						temp_plugin_info[info_key].enabled = module.info.enabled;
+					else
+						temp_plugin_info[info_key][k.toLowerCase()] = module.info[k.toLowerCase()];
+				}
+				if (Array.isArray(module.info.classes)) 
+					temp_plugin_info[info_key].classes = module.info.classes;
+			}
+			return;
+		}
+
+		if (engine.file_ext.some(f => file.endsWith(f))) {
 			let data = nwFS.readFileSync(file,'utf-8');
 
 			// add file path
@@ -68,7 +69,7 @@ function inspectPlugins(silent) {
 				temp_plugin_info[info_key].files.push(file);
 
 			for (let k of info_keys) {
-				let re = new RegExp(`\\*\\s*${k}\\s*:\\s*(.+)`)
+				let re = new RegExp(engine.plugin_info_key(k))
 				//js_plugin_info
 				let match = re.exec(data);
 				if (match) {
@@ -116,7 +117,7 @@ function inspectPlugins(silent) {
 			for (let f of files) {
 				let full_path = pathJoin(app.ideSetting("plugin_path"),f);
 				// .js
-				if (f.endsWith('.js')) {
+				if (engine.file_ext.some(_f => f.endsWith(_f))) {
 					inspectFile(full_path);
 					//nwFS.copyFileSync(pathJoin(app.ideSetting("plugin_path"),f), pathJoin(eng_plugin_dir,f));
 				}

@@ -28,7 +28,8 @@ class Settings extends Editor {
         this.el_settings = new BlankeForm([
             ['GAME'],
             ['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
-            ['size','number',{'inputs':2, 'separator':'x', 'step':1, 'min':1, 'default':proj_set.size}],
+            ['window_size','number',{'inputs':2, 'separator':'x', 'step':1, 'min':1, 'default':proj_set.window_size}],
+            ['game_size','number',{'inputs':2, 'separator':'x', 'step':1, 'min':1, 'default':proj_set.game_size}],
             ['IDE'],
             ...autoplay_settings,
             ['theme','select',{'choices':app.themes,'default':app_set.theme}],
@@ -37,7 +38,7 @@ class Settings extends Editor {
             ...paths.map((path)=>[path,'directory',{default:app_set[path+'_path']}]),
             ...files.map((path)=>[path,'file',{default:app_set[path+'_path']}])
         ],true);
-        ['first_scene','size','autoplay_preview'].forEach(s => {
+        ['first_scene','game_size','autoplay_preview'].forEach(s => {
             this.el_settings.onChange(s, v => {
                 app.projSetting(s, v);
                 app.saveSettings();

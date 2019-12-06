@@ -3,6 +3,7 @@ const engine = {
 	main_file: 'main.js',
 	file_ext: ['js'],
 	language: 'javascript',
+	plugin_info_key: (k) => `\\*\\s*${k}\\s*:\\s*(.+)`,
 	get script_path () { return nwPATH.join(app.project_path,'scripts') },
 	code_associations: [
 		[

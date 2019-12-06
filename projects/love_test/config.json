@@ -16,16 +16,16 @@
             "game.moon"
         ],
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "View assets=?",
             "View assets"
         ],
         [
             "level1.map=map+?",
             "level1.map"
-        ],
-        [
-            "Add a map=new+?",
-            "Add a map"
         ]
     ],
     "autoplay_preview": true,
@@ -53,12 +53,22 @@
         "scale_mode": "linear",
         "frameless": false,
         "minify": true,
-        "scale": true,
+        "scale": false,
         "resizable": false
     },
     "enabled_plugins": {
         "xhh-platformer": false,
         "xhh-tween": false,
-        "xhh-effect": false
-    }
+        "xhh-effect": true
+    },
+    "game_size": [
+        800,
+        600
+    ],
+    "window_size": [
+        800,
+        600
+    ],
+    "frameless": false,
+    "resizable": false
 }

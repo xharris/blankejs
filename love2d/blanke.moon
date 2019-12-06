@@ -56,7 +56,6 @@ export FS = {
 -- needed extra libraries
 uuid = require "uuid"
 json = require "json"
-HC = require "HC"
 
 --GAME
 export class Game
@@ -65,7 +64,7 @@ export class Game
         filter: 'linear'
         load: () ->
         update: (dt) ->
-        draw: nil
+        draw: (d) -> d!
         postDraw: nil
     }
     @config = {
@@ -75,6 +74,8 @@ export class Game
     objects = {}
     @updatables = {}
     @drawables = {}
+    @win_width = 0
+    @win_height = 0
     @width = 0
     @height = 0
 
@@ -82,14 +83,17 @@ export class Game
         table.update(@@options, args, {'res','filter','load','draw','update','postDraw'})
         return nil
 
-    @updateWinSize = () ->
-        @width, @height = love.graphics.getDimensions()
+    @updateWinSize = (update_size) ->
+        @win_width, @win_height, flags = love.window.getMode!
+        if update_size or not Blanke.config.scale
+            @width, @height = @win_width, @win_height
+        
 
     @load = () ->
         -- load config.json
+        Game.updateWinSize true
         config_data = love.filesystem.read('config.json')
         if config_data then @@config = json.decode(config_data)
-        @@updateWinSize!
         if type(Game.filter) == 'table'
             love.graphics.setDefaultFilter(unpack(Game.options.filter))
         else 
@@ -238,13 +242,19 @@ export class Canvas extends GameObject
         last_canvas = love.graphics.getCanvas()
         Draw.stack () ->
             Draw.setBlendMode('alpha')
-            love.graphics.setCanvas(@canvas)
+            love.graphics.setCanvas {
+                @canvas, 
+                stencil:true
+            }
             if @auto_clear then Draw.clear()
             if type(obj) == "function"
                 obj!
             else if is_object(obj) and obj.draw
                 obj\draw!
-            love.graphics.setCanvas(last_canvas)
+            love.graphics.setCanvas {
+                last_canvas, 
+                stencil:true
+            }
 
 --IMAGE
 export class Image extends GameObject
@@ -286,7 +296,14 @@ export class Image extends GameObject
             for f in *frame_list
                 x,y = Math.indexTo2d(f, o('cols'))
                 table.insert(quads, love.graphics.newQuad((x-1)*fw,(y-1)*fh,fw,fh,img\getWidth!,img\getHeight!))
-            animations[anim.name or FS.removeExt(FS.basename(file))] = {file:file, duration:o('duration') or 1, durations:o('durations') or {}, quads:quads, w:fw, h:fh, frame_size:{fw,fh}}
+            animations[anim.name or FS.removeExt(FS.basename(file))] = {
+                file:file, 
+                duration:o('duration') or 1, 
+                durations:o('durations') or {}, 
+                quads:quads, 
+                w:fw, h:fh, frame_size:{fw,fh}, 
+                speed:o('speed') or 1
+            }
     new: (args) =>
         super!
         -- animation?
@@ -299,6 +316,7 @@ export class Image extends GameObject
         if anim_info then 
             args = {file:anim_info.file}
             @animated = anim_info
+            @speed = anim_info.speed
             @t, @frame_index, @frame_len = 0, 1, anim_info.durations[1] or anim_info.duration
             @quads = anim_info.quads
             @frame_count = #@quads
@@ -321,7 +339,7 @@ export class Image extends GameObject
     update: (dt) => 
         -- update animation
         if @animated
-            @t += dt
+            @t += dt * @speed
             if @t > @frame_len
                 @frame_index += 1
                 if @frame_index > @frame_count then @frame_index = 1
@@ -483,7 +501,7 @@ export class Input
 
 --DRAW
 export class Draw
-    crop_used = false
+    @crop_used = false
     new: (instructions) =>
         for instr in *instructions
             name, args = instr[1], table.slice(instr,2)
@@ -509,15 +527,15 @@ export class Draw
         stencilFn = () -> Draw.rect('fill',x,y,w,h)
         love.graphics.stencil(stencilFn,"replace",1)
         love.graphics.setStencilTest("greater",0)
-        crop_used = true
+        Draw.crop_used = true
     @reset = (only) ->
         if only == 'color' or not only
             Draw.color(1,1,1,1)
             Draw.lineWidth(1)
         if only == 'transform' or not only
             Draw.origin()
-        if (only == 'crop' or not only) and crop_used
-            crop_used = false
+        if (only == 'crop' or not only) and Draw.crop_used
+            Draw.crop_used = false
             love.graphics.setStencilTest()
     @push = () -> love.graphics.push('all')
     @pop = () -> 
@@ -528,11 +546,17 @@ export class Draw
         fn!
         Draw.pop()
 
-draw_functions = {'arc','circle','clear','discard','ellipse','line','points','polygon','rectangle','setLineWidth','origin','print','printf'}
+draw_functions = {
+    'arc','circle','ellipse','line','points','polygon','rectangle','print','printf'
+    'clear','discard','origin',
+    'rotate','scale','shear','translate','transformPoint'
+    'setLineWidth','setPointSize'
+}
 draw_aliases = {
     polygon: 'poly',
     rectangle: 'rect',
-    setLineWidth: 'lineWidth'
+    setLineWidth: 'lineWidth',
+    setPointSize: 'pointSize'
 }
 for fn in *draw_functions do Draw[draw_aliases[fn] or fn] = (...) -> love.graphics[fn](...)
 
@@ -747,7 +771,7 @@ export class Camera
         Draw.push()
         if o.enabled == false then return
         w, h = o.width or Game.width, o.height or Game.height
-        if o 
+        if o
             if o.follow then
                 o.x = o.follow.x or o.x
                 o.y = o.follow.y or o.y
@@ -1079,8 +1103,12 @@ export class Hitbox
 
 --BLANKE
 export Blanke = {
+    config: {}
+    game_canvas: nil
     load: () ->
         Game.load!
+        Blanke.game_canvas = Canvas!
+        Blanke.game_canvas\remDrawable!
 
     update: (dt) ->
         if Game.options.update(dt) == true then return
@@ -1111,13 +1139,29 @@ export Blanke = {
             Hitbox.draw!
        
         _draw = () ->
-            if Camera.count! > 0
-                Camera.useAll actual_draw
-            else 
-                actual_draw!
+            Game.options.draw () ->
+                if Camera.count! > 0
+                    Camera.useAll actual_draw
+                else 
+                    actual_draw!
 
-        if Game.options.draw   
-            Game.options.draw _draw
+        if Blanke.config.scale == true
+            Blanke.game_canvas\drawTo _draw
+
+            scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
+            scale = math.min scalex, scaley
+            padx, pady = 0, 0
+            if scalex > scaley
+                padx = floor((Game.win_width - (Game.width * scale)) / 2)
+            else 
+                pady = floor((Game.win_height - (Game.height * scale)) / 2)
+
+            Draw.push!
+            Draw.translate padx, pady
+            Draw.scale scale
+            Blanke.game_canvas\draw!
+            Draw.pop!
+        
         else 
             _draw!
 
@@ -1135,6 +1179,7 @@ love.load = () -> Blanke.load!
 love.update = (dt) -> 
     Blanke.update dt
 love.draw = () -> Blanke.draw!
+love.resize = (w, h) -> Game.updateWinSize!
 love.keypressed = (key, scancode, isrepeat) -> Blanke.keypressed key, scancode, isrepeat
 love.keyreleased = (key, scancode) -> Blanke.keyreleased key, scancode
 love.mousepressed = (x, y, button, istouch, presses) -> Blanke.mousepressed x, y, button, istouch, presses
