@@ -1,6 +1,8 @@
 import Entity, Input from require "blanke"
 import Tween from require "xhh-tween"
 
+import p from require "moon"
+
 Camera "player"
 
 Image.animation 'player_stand.png'
@@ -33,11 +35,11 @@ Entity "Player", {
 	die: () =>
 		if not @dead
 			@dead = true
+			@hitArea = 'player_dead'
 			Tween 2, @, { hspeed:0 }
     update: (dt) =>
 		if @dead	
 			@animation = "player_dead"
-			-- @hitArea = {}
 		else 
 			-- left/right
         	dx = 150

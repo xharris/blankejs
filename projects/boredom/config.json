@@ -8,16 +8,16 @@
     ],
     "quick_access": [
         [
+            "View assets=?",
+            "View assets"
+        ],
+        [
             "player.moon=script+entity+?",
             "player.moon"
         ],
         [
             "conf.lua=script+?",
             "conf.lua"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ],
         [
             "Add a script=new+?",

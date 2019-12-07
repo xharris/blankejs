@@ -5,11 +5,10 @@ export class Tween extends GameObject
         @tween = tween.new(duration, subject, target, tween.easing[easing])
         @onFinish = onFinish
         @addUpdatable!
-        @destroy!
 
     update: (dt) =>
         if @tween\update dt
             if @onFinish then @onFinish!
-            @destroy!
+            @remUpdatable!
 
 { :Tween }

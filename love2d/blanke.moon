@@ -412,9 +412,15 @@ export class _Entity extends GameObject
             if spawn_args then @spawn unpack(spawn_args)
             else @spawn!
         if @body then @body\setPosition @x, @y
-    
     _updateSize: (obj) =>
+        if type(@hitArea) == "string" and (@animList[@hitArea] or @imageList[@hitArea])
+            other_obj = @animList[@hitArea] or @imageList[@hitArea]
+            @hitArea = {}
+            @width, @height = abs(other_obj.width * @scalex*@scale), abs(other_obj.height * @scaley*@scale)
+            Game.checkAlign @
+            Hitbox.teleport @
         @width, @height = abs(obj.width * @scalex*@scale), abs(obj.height * @scaley*@scale)
+    
     _update: (dt) =>
         last_x, last_y = @x, @y
         if @animation 
@@ -1063,25 +1069,34 @@ export class BodyHelper
 export class Hitbox
     world = bump.newWorld()
     @debug = false
-    @add = (obj) ->
-        if obj.x and obj.y and obj.width and obj.height
-            if obj.classname then obj.tag = obj.classname
-            if not obj.hitArea then obj.hitArea = {}
+    checkHitArea = (obj) ->
+        if obj.hasHitbox 
             if not obj.alignx then obj.alignx = 0
             if not obj.aligny then obj.aligny = 0
+            if not obj.hitArea
+                obj.hitArea = {
+                    left: -obj.alignx
+                    top: -obj.aligny
+                    right: 0
+                    bottom: 0
+                }
             table.defaults obj.hitArea, {
                 left: -obj.alignx
                 top: -obj.aligny
                 right: 0
                 bottom: 0
             }
-            ha = obj.hitArea
-            world\add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
+            return obj.hitArea
+    @add = (obj) ->
+        if obj.x and obj.y and obj.width and obj.height
+            if obj.classname then obj.tag = obj.classname
             obj.hasHitbox = true
+            ha = checkHitArea obj
+            world\add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)       
     -- ignore collisions
     @teleport = (obj) ->
         if obj.hasHitbox
-            ha = obj.hitArea
+            ha = checkHitArea obj
             world\update(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
     @move = (obj) ->
         if obj.hasHitbox
@@ -1089,7 +1104,7 @@ export class Hitbox
             if obj.collFilter
                 filter = (item, other) ->
                     return obj.collFilter item, other
-            ha = obj.hitArea
+            ha = checkHitArea obj
             new_x, new_y, cols = world\move(obj, obj.x + ha.left, obj.y + ha.top, filter)
             if obj.destroyed then return
             if obj.collision and #cols > 0
