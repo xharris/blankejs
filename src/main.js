@@ -54,8 +54,8 @@ const DEFAULT_PROJECT_SETTINGS =  {
 	ico:nwPATH.join('src','logo.ico'),
 	icns:nwPATH.join('src','logo.icns'),
 	first_scene:null,
-	game_size:[800,600],
-	window_size:[800,600],
+	game_size:3,
+	window_size:3,
 	quick_access:[],
 	autoplay_preview:true
 };

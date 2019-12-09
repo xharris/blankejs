@@ -2,11 +2,10 @@ import Game, Input, Map from require "blanke"
 
 import p from require "moon"
 
-require "player"
-
 Game {
     res: 'assets'
-    filter: 'nearest'
+    filter: 'linear'
+	scripts: { 'player' }
     load: () ->
         Game.setBackgroundColor(1,1,1,1)
         Map.load('level1.map')

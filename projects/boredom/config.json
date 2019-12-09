@@ -8,8 +8,12 @@
     ],
     "quick_access": [
         [
-            "View assets=?",
-            "View assets"
+            "game.moon=script+?",
+            "game.moon"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "player.moon=script+entity+?",
@@ -20,12 +24,8 @@
             "conf.lua"
         ],
         [
-            "Add a script=new+?",
-            "Add a script"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
+            "View assets=?",
+            "View assets"
         ]
     ],
     "autoplay_preview": true,
@@ -53,7 +53,7 @@
         "scale_mode": "linear",
         "frameless": false,
         "minify": true,
-        "scale": false,
+        "scale": true,
         "resizable": true
     },
     "enabled_plugins": {
@@ -61,14 +61,8 @@
         "xhh-tween": true,
         "xhh-effect": false
     },
-    "game_size": [
-        800,
-        600
-    ],
-    "window_size": [
-        400,
-        300
-    ],
+    "game_size": 3,
+    "window_size": 3,
     "frameless": false,
     "resizable": false
 }

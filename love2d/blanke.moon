@@ -5,7 +5,7 @@ bump = require 'bump'
 --UTIL.table
 table.update = (old_t, new_t, keys) -> 
     if keys == nil then
-        for k, v in pairs new_t do old_t[k] = v
+        for k, v in pairs(new_t) do old_t[k] = v
     else
         for k in *keys do if new_t[k] ~= nil then old_t[k] = new_t[k]
 table.keys = (t) -> [k for k, v in pairs t]
@@ -32,7 +32,10 @@ table.defaults = (t,defaults) ->
     for k,v in pairs(defaults)
         if t[k] == nil then t[k] = v
         else if type(v) == 'table' then table.defaults(t[k],defaults[k])
-         
+table.append = (t, new_t) ->
+    for k,v in pairs(new_t)
+        if type(k) == 'string' then t[k] = v
+        else table.insert(t, v)
 --UTIL.string
 string.contains = (str,q) -> (string.match(str, q) ~= nil)
 string.capitalize = (str) -> string.upper(string.sub(str,1,1))..string.sub(str,2)
@@ -61,6 +64,7 @@ json = require "json"
 export class Game
     @options = {
         res: 'assets',
+        scripts: {},
         filter: 'linear'
         load: () ->
         update: (dt) ->
@@ -80,7 +84,7 @@ export class Game
     @height = 0
 
     new: (args) =>
-        table.update(@@options, args, {'res','filter','load','draw','update','postDraw'})
+        table.update(@@options, args, {'res','scripts','filter','load','draw','update','postDraw'})
         return nil
 
     @updateWinSize = () ->
@@ -88,19 +92,27 @@ export class Game
         if not Blanke.config.scale
             @width, @height = @win_width, @win_height
         
-
     @load = () ->
         -- load config.json
         config_data = love.filesystem.read('config.json')
         if config_data then @@config = json.decode(config_data)
         -- load settings
-        @width, @height = Blanke.config.width or 0, Blanke.config.height or 0
+        @width, @height = Window.calculateSize(Blanke.config.game_size) -- game size
+        Window.setSize(Blanke.config.window_size, Blanke.config.window_flags) -- window size
         Game.updateWinSize!
         if type(Game.filter) == 'table'
             love.graphics.setDefaultFilter(unpack(Game.options.filter))
         else 
             love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
+        -- load scripts
+        for script in *Game.options.scripts do Game.require(script)
+        -- fullscreen toggle
+        Input { _fs_toggle: { 'alt', 'enter' } }, { 
+            combo: { '_fs_toggle' } 
+            no_repeat: { '_fs_toggle' }
+        }
         if @options.load then @options.load()
+
 
     @addObject = (name, _type, args, spawn_class) ->
         -- store in object 'library' and update initial props
@@ -161,6 +173,8 @@ export class Game
             return instance
 
     @res: (_type, file) -> "#{Game.options.res}/#{_type}/#{file}"
+
+    @require: (path) -> require path
 
     @setBackgroundColor: (...) -> love.graphics.setBackgroundColor(Draw.parseColor(...))
 
@@ -464,16 +478,22 @@ export class Input
     name_to_input = {} -- name -> { key1: t/f, mouse1: t/f }
     input_to_name = {} -- key -> { name1, name2, ... }
     options = {
-        norepeat: {}
+        no_repeat: {}
         combo: {}
     }
     pressed = {}
     released = {}
+    key_assoc = {
+        lalt: 'alt', ralt: 'alt',
+        return: 'enter', kpenter: 'enter',
+        lgui: 'gui', rgui: 'gui'
+    }
 
     new: (inputs, _options) =>
         for name, inputs in pairs(inputs)
             Input.addInput(name, inputs, _options)
-        table.update(options, _options)
+        table.append(options.combo, _options.combo or {})
+        table.append(options.no_repeat, _options.no_repeat or {})
         return nil
 
     @addInput = (name, inputs, options) ->
@@ -482,30 +502,36 @@ export class Input
             if not input_to_name[i] then input_to_name[i] = {}
             if not table.hasValue(input_to_name[i], name) then table.insert(input_to_name[i], name)
 
-    @pressed = (name) -> pressed[name]
+    @pressed = (name) -> pressed[name] -- unless (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1)
 
     @released = (name) -> released[name]
 
     @press = (key, extra) ->
+        if key_assoc[key] then Input.press(key_assoc[key], extra)
         if input_to_name[key] 
             for name in *input_to_name[key]
                 name_to_input[name][key] = true
                 -- is input pressed now?
                 combo = table.hasValue(options.combo, name)
                 if (combo and table.every(name_to_input[name])) or (not combo and table.some(name_to_input[name]))
-                        pressed[name] = extra
+                    pressed[name] = extra
+                    pressed[name].count = 0
 
     @release = (key, extra) ->
+        if key_assoc[key] then Input.release(key_assoc[key], extra)
         if input_to_name[key]
             for name in *input_to_name[key]
                 name_to_input[name][key] = false
                 -- is input released now?
                 combo = table.hasValue(options.combo, name)
                 if pressed[name] and (combo or not table.some(name_to_input[name]))
-                        pressed[name] = false
+                        pressed[name] = nil
                         released[name] = extra
     
-    @releaseCheck = () -> released = {}
+    @keyCheck = () -> 
+        for name, info in pairs(pressed)
+            info.count += 1
+        released = {}
 
 --DRAW
 export class Draw
@@ -731,8 +757,8 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
 
         @spare_canvas = Canvas!
         @main_canvas = Canvas!
-        @spare_canvas.blendmode = {"alpha","premultiplied"}
-        @main_canvas.blendmode = {"alpha","premultiplied"}
+        @spare_canvas.blendmode = {"alpha"}--,"premultiplied"}
+        @main_canvas.blendmode = {"premultiplied"}
         @spare_canvas\remDrawable!
         @main_canvas\remDrawable!
 
@@ -746,6 +772,7 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
         for k,v in pairs(@vars[name])
             @send(name, k, v)
     draw: (fn) =>
+        @spare_canvas.blendmode = {"alpha"}
         @spare_canvas\drawTo fn
         for name in *@names
             if not @disabled[name]
@@ -755,6 +782,7 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
                     if info.opt.blend
                         @spare_canvas.blendmode = info.opt.blend
                     last_shader = love.graphics.getShader()
+                    @main_canvas.blendmode = {"premultiplied"}
                     love.graphics.setShader(info.shader)
                     @main_canvas\drawTo @spare_canvas
                     love.graphics.setShader(last_shader)
@@ -788,7 +816,7 @@ export class Camera
             half_w, half_h = w/2, h/2
             Draw.crop(o.left, o.top, w, h)
             o.transform\reset!
-            o.transform\translate half_w, half_h
+            o.transform\translate floor(half_w), floor(half_h)
             o.transform\scale o.scalex, o.scaley or o.scalex
             o.transform\rotate math.rad(o.angle)
             o.transform\translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
@@ -1125,14 +1153,46 @@ export class Hitbox
                     Draw.rect('fill',world\getRect(i))
             Draw.color()
 
+--WINDOW
+export Window = {
+    os: '?'
+    aspect_ratio: nil
+    aspect_ratios: { {4,3}, {5,4}, {16,10}, {16,9} }
+    resolutions: { 512, 640, 800, 1024, 1280, 1366, 1920 }
+    aspectRatio: () ->
+        w, h = love.window.getDesktopDimensions!
+        for ratio in *Window.aspect_ratios
+            if w * (ratio[2] / ratio[1]) == h
+                Window.aspect_ratio = ratio
+                return ratio
+    setSize: (r, flags) -> 
+        w, h = Window.calculateSize(r)
+        love.window.setMode w, h, flags
+    setExactSize: (w, h, flags) ->
+        love.window.setMode w, h, flags
+    calculateSize: (r=3) ->
+        if not Window.aspect_ratio then Window.aspectRatio!
+        w = Window.resolutions[r]
+        h = w / Window.aspect_ratio[1] * Window.aspect_ratio[2]
+        return w, h
+    fullscreen: (v,fs_type) ->
+        if not v then return love.window.getFullscreen!
+        else love.window.setFullscreen(v,fs_type)
+    toggleFullscreen: () ->
+        Window.fullscreen(not Window.fullscreen!)
+}
+
 --BLANKE
 export Blanke = {
     config: {}
     game_canvas: nil
+    loaded: false
     load: () ->
-        Game.load!
-        Blanke.game_canvas = Canvas!
-        Blanke.game_canvas\remDrawable!
+        if not Blanke.loaded
+            Blanke.loaded = true
+            Game.load!
+            Blanke.game_canvas = Canvas!
+            Blanke.game_canvas\remDrawable!
 
     update: (dt) ->
         if Game.options.update(dt) == true then return
@@ -1147,7 +1207,11 @@ export Blanke = {
                 Game.updatables[o] = nil
             else if obj and obj._update then obj\_update(dt)
         
-        Input.releaseCheck!
+        key = Input.pressed('_fs_toggle') 
+        if key and key.count == 1
+            Window.toggleFullscreen!
+            
+        Input.keyCheck!
     
     draw: () ->
         actual_draw = () ->
@@ -1245,4 +1309,4 @@ love.run = () ->
 
     if love.timer then love.timer.sleep(0.0001)
 
-{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map, :Physics, :Hitbox }
+{ :Blanke, :Game, :Canvas, :Image, :Entity, :Input, :Draw, :Audio, :Effect, :Math, :Map, :Physics, :Hitbox, :Window }

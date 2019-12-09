@@ -2,13 +2,16 @@ io.stdout:setvbuf('no')
 package.path = package.path .. ";D:/Documents/PROJECTS/blankejs/love2d/?.lua;D:/Documents/PROJECTS/blankejs/love2d/lua/?/init.lua;D:/Documents/PROJECTS/blankejs/love2d/lua/?.lua;D:/Documents/PROJECTS/blankejs/love2d/plugins/?/init.lua;D:/Documents/PROJECTS/blankejs/love2d/plugins/?.lua"
 require 'moonscript'
 local blanke = require "blanke"
-blanke.Blanke.config.scale = false
-blanke.Blanke.config.width = 800
-blanke.Blanke.config.height = 600
+blanke.Blanke.config = {
+    scale = true,
+    game_size = 3,
+    window_size = 3
+}
+blanke.Blanke.config.window_flags = {
+    borderless = false,
+    resizable = true
+}
 function love.conf(t)
     t.console = true
-    t.window.width = 400
-    t.window.height = 300
-    t.window.borderless = false
-    t.window.resizable = true
+    t.window = false
 end

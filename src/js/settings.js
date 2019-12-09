@@ -28,8 +28,8 @@ class Settings extends Editor {
         this.el_settings = new BlankeForm([
             ['GAME'],
             ['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
-            ['window_size','number',{'inputs':2, 'separator':'x', 'step':1, 'min':1, 'default':proj_set.window_size}],
-            ['game_size','number',{'inputs':2, 'separator':'x', 'step':1, 'min':1, 'default':proj_set.game_size}],
+            ['window_size','number',{'step':1, 'min':1, 'max':7, 'default':proj_set.window_size}],
+            ['game_size','number',{'step':1, 'min':1, 'max':7, 'default':proj_set.game_size}],
             ['IDE'],
             ...autoplay_settings,
             ['theme','select',{'choices':app.themes,'default':app_set.theme}],
