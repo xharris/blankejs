@@ -8,7 +8,7 @@ Game {
 	scripts: { 'xhh-effect', 'player' }
 	--effect: 'chroma shift'
     load: () ->
-        Game.setBackgroundColor('white')
+        Game.setBackgroundColor(1,1,1,0)
         Map.load('level1.map')	
 }
 

@@ -250,7 +250,6 @@ export class GameObject
 
 --CANVAS
 export class Canvas extends GameObject
-    @applied = 0
     new: (w=Game.width, h=Game.height, settings={}) =>
         super!
         @auto_clear = true
@@ -270,13 +269,11 @@ export class Canvas extends GameObject
         Draw.setBlendMode('alpha')
         if @auto_clear then Draw.clear()
         -- camera transform
-        if Camera.transform and Canvas.applied > 1
-            love.graphics.origin!
+        love.graphics.origin!
+        if Camera.transform and not @_main_canvas
             love.graphics.replaceTransform(Camera.transform)
     drawTo: (obj) =>
-        --last_canvas = love.graphics.getCanvas()
         Draw.stack () ->
-            Canvas.applied += 1
             -- camera transform
             if type(obj) == "function"
                 @canvas\renderTo ()->
@@ -286,8 +283,6 @@ export class Canvas extends GameObject
                 @canvas\renderTo () ->
                     @prepare!
                     obj\draw!
-        --love.graphics.setCanvas { last_canvas }--, stencil:true}
-        Canvas.applied -= 1
 
 --IMAGE
 export class Image extends GameObject
@@ -841,7 +836,7 @@ export class Camera
                 o.x = o.follow.x or o.x
                 o.y = o.follow.y or o.y
             half_w, half_h = w/2, h/2
-            -- Draw.crop(o.x - o.left, o.y - o.top, w, h)
+            --Draw.crop(o.x - o.left, o.y - o.top, w, h)
             o.transform\reset!
             o.transform\translate floor(half_w), floor(half_h)
             o.transform\scale o.scalex, o.scaley or o.scalex
@@ -849,8 +844,7 @@ export class Camera
             o.transform\translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
 
             Camera.transform = o.transform
-            if Canvas.applied == 1
-                love.graphics.replaceTransform(o.transform)
+            love.graphics.replaceTransform(o.transform)
     @detach = () ->
         Draw.pop()
     @use = (name, fn) ->
@@ -1269,7 +1263,7 @@ export Blanke = {
                 else 
                     _drawGame!
 
-        Blanke.game_canvas\drawTo _draw
+        Blanke.game_canvas\drawTo actual_draw
         if Blanke.config.scale == true
             scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
             scale = math.min scalex, scaley
