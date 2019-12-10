@@ -16,6 +16,7 @@ Entity "Player", {
 	align: "center",
 	gravity: 10,
 	can_jump: true,
+	effect: "static",
 	hitbox: true,
 	hitArea: {
 		left: -5

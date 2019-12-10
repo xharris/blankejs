@@ -1,4 +1,4 @@
-## Effect
+## Effect - GameObject (Updatable)
 
 ```
 Effect.new "chroma shift", {

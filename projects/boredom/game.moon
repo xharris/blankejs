@@ -4,11 +4,12 @@ import p from require "moon"
 
 Game {
     res: 'assets'
-    filter: 'linear'
-	scripts: { 'player' }
+    filter: 'nearest'
+	scripts: { 'xhh-effect', 'player' }
+	--effect: 'chroma shift'
     load: () ->
-        Game.setBackgroundColor(1,1,1,1)
-        Map.load('level1.map')
+        Game.setBackgroundColor('white')
+        Map.load('level1.map')	
 }
 
 Map.config {

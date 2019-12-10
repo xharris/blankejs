@@ -8,6 +8,14 @@
     ],
     "quick_access": [
         [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
+            "player.moon=script+entity+?",
+            "player.moon"
+        ],
+        [
             "game.moon=script+?",
             "game.moon"
         ],
@@ -16,16 +24,8 @@
             "main.lua"
         ],
         [
-            "player.moon=script+entity+?",
-            "player.moon"
-        ],
-        [
             "conf.lua=script+?",
             "conf.lua"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "autoplay_preview": true,
@@ -59,7 +59,7 @@
     "enabled_plugins": {
         "xhh-platformer": false,
         "xhh-tween": true,
-        "xhh-effect": false
+        "xhh-effect": true
     },
     "game_size": 3,
     "window_size": 3,

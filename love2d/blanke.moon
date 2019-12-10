@@ -70,6 +70,7 @@ export class Game
         update: (dt) ->
         draw: (d) -> d!
         postDraw: nil
+        effect: nil
     }
     @config = {
 
@@ -84,7 +85,7 @@ export class Game
     @height = 0
 
     new: (args) =>
-        table.update(@@options, args, {'res','scripts','filter','load','draw','update','postDraw'})
+        table.update(@@options, args)
         return nil
 
     @updateWinSize = () ->
@@ -111,6 +112,9 @@ export class Game
             combo: { '_fs_toggle' } 
             no_repeat: { '_fs_toggle' }
         }
+        -- effect
+        if Game.options.effect 
+            Game.effect = Effect(Game.options.effect)
         if @options.load then @options.load()
 
 
@@ -246,6 +250,7 @@ export class GameObject
 
 --CANVAS
 export class Canvas extends GameObject
+    @applied = 0
     new: (w=Game.width, h=Game.height, settings={}) =>
         super!
         @auto_clear = true
@@ -253,25 +258,36 @@ export class Canvas extends GameObject
         @height = h
         @canvas = love.graphics.newCanvas(@width, @height, settings)
         @addDrawable!
-    _draw: () => Game.drawObject(@, @canvas)
+    _draw: () => 
+        if not @_main_canvas
+            Draw.push!
+            love.graphics.origin!
+        Game.drawObject(@, @canvas)
+        if not @_main_canvas
+            Draw.pop!
     resize: (w,h) => @canvas\resize(w,h)
+    prepare: () =>
+        Draw.setBlendMode('alpha')
+        if @auto_clear then Draw.clear()
+        -- camera transform
+        if Camera.transform and Canvas.applied > 1
+            love.graphics.origin!
+            love.graphics.replaceTransform(Camera.transform)
     drawTo: (obj) =>
-        last_canvas = love.graphics.getCanvas()
+        --last_canvas = love.graphics.getCanvas()
         Draw.stack () ->
-            Draw.setBlendMode('alpha')
-            love.graphics.setCanvas {
-                @canvas, 
-                stencil:true
-            }
-            if @auto_clear then Draw.clear()
+            Canvas.applied += 1
+            -- camera transform
             if type(obj) == "function"
-                obj!
+                @canvas\renderTo ()->
+                    @prepare!
+                    obj!
             else if is_object(obj) and obj.draw
-                obj\draw!
-            love.graphics.setCanvas {
-                last_canvas, 
-                stencil:true
-            }
+                @canvas\renderTo () ->
+                    @prepare!
+                    obj\draw!
+        --love.graphics.setCanvas { last_canvas }--, stencil:true}
+        Canvas.applied -= 1
 
 --IMAGE
 export class Image extends GameObject
@@ -403,11 +419,7 @@ export class _Entity extends GameObject
         for _,anim in pairs(@animList) do anim.parent = @
         Game.checkAlign @
         -- effect
-        if args.effect
-            if type(args.effect) == 'table'
-                @setEffect unpack(args.effect)
-            else 
-                @setEffect args.effect
+        if args.effect then @setEffect args.effect
         -- physics
         assert(not (args.body and args.fixture), "Entity can have body or fixture. Not both!")
         if args.body
@@ -533,6 +545,8 @@ export class Input
             info.count += 1
         released = {}
 
+    @mousePos = () -> love.mouse.getPosition!
+
 --DRAW
 export class Draw
     @crop_used = false
@@ -558,10 +572,11 @@ export class Draw
     @getBlendMode = () -> love.graphics.getBlendMode()
     @setBlendMode = (...) -> love.graphics.setBlendMode(...)
     @crop = (x,y,w,h) ->
-        stencilFn = () -> Draw.rect('fill',x,y,w,h)
-        love.graphics.stencil(stencilFn,"replace",1)
-        love.graphics.setStencilTest("greater",0)
-        Draw.crop_used = true
+        love.graphics.setScissor(x,y,w,h)
+        -- stencilFn = () -> Draw.rect('fill',x,y,w,h)
+        -- love.graphics.stencil(stencilFn,"replace",1)
+        -- love.graphics.setStencilTest("greater",0)
+        -- Draw.crop_used = true
     @reset = (only) ->
         if only == 'color' or not only
             Draw.color(1,1,1,1)
@@ -674,7 +689,7 @@ export class Audio
         if new_sources[name] then return table.some([ src\isPlaying! for src in *new_sources[name] ])
 
 --EFFECT
-export class Effect
+export class Effect extends GameObject
     love_replacements = {
         float: "number",
         sampler2D: "Image",
@@ -687,8 +702,11 @@ export class Effect
     @new = (name, in_opt) ->
         opt = { vars:{}, unused_vars:{}, integers:{}, code:nil, effect:'', vertex:'' }
         table.update(opt, in_opt)
-        print name 
-        p opt
+        -- mandatory vars
+        if not opt.vars['texSize'] or opt.vars['textureSize']
+            opt.vars['texSize'] = {Game.width, Game.height}
+        if not opt.vars['time']
+            opt.vars['time'] = 0
         code = ""
         -- create var string
         var_str = ""
@@ -750,6 +768,8 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
     
     new: (...) =>
         @names = {...}
+        if type(@names[1]) == 'table'
+            @names = @names[1]
         assert(library[name], "Effect \'#{name}\' not found") for name in *@names
         @vars = { name, copy(library[name].opt.vars) for name in *@names }
         @unused_vars = { name, copy(library[name].opt.unused_vars) for name in *@names }
@@ -757,10 +777,12 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
 
         @spare_canvas = Canvas!
         @main_canvas = Canvas!
-        @spare_canvas.blendmode = {"alpha"}--,"premultiplied"}
-        @main_canvas.blendmode = {"premultiplied"}
+        @spare_canvas.blendmode = {"alpha","premultiplied"}
+        @main_canvas.blendmode = {"alpha","premultiplied"}
         @spare_canvas\remDrawable!
         @main_canvas\remDrawable!
+
+        @addUpdatable!
 
     disable: (...) => for name in *{...} do @disabled[name] = true
     enable: (...) => for name in *{...} do @disabled[name] = false
@@ -771,8 +793,12 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
     sendVars: (name) =>
         for k,v in pairs(@vars[name])
             @send(name, k, v)
+    update: (dt) =>
+        for name in *@names
+            vars = @vars[name]
+            vars.time += dt
+            @send(name, 'time', vars.time)
     draw: (fn) =>
-        @spare_canvas.blendmode = {"alpha"}
         @spare_canvas\drawTo fn
         for name in *@names
             if not @disabled[name]
@@ -782,10 +808,10 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
                     if info.opt.blend
                         @spare_canvas.blendmode = info.opt.blend
                     last_shader = love.graphics.getShader()
-                    @main_canvas.blendmode = {"premultiplied"}
                     love.graphics.setShader(info.shader)
                     @main_canvas\drawTo @spare_canvas
                     love.graphics.setShader(last_shader)
+                    @spare_canvas\drawTo @main_canvas
 
                 if info.opt.draw
                     info.opt.draw(@vars[name], applyShader)
@@ -799,6 +825,7 @@ export class Camera
     default_opt = { x:0, y:0, dx:0, dy:0, angle:0, scalex:1, scaley:nil, top:0, left:0, width:nil, height:nil, follow:nil, enabled:true }
     attach_count = 0
     options = {}
+    @transform = nil
     new: (name, opt={}) =>
         options[name] = copy(default_opt)
         options[name].transform = love.math.newTransform()
@@ -808,20 +835,22 @@ export class Camera
         o = Camera.get name
         Draw.push()
         if o.enabled == false then return
-        w, h = o.width or Game.width, o.height or Game.height
         if o
+            w, h = o.width or Game.width, o.height or Game.height
             if o.follow then
                 o.x = o.follow.x or o.x
                 o.y = o.follow.y or o.y
             half_w, half_h = w/2, h/2
-            Draw.crop(o.left, o.top, w, h)
+            -- Draw.crop(o.x - o.left, o.y - o.top, w, h)
             o.transform\reset!
             o.transform\translate floor(half_w), floor(half_h)
             o.transform\scale o.scalex, o.scaley or o.scalex
             o.transform\rotate math.rad(o.angle)
             o.transform\translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
 
-            love.graphics.replaceTransform(o.transform)
+            Camera.transform = o.transform
+            if Canvas.applied == 1
+                love.graphics.replaceTransform(o.transform)
     @detach = () ->
         Draw.pop()
     @use = (name, fn) ->
@@ -1142,7 +1171,7 @@ export class Hitbox
             obj.x = new_x - ha.left
             obj.y = new_y - ha.top
     @remove = (obj) ->
-        if obj.hasHitbox then world\remove(obj)
+        if obj and obj.hasHitbox then world\remove(obj)
     @draw = () ->
         if Hitbox.debug
             items, len = world\getItems!
@@ -1192,11 +1221,11 @@ export Blanke = {
             Blanke.loaded = true
             Game.load!
             Blanke.game_canvas = Canvas!
+            Blanke.game_canvas._main_canvas = true
             Blanke.game_canvas\remDrawable!
 
     update: (dt) ->
         if Game.options.update(dt) == true then return
-
         Physics.update dt
 
         len = #Game.updatables
@@ -1226,17 +1255,22 @@ export Blanke = {
             if Game.options.postDraw then Game.options.postDraw!
             Physics.draw!
             Hitbox.draw!
+
+        _drawGame = () ->
+            if Camera.count! > 0
+                Camera.useAll actual_draw
+            else 
+                actual_draw!
        
         _draw = () ->
             Game.options.draw () ->
-                if Camera.count! > 0
-                    Camera.useAll actual_draw
+                if Game.effect
+                    Game.effect\draw _drawGame
                 else 
-                    actual_draw!
+                    _drawGame!
 
+        Blanke.game_canvas\drawTo _draw
         if Blanke.config.scale == true
-            Blanke.game_canvas\drawTo _draw
-
             scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
             scale = math.min scalex, scaley
             padx, pady = 0, 0
@@ -1252,7 +1286,7 @@ export Blanke = {
             Draw.pop!
         
         else 
-            _draw!
+            Blanke.game_canvas\draw!
 
     keypressed: (key, scancode, isrepeat) -> Input.press(key, {:scancode, :isrepeat})
     keyreleased: (key, scancode) -> Input.release(key, {:scancode})
