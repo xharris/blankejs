@@ -29,7 +29,29 @@ Game.spawn("Player", { custom_prop: 5 })
 
 `hitArea` { left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
 
-`collision, collFilter`
+`collision (info)` info = { <see below> }
+
+* item
+
+* other
+
+* normal { x, y }
+
+* move { x, y }
+
+* touch { x, y }
+
+`collFilter (item, other)` return nil to ignore collision or a response string:
+
+* `"touch"`
+
+* `"cross"`
+
+* `"slide"`
+
+* `"bounce"`
+
+`collList {}` list of { other_tag:response }. default response is `Hitbox.default_coll_response (slide)`
 
 ## physics
 

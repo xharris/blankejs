@@ -8,7 +8,8 @@ C	separate tabs from history bar
 C	implement fibonnaci-sized windows
 C	sprite sheet preview: should display image dimensions
 C	find and replace
-C	GamePreview - auto insert Asset.add() method		
+C	GamePreview - auto insert Asset.add() method
+	Add confirm dialog when closing changed Code		
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
@@ -1462,6 +1463,9 @@ app.window.webContents.once('dom-ready', ()=>{
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();
 		}});
+		app.addSearchKey({key: 'Clear history', onSelect: () => {
+			app.clearHistory();
+		}})
 		app.refreshQuickAccess();
 	});
 

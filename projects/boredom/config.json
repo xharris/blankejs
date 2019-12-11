@@ -8,20 +8,24 @@
     ],
     "quick_access": [
         [
-            "level1.map=map+?",
-            "level1.map"
-        ],
-        [
             "player.moon=script+entity+?",
             "player.moon"
+        ],
+        [
+            "level1.map=map+?",
+            "level1.map"
         ],
         [
             "game.moon=script+?",
             "game.moon"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
+            "movingblock.moon=script+?",
+            "movingblock.moon"
+        ],
+        [
+            "View assets=?",
+            "View assets"
         ]
     ],
     "autoplay_preview": true,
@@ -37,10 +41,22 @@
                 ],
                 "uuid": "e6d1877c",
                 "size_changed": true
+            },
+            "bc08a4cd": {
+                "name": "MovingBlock",
+                "char": "!",
+                "color": "#fe8c05",
+                "size": [
+                    99,
+                    33
+                ],
+                "uuid": "bc08a4cd",
+                "size_changed": true
             }
         },
         "object_order": [
-            "e6d1877c"
+            "e6d1877c",
+            "bc08a4cd"
         ]
     },
     "export": {

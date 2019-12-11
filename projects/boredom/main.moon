@@ -2,13 +2,13 @@ import Game, Input, Map from require "blanke"
 
 import p from require "moon"
 
+
 Game { 
     res: 'assets'
     filter: 'nearest'
-	scripts: { 'xhh-effect', 'player' }
-	effect: 'static'
+	scripts: { 'xhh-effect' }
     load: () ->
-        Game.setBackgroundColor(1,1,1,0)
+        Game.setBackgroundColor('white')
         Map.load('level1.map')	
 }
 
@@ -24,5 +24,5 @@ Input {
     left: { "left", "a" }
     right: { "right", "d" }
     jump: { "up", "w" }
-    action: { 'space', 'mouse1' }
+    action: { 'space' }
 }, { no_repeat: { "jump" } }

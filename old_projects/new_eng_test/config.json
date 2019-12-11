@@ -266,8 +266,13 @@
     },
     "export": {
         "name": "boredom",
-        "remove_unused": true,
         "web_autoplay": false,
+        "scale_mode": "linear",
+        "frameless": false,
+        "minify": true,
+        "scale": true,
+        "resizable": false,
+        "remove_unused": true,
         "web_memory": 120,
         "web_stack": 4
     },
@@ -290,5 +295,12 @@
         600,
         400
     ],
-    "enabled_plugins": {}
+    "enabled_plugins": {
+        "xhh-effect": false,
+        "xhh-tween": false
+    },
+    "game_size": 3,
+    "window_size": 3,
+    "quick_access": [],
+    "autoplay_preview": true
 }

@@ -463,11 +463,17 @@
 		margin: 25px;
 	    margin-top: 58px;
 		z-index: 1;
-	    pointer-events: none;
 		background-color: rgba(38, 50, 56, 0.81);
 	    transition: all ease-in-out 0.2s;
 	    border-radius: 4px;
-    	overflow: hidden;
+		
+		bottom: 0px;
+		top: 0px;
+		overflow-y: auto;
+		/*
+	    pointer-events: none;
+		overflow: hidden;
+		*/
 
 	    &.hidden {
 	    	right: -100%;

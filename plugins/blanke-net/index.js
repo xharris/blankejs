@@ -1,7 +1,7 @@
 exports.info = {
     name: "Net.js",
     author: "XHH",
-    description: "Simple networking plugin for BlankE. Uses socket.io",
+    description: "Simple networking plugin for BlankE",
     id: "xhh-net",
     enabled: false
 }

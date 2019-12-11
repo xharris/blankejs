@@ -1,91 +1,44 @@
 {
-    "ico": "src\\logo.ico",
-    "icns": "src\\logo.icns",
-    "first_scene": "Map",
-    "size": [
-        400,
-        300
-    ],
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns",
+    "first_scene": null,
+    "game_size": 3,
+    "window_size": 3,
     "quick_access": [
-        [
-            "Map.js=script+scene+?",
-            "Map.js"
-        ],
-        [
-            "Player.js=script+entity+?",
-            "Player.js"
-        ],
         [
             "map0.map=map+?",
             "map0.map"
         ],
         [
-            "View assets=?",
-            "View assets"
+            "Add a map=new+?",
+            "Add a map"
         ],
         [
-            "Find in files=?",
-            "Find in files"
+            "main.moon=script+?",
+            "main.moon"
+        ],
+        [
+            "View assets=?",
+            "View assets"
         ]
     ],
+    "autoplay_preview": true,
     "scene": {
         "objects": {
-            "d4ecd89e": {
-                "name": "Bunny",
-                "char": "<",
+            "526dedde": {
+                "name": "object0",
+                "char": "A",
                 "color": "#000000",
                 "size": [
-                    25,
+                    32,
                     32
                 ],
-                "uuid": "d4ecd89e"
-            },
-            "eec001b5": {
-                "name": "Player",
-                "char": "%",
-                "color": "#000000",
-                "size": [
-                    38,
-                    33
-                ],
-                "uuid": "eec001b5"
+                "uuid": "526dedde"
             }
         },
         "object_order": [
-            "d4ecd89e",
-            "eec001b5"
+            "526dedde"
         ]
-    },
-    "enabled_plugins": {
-        "xhh-platformer": true,
-        "xhh-tween": false,
-        "xhh-particle": false,
-        "xhh-effect": true
-    },
-    "spritesheet_prvw": {
-        "image/bluerobot.png": {
-            "name": "robot_walk",
-            "offset": [
-                38,
-                0
-            ],
-            "speed": 1,
-            "frame_size": [
-                38,
-                33
-            ],
-            "frames": 7,
-            "selected_frames": [
-                "\"1-7\"",
-                1
-            ],
-            "columns": 8,
-            "border": [
-                0,
-                0
-            ],
-            "image": "image/bluerobot.png"
-        }
     },
     "export": {
         "name": "test_zone",
@@ -94,8 +47,10 @@
         "frameless": false,
         "minify": true,
         "scale": true,
-        "resizable": true
+        "resizable": false
     },
-    "os": "windows",
-    "autoplay_preview": true
+    "enabled_plugins": {
+        "xhh-effect": false,
+        "xhh-tween": false
+    }
 }

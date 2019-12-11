@@ -54,6 +54,7 @@ export FS = {
     dirname: (str) -> if string.match(str,".-/.-") then return string.gsub(str, "(.*/)(.*)", "%1") else return ''
     extname: (str) -> if str = string.match(str,"^.+(%..+)$") then return string.sub(str,2)
     removeExt: (str) -> string.gsub(str, '.'..FS.extname(str), '')
+    ls: (path) -> love.filesystem.getDirectoryItems path
 }
 
 -- needed extra libraries
@@ -63,14 +64,15 @@ json = require "json"
 --GAME
 export class Game
     @options = {
-        res: 'assets',
-        scripts: {},
+        res: 'assets'
+        scripts: {}
         filter: 'linear'
         load: () ->
         update: (dt) ->
         draw: (d) -> d!
         postDraw: nil
         effect: nil
+        auto_require: true
     }
     @config = {
 
@@ -106,7 +108,14 @@ export class Game
         else 
             love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
         -- load scripts
-        for script in *Game.options.scripts do Game.require(script)
+        scripts = Game.options.scripts or {}
+        if Game.options.auto_require
+            files = FS.ls ''
+            for f in *files 
+                if FS.extname(f) == 'moon' and not table.hasValue(scripts, f)
+                    new_f = FS.removeExt(f)
+                    table.insert(scripts, new_f)
+        for script in *scripts do Game.require(script)
         -- fullscreen toggle
         Input { _fs_toggle: { 'alt', 'enter' } }, { 
             combo: { '_fs_toggle' } 
@@ -268,7 +277,6 @@ export class Canvas extends GameObject
     resize: (w,h) => @canvas\resize(w,h)
     prepare: () =>
         if @auto_clear then Draw.clear()
-        Draw.setBlendMode("alpha","premultiplied")
         -- camera transform
         love.graphics.origin!
         if Camera.transform and not @_main_canvas
@@ -306,6 +314,7 @@ export class Image extends GameObject
         if not anims then anims = {
             { name:FS.removeExt(FS.basename(file)), cols:1, rows:1, frames:{1} }
         }
+        if #anims == 0 then anims = {{}}
         for anim in *anims
             o = (k) -> anim[k] or all_opt[k]
             quads, durations = {}, {}
@@ -341,15 +350,16 @@ export class Image extends GameObject
             anim_info = animations[args]
         else if args.animation
             anim_info = animations[args.animation]
-
         if anim_info then 
+            -- animation
             args = {file:anim_info.file}
             @animated = anim_info
             @speed = anim_info.speed
             @t, @frame_index, @frame_len = 0, 1, anim_info.durations[1] or anim_info.duration
             @quads = anim_info.quads
             @frame_count = #@quads
-        else
+        else if type(args) == 'string'
+            -- static image
             args = {file:args}
         @image = love.graphics.newImage(Game.res('image',args.file))
         @updateSize!
@@ -364,7 +374,7 @@ export class Image extends GameObject
             @width, @height = abs(@animated.frame_size[1] * @scalex * @scale), abs(@animated.frame_size[2] * @scaley * @scale)
         else
             @width = abs(@image\getWidth() * @scalex * @scale)
-            @height = abs(@image\getHeight() * @scaly * @scale)
+            @height = abs(@image\getHeight() * @scaley * @scale)
     update: (dt) => 
         -- update animation
         if @animated
@@ -510,7 +520,7 @@ export class Input
             if not input_to_name[i] then input_to_name[i] = {}
             if not table.hasValue(input_to_name[i], name) then table.insert(input_to_name[i], name)
 
-    @pressed = (name) -> pressed[name] -- unless (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1)
+    @pressed = (name) -> pressed[name] unless (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1)
 
     @released = (name) -> released[name]
 
@@ -523,7 +533,7 @@ export class Input
                 combo = table.hasValue(options.combo, name)
                 if (combo and table.every(name_to_input[name])) or (not combo and table.some(name_to_input[name]))
                     pressed[name] = extra
-                    pressed[name].count = 0
+                    pressed[name].count = 1
 
     @release = (key, extra) ->
         if key_assoc[key] then Input.release(key_assoc[key], extra)
@@ -874,10 +884,11 @@ export class Map extends GameObject
         data = json.decode(data)
         layer_name = {}
         -- get layer names
-        if not options.layer_order then options.layer_order = {}
-        for info in *data.layers
-            layer_name[info.uuid] = info.name
-            table.insert(options.layer_order, info.name)
+        if not options.layer_order 
+            options.layer_order = {}
+            for i,info in ipairs(data.layers)
+                layer_name[info.uuid] = info.name
+                table.insert(options.layer_order, info.name)
         -- place tiles
         for img_info in *data.images
             for l_uuid, coord_list in pairs(img_info.coords)
@@ -890,9 +901,10 @@ export class Map extends GameObject
             if obj_info
                 for l_uuid, coord_list in pairs(info)
                     for c in *coord_list
-                        new_map\_spawnEntity(obj_info.name,{
-                            x:c[2], y:c[3], layer:layer_name[l_uuid]
+                        obj = new_map\_spawnEntity(obj_info.name,{
+                            x:c[2], y:c[3], z:new_map\getLayerZ(layer_name[l_uuid]), layer:layer_name[l_uuid]
                         })
+                        obj.mapTag = c[1]
         new_map.data = data
         return new_map
     @config = (opt) -> options = opt
@@ -900,6 +912,8 @@ export class Map extends GameObject
         super!
         @batches = {} -- { layer: { img_name: SpriteBatch } }
         @hbList = {}
+        @layer_z = {}
+        @entities = {} -- { layer: { entities... } }
         @addDrawable!
     addTile: (file,x,y,tx,ty,tw,th,layer='_') =>
         -- get image
@@ -941,19 +955,30 @@ export class Map extends GameObject
             Hitbox.add(tile_info)
 
     _spawnEntity: (ent_name, opt) =>
-        Game.spawn(ent_name, opt)
+        obj = Game.spawn(ent_name, opt)
+        obj\remDrawable!
+        if not @entities[opt.layer] then @entities[opt.layer] = {}
+        table.insert(@entities[opt.layer], obj)
+        return obj
     spawnEntity: (ent_name, x, y, layer="_") =>
         obj_info = getObjInfo(ent_name, true)
         if obj_info then
             obj_info.x = x
             obj_info.y = y 
             obj_info.layer = layer
-            @_spawnEntity ent_name, obj_info
+            return @_spawnEntity ent_name, obj_info
+    getLayerZ: (l_name) =>
+        for i, name in ipairs(options.layer_order)
+            if name == l_name then return i
+        return 0
     _draw: () => 
         for l_name in *options.layer_order
             if @batches[l_name]
                 for f_name, batch in pairs(@batches[l_name])
                     Game.drawObject(@, batch)
+            if @entities[l_name]
+                for ent in *@entities[l_name]
+                    ent\draw!
 
 --PHYSICS
 export class Physics 
@@ -1118,6 +1143,7 @@ export class BodyHelper
 export class Hitbox
     world = bump.newWorld()
     @debug = false
+    @default_coll_response = 'slide'
     checkHitArea = (obj) ->
         if obj.hasHitbox 
             if not obj.alignx then obj.alignx = 0
@@ -1138,7 +1164,7 @@ export class Hitbox
             return obj.hitArea
     @add = (obj) ->
         if obj.x and obj.y and obj.width and obj.height
-            if obj.classname then obj.tag = obj.classname
+            if obj.classname then obj.tag = obj.collTag or obj.classname
             obj.hasHitbox = true
             ha = checkHitArea obj
             world\add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)       
@@ -1149,10 +1175,10 @@ export class Hitbox
             world\update(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
     @move = (obj) ->
         if obj.hasHitbox
-            filter = nil
-            if obj.collFilter
-                filter = (item, other) ->
-                    return obj.collFilter item, other
+            filter = (item, other) ->
+                if obj.collList and obj.collList[other.tag] then return obj.collList[other.tag]
+                if obj.collFilter then return obj\collFilter item, other
+                return Hitbox.default_coll_response
             ha = checkHitArea obj
             new_x, new_y, cols = world\move(obj, obj.x + ha.left, obj.y + ha.top, filter)
             if obj.destroyed then return

@@ -1,7 +1,5 @@
 import Entity, Input from require "blanke"
 import Tween from require "xhh-tween"
-
-import p from require "moon"
  
 Camera "player" 
 
@@ -9,25 +7,17 @@ Image.animation 'player_stand.png'
 Image.animation 'player_dead.png'
 Image.animation 'player_walk.png', { { rows:1, cols:2, duration: 0.2 } }
 
-
-Effect.new "test", {
-  effect: ""
-}
-
 Entity "Player", {
 	camera: 'player',
 	animations: {'player_stand','player_walk','player_dead'},
 	align: "center",
 	gravity: 10,
 	can_jump: true,
-	effect: "chroma shift",
 	hitbox: true,
 	hitArea: {
 		left: -5
 		right: -10
 	},
-	collFilter: (other) =>
-		return 'slide'
 	collision: (v) =>
 		if v.other.tag == 'death'
 			@die!
@@ -35,9 +25,7 @@ Entity "Player", {
 			@can_jump = true
 			@vspeed = 0
 		if v.normal.y > 0
-			@vspeed = -@vspeed
-	spawn: () =>
-		print @uuid
+			@vspeed = -@vspeed/2
 	die: () =>
 		if not @dead
 			@dead = true
@@ -63,7 +51,7 @@ Entity "Player", {
 				@animation = 'player_stand'
 			-- jumping
 			if Input.pressed('jump') and @can_jump
-				@vspeed = -300
+				@vspeed = -350
 				@can_jump = false
 
 

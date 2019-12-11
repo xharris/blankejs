@@ -927,9 +927,10 @@ class SceneEditor extends Editor {
 			this.refreshImageList();
 			this.loadObjectsFromSettings();
 			// refresh image aligns
-			this.iterObject(this.curr_object.name, (obj) => {
-				this.drawObjImage(this.curr_object, obj.image, obj.points);
-			});
+			if (this.curr_object)
+				this.iterObject(this.curr_object.name, (obj) => {
+					this.drawObjImage(this.curr_object, obj.image, obj.points);
+				});
 			this.has_focus = true;
 		}
 		this.addCallback("onFocus", () => focus());
@@ -1997,13 +1998,13 @@ class SceneEditor extends Editor {
 			let spr_ref = Code.sprites[obj.name];
 			obj.size[0] = spr_ref.frame_size[0];
 			obj.size[1] = spr_ref.frame_size[1];
-			if (uuid === this.curr_object.uuid) {
-				this.el_object_form.setValue('size', obj.size[0], 0);
-				this.el_object_form.setValue('size', obj.size[1], 1);
-			}	
-			this.export();
-			return true;
 		}
+		if (uuid === this.curr_object.uuid) {
+			this.el_object_form.setValue('size', obj.size[0], 0);
+			this.el_object_form.setValue('size', obj.size[1], 1);
+		}	
+		this.export();
+		return true;
 	}
 
 	setObject (name) {
