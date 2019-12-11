@@ -16,37 +16,37 @@ class Settings extends Editor {
         this.container.height = 270;
         
 		app.refreshThemeList();
-        let proj_set = app.project_settings;
-        let app_set = app.settings;
+        let proj_set = app.projSetting();
+        let app_set = app.ideSetting();
 
         let autoplay_settings = engine.game_preview_enabled ? [
                 ['game_preview_enabled','checkbox',{'default':app_set.game_preview_enabled,'label':'show preview of game while coding'}],
-                ['autoplay_preview','checkbox',{'default':proj_set.autoplay_preview}]
+                ['autoplay_preview','checkbox',{'default':proj_set.autoplay_preview}],
+                ['autoreload_external_run','checkbox',{'default':app_set.autoreload_external_run,'label':'auto-reload external run','desc':'when a game is run using the Play button, it can be automatically refreshed when the code changes'}],
             ] : [];
             
         this.el_settings = new BlankeForm([
             ['GAME'],
             ['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
-            ['size','number',{'inputs':2, 'separator':'x', 'step':1, 'min':1, 'default':proj_set.size}],
+            ['window_size','number',{'step':1, 'min':1, 'max':7, 'default':proj_set.window_size}],
+            ['game_size','number',{'step':1, 'min':1, 'max':7, 'default':proj_set.game_size}],
             ['IDE'],
             ...autoplay_settings,
             ['theme','select',{'choices':app.themes,'default':app_set.theme}],
             ['quick_access_size','number',{'min':1,'default':app_set.quick_access_size}],
-            ['autoreload_external_run','checkbox',{'default':app_set.autoreload_external_run,'label':'auto-reload external run','desc':'when a game is run using the Play button, it can be automatically refreshed when the code changes'}],
             ['Paths'],
             ...paths.map((path)=>[path,'directory',{default:app_set[path+'_path']}]),
             ...files.map((path)=>[path,'file',{default:app_set[path+'_path']}])
         ],true);
-        //console.log(JSON.parse(JSON.stringify(app.project_settings)))
-        ['first_scene','game_size','autoplay_preview'].forEach(s => {
+        ['first_scene','game_size','window_size','autoplay_preview'].forEach(s => {
             this.el_settings.onChange(s, v => {
-                app.project_settings[s] = v;
+                app.projSetting(s, v);
                 app.saveSettings();
             });
         });
         ['quick_access_size','game_preview_enabled','autoreload_external_run','theme'].forEach(s => {
             this.el_settings.onChange(s, v => {
-                app.settings[s] = v;
+                app.ideSetting(s,v);
                 app.saveAppData();
 
                 if (s === 'quick_access_size')
@@ -61,9 +61,9 @@ class Settings extends Editor {
                 try {
                     nwFS.statSync(value);
                 } catch (e) {
-                    return app.settings[path+'_path'];
+                    return app.ideSetting(path+'_path');
                 }
-                app.settings[path+'_path'] = app.cleanPath(value);
+                app.ideSetting(path+'_path', app.cleanPath(value));
                 if (path == 'engine') 
                     Settings.watchEngine();
                 if (path == 'autocomplete')
@@ -78,9 +78,9 @@ class Settings extends Editor {
                 try {
                     nwFS.statSync(value);
                 } catch (e) {
-                    return app.settings[path+'_path'];
+                    return app.ideSetting(path+'_path');
                 }
-                app.settings[path+'_path'] = app.cleanPath(value);
+                app.ideSetting(path+'_path', app.cleanPath(value));
                 app.saveAppData();
             });
         });
@@ -91,7 +91,7 @@ class Settings extends Editor {
         app.minifyEngine(null,{ save_internal: true });
         if (engine_watch)
             engine_watch.close();
-        engine_watch = app.watch(app.settings.engine_path, (e, file) => {   
+        engine_watch = app.watch(app.ideSetting("engine_path"), (e, file) => {   
             app.minifyEngine(null,{ save_internal: true });
         });
     }
@@ -112,7 +112,7 @@ document.addEventListener('ideReady',(e)=>{
     Settings.watchEngine();
     app.watchAutocomplete();
 
-    paths.forEach(p => {app.settings[p+'_path'] = app.cleanPath(app.settings[p+'_path'])});
-    files.forEach(p => {app.settings[p+'_path'] = app.cleanPath(app.settings[p+'_path'])});
+    paths.forEach(p => { app.ideSetting(p+'_path', app.cleanPath(app.ideSetting(p+'_path'))) });
+    files.forEach(p => { app.ideSetting(p+'_path', app.cleanPath(app.ideSetting(p+'_path'))) });
     app.saveAppData();
 })

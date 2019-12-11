@@ -25,7 +25,7 @@ class Exporter extends Editor {
 		this.container.height = 370;
 
 		// diplay list of target platforms
-		this.platforms = Object.keys(engine.export_targets);
+		this.platforms = Object.keys(engine.export_targets || []);
 
 		this.el_platforms = app.createElement("div","platforms");
 		let el_title1 = app.createElement("p","title1");
@@ -52,33 +52,34 @@ class Exporter extends Editor {
 		this.appendChild(this.el_platforms);
 
 		// setup default settings
-		if (!app.project_settings.export) app.project_settings.export = {};
-		ifndef_obj(app.project_settings.export, DEFAULT_EXPORT_SETTINGS());
+		if (!app.projSetting("export")) app.projSetting("export",{})
+		ifndef_obj(app.projSetting("export"), DEFAULT_EXPORT_SETTINGS());
 
 		// extra options
 		let form_options = [
 			['general'],
-			['name', 'text', {'default':app.project_settings.export.name}],
+			['name', 'text', {'default':app.projSetting("export").name}],
 			['web'],
-			//['web_autoplay','checkbox',{'default':app.project_settings.export.web_autoplay,label:"autoplay"}],
-			['minify','checkbox',{'default':app.project_settings.export.minify}],
+			//['web_autoplay','checkbox',{'default':app.projSetting("export").web_autoplay,label:"autoplay"}],
+			['minify','checkbox',{'default':app.projSetting("export").minify}],
 			['rendering'],
-			['scale_mode','select',{'choices':['linear','nearest'],'default':app.project_settings.export.scale_mode}],
+			['scale_mode','select',{'choices':['linear','nearest'],'default':app.projSetting("export").scale_mode}],
 			['window sizing'],
-			...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{'default':app.project_settings.export[o]}]))
+			...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{'default':app.projSetting("export")[o]}]))
 		];
 		this.el_export_form = new BlankeForm(form_options);
 		this.el_export_form.container.classList.add("dark");
 		form_options.forEach((s)=>{
 			if (s.length > 1)
-				this_ref.el_export_form.onChange(s[0],(val)=>app.project_settings.export[s[0]] = val);
+				this_ref.el_export_form.onChange(s[0],(val)=>app.projSetting("export")[s[0]] = val);
 		});
 		this.appendChild(this.el_export_form.container);
 	}
 
 	// dir : target directory to write bundled files to 
 	bundle (dir, target_os, cb_done) {
-		engine.bundle(dir, target_os, cb_done);
+		if (engine.bundle)
+			engine.bundle(dir, target_os, cb_done);
 	}
 
 	static openDistFolder(os) {
@@ -171,7 +172,8 @@ class Exporter extends Editor {
 				this.errToast();
 			}
 			for (let platform in platforms) {
-				engine.setupBinary(os_dir, temp_dir, platform, platforms[platform], cb_done, cb_err);
+				if (engine.setupBinary)
+					engine.setupBinary(os_dir, temp_dir, platform, platforms[platform], cb_done, cb_err);
 			}
 		}
 
@@ -195,7 +197,7 @@ class Exporter extends Editor {
 				this_ref.bundle(temp_dir, target_os, function(){	
 					this_ref.toast.text = "Building app";
 
-					for (let target in engine.export_targets) {
+					for (let target in engine.export_targets || []) {
 						if (target_os == target) {
 							let platforms = engine.export_targets[target]
 							if (platforms === false)
@@ -218,5 +220,5 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({key: 'Export game', group:"Exporter", onSelect: function() {
 		new Exporter(app);
 	}});
-	app.project_settings.export = Object.assign(DEFAULT_EXPORT_SETTINGS(), app.project_settings.export);
+	app.projSetting("export",Object.assign(DEFAULT_EXPORT_SETTINGS(), app.projSetting("export")))
 });

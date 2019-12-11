@@ -1967,17 +1967,17 @@ class SceneEditor extends Editor {
 	loadObjectsFromSettings() {
 		let this_ref = this;
 		
-		if (app.project_settings.scene && app.project_settings.scene.objects) {
+		if (app.projSetting("scene") && app.projSetting("scene").objects) {
 			let last_obj_name = '';
 			if (this.curr_object)
 				last_obj_name = this.curr_object.name;
 			
 			this.objects = [];
-			let obj_ids = app.project_settings.scene.object_order;
-			if (!obj_ids || obj_ids.length == 0) obj_ids = Object.keys(app.project_settings.scene.objects);
+			let obj_ids = app.projSetting("scene").object_order;
+			if (!obj_ids || obj_ids.length == 0) obj_ids = Object.keys(app.projSetting("scene").objects);
 			
 			for (let uuid of obj_ids) {
-				let obj = app.project_settings.scene.objects[uuid];
+				let obj = app.projSetting("scene").objects[uuid];
 				if (!obj) continue;
 
 				this.addObject(obj);
@@ -2054,8 +2054,8 @@ class SceneEditor extends Editor {
 	}
 
 	deleteObject (uuid) {
-		delete app.project_settings.scene.objects[uuid];
-		app.project_settings.scene.object_order.splice(app.project_settings.scene.object_order.indexOf(uuid),1);
+		delete app.projSetting("scene").objects[uuid];
+		app.projSetting("scene").object_order.splice(app.projSetting("scene").object_order.indexOf(uuid),1);
 		delete this.objects[uuid];
 		this.export();
 	}
@@ -2304,8 +2304,8 @@ class SceneEditor extends Editor {
 			last_object_type:this.obj_type,
 			last_object_name:ifndef(this.curr_object, {name:null}).name
 		}};
-		if (!app.project_settings.scene)
-			app.project_settings.scene = {};
+		if (!app.projSetting("scene"))
+			app.projSetting("scene",{})
 
 		let layer_names = {};
 		let layer_uuids = {};
@@ -2325,15 +2325,15 @@ class SceneEditor extends Editor {
 		}
 
 		// objects
-		if (!app.project_settings.scene.objects)
-			app.project_settings.scene.objects = {};
+		if (!app.projSetting("scene").objects)
+			app.projSetting("scene").objects = {};
 
-		app.project_settings.scene.object_order = Object.keys(this.objects);
+		app.projSetting("scene").object_order = Object.keys(this.objects);
 		for (let obj_uuid in this.objects) {
 			let obj = this.objects[obj_uuid];
 
 			// save object info
-			app.project_settings.scene.objects[obj_uuid] = obj;
+			app.projSetting("scene").objects[obj_uuid] = obj;
 
 			let polygons = {};
 
@@ -2462,8 +2462,8 @@ let last_new;
 document.addEventListener("openProject", function(e){
 	var proj_path = e.detail.path;
 	SceneEditor.refreshSceneList(proj_path);
-	if (!app.project_settings.scene)
-		app.project_settings.scene = {};
+	if (!app.projSetting("scene"))
+		app.projSetting("scene",{})
 
 	app.addSearchKey({
 		key: 'Add a map',

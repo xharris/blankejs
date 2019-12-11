@@ -41,7 +41,7 @@ let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 const DEFAULT_IDE_SETTINGS = {
 	recent_files:[],
 	plugin_path:'plugins',
-	engine_path:'blankejs',
+	engine_path:'love2d',
 	themes_path:'themes',
 	autocomplete_path:'./autocomplete.js',
 	theme:'green',
@@ -54,7 +54,8 @@ const DEFAULT_PROJECT_SETTINGS =  {
 	ico:nwPATH.join('src','logo.ico'),
 	icns:nwPATH.join('src','logo.icns'),
 	first_scene:null,
-	size:[800,600],
+	game_size:3,
+	window_size:3,
 	quick_access:[],
 	autoplay_preview:true
 };
@@ -187,21 +188,21 @@ var app = {
 	theme_data: {},
 	setTheme: function(name) {
 		// get theme variables from file
-		nwFS.readFile(nwPATH.join(app.settings.themes_path,name+'.json'),'utf-8',(err, data)=>{
+		nwFS.readFile(nwPATH.join(app.ideSetting("themes_path"),name+'.json'),'utf-8',(err, data)=>{
 			if (err) return;
 			let theme_data = JSON.parse(data);
 			app.theme_data = theme_data;
 			// change theme variables
 			less.modifyVars(theme_data);
-			app.settings.theme = name;
+			app.ideSetting("theme",name)
 			app.saveAppData();
 			app.refreshThemeList();
 		});
 	},
 	refreshThemeList: function() {
 		// get list of themes available
-		nwFS.ensureDirSync(app.settings.themes_path);
-		app.themes = nwFS.readdirSync(app.settings.themes_path).map((v)=>v.replace('.json',''));
+		nwFS.ensureDirSync(app.ideSetting("themes_path"));
+		app.themes = nwFS.readdirSync(app.ideSetting("themes_path")).map((v)=>v.replace('.json',''));
 	},
 	closeProject: function() {
 		// app.saveSettings();
@@ -256,8 +257,8 @@ var app = {
 				
 				// add to recent files
 				app.last_quick_access = '';
-				app.settings.recent_files = app.settings.recent_files.filter(e => !e.includes(nwPATH.basename(path)));
-				app.settings.recent_files.unshift(path);
+				app.ideSetting("recent_files",app.ideSetting("recent_files").filter(e => !e.includes(nwPATH.basename(path))))
+				app.ideSetting("recent_files").unshift(path);
 				app.saveAppData();
 
 				app.getElement("#search-container").classList.remove("no-project");
@@ -295,7 +296,7 @@ var app = {
 		app.autocomplete_loaded = false;
 		app.ignore_errors = true;
 		try {
-			let data = app.require(app.settings.autocomplete_path)
+			let data = app.require(app.ideSetting("autocomplete_path"))
 			if (!data)
 				throw 'autocomplete not loaded';
 			else 
@@ -320,7 +321,7 @@ var app = {
             dispatchEvent("autocompleteChanged");
         }
 		app.ignore_errors = true;
-	    autocomplete_watch = nwFS.watch(nwPATH.resolve('src',app.settings.autocomplete_path), function(e){
+	    autocomplete_watch = nwFS.watch(nwPATH.resolve('src',app.ideSetting("autocomplete_path")), function(e){
             app.refreshAutocomplete();
 			dispatchEvent("autocompleteChanged");
 			if (!app.autocomplete_toast)
@@ -333,6 +334,8 @@ var app = {
 
 	engine_code: '',
 	minifyEngine: function(cb, opt) {
+		if (!engine.minifyEngine) return;
+		
 		opt = opt || {};
 		blanke.cooldownFn('minify-engine',500,function(){
 			app.getElement("#status-icons > .engine-status").classList.add('active');
@@ -350,13 +353,14 @@ var app = {
 					toast.style = "bad";
 				}
 			}
-			engine.minifyEngine(cb_err, cb_done, opt);
+			if (engine.minifyEngine)
+				engine.minifyEngine(cb_err, cb_done, opt);
 		}, true);
 	},
 
 	extra_windows: [],
 	play: function(options) { 
-        if (app.isProjectOpen()) {
+        if (app.isProjectOpen() && engine.play) {
 			engine.play(options);
 		}
 	},
@@ -556,6 +560,24 @@ var app = {
 		dispatchEvent('appdataSave');
 	},
 
+	ideSetting: function (k, v) {
+		if (v != null) {
+			app.settings[k] = v;
+			// app.saveAppData();
+		}
+		if (!k) return app.settings;
+		return app.settings[k] || DEFAULT_IDE_SETTINGS[k]
+	},
+
+	projSetting: function (k, v) {
+		if (v != null) {
+			app.project_settings[k] = v;
+			// app.saveSettings();
+		}
+		if (!k) return app.project_settings;
+		return app.project_settings[k] || DEFAULT_PROJECT_SETTINGS[k]
+	},
+
 	project_settings:{},
 	loadSettings: function(callback){
 		if (app.isProjectOpen()) {	
@@ -653,7 +675,7 @@ var app = {
 	getAssetPath: function(_type, name, cb) {
 		if (!name) {
 			if (_type == 'scripts')
-				return nwPATH.resolve(nwPATH.join(app.project_path,_type))
+				return nwPATH.resolve(engine.script_path)
 			else if (_type)
 				return nwPATH.resolve(nwPATH.join(app.project_path,'assets',_type))
 			else 
@@ -715,7 +737,7 @@ var app = {
 	last_quick_access: '',
 	_refreshQuickAccess: (hash) => {
 		if (app.isProjectOpen()) {
-			let set = app.project_settings;
+			let set = app.projSetting();
 			if (hash) {
 				let last_hash, last_title;
 				set.quick_access = set.quick_access.filter(h => {
@@ -737,7 +759,7 @@ var app = {
 					set.quick_access.unshift([hash,title]);
 			}
 			if (!set.quick_access) return;
-			set.quick_access = set.quick_access.slice(0,app.settings.quick_access_size);
+			set.quick_access = set.quick_access.slice(0,app.ideSetting("quick_access_size"));
 			app.saveSettings();
 			let el_container = app.getElement("#recents-container");
 			// check if anything needs to be changed
@@ -796,7 +818,7 @@ var app = {
 	},
 /*
 	removeQuickAccess: (hash) => {
-		app.project_settings.quick_access = app.project_settings.quick_access.filter(q => q[0] !== hash)
+		app.projSetting("quick_access") = app.projSetting("quick_access").filter(q => q[0] !== hash)
 		app.saveSettings();
 		app.refreshQuickAccess();
 	},
@@ -826,7 +848,7 @@ var app = {
 		}
 		// change settings
 		//if (hash) {
-			app.project_settings.quick_access = app.project_settings.quick_access.filter(h => (!hash || h[0] != hash) && h[1] != text);
+			app.projSetting("quick_access",app.projSetting("quick_access").filter(h => (!hash || h[0] != hash) && h[1] != text))
 			app.saveSettings();
 		//}
 		app.refreshQuickAccess();
@@ -976,7 +998,7 @@ var app = {
 						// rename in quick access if it's there
 						let old_name = nwPATH.basename(old_path);
 						let new_name = nwPATH.basename(new_path);
-						for (let pair of app.project_settings.quick_access) {
+						for (let pair of app.projSetting("quick_access")) {
 							for (let p in pair) {
 								pair[p] = pair[p].replace(old_name, new_name)
 							}
@@ -1446,18 +1468,18 @@ app.window.webContents.once('dom-ready', ()=>{
 
 	app.loadAppData(function(){
 		// load current theme
-		app.setTheme(app.settings.theme);
+		app.setTheme(app.ideSetting("theme"));
 
 		// add recent projects (max 10)
 		var el_recent = app.getElement("#welcome .recent-files");
-		if (app.settings.recent_files.length > 10) 
-			app.settings.recent_files = app.settings.recent_files.slice(0,10);
+		if (app.ideSetting("recent_files").length > 10) 
+			app.ideSetting("recent_files",app.ideSetting("recent_files").slice(0,10))
 			
 		// setup welcome screen
 		let el_br = app.createElement("br");
 
 		elec.remote.app.clearRecentDocuments();
-		app.settings.recent_files.forEach((file) => {
+		app.ideSetting("recent_files").forEach((file) => {
 			if (nwFS.pathExistsSync(file) && nwFS.statSync(file).isDirectory()) {
 				let el_file = app.createElement("button", "file");
 				el_file.innerHTML = nwPATH.basename(file);

@@ -200,8 +200,8 @@ class SpritesheetPreview extends Editor {
 			this_ref.el_image_size.innerHTML = img_w + " x " + img_h;
 
 			// use last used values
-			if (app.project_settings.spritesheet_prvw && app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)]) {
-				let sheet_values = app.project_settings.spritesheet_prvw[app.cleanPath(this_ref.selected_img)];
+			if (app.projSetting("spritesheet_prvw") && app.projSetting("spritesheet_prvw")[app.cleanPath(this_ref.selected_img)]) {
+				let sheet_values = app.projSetting("spritesheet_prvw")[app.cleanPath(this_ref.selected_img)];
 				this_ref.el_sheet_form.useValues(sheet_values);
 				if (sheet_values['frame_size'][0] + sheet_values['frame_size'][1] != 0)
 					this_ref.frame_size_changed = true;
@@ -237,10 +237,10 @@ class SpritesheetPreview extends Editor {
 		let vals = this.getValues();
 
 		// save last used values for this image
-		if (!app.project_settings.spritesheet_prvw)
-			app.project_settings.spritesheet_prvw = {};
+		if (!app.projSetting("spritesheet_prvw"))
+			app.projSetting("spritesheet_prvw",{})
 		if (this.selected_img) 
-			app.project_settings.spritesheet_prvw[app.cleanPath(this.selected_img)]=vals
+			app.projSetting("spritesheet_prvw")[app.cleanPath(this.selected_img)]=vals
 		app.saveSettings();
 
 		// create the rectangles

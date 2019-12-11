@@ -1,8 +1,10 @@
 const engine = {
 	game_preview_enabled: true,
 	main_file: 'main.js',
-	file_ext: 'js',
+	file_ext: ['js'],
 	language: 'javascript',
+	plugin_info_key: (k) => `\\*\\s*${k}\\s*:\\s*(.+)`,
+	get script_path () { return nwPATH.join(app.project_path,'scripts') },
 	code_associations: [
 		[
 			/\bScene\s*\(\s*[\'\"](.+)[\'\"]/,
@@ -35,8 +37,41 @@ const engine = {
 		}
 		`
 	},
+	entity_sprite_parse: (text, info, cb) => {
+		// use the first frame
+		let re_frame_size = /frame_size\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+		let re_offset = /offset\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+		let re_frame = /frames\s*:\s*(\d+)/;
+		let re_spacing = /spacing\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
+		let re_comment = /\/(?:\/|\*).*/;
+
+		let match;
+		if (match = re_frame_size.exec(text.replace(re_comment,''))) {
+			info.cropped = true;
+			info.frame_size = [parseInt(match[1]),parseInt(match[2])];
+		} else {
+			// get image size
+			let img = new Image();
+			img.onload = () => {
+				info.frame_size = [img.width, img.height];
+				cb(null, info);
+			}
+			img.src = 'file://'+info.path;
+		}
+		if (match = re_offset.exec(text.replace(re_comment,''))) 
+			info.offset = [parseInt(match[1]),parseInt(match[2])];
+
+		if (match = re_frame.exec(text.replace(re_comment,''))) 
+			info.frames = parseInt(match[1]);
+
+		if (match = re_spacing.exec(text.replace(re_comment,''))) {
+			info.offset[0] += parseInt(match[1]);
+			info.offset[1] += parseInt(match[1]);
+		}
+		if (info.cropped) cb(info);
+	},
     play: (options) => {
-        let proj_set = app.project_settings;
+        let proj_set = app.projSetting();
         let game = new GamePreview(null, {
             ide_mode: false,
             scene: proj_set.first_scene,
@@ -50,7 +85,7 @@ const engine = {
                 width: proj_set.size[0],
                 height: proj_set.size[1],
                 useContentSize: true,
-                resizable: app.project_settings.export.resizable,
+                resizable: app.projSetting("export").resizable,
                 webPreferences: {
                     nodeIntegration: true,
                     webgl: true,
@@ -74,7 +109,7 @@ const engine = {
                             } catch (e) {}
                         })
                     }
-                    if (app.settings.autoreload_external_run) {
+                    if (app.ideSetting("autoreload_external_run")) {
                         document.addEventListener("codeSaved", reloadWindow);
                         document.addEventListener("engineChange", reloadWindow);
                     }
@@ -92,7 +127,7 @@ const engine = {
 	},
 	minifyEngine: (cb_err, cb_done, opt) => {
 		let code_obj = {};
-		let walker = nwWALK.walk(app.settings.engine_path);
+		let walker = nwWALK.walk(app.ideSetting("engine_path"));
 		let plugin_code = '';
 		walker.on('file', (path, stat, next) => {
 			// place all code in one object
@@ -154,10 +189,10 @@ const elec = require('electron');
 //process.noAsar = true;
 elec.app.on('ready', function(){
 	let main_window = new elec.BrowserWindow({
-		width: ${app.project_settings.size[0]},
-		height: ${app.project_settings.size[1]},
-		frame: ${!app.project_settings.export.frameless},
-		resizable: ${app.project_settings.export.resizable}
+		width: ${app.projSetting("size")[0]},
+		height: ${app.projSetting("size")[1]},
+		frame: ${!app.projSetting("export").frameless},
+		resizable: ${app.projSetting("export").resizable}
 	})
 	if (main_window.setMenuBarVisibility)
 		main_window.setMenuBarVisibility(false);
@@ -168,7 +203,7 @@ elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');
 		// package.json
 		nwFS.writeFileSync(nwPATH.join(dir,'package.json'),`
 {
-	"name": "${app.project_settings.export.name}",
+	"name": "${app.projSetting("export").name}",
 	"description": "Made with BlankE",
 	"version": "1.0",
 	"main": "./entry.js",
@@ -178,7 +213,7 @@ elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');
 		}
 	},
 	bundle: (dir, target_os, cb_done) => {
-		let js_path = nwPATH.join(dir, app.project_settings.export.name+".js");
+		let js_path = nwPATH.join(dir, app.projSetting("export").name+".js");
 
 		let game = new GamePreview();
 		let scripts = GamePreview.getScriptOrder();
@@ -187,7 +222,7 @@ elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');
 			user_code += nwFS.readFileSync(path,'utf-8') + '\n';
 		}
 		// get copy of other engine settings
-		let new_config = JSON.parse(JSON.stringify(app.project_settings));
+		let new_config = JSON.parse(JSON.stringify(app.projSetting()));
 		for (let k in new_config.export) {
 			new_config[k] = new_config.export[k];
 		}
@@ -201,7 +236,7 @@ elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');
 <script>
 var game_instance;
 window.addEventListener('load',()=>{
-	game_instance = Blanke.run('#game','${app.project_settings.export.name}');
+	game_instance = Blanke.run('#game','${app.projSetting("export").name}');
 })
 </script>`,
 false,
@@ -212,13 +247,13 @@ nwPATH.basename(js_path));
 		},{ 
 			silent: true,
 			release: true,
-			minify: app.project_settings.export.minify, // true,
+			minify: app.projSetting("export").minify, // true,
 			wrapper: (code) => `
 ${code}
-Blanke.addGame('${app.project_settings.export.name}',{
+Blanke.addGame('${app.projSetting("export").name}',{
 	config: ${JSON.stringify(new_config)},
-	width: ${app.project_settings.size[0]},
-	height: ${app.project_settings.size[1]},
+	width: ${app.projSetting("size")[0]},
+	height: ${app.projSetting("size")[1]},
 	assets: [${game.getAssetStr()}],
 	onLoad: function(classes){
 		let { ${GamePreview.engine_classes} } = classes;
@@ -228,7 +263,7 @@ Blanke.addGame('${app.project_settings.export.name}',{
 });
 `	 
 		})
-		app.project_settings.os = target_os; // why ?
+		app.projSetting("os",target_os) // why ?
 	},
 	setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
 		let packager = require('electron-packager');

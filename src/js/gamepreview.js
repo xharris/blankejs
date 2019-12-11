@@ -236,8 +236,8 @@ class GamePreview {
 				return false;
 			});
 			var game_instance = Blanke("#game",{
-				config: ${JSON.stringify(app.project_settings)},
-				scale: ${this.options.ide_mode || app.project_settings.export.scale},
+				config: ${JSON.stringify(app.projSetting())},
+				scale: ${this.options.ide_mode || app.projSetting("export").scale},
 				width: ${this.options.size[0]},
 				height: ${this.options.size[1]},
 				${this.options.resizable ? 'resizable: true,' : '' }
@@ -423,7 +423,7 @@ class GamePreview {
 		let code = `
 var game_instance;	
 game_instance = Blanke("#game",{
-	config: ${JSON.stringify(app.project_settings)},
+	config: ${JSON.stringify(app.projSetting())},
 	ide_mode: true,
 	${this.options.size == null ?
 	`scale: true,`
@@ -465,7 +465,7 @@ game_instance = Blanke("#game",{
 		onload_code += (post_load || '');
 		code += (post_load || '') + `
 		
-		${app.project_settings.autoplay_preview && this.options.ide_mode ? '' : 'Game.pause();Game.step();'}
+		${app.projSetting("autoplay_preview") && this.options.ide_mode ? '' : 'Game.pause();Game.step();'}
 	}
 });`;
 		this.iframe.srcdoc = GamePreview.getHTML(`

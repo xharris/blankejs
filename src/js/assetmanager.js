@@ -110,6 +110,7 @@ class AssetManager extends Editor {
 			el_file_row.setAttribute('data-path',path);
 			el_file_row.setAttribute('data-type',file_type);
 			el_file_row.innerHTML = nwPATH.basename(path);
+			el_file_row.title = path;
 			el_file_row.draggable = true;
 			el_file_row.ondragstart = defineDragData("text/plain", (path.match(/[\\\/\w]\/assets\/\w+\/(.*)\./,'')||['',path])[1] );
 
