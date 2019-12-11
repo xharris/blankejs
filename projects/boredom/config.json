@@ -12,20 +12,16 @@
             "level1.map"
         ],
         [
+            "Add a map=new+?",
+            "Add a map"
+        ],
+        [
             "player.moon=script+entity+?",
             "player.moon"
         ],
         [
             "game.moon=script+?",
             "game.moon"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
         ]
     ],
     "autoplay_preview": true,

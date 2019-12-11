@@ -47,7 +47,8 @@ const DEFAULT_IDE_SETTINGS = {
 	theme:'green',
 	quick_access_size:5,
 	game_preview_enabled:true,
-	autoreload_external_run:false
+	autoreload_external_run:false,
+	run_save_code:true
 };
 
 const DEFAULT_PROJECT_SETTINGS =  {
@@ -361,6 +362,8 @@ var app = {
 	extra_windows: [],
 	play: function(options) { 
         if (app.isProjectOpen() && engine.play) {
+			if (app.ideSetting('run_save_code'))
+				Code.saveAll();
 			engine.play(options);
 		}
 	},

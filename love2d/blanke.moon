@@ -256,6 +256,7 @@ export class Canvas extends GameObject
         @width = w
         @height = h
         @canvas = love.graphics.newCanvas(@width, @height, settings)
+        @blendmode = {"alpha"}
         @addDrawable!
     _draw: () => 
         if not @_main_canvas
@@ -266,8 +267,8 @@ export class Canvas extends GameObject
             Draw.pop!
     resize: (w,h) => @canvas\resize(w,h)
     prepare: () =>
-        Draw.setBlendMode('alpha')
         if @auto_clear then Draw.clear()
+        Draw.setBlendMode("alpha","premultiplied")
         -- camera transform
         love.graphics.origin!
         if Camera.transform and not @_main_canvas
@@ -276,7 +277,7 @@ export class Canvas extends GameObject
         Draw.stack () ->
             -- camera transform
             if type(obj) == "function"
-                @canvas\renderTo ()->
+                @canvas\renderTo () ->
                     @prepare!
                     obj!
             else if is_object(obj) and obj.draw
@@ -772,8 +773,6 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
 
         @spare_canvas = Canvas!
         @main_canvas = Canvas!
-        @spare_canvas.blendmode = {"alpha","premultiplied"}
-        @main_canvas.blendmode = {"alpha","premultiplied"}
         @spare_canvas\remDrawable!
         @main_canvas\remDrawable!
 
@@ -812,7 +811,6 @@ vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
                     info.opt.draw(@vars[name], applyShader)
                 @sendVars name
                 applyShader!
-
         @main_canvas\draw!
 
 --CAMERA

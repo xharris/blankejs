@@ -1008,7 +1008,7 @@ class Code extends Editor {
 	}
 
 	save () {
-		blanke.cooldownFn("codeSave", 200, ()=>{
+		blanke.cooldownFn("codeSave."+this.file, 200, ()=>{
 			let data = this.codemirror.getValue();
 			nwFS.writeFileSync(this.file, data);
 			getKeywords(this.file, data);
@@ -1021,6 +1021,10 @@ class Code extends Editor {
 			this.refreshGame();
 			dispatchEvent("codeSaved");
 		});
+	}
+
+	static saveAll () {
+		for (let i in code_instances) { code_instances[i].save(); }
 	}
 
 	delete (path) {

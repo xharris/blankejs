@@ -34,6 +34,7 @@ class Settings extends Editor {
             ...autoplay_settings,
             ['theme','select',{'choices':app.themes,'default':app_set.theme}],
             ['quick_access_size','number',{'min':1,'default':app_set.quick_access_size}],
+            ['run_save_code','checkbox',{'default':app_set.run_save_code,'label':'save code before runs'}],
             ['Paths'],
             ...paths.map((path)=>[path,'directory',{default:app_set[path+'_path']}]),
             ...files.map((path)=>[path,'file',{default:app_set[path+'_path']}])
@@ -44,7 +45,7 @@ class Settings extends Editor {
                 app.saveSettings();
             });
         });
-        ['quick_access_size','game_preview_enabled','autoreload_external_run','theme'].forEach(s => {
+        ['quick_access_size','game_preview_enabled','autoreload_external_run','theme','run_save_code'].forEach(s => {
             this.el_settings.onChange(s, v => {
                 app.ideSetting(s,v);
                 app.saveAppData();

@@ -2,7 +2,7 @@ import Game, Input, Map from require "blanke"
 
 import p from require "moon"
 
-Game {
+Game { 
     res: 'assets'
     filter: 'nearest'
 	scripts: { 'xhh-effect', 'player' }

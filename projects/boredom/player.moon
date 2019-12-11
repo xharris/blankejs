@@ -2,13 +2,17 @@ import Entity, Input from require "blanke"
 import Tween from require "xhh-tween"
 
 import p from require "moon"
-
---Camera "player"
+ 
+--Camera "player" 
 
 Image.animation 'player_stand.png'
 Image.animation 'player_dead.png'
 Image.animation 'player_walk.png', { { rows:1, cols:2, duration: 0.2 } }
 
+
+Effect.new "test", {
+  effect: ""
+}
 
 Entity "Player", {
 	--camera: 'player',
@@ -16,7 +20,7 @@ Entity "Player", {
 	align: "center",
 	gravity: 10,
 	can_jump: true,
-	effect: "static",
+	effect: "test",
 	hitbox: true,
 	hitArea: {
 		left: -5
