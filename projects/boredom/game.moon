@@ -6,7 +6,7 @@ Game {
     res: 'assets'
     filter: 'nearest'
 	scripts: { 'xhh-effect', 'player' }
-	--effect: 'chroma shift'
+	effect: 'static'
     load: () ->
         Game.setBackgroundColor(1,1,1,0)
         Map.load('level1.map')	

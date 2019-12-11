@@ -12,16 +12,16 @@
             "level1.map"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
-        ],
-        [
             "player.moon=script+entity+?",
             "player.moon"
         ],
         [
             "game.moon=script+?",
             "game.moon"
+        ],
+        [
+            "Add a map=new+?",
+            "Add a map"
         ]
     ],
     "autoplay_preview": true,

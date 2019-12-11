@@ -3,7 +3,7 @@ import Tween from require "xhh-tween"
 
 import p from require "moon"
  
---Camera "player" 
+Camera "player" 
 
 Image.animation 'player_stand.png'
 Image.animation 'player_dead.png'
@@ -15,12 +15,12 @@ Effect.new "test", {
 }
 
 Entity "Player", {
-	--camera: 'player',
+	camera: 'player',
 	animations: {'player_stand','player_walk','player_dead'},
 	align: "center",
 	gravity: 10,
 	can_jump: true,
-	effect: "test",
+	effect: "chroma shift",
 	hitbox: true,
 	hitArea: {
 		left: -5
@@ -36,6 +36,8 @@ Entity "Player", {
 			@vspeed = 0
 		if v.normal.y > 0
 			@vspeed = -@vspeed
+	spawn: () =>
+		print @uuid
 	die: () =>
 		if not @dead
 			@dead = true

@@ -1223,10 +1223,12 @@ export Blanke = {
         len = #Game.updatables
         for o = 1, len
             obj = Game.updatables[o]
-            if not obj or obj.destroyed or not obj.updatable
-                Hitbox.remove(obj)
-                Game.updatables[o] = nil
-            else if obj and obj._update then obj\_update(dt)
+            if obj
+                if obj.destroyed
+                    Hitbox.remove(obj)
+                    Game.updatables[o] = nil
+                else if obj._update
+                    obj\_update(dt)
         
         key = Input.pressed('_fs_toggle') 
         if key and key.count == 1
@@ -1239,11 +1241,12 @@ export Blanke = {
             len = #Game.drawables
             for o = 1, len
                 obj = Game.drawables[o]
-                if not obj or obj.destroyed or not obj.drawable
-                    Game.drawables[o] = nil
-                else if obj.draw ~= false
-                    if obj.draw then obj\draw(() -> if obj._draw then obj\_draw!)
-                    else if obj and obj._draw then obj\_draw!
+                if obj
+                    if obj.destroyed
+                        Game.drawables[o] = nil
+                    else if obj.drawable and obj.draw ~= false
+                        if obj.draw then obj\draw(() -> if obj._draw then obj\_draw!)
+                        else if obj and obj._draw then obj\_draw!
             if Game.options.postDraw then Game.options.postDraw!
             Physics.draw!
             Hitbox.draw!
@@ -1261,7 +1264,7 @@ export Blanke = {
                 else 
                     _drawGame!
 
-        Blanke.game_canvas\drawTo actual_draw
+        Blanke.game_canvas\drawTo _draw
         if Blanke.config.scale == true
             scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
             scale = math.min scalex, scaley
