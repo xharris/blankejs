@@ -1,19 +1,7 @@
 const writeConf = () => {
     nwFS.writeFileSync(
         nwPATH.join(app.getAssetPath('scripts'),'conf.lua'),
-`io.stdout:setvbuf('no')
-package.path = package.path .. ";${['/?.lua','/lua/?/init.lua','/lua/?.lua','/plugins/?/init.lua','/plugins/?.lua'].map(p => app.ideSetting('engine_path')+p).join(';')}"
-require 'moonscript'
-local blanke = require "blanke"
-blanke.Blanke.config = {
-    scale = ${app.projSetting('export').scale},
-    game_size = ${app.projSetting('game_size')},
-    window_size = ${app.projSetting('window_size')}
-}
-blanke.Blanke.config.window_flags = {
-    borderless = ${app.projSetting('export').frameless},
-    resizable = ${app.projSetting('export').resizable}
-}
+`package.path = package.path .. ";${['/?.lua','/lua/?/init.lua','/lua/?.lua','/plugins/?/init.lua','/plugins/?.lua'].map(p => app.ideSetting('engine_path')+p).join(';')}"
 function love.conf(t)
     t.console = true
     t.window = false
@@ -24,8 +12,8 @@ end
 const engine = {
     game_preview_enabled: false,
     main_file: 'main.lua',
-    file_ext: ['moon','lua'],
-    language: 'moonscript',
+    file_ext: ['lua'],
+    language: 'lua',
     get script_path () { return app.project_path },
     plugin_info_key: (k) => `--\s*${k}\s*:\s*(.+)`,
     code_associations: [

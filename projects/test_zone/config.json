@@ -6,6 +6,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "map0.map=map+?",
             "map0.map"
         ],

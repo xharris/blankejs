@@ -605,7 +605,7 @@ class Code extends Editor {
 
 				let hint_list = [];
 				// dot activation
-				let word_pos = editor.findWordAt(cursor);
+				let word_pos = editor.findWordAt(cursor); // TODO: check if cursor is outside of document (line count)
 				let word = editor.getRange(word_pos.anchor, word_pos.head);
 				let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
 				let before_word = editor.getRange(before_word_pos.anchor, before_word_pos.head);//before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});

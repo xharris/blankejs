@@ -87,7 +87,8 @@ export class Game
     @height = 0
 
     new: (args) =>
-        table.update(@@options, args)
+        table.update(Game.options, args)
+        Game.load!
         return nil
 
     @updateWinSize = () ->
@@ -98,12 +99,12 @@ export class Game
     @load = () ->
         -- load config.json
         config_data = love.filesystem.read('config.json')
-        if config_data then @@config = json.decode(config_data)
+        if config_data then Game.config = json.decode(config_data)
         -- load settings
         @width, @height = Window.calculateSize(Blanke.config.game_size) -- game size
         Window.setSize(Blanke.config.window_size, Blanke.config.window_flags) -- window size
         Game.updateWinSize!
-        if type(Game.filter) == 'table'
+        if type(Game.options.filter) == 'table'
             love.graphics.setDefaultFilter(unpack(Game.options.filter))
         else 
             love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
@@ -124,7 +125,11 @@ export class Game
         -- effect
         if Game.options.effect 
             Game.effect = Effect(Game.options.effect)
-        if @options.load then @options.load()
+        if Game.options.load then Game.options.load()
+
+        Blanke.game_canvas = Canvas!
+        Blanke.game_canvas._main_canvas = true
+        Blanke.game_canvas\remDrawable!
 
 
     @addObject = (name, _type, args, spawn_class) ->
@@ -1237,10 +1242,7 @@ export Blanke = {
     load: () ->
         if not Blanke.loaded
             Blanke.loaded = true
-            Game.load!
-            Blanke.game_canvas = Canvas!
-            Blanke.game_canvas._main_canvas = true
-            Blanke.game_canvas\remDrawable!
+            require "main"
 
     update: (dt) ->
         if Game.options.update(dt) == true then return
@@ -1318,6 +1320,7 @@ export Blanke = {
         Input.press('mouse', {:x, :y, :button, :istouch, :presses})
         Input.release('mouse'..tostring(button), {:x, :y, :button, :istouch, :presses})
 }
+
 
 love.load = () -> Blanke.load!
 love.update = (dt) -> 

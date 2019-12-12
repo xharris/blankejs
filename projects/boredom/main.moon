@@ -1,13 +1,18 @@
-import Game, Input, Map from require "blanke"
-
 import p from require "moon"
+p blanke
+print blanke
+print 'hi'
+import Game, Input, Map from require blanke
+print 2
 
 
+print 3
 Game { 
     res: 'assets'
     filter: 'nearest'
 	scripts: { 'xhh-effect' }
     load: () ->
+		print love.graphics.getDefaultFilter!
         Game.setBackgroundColor('white')
         Map.load('level1.map')	
 }

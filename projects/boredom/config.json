@@ -12,20 +12,20 @@
             "player.moon"
         ],
         [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
+            "main.moon=script+?",
+            "main.moon"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
         [
             "game.moon=script+?",
             "game.moon"
-        ],
-        [
-            "movingblock.moon=script+?",
-            "movingblock.moon"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "autoplay_preview": true,
