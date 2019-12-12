@@ -8,24 +8,24 @@
     ],
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "player.lua=script+?",
+            "player.lua"
+        ],
+        [
+            "movingblock.lua=script+?",
+            "movingblock.lua"
+        ],
+        [
             "player.moon=script+entity+?",
             "player.moon"
         ],
         [
             "conf.lua=script+?",
             "conf.lua"
-        ],
-        [
-            "main.moon=script+?",
-            "main.moon"
-        ],
-        [
-            "level1.map=map+?",
-            "level1.map"
-        ],
-        [
-            "game.moon=script+?",
-            "game.moon"
         ]
     ],
     "autoplay_preview": true,

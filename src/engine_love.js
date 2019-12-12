@@ -1,10 +1,12 @@
 const writeConf = () => {
     nwFS.writeFileSync(
         nwPATH.join(app.getAssetPath('scripts'),'conf.lua'),
-`package.path = package.path .. ";${['/?.lua','/lua/?/init.lua','/lua/?.lua','/plugins/?/init.lua','/plugins/?.lua'].map(p => app.ideSetting('engine_path')+p).join(';')}"
+`io.stdout:setvbuf('no')
+package.path = package.path .. ";${['/?.lua','/lua/?/init.lua','/lua/?.lua','/plugins/?/init.lua','/plugins/?.lua'].map(p => app.ideSetting('engine_path')+p).join(';')}"
+require "blanke"
 function love.conf(t)
     t.console = true
-    t.window = false
+    --t.window = false
 end
 `)
 }

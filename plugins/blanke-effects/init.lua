@@ -1,9 +1,7 @@
-import Game from require "blanke"
-
-Effect.new "bloom", {
-    vars: { samples: 5, quality: 1 },
-    integers: { 'samples' }
-    effect: "
+Effect.new("bloom", {
+    vars = { samples=5, quality=1 },
+    integers = { 'samples' },
+    effect = [[
   vec4 source = Texel(texture, texCoord);
   vec4 sum = vec4(0);
   int diff = (samples - 1) / 2;
@@ -19,13 +17,13 @@ Effect.new "bloom", {
   }
   
   pixel = ((sum / (samples * samples)) + source);    
-    "
-}
+  ]]
+})
 
-Effect.new "chroma shift", {
-    vars: { angle:0, radius:2, direction:{0,0} },
-    blend: {"replace", "alphamultiply"},
-    effect: "
+Effect.new("chroma shift", {
+    vars = { angle=0, radius=2, direction={0,0} },
+    blend = {"replace", "alphamultiply"},
+    effect = [[
       vec4 px_minus = Texel(texture, texCoord - direction);
       vec4 px_plus = Texel(texture, texCoord + direction);
       pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);
@@ -33,17 +31,17 @@ Effect.new "chroma shift", {
           
           pixel.a = 1.0;
       }
-    ",
-    draw: (vars, applyShader) ->
-        {:angle, :radius} = vars
-        dx = (math.cos(math.rad(angle)) * radius) / Game.width
-        dy = (math.sin(math.rad(angle)) * radius) / Game.height
-        vars.direction = {dx,dy}
-}
+    ]],
+    draw = function(vars, applyShader)
+      dx = (math.cos(math.rad(vars.angle)) * vars.radius) / Game.width
+      dy = (math.sin(math.rad(vars.angle)) * vars.radius) / Game.height
+      vars.direction = {dx,dy}
+    end
+})
 
-Effect.new "zoom blur", {
-  vars: { center:{0,0}, strength:0.1 },
-  effect: "
+Effect.new("zoom blur", {
+  vars = { center={0,0}, strength=0.1 },
+  effect = [[
     vec4 color = vec4(0.0);
     float total = 0.0;
     vec2 toCenter = center - texCoord * texSize;
@@ -67,24 +65,24 @@ Effect.new "zoom blur", {
     
     /* switch back from pre-multiplied alpha */
     gl_FragColor.rgb /= gl_FragColor.a + 0.00001;
-  "
-}
+  ]]
+})
 
 -- UNTESTED
-Effect.new 'grayscale', {
-  vars: { strength:1 },
-  effect: "
+Effect.new('grayscale', {
+  vars = { strength=1 },
+  effect = [[
   number average = (pixel.r + pixel.b + pixel.g)/3.0;
   pixel.r = pixel.r + (average-pixel.r) * strength;
   pixel.g = pixel.g + (average-pixel.g) * strength;
   pixel.b = pixel.b + (average-pixel.b) * strength;
-  "
-}
+  ]]
+})
 
 -- DOES NOT WORK
-Effect.new 'warp sphere', {
-  vars: { radius:50, strength:2, center:{0,0} },
-  effect: "
+Effect.new('warp sphere', {
+  vars = { radius=50, strength=2, center={0,0} },
+  effect = [[
     vec2 coord =  texCoord * texSize;
     coord -= center;
     float distance = length(coord);
@@ -102,15 +100,15 @@ Effect.new 'warp sphere', {
     if (coord != clampedCoord) {
         gl_FragColor.a *= max(0.0, 1.0 - length(coord - clampedCoord));
     }
-  "
-}
+  ]]
+})
 
-Effect.new 'static', {
-  vars: { strength:{5,5} },
-  effect: "
+Effect.new('static', {
+  vars = { strength={5,5} },
+  effect = [[
   pixel = Texel(texture, vec2(
 			texCoord.x + getX(random(vec2(0, 2.0), screen_coords, time) - 1.0) * strength.x,
 			texCoord.y + getY(random(vec2(0, 2.0), screen_coords, time) - 1.0) * strength.y
 		));
-  "
-}
+  ]]
+})

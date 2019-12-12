@@ -15,9 +15,9 @@ Uses [tween.lua by kikito](https://github.com/kikito/tween.lua)
 Ex.
 
 ```
-import Tween from require "xhh-tween"
+require "xhh-tween"
 
-my_tween = Tween(5, player, { hspeed: 0 })
+my_tween = Tween(5, player, { hspeed = 0 })
 my_tween.mod = 2.0 -- makes tween go twice as fast.
 ```
 
@@ -38,11 +38,11 @@ Use it like this: `cubic` -> `inOutCubic`
 # Custom easting function
 
 ```
-custom_fn = (x1, y1, x2, y2) ->
+custom_fn = function(x1, y1, x2, y2)
     curve = love.math.newBezierCurve(0,0,x1,y1,x2,y2,1,1)
-    return (t, b, c, d) -> c * curve\evaluate(t/d) + b
-
-Tween(4, myobj, { y: 4 }, custom_fn(0.2, 0.5, 0.2, 0.4))
+    return function(t, b, c, d) return c * curve:evaluate(t/d) + b end
+end
+Tween(4, myobj, { y = 4 }, custom_fn(0.2, 0.5, 0.2, 0.4))
 ```
 
 * __t__ ime - current time (moving towards duration)
