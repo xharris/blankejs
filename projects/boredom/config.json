@@ -8,12 +8,12 @@
     ],
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
             "player.lua=script+?",
             "player.lua"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "movingblock.lua=script+?",
