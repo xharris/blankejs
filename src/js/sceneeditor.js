@@ -707,7 +707,13 @@ class SceneEditor extends Editor {
 			}
 		});
 
-		this.addCallback('onResize', this.resizeEditor.bind(this));
+		this.addCallback('onResize', () => {
+			this.pixi.resize();
+			
+			this.game_width = this.pixi.width;
+			this.game_height = this.pixi.height;
+			this.drawGrid();
+		});
 
 		if (file_path) this.load(file_path);
 	}
@@ -756,26 +762,6 @@ class SceneEditor extends Editor {
 				}, "no": () => {}
 			})
 		}
-	}
-
-	resizeEditor () {
-		let parent = this.pixi.view.parentElement;
-		if (!parent) return;
-		let w = parent.clientWidth;
-		let h = parent.clientHeight;
-		/*
-		let w = this.bg_width;
-		let h = this.bg_height;
-		*/
-
-		this.pixi.renderer.view.style.width = w + "px";
-		this.pixi.renderer.view.style.height = h + "px";
-		//this part adjusts the ratio:
-		this.pixi.renderer.resize(w,h);
-		this.game_width = w;
-		this.game_height = h;
-
-		this.drawGrid();
 	}
 
 	onClose () {
@@ -2022,7 +2008,7 @@ class SceneEditor extends Editor {
 		});
 		this.refreshLayerList();
 		this.loadObjectsFromSettings();
-		this.resizeEditor();
+		this.pixi.resize();
 	}
 
 	export () {

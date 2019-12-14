@@ -8,6 +8,10 @@
     ],
     "quick_access": [
         [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
             "View project in explorer=?",
             "View project in explorer"
         ],
@@ -22,10 +26,6 @@
         [
             "main.lua=script+?",
             "main.lua"
-        ],
-        [
-            "player.moon=script+entity+?",
-            "player.moon"
         ]
     ],
     "autoplay_preview": true,

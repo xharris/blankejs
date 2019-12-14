@@ -15,10 +15,11 @@ class ImageEditor extends Editor {
         this.el_sidebar = app.createElement('div','sidebar');
         this.el_tools = app.createElement('div','tools');
         this.el_layers = new BlankeListView({object_type:"layer"});
-        this.pixi = new PIXI.Application(0,0,{
-            backgroundColor: 0x354048,
-            antialias: false
-        });
+        this.pixi = new BlankePixi();
+		this.addCallback('onResize', () => {
+			this.pixi.resize();
+		});
+		this.appendBackground(this.pixi.view);
         // setup pixi
 		this.pixi.stage.interactive = true;
 		this.pixi.stage.hitArea = this.pixi.screen;

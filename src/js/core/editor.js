@@ -122,6 +122,8 @@ class Editor {
 			app.setHistoryClick(this.container.history_id, fn);
 	}
 
+	onClose()
+
 	close(...args) {
 		app.setHistoryActive(this.container.history_id, false);
 		this.container.close(...args);

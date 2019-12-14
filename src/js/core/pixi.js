@@ -1,6 +1,10 @@
 PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
 class BlankePixi {
     constructor (opt) {
+		opt = opt || { 
+			w: window.innerWidth,
+			h: window.innerHeight
+		 }
 		this.evt_list = {};
 
 		this.can_drag = false;
@@ -290,6 +294,18 @@ class BlankePixi {
 			this.dispatchEvent('dragStop', { camera:cam_drag_override != null ? cam_drag_override : this.camera_drag });
 		}
 	}
+	resize () {
+		let parent = this.pixi.view.parentElement;
+		if (!parent) return;
+		let w = parent.clientWidth;
+		let h = parent.clientHeight;
+		this.pixi.renderer.view.style.width = w + "px";
+		this.pixi.renderer.view.style.height = h + "px";
+		//this part adjusts the ratio:
+		this.pixi.renderer.resize(w,h);
+	}
+	get width () { return parseInt(this.pixi.renderer.view.clientWidth); }
+	get height () { return parseInt(this.pixi.renderer.view.clientHeight); }
     get view () { return this.pixi.view; }
 	get stage () { return this.pixi.stage; }
 	get renderer () { return this.pixi.renderer; }
