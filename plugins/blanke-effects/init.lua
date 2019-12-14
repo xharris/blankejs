@@ -25,8 +25,7 @@ Effect.new("chroma shift", {
     effect = [[
       vec4 px_minus = Texel(texture, texCoord - direction);
       vec4 px_plus = Texel(texture, texCoord + direction);
-      if (!(px_minus.r + px_minus.g + px_minus.b == 3.0 && px_plus.r + px_plus.g + px_plus.b == 3.0))
-        pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);
+      pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);
       if ((px_minus.a == 0 || px_plus.a == 0) && pixel.a > 0) {
           pixel.a = 1.0;
       }

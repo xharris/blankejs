@@ -333,7 +333,6 @@ var app = {
 		});
 		app.ignore_errors = false;
 	},
-
 	engine_code: '',
 	minifyEngine: function(cb, opt) {
 		if (!engine.minifyEngine) return;
@@ -612,6 +611,21 @@ var app = {
 		app.getElement("#welcome").classList.remove("hidden");
 	},
 
+	getNewAssetPath: function (_type, cb) {
+		const asset_dir = nwPATH.join(app.project_path, 'assets', _type);
+		nwFS.ensureDir(asset_dir, err => {
+			nwFS.readdir(asset_dir, (err, files) => {
+				let num = files.length;
+				let fpath = nwPATH.join(asset_dir, _type+num+'.'+app.allowed_extensions[_type][0])
+				while (nwFS.pathExistsSync(fpath)) {
+					num++;
+					fpath = nwPATH.join(asset_dir, _type+num+'.'+app.allowed_extensions[_type][0]);
+				}
+				cb(app.cleanPath(fpath), nwPATH.basename(fpath));
+			});
+		});
+	},
+
 	addAsset: function(res_type, path) {
 		blanke.toast("adding file \'"+nwPATH.basename(path)+"\'");
 		nwFS.ensureDir(nwPATH.join(app.project_path, 'assets', res_type), (err) => {
@@ -679,18 +693,18 @@ var app = {
 	getAssetPath: function(_type, name, cb) {
 		if (!name) {
 			if (_type == 'scripts')
-				return nwPATH.resolve(engine.script_path)
+				return app.cleanPath(nwPATH.resolve(engine.script_path));
 			else if (_type)
-				return nwPATH.resolve(nwPATH.join(app.project_path,'assets',_type))
+				return app.cleanPath(nwPATH.resolve(nwPATH.join(app.project_path,'assets',_type)));
 			else 
-				return nwPATH.resolve(nwPATH.join(app.project_path,'assets'))
+				return app.cleanPath(nwPATH.resolve(nwPATH.join(app.project_path,'assets')));
 		}
 		app.getAssets(_type, (files) => {
 			let found = false;
 			let re_name = /[\\\/](([\w\s.-]+)\.\w+)/;
 			files.forEach((f) => {
 				let match = re_name.exec(f);
-				if (!found && match && match[2] == name) {
+				if (match && (match[1] == name || match[2] == name)) {
 					found = true;
 					cb(false, app.lengthenAsset(app.cleanPath(nwPATH.join(_type,match[1]))));
 				}

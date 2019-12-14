@@ -723,7 +723,6 @@ class Code extends Editor {
 
 	checkLineWidgets (line, editor) {
 		let l_info = editor.lineInfo(line);
-		
 		Code.parseLineSprite(l_info.text, (err, info) => {
 			if (err) {
 				// remove previous image

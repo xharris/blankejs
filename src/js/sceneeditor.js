@@ -24,7 +24,6 @@ class SceneEditor extends Editor {
 		this.file = '';
 		
 		this.grid_opacity = 0.05;
-		this.snap_on = true;
 		this.deleted = false;
 
 		this.obj_type = '';
@@ -41,30 +40,12 @@ class SceneEditor extends Editor {
 		this.image_preview = null;
 		this.selected_tiles = [];
 
-		this.can_drag = false;
-		this.dragging = false;
-		this.mouse_start = [0,0];
-		this.camera_start = [0,0];
-		this.camera = [0,0];
-		this.mouse = [0,0];
-		this.snap_mouse = [0,0];
 		this.game_width = window.innerWidth;
 		this.game_height = window.innerHeight;
 
-		PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
-		this.pixi = new PIXI.Application(this.game_width, this.game_height, {
-			backgroundColor: 0x354048,// 0x424242,
-			antialias: false//,
-			//resizeTo: app.getElement("#bg-workspace")
-		});
+		this.pixi = new BlankePixi({ w: this.game_width, h: this.game_height });
 		this.grid_color = 0xBDBDBD;
 		this.appendBackground(this.pixi.view);
-
-		this.pixi.stage.interactive = true;
-		this.pixi.stage.hitArea = this.pixi.screen;
-		this.pixi.view.addEventListener('contextmenu', (e) => {
-			e.preventDefault();
-		});
 
 		// create map container
 		this.overlay_container = new PIXI.Container();	// displayed above everything
@@ -344,30 +325,30 @@ class SceneEditor extends Editor {
 
 		this.el_layer_form.setValue('snap', 32, 0);
 		this.el_layer_form.setValue('snap', 32, 1);
-		this.el_layer_form.onChange('snap', function(value){
+		this.el_layer_form.onChange('snap', value => {
 			var new_x = parseInt(value[0]);
 			var new_y = parseInt(value[1]);
-			if (new_x <= 0) new_x = this_ref.curr_layer.snap[0];
-			this_ref.curr_layer.snap[0] = new_x;
-			if (new_y <= 0) new_y = this_ref.curr_layer.snap[1];
-			this_ref.curr_layer.snap[1] = new_y;
+			if (new_x <= 0) new_x = this.curr_layer.snap[0];
+			this.curr_layer.snap[0] = new_x;
+			if (new_y <= 0) new_y = this.curr_layer.snap[1];
+			this.curr_layer.snap[1] = new_y;
 
 			// move grid
-			this_ref.grid_container.x = this_ref.camera[0] % this_ref.curr_layer.snap[0];
-			this_ref.grid_container.y = this_ref.camera[1] % this_ref.curr_layer.snap[1];
+			this.grid_container.x = this.pixi.camera[0] % this.curr_layer.snap[0];
+			this.grid_container.y = this.pixi.camera[1] % this.curr_layer.snap[1];
 
-			this_ref.iterObjectInLayer(this_ref.curr_layer.uuid, function(obj) {
-				obj.style.fontSize = this_ref.curr_layer.snap[1]; // only for y snap change;
+			this.iterObjectInLayer(this.curr_layer.uuid, function(obj) {
+				obj.style.fontSize = this.curr_layer.snap[1]; // only for y snap change;
 				if (obj.snapped) {
-					obj.x = obj.grid_x * this_ref.curr_layer.snap[0];
-					obj.x = obj.x + (this_ref.curr_layer.snap[0]/2) - (obj.width/2);
-					obj.y = obj.grid_y * this_ref.curr_layer.snap[1];
-					obj.y = obj.y + (this_ref.curr_layer.snap[1]/2) - (obj.height/2);
+					obj.x = obj.grid_x * this.curr_layer.snap[0];
+					obj.x = obj.x + (this.curr_layer.snap[0]/2) - (obj.width/2);
+					obj.y = obj.grid_y * this.curr_layer.snap[1];
+					obj.y = obj.y + (this.curr_layer.snap[1]/2) - (obj.height/2);
 				}
 			});
 			
-			this_ref.drawGrid();
-			this_ref.export();
+			this.drawGrid();
+			this.export();
 		});
 
 		this.el_layer_form.onChange('name', function(value){
@@ -466,132 +447,66 @@ class SceneEditor extends Editor {
 		this.appendChild(this.el_sidebar);
 		// this.appendChild(this.el_toggle_sidebar); // commented out for SideWindow changes
 
-		// Pointer Locking for camera dragging
-		function dragStart() {
-			if (!this_ref.dragging && this_ref.can_drag) {
-				var mouse = this_ref.pixi.renderer.plugins.interaction.mouse.global;
-				this_ref.mouse_start = {x:mouse.x, y:mouse.y};
-				this_ref.camera_start = this_ref.camera;
-				this_ref.dragging = true; // this is true when dragging the camera (holding alt/middle btn)
-				// selecting tiles
-				if (this_ref.obj_type == 'image') {
-
-				}
-			}
-		}
-		function dragStop() {
-			if (this_ref.dragging) {
-				this_ref.dragging = false;
-				this_ref.export();
-			}
-		}
-		window.addEventListener('keydown', function(e){
-			var keyCode = e.keyCode || e.which;
-
-			// CTRL
-			if (keyCode == 17) {
-				this_ref.snap_on = true;
-			}
-		});
-		window.addEventListener('keyup', function(e){
-			var keyCode = e.keyCode || e.which;
-
-			// CTRL
-			if (keyCode == 17) {
-				this_ref.snap_on = false;
-			}
-
-			// ENTER
-			if (keyCode == 13) {
-				if (this_ref.obj_type == "object" && this_ref.placing_object) {
-					this_ref.placeObject(this_ref.placing_object.points.slice());
-					this_ref.clearPlacingObject();
-					this_ref.export();
-				}
-			}
-		});
-		this.pixi.view.addEventListener('mouseenter', function(e){
-			this_ref.can_drag = true;
-		});
-		this.pixi.view.addEventListener('mouseout', function(e){
-			if (!this_ref.dragging) this_ref.can_drag = false;
-		});
-
-		// Zoom control
-		this.zoom = 1;
-		this.zoom_target = 1;
-		this.zoom_incr = 0.1;
-		this.old_cam = [0,0];
-		window.addEventListener('wheel',(e)=>{
-			/*
-			e.preventDefault();
-			this_ref.setZoom(this_ref.zoom - (Math.sign(e.deltaY) * this.zoom_incr))
-			*/
-		});
-		
 		this.tile_start = [0,0];
 		this.scene_graphic = new PIXI.Graphics();
 		this.map_container.addChild(this.scene_graphic);
 
-        this.pointer_down = -1;
-		this.pixi.stage.on('pointerdown',function(e){
-			let x = this_ref.mouse[0];
-			let y = this_ref.mouse[1];
-			let btn = e.data.originalEvent.button;
-			let alt = e.data.originalEvent.altKey;
-
-			this_ref.pointer_down = btn;
-
-			// dragging canvas
-			if (btn == 1 && !this_ref.dragging) {
-				this_ref.can_drag = true;
-				this_ref.pixi.view.style.cursor = "all-scroll";
-				dragStart();
-			}
-
-			if (!alt && !this_ref.dragging) {
-				// placing object
-				if (btn == 0) {
-					this_ref.tile_start = [this_ref.mouse[0], this_ref.mouse[1]];
-					if(this_ref.obj_type == 'object') 
-						this_ref.placeObjectPoint(this_ref.half_mouse[0], this_ref.half_mouse[1]);
+		this.pixi.on('dragStop', (e, info) => {
+			let { alt, btn, mouse } = info;
+			if (!this.selecting && !alt && btn == 0) {
+				// place tiles in a snapped line
+				if (this.placeImageReady()) {
+					this.clearTileSelection();
 					
-					if(this_ref.obj_type == 'image') {
-						bringToFront(this.scene_graphic)
-					}
-				}
+					let start_x = this.tile_start[0],
+						start_y = this.tile_start[1];
+					if (mouse[0] == this.tile_start[0] && mouse[1] == this.tile_start[1]) {
+						this.placeImage(mouse[0], mouse[1], this.curr_image);
 
-				// removing object/tile
-				if (btn == 2) {
-					if (this_ref.obj_type == 'object') {
-						this_ref.removeObjectPoint();
-					}
-					if (this_ref.obj_type == 'image' && this_ref.curr_image) {
-						this_ref.deleteTile(this_ref.mx,this_ref.my);
-                    }
-				}
+					} else {
+						let ix = start_x,
+							iy = start_y,
+							target_x = mouse[0],
+							target_y = mouse[1],
+							x_incr = this.selected_width,
+							y_incr = this.selected_height,
+							x_diff = Math.abs(target_x - start_x),
+							y_diff = Math.abs(target_y - start_y),
+							checkX = false,
+							checkY = false;
 
-				if (this_ref.obj_type) 
-					this_ref.export();
+							if (x_diff > y_diff) 
+								y_incr = (target_y - start_y) / (x_diff / x_incr);
+							
+							if (x_diff < y_diff) 
+								x_incr = (target_x - start_x) / (y_diff / y_incr);
+							
+						do {
+							x_diff = (target_x - ix);
+							y_diff = (target_y - iy);
+
+							this.placeImage(ix, iy, this.curr_image);
+
+							checkX = (start_x < target_x && ix < target_x) || (start_x > target_x && ix > target_x);
+							checkY = (start_y < target_y && iy < target_y) || (start_y > target_y && iy > target_y);
+
+							if (checkX) ix += Math.sign(x_diff)*x_incr;
+							if (checkY) iy += Math.sign(y_diff)*y_incr;
+						} while (checkX || checkY);
+					}
+
+					this.export();
+				}
 			}
-		});
-
-		this.pixi.stage.on('pointerup',function(e){
-			let x = this_ref.mouse[0];
-			let y = this_ref.mouse[1];
-			let btn = e.data.originalEvent.button;
-			let alt = e.data.originalEvent.altKey; 
-        	this_ref.pointer_down = -1;
-
-			if (this_ref.selecting) {
-				this_ref.selection_finish = true;
+			if (this.selecting) {
+				this.selection_finish = true;
 				// tile selection FINISH (making rect)
-				let g = this_ref.scene_graphic;
+				let g = this.scene_graphic;
 				let a = g.selection_area;
 
 				// selection area big enough to continue?
 				if (a[2] <= 0 || a[3] <= 0) {
-					this_ref.clearTileSelection();
+					this.clearTileSelection();
 
 				} else {
 					// click-drag tile selector
@@ -599,26 +514,24 @@ class SceneEditor extends Editor {
 					let last_dx = 0, last_dy = 0;
 					g.on('pointerdown', (e2) => {
 						obj_start = [g.x, g.y]
-						mouse_start = [this_ref.snap_mouse[0], this_ref.snap_mouse[1]]
+						mouse_start = [this.pixi.snap_mouse[0], this.pixi.snap_mouse[1]]
 						g.dragging = true;
-						this_ref.selected_tiles.forEach((tile) => {
+						this.selected_tiles.forEach((tile) => {
 							tile.old_x = tile.x;
 							tile.old_y = tile.y;
 						})
 					})
 					g.on('pointermove', (e2) => {
 						if (g.dragging) {
-							let [ start_x, start_y ] = mouse_start;
-							let dx = this_ref.snap_mouse[0] - start_x;
-							let dy = this_ref.snap_mouse[1] - start_y;
-
+							let dx = this.pixi.snap_mouse[0] - mouse_start[0];
+							let dy = this.pixi.snap_mouse[1] - mouse_start[1];
 							if (dx != last_dx || dy != last_dy) {
 								last_dx= dx; last_dy = dy;
 								g.x = obj_start[0] + dx;
 								g.y = obj_start[1] + dy;
 
 								// move tiles
-								this_ref.selected_tiles.forEach((tile) => {
+								this.selected_tiles.forEach((tile) => {
 									tile.moveTo(tile.old_x + dx, tile.old_y + dy);
 								})
 							}
@@ -631,179 +544,69 @@ class SceneEditor extends Editor {
 					g.on('pointerupoutside', pointerup);
 				}
 			}
-
-			if (btn == 1 && this_ref.dragging) {
-				this_ref.can_drag = true;
-				this_ref.pixi.view.style.cursor = "auto";
-				dragStop();
-			}
-
-			if (btn == 2) {
-
-			}
-
-			if (!alt && !this_ref.dragging && !this_ref.selecting) {
-				if (btn == 0) {
-
-					// place tiles in a snapped line
-					if (this_ref.placeImageReady()) {
-						this_ref.clearTileSelection();
-						
-						let start_x = this_ref.tile_start[0],
-						    start_y = this_ref.tile_start[1];
-						if (x == this_ref.tile_start[0] && y == this_ref.tile_start[1]) {
-							this_ref.placeImage(x, y, this_ref.curr_image);
-
-						} else {
-							let ix = start_x,
-								iy = start_y,
-								target_x = x,
-								target_y = y,
-								x_incr = this_ref.selected_width,
-								y_incr = this_ref.selected_height,
-								x_diff = Math.abs(target_x - start_x),
-								y_diff = Math.abs(target_y - start_y),
-								checkX = false,
-								checkY = false;
-
-								if (x_diff > y_diff) 
-									y_incr = (target_y - start_y) / (x_diff / x_incr);
-								
-								if (x_diff < y_diff) 
-									x_incr = (target_x - start_x) / (y_diff / y_incr);
-								
-							do {
-								x_diff = (target_x - ix);
-								y_diff = (target_y - iy);
-
-								this_ref.placeImage(ix, iy, this_ref.curr_image);
-
-								checkX = (start_x < target_x && ix < target_x) || (start_x > target_x && ix > target_x);
-								checkY = (start_y < target_y && iy < target_y) || (start_y > target_y && iy > target_y);
-
-								if (checkX) ix += Math.sign(x_diff)*x_incr;
-								if (checkY) iy += Math.sign(y_diff)*y_incr;
-							} while (checkX || checkY);
-						}
-
-						this_ref.export();
-					}
-				}
-			}
+			this.export();
 		});
+
+		this.pixi.on('mousePlace', (e, info) => {
+			const { mouse, half_mouse } = info;
+			this.tile_start = [mouse[0], mouse[1]];
+			if(this.obj_type == 'object') 
+				this.placeObjectPoint(half_mouse[0], half_mouse[1]);
+			
+			if(this.obj_type == 'image') 
+				bringToFront(this.scene_graphic)
+
+			//if (!this.selecting)
+			//	this.placeImage(mouse[0], mouse[1], this.curr_image);
+		})
+
+		this.pixi.on('mouseRemove', (e, info) => {
+			if (this.obj_type == 'object') {
+				this.removeObjectPoint();
+			}
+			if (this.obj_type == 'image' && this.curr_image) {
+				this.deleteTile(info.mx,info.my);
+			}
+			if (this.obj_type)
+				this.export()
+		})
 
 		let getThemeColor = () => parseInt(app.theme_data['ide-accent'].replace('#','0x'),16);
 
-		this.place_mouse = [0,0];
-		this.half_mouse = [0,0];
-		this.half_place_mouse = [0,0];
-		this.lock_mouse = false;
-		this.mx = 0;
-		this.my = 0;
+		this.pixi.on('cameraChange', (e, info) => {
+			this.refreshCamera();
+		});
+
 		let old_sel_rect;
-		this.pixi.stage.on('pointermove', function(e) {
-			// mouse screen coordinates
-			let x = e.data.global.x;
-			let y = e.data.global.y;
-			let btn = this_ref.pointer_down;
-			let alt = e.data.originalEvent.altKey; 
+		this.pixi.on('mouseMove', (e, info) => {
+			this.drawCrosshair();
 
-			// camera dragging
-			if (this_ref.dragging) {
-				this_ref.setCameraPosition(
-					this_ref.camera[0] + e.data.originalEvent.movementX,
-					this_ref.camera[1] + e.data.originalEvent.movementY
-				)
-			}
-		
-			let snapx = 1, snapy = 1;	
-			if (this_ref.curr_layer) {
-				snapx = this_ref.curr_layer.snap[0];
-				snapy = this_ref.curr_layer.snap[1];
-			}
+			if (info.btn == 2 && this.obj_type == 'image' && this.curr_image)
+				this.deleteTile(info.mx, info.my);
 
-			x /= this_ref.zoom;
-			y /= this_ref.zoom;
-				
-			// mouse world coordinates
-			let mx = x-(this_ref.camera[0] / this_ref.zoom),
-				my = y-(this_ref.camera[1] / this_ref.zoom);
-			this_ref.mx = mx;
-			this_ref.my = my;
-
-			this_ref.place_mouse = [Math.floor(x * this_ref.zoom),Math.floor(y * this_ref.zoom)];
-			this_ref.mouse = [Math.floor(mx),Math.floor(my)];
-			this_ref.half_mouse = [Math.floor(mx), Math.floor(my)];
-			this_ref.half_place_mouse = [Math.floor(x),Math.floor(y)];
-
-			// use: selecting images
-			this_ref.snap_mouse = [
-				mx < 0 ? (mx - snapx - ((mx - snapx) % snapx)) : mx - (mx%snapx),
-				my < 0 ? (my - snapy - ((my - snapy) % snapy)) : my - (my%snapy)
-			]
-
-			if ((!e.data.originalEvent.ctrlKey || ["object","image"].includes(this_ref.obj_type)) && !this_ref.dragging) {
-				if (mx < 0) { mx -= snapx; x -= snapx; }
-				if (my < 0) { my -= snapy; y -= snapy; }
-
-				// use: placing images, displaying mouse coordinates
-				this_ref.mouse = [
-					mx - (mx%snapx),
-					my - (my%snapy)
-				];
-				// use: drawing crosshair
-				this_ref.place_mouse = [
-					(x * this_ref.zoom) - (mx % snapx  * this_ref.zoom),
-					(y * this_ref.zoom) - (my % snapy * this_ref.zoom)
-				]
-
-				if (mx < 0) { mx += snapx/2; x += snapx/2; }
-				if (my < 0) { my += snapy/2; y += snapy/2; }
-				// use: placing object points, displaying mouse coordinates
-				this_ref.half_mouse = [
-					mx - (mx%(snapx/2)),
-					my - (my%(snapy/2))
-				];
-				// use: drawing crosshair
-				this_ref.half_place_mouse = [
-					(x * this_ref.zoom) - (mx % (snapx/2.0)  * this_ref.zoom),
-					(y * this_ref.zoom) - (my % (snapy/2.0) * this_ref.zoom)
-				]
-			}
-
-			this_ref.drawCrosshair();
-
-			if (btn == 2) {
-				if (this_ref.obj_type == 'image' && this_ref.curr_image) {
-                    //blanke.cooldownFn("delete_tile",500,function(){
-                        this_ref.deleteTile(mx, my);                                
-                    //});
-				}
-			}
-			
-			// making selection
-			if (!alt && btn == 0 && ['image'].includes(this_ref.obj_type) && e.data.originalEvent.ctrlKey && !this_ref.selection_finish) {
+			// making tile selection
+			if (!info.alt && info.ctrl && info.btn == 0 && ['image'].includes(this.obj_type) && !this.selection_finish) {
 				// tile selection START
-				this_ref.selecting = true;
-				let g = this_ref.scene_graphic;
+				this.selecting = true;
+				let g = this.scene_graphic;
 				if (!g.interactive) {
 					g.interactive = true;
 					g.buttonMode = true;
 				}
-				let sel_mouse = [this_ref.snap_mouse[0], this_ref.snap_mouse[1]];
-				let x = this_ref.tile_start[0], y = this_ref.tile_start[1];
-				let w = sel_mouse[0] - this_ref.tile_start[0], h = sel_mouse[1] - this_ref.tile_start[1];
+				let sel_mouse = [info.snap_mouse[0], info.snap_mouse[1]];
+				let x = this.tile_start[0], y = this.tile_start[1];
+				let w = sel_mouse[0] - this.tile_start[0], h = sel_mouse[1] - this.tile_start[1];
 				if (w < 0) {
 					x = sel_mouse[0];
-					w = this_ref.tile_start[0] - sel_mouse[0];
+					w = this.tile_start[0] - sel_mouse[0];
 				} else {
-					w = sel_mouse[0] - this_ref.tile_start[0] + this_ref.curr_layer.snap[0];
+					w = sel_mouse[0] - this.tile_start[0] + this.curr_layer.snap[0];
 				}
 				if (h < 0) {
 					y = sel_mouse[1];
-					h = this_ref.tile_start[1] - sel_mouse[1];
+					h = this.tile_start[1] - sel_mouse[1];
 				} else {
-					h = sel_mouse[1] - this_ref.tile_start[1] + this_ref.curr_layer.snap[1];
+					h = sel_mouse[1] - this.tile_start[1] + this.curr_layer.snap[1];
 				}
 				g.clear()
 				g.selection_area = [x,y,w,h];
@@ -816,104 +619,58 @@ class SceneEditor extends Editor {
 					// get all tiles in selection area
 					if (old_sel_rect != JSON.stringify(a)) {
 						old_sel_rect = JSON.stringify(a);
-						this_ref.selected_tiles = this_ref.getTiles(a[0] + g.x, a[1] + g.y, a[2], a[3]);
+						this.selected_tiles = this.getTiles(a[0] + g.x, a[1] + g.y, a[2], a[3]);
 						let tile_info = {};
-						this_ref.selected_tiles.forEach((tile) => {
+						this.selected_tiles.forEach((tile) => {
 							if (!tile_info[tile.path])
 								tile_info[tile.path] = 0;
 							tile_info[tile.path]++;
 						})
-						this_ref.selected_tile_info = '';
+						this.selected_tile_info = '';
 						Object.keys(tile_info).forEach((path) => {
-							this_ref.selected_tile_info += ` - ${app.shortenAsset(path)} (${tile_info[path]})\n`;
+							this.selected_tile_info += ` - ${app.shortenAsset(path)} (${tile_info[path]})\n`;
 						})
 					}
 					
 				}
 			}
-
-			if (!alt && !this_ref.dragging && !this_ref.selecting) {
-				if (btn == 0 && this_ref.placeImageReady()) {
+			
+			if (!this.selecting) {
+				if (info.btn == 0 && this.placeImageReady()) {
 					// placing tiles in a snapped line
-					this_ref.scene_graphic.clear()
-					this_ref.scene_graphic.lineStyle(2, getThemeColor(), 0.8)
-						.moveTo(this_ref.tile_start[0], this_ref.tile_start[1])
-						.lineTo(this_ref.mouse[0], this_ref.mouse[1]);
+					this.scene_graphic.clear()
+					this.scene_graphic.lineStyle(2, getThemeColor(), 0.8)
+						.moveTo(this.tile_start[0], this.tile_start[1])
+						.lineTo(info.mouse[0], info.mouse[1]);
 				}           
 			}
 
-			this_ref.drawDotPreview();
+			this.drawDotPreview();
+		});
+
+		this.pixi.on('keyCancel', (e, info) => {
+			this.clearTileSelection();
+		});
+
+		this.pixi.on('keyDelete', (e, info) => {
+			this.deleteTileSelection();
+		});
+
+		this.pixi.on('keyFinish', (e, info) => {
+			if (this.obj_type == "object" && this.placing_object) {
+				this.placeObject(this.placing_object.points.slice());
+				this.clearPlacingObject();
+				this.export();
+			}
 		});
         
 		// moving camera with arrow keys
-		document.addEventListener('keydown', function(e){
-			if (document.activeElement === document.body && this_ref.curr_layer) {
-				var keyCode = e.keyCode || e.which;
-
-				let vx = 0;
-				let vy = 0;
-				// left
-				if (keyCode == 37) vx = this_ref.curr_layer.snap[0];
-				// right
-				if (keyCode == 39) vx = -this_ref.curr_layer.snap[0];
-				// up
-				if (keyCode == 38) vy = this_ref.curr_layer.snap[1];
-				// down
-				if (keyCode == 40) vy = -this_ref.curr_layer.snap[1];
-
-				this_ref.setCameraPosition(this_ref.camera[0] + vx, this_ref.camera[1] + vy);
-
-				// show camera grabbing hand
-				if (e.key == "Alt") {
-					this_ref.pixi.view.style.cursor = "all-scroll";
-					this_ref.pixi.view.requestPointerLock();
-					dragStart();
-				}
-
-				/* TODO: cancel things 
-				if (e.key == "Esc") {
-        			this_ref.pointer_down = -1;
-
-        			// ... like placing tiles in a line
-				}*/
-			}
-			this_ref.drawCrosshair();
+		document.addEventListener('keydown', e => {
+			this.drawCrosshair();
 		});
 
-		document.addEventListener('keyup', function(e){
-			if (document.activeElement === document.body) {
-				this_ref.pixi.view.style.cursor = "auto";
-
-				if (e.key == "Escape") {
-					this_ref.clearTileSelection();
-				}
-
-				if (e.key == "Delete" || e.key == "Backspace") {
-					this_ref.deleteTileSelection();
-				}
-
-				if (e.key == "Alt") {
-					// release mouse
-					dragStop();
-					document.exitPointerLock();
-				}
-				
-				if (e.key == "-") {
-					// zoom out
-					this_ref.setZoom(this_ref.zoom - this_ref.zoom_incr);
-				}
-
-				if (e.key == "=") {
-					// zoom out
-					this_ref.setZoom(this_ref.zoom + this_ref.zoom_incr);
-				}
-
-				if (e.key == "0") {
-					// reset zoom
-					this_ref.setZoom(1);
-				}
-			}
-			this_ref.drawCrosshair();
+		document.addEventListener('keyup', e => {
+			this.drawCrosshair();
 		});
 
 		this.pixi.stage.addChild(this.map_container);
@@ -954,8 +711,6 @@ class SceneEditor extends Editor {
 
 		if (file_path) this.load(file_path);
 	}
-
-	
 
 	clearTileSelection () {
 		let g = this.scene_graphic;
@@ -1084,10 +839,11 @@ class SceneEditor extends Editor {
 
 	drawGrid () {	
 		if (this.curr_layer) {
+			let zoom = this.pixi.zoom;
 			var snapx = this.curr_layer.snap[0];
 			var snapy = this.curr_layer.snap[1];
-			var stage_width =  this.game_width / this.zoom;
-			var stage_height = this.game_height / this.zoom;
+			var stage_width =  this.game_width / zoom;
+			var stage_height = this.game_height / zoom;
 
 			if (!this.grid_graphics) {
 				this.grid_graphics = new PIXI.Graphics();
@@ -1095,7 +851,7 @@ class SceneEditor extends Editor {
 			}
 
 			this.grid_graphics.clear();
-			this.grid_graphics.lineStyle(1/this.zoom, this.grid_color, this.grid_opacity);
+			this.grid_graphics.lineStyle(1/zoom, this.grid_color, this.grid_opacity);
 			// vertical lines
 			for (var x = -snapx; x < stage_width + snapx; x += snapx) {
 				this.grid_graphics.moveTo(x, -snapy);
@@ -1115,59 +871,23 @@ class SceneEditor extends Editor {
 		if (this.curr_layer) {
 			var stage_width =  this.game_width;
 			var stage_height = this.game_height;
+			let camera = this.pixi.camera;
 
 			// origin line
 			this.origin_graphics.clear()
 			this.origin_graphics.lineStyle(1, this.grid_color, .25);
 
 			// horizontal
-			this.origin_graphics.moveTo(0, this.camera[1])
-			this.origin_graphics.lineTo(stage_width, this.camera[1]);
+			this.origin_graphics.moveTo(0, camera[1])
+			this.origin_graphics.lineTo(stage_width, camera[1]);
 			// vertical
-			this.origin_graphics.moveTo(this.camera[0], 0);
-			this.origin_graphics.lineTo(this.camera[0], stage_height);
+			this.origin_graphics.moveTo(camera[0], 0);
+			this.origin_graphics.lineTo(camera[0], stage_height);
 		}
-	}
-
-	updateZoom () {
-		let this_ref = this;
-		let diff = this.zoom_target - this.zoom;
-		if (Math.abs(diff) < 0.01) {
-			this.zoom = this.zoom_target;
-			return;
-		}
-		 
-		// look at https://github.com/anvaka/ngraph/tree/master/examples/pixi.js/03%20-%20Zoom%20And%20Pan instead
-
-		requestAnimationFrame(this.updateZoom.bind(this));
-
-		let old_s = this.zoom;
-		let new_s = this.zoom + (diff / 10);
-		let gw = (this.game_width / 2); 
-		let gh = (this.game_height / 2);
-		let offx = ((gw * new_s) - (gw * old_s));
-		let offy = ((gh * new_s) - (gh * old_s));
-
-		this.zoom = new_s;
-
-		this.setCameraPosition(
-			this.camera[0] - offx,
-			this.camera[1] - offy
-		);
-		//this.refreshCamera();
-		this.drawGrid();
-}
-
-	setZoom (scale) {
-		return; // TODO: zoom disabled for now
-		
-		this.zoom_target = scale > 0 ? scale : this.zoom;
-		this.old_cam = [this.camera[0] * this.zoom, this.camera[1] * this.zoom];
-		requestAnimationFrame(this.updateZoom.bind(this));
 	}
 
 	setCameraPosition (x, y) {
-		this.camera = [x, y];
+		this.pixi.setCameraPosition(x, y);
 		this.refreshCamera();
 	}
 
@@ -1179,16 +899,16 @@ class SceneEditor extends Editor {
 	}
 
 	refreshCamera () {
-		let this_ref = this;
+		let { camera, zoom } = this.pixi;
 		// move grid
-		this.grid_container.x = this.camera[0] % (this.curr_layer.snap[0] * this.zoom);
-		this.grid_container.y = this.camera[1] % (this.curr_layer.snap[1] * this.zoom);
+		this.grid_container.x = camera[0] % (this.curr_layer.snap[0] * zoom);
+		this.grid_container.y = camera[1] % (this.curr_layer.snap[1] * zoom);
 
-		this.map_container.setTransform(this.camera[0], this.camera[1]);//, this.zoom, this.zoom);
+		this.map_container.setTransform(camera[0], camera[1]);//, zoom, zoom);
 		
 		this.iterateContainers((cont)=>{
-			cont.scale.x = this_ref.zoom;
-			cont.scale.y = this_ref.zoom;
+			cont.scale.x = zoom;
+			cont.scale.y = zoom;
 		})
 		this.drawCrosshair();
 		this.drawOrigin();
@@ -1196,17 +916,24 @@ class SceneEditor extends Editor {
 
 	drawCrosshair () {
 		if (this.curr_layer) {
+			let mouse = this.pixi.mouse;
+			let pmouse = this.pixi.place_mouse;
+			let hmouse = this.pixi.half_mouse;
+			let hpmouse = this.pixi.half_place_mouse;
+
+			let { zoom } = this.pixi;
+
 			var stage_width =  this.game_width;
 			var stage_height = this.game_height;
 
-			let text = 'x '+parseInt(this.mouse[0])+' y '+parseInt(this.mouse[1]);
+			let text = 'x '+parseInt(mouse[0])+' y '+parseInt(mouse[1]);
 			// which mouse coordinates to display
 			if (this.obj_type == "object") {
-				text = 'x '+parseInt(this.half_mouse[0])+' y '+parseInt(this.half_mouse[1]);
+				text = 'x '+parseInt(hmouse[0])+' y '+parseInt(hmouse[1]);
 			}
 			// zoom level
-			if (this.zoom != 1) 
-				text += ` zoom: ${blanke.places(this.zoom, 2)}`;
+			if (zoom != 1) 
+				text += ` zoom: ${blanke.places(zoom, 2)}`;
 			// object being hovered
 			let obj_names = Object.values(this.obj_info);
 			if (obj_names.length > 0)
@@ -1222,20 +949,20 @@ class SceneEditor extends Editor {
 			}
 
 			let center = [
-				this.place_mouse[0],
-				this.place_mouse[1]
+				pmouse[0],
+				pmouse[1]
 			];
 			if (this.obj_type == "object") {
 				center = [
-					this.half_place_mouse[0],
-					this.half_place_mouse[1]
+					hpmouse[0],
+					hpmouse[1]
 				];
 			}
 
 			let text_center = center.slice();
 			this.coord_textL.text = text;
 			this.coord_textR.text = text;
-			if (this.place_mouse[0] < stage_width / 2) {
+			if (pmouse[0] < stage_width / 2) {
 				// display on left
 				this.coord_textL.alpha = 0;
 				this.coord_textR.alpha = 1;
@@ -1246,25 +973,24 @@ class SceneEditor extends Editor {
 			}
 
 			// change center based on mouse position
-			if (this.place_mouse[0] >= stage_width / 2)
+			if (pmouse[0] >= stage_width / 2)
 				text_center[0] -= this.coord_textR.width;
-			if (this.place_mouse[1] >= stage_height / 2)
+			if (pmouse[1] >= stage_height / 2)
 				text_center[1] -= this.coord_textL.height;
 
 			// place text
-			if (this.place_mouse[0] < stage_width / 2) 
+			if (pmouse[0] < stage_width / 2) 
 				this.coord_textR.x = parseInt((this.game_width - text_center[0]) / 5 + text_center[0]);
 			else	
 				this.coord_textL.x = parseInt(-(text_center[0] / 5) + text_center[0]);
 			
-			if (this.place_mouse[1] < stage_height / 2) {
+			if (pmouse[1] < stage_height / 2) {
 				this.coord_textL.y = parseInt(text_center[1] + 8);
 				this.coord_textR.y = parseInt(text_center[1] + 8);
 			} else {
 				this.coord_textL.y = parseInt(text_center[1] - 8);
 				this.coord_textR.y = parseInt(text_center[1] - 8);
 			}
-
 			
 			// line style
 			this.crosshair_graphics.clear()
@@ -1314,6 +1040,7 @@ class SceneEditor extends Editor {
 			this.el_layer_list.selectItem(this.curr_layer.name);
 			this.setLayer(this.curr_layer.name);
 		}
+		this.pixi.snap = this.curr_layer.snap.slice();
 	}
 
 	// refreshes object list items
@@ -1686,7 +1413,7 @@ class SceneEditor extends Editor {
 			// calculate snap
 			let snapx = this.curr_layer.snap[0] / 2;
 			let snapy = this.curr_layer.snap[1] / 2;
-			if (this.snap_on) {
+			if (this.pixi.snap_on) {
 				x -= x % snapx;
 				y -= y % snapy;
 			}
@@ -1779,7 +1506,7 @@ class SceneEditor extends Editor {
 				
 			let align = place_image.align || "top-left";
 
-			if (this.snap_on && !from_load) {
+			if (this.pixi.snap_on && !from_load) {
 				x -= x % layer.snap[0];
 				y -= y % layer.snap[1];
 				new_tile.snapped = true;
@@ -1829,6 +1556,7 @@ class SceneEditor extends Editor {
 		}
 	}
 
+	// aka placeTile
 	placeImage (x, y, img_ref, layer) {
 		if (this.curr_image && this.curr_layer) {
 			for (var frame of this.selected_image_frames) {
@@ -1847,10 +1575,10 @@ class SceneEditor extends Editor {
 			if (opt.img_ref.pixi_images[s].layer_name == opt.layer_name) {
 				let sprite = opt.img_ref.pixi_images[s].sprite;
 				let rect = sprite.getBounds();
-				rect.x -= this.camera[0];
-				rect.y -= this.camera[1];
+				rect.x -= this.pixi.camera[0];
+				rect.y -= this.pixi.camera[1];
 				
-				if (rect.contains(x * this.zoom,y * this.zoom)) {
+				if (rect.contains(x * this.pixi.zoom,y * this.pixi.zoom)) {
 					sprite.destroy();
 					delete opt.img_ref.pixi_images[s];
 					this.redrawTiles();
@@ -1958,7 +1686,7 @@ class SceneEditor extends Editor {
 		if (this.obj_type == "object" && this.curr_object) {
 			this.dot_preview.clear();
 			this.dot_preview.beginFill(parseInt(this.curr_object.color.replace('#',"0x"),16), .75);
-			this.dot_preview.drawRect(this.half_place_mouse[0]-2,this.half_place_mouse[1]-2,4,4);
+			this.dot_preview.drawRect(this.pixi.half_place_mouse[0]-2,this.pixi.half_place_mouse[1]-2,4,4);
 			this.dot_preview.endFill();
 		} else {
 			this.dot_preview.clear();
@@ -2206,6 +1934,7 @@ class SceneEditor extends Editor {
 		this.drawGrid();
 	}
 
+	// refresh z-indexing of pixi layers
 	refreshLayers () {
 		let this_ref = this;
 		this.el_layer_list.getItems().reverse().forEach((o,i)=>{
@@ -2300,7 +2029,7 @@ class SceneEditor extends Editor {
 		if (this.deleted) return;
 
 		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
-			camera:this.camera,
+			camera:this.pixi.camera,
 			last_active_layer:this.curr_layer.uuid,
 			last_object_type:this.obj_type,
 			last_object_name:ifndef(this.curr_object, {name:null}).name
@@ -2393,6 +2122,7 @@ class SceneEditor extends Editor {
 					]);
 				}
 			}
+			console.log(this.file)
 
 			// only save image if it was used
 			if (Object.keys(obj.pixi_images).length > 0) {
@@ -2427,28 +2157,17 @@ function openScene(file_path) {
 }
 
 function addScenes(folder_path) {
-	nwFS.readdir(folder_path, function(err, files) {
-		if (err) return;
-		files.forEach(function(file){
-			var full_path = nwPATH.join(folder_path, file);
-			nwFS.stat(full_path, function(err, file_stat){		
-				// iterate through directory			
-				if (file_stat.isDirectory())
-					addScenes(full_path);
-
-				// add file to search pool
-				else if (file.endsWith('.map')) {
-					app.addSearchKey({
-						key: file,
-						onSelect: function(file_path){
-							openScene(file_path);
-						},
-						tags: ['map'],
-						args: [full_path],
-						category: 'Map',
-						group: 'Map'
-					});
-				}
+	app.getAssets('map', files => {
+		files.forEach(f => {
+			app.addSearchKey({
+				key: f.replace(app.getAssetPath('map')+'/', ''),
+				onSelect: function(f){
+					openScene(f);
+				},
+				tags: ['map'],
+				args: [f],
+				category: 'Map',
+				group: 'Map'
 			});
 		});
 	});
@@ -2469,20 +2188,12 @@ document.addEventListener("openProject", function(e){
 	app.addSearchKey({
 		key: 'Add a map',
 		onSelect: function() {
-			var map_dir = map_folder();
-			// overwrite the file if it exists. fuk it (again)!!
-			nwFS.mkdir(map_dir, function(err){
-				nwFS.readdir(map_dir, function(err, files){
-					let num = files.length;
-					while (nwFS.pathExistsSync(nwPATH.join(map_dir, 'map'+num+'.map')))
-						num++;
-					nwFS.writeFile(nwPATH.join(map_dir, 'map'+num+'.map'),"");
-				
-					// edit the new script
-					app.addPendingQuickAccess('map'+num+'.map');
-					new SceneEditor(nwPATH.join(map_dir, 'map'+num+'.map'));
-				});
-			});	
+			app.getNewAssetPath('map', (path, name) => {
+				nwFS.writeFile(path,"");
+				// edit the new script
+				app.addPendingQuickAccess(name);
+				new SceneEditor(path);
+			});
 		},
 		tags: ['new']
 	});

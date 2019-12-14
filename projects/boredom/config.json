@@ -8,24 +8,24 @@
     ],
     "quick_access": [
         [
-            "player.lua=script+?",
-            "player.lua"
+            "View project in explorer=?",
+            "View project in explorer"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
+            "player.lua=script+?",
+            "player.lua"
         ],
         [
             "movingblock.lua=script+?",
             "movingblock.lua"
         ],
         [
-            "player.moon=script+entity+?",
-            "player.moon"
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
-            "conf.lua=script+?",
-            "conf.lua"
+            "player.moon=script+entity+?",
+            "player.moon"
         ]
     ],
     "autoplay_preview": true,

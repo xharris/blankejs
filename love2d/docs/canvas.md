@@ -2,9 +2,9 @@
 
 ```
 mycanvas = Canvas!
-mycanvas\drawTo my_entity
+mycanvas:drawTo my_entity
 
-mycanvas\draw!
+mycanvas:draw!
 ```
 
 # Constructor

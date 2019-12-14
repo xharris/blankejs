@@ -6,7 +6,7 @@
 
 `options`
 
-* `draw=false` if true then `img\addDrawable!`
+* `draw=false` if true then `img:addDrawable()`
 * `animation` animation name
 
 # Class Methods

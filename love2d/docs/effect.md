@@ -18,8 +18,8 @@ Effect.new "chroma shift", {
         vars.direction = {dx,dy}
 }
 
-my_entity\setEffect('chroma shift')
-my_entity.effect\set('chroma shift', 'radius', 4)
+my_entity:setEffect('chroma shift')
+my_entity.effect:set('chroma shift', 'radius', 4)
 ```
 
 # Props

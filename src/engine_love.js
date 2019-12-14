@@ -27,13 +27,13 @@ const engine = {
 	add_script_templates: {
 		'script': `import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map from require "blanke"`
     },
-    entity_sprite_parse: (str_line, cb) => {
-		// use the first frame
-		let re_frame_size = /frame_size\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
-		let re_offset = /offset\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
-		let re_frame = /frames\s*:\s*(\d+)/;
-		let re_spacing = /spacing\s*:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/;
-		let re_comment = /\/(?:\/|\*).*/;
+    entity_sprite_parse: (str_line, info, cb) => {
+		// use the first frame        
+        let re_rows = /rows\s*=\s*(\d+)/;
+        let re_cols = /cols\s*=\s*(\d+)/;
+        let re_offx = /offx\s*=\s*(\d+)/;
+        let re_offy = /offy\s*=\s*(\d+)/;
+        let re_frames = /frames\s*=\s*\{[\s'"]*?(\d+)/;
 
         /*
 		let match;

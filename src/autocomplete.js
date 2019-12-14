@@ -72,9 +72,9 @@ module.exports.user_words = {
 }
 
 module.exports.image = [
-	/Sprite\(["']([\w\s\/.-]+)["']\)/,
-	/this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/,
-	/new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/
+	/images[\s=]+\{\s*['"]([\w\s\/.-]+)['"]/,
+	/Image\.animation\s*\(\s*['"]([\w\s\/.-]+)['"]/
+
 ];
 
 module.exports.this_ref = {

@@ -21,7 +21,7 @@ Game.spawn("Player", { custom_prop: 5 })
 
 `animations` { 'animation_name1', ... }
 
-`effect` entity\setEffect <effect>
+`effect` entity:setEffect <effect>
 
 ## collisions
 
