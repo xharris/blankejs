@@ -616,7 +616,7 @@ a {
 	}
 
 	&.focused, &:hover {
-		border: 2px solid @sub-window-background;
+		/* border: 2px solid @sub-window-background; */
 
 		.fib-title {	
 			padding-left: 30px;
@@ -1488,6 +1488,11 @@ iframe {
 	}
 }
 
+
+select option.placeholder {
+	display: none;
+}
+
 .dark {
 	.form-label, select, button, .form-separator {
 		color: rgba(238,238,238 ,1)
@@ -1513,6 +1518,7 @@ iframe {
 	text-shadow: 0px 0px 8px @ide-accent;
 	text-transform: uppercase;
 	user-select: none;
+	cursor: pointer;
 }
 
 .form-group {

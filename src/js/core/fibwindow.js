@@ -239,6 +239,7 @@ class FibWindow {
 		this.fib_content.appendChild(element);
 	}
 
+	// NOTE: add background element last
 	appendBackground (element) {
 		this.bg_content = element;
 		FibWindow.checkBackground();	
@@ -259,8 +260,11 @@ class FibWindow {
 				boxes[b].fib_container.classList.remove("first");
 				if (boxes[b].bg_content && boxes[b].in_background) {
 					old_first_found = true;
-					if (!boxes[b].bg_first_only) 
-						boxes[b].appendChild(el_bg_workspace.removeChild(boxes[b].bg_content));
+					if (!boxes[b].bg_first_only) {
+						if (el_bg_workspace.contains(boxes[b].bg_content))
+							el_bg_workspace.removeChild(boxes[b].bg_content)
+						boxes[b].appendChild(boxes[b].bg_content)
+					}
 				}
 				boxes[b].in_background = false;
 			}

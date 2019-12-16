@@ -199,8 +199,10 @@ var app = {
 			app.ideSetting("theme",name)
 			app.saveAppData();
 			app.refreshThemeList();
+			dispatchEvent("themeChanged");
 		});
 	},
+	getThemeColor: name => parseInt(app.theme_data[name].replace('#','0x'),16),
 	refreshThemeList: function() {
 		// get list of themes available
 		nwFS.ensureDirSync(app.ideSetting("themes_path"));

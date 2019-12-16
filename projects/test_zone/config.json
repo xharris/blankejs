@@ -14,12 +14,12 @@
             "map0.map"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "Add a map=new+?",
+            "Add a map"
         ],
         [
             "View assets=?",
@@ -56,5 +56,19 @@
     "enabled_plugins": {
         "xhh-effect": false,
         "xhh-tween": false
+    },
+    "imageeditor": {
+        "image/blue_robot.png": {
+            "frame_size": [
+                33,
+                33
+            ],
+            "frames": 9,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0
+        }
     }
 }

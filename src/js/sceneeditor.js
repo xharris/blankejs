@@ -571,8 +571,6 @@ class SceneEditor extends Editor {
 				this.export()
 		})
 
-		let getThemeColor = () => parseInt(app.theme_data['ide-accent'].replace('#','0x'),16);
-
 		this.pixi.on('cameraChange', (e, info) => {
 			this.refreshCamera();
 		});
@@ -613,8 +611,8 @@ class SceneEditor extends Editor {
 				let a = g.selection_area;
 				
 				if (h != 0 && w != 0) {
-					g.lineStyle(2, getThemeColor(), 0.75, 1.5)
-					g.beginFill(getThemeColor(), 0.25)
+					g.lineStyle(2, app.getThemeColor('ide-accent'), 0.75, 1.5)
+					g.beginFill(app.getThemeColor('ide-accent'), 0.25)
 					g.drawRoundedRect(x,y,w,h,2)
 					// get all tiles in selection area
 					if (old_sel_rect != JSON.stringify(a)) {
@@ -639,7 +637,7 @@ class SceneEditor extends Editor {
 				if (info.btn == 0 && this.placeImageReady()) {
 					// placing tiles in a snapped line
 					this.scene_graphic.clear()
-					this.scene_graphic.lineStyle(2, getThemeColor(), 0.8)
+					this.scene_graphic.lineStyle(2, app.getThemeColor('ide-accent'), 0.8)
 						.moveTo(this.tile_start[0], this.tile_start[1])
 						.lineTo(info.mouse[0], info.mouse[1]);
 				}           
@@ -1041,25 +1039,15 @@ class SceneEditor extends Editor {
 
 	// add all images in project to the search bar
 	refreshImageList() {
-		var this_ref = this;
-		app.removeSearchGroup('scene_image');
-		let walker = nwWALK.walk(nwPATH.join(app.project_path,'assets'));
 		let sel_str = `<option class="placeholder" value="" disabled ${this.curr_image ? '' : 'selected'}>Select an image</option>`;
-		this.image_list = [];
-		walker.on('file', (path, stat, next) => {
-			if (stat.isFile() && !stat.name.startsWith(".") && app.findAssetType(stat.name) == 'image') {
-				let full_path = nwPATH.join(path, stat.name);
-				var img_path = app.shortenAsset(full_path);
-				sel_str += `<option value="${full_path}" ${this.curr_image && this.curr_image.path == img_path ? 'selected' : ''}>${img_path}</option>`;
-				if (!this.image_list.includes(full_path)) {
-					this.image_list.push(full_path);
-				}
-			}
-			next();
-		});
-		walker.on('end', () => {
+		this.el_image_sel.innerHTML = sel_str;
+		app.getAssets('image', files => {
+			files.forEach(f => {
+				var img_path = app.shortenAsset(f);
+				sel_str += `<option value="${f}" ${this.curr_image && this.curr_image.path == img_path ? 'selected' : ''}>${img_path}</option>`;
+			})
 			this.el_image_sel.innerHTML = sel_str;
-		});
+		})
 	}
 
 	// list of grid cells selected
@@ -2108,7 +2096,6 @@ class SceneEditor extends Editor {
 					]);
 				}
 			}
-			console.log(this.file)
 
 			// only save image if it was used
 			if (Object.keys(obj.pixi_images).length > 0) {
@@ -2161,7 +2148,6 @@ function addScenes(folder_path) {
 
 document.addEventListener("closeProject", function(e){	
 	app.removeSearchGroup("Scene");
-	app.removeSearchGroup("scene_image");
 });
 
 let last_new;

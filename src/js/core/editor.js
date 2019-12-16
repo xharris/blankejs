@@ -1,11 +1,7 @@
 class Editor {
 	constructor () {
-		var workspace = app.getElement('#workspace');
-		var sidewindow_container = app.getElement('#sidewindow-container');
 		this.app = app;
 		this.closed = false;
-
-		var this_ref = this;
 
 		// asset list
 		this.asset_list = document.createElement("div");
@@ -122,7 +118,7 @@ class Editor {
 			app.setHistoryClick(this.container.history_id, fn);
 	}
 
-	onClose()
+	onClose() {}
 
 	close(...args) {
 		app.setHistoryActive(this.container.history_id, false);

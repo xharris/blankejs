@@ -4,7 +4,8 @@ class BlankePixi {
 		opt = opt || { 
 			w: window.innerWidth,
 			h: window.innerHeight
-		 }
+		}
+		this.options = opt;
 		this.evt_list = {};
 
 		this.can_drag = false;
@@ -25,7 +26,7 @@ class BlankePixi {
 		// Zoom control
 		this.zoom = 1;
 		this.zoom_target = 1;
-		this.zoom_incr = 0.1;
+		this.zoom_incr = 0.3;
 
         this.pixi = new PIXI.Application(opt.w, opt.h, {
             backgroundColor: opt.bg_color || 0x354048,
@@ -37,12 +38,15 @@ class BlankePixi {
 			e.preventDefault();
 		});
 		
+		this.has_mouse = true;
 		// zoom
 		window.addEventListener('wheel',(e)=>{
-			/*
-			e.preventDefault();
-			this.setZoom(this.zoom - (Math.sign(e.deltaY) * this.zoom_incr))
-			*/
+			if (this.has_mouse) {
+				// e.preventDefault();
+				this.clientX = e.clientX;
+				this.clientY = e.clientY;
+				this.setZoom(this.zoom - (Math.sign(e.deltaY) * (this.zoom_incr * (this.zoom))))
+			}
 		});
 
         // snap
@@ -54,7 +58,7 @@ class BlankePixi {
 				this.dispatchEvent('snapChange',e);
 			}		
 			// moving camera with arrow keys
-			if (document.activeElement === document.body) {
+			if (this.has_mouse) {
 				var keyCode = e.keyCode || e.which;
 				let vx = 0;
 				let vy = 0;
@@ -67,7 +71,7 @@ class BlankePixi {
 				// down
 				if (keyCode == 40) vy = -this.snap[1];
 
-				this.setCameraPosition(this.camera[0] + vx, this.camera[1] + vy);
+				this.moveCamera(vx, vy);
 
 				// show camera grabbing hand
 				if (e.key == "Alt") {
@@ -88,7 +92,7 @@ class BlankePixi {
         
         window.addEventListener('keyup', e => {
 			var keyCode = e.keyCode || e.which;
-			if (document.activeElement === document.body) {
+			if (this.has_mouse) {
 				// CTRL
 				if (keyCode == 17) {
 					this.snap_on = false;
@@ -128,9 +132,11 @@ class BlankePixi {
 
         // mouse enter/exit
 		this.pixi.view.addEventListener('mouseenter', e => {
+			this.has_mouse = true;;
 			this.can_drag = true;
 		});
 		this.pixi.view.addEventListener('mouseout', e => {
+			this.has_mouse = false;
 			if (!this.dragging) {
 				this.can_drag = false;
 			}
@@ -182,10 +188,7 @@ class BlankePixi {
 			// camera dragging
 			if (this.dragging) {
 				if (this.camera_drag) {
-					this.setCameraPosition(
-						this.camera[0] + e.data.originalEvent.movementX,
-						this.camera[1] + e.data.originalEvent.movementY
-					)
+					this.moveCamera(e.data.originalEvent.movementX, e.data.originalEvent.movementY);
 				} else 
 					this.dispatchEvent('dragMove');
 			}
@@ -252,34 +255,48 @@ class BlankePixi {
 		 
 		// look at https://github.com/anvaka/ngraph/tree/master/examples/pixi.js/03%20-%20Zoom%20And%20Pan instead
 
+		var getCoords = (() => {
+			var ctx = {
+				global: { x: 0, y: 0} // store it inside closure to avoid GC pressure
+			};
+		
+			return (container, x, y) => {
+				ctx.global.x = x; ctx.global.y = y;
+				return PIXI.interaction.InteractionData.prototype.getLocalPosition.call(ctx, container);
+			}
+		})();
+
 		requestAnimationFrame(this.updateZoom.bind(this));
-
-		let old_s = this.zoom;
 		let new_s = this.zoom + (diff / 10);
-		let gw = (this.game_width / 2); 
-		let gh = (this.game_height / 2);
-		let offx = ((gw * new_s) - (gw * old_s));
-		let offy = ((gh * new_s) - (gh * old_s));
-
+	
+		let pre_zoom = this.zoom;
 		this.zoom = new_s;
 
-		this.setCameraPosition(
-			this.camera[0] - offx,
-			this.camera[1] - offy
-		);
-		//this.refreshCamera();
-		this.drawGrid();
+		if (this.stage.children.length >= 1) {
+			let child = this.stage.children[0];
+			child.scale.x = this.zoom;
+			child.scale.y = this.zoom;
+			let beforeTrans = getCoords(child,  this.clientX,  this.clientY);
+			child.updateTransform();
+			let afterTrans = getCoords(child,  this.clientX,  this.clientY);
+			this.moveCamera(
+				(afterTrans.x - beforeTrans.x) * child.scale.x,
+				(afterTrans.y - beforeTrans.y) * child.scale.y
+			)
+			child.updateTransform();
+		}
 	}
 	setZoom (scale) {
-		return; // TODO: zoom disabled for now
-		
 		this.zoom_target = scale > 0 ? scale : this.zoom;
 		this.old_cam = [this.camera[0] * this.zoom, this.camera[1] * this.zoom];
 		requestAnimationFrame(this.updateZoom.bind(this));
 	}
+	moveCamera (dx, dy) {
+		this.setCameraPosition(this.camera[0] + (dx), this.camera[1] + (dy));
+	}
 	setCameraPosition (x, y) {
 		this.camera = [x, y];
-		this.dispatchEvent('cameraChange', {});
+		this.dispatchEvent('cameraChange', { x, y });
 	}
 	// Pointer Locking for camera dragging
 	dragStart () {

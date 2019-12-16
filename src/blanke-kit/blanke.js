@@ -362,16 +362,48 @@ class BlankeForm {
         this.input_values = {};
         this.input_types = {};
         this.input_args = {};
+        this.first_header = null;
 
         for (var input of inputs) {
-            this.addInput(input);
+            this.addInput(input, true);
+        }
+        if (inputs.length > 0 && this.first_header) {
+            this.toggleHeader(this.first_header);
         }
 
         if (dark)
             this.container.classList.add("dark");
     }
 
-    addInput (input) {
+    toggleHeader (nextEl) {
+        let hiding = false;
+        while (nextEl) {
+            if (nextEl.is_header) {
+                hiding = nextEl.hide;
+            } 
+            // get whether this header is hidden or not
+            if (nextEl.is_header) {
+                if (hiding) {
+                    nextEl.classList.add('hidden');
+                    nextEl.innerHTML = nextEl.title + "...";
+                } else { 
+                    nextEl.classList.remove('hidden');
+                    nextEl.innerHTML = nextEl.title;
+                }
+            }
+            // hide this input?
+            else {
+                if (hiding) {
+                    nextEl.style.display = "none";
+                } else {
+                    nextEl.style.display = null;
+                }
+            }
+            nextEl = nextEl.nextSibling;
+        }
+    }
+
+    addInput (input, internal) {
         if (input.length < 1) return;
 
         let input_name = input[0];
@@ -379,9 +411,21 @@ class BlankeForm {
         let extra_args = input[2] || {};
 
         // header element
-        if (input_type == null) {
+        if (input_type == null || input_type === true) {
             let el_header = app.createElement("div","form-header");
+            el_header.hide = true;
+            el_header.is_header = true;
             el_header.innerHTML = input_name;
+            el_header.title = input_name;
+            if (!this.first_header) 
+                this.first_header = el_header;
+            
+            el_header.addEventListener('click', e => {
+                e.target.hide = !e.target.hide;
+                this.toggleHeader(e.target);
+            });
+            el_header.hide = (input_type === true);
+
             this.container.appendChild(el_header);
             return;
         }
@@ -488,13 +532,14 @@ class BlankeForm {
             }
 
             // add choices
-            for (let c of extra_args.choices) {
-                var new_option = app.createElement("option");
-                new_option.value = c;
-                if (extra_args.default == c) new_option.selected = true;
-                new_option.innerHTML = c;
-                el_input.appendChild(new_option);
-            }
+            if (extra_args.choices)
+                for (let c of extra_args.choices) {
+                    var new_option = app.createElement("option");
+                    new_option.value = c;
+                    if (extra_args.default == c) new_option.selected = true;
+                    new_option.innerHTML = c;
+                    el_input.appendChild(new_option);
+                }
 
             this.prepareInput(el_input, input_name);
             el_inputs_container.appendChild(el_input);
@@ -531,6 +576,8 @@ class BlankeForm {
         el_container.setAttribute('data-name',input_name);
 
         this.container.appendChild(el_container);
+        if (!internal)
+            this.hideHeader(this.first_header);
     }
 
     removeInput (name) {
