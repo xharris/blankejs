@@ -91,7 +91,7 @@ var app = {
 	},
 
 	createIconButton: function(icon, title) {
-		blanke.createIconButton(icon, title);
+		return blanke.createIconButton(icon, title);
 	},
 
 	clearElement: function(element) {

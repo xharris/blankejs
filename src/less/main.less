@@ -129,9 +129,7 @@ a {
 
 	&:hover {
 
-		body.win & {
-			transform: scale(2);
-		}
+		transform: scale(2);
 
 		body.mac & {
 			transform: scale3d(2,2,2);
@@ -1489,6 +1487,10 @@ iframe {
 
 	&.dark {
 		background: @beveled-bg;
+	}
+
+    .form-group[data-type="icon-button"] {
+		display: inline-block;
 	}
 }
 

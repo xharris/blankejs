@@ -696,9 +696,19 @@ class BlankeForm {
     setValue (input_name, value, index) {
         if (!this.input_ref[input_name] || value == null) return;
         index = index || 0;
-        if (this.input_types[input_name] == "checkbox")
+        let input_type = this.input_types[input_name];
+        if (input_type == "checkbox")
             this.input_ref[input_name][index].checked = value;
-        else
+        else if (input_type == "select") {
+            let opts = Array.from(this.input_ref[input_name][index].options);
+            for (let i = 0; i < opts.length; i++) {
+                let opt = opts[i];
+                if (opt.value == value) {
+                    this.input_ref[input_name][index].selectedIndex = i;
+                    break;
+                }
+            }
+        } else
             this.input_ref[input_name][index].value = value;
         this.input_values[input_name][index] = value;
     }
@@ -871,6 +881,27 @@ var blanke = {
         }
 
         blanke.cooldown_keys[name].func = fn;
+    },
+
+    askColor: (color, onChange) => {
+        let el_color = document.getElementById('blanke-color-input')
+        if (!el_color) {
+            el_color = app.createElement('input');
+            document.body.appendChild(el_color);
+        }
+        el_color.id = "blanke-color-input";
+        el_color.type = "color";
+        el_color.value = color;
+        el_color.style.position = "absolute";
+        el_color.style.left = "-10000000px";
+        el_color.style.width = "1px";
+        el_color.style.height = "1px";
+        el_color.style.overflow = "hidden";
+        el_color.focus();
+        el_color.click();
+        el_color.addEventListener('change', e => {
+            onChange(e);
+        });
     },
 
     el_toasts: undefined,

@@ -1638,10 +1638,10 @@
 .fib-container[data-type="ImageEditor"] {
 	&.first {
 		position: absolute;
-		background-color: rgba(38, 50, 56, 0.81);
 		z-index: 5;
 		max-width: 170px;
 		height: auto !important;
+		background-color: rgba(38, 50, 56, 0.81);
 		/* max-height: 100px; */
 		
 		&:not(.single) {
@@ -1663,10 +1663,11 @@
 		.editor-content {
 			position: absolute;
 			right: 0px;
-			width: auto;
+			max-width: 165px;
 			margin: 5px;
 			height: auto;
 			margin-top: 20px;
+			background-color: rgba(38, 50, 56, 0.81);
 		}
 	}
 }
@@ -1685,10 +1686,23 @@
 		}
 	}
 	.color-container {
-		.color {
+		.color, .add-color {
 			display: inline-block;
-			width: 10px;
-			height: 10px;
+			width: 15px;
+			height: 15px;
+			vertical-align: top;
+			transition: ease-in-out all 0.1s;
+		}
+		.color:hover {
+			transform: scale(1.25);
+			z-index: 100;
+		}
+		.add-color {
+			.no-select();
+			cursor: pointer;
+			font-size: 28px;
+			color: #f5f5f5;
+			text-align: center;
 		}
 	}
 }

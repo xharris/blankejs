@@ -56,7 +56,8 @@ class BlankePixi {
 			if (keyCode == 17) {
                 this.snap_on = true;
 				this.dispatchEvent('snapChange',e);
-			}		
+			}
+			this.dispatchEvent('keyDown',e);
 			// moving camera with arrow keys
 			if (this.has_mouse) {
 				var keyCode = e.keyCode || e.which;
@@ -92,6 +93,7 @@ class BlankePixi {
         
         window.addEventListener('keyup', e => {
 			var keyCode = e.keyCode || e.which;
+			this.dispatchEvent('keyUp',e);
 			if (this.has_mouse) {
 				// CTRL
 				if (keyCode == 17) {
@@ -246,6 +248,13 @@ class BlankePixi {
 			this.dispatchEvent('mouseMove',e);
 		});
 	}
+	bringToFront (sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {         if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.push(sprite);}}
+	sendToBack (sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {          if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.splice(0,0,sprite);}}
+	orderComponents (list) {
+		for (let el of list) {
+			this.bringToFront(el);
+		}
+	}
 	updateZoom () {
 		let diff = this.zoom_target - this.zoom;
 		if (Math.abs(diff) < 0.01) {
@@ -276,9 +285,10 @@ class BlankePixi {
 			let child = this.stage.children[0];
 			child.scale.x = this.zoom;
 			child.scale.y = this.zoom;
-			let beforeTrans = getCoords(child,  this.clientX,  this.clientY);
+			let rect = this.view.getBoundingClientRect();
+			let beforeTrans = getCoords(child,  this.clientX - rect.left,  this.clientY - rect.top);
 			child.updateTransform();
-			let afterTrans = getCoords(child,  this.clientX,  this.clientY);
+			let afterTrans = getCoords(child,  this.clientX - rect.left,  this.clientY - rect.top);
 			this.moveCamera(
 				(afterTrans.x - beforeTrans.x) * child.scale.x,
 				(afterTrans.y - beforeTrans.y) * child.scale.y

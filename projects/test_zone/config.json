@@ -10,12 +10,12 @@
             "Open image editor"
         ],
         [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "map0.map=map+?",
+            "map0.map"
         ],
         [
             "Add a map=new+?",
@@ -61,14 +61,47 @@
         "image/blue_robot.png": {
             "frame_size": [
                 33,
-                33
+                36
             ],
             "frames": 9,
             "position": [
                 0,
                 0
             ],
-            "spacing": 0
+            "spacing": 0,
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png"
+        },
+        "image/blue_robot.png2.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": [
+                0,
+                0
+            ],
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png"
+        },
+        "../../blue_robot.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": [
+                0,
+                0
+            ],
+            "image": "blue_robot.png"
         }
     }
 }

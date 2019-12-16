@@ -19,7 +19,9 @@ class ImageEditor extends Editor {
         this.setupFibWindow();
         this.file = null;
         this.img_settings = {};
-        this.curr_tool = '';
+        this.curr_tool = 'pencil';
+        this.curr_color = 0x000000;
+        this.cursor = [0,0];
         // create elements
         this.el_top_right_container = app.createElement('div','top-right-container');
         let form_options = [
@@ -30,7 +32,8 @@ class ImageEditor extends Editor {
             ['frame_size', 'number', {'inputs':2, 'separator':'x', 'min':1}],
             ['frames', 'number', {'min':1}],
             ['tools'],
-            ['pencil', 'icon-button']
+            ['pencil', 'icon-button'],
+            ['line', 'icon-button']
         ]
         this.el_image_form = new BlankeForm(form_options);
         this.el_sidebar = app.createElement('div','sidebar');
@@ -38,15 +41,15 @@ class ImageEditor extends Editor {
         //this.el_layers = new BlankeListView({object_type:"layer"});
         this.pixi = new BlankePixi();
         this.img_container = new PIXI.Container();
-        this.img_background = new PIXI.Graphics();
         this.crosshair = new PIXI.Graphics();
-        this.img_background.zIndex = 0;
-        this.crosshair.zIndex = 2;
-        this.img_container.sortableChildren = true;
+        this.edit_container = new PIXI.Container(); // all the stuff that will be saved to image file
+        this.img_background = new PIXI.Graphics();
+        this.img_edits = new PIXI.Graphics();
+        this.edit_container.addChild(this.img_edits);
         this.img_container.addChild(this.img_background);
+        this.img_container.addChild(this.edit_container);
         this.img_container.addChild(this.crosshair);
         this.pixi.stage.addChild(this.img_container);
-        this.img_container.updateTransform();
 
         // setup el_image_form   
         form_options.forEach(s => {
@@ -55,8 +58,9 @@ class ImageEditor extends Editor {
                     this.img_settings[s[0]] = val;
                     this.redrawBackground();
                     // tools
-                    if (['pencil'].includes(s[0])) {
+                    if (['pencil','line'].includes(s[0])) {
                         this.curr_tool = s[0];
+                        console.log(this.curr_tool)
                     }
                 });
             }
@@ -85,28 +89,88 @@ class ImageEditor extends Editor {
             this.img_container.position.set(e.x, e.y);
         });
         this.pixi.on('mouseMove', (e, info) => {
-            let { mx, my } = info;
+            let { mx, my, btn } = info;
+            this.cursor = [ Math.floor(mx), Math.floor(my) ];
             let cross = this.crosshair;
             cross.clear();
-            cross.lineStyle(Math.max(1/this.pixi.zoom,1), 0x000000, 0.3);
+            cross.lineStyle(Math.max(1/this.pixi.zoom,1), this.curr_color, 0.3);
             let w = this.pixi.width/Math.min(this.pixi.zoom, 1);
             let h = this.pixi.height/Math.min(this.pixi.zoom, 1);
             let camx = this.pixi.camera[0];
             let camy = this.pixi.camera[1];
             // vertical
-            cross.moveTo(Math.floor(mx) + 0.5,  -h - camy);
-            cross.lineTo(Math.floor(mx) + 0.5,  h - camy);
+            cross.moveTo(this.cursor[0] + 0.5,  -h - camy);
+            cross.lineTo(this.cursor[0] + 0.5,  h - camy);
             // horizontal
-            cross.moveTo(-w - camx,    Math.floor(my) + 0.5);
-            cross.lineTo(w - camx,     Math.floor(my) + 0.5);
+            cross.moveTo(-w - camx,    this.cursor[1] + 0.5);
+            cross.lineTo(w - camx,     this.cursor[1] + 0.5);
+            // center
+            cross.lineStyle(0, this.curr_color, 0.3);
+            cross.beginFill(this.curr_color);
+            cross.drawRect(this.cursor[0], this.cursor[1], 1, 1);
+            cross.endFill();
+            
+            if (this.curr_tool == "pencil" && btn == 0) {
+                this.drawPoint(this.cursor[0], this.cursor[1], this.curr_color);
+            }
         });
-        this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);   
+        this.pixi.on('movePlace', (e, info) => {
+            console.log(this.curr_tool)
+            if (this.curr_tool == "pencil")
+                this.drawPoint(this.cursors[0], this.cursor[1], this.curr_color);
+            if (this.curr_tool == "line")
+                this.getPoint(this.cursor[0], this.cursor[1]);
+        });
+        this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);  
+        this.save_key_up = true; 
+        this.pixi.on('keyDown', (e, info) => {
+            if (e.ctrlKey && e.key == "s" && this.save_key_up) {
+                this.save();
+                this.save_key_up = false;
+            }
+        });
+        this.pixi.on('keyUp', (e, info) => {
+          if (e.key == 's') this.save_key_up = true;  
+        })
         
         // setup el_colors
-        for (let c of colors) {
+        const addColor = (c) => {
             let el_color = app.createElement('div','color');
-            el_color.style.backgroundColor = '0x'+c;
+            el_color.style.backgroundColor = `#${c}`;
+            el_color.title = `#${c}`;
+            el_color.value = parseInt(`0x${c}`);
+            el_color.addEventListener('click', e => {
+                this.curr_color = e.target.value;
+            });
+            el_color.addEventListener('contextmenu', e => {
+                app.contextMenu(e.x, e.y, [
+                    {
+                        label:'edit', 
+                        click: () => {
+                            blanke.askColor(`#${c}`, (e) => {
+                                el_color.style.backgroundColor = e.target.value;
+                                el_color.title = e.target.value;
+                                el_color.value = e.target.value;
+                            });
+                        }
+                    },
+                    {
+                        label:'delete',
+                        click: () => {
+                            blanke.destroyElement(el_color);
+                        }
+                    }
+                ])
+            });
+            this.el_colors.appendChild(el_color);
         }
+        colors.forEach(c => addColor(c));
+        let el_add_color = app.createElement('div','add-color');
+        el_add_color.innerHTML = "+";
+        el_add_color.addEventListener('click', e => {
+            addColor('FFFFFF')
+        });
+        this.el_colors.insertBefore(el_add_color, this.el_colors.firstChild);
 
         // add elements to Editor
         this.el_top_right_container.appendChild(this.el_image_form.container);
@@ -119,7 +183,7 @@ class ImageEditor extends Editor {
 
         this.setTitle(EDITOR_TITLE);
 		this.setOnClick(() => {
-            openImage(nwPATH.basename(this.file || EDITOR_TITLE))
+            openImage(this.file || EDITOR_TITLE)
         });
         
         if (file && file != EDITOR_TITLE)
@@ -140,14 +204,20 @@ class ImageEditor extends Editor {
         if (!app.projSetting("imageeditor")) app.projSetting("imageeditor",{})
         let image_edit_settings = app.projSetting("imageeditor");
         
+        this.img_edits.clear();
+
         const setupForm = () => {
             app.saveSettings();
             this.redrawBackground();
             let img_sprite = PIXI.Sprite.from(this.file);
-            img_sprite.zIndex = 1;
-            this.img_container.addChild(img_sprite);
-            this.img_container.updateTransform();
-            //this.img_container.sortChildren();
+            this.edit_container.addChild(img_sprite);
+            this.pixi.orderComponents([
+                img_sprite, this.img_edits
+            ])
+            this.pixi.orderComponents([
+                this.img_background, this.edit_container, this.crosshair
+            ])
+            this.el_image_form.useValues(this.img_settings);
         }
     
         let new_file = false;
@@ -157,7 +227,8 @@ class ImageEditor extends Editor {
         }
         ifndef_obj(image_edit_settings[fname], DEFAULT_IMAGE_SETTINGS);
         this.img_settings = image_edit_settings[fname];
-        this.el_image_form.useValues(this.img_settings)
+        this.img_settings.image = this.file;
+        
         if (new_file) {
             let img = new Image();
             img.onload = () => {
@@ -173,12 +244,13 @@ class ImageEditor extends Editor {
 		this.el_image_form.getInput('image').innerHTML = sel_str;
 		app.getAssets('image', files => {
 			files.forEach(f => {
-                if (!img_editors.some(e => e.file == f)) {
+                if (!img_editors.some(e => e.file == f && e.file != this.file)) {
                     var img_path = nwPATH.basename(f);
-                    sel_str += `<option value="${f}" ${this.file == img_path ? 'selected' : ''}>${img_path}</option>`;
+                    sel_str += `<option value="${f}">${img_path}</option>`;
                 }
 			})
-			this.el_image_form.getInput('image').innerHTML = sel_str;
+            this.el_image_form.getInput('image').innerHTML = sel_str;
+            this.el_image_form.useValues(this.img_settings);
 		});
     }
     redrawBackground () {
@@ -204,13 +276,33 @@ class ImageEditor extends Editor {
         // draw frame rects
         for (let x = set.position[0]; x < width; x += set.frame_size[0] + set.spacing) {
             bg.lineStyle(1, app.getThemeColor('ide-accent'), 0.5);
-            bg.drawRect(x,0,set.frame_size[0],set.frame_size[1]);
+            bg.drawRect(x,-set.position[1],set.frame_size[0],set.frame_size[1]);
+        }
+    }
+    drawPoint (x, y, color) {
+        let edit = this.img_edits;
+        edit.beginFill(color);
+        edit.drawRect(x, y, 1, 1);
+    }
+    getPoint (x, y) {
+        let pixels = this.pixi.renderer.extract.pixels(this.edit_container);
+        let i = (y * this.edit_container.width + x) * 4;
+        let rgba = { r:pixels[i], g:pixels[i+1], b:pixels[i+2], a:[pixels[i+3]] }
+        console.log(rgba);
+    }
+    save () {
+        if (this.file) {
+            let img = this.pixi.renderer.plugins.extract.image(this.edit_container)
+            img.onload = () => {
+                let buf = Buffer.from(img.src.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+                nwFS.writeFile(this.file, buf);
+            }
         }
     }
 }
 
 const openImage = f => {
-    if (!FibWindow.focus(f || EDITOR_TITLE))
+    if (!FibWindow.focus(nwPATH.basename(f || EDITOR_TITLE)))
         new ImageEditor(f);
 }
 
