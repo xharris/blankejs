@@ -447,7 +447,7 @@ class BlankeForm {
         // input label
         let show_label = extra_args.label;
 
-        if (show_label === false || input_type == "button")
+        if (show_label === false || ['button','icon-button'].includes(input_type))
             show_label = false;
 
         el_container.setAttribute("data-type", input_type);
@@ -458,6 +458,12 @@ class BlankeForm {
         if (input_type == "button") {
             let el_button = blanke.createElement("button","form-button");
             el_button.innerHTML = ifndef(extra_args.label, input_name);
+            this.prepareInput(el_button, input_name);
+            el_inputs_container.appendChild(el_button);
+        }
+
+        if (input_type == 'icon-button') {
+            let el_button = blanke.createIconButton(extra_args.icon || input_name, input_name);
             this.prepareInput(el_button, input_name);
             el_inputs_container.appendChild(el_button);
         }
@@ -633,7 +639,7 @@ class BlankeForm {
             let event_type = 'input';
 
             if (["color", "select", "checkbox"].includes(this.input_types[input_name])) event_type = "change";
-            if (this.input_types[input_name] == "button") event_type = "click";
+            if (["button","icon-button"].includes(this.input_types[input_name])) event_type = "click";
 
             input.addEventListener(event_type, function(e){
                 let input_type = this_ref.input_types[e.target.name_ref];
@@ -801,6 +807,22 @@ var blanke = {
         if (Array.isArray(el_class)) ret_el.classList.add(...el_class);
         else if (el_class) ret_el.classList.add(el_class);
         return ret_el;
+    },
+
+    createIconButton: function(icon, title) { 
+		let el_btn = app.createElement("button","icon-button");
+		let el_icon = app.createElement("object","blanke-icon");
+		el_icon.data = "icons/"+icon+".svg";
+		el_icon.type = "image/svg+xml";
+		el_icon.innerHTML = icon[0].toUpperCase();
+		el_btn.appendChild(el_icon);
+		el_btn.title = title;
+		el_btn.change = (icon2, title2) => {
+			el_icon.data = "icons/"+icon2+".svg";
+			el_icon.innerHTML = icon2[0].toUpperCase();
+			el_btn.title = title2;
+		}
+		return el_btn;
     },
 
     clearElement: function(element) {

@@ -7,6 +7,10 @@ const DEFAULT_IMAGE_SETTINGS = {
 }
 const MARGIN_LEFT = 5;
 const MARGIN_TOP = 40;
+let colors = [
+    'f44336','E91E63','9C27B0','673AB7','3F51B5','2196F3','03A9F4','00BCD4','009688',
+    '4CAF50','8BC34A','CDDC39','FFEB3B','FFC107','FF9800','FF5722','795548','9E9E9E',
+    '607D8B','FFFFFF','000000'];
 let img_editors = [];
 
 class ImageEditor extends Editor {
@@ -15,6 +19,7 @@ class ImageEditor extends Editor {
         this.setupFibWindow();
         this.file = null;
         this.img_settings = {};
+        this.curr_tool = '';
         // create elements
         this.el_top_right_container = app.createElement('div','top-right-container');
         let form_options = [
@@ -23,17 +28,25 @@ class ImageEditor extends Editor {
             ['position', 'number', {'inputs':2, 'separator':'x'}],
             ['spacing', 'number'],
             ['frame_size', 'number', {'inputs':2, 'separator':'x', 'min':1}],
-            ['frames', 'number', {'min':1}]
+            ['frames', 'number', {'min':1}],
+            ['tools'],
+            ['pencil', 'icon-button']
         ]
         this.el_image_form = new BlankeForm(form_options);
         this.el_sidebar = app.createElement('div','sidebar');
-        this.el_tools = app.createElement('div','tools');
+        this.el_colors = app.createElement('div','color-container');
         //this.el_layers = new BlankeListView({object_type:"layer"});
         this.pixi = new BlankePixi();
         this.img_container = new PIXI.Container();
         this.img_background = new PIXI.Graphics();
+        this.crosshair = new PIXI.Graphics();
+        this.img_background.zIndex = 0;
+        this.crosshair.zIndex = 2;
+        this.img_container.sortableChildren = true;
         this.img_container.addChild(this.img_background);
+        this.img_container.addChild(this.crosshair);
         this.pixi.stage.addChild(this.img_container);
+        this.img_container.updateTransform();
 
         // setup el_image_form   
         form_options.forEach(s => {
@@ -41,6 +54,10 @@ class ImageEditor extends Editor {
                 this.el_image_form.onChange(s[0], val => {
                     this.img_settings[s[0]] = val;
                     this.redrawBackground();
+                    // tools
+                    if (['pencil'].includes(s[0])) {
+                        this.curr_tool = s[0];
+                    }
                 });
             }
         })
@@ -56,6 +73,7 @@ class ImageEditor extends Editor {
         })
 
         // setup pixi
+        //this.img_container.sortChildren();
 		this.pixi.stage.interactive = true;
         this.pixi.view.addEventListener('contextmenu', (e) => {
 			e.preventDefault();
@@ -65,12 +83,34 @@ class ImageEditor extends Editor {
         });
         this.pixi.on('cameraChange', e => {
             this.img_container.position.set(e.x, e.y);
-        })    
-        this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);    
+        });
+        this.pixi.on('mouseMove', (e, info) => {
+            let { mx, my } = info;
+            let cross = this.crosshair;
+            cross.clear();
+            cross.lineStyle(Math.max(1/this.pixi.zoom,1), 0x000000, 0.3);
+            let w = this.pixi.width/Math.min(this.pixi.zoom, 1);
+            let h = this.pixi.height/Math.min(this.pixi.zoom, 1);
+            let camx = this.pixi.camera[0];
+            let camy = this.pixi.camera[1];
+            // vertical
+            cross.moveTo(Math.floor(mx) + 0.5,  -h - camy);
+            cross.lineTo(Math.floor(mx) + 0.5,  h - camy);
+            // horizontal
+            cross.moveTo(-w - camx,    Math.floor(my) + 0.5);
+            cross.lineTo(w - camx,     Math.floor(my) + 0.5);
+        });
+        this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);   
+        
+        // setup el_colors
+        for (let c of colors) {
+            let el_color = app.createElement('div','color');
+            el_color.style.backgroundColor = '0x'+c;
+        }
 
         // add elements to Editor
         this.el_top_right_container.appendChild(this.el_image_form.container);
-        this.el_sidebar.appendChild(this.el_tools);
+        this.el_sidebar.appendChild(this.el_colors);
         //this.el_sidebar.appendChild(this.el_layers);
         this.appendChild(this.el_top_right_container);
         this.appendChild(this.el_sidebar);
@@ -104,7 +144,10 @@ class ImageEditor extends Editor {
             app.saveSettings();
             this.redrawBackground();
             let img_sprite = PIXI.Sprite.from(this.file);
+            img_sprite.zIndex = 1;
             this.img_container.addChild(img_sprite);
+            this.img_container.updateTransform();
+            //this.img_container.sortChildren();
         }
     
         let new_file = false;

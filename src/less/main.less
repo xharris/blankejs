@@ -156,6 +156,24 @@ a {
 	}
 }
 
+.icon-button {
+	.win-nodrag();
+	.btn-round();
+	display: inline-flex;
+	margin: 5px;
+
+	.btn-badge {
+		position: absolute;
+	    right: 1px;
+	    bottom: -5px;
+	    margin: 0px;
+	    color: rgba(200, 200, 200, 1);
+	    line-height: 18px;
+	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
+		font-size: 16px;
+	}
+}
+
 .tool-container {
 	.no-select();
 	.win-drag();
@@ -170,24 +188,10 @@ a {
 	}
 
 	button {
-		.win-nodrag();
-		.btn-round();
-		display: inline-flex;
-		margin: 5px;
-
-	}
-
-	.btn-badge {
-		position: absolute;
-	    right: 1px;
-	    bottom: -5px;
-	    margin: 0px;
-	    color: rgba(200, 200, 200, 1);
-	    line-height: 18px;
-	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
-		font-size: 16px;
+		.icon-button();
 	}
 }
+
 
 #sidebar {
     width: auto;
@@ -1472,13 +1476,13 @@ iframe {
 	box-sizing: border-box;
 
 	input, select, button {
-		outline: 1px solid fade(@ide-accent, 0%);
+		border: 1px solid fade(@ide-accent, 0%); // was outline
     	outline-offset: -1px;
     	transition: all ease-in-out 0.1s;	
 	}
 
 	input:focus, select:focus, button:hover {
-		outline: 1px solid @ide-accent;
+		border: 1px solid @ide-accent;
     	outline-offset: 0px;
     	box-shadow: 0 0px 10px 3px fade(@ide-accent, 30%), 0 6px 6px rgba(0, 0, 0, 0.23);
 	}

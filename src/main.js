@@ -91,19 +91,7 @@ var app = {
 	},
 
 	createIconButton: function(icon, title) {
-		let el_btn = app.createElement("button");
-		let el_icon = app.createElement("object","blanke-icon");
-		el_icon.data = "icons/"+icon+".svg";
-		el_icon.type = "image/svg+xml";
-		el_icon.innerHTML = icon[0].toUpperCase();
-		el_btn.appendChild(el_icon);
-		el_btn.title = title;
-		el_btn.change = (icon2, title2) => {
-			el_icon.data = "icons/"+icon2+".svg";
-			el_icon.innerHTML = icon2[0].toUpperCase();
-			el_btn.title = title2;
-		}
-		return el_btn;
+		blanke.createIconButton(icon, title);
 	},
 
 	clearElement: function(element) {
