@@ -9,8 +9,8 @@
 function bringToFront(sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {         if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.push(sprite);}}
 function sendToBack(sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {          if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.splice(0,0,sprite);    }}
 
-PIXI.loader.add('ProggyScene','includes/proggy_scene.fnt');
-PIXI.loader.load();
+PIXI.Loader.shared.add('ProggyScene','includes/proggy_scene.fnt');
+PIXI.Loader.shared.load();
 
 let map_folder = () => nwPATH.join(app.project_path,'assets','maps');
 

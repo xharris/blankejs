@@ -3,10 +3,11 @@ const DEFAULT_IMAGE_SETTINGS = {
     frame_size: [256,256],
     frames: 1,
     position: [0,0],
-    spacing: [0,0]
+    spacing: 0
 }
 const MARGIN_LEFT = 5;
 const MARGIN_TOP = 40;
+const TOOLS = ['pencil','line','eraser'];
 let colors = [
     'f44336','E91E63','9C27B0','673AB7','3F51B5','2196F3','03A9F4','00BCD4','009688',
     '4CAF50','8BC34A','CDDC39','FFEB3B','FFC107','FF9800','FF5722','795548','9E9E9E',
@@ -19,9 +20,12 @@ class ImageEditor extends Editor {
         this.setupFibWindow();
         this.file = null;
         this.img_settings = {};
-        this.curr_tool = 'pencil';
         this.curr_color = 0x000000;
         this.cursor = [0,0];
+        this.img_left = 0;
+        this.img_top = 0;
+        this.img_width = 0;
+        this.img_height = 0;
         // create elements
         this.el_top_right_container = app.createElement('div','top-right-container');
         let form_options = [
@@ -32,8 +36,8 @@ class ImageEditor extends Editor {
             ['frame_size', 'number', {'inputs':2, 'separator':'x', 'min':1}],
             ['frames', 'number', {'min':1}],
             ['tools'],
-            ['pencil', 'icon-button'],
-            ['line', 'icon-button']
+            ...TOOLS.map(t => [t, 'icon-button'])
+
         ]
         this.el_image_form = new BlankeForm(form_options);
         this.el_sidebar = app.createElement('div','sidebar');
@@ -45,7 +49,10 @@ class ImageEditor extends Editor {
         this.edit_container = new PIXI.Container(); // all the stuff that will be saved to image file
         this.img_background = new PIXI.Graphics();
         this.img_edits = new PIXI.Graphics();
+        this.img_mask = new PIXI.Graphics();
         this.edit_container.addChild(this.img_edits);
+        this.edit_container.addChild(this.img_mask);
+        this.edit_container.mask = this.img_mask;
         this.img_container.addChild(this.img_background);
         this.img_container.addChild(this.edit_container);
         this.img_container.addChild(this.crosshair);
@@ -57,14 +64,11 @@ class ImageEditor extends Editor {
                 this.el_image_form.onChange(s[0], val => {
                     this.img_settings[s[0]] = val;
                     this.redrawBackground();
-                    // tools
-                    if (['pencil','line'].includes(s[0])) {
-                        this.curr_tool = s[0];
-                        console.log(this.curr_tool)
-                    }
+                    this.setTool(s[0]);
                 });
             }
-        })
+        });
+        this.setTool(TOOLS[0]);
 
         // setup el_file_select
         document.addEventListener('fileChange', e => {
@@ -110,16 +114,18 @@ class ImageEditor extends Editor {
             cross.drawRect(this.cursor[0], this.cursor[1], 1, 1);
             cross.endFill();
             
-            if (this.curr_tool == "pencil" && btn == 0) {
+            if (this.curr_tool == "pencil" && btn == 0) 
                 this.drawPoint(this.cursor[0], this.cursor[1], this.curr_color);
-            }
+            if (this.curr_tool == "eraser" && btn == 0)
+                this.erase(this.cursor[0], this.cursor[1]);
         });
-        this.pixi.on('movePlace', (e, info) => {
-            console.log(this.curr_tool)
+        this.pixi.on('mousePlace', (e, info) => {
             if (this.curr_tool == "pencil")
-                this.drawPoint(this.cursors[0], this.cursor[1], this.curr_color);
+                this.drawPoint(this.cursor[0], this.cursor[1], this.curr_color);
             if (this.curr_tool == "line")
                 this.getPoint(this.cursor[0], this.cursor[1]);
+            if (this.curr_tool == "eraser")
+                this.erase(this.cursor[0], this.cursor[1]);
         });
         this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);  
         this.save_key_up = true; 
@@ -183,7 +189,7 @@ class ImageEditor extends Editor {
 
         this.setTitle(EDITOR_TITLE);
 		this.setOnClick(() => {
-            openImage(this.file || EDITOR_TITLE)
+            openImage(this.file)
         });
         
         if (file && file != EDITOR_TITLE)
@@ -209,7 +215,10 @@ class ImageEditor extends Editor {
         const setupForm = () => {
             app.saveSettings();
             this.redrawBackground();
-            let img_sprite = PIXI.Sprite.from(this.file);
+            this.pixi.setCameraPosition((this.pixi.width - this.img_width) / 2, (this.pixi.height - this.img_height) / 2);
+            let img_sprite = new PIXI.Sprite();
+            if (nwFS.pathExistsSync(path)) 
+                img_sprite = PIXI.Sprite.from(this.file);
             this.edit_container.addChild(img_sprite);
             this.pixi.orderComponents([
                 img_sprite, this.img_edits
@@ -229,7 +238,7 @@ class ImageEditor extends Editor {
         this.img_settings = image_edit_settings[fname];
         this.img_settings.image = this.file;
         
-        if (new_file) {
+        if (new_file && nwFS.pathExistsSync(path)) {
             let img = new Image();
             img.onload = () => {
                 this.img_settings.frame_size = [img.width, img.height];
@@ -261,38 +270,68 @@ class ImageEditor extends Editor {
         let white_tile = true;
         let t_size = 10;
 
-        let width = set.position[0] + ((set.frame_size[0] + set.spacing) * set.frames) - (set.spacing);
-        let height = set.position[1] + set.frame_size[1];
+        this.img_left = set.position[0];
+        this.img_top = set.position[1];
+        this.img_width = set.position[0] + ((set.frame_size[0] + set.spacing) * set.frames) - (set.spacing);
+        this.img_height = set.position[1] + set.frame_size[1];
+
+        this.pixi.setCameraBounds(0,0,this.pixi.width-this.img_width,this.pixi.height-this.img_height);
         // draw transparency tiles
-        for (let x = set.position[0]; x < width; x += t_size) {
+        for (let x = this.img_left; x < this.img_width; x += t_size) {
             white_tile = (x/t_size % 2 == 0) ? true : false;
-            for (let y = set.position[1]; y < height; y += t_size) {
+            for (let y = this.img_top; y < this.img_height; y += t_size) {
                 bg.beginFill(white_tile ? 0xFFFFFF : 0xBFBFBF);
-                bg.drawRect(x, y, x + t_size > width ? width - x : t_size, y + t_size > height ? height - y : t_size)
+                bg.drawRect(x, y, x + t_size > this.img_width ? this.img_width - x : t_size, y + t_size > this.img_height ? this.img_height - y : t_size)
                 bg.endFill();
                 white_tile = !white_tile;
             }
         }
         // draw frame rects
-        for (let x = set.position[0]; x < width; x += set.frame_size[0] + set.spacing) {
+        for (let x = this.img_left; x < this.img_width; x += set.frame_size[0] + set.spacing) {
             bg.lineStyle(1, app.getThemeColor('ide-accent'), 0.5);
-            bg.drawRect(x,-set.position[1],set.frame_size[0],set.frame_size[1]);
+            bg.drawRect(x,-this.img_top,set.frame_size[0],set.frame_size[1]);
+        }
+        // update mask
+        let mask = this.img_mask;
+        mask.clear();
+        mask.beginFill(0xFFFFFF);
+        mask.drawRect(this.img_left, this.img_top, this.img_width, this.img_height);
+        mask.endFill();
+    }
+    setTool (name) {
+        if (TOOLS.includes(name)) {
+            this.curr_tool = 'pencil';
+            this.curr_tool = name;
+            this.el_image_form.getInput(name).classList.add('selected');
+            TOOLS.forEach(t => {
+                if (t != name) this.el_image_form.getInput(t).classList.remove('selected')
+            });
         }
     }
     drawPoint (x, y, color) {
-        let edit = this.img_edits;
-        edit.beginFill(color);
-        edit.drawRect(x, y, 1, 1);
+        if (x >= 0 && y >= 0 && x < this.img_width && y < this.img_height) {
+            let edit = this.img_edits;
+            edit.beginFill(color);
+            edit.drawRect(x, y, 1, 1);
+        }
     }
     getPoint (x, y) {
         let pixels = this.pixi.renderer.extract.pixels(this.edit_container);
         let i = (y * this.edit_container.width + x) * 4;
-        let rgba = { r:pixels[i], g:pixels[i+1], b:pixels[i+2], a:[pixels[i+3]] }
-        console.log(rgba);
+        return { r:pixels[i], g:pixels[i+1], b:pixels[i+2], a:pixels[i+3] }
+    }
+    erase (x, y, w=1, h=1) {
+        let mask = this.img_mask;
+        mask.beginHole();
+        mask.beginFill(0xFFFFFF);
+        mask.drawRect(x, y, w, h);
+        mask.endFill();
     }
     save () {
         if (this.file) {
-            let img = this.pixi.renderer.plugins.extract.image(this.edit_container)
+            let rtx = PIXI.RenderTexture.create(this.img_width, this.img_height);
+            this.pixi.renderer.render(this.edit_container, rtx);
+            let img = this.pixi.renderer.plugins.extract.image(rtx);
             img.onload = () => {
                 let buf = Buffer.from(img.src.replace(/^data:image\/\w+;base64,/, ""), 'base64');
                 nwFS.writeFile(this.file, buf);
@@ -310,7 +349,9 @@ document.addEventListener("openProject", e => {
     app.addSearchKey({
         key: "Open image editor",
         onSelect: () => {
-            openImage();
+			app.getNewAssetPath('image', (path, name) => {
+                openImage(path);
+            });
         }
     })
 });

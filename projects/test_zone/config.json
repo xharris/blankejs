@@ -10,20 +10,20 @@
             "Open image editor"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
             "map0.map=map+?",
             "map0.map"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
-        ],
-        [
             "View assets=?",
             "View assets"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "Add a map=new+?",
+            "Add a map"
         ]
     ],
     "autoplay_preview": true,
@@ -32,7 +32,7 @@
             "526dedde": {
                 "name": "object0",
                 "char": "A",
-                "color": "#000000",
+                "color": "#00ff00",
                 "size": [
                     32,
                     32
@@ -61,7 +61,7 @@
         "image/blue_robot.png": {
             "frame_size": [
                 33,
-                36
+                33
             ],
             "frames": 9,
             "position": [
@@ -69,7 +69,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png"
+            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/blue_robot.png"
         },
         "image/blue_robot.png2.png": {
             "frame_size": [
@@ -102,6 +102,19 @@
                 0
             ],
             "image": "blue_robot.png"
+        },
+        "image/image1.png": {
+            "frame_size": [
+                32,
+                32
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/blue_robot.png"
         }
     }
 }

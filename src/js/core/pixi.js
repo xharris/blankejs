@@ -1,4 +1,4 @@
-PIXI.scaleModes.DEFAULT = PIXI.scaleModes.NEAREST;
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 class BlankePixi {
     constructor (opt) {
 		opt = opt || { 
@@ -22,13 +22,16 @@ class BlankePixi {
 		this.snap = [32,32];
 		this.snap_mouse = [0,0];
 		this.camera = [0,0];
+		this.camera_bounds = null;
 		//this.camera_start = [0,0];
 		// Zoom control
 		this.zoom = 1;
 		this.zoom_target = 1;
-		this.zoom_incr = 0.3;
+		this.zoom_incr = 0.5;
 
-        this.pixi = new PIXI.Application(opt.w, opt.h, {
+        this.pixi = new PIXI.Application({
+			width: opt.w, 
+			height: opt.h,
             backgroundColor: opt.bg_color || 0x354048,
             antialias: false
         });
@@ -305,8 +308,25 @@ class BlankePixi {
 		this.setCameraPosition(this.camera[0] + (dx), this.camera[1] + (dy));
 	}
 	setCameraPosition (x, y) {
-		this.camera = [x, y];
+		let xclamp = [x,x];
+		let yclamp = [y,y];
+		if (this.camera_bounds) {
+			let l = this.camera_bounds[0], t = this.camera_bounds[1];
+			let w = this.camera_bounds[2], h = this.camera_bounds[3];
+			let offx = w - (w * this.zoom), offy = h - (h * this.zoom);
+			xclamp = [l + offx, w - offx];
+			yclamp = [t + offy, h - offy];
+		}
+		this.camera[0] = Math.min(Math.max(x, xclamp[0]), xclamp[1]);
+		this.camera[1] = Math.min(Math.max(y, yclamp[0]), yclamp[1]);
 		this.dispatchEvent('cameraChange', { x, y });
+	}
+	setCameraBounds (x1,y1,x2,y2) {
+		if (x1 != null)
+			this.camera_bounds = [x1,y1,x2,y2];
+		else 
+			this.camera_bounds = null;
+		this.setCameraPosition(...this.camera);
 	}
 	// Pointer Locking for camera dragging
 	dragStart () {
