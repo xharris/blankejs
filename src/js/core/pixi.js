@@ -356,6 +356,7 @@ class BlankePixi {
     get view () { return this.pixi.view; }
 	get stage () { return this.pixi.stage; }
 	get renderer () { return this.pixi.renderer; }
+	get ticker () { return this.pixi.ticker; }
 	on (name, fn) {
 		if (!(name in this.evt_list)) this.evt_list[name] = [];
 		if (!this.evt_list[name].includes(fn)) this.evt_list[name].push(fn);

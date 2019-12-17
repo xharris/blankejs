@@ -50,20 +50,15 @@ class ImageEditor extends Editor {
         // image editing-related
         this.edit_container = new PIXI.Container(); // all the stuff that will be saved to image file
         this.img_background = new PIXI.Graphics();
-        this.img_sprite = new PIXI.Sprite();
         this.img_edits = new PIXI.Graphics();
+        this.img_rtx = PIXI.RenderTexture.create(this.img_width, this.img_height); 
+        this.img_sprite = new PIXI.Sprite(this.img_rtx); // only this gets shown
         // masks
         this.img_mask = new PIXI.Graphics();
         this.img_erase = new PIXI.Graphics();
-        this.img_rtx = PIXI.RenderTexture.create(this.img_width, this.img_height); 
-        this.img_final_spr = new PIXI.Sprite(); // only this gets shown
-        this.edit_container.addChild(this.img_mask);
-        this.edit_container.addChild(this.img_erase);
-        this.edit_container.addChild(this.img_final_spr);
         this.edit_container.mask = this.img_mask;
-        this.img_container.addChild(this.img_background);
-        this.img_container.addChild(this.edit_container);
-        this.img_container.addChild(this.crosshair);
+        this.edit_container.addChild(this.img_sprite, this.img_edits);
+        this.img_container.addChild(this.img_background, this.edit_container, this.crosshair);
         this.pixi.stage.addChild(this.img_container);
 
         // setup el_image_form   
@@ -103,24 +98,7 @@ class ImageEditor extends Editor {
         this.pixi.on('mouseMove', (e, info) => {
             let { mx, my, btn } = info;
             this.cursor = [ Math.floor(mx), Math.floor(my) ];
-            let cross = this.crosshair;
-            cross.clear();
-            cross.lineStyle(Math.max(1/this.pixi.zoom,1), this.curr_color, 0.3);
-            let w = this.pixi.width/Math.min(this.pixi.zoom, 1);
-            let h = this.pixi.height/Math.min(this.pixi.zoom, 1);
-            let camx = this.pixi.camera[0];
-            let camy = this.pixi.camera[1];
-            // vertical
-            cross.moveTo(this.cursor[0] + 0.5,  -h - camy);
-            cross.lineTo(this.cursor[0] + 0.5,  h - camy);
-            // horizontal
-            cross.moveTo(-w - camx,    this.cursor[1] + 0.5);
-            cross.lineTo(w - camx,     this.cursor[1] + 0.5);
-            // center
-            cross.lineStyle(0, this.curr_color, 0.3);
-            cross.beginFill(this.curr_color);
-            cross.drawRect(this.cursor[0], this.cursor[1], 1, 1);
-            cross.endFill();
+            this.drawCrosshair();
             
             if (this.curr_tool == "pencil" && btn == 0) 
                 this.drawPoint(this.cursor[0], this.cursor[1], this.curr_color);
@@ -146,6 +124,10 @@ class ImageEditor extends Editor {
         this.pixi.on('keyUp', (e, info) => {
           if (e.key == 's') this.save_key_up = true;  
         })
+        /*
+        this.pixi.ticker.add(() => {
+            this.pixi.renderer.render(container, this.img_rtx);
+        });*/
         
         // setup el_colors
         const addColor = (c) => {
@@ -155,6 +137,7 @@ class ImageEditor extends Editor {
             el_color.value = parseInt(`0x${c}`);
             el_color.addEventListener('click', e => {
                 this.curr_color = e.target.value;
+                this.drawCrosshair();
             });
             el_color.addEventListener('contextmenu', e => {
                 app.contextMenu(e.x, e.y, [
@@ -218,26 +201,19 @@ class ImageEditor extends Editor {
         if (!app.projSetting("imageeditor")) app.projSetting("imageeditor",{})
         let image_edit_settings = app.projSetting("imageeditor");
         
-        this.img_edits.clear();
-
         const setupForm = () => {
             app.saveSettings();
             this.redrawBackground();
             this.pixi.setCameraPosition((this.pixi.width - this.img_width) / 2, (this.pixi.height - this.img_height) / 2);
-            this.img_sprite = new PIXI.Sprite();
-            if (this.img_rtx)
-                this.img_rtx.destroy();
-            this.img_rtx = PIXI.RenderTexture.create(this.img_width, this.img_height);
-            if (nwFS.pathExistsSync(path)) 
-                this.img_sprite.texture = PIXI.Texture.from(path);
-            this.refreshImageTexture();
-            this.pixi.orderComponents([
-                this.img_sprite, this.img_edits
-            ])
+            this.el_image_form.useValues(this.img_settings);
+             
             this.pixi.orderComponents([
                 this.img_background, this.edit_container, this.crosshair
             ])
-            this.el_image_form.useValues(this.img_settings);
+            if (nwFS.pathExistsSync(path)) {
+                this.initial_spr = PIXI.Sprite.from(path)
+                this.renderImageTexture(null,this.initial_spr);
+            }
         }
     
         let new_file = false;
@@ -258,6 +234,26 @@ class ImageEditor extends Editor {
             img.src = "file://"+path;
         } else 
             setupForm();
+    }
+    drawCrosshair () {
+        let cross = this.crosshair;
+        cross.clear();
+        cross.lineStyle(Math.max(1/this.pixi.zoom,1), this.curr_color, 0.3);
+        let w = this.pixi.width/Math.min(this.pixi.zoom, 1);
+        let h = this.pixi.height/Math.min(this.pixi.zoom, 1);
+        let camx = this.pixi.camera[0];
+        let camy = this.pixi.camera[1];
+        // vertical
+        cross.moveTo(this.cursor[0] + 0.5,  -h - camy);
+        cross.lineTo(this.cursor[0] + 0.5,  h - camy);
+        // horizontal
+        cross.moveTo(-w - camx,    this.cursor[1] + 0.5);
+        cross.lineTo(w - camx,     this.cursor[1] + 0.5);
+        // center
+        cross.lineStyle(0, this.curr_color, 0.3);
+        cross.beginFill(this.curr_color);
+        cross.drawRect(this.cursor[0], this.cursor[1], 1, 1);
+        cross.endFill();
     }
     refreshImageList () {
         let sel_str = `<option class="placeholder" value="" disabled ${this.file ? '' : 'selected'}>Select an image</option>`;
@@ -325,9 +321,10 @@ class ImageEditor extends Editor {
     drawPoint (x, y, color) {
         if (x >= 0 && y >= 0 && x < this.img_width && y < this.img_height) {
             let edit = this.img_edits;
+            edit.clear();
             edit.beginFill(color);
             edit.drawRect(x, y, 1, 1);
-            this.refreshImageTexture();
+            this.renderImageTexture();
         }
     }
     getPoint (x, y) {
@@ -339,20 +336,17 @@ class ImageEditor extends Editor {
         let mask = this.img_erase;
         mask.clear();
         mask.beginFill(0xFFFFFF);
-        mask.drawRect(x,y,this.img_width,this.img_height);
+        mask.drawRect(0,0,this.img_width,this.img_height);
         mask.beginHole();
         if (_type) mask[_type](...args);
         mask.endHole();
         mask.endFill();
-        this.refreshImageTexture(true);
+        this.renderImageTexture(true);
         mask.clear();
     }
-    refreshImageTexture (mask) {
-        for (let obj of [this.img_sprite, this.img_edits]) {
-            //if (mask) obj.mask = this.img_erase;
-            this.pixi.renderer.render(obj, this.img_rtx);
-        }
-        this.img_final_spr.texture = this.img_rtx;
+    renderImageTexture (mask, spr) {
+        //if (mask) this.fake_container.mask = this.img_erase;
+        this.pixi.renderer.render(spr || this.edit_container, this.img_rtx);
     }
     save () {
         if (this.file) {
