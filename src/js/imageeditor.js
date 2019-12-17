@@ -26,6 +26,7 @@ class ImageEditor extends Editor {
         this.img_top = 0;
         this.img_width = 0;
         this.img_height = 0;
+        this.erase_coords = [];
         // create elements
         this.el_top_right_container = app.createElement('div','top-right-container');
         let form_options = [
@@ -46,12 +47,19 @@ class ImageEditor extends Editor {
         this.pixi = new BlankePixi();
         this.img_container = new PIXI.Container();
         this.crosshair = new PIXI.Graphics();
+        // image editing-related
         this.edit_container = new PIXI.Container(); // all the stuff that will be saved to image file
         this.img_background = new PIXI.Graphics();
+        this.img_sprite = new PIXI.Sprite();
         this.img_edits = new PIXI.Graphics();
+        // masks
         this.img_mask = new PIXI.Graphics();
-        this.edit_container.addChild(this.img_edits);
+        this.img_erase = new PIXI.Graphics();
+        this.img_rtx = PIXI.RenderTexture.create(this.img_width, this.img_height); 
+        this.img_final_spr = new PIXI.Sprite(); // only this gets shown
         this.edit_container.addChild(this.img_mask);
+        this.edit_container.addChild(this.img_erase);
+        this.edit_container.addChild(this.img_final_spr);
         this.edit_container.mask = this.img_mask;
         this.img_container.addChild(this.img_background);
         this.img_container.addChild(this.edit_container);
@@ -117,7 +125,7 @@ class ImageEditor extends Editor {
             if (this.curr_tool == "pencil" && btn == 0) 
                 this.drawPoint(this.cursor[0], this.cursor[1], this.curr_color);
             if (this.curr_tool == "eraser" && btn == 0)
-                this.erase(this.cursor[0], this.cursor[1]);
+                this.erase('drawRect',this.cursor[0], this.cursor[1], 1, 1);
         });
         this.pixi.on('mousePlace', (e, info) => {
             if (this.curr_tool == "pencil")
@@ -125,7 +133,7 @@ class ImageEditor extends Editor {
             if (this.curr_tool == "line")
                 this.getPoint(this.cursor[0], this.cursor[1]);
             if (this.curr_tool == "eraser")
-                this.erase(this.cursor[0], this.cursor[1]);
+                this.erase('drawRect',this.cursor[0], this.cursor[1], 1, 1);
         });
         this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);  
         this.save_key_up = true; 
@@ -216,12 +224,15 @@ class ImageEditor extends Editor {
             app.saveSettings();
             this.redrawBackground();
             this.pixi.setCameraPosition((this.pixi.width - this.img_width) / 2, (this.pixi.height - this.img_height) / 2);
-            let img_sprite = new PIXI.Sprite();
+            this.img_sprite = new PIXI.Sprite();
+            if (this.img_rtx)
+                this.img_rtx.destroy();
+            this.img_rtx = PIXI.RenderTexture.create(this.img_width, this.img_height);
             if (nwFS.pathExistsSync(path)) 
-                img_sprite = PIXI.Sprite.from(this.file);
-            this.edit_container.addChild(img_sprite);
+                this.img_sprite.texture = PIXI.Texture.from(path);
+            this.refreshImageTexture();
             this.pixi.orderComponents([
-                img_sprite, this.img_edits
+                this.img_sprite, this.img_edits
             ])
             this.pixi.orderComponents([
                 this.img_background, this.edit_container, this.crosshair
@@ -297,6 +308,9 @@ class ImageEditor extends Editor {
         mask.beginFill(0xFFFFFF);
         mask.drawRect(this.img_left, this.img_top, this.img_width, this.img_height);
         mask.endFill();
+        // resize rendertexture
+        if (this.img_rtx)
+            this.img_rtx.resize(this.img_width, this.img_height);
     }
     setTool (name) {
         if (TOOLS.includes(name)) {
@@ -313,6 +327,7 @@ class ImageEditor extends Editor {
             let edit = this.img_edits;
             edit.beginFill(color);
             edit.drawRect(x, y, 1, 1);
+            this.refreshImageTexture();
         }
     }
     getPoint (x, y) {
@@ -320,12 +335,24 @@ class ImageEditor extends Editor {
         let i = (y * this.edit_container.width + x) * 4;
         return { r:pixels[i], g:pixels[i+1], b:pixels[i+2], a:pixels[i+3] }
     }
-    erase (x, y, w=1, h=1) {
-        let mask = this.img_mask;
-        mask.beginHole();
+    erase (_type, ...args) {
+        let mask = this.img_erase;
+        mask.clear();
         mask.beginFill(0xFFFFFF);
-        mask.drawRect(x, y, w, h);
+        mask.drawRect(x,y,this.img_width,this.img_height);
+        mask.beginHole();
+        if (_type) mask[_type](...args);
+        mask.endHole();
         mask.endFill();
+        this.refreshImageTexture(true);
+        mask.clear();
+    }
+    refreshImageTexture (mask) {
+        for (let obj of [this.img_sprite, this.img_edits]) {
+            //if (mask) obj.mask = this.img_erase;
+            this.pixi.renderer.render(obj, this.img_rtx);
+        }
+        this.img_final_spr.texture = this.img_rtx;
     }
     save () {
         if (this.file) {
