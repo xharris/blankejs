@@ -1,4 +1,6 @@
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+
+let clientX = 0, clientY = 0;
 class BlankePixi {
     constructor (opt) {
 		opt = opt || { 
@@ -41,13 +43,19 @@ class BlankePixi {
 			e.preventDefault();
 		});
 		
+		this.renderer.state.blendModes[21] = [WebGLRenderingContext.ONE, WebGLRenderingContext.ONE, 
+			WebGLRenderingContext.ONE, WebGLRenderingContext.ONE, 
+			WebGLRenderingContext.FUNC_REVERSE_SUBTRACT, WebGLRenderingContext.FUNC_ADD];
+		// used to erase using graphics
+		this.renderer.state.blendModes[22] = [0, WebGLRenderingContext.ONE_MINUS_SRC_ALPHA];
+
 		this.has_mouse = true;
+
 		// zoom
 		window.addEventListener('wheel',(e)=>{
 			if (this.has_mouse) {
 				// e.preventDefault();
-				this.clientX = e.clientX;
-				this.clientY = e.clientY;
+				//console.log( - (Math.sign(e.deltaY) * (this.zoom_incr * (this.zoom))));
 				this.setZoom(this.zoom - (Math.sign(e.deltaY) * (this.zoom_incr * (this.zoom))))
 			}
 		});
@@ -115,11 +123,11 @@ class BlankePixi {
 				}
 				if (e.key == "-") {
 					// zoom out
-					this.setZoom(this.zoom - this.zoom_incr);
+					this.setZoom(this.zoom - (this.zoom_incr * (this.zoom)));
 				}
 				if (e.key == "=") {
-					// zoom out
-					this.setZoom(this.zoom + this.zoom_incr);
+					// zoom in
+					this.setZoom(this.zoom + (this.zoom_incr * (this.zoom)));
 				}
 				if (e.key == "0") {
 					// reset zoom
@@ -182,6 +190,7 @@ class BlankePixi {
 				this.can_drag = true;
 			}
 			this.dragStop(was_cam_dragging);
+			this.dispatchEvent('mouseUp',e);
         	this.pointer_down = -1;
 		});
 
@@ -289,9 +298,9 @@ class BlankePixi {
 			child.scale.x = this.zoom;
 			child.scale.y = this.zoom;
 			let rect = this.view.getBoundingClientRect();
-			let beforeTrans = getCoords(child,  this.clientX - rect.left,  this.clientY - rect.top);
+			let beforeTrans = getCoords(child,  clientX - rect.left,  clientY - rect.top);
 			child.updateTransform();
-			let afterTrans = getCoords(child,  this.clientX - rect.left,  this.clientY - rect.top);
+			let afterTrans = getCoords(child,  clientX - rect.left,  clientY - rect.top);
 			this.moveCamera(
 				(afterTrans.x - beforeTrans.x) * child.scale.x,
 				(afterTrans.y - beforeTrans.y) * child.scale.y
@@ -300,6 +309,7 @@ class BlankePixi {
 		}
 	}
 	setZoom (scale) {
+		console.log(scale)
 		this.zoom_target = scale > 0 ? scale : this.zoom;
 		this.old_cam = [this.camera[0] * this.zoom, this.camera[1] * this.zoom];
 		requestAnimationFrame(this.updateZoom.bind(this));
@@ -357,6 +367,13 @@ class BlankePixi {
 	get stage () { return this.pixi.stage; }
 	get renderer () { return this.pixi.renderer; }
 	get ticker () { return this.pixi.ticker; }
+	get loader () { return PIXI.Loader.shared; }
+	loadRes (path, cb, name) {
+		if (!name) name = path;
+		delete this.loader.resources[name];
+		this.pixi.loader.add(name, path);
+		this.pixi.loader.load(cb);
+	}
 	on (name, fn) {
 		if (!(name in this.evt_list)) this.evt_list[name] = [];
 		if (!this.evt_list[name].includes(fn)) this.evt_list[name].push(fn);
@@ -377,3 +394,8 @@ class BlankePixi {
 		}
 	}
 }
+
+window.addEventListener('mousemove', (e) => {
+	clientX = e.clientX;
+	clientY = e.clientY;
+});

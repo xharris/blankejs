@@ -10,12 +10,12 @@
             "Open image editor"
         ],
         [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
             "View assets=?",
             "View assets"
+        ],
+        [
+            "map0.map=map+?",
+            "map0.map"
         ],
         [
             "main.lua=script+?",
@@ -69,7 +69,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/blue_robot.png"
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png"
         },
         "image/blue_robot.png2.png": {
             "frame_size": [
@@ -114,7 +114,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/blue_robot.png"
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png"
         }
     }
 }

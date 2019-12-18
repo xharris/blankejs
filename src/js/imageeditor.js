@@ -26,7 +26,6 @@ class ImageEditor extends Editor {
         this.img_top = 0;
         this.img_width = 0;
         this.img_height = 0;
-        this.erase_coords = [];
         // create elements
         this.el_top_right_container = app.createElement('div','top-right-container');
         let form_options = [
@@ -50,16 +49,20 @@ class ImageEditor extends Editor {
         this.crosshair = new PIXI.Graphics();
         // image editing-related
         this.edit_container = new PIXI.Container(); // all the stuff that will be saved to image file
+        this.render_img = this.edit_container;
+        this.temp_rtx_used = false;
         this.img_background = new PIXI.Graphics();
         this.img_edits = new PIXI.Graphics();
-        this.img_rtx = new PIXI.RenderTexture.create(this.width,this.height); 
-        this.img_sprite = new PIXI.Sprite(this.img_rtx); // only this gets shown
+        this.img_rtx = PIXI.RenderTexture.create(this.width, this.height); 
+        this.img_rtx_temp = PIXI.RenderTexture.create(this.width, this.height);
+        this.img_sprite = new PIXI.Sprite(this.img_rtx);
+        this.img_erase = new PIXI.Graphics();
+        this.img_erase.blendMode = 22;
         
         // masks
         this.img_mask = new PIXI.Graphics();
-        this.img_erase = new PIXI.Graphics();
-        //this.edit_container.mask = this.img_mask;
-        this.edit_container.addChild(this.img_sprite, this.img_edits);
+        this.edit_container.mask = this.img_mask;
+        this.edit_container.addChild(this.img_mask, this.img_sprite, this.img_edits, this.img_erase);
         this.img_container.addChild(this.img_background, this.edit_container, this.crosshair);
         this.pixi.stage.addChild(this.img_container);
 
@@ -96,6 +99,7 @@ class ImageEditor extends Editor {
         });
         this.pixi.on('cameraChange', e => {
             this.img_container.position.set(e.x, e.y);
+            this.switch_rtx = false;
         });
         this.pixi.on('mouseMove', (e, info) => {
             let { mx, my, btn } = info;
@@ -115,6 +119,9 @@ class ImageEditor extends Editor {
             if (this.curr_tool == "eraser")
                 this.erase('drawRect',this.cursor[0], this.cursor[1], 10, 10);
         });
+        this.pixi.on('mouseUp', (e, info) => {
+            this.img_erase.clear();
+        })
         this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);  
         this.save_key_up = true; 
         this.pixi.on('keyDown', (e, info) => {
@@ -129,6 +136,7 @@ class ImageEditor extends Editor {
         this.pixi.ticker.add(() => {
             this.renderImageTexture();
         });
+        // [gl.FUNC_REVERSE_SUBTRACT, gl.FUNC_ADD]  -- OR -- [gl.ZERO, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE_MINUS_SRC_ALPHA]
         
         // setup el_colors
         const addColor = (c) => {
@@ -207,22 +215,15 @@ class ImageEditor extends Editor {
             this.redrawBackground();
             this.pixi.setCameraPosition((this.pixi.width - this.img_width) / 2, (this.pixi.height - this.img_height) / 2);
             this.el_image_form.useValues(this.img_settings);
-             
+             /*
             this.pixi.orderComponents([
                 this.img_background, this.edit_container, this.crosshair
-            ])
+            ])*/
             if (nwFS.pathExistsSync(path)) {
-                var initial_spr = PIXI.Sprite.from(path);
-                this.render_img = initial_spr;
-                let mask = this.img_erase;
-                mask.clear();
-                mask.beginFill(0xFFFFFF);
-                mask.drawRect(0,0,this.img_width,this.img_height);
-                mask.beginHole();
-                mask.drawRect(5,5,100,20);
-                mask.endHole();
-                mask.endFill();
-                initial_spr.mask = mask;
+                this.pixi.loadRes(path, (loader, res) => {
+                    var initial_spr = new PIXI.Sprite(res[path].texture);
+                    this.render(initial_spr);
+                });
             }
         }
     
@@ -289,8 +290,8 @@ class ImageEditor extends Editor {
 
         this.img_left = set.position[0];
         this.img_top = set.position[1];
-        this.img_width = set.position[0] + ((set.frame_size[0] + set.spacing) * set.frames) - (set.spacing);
-        this.img_height = set.position[1] + set.frame_size[1];
+        this.img_width = this.img_left + ((set.frame_size[0] + set.spacing) * set.frames) - (set.spacing);
+        this.img_height = this.img_top + set.frame_size[1];
 
         this.pixi.setCameraBounds(0,0,this.pixi.width-this.img_width,this.pixi.height-this.img_height);
         // draw transparency tiles
@@ -315,8 +316,8 @@ class ImageEditor extends Editor {
         mask.drawRect(this.img_left, this.img_top, this.img_width, this.img_height);
         mask.endFill();
         // resize rendertexture
-        if (this.img_rtx)
-            this.img_rtx.resize(this.img_width, this.img_height);
+        this.img_rtx.resize(this.img_width, this.img_height);
+        this.img_rtx_temp.resize(this.img_width, this.img_height);
     }
     setTool (name) {
         if (TOOLS.includes(name)) {
@@ -334,8 +335,6 @@ class ImageEditor extends Editor {
             edit.clear();
             edit.beginFill(color);
             edit.drawRect(x, y, 1, 1);
-            this.render_img = edit;
-            //this.renderImageTexture();
         }
     }
     getPoint (x, y) {
@@ -346,25 +345,26 @@ class ImageEditor extends Editor {
     erase (_type, ...args) {
         let mask = this.img_erase;
         mask.clear();
-        mask.beginFill(0xFFFFFF);
-        mask.drawRect(0,0,this.img_width,this.img_height);
-        mask.beginHole();
+        mask.beginFill(0xFFFFFF, 1.0);
         if (_type) mask[_type](...args);
-        mask.endHole();
         mask.endFill();
-        //this.renderImageTexture(true);
-        this.render_mask = mask;
+    }
+    render (img) {
+        this.rendered_image = false;
+        this.render_img = img;
     }
     renderImageTexture () {
-        if (!this.render_img) 
+        let temp = this.img_rtx;
+        this.img_rtx = this.img_rtx_temp;
+        this.img_rtx_temp = temp;
+        
+        this.img_sprite.texture = this.img_rtx;
+        this.pixi.renderer.render(this.render_img, this.img_rtx_temp, false);
+        // reset stuff
+        if (!this.rendered_image)
+            this.rendered_image = true;
+        else 
             this.render_img = this.edit_container;
-        if (this.render_mask) {
-            this.edit_container.mask = this.render_mask;
-            this.render_mask = null;
-        }
-        this.pixi.renderer.render(this.edit_container, this.img_rtx, false);
-        this.img_edits.clear();
-        this.edit_container.mask = null;
     }
     save () {
         if (this.file) {
