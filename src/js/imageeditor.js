@@ -45,18 +45,20 @@ class ImageEditor extends Editor {
         this.el_colors = app.createElement('div','color-container');
         //this.el_layers = new BlankeListView({object_type:"layer"});
         this.pixi = new BlankePixi();
+        this.renderer = PIXI.autoDetectRenderer();
         this.img_container = new PIXI.Container();
         this.crosshair = new PIXI.Graphics();
         // image editing-related
         this.edit_container = new PIXI.Container(); // all the stuff that will be saved to image file
         this.img_background = new PIXI.Graphics();
         this.img_edits = new PIXI.Graphics();
-        this.img_rtx = PIXI.RenderTexture.create(this.img_width, this.img_height); 
+        this.img_rtx = new PIXI.RenderTexture.create(this.width,this.height); 
         this.img_sprite = new PIXI.Sprite(this.img_rtx); // only this gets shown
+        
         // masks
         this.img_mask = new PIXI.Graphics();
         this.img_erase = new PIXI.Graphics();
-        this.edit_container.mask = this.img_mask;
+        //this.edit_container.mask = this.img_mask;
         this.edit_container.addChild(this.img_sprite, this.img_edits);
         this.img_container.addChild(this.img_background, this.edit_container, this.crosshair);
         this.pixi.stage.addChild(this.img_container);
@@ -103,7 +105,7 @@ class ImageEditor extends Editor {
             if (this.curr_tool == "pencil" && btn == 0) 
                 this.drawPoint(this.cursor[0], this.cursor[1], this.curr_color);
             if (this.curr_tool == "eraser" && btn == 0)
-                this.erase('drawRect',this.cursor[0], this.cursor[1], 1, 1);
+                this.erase('drawRect',this.cursor[0], this.cursor[1], 10, 10);
         });
         this.pixi.on('mousePlace', (e, info) => {
             if (this.curr_tool == "pencil")
@@ -111,7 +113,7 @@ class ImageEditor extends Editor {
             if (this.curr_tool == "line")
                 this.getPoint(this.cursor[0], this.cursor[1]);
             if (this.curr_tool == "eraser")
-                this.erase('drawRect',this.cursor[0], this.cursor[1], 1, 1);
+                this.erase('drawRect',this.cursor[0], this.cursor[1], 10, 10);
         });
         this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);  
         this.save_key_up = true; 
@@ -124,10 +126,9 @@ class ImageEditor extends Editor {
         this.pixi.on('keyUp', (e, info) => {
           if (e.key == 's') this.save_key_up = true;  
         })
-        /*
         this.pixi.ticker.add(() => {
-            this.pixi.renderer.render(container, this.img_rtx);
-        });*/
+            this.renderImageTexture();
+        });
         
         // setup el_colors
         const addColor = (c) => {
@@ -211,8 +212,17 @@ class ImageEditor extends Editor {
                 this.img_background, this.edit_container, this.crosshair
             ])
             if (nwFS.pathExistsSync(path)) {
-                this.initial_spr = PIXI.Sprite.from(path)
-                this.renderImageTexture(null,this.initial_spr);
+                var initial_spr = PIXI.Sprite.from(path);
+                this.render_img = initial_spr;
+                let mask = this.img_erase;
+                mask.clear();
+                mask.beginFill(0xFFFFFF);
+                mask.drawRect(0,0,this.img_width,this.img_height);
+                mask.beginHole();
+                mask.drawRect(5,5,100,20);
+                mask.endHole();
+                mask.endFill();
+                initial_spr.mask = mask;
             }
         }
     
@@ -324,7 +334,8 @@ class ImageEditor extends Editor {
             edit.clear();
             edit.beginFill(color);
             edit.drawRect(x, y, 1, 1);
-            this.renderImageTexture();
+            this.render_img = edit;
+            //this.renderImageTexture();
         }
     }
     getPoint (x, y) {
@@ -341,12 +352,19 @@ class ImageEditor extends Editor {
         if (_type) mask[_type](...args);
         mask.endHole();
         mask.endFill();
-        this.renderImageTexture(true);
-        mask.clear();
+        //this.renderImageTexture(true);
+        this.render_mask = mask;
     }
-    renderImageTexture (mask, spr) {
-        //if (mask) this.fake_container.mask = this.img_erase;
-        this.pixi.renderer.render(spr || this.edit_container, this.img_rtx);
+    renderImageTexture () {
+        if (!this.render_img) 
+            this.render_img = this.edit_container;
+        if (this.render_mask) {
+            this.edit_container.mask = this.render_mask;
+            this.render_mask = null;
+        }
+        this.pixi.renderer.render(this.edit_container, this.img_rtx, false);
+        this.img_edits.clear();
+        this.edit_container.mask = null;
     }
     save () {
         if (this.file) {
