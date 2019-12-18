@@ -114,7 +114,13 @@
                 0
             ],
             "spacing": 0,
-            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png"
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/image1.png",
+            "tool.shape": "rect",
+            "tool.fill": false,
+            "tool.size": [
+                5,
+                1
+            ]
         }
     }
 }

@@ -411,7 +411,7 @@ class BlankeForm {
         let extra_args = input[2] || {};
 
         // header element
-        if (input_type == null || input_type === true) {
+        if (input.length <= 2 && typeof(input_type) != 'string') {
             let el_header = app.createElement("div","form-header");
             el_header.hide = true;
             el_header.is_header = true;
@@ -584,6 +584,25 @@ class BlankeForm {
         this.container.appendChild(el_container);
         if (!internal)
             this.hideHeader(this.first_header);
+    }
+
+    hideInput (name) {
+        for (var i = 0; i < this.container.children.length; i++) {
+            let container = this.container.children[i];
+            if (container.dataset.name == name) {
+                container.style.display = "none";
+            }
+        }
+    }
+
+    showInput (name) {
+        for (var i = 0; i < this.container.children.length; i++) {
+            let container = this.container.children[i];
+            if (container.dataset.name == name) {
+                container.style = null;
+            }
+        }
+
     }
 
     removeInput (name) {

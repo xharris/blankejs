@@ -36,9 +36,16 @@ class ImageEditor extends Editor {
             ['frame_size', 'number', {'inputs':2, 'separator':'x', 'min':1}],
             ['frames', 'number', {'min':1}],
             ['tools'],
-            ...TOOLS.map(t => [t, 'icon-button'])
-
-        ]
+            ...TOOLS.map(t => [t, 'icon-button']),
+            ['tool settings', false],
+            ['tool.shape', 'select', {'choices':['rect','circle'], 'label':'shape'}],
+            ['tool.alpha', 'number', {min:0,max:255,label:'alpha'}],
+            ['tool.fill', 'checkbox', {label:'fill'}],
+            ['tool.thickness', 'number', {min:0, label:'thickness'}],
+            ['tool.size','number', {min:1, default:[1,1], inputs:2, separator:'x', label:'size'}],
+            ['tool.radius','number', {min:1, default:1, label:'radius'}],
+            ['tool.angle','number', {min:0, max:360, default:0, label:'angle'}]
+        ];
         this.el_image_form = new BlankeForm(form_options);
         this.el_sidebar = app.createElement('div','sidebar');
         this.el_colors = app.createElement('div','color-container');
@@ -58,6 +65,7 @@ class ImageEditor extends Editor {
         this.img_sprite = new PIXI.Sprite(this.img_rtx);
         this.img_erase = new PIXI.Graphics();
         this.img_erase.blendMode = 22;
+        this.edit_prvw = new PIXI.Graphics();
         
         // masks
         this.img_mask = new PIXI.Graphics();
@@ -73,10 +81,26 @@ class ImageEditor extends Editor {
                     this.img_settings[s[0]] = val;
                     this.redrawBackground();
                     this.setTool(s[0]);
+
+                    if (s[0] == 'tool.shape') {
+                        this.el_image_form.showInput('tool.radius');
+                        this.el_image_form.showInput('tool.size');
+                        if (val == 'rect') 
+                            this.el_image_form.hideInput('tool.radius');
+                        if (val == 'circle')
+                            this.el_image_form.hideInput('tool.size');
+                    }
+                    if (s[0] == 'tool.fill') {
+                        if (val) 
+                            this.el_image_form.hideInput('tool.thickness');
+                        else 
+                            this.el_image_form.showInput('tool.thickness');
+                    }
                 });
             }
         });
         this.setTool(TOOLS[0]);
+        this.el_image_form.hideInput('tool.radius');
 
         // setup el_file_select
         document.addEventListener('fileChange', e => {
@@ -109,7 +133,7 @@ class ImageEditor extends Editor {
             if (this.curr_tool == "pencil" && btn == 0) 
                 this.drawPoint(this.cursor[0], this.cursor[1], this.curr_color);
             if (this.curr_tool == "eraser" && btn == 0)
-                this.erase('drawRect',this.cursor[0], this.cursor[1], 10, 10);
+                this.erase(this.cursor[0], this.cursor[1]);
         });
         this.pixi.on('mousePlace', (e, info) => {
             if (this.curr_tool == "pencil")
@@ -117,7 +141,7 @@ class ImageEditor extends Editor {
             if (this.curr_tool == "line")
                 this.getPoint(this.cursor[0], this.cursor[1]);
             if (this.curr_tool == "eraser")
-                this.erase('drawRect',this.cursor[0], this.cursor[1], 10, 10);
+                this.erase(this.cursor[0], this.cursor[1]);
         });
         this.pixi.on('mouseUp', (e, info) => {
             this.img_erase.clear();
@@ -254,17 +278,27 @@ class ImageEditor extends Editor {
         let h = this.pixi.height/Math.min(this.pixi.zoom, 1);
         let camx = this.pixi.camera[0];
         let camy = this.pixi.camera[1];
+        let curx = this.cursor[0];
+        let cury = this.cursor[1];
+        let color = this.curr_color;
         // vertical
-        cross.moveTo(this.cursor[0] + 0.5,  -h - camy);
-        cross.lineTo(this.cursor[0] + 0.5,  h - camy);
+        cross.moveTo(curx + 0.5,  -h - camy);
+        cross.lineTo(curx + 0.5,  h - camy);
         // horizontal
-        cross.moveTo(-w - camx,    this.cursor[1] + 0.5);
-        cross.lineTo(w - camx,     this.cursor[1] + 0.5);
+        cross.moveTo(-w - camx,    cury + 0.5);
+        cross.lineTo(w - camx,     cury + 0.5);
         // center
-        cross.lineStyle(0, this.curr_color, 0.3);
-        cross.beginFill(this.curr_color);
-        cross.drawRect(this.cursor[0], this.cursor[1], 1, 1);
+        cross.lineStyle(0, color, 0.3);
+        cross.beginFill(color);
+        cross.drawRect(curx, cury, 1, 1);
         cross.endFill();
+        // update draw preview
+        if (this.curr_tool == 'pencil') {
+            this.performDrawOps(this.edit_prvw, curx, cury, color, this.el_image_form.getValue('tool.alpha'));
+        }
+        if (this.curr_tool == 'erase') {
+            this.performDrawOps(this.edit_prvw, curx, cury, color, 0.5);
+        }
     }
     refreshImageList () {
         let sel_str = `<option class="placeholder" value="" disabled ${this.file ? '' : 'selected'}>Select an image</option>`;
@@ -321,7 +355,6 @@ class ImageEditor extends Editor {
     }
     setTool (name) {
         if (TOOLS.includes(name)) {
-            this.curr_tool = 'pencil';
             this.curr_tool = name;
             this.el_image_form.getInput(name).classList.add('selected');
             TOOLS.forEach(t => {
@@ -329,25 +362,39 @@ class ImageEditor extends Editor {
             });
         }
     }
-    drawPoint (x, y, color) {
-        if (x >= 0 && y >= 0 && x < this.img_width && y < this.img_height) {
-            let edit = this.img_edits;
-            edit.clear();
-            edit.beginFill(color);
-            edit.drawRect(x, y, 1, 1);
-        }
-    }
     getPoint (x, y) {
         let pixels = this.pixi.renderer.extract.pixels(this.edit_container);
         let i = (y * this.edit_container.width + x) * 4;
         return { r:pixels[i], g:pixels[i+1], b:pixels[i+2], a:pixels[i+3] }
     }
-    erase (_type, ...args) {
-        let mask = this.img_erase;
-        mask.clear();
-        mask.beginFill(0xFFFFFF, 1.0);
-        if (_type) mask[_type](...args);
-        mask.endFill();
+    performDrawOps (obj, x, y, color, alpha) {
+        let tset = (i) => this.el_image_form.getValue(i);
+        let shape = tset('tool.shape');
+        let fill = tset('tool.fill');
+        if (!alpha) alpha = tset('tool.alpha');
+
+        obj.clear();
+        if (fill)
+            obj.beginFill(color, alpha);
+        else
+            obj.lineStyle(tset('tool.thickness'), color, alpha)
+        if (shape == 'rect') {
+            let w = tset('tool.size')[0];
+            let h = tset('tool.size')[1];
+            obj.drawRect(x - (w/2), y - (h/2), w/2, h/2);
+        }
+        if (shape == 'circle')
+            obj.drawCircle(x, y, tset('tool.radius'));
+        if (fill)
+            obj.endFill();
+    }
+    drawPoint (x, y, color, alpha) {
+        let edit = this.img_edits;
+        this.performDrawOps(edit, x, y, color, alpha);
+    }
+    erase (x, y) {
+        let erase = this.img_erase;
+        this.performDrawOps(erase, x, y, 0xFFFFFF, 1.0);
     }
     render (img) {
         this.rendered_image = false;
