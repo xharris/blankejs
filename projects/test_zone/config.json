@@ -105,8 +105,8 @@
         },
         "image/image1.png": {
             "frame_size": [
-                32,
-                32
+                256,
+                256
             ],
             "frames": 1,
             "position": [
@@ -114,13 +114,15 @@
                 0
             ],
             "spacing": 0,
-            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/image1.png",
+            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image1.png",
             "tool.shape": "rect",
             "tool.fill": false,
             "tool.size": [
-                5,
-                1
-            ]
+                2,
+                2
+            ],
+            "tool.radius": 8,
+            "tool.angle": 30
         }
     }
 }
