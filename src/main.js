@@ -1142,11 +1142,12 @@ var app = {
 		elec.remote.app.relaunch();
 		elec.remote.app.exit();
 	},
-
-	error () {
+	error_toast: null,
+	error (e) {
 		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
-			if (!app.ignore_errors) {
-				blanke.toast(`Error! See <a href="#" role="button" onclick="app.openErrorFile()">error.txt</a> for more info`);
+			if (!app.error_occured) {
+				app.error_occured = e;
+				blanke.toast(`Error! See <a href="#" role="button" onclick="app.openErrorFile()">error.txt</a> for more info`,-1);
 				app.sanitizeURLs();
 			}
 		});
@@ -1219,7 +1220,6 @@ app.window.webContents.once('dom-ready', ()=>{
 	*/
 
 	window.addEventListener("error", function(e){
-		app.error_occured = e;
 		if (e.error)
 			app.error(e.error.stack);
 		else 
