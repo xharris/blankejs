@@ -75,7 +75,9 @@
                 1,
                 1
             ],
-            "tool.fill": true
+            "tool.fill": true,
+            "animSpeed": 0.1,
+            "showPreview": true
         },
         "image/image1.png": {
             "frame_size": [
@@ -108,7 +110,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/image1.png",
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png",
             "tool.shape": "line",
             "tool.length": 43,
             "tool.angle": 8,

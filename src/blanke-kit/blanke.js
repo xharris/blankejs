@@ -30,6 +30,8 @@ function htmlEncode(s) {
     return s;
 }
 
+const isFloat = n => typeof(n) == "string" ? n.includes('.') : Number(n) === n && n % 1 !== 0;
+
 // Extend the string type to allow converting to hex for quick access.
 String.prototype.toHex = function() {
     function intToARGB(i) {
@@ -681,8 +683,8 @@ class BlankeForm {
                 if (input_type == "checkbox")
                     val = this.checked;
 
-                if (input_type == "number")
-                    val = parseInt(e.target.value);
+                if (input_type == "number") 
+                    val = isFloat(e.target.value) ? parseFloat(e.target.value) : parseInt(e.target.value);
 
                 input_value[parseInt(e.target.dataset['index']) || 0] = val;
                 let ret_val = func(input_value.length == 1 ? input_value[0] : input_value.slice());
@@ -704,8 +706,10 @@ class BlankeForm {
 
     getValue (input_name, index) {
         index = index || 0;
-        if (this.input_types[input_name] == "number")
-            return parseFloat(this.input_ref[input_name][index].value);
+        if (this.input_types[input_name] == "number") {
+            let val = this.input_ref[input_name][index].value;
+            return isFloat(val) ? parseFloat(val) : parseInt(val);
+        }
         else if (this.input_types[input_name] == "checkbox")
             return this.input_ref[input_name][index].checked;
         else

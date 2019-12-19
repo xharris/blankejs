@@ -42,7 +42,7 @@ class BlankePixi {
 		this.pixi.view.addEventListener('contextmenu', (e) => {
 			e.preventDefault();
 		});
-		
+
 		this.renderer.state.blendModes[21] = [WebGLRenderingContext.ONE, WebGLRenderingContext.ONE, 
 			WebGLRenderingContext.ONE, WebGLRenderingContext.ONE, 
 			WebGLRenderingContext.FUNC_REVERSE_SUBTRACT, WebGLRenderingContext.FUNC_ADD];

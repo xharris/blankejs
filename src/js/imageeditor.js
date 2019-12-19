@@ -54,6 +54,8 @@ class ImageEditor extends Editor {
             ['spacing', 'number'],
             ['frame_size', 'number', {'inputs':2, 'separator':'x', 'min':1}],
             ['frames', 'number', {'min':1}],
+            ['showPreview', 'checkbox', {default:true}],
+            ['animSpeed', 'number', {min:0, default:0.5, step:0.1, label:'animation speed'}],
             ['tools'],
             ...TOOLS.map(t => [t, 'icon-button']),
             ['tool settings', false],
@@ -72,7 +74,7 @@ class ImageEditor extends Editor {
         //this.el_layers = new BlankeListView({object_type:"layer"});
         this.pixi = new BlankePixi();
         this.renderer = PIXI.autoDetectRenderer();
-        this.img_container = new PIXI.Container();
+        this.img_container = new PIXI.Container();        
         this.crosshair = new PIXI.Graphics();
         // image editing-related
         this.edit_container = new PIXI.Container(); // all the stuff that will be saved to image file
@@ -90,13 +92,15 @@ class ImageEditor extends Editor {
         this.edit_prvw_rtx = PIXI.RenderTexture.create(this.width, this.height);
         this.edit_prvw = new PIXI.Sprite(this.edit_prvw_rtx);
         
+        this.anim_container = new PIXI.Container();
+
         // masks
         this.img_mask = new PIXI.Graphics();
         this.edit_container.mask = this.img_mask;
         this.edit_prvw.mask = this.img_mask;
 
         this.edit_container.addChild(this.img_mask, this.img_sprite, this.img_edits, this.img_erase);
-        this.img_container.addChild(this.img_background, this.edit_container, this.crosshair, this.edit_prvw);
+        this.img_container.addChild(this.anim_container, this.img_background, this.edit_container, this.crosshair, this.edit_prvw);
         this.pixi.stage.addChild(this.img_container);
 
         // setup el_image_form   
@@ -109,6 +113,11 @@ class ImageEditor extends Editor {
                     this.setTool(s[0]);
                     if (s[0] == 'size')
                         this.resize = true;
+                    if (s[0] == 'animSpeed' && this.anim) {
+                        this.positionAnimationPreview();
+                        this.anim.animationSpeed = val;
+                        this.anim.play();
+                    }
                 });
             }
         });
@@ -135,6 +144,7 @@ class ImageEditor extends Editor {
         });
         this.pixi.on('cameraChange', e => {
             this.img_container.position.set(e.x, e.y);
+            this.positionAnimationPreview();
             this.switch_rtx = false;
         });
         let toolActive = (btn) => {
@@ -270,6 +280,7 @@ class ImageEditor extends Editor {
                 });
             }
             this.clearHistory();
+            this.refreshAnimation();
             this.storeUndo(true);
         }
     
@@ -416,6 +427,33 @@ class ImageEditor extends Editor {
             form.hideInput('tool.fill');
         }
     }
+    _refreshAnimation () {
+        if (this.changed || this.render_anim) {
+            this.render_anim = false;
+            let tex_frames = [];
+            let set = this.img_settings;
+            for (let x = this.img_left; x < this.img_width; x += set.frame_size[0] + set.spacing) {
+                let new_tex = this.img_rtx.clone();
+                new_tex.frame = new PIXI.Rectangle(x,0,set.frame_size[0],set.frame_size[1]);
+                tex_frames.push(new_tex);
+            }
+            if (this.anim)
+                this.anim.destroy();
+            this.anim = new PIXI.AnimatedSprite(tex_frames);
+            this.anim.animationSpeed = this.el_image_form.getValue('animSpeed');
+            this.anim.play();
+            this.anim_container.addChild(this.anim);
+            this.anim_container.y = this.img_height;
+        }
+        this.positionAnimationPreview();
+    }
+    refreshAnimation () {
+        this.render_anim = true;
+    }
+    positionAnimationPreview () {
+        this.anim_container.position.set(-this.pixi.camera[0] / Math.max(1, this.pixi.zoom), (-this.pixi.camera[1] + 34) / Math.max(1, this.pixi.zoom));
+        this.anim_container.visible = this.el_image_form.getValue('showPreview');
+    }
     getPoint (x, y) {
         let pixels = this.pixi.renderer.extract.pixels(this.edit_container);
         let i = (y * this.edit_container.width + x) * 4;
@@ -466,10 +504,12 @@ class ImageEditor extends Editor {
     drawPoint (color, alpha) {
         this.performDrawOps(this.img_edits, color, alpha);
         this.storeUndo();
+        this.refreshAnimation();
     }
     erase () {
         this.performDrawOps(this.img_erase, 0xFFFFFF, 1.0);
         this.storeUndo();
+        this.refreshAnimation();
     }
     render (img, clear) {
         this.rendered_image = false;
@@ -508,6 +548,8 @@ class ImageEditor extends Editor {
                 this.history_tex.push(spr);
             }
         }
+
+        this._refreshAnimation();
     }
     clearHistory () {
         this.history_tex = [];
