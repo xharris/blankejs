@@ -10,16 +10,16 @@
             "Open image editor"
         ],
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "View assets=?",
             "View assets"
         ],
         [
             "map0.map=map+?",
             "map0.map"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ],
         [
             "Add a map=new+?",
@@ -60,55 +60,10 @@
     "imageeditor": {
         "image/blue_robot.png": {
             "frame_size": [
-                33,
+                38,
                 33
             ],
-            "frames": 9,
-            "position": [
-                0,
-                0
-            ],
-            "spacing": 0,
-            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png"
-        },
-        "image/blue_robot.png2.png": {
-            "frame_size": [
-                256,
-                256
-            ],
-            "frames": 1,
-            "position": [
-                0,
-                0
-            ],
-            "spacing": [
-                0,
-                0
-            ],
-            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png"
-        },
-        "../../blue_robot.png": {
-            "frame_size": [
-                256,
-                256
-            ],
-            "frames": 1,
-            "position": [
-                0,
-                0
-            ],
-            "spacing": [
-                0,
-                0
-            ],
-            "image": "blue_robot.png"
-        },
-        "image/image1.png": {
-            "frame_size": [
-                256,
-                256
-            ],
-            "frames": 1,
+            "frames": 8,
             "position": [
                 0,
                 0
@@ -116,13 +71,24 @@
             "spacing": 0,
             "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image1.png",
             "tool.shape": "rect",
-            "tool.fill": false,
             "tool.size": [
-                2,
-                2
+                1,
+                1
             ],
-            "tool.radius": 8,
-            "tool.angle": 30
+            "tool.fill": true
+        },
+        "image/image1.png": {
+            "frame_size": [
+                32,
+                32
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image1.png"
         }
     }
 }

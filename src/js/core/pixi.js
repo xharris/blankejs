@@ -309,7 +309,6 @@ class BlankePixi {
 		}
 	}
 	setZoom (scale) {
-		console.log(scale)
 		this.zoom_target = scale > 0 ? scale : this.zoom;
 		this.old_cam = [this.camera[0] * this.zoom, this.camera[1] * this.zoom];
 		requestAnimationFrame(this.updateZoom.bind(this));
@@ -370,9 +369,11 @@ class BlankePixi {
 	get loader () { return PIXI.Loader.shared; }
 	loadRes (path, cb, name) {
 		if (!name) name = path;
-		delete this.loader.resources[name];
-		this.pixi.loader.add(name, path);
-		this.pixi.loader.load(cb);
+		let loader = new PIXI.Loader();
+		//if (!this.loader.resources[name]) {
+		loader.add(name, path);
+		loader.load(cb);
+		//}
 	}
 	on (name, fn) {
 		if (!(name in this.evt_list)) this.evt_list[name] = [];

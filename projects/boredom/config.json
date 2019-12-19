@@ -8,6 +8,14 @@
     ],
     "quick_access": [
         [
+            "Open image editor=?",
+            "Open image editor"
+        ],
+        [
+            "View assets=?",
+            "View assets"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
@@ -18,14 +26,6 @@
         [
             "player.lua=script+?",
             "player.lua"
-        ],
-        [
-            "movingblock.lua=script+?",
-            "movingblock.lua"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -76,5 +76,85 @@
     "game_size": 3,
     "window_size": 3,
     "frameless": false,
-    "resizable": false
+    "resizable": false,
+    "imageeditor": {
+        "image/image6.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/image6.png"
+        },
+        "image/spike.png": {
+            "frame_size": [
+                9,
+                11
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/block_corner.png"
+        },
+        "image/block_corner.png": {
+            "frame_size": [
+                99,
+                33
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/ground.png"
+        },
+        "image/ground.png": {
+            "frame_size": [
+                132,
+                132
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/player_dead.png"
+        },
+        "image/player_walk.png": {
+            "frame_size": [
+                42,
+                33
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/player_walk.png"
+        },
+        "image/player_dead.png": {
+            "frame_size": [
+                35,
+                35
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/player_dead.png"
+        }
+    }
 }
