@@ -396,8 +396,10 @@ class BlankeForm {
             // hide this input?
             else {
                 if (hiding) {
+                    nextEl.classList.add('header-hidden');
                     nextEl.style.display = "none";
                 } else {
+                    nextEl.classList.remove('header-hidden');
                     nextEl.style.display = null;
                 }
             }
@@ -592,7 +594,7 @@ class BlankeForm {
         for (var i = 0; i < this.container.children.length; i++) {
             let container = this.container.children[i];
             if (container.dataset.name == name) {
-                container.style.display = "none";
+                container.classList.add('input-hidden');
             }
         }
     }
@@ -601,10 +603,9 @@ class BlankeForm {
         for (var i = 0; i < this.container.children.length; i++) {
             let container = this.container.children[i];
             if (container.dataset.name == name) {
-                container.style = null;
+                container.classList.remove('input-hidden');
             }
         }
-
     }
 
     removeInput (name) {

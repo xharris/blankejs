@@ -197,6 +197,7 @@ class ImageEditor extends Editor {
         // setup el_colors
         const addColor = (c) => {
             let el_color = app.createElement('div','color');
+            c = c.replace('0x','');
             el_color.style.backgroundColor = `#${c}`;
             el_color.title = `#${c}`;
             el_color.value = parseInt(`0x${c}`);
@@ -230,7 +231,7 @@ class ImageEditor extends Editor {
         let el_add_color = app.createElement('div','add-color');
         el_add_color.innerHTML = "+";
         el_add_color.addEventListener('click', e => {
-            addColor('FFFFFF')
+            addColor(this.curr_color.toString(16));
         });
         this.el_colors.insertBefore(el_add_color, this.el_colors.firstChild);
 
