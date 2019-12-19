@@ -7,6 +7,8 @@ const DEFAULT_IMAGE_SETTINGS = {
 }
 const MARGIN_LEFT = 5;
 const MARGIN_TOP = 40;
+const HISTORY_TIMER = 2000;
+const HISTORY_MAX = 30;
 const TOOLS = ['pencil','eraser','eyedrop'];
 let colors = [
     'f44336','E91E63','9C27B0','673AB7','3F51B5','2196F3','03A9F4','00BCD4','009688',
@@ -40,6 +42,9 @@ class ImageEditor extends Editor {
         this.img_width = 0;
         this.img_height = 0;
         this.clear_rtx = 0;
+        this.changed = false;
+        this.history_tex = [];
+        this.history_cd = HISTORY_TIMER;
         // create elements
         this.el_top_right_container = app.createElement('div','top-right-container');
         let form_options = [
@@ -159,14 +164,20 @@ class ImageEditor extends Editor {
         })
         this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);  
         this.save_key_up = true; 
+        this.undo_key_up = true;
         this.pixi.on('keyDown', (e, info) => {
             if (e.ctrlKey && e.key == "s" && this.save_key_up) {
                 this.save();
                 this.save_key_up = false;
             }
+            if (e.ctrlKey && e.key == "z" && this.undo_key_up) {
+                this.undo();
+                this.undo_key_up = false;
+            }
         });
         this.pixi.on('keyUp', (e, info) => {
           if (e.key == 's') this.save_key_up = true;  
+          if (e.key == 'z') this.undo_key_up = true;  
         })
         this.pixi.ticker.add(() => {
             this.renderImageTexture();
@@ -251,16 +262,15 @@ class ImageEditor extends Editor {
             this.pixi.setCameraPosition((this.pixi.width - this.img_width) / 2, (this.pixi.height - this.img_height) / 2);
             this.el_image_form.useValues(this.img_settings);
             this.checkFormVisibility();
-             /*
-            this.pixi.orderComponents([
-                this.img_background, this.edit_container, this.crosshair
-            ])*/
+            
             if (nwFS.pathExistsSync(path)) {
                 this.pixi.loadRes(path, (loader, res) => {
                     var initial_spr = new PIXI.Sprite(res[path].texture);
                     this.render(initial_spr, true);
                 });
             }
+            this.clearHistory();
+            this.storeUndo(true);
         }
     
         let new_file = false;
@@ -455,9 +465,11 @@ class ImageEditor extends Editor {
     }
     drawPoint (color, alpha) {
         this.performDrawOps(this.img_edits, color, alpha);
+        this.storeUndo();
     }
     erase () {
         this.performDrawOps(this.img_erase, 0xFFFFFF, 1.0);
+        this.storeUndo();
     }
     render (img, clear) {
         this.rendered_image = false;
@@ -482,6 +494,33 @@ class ImageEditor extends Editor {
         //this.img_erase.clear();
 
         this.pixi.renderer.render(this.edit_prvw_graphic, this.edit_prvw_rtx, true);
+
+        this.history_cd -= this.pixi.ticker.deltaMS;
+        if (this.changed) {
+            this.changed = false;
+            if (this.history_tex.length >= HISTORY_MAX) 
+                this.history_tex.shift();
+            if (this.history_cd <= 0) {
+                this.history_cd = HISTORY_TIMER;
+                let rtx = PIXI.RenderTexture.create(this.img_width, this.img_height);
+                let spr = new PIXI.Sprite(rtx);
+                this.pixi.renderer.render(this.render_img, rtx, true);
+                this.history_tex.push(spr);
+            }
+        }
+    }
+    clearHistory () {
+        this.history_tex = [];
+        this.history_cd = HISTORY_TIMER;
+    }
+    storeUndo (now) {
+        if (now) this.history_cd = 0;
+        this.changed = true;
+    }
+    undo () {
+        let spr = this.history_tex.pop();
+        if (spr)
+            this.render(spr, true);
     }
     save () {
         if (this.file) {
