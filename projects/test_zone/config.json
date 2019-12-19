@@ -69,7 +69,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image1.png",
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/blue_robot.png",
             "tool.shape": "rect",
             "tool.size": [
                 1,
@@ -88,7 +88,20 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image1.png"
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/image1.png"
+        },
+        "image/image2.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/image1.png"
         }
     }
 }

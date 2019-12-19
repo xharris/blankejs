@@ -13,6 +13,7 @@ let colors = [
     '4CAF50','8BC34A','CDDC39','FFEB3B','FFC107','FF9800','FF5722','795548','9E9E9E',
     '607D8B','FFFFFF','000000'];
 let img_editors = [];
+let bg_colors = [0xEEEEEE, 0xBFBFBF];
 
 let rgbToHex = (color) => { 
     let hex = (c) => {
@@ -38,7 +39,7 @@ class ImageEditor extends Editor {
         this.img_top = 0;
         this.img_width = 0;
         this.img_height = 0;
-        this.clear_rtx = false;
+        this.clear_rtx = 0;
         // create elements
         this.el_top_right_container = app.createElement('div','top-right-container');
         let form_options = [
@@ -144,12 +145,14 @@ class ImageEditor extends Editor {
             this.img_container.position.set(e.x, e.y);
             this.switch_rtx = false;
         });
-        let toolActive = () => {
-            if (this.curr_tool == "pencil")
+        let toolActive = (btn) => {
+            let tool = this.curr_tool;
+
+            if (tool == "pencil" && btn == 0)
                 this.drawPoint(this.cursor[0], this.cursor[1], this.curr_color);
-            if (this.curr_tool == "eraser")
+            if ((tool == "eraser" && btn == 0) || (tool == "pencil" && btn == 2))
                 this.erase(this.cursor[0], this.cursor[1]);
-            if (this.curr_tool == "eyedrop")
+            if (tool == "eyedrop" && btn == 0)
                 this.curr_color = rgbToHex(this.getPoint(this.cursor[0], this.cursor[1]));
             this.drawCrosshair();
         }
@@ -157,13 +160,12 @@ class ImageEditor extends Editor {
             let { mx, my, btn } = info;
             this.cursor = [ Math.floor(mx), Math.floor(my)];
             this.drawCrosshair();
-            if (btn == 0)
-                toolActive();
+            toolActive(btn);
         });
-        this.pixi.on('mousePlace', (e, info) => {
-            let { mx, my } = info;
+        this.pixi.on('mouseDown', (e, info) => {
+            let { mx, my, btn } = info;
             this.cursor = [ Math.floor(mx), Math.floor(my)];
-            toolActive();
+            toolActive(btn);
         });
         this.pixi.on('mouseUp', (e, info) => {
             this.img_erase.clear();
@@ -258,7 +260,6 @@ class ImageEditor extends Editor {
         
         const setupForm = () => {
             app.saveSettings();
-            this.clear_rtx = true;
             this.drawBackground();
             this.pixi.setCameraPosition((this.pixi.width - this.img_width) / 2, (this.pixi.height - this.img_height) / 2);
             this.el_image_form.useValues(this.img_settings);
@@ -269,7 +270,7 @@ class ImageEditor extends Editor {
             if (nwFS.pathExistsSync(path)) {
                 this.pixi.loadRes(path, (loader, res) => {
                     var initial_spr = new PIXI.Sprite(res[path].texture);
-                    this.render(initial_spr);
+                    this.render(initial_spr, true);
                 });
             }
         }
@@ -359,7 +360,7 @@ class ImageEditor extends Editor {
         ifndef_obj(this.img_settings, DEFAULT_IMAGE_SETTINGS);
         bg.clear();
         let white_tile = true;
-        let t_size = 10;
+        let t_size = 5;
 
         this.img_left = set.position[0];
         this.img_top = set.position[1];
@@ -371,7 +372,7 @@ class ImageEditor extends Editor {
         for (let x = 0; x < this.img_width; x += t_size) {
             white_tile = (x/t_size % 2 == 0) ? true : false;
             for (let y = 0; y < this.img_height; y += t_size) {
-                bg.beginFill(white_tile ? 0xFFFFFF : 0xBFBFBF);
+                bg.beginFill(white_tile ? bg_colors[0] : bg_colors[1]);
                 bg.drawRect(x, y, x + t_size > this.img_width ? this.img_width - x : t_size, y + t_size > this.img_height ? this.img_height - y : t_size)
                 bg.endFill();
                 white_tile = !white_tile;
@@ -435,9 +436,11 @@ class ImageEditor extends Editor {
     erase (x, y) {
         this.performDrawOps(this.img_erase, x, y, 0xFFFFFF, 1.0);
     }
-    render (img) {
+    render (img, clear) {
         this.rendered_image = false;
         this.render_img = img;
+        if (clear)
+            this.clear_rtx = 2;
     }
     renderImageTexture () {
         let temp = this.img_rtx;
@@ -445,14 +448,14 @@ class ImageEditor extends Editor {
         this.img_rtx_temp = temp;
         
         this.img_sprite.texture = this.img_rtx;
-        this.pixi.renderer.render(this.render_img, this.img_rtx_temp, this.clear_rtx);
+        this.pixi.renderer.render(this.render_img, this.img_rtx_temp, this.clear_rtx > 0);
         // reset stuff
         if (!this.rendered_image)
             this.rendered_image = true;
         else 
             this.render_img = this.edit_container;
         this.img_edits.clear();
-        this.clear_rtx = false;
+        if (this.clear_rtx > 0) this.clear_rtx--;
         //this.img_erase.clear();
     }
     save () {

@@ -177,6 +177,7 @@ class BlankePixi {
                 if (btn == 2) 
 					this.dispatchEvent('mouseRemove',e);
 			}
+			this.dispatchEvent('mouseDown',e);
         });
         
 		this.pixi.stage.on('pointerup', e => {
