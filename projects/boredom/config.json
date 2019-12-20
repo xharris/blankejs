@@ -12,20 +12,20 @@
             "Open image editor"
         ],
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "player.lua=script+?",
+            "player.lua"
+        ],
+        [
             "View assets=?",
             "View assets"
         ],
         [
             "level1.map=map+?",
             "level1.map"
-        ],
-        [
-            "View project in explorer=?",
-            "View project in explorer"
-        ],
-        [
-            "player.lua=script+?",
-            "player.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -155,6 +155,19 @@
             ],
             "spacing": 0,
             "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/player_dead.png"
+        },
+        "image/image7.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/image6.png"
         }
     }
 }

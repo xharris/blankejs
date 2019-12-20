@@ -10,20 +10,20 @@
             "Open image editor"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "View assets=?",
-            "View assets"
+            "Add a map=new+?",
+            "Add a map"
         ],
         [
             "map0.map=map+?",
             "map0.map"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "View assets=?",
+            "View assets"
         ]
     ],
     "autoplay_preview": true,
@@ -90,7 +90,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/image1.png",
+            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image2.png",
             "tool.shape": "rect",
             "tool.fill": true,
             "tool.length": 1,
@@ -110,18 +110,57 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/blue_robot.png",
+            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image2.png",
             "tool.shape": "rect",
             "tool.length": 43,
             "tool.angle": 0,
             "tool.size": [
-                1,
-                1
+                5,
+                5
             ],
             "tool.radius": 6,
             "tool.fill": true,
             "tool.thickness": 16,
             "showPreview": true
+        },
+        "image/image3.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/jimbo.png"
+        },
+        "image/jimbo.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/wumbo.png"
+        },
+        "image/wumbo.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "image": "D:\\Documents\\PROJECTS\\blankejs\\projects\\test_zone\\assets\\image\\jimbo.png"
         }
     }
 }

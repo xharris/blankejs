@@ -91,6 +91,59 @@ class Editor {
 		return this;
 	}
 
+	setupMenu (opt) {
+		let items = [];
+		if (!opt.file_key) opt.file_key = 'file';
+
+		if (opt.close) {
+			items.push({label:'close', click:() => { this.close(); }});
+		}
+
+		// file_key : where filename is stored
+		// rename : callback when file is renamed
+		if (opt.rename) {
+			items.push({label:'rename', click:() => {
+				let full_path = this[opt.file_key];
+				let filename = nwPATH.basename(full_path);
+				let ext = nwPATH.extname(filename);
+				blanke.showModal(
+					"<label>new name: </label>"+
+					"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, ext)+"'/>",
+				{
+					"yes": () => { 
+						let new_path = nwPATH.join(nwPATH.dirname(full_path), app.getElement('#new-file-name').value+ext);
+						app.renameSafely(full_path, new_path, (success, err) => {
+							if (success) {
+								this[opt.file_key] = app.cleanPath(new_path);
+								if (typeof(opt.rename) == "function") opt.rename(new_path, full_path);
+							} else
+								blanke.toast("could not rename \'"+nwPATH.basename(full_path)+"\' ("+err+")");
+						});
+					},
+					"no": () => {}
+				});
+			}});
+		}
+
+		// file_key
+		// delete
+		if (opt.delete) {
+			items.push({label:'delete', click:() => {
+				blanke.showModal(
+					"delete \'"+nwPATH.basename(this[opt.file_key])+"\'?",
+				{
+					"yes": () => { 
+						nwFS.remove(this[opt.file_key]);
+						if (typeof(opt.delete) == "function") opt.delete();
+					},
+					"no": () => {}
+				});
+			}});
+		}
+
+		this.onMenuClick = (e) => { app.contextMenu(e.x, e.y, items); }
+	}
+
 	removeHistory() {
 		if (this.container)
 			app.removeHistory(this.container.history_id);

@@ -768,59 +768,6 @@ class SceneEditor extends Editor {
 		addScenes(app.project_path);
 	}
 
-	onMenuClick (e) {
-		var this_ref = this;
-		app.contextMenu(e.x, e.y, [
-			{label:'close', click:function(){this_ref.close();}},
-			{label:'rename', click:function(){this_ref.renameModal()}},
-			{label:'delete', click:function(){this_ref.deleteModal()}},
-		]);
-	}
-
-	rename (old_path, new_name) {
-		var this_ref = this;
-		let new_path = nwPATH.dirname(this.file)+"/"+new_name;
-		
-		app.renameSafely(old_path, new_path, (success) => {
-			if (success) {
-				this_ref.file = new_path;
-				this_ref.setTitle(nwPATH.basename(this_ref.file));
-				SceneEditor.refreshSceneList();
-			} else
-				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
-		});
-	}
-
-	renameModal () {
-		var this_ref = this;
-		var filename = this.file;
-		blanke.showModal(
-			"<label>new name: </label>"+
-			"<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
-		{
-			"yes": function() { this_ref.rename(filename, app.getElement('#new-file-name').value+".map"); },
-			"no": function() {}
-		});
-	}
-
-	delete () {
-		nwFS.remove(this.file);
-		//app.onFileRemoved(this.file);
-		this.deleted = true;
-		SceneEditor.refreshSceneList();
-		this.close(true);
-	}
-
-	deleteModal () {
-		var this_ref = this;
-		blanke.showModal(
-			"delete \'"+nwPATH.basename(this.file)+"\'",
-		{
-			"yes": function() { this_ref.delete(); },
-			"no": function() {}
-		});
-	}
-
 	drawGrid () {	
 		if (this.curr_layer) {
 			let zoom = this.pixi.zoom;
@@ -1993,6 +1940,18 @@ class SceneEditor extends Editor {
 		this.setTitle(nwPATH.basename(file_path));
 		this.setOnClick(function(){
 			openScene(this_ref.file);
+		});
+		this.setupMenu({
+			close: true,
+			rename: () => {
+				this.setTitle(nwPATH.basename(this.file));
+				SceneEditor.refreshSceneList();
+			},
+			delete: () => {
+				this.deleted = true;
+				SceneEditor.refreshSceneList();
+				this.close(true);
+			}
 		});
 		this.refreshLayerList();
 		this.loadObjectsFromSettings();

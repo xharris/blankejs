@@ -994,13 +994,13 @@ var app = {
 	renameSafely: function(old_path, new_path, fn_done) {
 		nwFS.pathExists(new_path, (err, exists) => {
 			// file exists
-			if (exists && fn_done)
-				fn_done(false);
+			if (exists && fn_done) 
+				fn_done(false, 'file exists');
 			else {
 				// does not exist, continue with renaming
 				nwFS.rename(old_path, new_path, (err) => {
 					if (err)
-						fn_done(false);
+						fn_done(false, err);
 					else {
 						// rename in quick access if it's there
 						let old_name = nwPATH.basename(old_path);

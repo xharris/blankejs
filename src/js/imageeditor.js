@@ -248,6 +248,16 @@ class ImageEditor extends Editor {
 		this.setOnClick(() => {
             openImage(this.file)
         });
+
+        this.setupMenu({
+            close:true,
+            rename: () => {
+                this.setTitle(nwPATH.basename(this.file));
+            },
+            delete: () => {
+                this.close(true);
+            }
+        });
         
         if (file && file != EDITOR_TITLE)
             this.openFile(file)
@@ -343,10 +353,12 @@ class ImageEditor extends Editor {
 			files.forEach(f => {
                 if (!img_editors.some(e => e.file == f && e.file != this.file)) {
                     var img_path = nwPATH.basename(f);
-                    sel_str += `<option value="${f}">${img_path}</option>`;
+                    console.log(this.file, f)
+                    sel_str += `<option value="${f}" ${this.file == f ? 'selected' : ''}>${img_path}</option>`;
                 }
 			})
             this.el_image_form.getInput('image').innerHTML = sel_str;
+            this.img_settings.image = this.file;
             this.el_image_form.useValues(this.img_settings);
 		});
     }
