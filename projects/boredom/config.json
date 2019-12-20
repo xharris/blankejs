@@ -1,4 +1,12 @@
 {
+    "0": [
+        "write_conf",
+        "checkbox",
+        {
+            "default": true,
+            "label": "write conf.lua"
+        }
+    ],
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "first_scene": null,
@@ -8,24 +16,24 @@
     ],
     "quick_access": [
         [
-            "Open image editor=?",
-            "Open image editor"
+            "player.lua=script+?",
+            "player.lua"
+        ],
+        [
+            "Find in files=?",
+            "Find in files"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "player.lua=script+?",
-            "player.lua"
+            "Open image editor=?",
+            "Open image editor"
         ],
         [
             "View assets=?",
             "View assets"
-        ],
-        [
-            "level1.map=map+?",
-            "level1.map"
         ]
     ],
     "autoplay_preview": true,

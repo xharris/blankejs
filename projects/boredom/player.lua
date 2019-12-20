@@ -15,9 +15,6 @@ Entity("Player", {
 		left = -5,
 		right = -10
 	},
-	spawn = function(self)
-		Game.effect = Effect("chroma shift")	
-	end,
 	collision = function(self, v)
 		if v.other.tag == 'death' then
 			self:die()
