@@ -580,6 +580,7 @@ var app = {
 					app.project_settings = {};
 
 				ifndef_obj(app.project_settings, DEFAULT_PROJECT_SETTINGS);
+				app.project_settings = Object.assign({}, app.project_settings, engine.project_settings || {});
 				app.saveSettings();
 				if (callback) callback();
 			});

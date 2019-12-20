@@ -1,6 +1,7 @@
 const writeConf = () => {
-    nwFS.writeFileSync(
-        nwPATH.join(app.getAssetPath('scripts'),'conf.lua'),
+    if (app.projSetting('write_conf'))
+        nwFS.writeFileSync(
+            nwPATH.join(app.getAssetPath('scripts'),'conf.lua'),
 `io.stdout:setvbuf('no')
 package.path = package.path .. ";${['/?.lua','/lua/?/init.lua','/lua/?.lua','/plugins/?/init.lua','/plugins/?.lua'].map(p => app.ideSetting('engine_path')+p).join(';')}"
 require "blanke"
@@ -16,6 +17,14 @@ const engine = {
     main_file: 'main.lua',
     file_ext: ['lua'],
     language: 'lua',
+    project_settings: [
+        [ 'write_conf', 'checkbox', {default:true, label: 'write conf.lua'} ]
+    ],
+    export_settings: [
+        ['window/rendering'],
+        ['scale_mode','select',{'choices':['linear','nearest']}],
+        ...(['frameless','scale','resizable'].map((o)=>[o,'checkbox']))
+    ],
     get script_path () { return app.project_path },
     plugin_info_key: (k) => `--\s*${k}\s*:\s*(.+)`,
     code_associations: [

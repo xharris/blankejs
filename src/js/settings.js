@@ -24,22 +24,33 @@ class Settings extends Editor {
                 ['autoplay_preview','checkbox',{'default':proj_set.autoplay_preview}],
                 ['autoreload_external_run','checkbox',{'default':app_set.autoreload_external_run,'label':'auto-reload external run','desc':'when a game is run using the Play button, it can be automatically refreshed when the code changes'}],
             ] : [];
-            
-        this.el_settings = new BlankeForm([
+        
+        let engine_settings = [];
+        let engine_set_keys = [];
+        if (engine.project_settings) {
+            for (let form_set of engine.project_settings) {
+                if (form_set.length > 1 && typeof(form_set[1]) != "boolean")
+                    engine_set_keys.push(form_set[0])
+                engine_settings.push(form_set);
+            }
+        }
+        let form_options = [
             ['GAME'],
             //['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
             ['window_size','number',{'step':1, 'min':1, 'max':7, 'default':proj_set.window_size}],
             ['game_size','number',{'step':1, 'min':1, 'max':7, 'default':proj_set.game_size}],
+            ...engine_settings,
             ['IDE'],
             ...autoplay_settings,
             ['theme','select',{'choices':app.themes,'default':app_set.theme}],
             ['quick_access_size','number',{'min':1,'default':app_set.quick_access_size}],
             ['run_save_code','checkbox',{'default':app_set.run_save_code,'label':'save code before runs'}],
-            ['Paths'],
+            ['Paths', true],
             ...paths.map((path)=>[path,'directory',{default:app_set[path+'_path']}]),
             ...files.map((path)=>[path,'file',{default:app_set[path+'_path']}])
-        ],true);
-        ['game_size','window_size','autoplay_preview'].forEach(s => {
+        ]
+        this.el_settings = new BlankeForm(form_options, true);
+        ['game_size','window_size','autoplay_preview',...engine_set_keys].forEach(s => {
             this.el_settings.onChange(s, v => {
                 app.projSetting(s, v);
                 app.saveSettings();

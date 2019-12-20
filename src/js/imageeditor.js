@@ -353,7 +353,6 @@ class ImageEditor extends Editor {
 			files.forEach(f => {
                 if (!img_editors.some(e => e.file == f && e.file != this.file)) {
                     var img_path = nwPATH.basename(f);
-                    console.log(this.file, f)
                     sel_str += `<option value="${f}" ${this.file == f ? 'selected' : ''}>${img_path}</option>`;
                 }
 			})
