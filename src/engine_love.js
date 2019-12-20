@@ -98,7 +98,7 @@ const engine = {
     },
     export_assets: false,
     bundle: (dir, target_os, cb_done) => {
-        let love_path = nwPATH.join(dir, app.projSetting("export").name+".zip");
+        let love_path = nwPATH.join(dir, app.projSetting("export").name+".love");
         let engine_path = app.ideSetting("engine_path");
 
         let output = nwFS.createWriteStream(love_path);
