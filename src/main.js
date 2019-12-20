@@ -580,7 +580,15 @@ var app = {
 					app.project_settings = {};
 
 				ifndef_obj(app.project_settings, DEFAULT_PROJECT_SETTINGS);
-				app.project_settings = Object.assign({}, app.project_settings, engine.project_settings || {});
+				// project settings
+				let eng_settings = {};
+				(engine.project_settings || []).forEach(s => {
+					for (let prop of s) {
+						if (typeof(prop) == "object" && prop.default)
+							eng_settings[s[0]] = prop.default;
+					}
+				});
+				app.project_settings = Object.assign({}, app.project_settings, eng_settings);
 				app.saveSettings();
 				if (callback) callback();
 			});

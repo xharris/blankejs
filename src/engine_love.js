@@ -3,7 +3,7 @@ const writeConf = () => {
         nwFS.writeFileSync(
             nwPATH.join(app.getAssetPath('scripts'),'conf.lua'),
 `io.stdout:setvbuf('no')
-package.path = package.path .. ";${['/?.lua','/lua/?/init.lua','/lua/?.lua','/plugins/?/init.lua','/plugins/?.lua'].map(p => app.ideSetting('engine_path')+p).join(';')}"
+package.path = package.path .. ";${['/?.lua','/?/init.lua','/lua/?/init.lua','/lua/?.lua','/plugins/?/init.lua','/plugins/?.lua'].map(p => app.ideSetting('engine_path')+p).join(';')}"
 require "blanke"
 function love.conf(t)
     t.console = true
@@ -11,6 +11,13 @@ function love.conf(t)
 end
 `)
 }
+
+const exportConf = () => app.projSetting('write_conf') ? `
+require "blanke"
+function love.conf(t)
+
+end
+` : null;
 
 const engine = {
     game_preview_enabled: false,
@@ -22,8 +29,8 @@ const engine = {
     ],
     export_settings: [
         ['window/rendering'],
-        ['scale_mode','select',{'choices':['linear','nearest']}],
-        ...(['frameless','scale','resizable'].map((o)=>[o,'checkbox']))
+        ['scale_mode','select',{'choices':['linear','nearest'],default:'linear'}],
+        ...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{default:false}]))
     ],
     get script_path () { return app.project_path },
     plugin_info_key: (k) => `--\s*${k}\s*:\s*(.+)`,
@@ -85,5 +92,26 @@ const engine = {
         child.on('close', () => {
             con.tryClose();
         })
+    },
+    export_targets: {
+        "love":false
+    },
+    export_assets: false,
+    bundle: (dir, target_os, cb_done) => {
+        let love_path = nwPATH.join(dir, app.projSetting("export").name+".zip");
+        let engine_path = app.ideSetting("engine_path");
+
+        let output = nwFS.createWriteStream(love_path);
+        let archive = nwZIP('zip',{ /* zlib: { level: 9} */});
+
+        output.on('close', cb_done);
+        archive.pipe(output);
+
+        let str_conf = exportConf();
+        if (str_conf)
+            archive.append(str_conf, { name: 'conf.lua' });
+        archive.glob("**/*", { cwd: app.project_path, ignore: ["*.css","dist","dist/**/*",str_conf ? "conf.lua" : null] });
+        archive.glob("**/*.lua", { cwd: nwPATH.join(engine_path) });
+        archive.finalize();
     }
 }

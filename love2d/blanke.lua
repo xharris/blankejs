@@ -1,10 +1,10 @@
 -- TODO Blanke.config
 
-local bump = require "bump"
-local uuid = require "uuid"
-local json = require "json"
-local class = require "clasp"
-require "print_r"
+local bump = require "lua.bump"
+local uuid = require "lua.uuid"
+local json = require "lua.json"
+local class = require "lua.clasp"
+require "lua.print_r"
 
 --UTIL.table
 table.update = function (old_t, new_t, keys) 
@@ -144,6 +144,7 @@ do
         end;
         
         load = function()
+            love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua')
             -- load config.json
             config_data = love.filesystem.read('config.json')
             if config_data then Game.config = json.decode(config_data) end
@@ -156,8 +157,14 @@ do
             else 
                 love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
             end
-            -- load scripts
             scripts = Game.options.scripts or {}
+            -- load plugins
+            if Game.options.plugins then 
+                for _,f in ipairs(Game.options.plugins) do 
+                    table.insert(scripts,'plugins.'..f)
+                end
+            end
+            -- load scripts
             if Game.options.auto_require then
                 files = FS.ls ''
                 for _,f in ipairs(files) do

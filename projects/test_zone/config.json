@@ -18,20 +18,20 @@
             "Open image editor"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
+            "View project in explorer=?",
+            "View project in explorer"
         ],
         [
-            "map0.map=map+?",
-            "map0.map"
+            "View assets=?",
+            "View assets"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "View assets=?",
-            "View assets"
+            "Add a map=new+?",
+            "Add a map"
         ]
     ],
     "autoplay_preview": true,
@@ -110,8 +110,8 @@
         },
         "image/image2.png": {
             "frame_size": [
-                256,
-                256
+                16,
+                16
             ],
             "frames": 1,
             "position": [
@@ -119,15 +119,15 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image2.png",
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/image2.png",
             "tool.shape": "rect",
             "tool.length": 43,
             "tool.angle": 0,
             "tool.size": [
-                5,
-                5
+                1,
+                1
             ],
-            "tool.radius": 6,
+            "tool.radius": 7,
             "tool.fill": true,
             "tool.thickness": 16,
             "showPreview": true
@@ -143,7 +143,11 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/jimbo.png"
+            "image": "/home/xhh/Documents/blankejs/projects/test_zone/assets/image/image3.png",
+            "tool.size": [
+                6,
+                1
+            ]
         },
         "image/jimbo.png": {
             "frame_size": [

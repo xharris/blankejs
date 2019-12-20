@@ -8,7 +8,11 @@ elec.app.on('open-file', (e, path)=>{
 })
 elec.app.commandLine.appendSwitch('enable-gpu-rasterization', 'true')
 elec.app.on('ready', function(){
+    let display = elec.screen.getPrimaryDisplay();
+
     main_window = new elec.BrowserWindow({
+        x: display.bounds.x + ((display.bounds.width - 800)/2),
+        y: display.bounds.y + ((display.bounds.height - 600)/2),
         width: 800,
         height: 600,
         frame: false,

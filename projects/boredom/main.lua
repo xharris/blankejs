@@ -1,7 +1,7 @@
 Game { 
     res = 'assets',
     filter = 'nearest',
-	scripts = { 'xhh-effect', 'xhh-tween' },
+	plugins = { 'xhh-effect', 'xhh-tween' },
     load = function()
         Game.setBackgroundColor('white')
         Map.load('level1.map')	

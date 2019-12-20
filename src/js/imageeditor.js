@@ -181,6 +181,7 @@ class ImageEditor extends Editor {
                 this.save_key_up = false;
             }
             if (e.ctrlKey && e.key == "z" && this.undo_key_up) {
+                e.preventDefault();
                 this.undo();
                 this.undo_key_up = false;
             }

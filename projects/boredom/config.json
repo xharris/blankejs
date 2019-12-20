@@ -16,6 +16,14 @@
     ],
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
             "player.lua=script+?",
             "player.lua"
         ],
@@ -24,16 +32,8 @@
             "Find in files"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
             "Open image editor=?",
             "Open image editor"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "autoplay_preview": true,
@@ -68,7 +68,7 @@
         ]
     },
     "export": {
-        "name": "love_test",
+        "name": "boredom",
         "web_autoplay": false,
         "scale_mode": "linear",
         "frameless": false,
@@ -177,5 +177,6 @@
             "spacing": 0,
             "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/image6.png"
         }
-    }
+    },
+    "write_conf": true
 }
