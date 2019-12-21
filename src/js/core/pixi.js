@@ -68,9 +68,9 @@ class BlankePixi {
                 this.snap_on = true;
 				this.dispatchEvent('snapChange',e);
 			}
-			this.dispatchEvent('keyDown',e);
 			// moving camera with arrow keys
 			if (this.has_mouse) {
+				this.dispatchEvent('keyDown',e);
 				var keyCode = e.keyCode || e.which;
 				let vx = 0;
 				let vy = 0;
@@ -104,8 +104,8 @@ class BlankePixi {
         
         window.addEventListener('keyup', e => {
 			var keyCode = e.keyCode || e.which;
-			this.dispatchEvent('keyUp',e);
 			if (this.has_mouse) {
+				this.dispatchEvent('keyUp',e);
 				// CTRL
 				if (keyCode == 17) {
 					this.snap_on = false;

@@ -446,10 +446,9 @@ class Code extends Editor {
             smartIndent : true,
             lineNumbers : true,
             gutters:["CodeMirror-linenumbers","breakpoints",...Object.values(this.gutterEvents).map(v=>v.name).filter((v,k,a)=>a.indexOf(v)===k)],
-            lineWrapping : false,
-            indentUnit : 4,
-            tabSize : 4,
-            indentWithTabs : true,
+			lineWrapping : false,
+			indentUnit: 4,
+			indentWithTabs: true,
             highlightSelectionMatches: {/*showToken: /\w{3,}/, */annotateScrollbar: false},
             matchBrackets: true,
 			completeSingle: false,
@@ -468,7 +467,8 @@ class Code extends Editor {
             	"Cmd--": function(cm) { this_ref.fontSizeDown(); },
             	"Shift-Tab": "indentLess",
             	"Ctrl-F": "findPersistent",
-            	"Ctrl-Space": "autocomplete"
+				"Ctrl-Space": "autocomplete",
+				"Ctrl-Shift-Tab": "indentAuto"
             }
 		});
 

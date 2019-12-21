@@ -113,5 +113,10 @@ const engine = {
         archive.glob("**/*", { cwd: app.project_path, ignore: ["*.css","dist","dist/**/*",str_conf ? "conf.lua" : null] });
         archive.glob("**/*.lua", { cwd: nwPATH.join(engine_path) });
         archive.finalize();
+    },
+    setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
+        if (platform == 'win') {
+            
+        }
     }
 }

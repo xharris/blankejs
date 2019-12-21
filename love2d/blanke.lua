@@ -336,6 +336,8 @@ GameObject = class {
         end
         if user_args then table.update(self,user_args) end
                     
+        State.addObject(self)
+
         if self._spawn then self:_spawn() end
         if self.spawn then self:spawn() end
     end;
@@ -542,6 +544,7 @@ do
             end
         end;
         _draw = function(self)
+            if self.destroyed then return end
             self:updateSize()
             Game.drawObject(self, self.image)
         end;
@@ -587,6 +590,14 @@ local _Entity = GameObject:extend {
                 self:_updateSize(self.animList[args.animations])
             end
         end
+
+        if not self.defaultCollRes then
+            self.defaultCollRes = 'cross'
+            if args.animations or args.images then 
+                self.defaultCollRes = 'slide'
+            end
+        end
+
         for _,img in pairs(self.imageList) do img.parent = self end
         for _,anim in pairs(self.animList) do anim.parent = self end
         Game.checkAlign(self)
@@ -670,6 +681,15 @@ local _Entity = GameObject:extend {
             self.width, self.height = self.animList[self.animation].width, self.animList[self.animation].height
         end
     end;
+    _destroy = function(self)
+        if self.destroyed then return end
+        for name, img in pairs(self.imageList) do
+            img:destroy()
+        end
+        for name, anim in pairs(self.animList) do
+            anim:destroy()
+        end
+    end
 }
 
 Entity = function(name, args)
@@ -763,81 +783,102 @@ do
 end
 
 --DRAW
-Draw = class {
-    crop_used = false;
-    init = function(self, instructions)
-        for _,instr in ipairs(instructions) do
-            name, args = instr[1], table.slice(instr,2)
-            assert(Draw[name], "bad draw instruction '"..name.."'")
-            Draw[name](unpack(args))
+Draw = nil 
+do
+    local _hex_cache = {}
+    local _hex2rgb = function(hex)
+        assert(type(hex) == "string", "hex2rgb: expected string, got "..type(hex).." ("..hex..")")
+        hex = hex:gsub("#","")
+        if(string.len(hex) == 3) then
+            return {tonumber("0x"..hex:sub(1,1)) * 17 / 255, tonumber("0x"..hex:sub(2,2)) * 17 / 255, tonumber("0x"..hex:sub(3,3)) * 17 / 255}
+        elseif(string.len(hex) == 6) then
+            return {tonumber("0x"..hex:sub(1,2)) / 255, tonumber("0x"..hex:sub(3,4)) / 255, tonumber("0x"..hex:sub(5,6)) / 255}
         end
-    end;
+    end
 
-    parseColor = function(...)
-        args = {...}
-        if Color[args[1]] then 
-            args = Color[args[1]]
-            for a,arg in ipairs(args) do 
-                if arg > 1 then args[a] = arg / 255 end
+    Draw = class {
+        crop_used = false;
+        init = function(self, instructions)
+            for _,instr in ipairs(instructions) do
+                name, args = instr[1], table.slice(instr,2)
+                assert(Draw[name], "bad draw instruction '"..name.."'")
+                Draw[name](unpack(args))
             end
-        end
-        if #args == 0 then args = {1,1,1,1} end
-        if not args[4] then args[4] = 1 end
-        return args[1], args[2], args[3], args[4]
-    end;
+        end;
 
-    color = function(...)
-        return love.graphics.setColor(Draw.parseColor(...))
-    end;
+        parseColor = function(...)
+            args = {...}
+            if Color[args[1]] then 
+                args = Color[args[1]]
+                for a,arg in ipairs(args) do 
+                    if arg > 1 then args[a] = arg / 255 end
+                end
+            end
+            if #args == 0 then args = {1,1,1,1} end
+            if not args[4] then args[4] = 1 end
+            return args[1], args[2], args[3], args[4]
+        end;
 
-    getBlendMode = function() return love.graphics.getBlendMode() end;
-    setBlendMode = function(...) love.graphics.setBlendMode(...) end;
-    crop = function(x,y,w,h)
-        love.graphics.setScissor(x,y,w,h)
-        -- stencilFn = () -> Draw.rect('fill',x,y,w,h)
-        -- love.graphics.stencil(stencilFn,"replace",1)
-        -- love.graphics.setStencilTest("greater",0)
-        -- Draw.crop_used = true
-    end;
-    reset = function(only)
-        if only == 'color' or not only then
-            Draw.color(1,1,1,1)
-            Draw.lineWidth(1)
-        end
-        if only == 'transform' or not only then
-            Draw.origin()
-        end
-        if (only == 'crop' or not only) and Draw.crop_used then
-            Draw.crop_used = false
-            love.graphics.setStencilTest()
-        end
-    end;
-    push = function() love.graphics.push('all') end;
-    pop = function()
-        Draw.reset('crop')
-        love.graphics.pop()
-    end;
-    stack = function(fn)
-        Draw.push()
-        fn()
-        Draw.pop()
-    end;
-}
+        color = function(...)
+            return love.graphics.setColor(Draw.parseColor(...))
+        end;
 
-local draw_functions = {
-    'arc','circle','ellipse','line','points','polygon','rectangle','print','printf',
-    'clear','discard','origin',
-    'rotate','scale','shear','translate','transformPoint',
-    'setLineWidth','setPointSize'
-}
-local draw_aliases = {
-    polygon = 'poly',
-    rectangle = 'rect',
-    setLineWidth = 'lineWidth',
-    setPointSize = 'pointSize'
-}
-for _,fn in ipairs(draw_functions) do 
-    Draw[draw_aliases[fn] or fn] = function(...) return love.graphics[fn](...) end 
+        hexToRgb = function(hex) 
+            if _hex_cache[hex] then return _hex_cache[hex] end
+            local ret = _hex2rgb(hex)
+            _hex_cache[hex] = ret 
+            return ret
+        end;
+
+        getBlendMode = function() return love.graphics.getBlendMode() end;
+        setBlendMode = function(...) love.graphics.setBlendMode(...) end;
+        crop = function(x,y,w,h)
+            love.graphics.setScissor(x,y,w,h)
+            -- stencilFn = () -> Draw.rect('fill',x,y,w,h)
+            -- love.graphics.stencil(stencilFn,"replace",1)
+            -- love.graphics.setStencilTest("greater",0)
+            -- Draw.crop_used = true
+        end;
+        reset = function(only)
+            if only == 'color' or not only then
+                Draw.color(1,1,1,1)
+                Draw.lineWidth(1)
+            end
+            if only == 'transform' or not only then
+                Draw.origin()
+            end
+            if (only == 'crop' or not only) and Draw.crop_used then
+                Draw.crop_used = false
+                love.graphics.setStencilTest()
+            end
+        end;
+        push = function() love.graphics.push('all') end;
+        pop = function()
+            Draw.reset('crop')
+            love.graphics.pop()
+        end;
+        stack = function(fn)
+            Draw.push()
+            fn()
+            Draw.pop()
+        end;
+    }
+    
+    local draw_functions = {
+        'arc','circle','ellipse','line','points','polygon','rectangle','print','printf',
+        'clear','discard','origin',
+        'rotate','scale','shear','translate','transformPoint',
+        'setLineWidth','setPointSize'
+    }
+    local draw_aliases = {
+        polygon = 'poly',
+        rectangle = 'rect',
+        setLineWidth = 'lineWidth',
+        setPointSize = 'pointSize'
+    }
+    for _,fn in ipairs(draw_functions) do 
+        Draw[draw_aliases[fn] or fn] = function(...) return love.graphics[fn](...) end 
+    end
 end
 
 Color = {
@@ -1191,7 +1232,6 @@ do
         end
     end
     Map = GameObject:extend {
-        
         load = function(name)
             local data = love.filesystem.read(Game.res('map',name))
             assert(data,"Error loading map '"..name.."'")
@@ -1221,14 +1261,20 @@ do
                 if obj_info then
                     for l_uuid, coord_list in pairs(info) do
                         for _,c in ipairs(coord_list) do
+                            local hb_color = Draw.hexToRgb(obj_info.color)
+                            hb_color[4] = 0.25
                             local obj = new_map:_spawnEntity(obj_info.name,{
-                                x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid]
+                                x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid],
+                                width=obj_info.size[1], height=obj_info.size[2], hitboxColor=hb_color, align="center"
                             })
-                            obj.mapTag = c[1]
+                            if obj then 
+                                obj.mapTag = c[1]
+                            end
                         end
                     end
                 end
             end
+            -- 
             new_map.data = data
             return new_map
         end;
@@ -1236,7 +1282,7 @@ do
         init = function(self)
             GameObject.init(self)
             self.batches = {} -- { layer: { img_name: SpriteBatch } }
-            self.hbList = {}
+            self.hb_list = {}
             self.layer_z = {}
             self.entities = {} -- { layer: { entities... } }
             self:addDrawable()
@@ -1284,15 +1330,18 @@ do
             end
             if not options.use_physics and tile_info.tag then
                 Hitbox.add(tile_info)
+                table.insert(self.hb_list, tile_info)
             end
         end;
 
         _spawnEntity = function(self, ent_name, opt)
             local obj = Game.spawn(ent_name, opt)
-            obj:remDrawable()
-            if not self.entities[opt.layer] then self.entities[opt.layer] = {} end
-            table.insert(self.entities[opt.layer], obj)
-            return obj
+            if obj then
+                obj:remDrawable()
+                if not self.entities[opt.layer] then self.entities[opt.layer] = {} end
+                table.insert(self.entities[opt.layer], obj)
+                return obj
+            end
         end;
         spawnEntity = function(self, ent_name, x, y, layer)
             layer = layer or "_"
@@ -1324,6 +1373,12 @@ do
                 end
             end
         end;
+        _destroy = function(self) 
+            -- destroy hitboxes
+            for _,tile in ipairs(self.hb_list) do 
+                Hitbox.remove(tile)
+            end
+        end
     }
 end
 
@@ -1545,7 +1600,7 @@ do
 
         add = function(obj)
             if obj.x and obj.y and obj.width and obj.height then
-                if obj.classname then obj.tag = obj.collTag or obj.classname end
+                if not obj.tag then obj.tag = obj.collTag or obj.classname end
                 obj.hasHitbox = true
                 local ha = checkHitArea(obj)
                 world:add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)  
@@ -1563,30 +1618,43 @@ do
                 local filter = function(item, other)
                     if obj.collList and obj.collList[other.tag] then return obj.collList[other.tag] end
                     if obj.collFilter then return obj:collFilter(item, other) end
-                    return Hitbox.default_coll_response
+                    return obj.defaultCollRes or Hitbox.default_coll_response
                 end
                 local ha = checkHitArea(obj)
-                local new_x, new_y, cols = world:move(obj, obj.x + ha.left, obj.y + ha.top, filter)
+                local new_x, new_y, cols, len = world:move(obj, obj.x + ha.left, obj.y + ha.top, filter)
                 if obj.destroyed then return end
-                if obj.collision and #cols > 0 then
-                    for _,col in ipairs(cols) do
-                        if obj.destroyed then return end
-                        obj:collision(col)
-                    end
-                end
                 obj.x = new_x - ha.left
                 obj.y = new_y - ha.top
+                local swap = function(t, key1, key2)
+                    local temp = t[key1]
+                    t[key1] = t[key2]
+                    t[key2] = temp
+                end
+                if obj.collision and len > 0 then
+                    for i=1,len do
+                        if obj.destroyed then return end
+                        obj:collision(cols[i])
+                        local info = cols[i]
+                        local other = info.other
+                        swap(info, 'item', 'other')
+                        swap(info, 'itemRect', 'otherRect')
+                        if other and not other.destroyed and other.collision then other:collision(info) end
+                    end
+                end
             end
         end;
         remove = function(obj)
-            if obj and obj.hasHitbox then world:remove(obj) end 
+            if obj and obj.hasHitbox then 
+                obj.hasHitbox = false
+                world:remove(obj) 
+            end 
         end;
         draw = function()
             if Hitbox.debug then
                 local items, len = world:getItems()
-                Draw.color(1,0,0,0.25)
                 for _,i in ipairs(items) do
                     if i.hasHitbox and not i.destroyed then
+                        Draw.color(i.hitboxColor or {1,0,0,0.25})
                         Draw.rect('fill',world:getRect(i))
                     end
                 end
@@ -1595,6 +1663,72 @@ do
         end;
     }
 end
+
+--STATE
+State = nil
+do 
+    local states = {}
+    local stateCB = function(name, fn_name, ...)
+        local state = states[name]
+        if state then 
+            state.running = true
+            State.curr_state = name
+            if state.callbacks[fn_name] then state.callbacks[fn_name](...) end
+            State.curr_state = nil
+            return state
+        end
+    end
+    State = class {
+        curr_state = nil;
+        init = function(self, name, cbs)
+            if states[name] then return nil end
+            self.name = name
+            self.callbacks = cbs
+            self.objects = {}
+            self.running = false
+            states[name] = self
+        end,
+        addObject = function(obj)
+            local state = states[State.curr_state]
+            if state then 
+                table.insert(state.objects, obj)
+            end 
+        end,
+        start = function(name)
+            stateCB(name, 'enter')
+        end,
+        update = function(name, dt)
+            for name, state in pairs(states) do 
+                if state.running then 
+                    stateCB(name, 'update', dt)
+                end
+            end
+        end,
+        draw = function()
+            for name, state in pairs(states) do 
+                if state.running then 
+                    stateCB(name, 'draw')
+                end
+            end
+        end,
+        stop = function(name) 
+            if name then
+                local state = states[name]
+                if state and state.running then
+                    state = stateCB(name, 'leave')
+                    for _,obj in ipairs(state.objects) do 
+                        if obj then obj:destroy() end 
+                    end
+                    if state then state.running = false end
+                end
+            else 
+                for name, state in pairs(states) do 
+                    State.stop(name)
+                end
+            end
+        end
+    }
+end 
 
 --WINDOW
 Window = {
@@ -1652,14 +1786,15 @@ Blanke = {
         for o = 1, len do
             local obj = Game.updatables[o]
             if obj then
-                if obj.destroyed then 
+                if obj.destroyed or not obj.updatable then 
                     Hitbox.remove(obj)
                     Game.updatables[o] = nil
-                elseif obj._update then
+                elseif not obj.skip_update and not obj.pause and obj._update then
                     obj:_update(dt)
                 end
             end
         end
+        State.update(dt)
         local key = Input.pressed('_fs_toggle') 
         if key and key.count == 1 then
             Window.toggleFullscreen()
@@ -1672,9 +1807,9 @@ Blanke = {
             for o = 1, len do
                 local obj = Game.drawables[o]
                 if obj then 
-                    if obj.destroyed then
+                    if obj.destroyed or not obj.drawable then
                         Game.drawables[o] = nil
-                    elseif obj.drawable and obj.draw ~= false then
+                    elseif not obj.skip_draw and obj.drawable and obj.draw ~= false then
                         if obj.draw then 
                             obj:draw(function()
                                 if obj._draw then obj:_draw() end
@@ -1686,6 +1821,8 @@ Blanke = {
             if Game.options.postDraw then Game.options.postDraw() end
             Physics.draw()
             Hitbox.draw()
+
+            State.draw()
         end
 
         local _drawGame = function()

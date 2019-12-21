@@ -1,19 +1,8 @@
-Game { 
-    res = 'assets',
-    filter = 'nearest',
-	plugins = { 'xhh-effect', 'xhh-tween' },
-    load = function()
-        Game.setBackgroundColor('white')
-        Map.load('level1.map')	
-    end
-}
-
 Map.config {
     tile_hitbox = { 
 		ground='ground',
 		spike='death'
-	},
-    entities = { 'Player' }
+	}
 }
 
 Input({
@@ -22,3 +11,19 @@ Input({
     jump = { "up", "w" },
     action = { 'space' }
 }, { no_repeat = { "jump" } })
+
+Game { 
+    res = 'assets',
+    filter = 'nearest',
+	plugins = { 'xhh-effect', 'xhh-tween' },
+    load = function()
+        Game.setBackgroundColor('white')
+		State.start('play')
+    end
+}
+
+State("play", {
+	enter = function()
+        Map.load('level1.map')
+	end
+})

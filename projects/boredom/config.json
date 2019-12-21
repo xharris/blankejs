@@ -16,24 +16,24 @@
     ],
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
-        ],
-        [
             "player.lua=script+?",
             "player.lua"
         ],
         [
-            "Find in files=?",
-            "Find in files"
+            "movingblock.lua=script+?",
+            "movingblock.lua"
         ],
         [
             "Open image editor=?",
             "Open image editor"
+        ],
+        [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
+            "View assets=?",
+            "View assets"
         ]
     ],
     "autoplay_preview": true,
@@ -60,11 +60,23 @@
                 ],
                 "uuid": "bc08a4cd",
                 "size_changed": true
+            },
+            "76703fef": {
+                "name": "BlockDestroyer",
+                "char": "=",
+                "color": "#000000",
+                "size": [
+                    9,
+                    33
+                ],
+                "uuid": "76703fef",
+                "size_changed": true
             }
         },
         "object_order": [
             "e6d1877c",
-            "bc08a4cd"
+            "bc08a4cd",
+            "76703fef"
         ]
     },
     "export": {
@@ -96,8 +108,7 @@
                 0,
                 0
             ],
-            "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/image6.png"
+            "spacing": 0
         },
         "image/spike.png": {
             "frame_size": [
@@ -109,8 +120,7 @@
                 0,
                 0
             ],
-            "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/block_corner.png"
+            "spacing": 0
         },
         "image/block_corner.png": {
             "frame_size": [
@@ -122,8 +132,7 @@
                 0,
                 0
             ],
-            "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/ground.png"
+            "spacing": 0
         },
         "image/ground.png": {
             "frame_size": [
@@ -135,21 +144,20 @@
                 0,
                 0
             ],
-            "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/player_dead.png"
+            "spacing": 0
         },
         "image/player_walk.png": {
             "frame_size": [
-                42,
+                21,
                 33
             ],
-            "frames": 1,
+            "frames": 2,
             "position": [
                 0,
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/player_walk.png"
+            "animSpeed": 0.1
         },
         "image/player_dead.png": {
             "frame_size": [
@@ -161,8 +169,7 @@
                 0,
                 0
             ],
-            "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/player_dead.png"
+            "spacing": 0
         },
         "image/image7.png": {
             "frame_size": [
@@ -174,8 +181,31 @@
                 0,
                 0
             ],
-            "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/boredom/assets/image/image6.png"
+            "spacing": 0
+        },
+        "image/player_stand.png": {
+            "frame_size": [
+                21,
+                32
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0
+        },
+        "image/image8.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0
         }
     },
     "write_conf": true

@@ -25,11 +25,11 @@ Game.spawn("Player", { custom_prop: 5 })
 
 ## collisions
 
-`hitbox` Hitbox.add(entity)
+`hitbox` true -> Hitbox.add(entity)
 
 `hitArea` { left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
 
-`collision (info)` info = { <see below> }
+`collision (self, info)` info = { <see below> }
 
 * item
 
@@ -41,7 +41,7 @@ Game.spawn("Player", { custom_prop: 5 })
 
 * touch { x, y }
 
-`collFilter (item, other)` return nil to ignore collision or a response string:
+`collFilter (self, item, other)` return nil to ignore collision or a response string:
 
 * `"touch"`
 

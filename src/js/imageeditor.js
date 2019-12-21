@@ -107,7 +107,8 @@ class ImageEditor extends Editor {
         form_options.forEach(s => {
             if (s.length > 1) {
                 this.el_image_form.onChange(s[0], val => {
-                    this.img_settings[s[0]] = val;
+                    if (s[0] != "image")
+                        this.img_settings[s[0]] = val;
                     this.drawBackground();
                     this.drawEditPreview();
                     this.setTool(s[0]);
@@ -118,6 +119,8 @@ class ImageEditor extends Editor {
                         this.anim.animationSpeed = val;
                         this.anim.play();
                     }
+                    if (!s[0].includes('tool'))
+                        this.refreshAnimation();
                 });
             }
         });
@@ -303,7 +306,6 @@ class ImageEditor extends Editor {
         }
         ifndef_obj(image_edit_settings[fname], DEFAULT_IMAGE_SETTINGS);
         this.img_settings = image_edit_settings[fname];
-        this.img_settings.image = this.file;
         
         if (new_file && nwFS.pathExistsSync(path)) {
             let img = new Image();
@@ -351,6 +353,8 @@ class ImageEditor extends Editor {
         let sel_str = `<option class="placeholder" value="" disabled ${this.file ? '' : 'selected'}>Select an image</option>`;
 		this.el_image_form.getInput('image').innerHTML = sel_str;
 		app.getAssets('image', files => {
+            if (!files.some(f => f == this.file))
+                files.push(this.file);
 			files.forEach(f => {
                 if (!img_editors.some(e => e.file == f && e.file != this.file)) {
                     var img_path = nwPATH.basename(f);
@@ -358,7 +362,6 @@ class ImageEditor extends Editor {
                 }
 			})
             this.el_image_form.getInput('image').innerHTML = sel_str;
-            this.img_settings.image = this.file;
             this.el_image_form.useValues(this.img_settings);
 		});
     }
@@ -585,6 +588,7 @@ class ImageEditor extends Editor {
             img.onload = () => {
                 let buf = Buffer.from(img.src.replace(/^data:image\/\w+;base64,/, ""), 'base64');
                 nwFS.writeFile(this.file, buf);
+                blanke.toast(`'${nwPATH.basename(this.file)}' saved!`);
             }
         }
     }

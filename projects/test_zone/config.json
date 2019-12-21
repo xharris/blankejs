@@ -14,6 +14,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "Open image editor=?",
             "Open image editor"
         ],
@@ -24,10 +28,6 @@
         [
             "View assets=?",
             "View assets"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ],
         [
             "Add a map=new+?",

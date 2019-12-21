@@ -1,5 +1,4 @@
 Game {
-	aut
 	load = function() 
 		Game.spawn("player")
 	end

@@ -333,6 +333,7 @@ class SceneEditor extends Editor {
 			if (new_y <= 0) new_y = this.curr_layer.snap[1];
 			this.curr_layer.snap[1] = new_y;
 
+			this.pixi.snap = this.curr_layer.snap.slice();
 			// move grid
 			this.grid_container.x = this.pixi.camera[0] % this.curr_layer.snap[0];
 			this.grid_container.y = this.pixi.camera[1] % this.curr_layer.snap[1];
