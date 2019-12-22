@@ -4,6 +4,8 @@ Image.animation('player_stand.png')
 Image.animation('player_dead.png')
 Image.animation('player_walk.png', { { rows=1, cols=2, duration=0.2 } })
 
+Hitbox.debug = true
+
 Entity("Player", {
 		camera = 'player',
 		animations = {'player_stand','player_walk','player_dead'},
@@ -25,9 +27,6 @@ Entity("Player", {
 			end
 			if v.normal.y > 0 then 
 				self.vspeed = -self.vspeed/2
-			end
-			if v.other.hspeed then 
-				self.x = self.x + (v.other.hspeed)
 			end
 		end,
 		die = function(self)

@@ -16,5 +16,6 @@
     "Audio": [ {"title":"", "file":"audio.md"} ],
     "Effect": [ {"title":"", "file":"effect.md"} ],
     "Camera": [ {"title":"", "file":"camera.md"} ],
-    "Map": [ {"title":"", "file":"map.md"} ]
+    "Map": [ {"title":"", "file":"map.md"} ],
+    "State": [ {"title":"", "file":"state.md"} ]
 }

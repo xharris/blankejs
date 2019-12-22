@@ -91,13 +91,11 @@ module.exports.hints = {
 	"global":[
 		{ fn: "Draw", vars: { args:'...' } }
 	],
-
 	"blanke-math":[
 		{ fn: 'random', vars: { min:'opt', max:'opt' } },
 		{ fn: 'indexTo2d', vars: { i:'', col:'' } },
 		{ fn: 'getXY', vars: { angle:'', dist:'' } }
 	],
-	
 	"blanke-fs":[
 		{fn:'basename',vars:{path:''}},
 		{fn:'dirname',vars:{path:''}},
@@ -105,7 +103,6 @@ module.exports.hints = {
 		{fn:'removeExt',vars:{path:''},info:'removes .extension'},
 		{fn:'ls',vars:{path:''},info:'lists files in path'}
 	],
-
 	"blanke-game":[
 		{ prop: 'options' },
 		{ prop: 'config' },
@@ -121,13 +118,18 @@ module.exports.hints = {
 		{ fn: 'info', vars: { name:'' } },
 		{ fn: 'animation', vars: { file:'', animations:'{name,}', global_options:'' } }
 	],
+	"blanke-input":[
+		{fn:'pressed',vars:{name:''}},
+		{fn:'released',vars:{name:''}}
+	],
 	"blanke-draw":[
 		{ fn: 'color' },
 		{ fn: 'crop', vars: { x:'', y:'', w:'', h:'' } },
 		{ fn: 'reset', vars: { only:'opt.color / transform / crop'} },
 		{ fn: 'push' },
 		{ fn: 'pop' },
-		{ fn: 'stack', vars: { fn:'' } }
+		{ fn: 'stack', vars: { fn:'' } },
+		{fn:'hexToRgb',vars:{hex:'string (#fff / #ffffff)'}}
 	],
 	"blanke-audio":[
 		{ fn: 'play', vars: { names:'etc' } },

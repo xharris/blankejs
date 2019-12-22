@@ -369,8 +369,8 @@ GameObject = class {
     end;
     destroy = function(self)
         if not self.destroyed then
+            Hitbox.remove(self)
             if self._destroy then self:_destroy() end
-            Hitbox.remove(obj)
             self.destroyed = true
             for _,k in ipairs(self.child_keys) do
                 self[k]:destroy() 
@@ -543,12 +543,14 @@ do
                     self.frame_len = info.durations[tostring(self.frame_index)] or info.duration
                     self.t = 0
                 end
-                self.quad = self.quads[self.frame_index]
             end
         end;
         _draw = function(self)
             if self.destroyed then return end
             self:updateSize()
+            if self.animated then 
+                self.quad = self.quads[self.frame_index] 
+            end
             Game.drawObject(self, self.image)
         end;
     }
@@ -1244,10 +1246,14 @@ do
             data = json.decode(data)
             local layer_name = {}
             -- get layer names
+            local store_layer_order = false
             if not options.layer_order then
                 options.layer_order = {}
-                for i,info in ipairs(data.layers) do
-                    layer_name[info.uuid] = info.name
+                store_layer_order = true
+            end
+            for i,info in ipairs(data.layers) do
+                layer_name[info.uuid] = info.name
+                if store_layer_order then
                     table.insert(options.layer_order, info.name)
                 end
             end
@@ -1741,6 +1747,10 @@ do
                     State.stop(name)
                 end
             end
+        end,
+        switch = function(name)
+            State.stop()
+            State.start(name)
         end
     }
 end 

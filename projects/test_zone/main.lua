@@ -17,17 +17,12 @@ Entity("player", {
 		update = function(self, dt)
 			if Input.released('action') then
 				State.stop()
-				State.start('play2')
+				State.start('play')
 			end
 		end
 })
 
 State('play',{
-		enter = function()
-			Map.load("map0.map")
-		end
-})
-State('play2',{
 		enter = function()
 			Map.load("map0.map")
 		end
