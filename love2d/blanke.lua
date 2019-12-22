@@ -120,7 +120,8 @@ do
             draw =          function(d) d() end,
             postDraw =      nil,
             effect =        nil,
-            auto_require =  true
+            auto_require =  true,
+            backgroundColor = nil
         };
         config = {};
         updatables = {};
@@ -186,6 +187,9 @@ do
             end
             if Game.options.load then
                 Game.options.load()
+            end
+            if Game.options.backgroundColor then 
+                Game.setBackgroundColor(Game.options.backgroundColor)
             end
 
             Blanke.game_canvas = Canvas()

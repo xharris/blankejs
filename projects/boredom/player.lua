@@ -4,8 +4,6 @@ Image.animation('player_stand.png')
 Image.animation('player_dead.png')
 Image.animation('player_walk.png', { { rows=1, cols=2, duration=0.2 } })
 
-Hitbox.debug = true
-
 Entity("Player", {
 		camera = 'player',
 		animations = {'player_stand','player_walk','player_dead'},

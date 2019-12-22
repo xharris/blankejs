@@ -174,7 +174,7 @@ class ImageEditor extends Editor {
         });
         this.pixi.on('mouseUp', (e, info) => {
             this.img_erase.clear();
-        })
+        });
         this.pixi.setCameraPosition(MARGIN_LEFT,MARGIN_TOP);  
         this.save_key_up = true; 
         this.undo_key_up = true;
@@ -196,6 +196,7 @@ class ImageEditor extends Editor {
         this.pixi.ticker.add(() => {
             this.renderImageTexture();
         });
+        this.pixi.hide_mouse = true;
         // [gl.FUNC_REVERSE_SUBTRACT, gl.FUNC_ADD]  -- OR -- [gl.ZERO, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE_MINUS_SRC_ALPHA]
         
         // setup el_colors

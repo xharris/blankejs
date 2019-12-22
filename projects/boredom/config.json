@@ -16,12 +16,16 @@
     ],
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
+            "Open image editor=?",
+            "Open image editor"
         ],
         [
             "player.lua=script+?",
             "player.lua"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "Dev Tools=?",
@@ -30,10 +34,6 @@
         [
             "movingblock.lua=script+?",
             "movingblock.lua"
-        ],
-        [
-            "Open image editor=?",
-            "Open image editor"
         ]
     ],
     "autoplay_preview": true,
@@ -132,7 +132,8 @@
                 0,
                 0
             ],
-            "spacing": 0
+            "spacing": 0,
+            "showPreview": false
         },
         "image/ground.png": {
             "frame_size": [

@@ -1519,5 +1519,6 @@ app.window.webContents.once('dom-ready', ()=>{
 		dispatchEvent("ideReady");
 
 		// app.openProject('projects/test zone');
+		app.window.show();
 	});
 });

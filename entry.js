@@ -24,7 +24,8 @@ elec.app.on('ready', function(){
             webSecurity: false,
             experimentalFeatures: true,
             experimentalCanvasFeatures: true
-        }
+        },
+        show: false
     })
     if (main_window.setWindowButtonVisibility)
         main_window.setWindowButtonVisibility(false);

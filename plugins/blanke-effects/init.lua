@@ -20,7 +20,7 @@ Effect.new("bloom", {
 })
 
 Effect.new("chroma shift", {
-    vars = { angle=0, radius=4, direction={0,0} },
+    vars = { angle=0, radius=2, direction={0,0} },
     blend = {"replace", "alphamultiply"},
     effect = [[
       vec4 px_minus = Texel(texture, texCoord - direction);

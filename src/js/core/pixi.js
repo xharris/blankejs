@@ -87,7 +87,7 @@ class BlankePixi {
 
 				// show camera grabbing hand
 				if (e.key == "Alt") {
-					this.pixi.view.style.cursor = "all-scroll";
+					this.pixi.stage.cursor = "all-scroll";
 					this.pixi.view.requestPointerLock();
 					this.camera_drag = true;
 					this.dragStart();
@@ -111,7 +111,7 @@ class BlankePixi {
 					this.snap_on = false;
 					this.dispatchEvent('snapChange',e);
 				}
-				this.pixi.view.style.cursor = "auto";
+				this.pixi.stage.cursor = this._hide_mouse ? "none" : "auto";
 				if (e.key == "Escape") {
 					this.dispatchEvent('keyCancel',e);
 				}
@@ -145,11 +145,13 @@ class BlankePixi {
 
         // mouse enter/exit
 		this.pixi.view.addEventListener('mouseenter', e => {
-			this.has_mouse = true;;
+			this.has_mouse = true;
+			this.dispatchEvent('mouseEnter',e);
 			this.can_drag = true;
 		});
 		this.pixi.view.addEventListener('mouseout', e => {
 			this.has_mouse = false;
+			this.dispatchEvent('mouseOut',e);
 			if (!this.dragging) {
 				this.can_drag = false;
 			}
@@ -164,7 +166,7 @@ class BlankePixi {
 			// dragging canvas
 			if (!this.dragging) {
 				if (btn == 1) {
-					this.pixi.view.style.cursor = "all-scroll";
+					this.pixi.stage.cursor = "all-scroll";
 					this.camera_drag = true;
 				}  
 				this.can_drag = true;
@@ -185,7 +187,6 @@ class BlankePixi {
 			let was_cam_dragging = this.camera_drag;
 			if (this.dragging) {
 				if (btn == 1) {
-					this.pixi.view.style.cursor = "auto";
 					this.camera_drag = false;
 				} else 
 				this.can_drag = true;
@@ -193,6 +194,7 @@ class BlankePixi {
 			this.dragStop(was_cam_dragging);
 			this.dispatchEvent('mouseUp',e);
         	this.pointer_down = -1;
+			this.pixi.stage.cursor = this._hide_mouse ? "none" : "auto";
 		});
 
 		this.pixi.stage.on('pointermove', e => {
@@ -260,6 +262,10 @@ class BlankePixi {
 			}
 			this.dispatchEvent('mouseMove',e);
 		});
+	}
+	set hide_mouse (v) {
+		this._hide_mouse = v;
+		this.pixi.stage.cursor = this._hide_mouse ? "none" : "auto";
 	}
 	bringToFront (sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {         if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.push(sprite);}}
 	sendToBack (sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {          if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.splice(0,0,sprite);}}
