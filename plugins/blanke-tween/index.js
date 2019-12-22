@@ -5,3 +5,7 @@ exports.info = {
     id: 'xhh-tween',
     enabled: true
 }
+
+exports.autocomplete = {
+    class_list: ['Tween']
+}

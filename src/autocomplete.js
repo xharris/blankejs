@@ -31,17 +31,16 @@ let prop_gameobject = [
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
 // used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
 module.exports.keywords = [
-	"class", "extends", "if", "then", "super", "do", "with",
-	"import", "export", "while", "elseif", "return", "for",
-	"in", "from", "when", "using", "else", "and", "or", "not",
-	"switch", "break"
+	'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 
+	'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 
+	'until', 'while'
 ]
 
 // TestScene is included just so it looks nice
 module.exports.class_list = [
-	'Blanke','Game','Canvas','Image','Entity',
-	'Inputs','Draw','Audio','Effect','Math',
-	'Map','Physics','Hitbox'
+	"Math", "FS", "Game", "Canvas", "Image", "Entity",
+	"Input", "Draw", "Color", "Audio", "Effect", "Camera",
+	"Map", "Physics", "Hitbox", "State", "Window", "Blanke"
 ];
 
 module.exports.class_extends = {
@@ -51,7 +50,7 @@ module.exports.class_extends = {
 module.exports.instance = {
 	'entity': /\b(\w+)\s*=\s*Game\.spawn\(\s*[\'\"]<class_name>[\'\"]\s*\)/g,
 	'map': /\b(\w+)\s*=\s*Map\.load\([\'\"].+[\'\"]\)/g,
-	'canvas': /(@?\w+)\s*(?::|=)\s*Canvas[!\s\(]/g
+	'canvas': /(@?\w+)\s*(?::|=)\s*Canvas[\s\(]/g
 }
 
 module.exports.user_words = {
@@ -78,8 +77,7 @@ module.exports.image = [
 ];
 
 module.exports.this_ref = {
-	'blanke-entity-instance':/\bclass\s+\w+\s+extends\s+Entity/g,
-	'blanke-scene':/\b(?:onStart|onUpdate|onEnd)[:\s\w]*\(([a-zA-Z_]\w*)\s*[),]/g
+	'blanke-entity-instance':/\bEntity\s+[\'\"]\w+[\'\"]\s*,/g
 }
 
 /*
@@ -99,6 +97,15 @@ module.exports.hints = {
 		{ fn: 'indexTo2d', vars: { i:'', col:'' } },
 		{ fn: 'getXY', vars: { angle:'', dist:'' } }
 	],
+	
+	"blanke-fs":[
+		{fn:'basename',vars:{path:''}},
+		{fn:'dirname',vars:{path:''}},
+		{fn:'extname',vars:{path:''},info:'returns extension with period'},
+		{fn:'removeExt',vars:{path:''},info:'removes .extension'},
+		{fn:'ls',vars:{path:''},info:'lists files in path'}
+	],
+
 	"blanke-game":[
 		{ prop: 'options' },
 		{ prop: 'config' },

@@ -299,7 +299,9 @@ GameObject = class {
         self.parent = nil
         -- custom properties were provided
         -- so far only allowed from Entity
+        if not self.classname then self.classname = "GameObject" end
         if args then
+            if args.classname then self.classname = args.classname end
             for k, v in pairs(args) do
                 local arg_type = type(v)
                 local new_obj = nil
@@ -368,6 +370,7 @@ GameObject = class {
     destroy = function(self)
         if not self.destroyed then
             if self._destroy then self:_destroy() end
+            Hitbox.remove(obj)
             self.destroyed = true
             for _,k in ipairs(self.child_keys) do
                 self[k]:destroy() 
@@ -379,7 +382,7 @@ GameObject = class {
 --CANVAS
 Canvas = GameObject:extend {
     init = function(self, w, h, settings)
-        GameObject.init(self)
+        GameObject.init(self, {classname="Canvas"})
         w, h, settings = w or Game.width, h or Game.height, settings or {}
         self.auto_clear = true
         self.width = w
@@ -490,7 +493,7 @@ do
             end
         end;
         init = function(self,args)
-            GameObject.init(self)
+            GameObject.init(self, {classname="Image"})
             -- animation?
             local anim_info = nil
             if type(args) == 'string' then
@@ -715,14 +718,16 @@ do
     Input = class {
         init = function(self, inputs, _options)
             for name, inputs in pairs(inputs) do
-                Input.addInput(name, inputs, _options)
+                Input.addInput(name, inputs)
             end
-            table.append(options.combo, _options.combo or {})
-            table.append(options.no_repeat, _options.no_repeat or {})
+            if _options then
+                table.append(options.combo, _options.combo or {})
+                table.append(options.no_repeat, _options.no_repeat or {})
+            end
             return nil
         end;
 
-        addInput = function(name, inputs, options)
+        addInput = function(name, inputs)
             name_to_input[name] = {}
             for _,i in ipairs(inputs) do name_to_input[i] = false end
             for _,i in ipairs(inputs) do
@@ -1075,7 +1080,7 @@ do
         end;
         
         init = function(self, ...)
-            GameObject.init(self)
+            GameObject.init(self, {classname="Effect"})
 
             self.names = {...}
             if type(self.names[1]) == 'table' then
@@ -1257,7 +1262,7 @@ do
             end
             -- spawn entities
             for obj_uuid, info in pairs(data.objects) do
-                obj_info = getObjInfo(obj_uuid)
+                local obj_info = getObjInfo(obj_uuid)
                 if obj_info then
                     for l_uuid, coord_list in pairs(info) do
                         for _,c in ipairs(coord_list) do
@@ -1274,13 +1279,13 @@ do
                     end
                 end
             end
-            -- 
+            
             new_map.data = data
             return new_map
         end;
         config = function(opt) options = opt end;
         init = function(self)
-            GameObject.init(self)
+            GameObject.init(self, {classname="Map"})
             self.batches = {} -- { layer: { img_name: SpriteBatch } }
             self.hb_list = {}
             self.layer_z = {}
@@ -1337,6 +1342,7 @@ do
         _spawnEntity = function(self, ent_name, opt)
             local obj = Game.spawn(ent_name, opt)
             if obj then
+                opt.layer = opt.layer or "_"
                 obj:remDrawable()
                 if not self.entities[opt.layer] then self.entities[opt.layer] = {} end
                 table.insert(self.entities[opt.layer], obj)
@@ -1377,6 +1383,12 @@ do
             -- destroy hitboxes
             for _,tile in ipairs(self.hb_list) do 
                 Hitbox.remove(tile)
+            end
+            -- destroy entities
+            for _,entities in pairs(self.entities) do
+                for _,ent in ipairs(entities) do
+                    ent:destroy()
+                end
             end
         end
     }
@@ -1695,7 +1707,10 @@ do
             end 
         end,
         start = function(name)
-            stateCB(name, 'enter')
+            local state = states[name]
+            if not state.running then
+                stateCB(name, 'enter')
+            end
         end,
         update = function(name, dt)
             for name, state in pairs(states) do 
@@ -1719,7 +1734,7 @@ do
                     for _,obj in ipairs(state.objects) do 
                         if obj then obj:destroy() end 
                     end
-                    if state then state.running = false end
+                    state.running = false
                 end
             else 
                 for name, state in pairs(states) do 
@@ -1769,115 +1784,123 @@ Window = {
 }
 
 --BLANKE
-Blanke = {
-    config = {};
-    game_canvas = nil;
-    loaded = false;
-    load = function()
-        if not Blanke.loaded then
-            Blanke.loaded = true
-            Game.load()
-        end
-    end;
-    update = function(dt)
-        if Game.options.update(dt) == true then return end
-        Physics.update(dt)
-        local len = #Game.updatables
+Blanke = nil
+do 
+    local iterate = function(t, test_val, fn) 
+        local len = #t
+        local offset = 0
         for o = 1, len do
-            local obj = Game.updatables[o]
-            if obj then
-                if obj.destroyed or not obj.updatable then 
-                    Hitbox.remove(obj)
-                    Game.updatables[o] = nil
-                elseif not obj.skip_update and not obj.pause and obj._update then
-                    obj:_update(dt)
+            local obj = t[o]
+            if obj then 
+                if obj.destroyed or not obj[test_val] then 
+                    t[o] = nil
+                    offset = offset + 1
+                else
+                    t[o] = nil 
+                    t[o - offset] = obj
+                    fn(obj, o)
                 end
             end
         end
-        State.update(dt)
-        local key = Input.pressed('_fs_toggle') 
-        if key and key.count == 1 then
-            Window.toggleFullscreen()
-        end            
-        Input.keyCheck()
-    end;    
-    draw = function()
-        local actual_draw = function()
-            local len = #Game.drawables
-            for o = 1, len do
-                local obj = Game.drawables[o]
-                if obj then 
-                    if obj.destroyed or not obj.drawable then
-                        Game.drawables[o] = nil
-                    elseif not obj.skip_draw and obj.drawable and obj.draw ~= false then
+    end
+
+    Blanke = {
+        config = {};
+        game_canvas = nil;
+        loaded = false;
+        load = function()
+            if not Blanke.loaded then
+                Blanke.loaded = true
+                Game.load()
+            end
+        end;
+        update = function(dt)
+            if Game.options.update(dt) == true then return end
+            Physics.update(dt)
+            iterate(Game.updatables, 'updatable', function(obj)
+                if not obj.skip_update and not obj.pause and obj._update then
+                    obj:_update(dt)
+                end
+            end)
+            State.update(dt)
+            local key = Input.pressed('_fs_toggle') 
+            if key and key.count == 1 then
+                Window.toggleFullscreen()
+            end            
+            Input.keyCheck()
+        end;    
+        draw = function()
+            local actual_draw = function()
+                iterate(Game.drawables, 'drawable', function(obj)
+                    if not obj.skip_draw and obj.drawable and obj.draw ~= false then
                         if obj.draw then 
                             obj:draw(function()
                                 if obj._draw then obj:_draw() end
                             end)
-                        elseif obj and obj._draw then obj:_draw() end
+                        elseif obj._draw then obj:_draw() end
                     end
-                end
-            end
-            if Game.options.postDraw then Game.options.postDraw() end
-            Physics.draw()
-            Hitbox.draw()
+                end)
+                if Game.options.postDraw then Game.options.postDraw() end
+                Physics.draw()
+                Hitbox.draw()
 
-            State.draw()
-        end
-
-        local _drawGame = function()
-            if Camera.count() > 0 then
-                Camera.useAll(actual_draw)
-            else 
-                actual_draw()
+                State.draw()
             end
-        end
-       
-        local _draw = function()
-            Game.options.draw(function()
-                if Game.effect then
-                    Game.effect:draw(_drawGame)
+
+            local _drawGame = function()
+                if Camera.count() > 0 then
+                    Camera.useAll(actual_draw)
                 else 
-                    _drawGame()
+                    actual_draw()
                 end
-            end)
-        end
-
-        Blanke.game_canvas:drawTo(_draw)
-        if Blanke.config.scale == true then
-            local scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
-            local scale = math.min(scalex, scaley)
-            local padx, pady = 0, 0
-            if scalex > scaley then
-                padx = floor((Game.win_width - (Game.width * scale)) / 2)
-            else 
-                pady = floor((Game.win_height - (Game.height * scale)) / 2)
             end
-            Draw.push()
-            Draw.translate(padx, pady)
-            Draw.scale(scale)
-            Blanke.game_canvas:draw()
-            Draw.pop()
         
-        else 
-            Blanke.game_canvas:draw()
-        end
-    end;
-    keypressed = function(key, scancode, isrepeat)
-        Input.press(key, {scancode=scancode, isrepeat=isrepeat})
-    end;
-    keyreleased = function(key, scancode)
-        Input.release(key, {scancode=scancode})
-    end;
-    mousepressed = function(x, y, button, istouch, presses) 
-        Input.press('mouse', {x=x, y=y, button=button, istouch=istouch, presses=presses})
-        Input.press('mouse'..tostring(button), {x=x, y=y, button=button, istouch=istouch, presses=presses})
-    end;
-    mousereleased = function(x, y, button, istouch, presses) 
-        Input.press('mouse', {x=x, y=y, button=button, istouch=istouch, presses=presses})
-        Input.release('mouse'..tostring(button), {x=x, y=y, button=button, istouch=istouch, presses=presses})
-    end;
-}
+            local _draw = function()
+                Game.options.draw(function()
+                    if Game.effect then
+                        Game.effect:draw(_drawGame)
+                    else 
+                        _drawGame()
+                    end
+                end)
+            end
+
+            Blanke.game_canvas:drawTo(_draw)
+            if Blanke.config.scale == true then
+                local scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
+                local scale = math.min(scalex, scaley)
+                local padx, pady = 0, 0
+                if scalex > scaley then
+                    padx = floor((Game.win_width - (Game.width * scale)) / 2)
+                else 
+                    pady = floor((Game.win_height - (Game.height * scale)) / 2)
+                end
+                Draw.push()
+                Draw.translate(padx, pady)
+                Draw.scale(scale)
+                Blanke.game_canvas:draw()
+                Draw.pop()
+            
+            else 
+                Blanke.game_canvas:draw()
+            end
+        end;
+        keypressed = function(key, scancode, isrepeat)
+            Input.press(key, {scancode=scancode, isrepeat=isrepeat})
+        end;
+        keyreleased = function(key, scancode)
+            Input.release(key, {scancode=scancode})
+        end;
+        mousepressed = function(x, y, button, istouch, presses) 
+            Input.press('mouse', {x=x, y=y, button=button, istouch=istouch, presses=presses})
+            Input.press('mouse'..tostring(button), {x=x, y=y, button=button, istouch=istouch, presses=presses})
+        end;
+        mousereleased = function(x, y, button, istouch, presses) 
+            Input.press('mouse', {x=x, y=y, button=button, istouch=istouch, presses=presses})
+            Input.release('mouse'..tostring(button), {x=x, y=y, button=button, istouch=istouch, presses=presses})
+        end;
+    }
+end
 
 
 love.load = function() Blanke.load() end

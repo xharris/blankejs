@@ -226,10 +226,11 @@
 		height: 100%;
 		z-index: 0;
 		background: rgba(33, 33, 33, 0.8);
-		line-height: 12px;
+		line-height: 14px;
 	}
 	.CodeMirror-code,.CodeMirror-linenumber, .CodeMirror-gutters {
 		background: transparent;
+		color: fade(@ide-accent-2, 50%);
 	}
 	.CodeMirror-dialog-top {
 		border: none;
@@ -577,7 +578,8 @@
 	   		 		button:hover {
 						box-shadow: 0 0px 10px 3px rgba(244, 67, 54, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
 	   		 			background-color: rgb(244, 67, 54);
-	   		 			color: rgb(250, 250, 250);
+						color: rgb(250, 250, 250);
+						border:	1px solid transparent;
 	   		 		}
 	   		 	}
 
@@ -593,8 +595,11 @@
 					display: initial;
 					margin: 0px;
 
+					.form-button, .form-text, .form-select {
+		   		 		/* border: none; */
+					}
+
 					.form-button {
-		   		 		border: none;
 		   		 		outline: none;
 				    	background-color: rgba(255,255,255,0.5);
 				    	padding: 0px;
@@ -610,7 +615,6 @@
 					}
 
 					.form-text {
-		   		 		border: none;
 				    	background-color: rgba(255,255,255,0.5);
 				    	padding: 4px;
 				    	box-sizing: border-box;
@@ -636,7 +640,6 @@
 					}
 
 					.form-select {
-					    border: none;
 					    padding: 5px;
 					    text-align: center;
 					    background-color: rgba(176,190,197 ,1);

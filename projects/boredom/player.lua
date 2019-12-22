@@ -27,7 +27,6 @@ Entity("Player", {
 				self.vspeed = -self.vspeed/2
 			end
 			if v.other.hspeed then 
-				print(v.other.hspeed)
 				self.x = self.x + (v.other.hspeed)
 			end
 		end,
@@ -36,6 +35,8 @@ Entity("Player", {
 				self.dead = true
 				self.hitArea = 'player_dead'
 				Tween(2, self, { hspeed=0 })
+				State.stop()
+				State.start('play')
 			end
 		end,
 		update = function(self, dt)

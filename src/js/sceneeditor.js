@@ -99,8 +99,7 @@ class SceneEditor extends Editor {
 		this.el_object_form = new BlankeForm([
 			['name', 'text'],//, {'label':false}],
 			['color', 'color', {'label':false}],
-			['size', 'number', {'inputs':2, 'separator':'x'}],
-			['delete', 'button']
+			['size', 'number', {'inputs':2, 'separator':'x'}]
 		]);
 		this.el_object_form.container.style.display = "none";
 	
@@ -264,37 +263,53 @@ class SceneEditor extends Editor {
 		// object size
 		this.el_object_form.onChange('size', (value) => this.setObjectSize(this.curr_object.uuid, value));
 
-		// object deletion
-		this.el_object_form.onChange('delete', function(){
-			if (this_ref.curr_object) {
-				for (let uuid in this_ref.objects) { 
-					if (uuid == this_ref.curr_object.uuid) {
-						let obj = this_ref.objects[uuid];
-						blanke.showModal(
-							"<label>Remove '"+obj.name+"'?<br/>Objects are global and it will be removed from all maps.</label>",
-						{
-						"yes": function() {
-							// remove instances
-							this_ref.iterObject(obj.name, function(obj) {
-								obj.image.destroy();
-								obj.poly.destroy();
-							});
-
-							// remove the object
-							this_ref.setObject(this_ref.el_obj_list.removeItem(obj.name, true));
-							this_ref.deleteObject(uuid);
-				 		},
-							"no": function() {}
-						});
-
-						break;
-					}
-				}
-			}
-		});
 
 		// add object button
-		this.el_obj_list = new BlankeListView({object_type:"object"});
+		this.el_obj_list = new BlankeListView({
+			object_type:"object",
+			actions:{
+				"delete":"remove object"
+			}
+		});
+		this.el_obj_list.onItemAction = (icon, text) => {
+			// object deletion
+			if (icon == "delete") {
+				blanke.showModal(
+					"delete \'"+text+"\'?",
+					{
+						"yes": () => { 
+							if (this.curr_object) {
+								for (let uuid in this.objects) { 
+									if (uuid == this.curr_object.uuid) {
+										let obj = this.objects[uuid];
+										blanke.showModal(
+											"<label>Remove '"+obj.name+"'?<br/>Objects are global and it will be removed from all maps.</label>",
+										{
+										"yes": function() {
+											// remove instances
+											this.iterObject(obj.name, function(obj) {
+												obj.image.destroy();
+												obj.poly.destroy();
+											});
+				
+											// remove the object
+											this.setObject(this.el_obj_list.removeItem(obj.name, true));
+											this.deleteObject(uuid);
+										 },
+											"no": function() {}
+										});
+				
+										break;
+									}
+								}
+							}
+						 },
+						"no": () => {}
+					}
+				);
+				
+			}
+		}
 		this.el_obj_list.onItemSelect = function(text) {
 			this_ref.setObject(text);	
 		}
@@ -465,35 +480,25 @@ class SceneEditor extends Editor {
 						this.placeImage(mouse[0], mouse[1], this.curr_image);
 
 					} else {
-						let ix = start_x,
-							iy = start_y,
-							target_x = mouse[0],
-							target_y = mouse[1],
-							x_incr = this.selected_width,
-							y_incr = this.selected_height,
-							x_diff = Math.abs(target_x - start_x),
-							y_diff = Math.abs(target_y - start_y),
-							checkX = false,
-							checkY = false;
+						let target_x = mouse[0],
+							target_y = mouse[1];
 
-							if (x_diff > y_diff) 
-								y_incr = (target_y - start_y) / (x_diff / x_incr);
-							
-							if (x_diff < y_diff) 
-								x_incr = (target_x - start_x) / (y_diff / y_incr);
-							
-						do {
-							x_diff = (target_x - ix);
-							y_diff = (target_y - iy);
+						let snapx = this.curr_layer.snap[0],
+							snapy = this.curr_layer.snap[1];
 
-							this.placeImage(ix, iy, this.curr_image);
+						let dx = Math.floor(Math.abs(target_x - start_x) / snapx) + 1;
+						let dy = Math.floor(Math.abs(target_y - start_y) / snapy) + 1;
 
-							checkX = (start_x < target_x && ix < target_x) || (start_x > target_x && ix > target_x);
-							checkY = (start_y < target_y && iy < target_y) || (start_y > target_y && iy > target_y);
+						let x_sign = Math.sign(target_x - start_x);
+						let y_sign = Math.sign(target_y - start_y);
 
-							if (checkX) ix += Math.sign(x_diff)*x_incr;
-							if (checkY) iy += Math.sign(y_diff)*y_incr;
-						} while (checkX || checkY);
+						let tiles = Math.floor(Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2)));
+						
+						for (let t = 0; t < tiles; t++) {
+							let x = (Math.floor((t/tiles) * dx) * x_sign * snapx) + start_x,
+								y = (Math.floor((t/tiles) * dy) * y_sign * snapy) + start_y;
+							this.placeImage(x, y, this.curr_image);
+						}
 					}
 
 					this.export();
@@ -715,6 +720,7 @@ class SceneEditor extends Editor {
 		});
 
 		if (file_path) this.load(file_path);
+		else this.loaded = true;
 	}
 
 	clearTileSelection () {
@@ -1870,13 +1876,17 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	load (file_path) {
-		let this_ref = this;
+	checkLoaded () {
+		if (this.image_loads_left <= 0) {
+			this.loaded = true;
+		}
+	}
 
+	load (file_path) {
 		this.file = file_path;
+		this.loaded = false;
 
 		var data = nwFS.readFileSync(file_path, 'utf-8');
-		var first_layer = null;
 
 		if (data.length > 5) {
 			data = JSON.parse(data);
@@ -1888,10 +1898,10 @@ class SceneEditor extends Editor {
 			this.refreshLayerList();
 
 			// images
-			let this_ref = this;
-			data.images.forEach(function(img, i){
+			this.image_loads_left = data.images.length;
+			data.images.forEach((img, i) => {
 				var full_path = nwPATH.normalize(nwPATH.join(app.project_path,img.path));
-				this_ref.images.push({
+				this.images.push({
 					path: app.cleanPath(full_path),
 					snap: img.snap,
 					offset: img.offset,
@@ -1901,16 +1911,17 @@ class SceneEditor extends Editor {
 					pixi_images: {},
 					pixi_tilemap: {}
 				});
-				this_ref.setImage(full_path, function(img_ref){
+				this.setImage(full_path, (img_ref) => {
 					for (var layer_uuid in img.coords) {
-						let layer = this_ref.getLayer(layer_uuid, true);
+						let layer = this.getLayer(layer_uuid, true);
 						for (var coord of img.coords[layer_uuid]) {
-							this_ref.placeImageFrame(coord[0], coord[1], {
+							this.placeImageFrame(coord[0], coord[1], {
 								'x':coord[2], 'y':coord[3], 'width':coord[4], 'height':coord[5]
 							}, img_ref, layer, true);
 						}
-					}
-
+					}	
+					this.image_loads_left--;
+					this.checkLoaded();
 				});				
 			});
 
@@ -1939,8 +1950,8 @@ class SceneEditor extends Editor {
 			}
 		}
 		this.setTitle(nwPATH.basename(file_path));
-		this.setOnClick(function(){
-			openScene(this_ref.file);
+		this.setOnClick(() => {
+			openScene(this.file);
 		});
 		this.setupMenu({
 			close: true,
@@ -1957,10 +1968,12 @@ class SceneEditor extends Editor {
 		this.refreshLayerList();
 		this.loadObjectsFromSettings();
 		this.pixi.resize();
+
+		if (data.images.length == 0) this.loaded = true;
 	}
 
 	export () {
-		if (this.deleted) return;
+		if (this.deleted || !this.loaded) return;
 
 		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
 			camera:this.pixi.camera,

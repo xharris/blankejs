@@ -16,8 +16,16 @@
     ],
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "player.lua=script+?",
             "player.lua"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
             "movingblock.lua=script+?",
@@ -26,14 +34,6 @@
         [
             "Open image editor=?",
             "Open image editor"
-        ],
-        [
-            "level1.map=map+?",
-            "level1.map"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "autoplay_preview": true,

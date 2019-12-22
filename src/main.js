@@ -316,7 +316,7 @@ var app = {
             app.refreshAutocomplete();
 			dispatchEvent("autocompleteChanged");
 			if (!app.autocomplete_toast)
-				app.autocomplete_toast = blanke.toast("autocomplete reloaded!", null, () => {
+				app.autocomplete_toast = blanke.toast("", null, () => {
 					app.autocomplete_toast = null;
 				});
 		});

@@ -18,27 +18,27 @@
             "main.lua"
         ],
         [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
+        ],
+        [
             "Open image editor=?",
             "Open image editor"
         ],
         [
             "View project in explorer=?",
             "View project in explorer"
-        ],
-        [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "Add a map=new+?",
-            "Add a map"
         ]
     ],
     "autoplay_preview": true,
     "scene": {
         "objects": {
             "526dedde": {
-                "name": "object0",
+                "name": "player",
                 "char": "A",
                 "color": "#00ff00",
                 "size": [
