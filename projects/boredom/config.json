@@ -108,7 +108,10 @@
                 0,
                 0
             ],
-            "spacing": 0
+            "spacing": 0,
+            "tool.shape": "circle",
+            "tool.radius": 12,
+            "tool.fill": false
         },
         "image/spike.png": {
             "frame_size": [
@@ -170,7 +173,9 @@
                 0,
                 0
             ],
-            "spacing": 0
+            "spacing": 0,
+            "tool.radius": 1,
+            "tool.shape": "rect"
         },
         "image/image7.png": {
             "frame_size": [

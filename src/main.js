@@ -377,9 +377,10 @@ var app = {
 
 	toggleWindowVis: function() {
 		DragBox.showHideAll();
+		app.getElement("#btn-winvis").title = `${(split_enabled == true ? 'hide' : 'show')} floating windows`;
 	},
 
-	toggleSplit: function() {
+	toggleSplit: () => {
 		FibWindow.toggleSplit();
 		app.getElement("#btn-winsplit").title = "toggle window splitting "+(split_enabled == true ? '(ON)' : '(OFF)');
 	},
