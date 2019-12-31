@@ -3,14 +3,14 @@ exports.info = {
     author: "XHH",
     description: "Simple networking plugin for BlankE",
     id: "xhh-net",
-    enabled: false
+    enabled: true
 }
 
 exports.autocomplete = {
     class_list: 'Net',
     hints: {
         "blanke-net":[
-            { fn: 'join', vars: { address:'', port:'' } },
+            { fn: 'connect', vars: { address:'', port:'' } },
             { fn: 'disconnect' }
         ]
     }

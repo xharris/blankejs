@@ -10,8 +10,7 @@ do
     require "plugins.xhh-net.noobhub"
     local client
     local leader = false
-    local net_objects = {}
-    
+
     local sendData = function(data)
         if client then 
             client:publish({
@@ -102,23 +101,8 @@ do
         on = function(event, fn)
             Signal.on('net.'..event, fn)
         end,
-        -- only to be used with class instances
-        sync = function(obj, vars) 
-            if not obj._net_last_val then 
-                -- setup object for net syncing
-                obj._net_last_val = {}
-                if not net_objects[Net.id] then net_objects[Net.id] = {} end
-                if not obj._net_id then obj._net_id = uuid() end
-                net_objects[Net.id][obj._net_id] = obj
-            end
-            local net_vars = vars or obj.net_vars or {}
-            -- sync vars
-            for _, prop in ipairs(net_vars) do 
-                if obj[prop] ~= obj._net_last_val[prop] then 
-                    obj._net_last_val[prop] = obj[prop]
-                    Net.send
-                end
-            end
+        sync = function(obj) 
+
         end
     }
 

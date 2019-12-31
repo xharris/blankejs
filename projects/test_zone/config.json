@@ -64,7 +64,8 @@
     },
     "enabled_plugins": {
         "xhh-effect": false,
-        "xhh-tween": false
+        "xhh-tween": false,
+        "xhh-net": true
     },
     "imageeditor": {
         "image/blue_robot.png": {

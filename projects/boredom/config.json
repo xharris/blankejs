@@ -16,16 +16,16 @@
     ],
     "quick_access": [
         [
-            "level1.map=map+?",
-            "level1.map"
+            "player.lua=script+?",
+            "player.lua"
         ],
         [
             "Open image editor=?",
             "Open image editor"
         ],
         [
-            "player.lua=script+?",
-            "player.lua"
+            "level1.map=map+?",
+            "level1.map"
         ],
         [
             "main.lua=script+?",
@@ -91,7 +91,8 @@
     "enabled_plugins": {
         "xhh-platformer": false,
         "xhh-tween": true,
-        "xhh-effect": true
+        "xhh-effect": true,
+        "xhh-net": false
     },
     "game_size": 3,
     "window_size": 3,
@@ -199,7 +200,9 @@
                 0,
                 0
             ],
-            "spacing": 0
+            "spacing": 0,
+            "tool.shape": "rect",
+            "showPreview": false
         },
         "image/image8.png": {
             "frame_size": [

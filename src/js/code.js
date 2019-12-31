@@ -121,14 +121,12 @@ var getCompletionList = (_type) => {
 // ** called when a file is modified
 var script_list = [];
 var getKeywords = (file, content) => {
-	if (file.includes(main_file)) return; // main file makes while loop freeze for some reason
     blanke.cooldownFn('getKeywords.'+file, 500, ()=>{
+		dispatchEvent('script_modified',{path:file, content:content})
+		if (file.includes(main_file)) return; // main file makes while loop freeze for some reason
         ext_class_list[file] = {};
         instance_list[file] = {};
         var_list[file] = {};
-
-        // should a server be running?
-		dispatchEvent('script_modified',{path:file, content:content})
 
         let match = (regex_obj, store_list) => {
 			// refresh matches for all files

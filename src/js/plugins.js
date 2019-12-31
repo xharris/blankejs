@@ -248,7 +248,7 @@ class Plugins extends Editor {
 				</div>
 				<div class='form-label'>
 					<div class='name'>${info.name}</div>
-					${info.author ? `<div class='author'>${info.author}</div>` : ''}
+					${info.author ? `<div class='author'>${info.author} (${info.id})</div>` : ''}
 					${info.description ? `<div class='description'>${info.description}</div>` : ''}
 				</label>
 			`;

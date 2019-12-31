@@ -541,22 +541,10 @@ var app = {
 	},
 
 	plugin_watch:null,
-	saveAppData: function() {
-		var app_data_folder = app.getAppDataFolder();
-		var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
-		
-		nwFS.stat(app_data_folder, function(err, stat) {
-			if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
-			nwFS.writeFile(app_data_path, JSON.stringify(app.settings));
-		});
-
-		dispatchEvent('appdataSave');
-	},
-
 	ideSetting: function (k, v) {
 		if (v != null) {
 			app.settings[k] = v;
-			// app.saveAppData();
+			app.saveAppData();
 		}
 		if (!k) return app.settings;
 		return app.settings[k] || DEFAULT_IDE_SETTINGS[k]
@@ -565,7 +553,7 @@ var app = {
 	projSetting: function (k, v) {
 		if (v != null) {
 			app.project_settings[k] = v;
-			// app.saveSettings();
+			app.saveSettings();
 		}
 		if (!k) return app.project_settings;
 		return app.project_settings[k] || DEFAULT_PROJECT_SETTINGS[k]
@@ -596,9 +584,25 @@ var app = {
 		}
 	},
 	saveSettings: function(){
-		if (app.isProjectOpen()) {
-			nwFS.writeFile(nwPATH.join(app.project_path,"config.json"), JSON.stringify(app.project_settings, null, 4));
-		}
+		blanke.cooldownFn('saveSettings',500,function(){
+			if (app.isProjectOpen()) {
+				nwFS.writeFile(nwPATH.join(app.project_path,"config.json"), JSON.stringify(app.project_settings, null, 4));
+			}
+		});
+	},
+
+	saveAppData: function() {
+		blanke.cooldownFn('saveAppData',500,function(){
+			var app_data_folder = app.getAppDataFolder();
+			var app_data_path = nwPATH.join(app_data_folder, 'blanke.json');
+			
+			nwFS.stat(app_data_folder, function(err, stat) {
+				if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder);
+				nwFS.writeFile(app_data_path, JSON.stringify(app.settings));
+			});
+
+			dispatchEvent('appdataSave');
+		});
 	},
 
 	hideWelcomeScreen: function() {
@@ -843,7 +847,7 @@ var app = {
 	refreshQuickAccess: (hash, not_now) => {
 		if (!not_now) // double negative lol
 			app._refreshQuickAccess(hash);
-		blanke.cooldownFn('refreshQuickAccess',2000,()=>{
+		blanke.cooldownFn('refreshQuickAccess',1000,()=>{
 			app._refreshQuickAccess(hash);
 		})
 	},

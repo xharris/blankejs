@@ -2,8 +2,8 @@
 
 local bump = require "lua.bump"
 local uuid = require "lua.uuid"
-local json = require "lua.json"
-local class = require "lua.clasp"
+json = require "lua.json"
+class = require "lua.clasp"
 require "lua.print_r"
 
 --UTIL.table
@@ -626,6 +626,10 @@ local _Entity = GameObject:extend {
         if args.hitbox then
             Hitbox.add(self)
         end
+        -- other props
+        for _, fn in ipairs(Entity.init_props) do
+            fn(self, args, spawn_args)
+        end
 
         self:addUpdatable()
         self:addDrawable()
@@ -701,9 +705,15 @@ local _Entity = GameObject:extend {
     end
 }
 
-Entity = function(name, args)
-    Game.addObject(name, "Entity", args, _Entity)
-end
+Entity = class {
+    init_props = {};
+    init = function(self, name, args)
+        Game.addObject(name, "Entity", args, _Entity)
+    end;
+    addInitFn = function(fn)
+        table.insert(Entity.init_props, fn)
+    end
+}
 
 --INPUT
 Input = nil
@@ -1718,7 +1728,7 @@ do
         end,
         start = function(name)
             local state = states[name]
-            if not state.running then
+            if state and not state.running then
                 stateCB(name, 'enter')
             end
         end,
@@ -1758,6 +1768,25 @@ do
         end
     }
 end 
+
+--SIGNAL
+Signal = nil
+do
+    local fns = {}
+    Signal = {
+        emit = function(event, ...)
+            if fns[event] then 
+                for _,fn in ipairs(fns[event]) do 
+                    fn(...)
+                end
+            end
+        end,
+        on = function(event, fn) 
+            if not fns[event] then fns[event] = {} end
+            table.insert(fns[event], fn)
+        end
+    }
+end
 
 --WINDOW
 Window = {
@@ -1837,6 +1866,7 @@ do
                 end
             end)
             State.update(dt)
+            Signal.emit('update',dt)
             local key = Input.pressed('_fs_toggle') 
             if key and key.count == 1 then
                 Window.toggleFullscreen()

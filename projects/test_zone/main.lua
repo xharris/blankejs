@@ -1,6 +1,8 @@
 Game {
+	plugins = { "xhh-net" },
 	load = function() 
-		State.start('play')
+		Map.load("map0.map")
+		Net.connect()
 	end
 }
 
@@ -14,16 +16,11 @@ Entity("player", {
 		animations = { "blue_robot" },
 		animation = "blue_robot",
 		hspeed = 50,
+		net = true,
 		update = function(self, dt)
 			if Input.released('action') then
 				State.stop()
 				State.start('play')
 			end
-		end
-})
-
-State('play',{
-		enter = function()
-			Map.load("map0.map")
 		end
 })
