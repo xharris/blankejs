@@ -94,7 +94,8 @@ const engine = {
         })
     },
     export_targets: {
-        "love":false
+        "love":false,
+        "windows":true
     },
     export_assets: false,
     bundle: (dir, target_os, cb_done) => {
@@ -114,9 +115,31 @@ const engine = {
         archive.glob("**/*.lua", { cwd: nwPATH.join(engine_path) });
         archive.finalize();
     },
+    extra_bundle_assets: {
+        windows: ['love.dll','lua51.dll','mpg123.dll','msvcp120.dll','msvcr120.dll','OpenAL32.dll','SDL2.dll'].map(p => '<engine_path>/'+p)
+    },
     setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
-        if (platform == 'win') {
-            
+        let love_path = nwPATH.join(temp_dir, app.projSetting("export").name+".love")
+        let engine_path = app.ideSetting('engine_path');
+        let project_name = app.projSetting('export').name;
+        
+        if (platform == 'windows') {
+            let exe_path = nwPATH.join(os_dir, project_name+".exe");
+            // TODO: test on mac/linux
+            // copy /b love.exe+game.love game.exe
+            let f_loveexe = nwFS.createReadStream(nwPATH.join(engine_path,"love.exe"), {flags:'r', encoding:'binary'});
+            let f_gamelove = nwFS.createReadStream(love_path, {flags:'r', encoding:'binary'});
+            let f_gameexe = nwFS.createWriteStream(exe_path, {flags:'w', encoding:'binary'});
+            // set up callbacks
+            f_loveexe.on('end', ()=>{ 
+                f_gamelove.pipe(f_gameexe); 
+                // finished all merging
+                nwFS.remove(love_path, () => {
+                    cb_done();
+                });
+            })
+            // start merging
+            f_loveexe.pipe(f_gameexe, {end:false});
         }
     }
 }

@@ -16,6 +16,10 @@
     ],
     "quick_access": [
         [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
             "Open image editor=?",
             "Open image editor"
         ],
@@ -30,10 +34,6 @@
         [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "movingblock.lua=script+?",
-            "movingblock.lua"
         ]
     ],
     "autoplay_preview": true,

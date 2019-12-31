@@ -1043,7 +1043,7 @@ var app = {
 		if (!DEV_MODE || force_search_keys) {
 			DEV_MODE = true;
 			app.addSearchKey({key: 'Dev Tools', onSelect: app.window.webContents.openDevTools});
-			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ elec.shell.openItem(app.getAppDataFolder()); }});
+			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ elec.remote.shell.openItem(app.getAppDataFolder()); }});
 			app.window.webContents.openDevTools();
 			blanke.toast("Dev mode enabled");
 		} else {
@@ -1157,14 +1157,14 @@ var app = {
 		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
 			if (!app.error_occured) {
 				app.error_occured = e;
-				blanke.toast(`Error! See <a href="#" role="button" onclick="app.openErrorFile()">error.txt</a> for more info`,-1);
+				blanke.toast(`Error! See <a href="#" title="open error.txt" role="button" onclick="app.openErrorFile()">error.txt</a> for more info`,-1);
 				app.sanitizeURLs();
 			}
 		});
 	},
 
 	openErrorFile () {
-		elec.shell.openItem(nwPATH.join(app.getAppDataFolder(),'error.txt'));
+		elec.remote.shell.openItem(nwPATH.join(app.getAppDataFolder(),'error.txt'));
 	},
 
 	shortcut_log: {},
@@ -1471,7 +1471,7 @@ app.window.webContents.once('dom-ready', ()=>{
 
 	document.addEventListener("openProject",function(){
 		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
-			elec.shell.openItem(app.project_path);
+			elec.remote.shell.openItem(app.project_path);
 		}});
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();

@@ -464,7 +464,6 @@
 		margin: 5px;
 	    margin-top: 20px;
 		z-index: 1;
-		background-color: rgba(38, 50, 56, 0.81);
 	    transition: all ease-in-out 0.2s;
 	    border-radius: 4px;
 		
@@ -928,7 +927,6 @@
 		width: auto;
 		margin: 0px;
 		margin-top: @window-padding;
-		background-color: transparent;
 		/* display: inline-table; */
 		position: initial;
 
@@ -1663,9 +1661,13 @@
 		}
 	}
 	&:not(.first) {
+		.content { 
+			border: 1px solid @sub-window-background;
+		}
 		.editor-content {
 			position: absolute;
 			right: 0px;
+			padding: 2px;
 			max-width: 165px;
 			margin: 5px;
 			height: auto;
