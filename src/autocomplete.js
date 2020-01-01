@@ -40,7 +40,8 @@ module.exports.keywords = [
 module.exports.class_list = [
 	"Math", "FS", "Game", "Canvas", "Image", "Entity",
 	"Input", "Draw", "Color", "Audio", "Effect", "Camera",
-	"Map", "Physics", "Hitbox", "State", "Window", "Blanke"
+	"Map", "Physics", "Hitbox", "State", "Window", "Net",
+	"Blanke"
 ];
 
 module.exports.class_extends = {
@@ -163,5 +164,8 @@ module.exports.hints = {
 		{ fn: 'add', vars: {obj:''}},
 		{ fn: 'move', vars: {obj:''}, info:'call after changing x/y/hitArea'},
 		{ fn: 'remove', vars: {obj:''}}
+	],
+	"blanke-net":[
+
 	]
 }

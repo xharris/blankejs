@@ -1,4 +1,5 @@
 -- TODO Blanke.config
+math.randomseed(os.time())
 
 local bump = require "lua.bump"
 local uuid = require "lua.uuid"
@@ -626,6 +627,15 @@ local _Entity = GameObject:extend {
         if args.hitbox then
             Hitbox.add(self)
         end
+        -- net
+        if args.net and not spawn_args.net_obj then
+            if not args.net_vars then 
+                args.net_vars = {'x','y','animation','align'}
+            end
+            self.net_vars = args.net_vars
+            Net.spawn(self, spawn_args)
+        end
+        self.net_obj = spawn_args.net_obj
         -- other props
         for _, fn in ipairs(Entity.init_props) do
             fn(self, args, spawn_args)
@@ -682,6 +692,7 @@ local _Entity = GameObject:extend {
             anim.x, anim.y = self.x, self.y
             anim:update(dt)
         end
+        Net.sync(self)
     end;
     _draw = function(self)
         if self.imageList then
@@ -1393,8 +1404,8 @@ do
                     end
                 end
                 if self.entities[l_name] then 
-                    for _,ent in ipairs(self.entities[l_name]) do
-                        ent:draw()
+                    for _,obj in ipairs(self.entities[l_name]) do 
+                        Blanke.drawObject(obj)
                     end
                 end
             end
@@ -1788,6 +1799,226 @@ do
     }
 end
 
+--NET
+Net = nil
+do
+    local socket = require "socket"
+    local uuid = require "lua.uuid"
+    require "lua.noobhub"
+    local client
+    local leader = false
+    local net_objects = {}
+    
+    local sendData = function(data)
+        if client then 
+            client:publish({
+                message = {
+                    type="data",
+                    timestamp = love.timer.getTime(),
+                    data=data,
+                    room=Net.room
+                }
+            })
+        end
+    end 
+
+    local sendNetEvent = function(event, data)
+        if client then 
+            client:publish({
+                message = {
+                    type="netevent",
+                    timestamp = love.timer.getTime(),
+                    event=event,
+                    data=data,
+                    room=Net.room
+                }
+            })
+        end
+    end
+
+    local storeNetObject = function(clientid, obj, objid)
+        objid = objid or obj.net_id or uuid()
+        if not net_objects[clientid] then net_objects[clientid] = {} end 
+        net_objects[clientid][objid] = obj
+    end
+
+    local onReceive = function(data)
+        local netdata = data.data
+        if data.type == "netevent" then 
+            if data.event == "getID" then 
+                if Net.id then 
+                    net_objects[Net.id] = nil
+                end
+                Net.id = data.info.id
+                leader = data.info.is_leader
+                net_objects[Net.id] = {}
+                Signal.emit('net.ready')
+            end
+            if data.event == "set.leader" and data.info == Net.id then 
+                leader = true
+            end
+            if data.event == "client.connect" and data.clientid ~= Net.id then 
+                Signal.emit('net.connect', data.clientid)
+                -- get new client up to speed with net objects
+                Net.syncAll(data.clientid)
+            end
+            if data.event == "client.disconnect" then 
+                Signal.emit('net.disconnect', data.clientid)
+            end
+            if data.event == "obj.sync" and netdata.clientid ~= Net.id then 
+                local obj = (net_objects[netdata.clientid] or {})[netdata.objid]
+                if obj then 
+                    print_r(netdata.props)
+                    for prop, val in pairs(netdata.props) do 
+                        obj[prop] = val
+                    end
+                end
+            end
+            if data.event == "obj.spawn" and netdata.clientid ~= Net.id then
+                netdata.args.net_obj = true
+                local obj = Game.spawn(netdata.classname, netdata.args)
+                storeNetObject(netdata.clientid, obj, netdata.args.net_id)
+            end
+            if data.event == "obj.syncAll" and netdata.targetid == Net.id then 
+                for clientid, objs in pairs(netdata.sync_objs) do 
+                    for objid, props in pairs(objs) do 
+                        print_r(props)
+                        local obj = Game.spawn(props.classname, props)
+                        storeNetObject(clientid, obj, objid)
+                    end
+                end
+            end
+        elseif data.type == "data" then
+            Signal.emit('net.data', netdata, data)
+        end
+    end
+
+    local onFail = function()
+
+    end
+
+    local prepNetObject = function(obj)
+        if not obj._net_last_val then 
+            -- setup object for net syncing
+            obj._net_last_val = {}
+            if not net_objects[Net.id] then net_objects[Net.id] = {} end
+            if not obj.net_id then obj.net_id = uuid() end
+            net_objects[Net.id][obj.net_id] = obj
+        end
+    end
+
+    Signal.on('update', function(dt)
+        if client then client:enterFrame() end
+    end)
+
+    Net = {
+        address='localhost',
+        port=8080,
+        room=1,
+        ip='',
+        client=nil,
+        connect = function(address,port)
+            Net.address = address or Net.address
+            Net.port = port or Net.port
+            client = noobhub.new({ server=Net.address, port=Net.port })
+            if client then 
+                client:subscribe({
+                    channel = "room"..tostring(Net.room),
+                    callback = onReceive,
+                    cb_reconnect = onFail
+                })
+            else 
+                print("failed connecting to "..Net.address..":"..Net.port)
+                onFail()
+            end
+        end,
+        disconnect = function()
+            if client then 
+                client:unsubscribe()
+                client = nil
+                leader = false
+            end
+        end,
+        connected = function() return client ~= nil end,
+        send = function(data)
+            sendData(data)
+        end,
+        on = function(event, fn)
+            Signal.on('net.'..event, fn)
+        end,
+        spawn = function(obj, args)
+            prepNetObject(obj)
+            -- trash function arguments
+            args = args or {}
+            for prop, val in pairs(args) do
+                if type(val) == 'function' then args[prop] = nil end
+            end
+            args.net_id = obj.net_id
+            sendNetEvent('obj.spawn', {
+                clientid = Net.id,
+                classname = obj.classname,
+                args = args
+            })
+            Net.sync(obj)
+        end,
+        -- only to be used with class instances. will not sync functions?/table data (TODO: sync functions too?)
+        sync = function(obj, vars) 
+            if not obj then 
+                for objid, obj in pairs(net_objects[Net.id]) do 
+                    Net.sync(obj)
+                end
+                return
+            end
+            prepNetObject(obj)
+            local net_vars = vars or obj.net_vars or {}
+            if not obj.net_obj and #net_vars > 0 then 
+                -- get vars to sync
+                local sync_data = {}
+                local len = 0
+                for _, prop in ipairs(net_vars) do 
+                    if obj[prop] ~= obj._net_last_val[prop] then 
+                        obj._net_last_val[prop] = obj[prop]
+                        sync_data[prop] = obj[prop]
+                        len = len + 1
+                    end
+                end
+                -- sync vars
+                if len > 0 then
+                    sendNetEvent('obj.sync', {
+                        clientid = Net.id,
+                        objid = obj.net_id,
+                        props = sync_data
+                    })
+                end
+            end
+        end,
+        syncAll = function(targetid)
+            if leader then 
+                local sync_objs = {}
+                for clientid, objs in pairs(net_objects) do 
+                    sync_objs[clientid] = {}
+                    for objid, obj in pairs(objs) do 
+                        sync_objs[clientid][objid] = { classname=obj.classname, net_id=objid, net_obj=true }
+                        for _,prop in ipairs(obj.net_vars) do 
+                            sync_objs[clientid][objid][prop] = obj[prop]
+                        end
+                    end
+                end
+                sendNetEvent('obj.syncAll', {
+                    clientid = Net.id,
+                    targetid = targetid,
+                    sync_objs = sync_objs
+                })
+            end
+        end
+    }
+
+    local s = socket.udp()
+    s:setpeername("74.125.115.104",80)
+    local ip, _ = s:getsockname()
+    Net.ip = ip
+end
+
 --WINDOW
 Window = {
     os = '?';
@@ -1857,14 +2088,33 @@ do
                 Game.load()
             end
         end;
-        update = function(dt)
-            if Game.options.update(dt) == true then return end
-            Physics.update(dt)
-            iterate(Game.updatables, 'updatable', function(obj)
+        iterUpdate = function(t, dt) 
+            iterate(t, 'updatable', function(obj)
                 if not obj.skip_update and not obj.pause and obj._update then
                     obj:_update(dt)
                 end
             end)
+        end;
+        iterDraw = function(t, override_drawable)
+            iterate(t, 'drawable', function(obj)
+                if not obj.skip_draw and (override_drawable or obj.drawable) and obj.draw ~= false then
+                    Blanke.drawObject(obj)
+                end
+            end)
+        end;
+        drawObject = function(obj)
+            Draw.stack(function()
+                if obj.draw then 
+                    obj:draw(function()
+                        if obj._draw then obj:_draw() end
+                    end)
+                elseif obj._draw then obj:_draw() end
+            end)
+        end;
+        update = function(dt)
+            if Game.options.update(dt) == true then return end
+            Physics.update(dt)
+            Blanke.iterUpdate(Game.updatables, dt)
             State.update(dt)
             Signal.emit('update',dt)
             local key = Input.pressed('_fs_toggle') 
@@ -1875,15 +2125,7 @@ do
         end;    
         draw = function()
             local actual_draw = function()
-                iterate(Game.drawables, 'drawable', function(obj)
-                    if not obj.skip_draw and obj.drawable and obj.draw ~= false then
-                        if obj.draw then 
-                            obj:draw(function()
-                                if obj._draw then obj:_draw() end
-                            end)
-                        elseif obj._draw then obj:_draw() end
-                    end
-                end)
+                Blanke.iterDraw(Game.drawables)
                 if Game.options.postDraw then Game.options.postDraw() end
                 Physics.draw()
                 Hitbox.draw()

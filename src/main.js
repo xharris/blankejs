@@ -1517,7 +1517,13 @@ app.window.webContents.once('dom-ready', ()=>{
 
 				elec.remote.app.addRecentDocument(file);
 			}
-		})
+		});
+
+		document.addEventListener('script_modified', (e) => {
+			if (!app.isServerRunning() && e.detail.content.includes("Net.")) {								
+				app.runServer();
+			}
+		});
 		
 		app.showWelcomeScreen();
 		app.checkForUpdates(true);

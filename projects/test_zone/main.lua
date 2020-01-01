@@ -1,7 +1,8 @@
 Game {
-	plugins = { "xhh-net" },
 	load = function() 
-		Map.load("map0.map")
+		Net.on('ready', function()	
+			Map.load("map0.map")	
+		end)
 		Net.connect()
 	end
 }
@@ -15,12 +16,17 @@ Input {
 Entity("player", {
 		animations = { "blue_robot" },
 		animation = "blue_robot",
-		hspeed = 50,
 		net = true,
 		update = function(self, dt)
-			if Input.released('action') then
-				State.stop()
-				State.start('play')
+			if Input.released('action') and not self.net_obj then
+				self.x = self.x + self.width
 			end
+		end,
+		draw = function(self, d)
+			d()
+			Draw{
+				{ 'color', 'red' },
+				{ 'circle', 'line', self.x, self.y, 2}
+			}
 		end
 })
