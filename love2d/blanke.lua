@@ -1808,7 +1808,19 @@ do
     local client
     local leader = false
     local net_objects = {}
-    
+
+    local destroyNetObjects = function(clientid)
+        if net_objects[clientid] then 
+            for objid, obj in pairs(net_objects[clientid]) do 
+                if not obj.net_persistent then 
+                    obj:destroy()
+                    net_objects[clientid][objid] = nil
+                end
+            end
+            net_objects[clientid] = nil
+        end
+    end
+
     local sendData = function(data)
         if client then 
             client:publish({
@@ -1864,11 +1876,11 @@ do
             end
             if data.event == "client.disconnect" then 
                 Signal.emit('net.disconnect', data.clientid)
+                destroyNetObjects(data.clientid)
             end
             if data.event == "obj.sync" and netdata.clientid ~= Net.id then 
                 local obj = (net_objects[netdata.clientid] or {})[netdata.objid]
                 if obj then 
-                    print_r(netdata.props)
                     for prop, val in pairs(netdata.props) do 
                         obj[prop] = val
                     end
@@ -1882,7 +1894,6 @@ do
             if data.event == "obj.syncAll" and netdata.targetid == Net.id then 
                 for clientid, objs in pairs(netdata.sync_objs) do 
                     for objid, props in pairs(objs) do 
-                        print_r(props)
                         local obj = Game.spawn(props.classname, props)
                         storeNetObject(clientid, obj, objid)
                     end
@@ -1997,10 +2008,12 @@ do
                 local sync_objs = {}
                 for clientid, objs in pairs(net_objects) do 
                     sync_objs[clientid] = {}
-                    for objid, obj in pairs(objs) do 
-                        sync_objs[clientid][objid] = { classname=obj.classname, net_id=objid, net_obj=true }
-                        for _,prop in ipairs(obj.net_vars) do 
-                            sync_objs[clientid][objid][prop] = obj[prop]
+                    for objid, obj in pairs(objs) do
+                        if obj and not obj.destroyed then  
+                            sync_objs[clientid][objid] = { classname=obj.classname, net_id=objid, net_obj=true }
+                            for _,prop in ipairs(obj.net_vars) do 
+                                sync_objs[clientid][objid][prop] = obj[prop]
+                            end
                         end
                     end
                 end
