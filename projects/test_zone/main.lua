@@ -20,6 +20,12 @@ Entity("player", {
 		update = function(self, dt)
 			if Input.released('action') and not self.net_obj then
 				self.x = self.x + self.width
+				
+				if self.anim_speed == 0 then self.anim_speed = 1
+				elseif self.anim_speed == 1 then self.anim_speed = 0 end
+				
+				self.scalex = self.scalex + 0.1
+				self.angle = self.angle + 5
 			end
 		end,
 		draw = function(self, d)

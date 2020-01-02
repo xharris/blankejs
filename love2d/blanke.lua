@@ -302,10 +302,14 @@ GameObject = class {
         self.blendmode = nil
         self.child_keys = {}
         self.parent = nil
+
+        self.net_vars = {'x','y','z','angle','scalex','scaley','scale','offx','offy','shearx','sheary','align','animation'}
+
         -- custom properties were provided
         -- so far only allowed from Entity
         if not self.classname then self.classname = "GameObject" end
         if args then
+            if args.net_vars then self.net_vars = args.net_vars end
             if args.classname then self.classname = args.classname end
             for k, v in pairs(args) do
                 local arg_type = type(v)
@@ -507,7 +511,7 @@ do
                 anim_info = animations[args.animation]
             end
             if anim_info then 
-                -- animation
+                -- animation (speed, frame_index)
                 args = {file=anim_info.file}
                 self.animated = anim_info
                 self.speed = anim_info.speed
@@ -562,169 +566,192 @@ do
 end
 
 --ENTITY
-local _Entity = GameObject:extend {
-    init = function(self, args, spawn_args, classname)
-        GameObject.init(self, args, spawn_args)
+Entity = nil
+do
+    local _Entity = GameObject:extend {
+        init = function(self, args, spawn_args, classname)
+            GameObject.init(self, args, spawn_args)
 
-        self.hspeed = 0
-        self.vspeed = 0
-        self.gravity = 0
-        self.gravity_direction = 90
+            self.hspeed = 0
+            self.vspeed = 0
+            self.gravity = 0
+            self.gravity_direction = 90
+            self.anim_speed = 1
 
-        table.update(self, args)
-        self.classname = classname
-        self.imageList = {}
-        self.animList = {}
-        -- image
-        if args.images then
-            if type(args.images) == 'table' then
-                for _,img in ipairs(args.images) do
-                    self.imageList[img] = Image{file=img, skip_update=true}
+            table.update(self, args)
+            self.classname = classname
+            self.imageList = {}
+            self.animList = {}
+            -- image
+            if args.images then
+                if type(args.images) == 'table' then
+                    for _,img in ipairs(args.images) do
+                        self.imageList[img] = Image{file=img, skip_update=true}
+                    end
+                    self:_updateSize(self.imageList[args.images[1]], true)
+                else 
+                    self.imageList[args.images] = Image{file=args.images, skip_update=true}
+                    self:_updateSize(self.imageList[args.images], true)
                 end
-                self:_updateSize(self.imageList[args.images[1]])
-            else 
-                self.imageList[args.images] = Image{file=args.images, skip_update=true}
-                self:_updateSize(self.imageList[args.images])
+                self.images = args.images
             end
-            self.images = args.images
-        end
-        -- animation
-        if args.animations then
-            if type(args.animations) == 'table' then
-                for _,anim_name in ipairs(args.animations) do 
-                    self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
+            -- animation
+            if args.animations then
+                if type(args.animations) == 'table' then
+                    for _,anim_name in ipairs(args.animations) do 
+                        self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
+                    end
+                    self:_updateSize(self.animList[args.animations[1]], true)
+                else 
+                    self.animList[args.animations] = Image{file=args, animation=args.animations, skip_update=true}
+                    self:_updateSize(self.animList[args.animations], true)
                 end
-                self:_updateSize(self.animList[args.animations[1]])
-            else 
-                self.animList[args.animations] = Image{file=args, animation=args.animations, skip_update=true}
-                self:_updateSize(self.animList[args.animations])
+                if args.anim_frame or args.anim_speed or spawn_args.anim_frame or spawn_args.anim_speed then 
+                    self.animList[args.animation].speed = spawn_args.anim_speed or args.anim_speed
+                    self.animList[args.animation].frame_index = spawn_args.anim_frame or args.anim_frame
+                end
             end
-        end
 
-        if not self.defaultCollRes then
-            self.defaultCollRes = 'cross'
-            if args.animations or args.images then 
-                self.defaultCollRes = 'slide'
+            if not self.defaultCollRes then
+                self.defaultCollRes = 'cross'
+                if args.animations or args.images then 
+                    self.defaultCollRes = 'slide'
+                end
             end
-        end
 
-        for _,img in pairs(self.imageList) do img.parent = self end
-        for _,anim in pairs(self.animList) do anim.parent = self end
-        Game.checkAlign(self)
-        -- effect
-        if args.effect then self:setEffect(args.effect) end
-        -- physics
-        assert(not (args.body and args.fixture), "Entity can have body or fixture. Not both!")
-        if args.body then
-            Physics.body(self.classname, args.body)
-            self.body = Physics.body(self.classname)
-        end
-        if args.joint then
-            Physics.joint(self.classname, args.joint)
-            self.joint = Physics.joint(self.classname)
-        end
-        -- hitbox
-        if args.hitbox then
-            Hitbox.add(self)
-        end
-        -- net
-        if args.net and not spawn_args.net_obj then
-            if not args.net_vars then 
-                args.net_vars = {'x','y','animation','align'}
-            end
-            self.net_vars = args.net_vars
-            Net.spawn(self, spawn_args)
-        end
-        self.net_obj = spawn_args.net_obj
-        -- other props
-        for _, fn in ipairs(Entity.init_props) do
-            fn(self, args, spawn_args)
-        end
-
-        self:addUpdatable()
-        self:addDrawable()
-        if self.spawn then 
-            if spawn_args then self:spawn(unpack(spawn_args))
-            else self:spawn() end 
-        end
-        if self.body then self.body:setPosition(self.x, self.y) end
-    end;
-    _updateSize = function(self,obj)
-        if type(self.hitArea) == "string" and (self.animList[self.hitArea] or self.imageList[self.hitArea]) then
-            local other_obj = self.animList[self.hitArea] or self.imageList[self.hitArea]
-            self.hitArea = {}
-            self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
+            for _,img in pairs(self.imageList) do img.parent = self end
+            for _,anim in pairs(self.animList) do anim.parent = self end
             Game.checkAlign(self)
-            Hitbox.teleport(self)
-        end
-        self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
-    end;
-    _update = function(self,dt)
-        local last_x, last_y = self.x, self.y
-        if self.animation then
-            assert(self.animList[self.animation], self.classname.." missing animation '"..self.animation.."'")
-            self:_updateSize(self.animList[self.animation])
-        end
-        if self.update then self:update(dt) end
-        if self.destroyed then return end
-        if self.gravity ~= 0 then
-            local gravx, gravy = Math.getXY(self.gravity_direction, self.gravity)
-            self.hspeed = self.hspeed + gravx
-            self.vspeed = self.vspeed + gravy
-        end
-        self.x = self.x + self.hspeed * dt
-        self.y = self.y + self.vspeed * dt
-        Hitbox.move(self)
-        if self.body then
-            local new_x, new_y = self.body:getPosition()
-            if self.x == last_x then self.x = new_x end
-            if self.y == last_y then self.y = new_y end
-            if self.x ~= last_x or self.y ~= last_y then
-                self.body:setPosition(self.x, self.y)
+            -- effect
+            if args.effect then self:setEffect(args.effect) end
+            -- physics
+            assert(not (args.body and args.fixture), "Entity can have body or fixture. Not both!")
+            if args.body then
+                Physics.body(self.classname, args.body)
+                self.body = Physics.body(self.classname)
             end
-        end
-        -- image/animation update
-        for name, img in pairs(self.imageList) do
-            img.x, img.y = self.x, self.y
-            img:update(dt)
-        end
-        for name, anim in pairs(self.animList) do
-            anim.x, anim.y = self.x, self.y
-            anim:update(dt)
-        end
-        Net.sync(self)
-    end;
-    _draw = function(self)
-        if self.imageList then
-            for name, img in pairs(self.imageList) do
-                img:draw()
+            if args.joint then
+                Physics.joint(self.classname, args.joint)
+                self.joint = Physics.joint(self.classname)
             end
-        end
-        if self.animation and self.animList[self.animation] then
-            self.animList[self.animation]:draw()
-            self.width, self.height = self.animList[self.animation].width, self.animList[self.animation].height
-        end
-    end;
-    _destroy = function(self)
-        if self.destroyed then return end
-        for name, img in pairs(self.imageList) do
-            img:destroy()
-        end
-        for name, anim in pairs(self.animList) do
-            anim:destroy()
-        end
-    end
-}
+            -- hitbox
+            if args.hitbox then
+                Hitbox.add(self)
+            end
+            -- net
+            if args.net and not spawn_args.net_obj then
+                spawn_args.anim_frame = args.anim_frame
+                spawn_args.anim_speed = args.anim_speed
+                Net.spawn(self, spawn_args)
+            end
+            self.net_obj = spawn_args.net_obj
+            -- other props
+            for _, fn in ipairs(Entity.init_props) do
+                fn(self, args, spawn_args)
+            end
 
-Entity = class {
-    init_props = {};
-    init = function(self, name, args)
-        Game.addObject(name, "Entity", args, _Entity)
-    end;
-    addInitFn = function(fn)
-        table.insert(Entity.init_props, fn)
-    end
-}
+            self:addUpdatable()
+            self:addDrawable()
+            if self.spawn then 
+                if spawn_args then self:spawn(unpack(spawn_args))
+                else self:spawn() end 
+            end
+            if self.body then self.body:setPosition(self.x, self.y) end
+        end;
+        _updateSize = function(self,obj,skip_anim_check)
+            if self.animation then
+                assert(skip_anim_check or self.animList[self.animation], self.classname.." missing animation '"..self.animation.."'")
+                self.animList[self.animation].speed = self.anim_speed
+                if self.anim_speed == 0 then 
+                    self.animList[self.animation].frame_index = self.anim_frame
+                    Net.sync(self, {'anim_speed','anim_frame'})
+                else 
+                    self.anim_frame = self.animList[self.animation].frame_index
+                end
+                Net.sync(self, {'anim_speed'})
+            end 
+            if type(self.hitArea) == "string" and (self.animList[self.hitArea] or self.imageList[self.hitArea]) then
+                local other_obj = self.animList[self.hitArea] or self.imageList[self.hitArea]
+                self.hitArea = {}
+                self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
+                Game.checkAlign(self)
+                Hitbox.teleport(self)
+            end
+            self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
+        end;
+        _update = function(self,dt)
+            local last_x, last_y = self.x, self.y
+            if self.animation then
+                self:_updateSize(self.animList[self.animation])
+            end
+            if self.update then self:update(dt) end
+            if self.destroyed then return end
+            if self.gravity ~= 0 then
+                local gravx, gravy = Math.getXY(self.gravity_direction, self.gravity)
+                self.hspeed = self.hspeed + gravx
+                self.vspeed = self.vspeed + gravy
+            end
+            self.x = self.x + self.hspeed * dt
+            self.y = self.y + self.vspeed * dt
+            Hitbox.move(self)
+            if self.body then
+                local new_x, new_y = self.body:getPosition()
+                if self.x == last_x then self.x = new_x end
+                if self.y == last_y then self.y = new_y end
+                if self.x ~= last_x or self.y ~= last_y then
+                    self.body:setPosition(self.x, self.y)
+                end
+            end
+            -- image/animation update
+            for name, img in pairs(self.imageList) do
+                img.x, img.y = self.x, self.y
+                img:update(dt)
+            end
+            for name, anim in pairs(self.animList) do
+                anim.x, anim.y = self.x, self.y
+                anim:update(dt)
+            end
+            Net.sync(self)
+        end;
+        netSync = function(self, props, spawning) 
+            if self.animation and (spawning or self.anim_speed ~= nil) then
+                props.anim_frame = self.anim_frame
+                props.anim_speed = self.animList[self.animation].speed
+                return 2
+            end
+        end,
+        _draw = function(self)
+            if self.imageList then
+                for name, img in pairs(self.imageList) do
+                    img:draw()
+                end
+            end
+            if self.animation and self.animList[self.animation] then
+                self.animList[self.animation]:draw()
+                self.width, self.height = self.animList[self.animation].width, self.animList[self.animation].height
+            end
+        end;
+        _destroy = function(self)
+            if self.destroyed then return end
+            for name, img in pairs(self.imageList) do
+                img:destroy()
+            end
+            for name, anim in pairs(self.animList) do
+                anim:destroy()
+            end
+        end
+    }
+    
+    Entity = class {
+        init_props = {};
+        init = function(self, name, args)
+            Game.addObject(name, "Entity", args, _Entity)
+        end;
+        addInitFn = function(fn)
+            table.insert(Entity.init_props, fn)
+        end
+    }
+end
 
 --INPUT
 Input = nil
@@ -1809,6 +1836,13 @@ do
     local leader = false
     local net_objects = {}
 
+    local triggerSyncFn = function(obj, data, spawning)
+        if obj.netSync then 
+            return obj:netSync(data, spawning) or 0
+        end
+        return 0
+    end
+
     local destroyNetObjects = function(clientid)
         if net_objects[clientid] then 
             for objid, obj in pairs(net_objects[clientid]) do 
@@ -1964,16 +1998,17 @@ do
             for prop, val in pairs(args) do
                 if type(val) == 'function' then args[prop] = nil end
             end
+            triggerSyncFn(obj, args, true)
             args.net_id = obj.net_id
             sendNetEvent('obj.spawn', {
                 clientid = Net.id,
                 classname = obj.classname,
                 args = args
             })
-            Net.sync(obj)
+            Net.sync(obj, nil, true)
         end,
         -- only to be used with class instances. will not sync functions?/table data (TODO: sync functions too?)
-        sync = function(obj, vars) 
+        sync = function(obj, vars, spawning) 
             if not obj then 
                 for objid, obj in pairs(net_objects[Net.id]) do 
                     Net.sync(obj)
@@ -1993,6 +2028,7 @@ do
                         len = len + 1
                     end
                 end
+                len = len + triggerSyncFn(obj, sync_data, spawning)
                 -- sync vars
                 if len > 0 then
                     sendNetEvent('obj.sync', {
@@ -2014,6 +2050,7 @@ do
                             for _,prop in ipairs(obj.net_vars) do 
                                 sync_objs[clientid][objid][prop] = obj[prop]
                             end
+                            triggerSyncFn(obj, sync_objs[clientid][objid], true)
                         end
                     end
                 end
