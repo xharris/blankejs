@@ -1,7 +1,7 @@
 Game {
 	load = function() 
 		Net.on('ready', function()	
-			Map.load("map0.map")	
+			Game.spawn('player') -- Map.load("map0.map")	
 		end)
 		Net.connect()
 	end

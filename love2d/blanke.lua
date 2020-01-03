@@ -246,6 +246,9 @@ do
                 for _,lobj in ipairs(lobjs) do
                     Game.checkAlign(props)
                     local ax, ay = props.alignx, props.aligny
+                    if gobj.classname == "Image" then
+                        print(gobj.quad, ax, ay)
+                    end
                     if gobj.quad then 
                         love.graphics.draw(lobj, gobj.quad, floor(props.x), floor(props.y), math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
                             floor(props.offx + props.alignx), floor(props.offy + props.aligny), props.shearx, props.sheary)
@@ -273,7 +276,7 @@ do
         spawn = function(name, args)
             local obj_info = objects[name]
             if obj_info ~= nil and obj_info.spawn_class then
-                local instance = obj_info.spawn_class(obj_info.args, args, name)
+                local instance = obj_info.spawn_class(obj_info.args, args or {}, name)
                 return instance
             end
         end;
@@ -295,6 +298,8 @@ end
 --GAMEOBJECT
 GameObject = class {
     init = function(self, args, user_args)
+        args = args or {}
+        user_args = user_args or {}
         self.uuid = uuid()
         self.x, self.y, self.z, self.angle, self.scalex, self.scaley, self.scale = 0, 0, 0, 0, 1, 1, 1
         self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = 0, 0, 0, 0, 0, 0

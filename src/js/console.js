@@ -23,7 +23,7 @@ class Console extends Editor {
 		this.el_autoscroll.addEventListener('click',()=>{
 			this.auto_scrolling = !this.auto_scrolling;
 		})
-		//this.el_log.appendChild(this.el_autoscroll);
+		this.el_log.appendChild(this.el_autoscroll);
 		this.el_log.appendChild(this.el_lines);
 
 		this.appendChild(this.el_log);
@@ -66,7 +66,7 @@ class Console extends Editor {
 		// blanke.removeChildClass(this.el_log, 'separator');
 		this.str_console = '';
 		this.last_line = '';
-		this.last_dupe_line = '';
+		this.last_dupe_line = null;
 		this.duplicate_count = 1;
 		this.had_error = false;
 	}
@@ -82,19 +82,20 @@ class Console extends Editor {
 
 	log (...args) {
 		// parse args
-		let str = this.parse(args); 
+		let str = this.parse(args)[0]; 
 		// TODO: add string length limiter
+		console.log(this.last_line, str)
 		if (this.last_line == str) {
 			this.duplicate_count++;
-			if (this.last_dupe_line !== '')
+			if (this.last_dupe_line)
 				this.str_console = this.str_console.slice(0, -this.last_dupe_line.length);	
 			else 
-				this.str_console = this.str_console.slice(0, -(this.last_line+'\n').length);
+				this.str_console = this.str_console.slice(0, -(this.last_line+(engine.console_new_line ? '\n' : '')).length);
 			this.last_dupe_line = `${str} (${this.duplicate_count})\n`;
 			this.str_console += this.last_dupe_line; 
 		} else {
 			this.duplicate_count = 1;
-			this.last_dupe_line = '';
+			this.last_dupe_line = null;
 			this.str_console += `${str}`+(engine.console_new_line ? '\n' : '');
 		}
 		this.last_line = str;
