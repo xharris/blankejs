@@ -1,3 +1,5 @@
+var CONSOLE_LINE_LIMIT = 500;
+
 class Console extends Editor {
 	constructor (windowed) {
 		super();
@@ -14,8 +16,6 @@ class Console extends Editor {
 		this.el_log = app.createElement("div", "log");
 		this.el_lines = app.createElement("div", "lines");
 		this.last_line = '';
-		this.str_console = '';
-		this.last_dupe_line = '';
 		this.auto_scrolling = true;
 
 		// auto-scroll toggle
@@ -23,7 +23,7 @@ class Console extends Editor {
 		this.el_autoscroll.addEventListener('click',()=>{
 			this.auto_scrolling = !this.auto_scrolling;
 		})
-		this.el_log.appendChild(this.el_autoscroll);
+		//this.el_log.appendChild(this.el_autoscroll);
 		this.el_log.appendChild(this.el_lines);
 
 		this.appendChild(this.el_log);
@@ -83,23 +83,21 @@ class Console extends Editor {
 	log (...args) {
 		// parse args
 		let str = this.parse(args)[0]; 
+		if (str.length == 0) return;
 		// TODO: add string length limiter
-		console.log(this.last_line, str)
 		if (this.last_line == str) {
 			this.duplicate_count++;
-			if (this.last_dupe_line)
-				this.str_console = this.str_console.slice(0, -this.last_dupe_line.length);	
-			else 
-				this.str_console = this.str_console.slice(0, -(this.last_line+(engine.console_new_line ? '\n' : '')).length);
-			this.last_dupe_line = `${str} (${this.duplicate_count})\n`;
-			this.str_console += this.last_dupe_line; 
+			this.el_lines.children[this.el_lines.children.length-1].innerHTML = `${str} (${this.duplicate_count})\n`;
 		} else {
 			this.duplicate_count = 1;
-			this.last_dupe_line = null;
-			this.str_console += `${str}`+(engine.console_new_line ? '\n' : '');
+			let el_new_line = app.createElement('div','line');
+			el_new_line.innerHTML = str;
+			this.el_lines.appendChild(el_new_line);
+
+			if (this.el_lines.childElementCount > CONSOLE_LINE_LIMIT)
+				this.el_lines.removeChild(this.el_lines.children[0]);
 		}
 		this.last_line = str;
-		if (this.isVisible()) this.el_lines.innerHTML = this.str_console;
 
 		if (this.auto_scrolling) {
 			blanke.cooldownFn("console.log", 100, ()=>{	

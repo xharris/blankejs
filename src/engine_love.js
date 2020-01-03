@@ -86,8 +86,8 @@ const engine = {
         let child = spawn(eng_path, ['.'], { cwd: app.getAssetPath('scripts') });
         let con = new Console(true);
         child.stdout.on('data', data => {
-            data = data.toString().replace(/Could not open device.\s*/,"");
-            con.log(data);
+            data = data.toString().replace(/Could not open device.\s*/,"").trim();
+            data.split(/[\r\n]+/).forEach(l => con.log(l))
         });
         child.on('close', () => {
             con.tryClose();

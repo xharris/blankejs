@@ -236,11 +236,13 @@ class Code extends Editor {
 			this.game = new GamePreview(null,{ ide_mode: true });
 		
 		this.console = new Console();
-		this.console.appendTo(this.getContent());
-		this.getContainer().bg_first_only = true;
-		if (this.game)
-			this.appendBackground(this.game.container);
-
+		if (engine.game_preview_enabled) {
+			this.console.appendTo(this.getContent());
+			this.getContainer().bg_first_only = true;
+			if (this.game)
+				this.appendBackground(this.game.container);
+		}
+		
 		var this_ref = this;
 		CodeMirror.defineMode("blanke", (config, parserConfig) => {
 			var blankeOverlay = {

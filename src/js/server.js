@@ -137,12 +137,13 @@ noobserver.on('connection', function (socket) {
 			str = str.substr(end + 13)  // cut the message and remove the precedant part of the buffer since it can't be processed
 			if (socket.buffer)
 				socket.buffer.len = socket.buffer.write(str, 0)
-
-			var subscribers = Object.keys(sockets[socket.channel])
-			for (var i = 0, l = subscribers.length; i < l; i++) {
-				sockets[socket.channel][ subscribers[i] ].isConnected && sockets[socket.channel][ subscribers[i] ].write('__JSON__START__' + json + '__JSON__END__')
-			} // writing this message to all sockets with the same channel
-			timeToExit = false
+			if (sockets[socket.channel]) {
+				var subscribers = Object.keys(sockets[socket.channel])
+				for (var i = 0, l = subscribers.length; i < l; i++) {
+					sockets[socket.channel][ subscribers[i] ].isConnected && sockets[socket.channel][ subscribers[i] ].write('__JSON__START__' + json + '__JSON__END__')
+				} // writing this message to all sockets with the same channel
+				timeToExit = false
+			}
 		} else { timeToExit = true } // if no json data found in buffer - then it is time to exit this loop
 		} while (!timeToExit)
 	}) // end of  socket.on 'data'

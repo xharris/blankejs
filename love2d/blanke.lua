@@ -7,6 +7,22 @@ json = require "lua.json"
 class = require "lua.clasp"
 require "lua.print_r"
 
+lua_print = print 
+do
+    local str = ''
+    local args
+    print = function(...)
+        str = ''
+        args = {...}
+        len = #args
+        for i = 1,len do 
+            str = str .. tostring(args[i]) 
+            if i ~= len then str = str .. ' ' end
+        end
+        lua_print(str)
+    end
+end
+
 --UTIL.table
 table.update = function (old_t, new_t, keys) 
     if keys == nil then
@@ -229,7 +245,7 @@ do
                     ay = obj.height
                 end
             end
-            obj.alignx, obj.aligny = ax, ay
+            obj.alignx, obj.aligny = ax / obj.scalex, ay / obj.scaley
         end;
 
         drawObject = function(gobj, ...)
@@ -246,15 +262,14 @@ do
                 for _,lobj in ipairs(lobjs) do
                     Game.checkAlign(props)
                     local ax, ay = props.alignx, props.aligny
-                    if gobj.classname == "Image" then
-                        print(gobj.quad, ax, ay)
-                    end
+                    local x = floor(props.x)
+                    local y = floor(props.y)
                     if gobj.quad then 
-                        love.graphics.draw(lobj, gobj.quad, floor(props.x), floor(props.y), math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
-                            floor(props.offx + props.alignx), floor(props.offy + props.aligny), props.shearx, props.sheary)
+                        love.graphics.draw(lobj, gobj.quad, x, y, math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
+                            floor(props.offx + ax), floor(props.offy + ay), props.shearx, props.sheary)
                     else
-                        love.graphics.draw(lobj, floor(props.x), floor(props.y), math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
-                            floor(props.offx + props.alignx), floor(props.offy + props.aligny), props.shearx, props.sheary)
+                        love.graphics.draw(lobj, x, y, math.rad(props.angle), props.scalex * props.scale, props.scaley * props.scale,
+                            floor(props.offx + ax), floor(props.offy + ay), props.shearx, props.sheary)
                     end
                 end
                 if last_blend then
@@ -686,9 +701,6 @@ do
         end;
         _update = function(self,dt)
             local last_x, last_y = self.x, self.y
-            if self.animation then
-                self:_updateSize(self.animList[self.animation])
-            end
             if self.update then self:update(dt) end
             if self.destroyed then return end
             if self.gravity ~= 0 then
@@ -732,8 +744,10 @@ do
                 end
             end
             if self.animation and self.animList[self.animation] then
-                self.animList[self.animation]:draw()
-                self.width, self.height = self.animList[self.animation].width, self.animList[self.animation].height
+                local anim = self.animList[self.animation]
+                self:_updateSize(anim)
+                anim:draw()
+                self.width, self.height = anim.width, anim.height
             end
         end;
         _destroy = function(self)

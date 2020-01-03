@@ -18,12 +18,12 @@
             "main.lua"
         ],
         [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
             "Dev Tools=?",
             "Dev Tools"
+        ],
+        [
+            "map0.map=map+?",
+            "map0.map"
         ],
         [
             "Open image editor=?",

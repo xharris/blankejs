@@ -17,15 +17,21 @@ Entity("player", {
 		animations = { "blue_robot" },
 		animation = "blue_robot",
 		net = true,
+		align = "center",
+		x = 150,
+		y = 150,
+		t = 1,
 		update = function(self, dt)
+			self.t = self.t + 1
 			if Input.released('action') and not self.net_obj then
 				self.x = self.x + self.width
 				
-				if self.anim_speed == 0 then self.anim_speed = 1
-				elseif self.anim_speed == 1 then self.anim_speed = 0 end
+				--if self.anim_speed == 0 then self.anim_speed = 1
+				--elseif self.anim_speed == 1 then self.anim_speed = 0 end
 				
-				self.scalex = self.scalex + 0.1
-				self.angle = self.angle + 5
+				self.scalex = self.scalex + 0.5
+				self.angle = self.angle + 90
+				print(self.angle)
 			end
 		end,
 		draw = function(self, d)
