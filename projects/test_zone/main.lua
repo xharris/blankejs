@@ -25,11 +25,8 @@ Entity("player", {
 			self.t = self.t + 1
 			if Input.released('action') and not self.net_obj then
 				self.x = self.x + self.width
-				
-				--if self.anim_speed == 0 then self.anim_speed = 1
-				--elseif self.anim_speed == 1 then self.anim_speed = 0 end
-				
-				self.scalex = self.scalex + 0.5
+								
+				self.scalex = self.scalex - 0.5
 				self.angle = self.angle + 90
 				print(self.angle)
 			end

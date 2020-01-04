@@ -14,9 +14,9 @@ do
     print = function(...)
         str = ''
         args = {...}
-        len = #args
+        len = table.len(args)
         for i = 1,len do 
-            str = str .. tostring(args[i]) 
+            str = str .. tostring(args[i] or 'nil') 
             if i ~= len then str = str .. ' ' end
         end
         lua_print(str)
@@ -245,7 +245,7 @@ do
                     ay = obj.height
                 end
             end
-            obj.alignx, obj.aligny = ax / obj.scalex, ay / obj.scaley
+            obj.alignx, obj.aligny = ax / abs(obj.scalex), ay / abs(obj.scaley)
         end;
 
         drawObject = function(gobj, ...)
@@ -312,18 +312,19 @@ end
 
 --GAMEOBJECT
 GameObject = class {
-    init = function(self, args, user_args)
+    init = function(self, args, spawn_args)
         args = args or {}
-        user_args = user_args or {}
+        spawn_args = spawn_args or {}
         self.uuid = uuid()
         self.x, self.y, self.z, self.angle, self.scalex, self.scaley, self.scale = 0, 0, 0, 0, 1, 1, 1
-        self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = 0, 0, 0, 0, 0, 0
+        self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = spawn_args.width or args.width or 0, spawn_args.height or args.height or 0, 0, 0, 0, 0
         self.align = nil
         self.blendmode = nil
         self.child_keys = {}
         self.parent = nil
 
         self.net_vars = {'x','y','z','angle','scalex','scaley','scale','offx','offy','shearx','sheary','align','animation'}
+        self.net_spawn_vars = copy(self.net_vars)
 
         -- custom properties were provided
         -- so far only allowed from Entity
@@ -354,7 +355,7 @@ GameObject = class {
                     args[k] = nil
                 end
             end
-            if args.camera then
+            if args.camera and not spawn_args.net_obj then
                 local cam_type = type(args.camera)
                 if cam_type == 'table' then
                     for _,name in ipairs(self.camera) do
@@ -365,7 +366,7 @@ GameObject = class {
                 end
             end
         end
-        if user_args then table.update(self,user_args) end
+        if spawn_args then table.update(self,spawn_args) end
                     
         State.addObject(self)
 
@@ -404,6 +405,7 @@ GameObject = class {
             for _,k in ipairs(self.child_keys) do
                 self[k]:destroy() 
             end
+            Net.destroy(self)
         end
     end;
 }
@@ -626,7 +628,7 @@ do
                     self.animList[args.animations] = Image{file=args, animation=args.animations, skip_update=true}
                     self:_updateSize(self.animList[args.animations], true)
                 end
-                if args.anim_frame or args.anim_speed or spawn_args.anim_frame or spawn_args.anim_speed then 
+                if self.animList[args.animation] and (args.anim_frame or args.anim_speed or spawn_args.anim_frame or spawn_args.anim_speed) then 
                     self.animList[args.animation].speed = spawn_args.anim_speed or args.anim_speed
                     self.animList[args.animation].frame_index = spawn_args.anim_frame or args.anim_frame
                 end
@@ -662,6 +664,8 @@ do
             if args.net and not spawn_args.net_obj then
                 spawn_args.anim_frame = args.anim_frame
                 spawn_args.anim_speed = args.anim_speed
+                spawn_args.x = spawn_args.x or self.x 
+                spawn_args.y = spawn_args.y or self.y 
                 Net.spawn(self, spawn_args)
             end
             self.net_obj = spawn_args.net_obj
@@ -1862,12 +1866,23 @@ do
         return 0
     end
 
-    local destroyNetObjects = function(clientid)
+    local destroyObj = function(clientid, objid)
+        local obj = net_objects[clientid][objid] 
+        if obj then 
+            if not obj.net_persistent then 
+                obj:destroy()
+                net_objects[clientid][objid] = nil
+            end
+        end
+    end
+
+    local destroyNetObjects = function(clientid, _objid)
         if net_objects[clientid] then 
-            for objid, obj in pairs(net_objects[clientid]) do 
-                if not obj.net_persistent then 
-                    obj:destroy()
-                    net_objects[clientid][objid] = nil
+            if _objid then 
+                destroyObj(clientid, _objid)
+            else
+                for objid, obj in pairs(net_objects[clientid]) do 
+                    destroyObj(clientid, objid)
                 end
             end
             net_objects[clientid] = nil
@@ -1952,6 +1967,9 @@ do
                     end
                 end
             end
+            if data.event == "obj.destroy" and netdata.clientid ~= Net.id then 
+                destroyObj(netdata.clientid, netdata.objid)
+            end
         elseif data.type == "data" then
             Signal.emit('net.data', netdata, data)
         end
@@ -1962,6 +1980,7 @@ do
     end
 
     local prepNetObject = function(obj)
+        obj.net = true
         if not obj._net_last_val then 
             -- setup object for net syncing
             obj._net_last_val = {}
@@ -1980,7 +1999,6 @@ do
         port=8080,
         room=1,
         ip='',
-        client=nil,
         connect = function(address,port)
             Net.address = address or Net.address
             Net.port = port or Net.port
@@ -2005,12 +2023,14 @@ do
         end,
         connected = function() return client ~= nil end,
         send = function(data)
+            if not client then return end
             sendData(data)
         end,
         on = function(event, fn)
             Signal.on('net.'..event, fn)
         end,
         spawn = function(obj, args)
+            if not client then return end
             prepNetObject(obj)
             -- trash function arguments
             args = args or {}
@@ -2026,8 +2046,17 @@ do
             })
             Net.sync(obj, nil, true)
         end,
+        destroy = function(obj)
+            if obj.net and not obj.net_obj and not obj.net_persistent then 
+                sendNetEvent('obj.destroy', {
+                    clientid = Net.id,
+                    objid = obj.net_id
+                })
+            end
+        end,
         -- only to be used with class instances. will not sync functions?/table data (TODO: sync functions too?)
         sync = function(obj, vars, spawning) 
+            if not client or not obj or not (obj.net or obj.net_obj) then return end
             if not obj then 
                 for objid, obj in pairs(net_objects[Net.id]) do 
                     Net.sync(obj)
@@ -2036,6 +2065,9 @@ do
             end
             prepNetObject(obj)
             local net_vars = vars or obj.net_vars or {}
+            if spawning then 
+                net_vars = vars or obj.net_spawn_vars or {}
+            end
             if not obj.net_obj and #net_vars > 0 then 
                 -- get vars to sync
                 local sync_data = {}
@@ -2059,6 +2091,7 @@ do
             end
         end,
         syncAll = function(targetid)
+            if not client then return end
             if leader then 
                 local sync_objs = {}
                 for clientid, objs in pairs(net_objects) do 
@@ -2066,7 +2099,7 @@ do
                     for objid, obj in pairs(objs) do
                         if obj and not obj.destroyed then  
                             sync_objs[clientid][objid] = { classname=obj.classname, net_id=objid, net_obj=true }
-                            for _,prop in ipairs(obj.net_vars) do 
+                            for _,prop in ipairs(obj.net_spawn_vars) do 
                                 sync_objs[clientid][objid][prop] = obj[prop]
                             end
                             triggerSyncFn(obj, sync_objs[clientid][objid], true)

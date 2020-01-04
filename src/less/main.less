@@ -620,7 +620,7 @@ a {
 	&.focused, &:hover {
 		/* border: 2px solid @sub-window-background; */
 
-		.fib-title {	
+		.fib-title-container {	
 			padding-left: 30px;
 			background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
 			text-shadow: black 1px 1px 1px, black -1px -1px 1px, black -1px 1px 1px, black 1px -1px 1px, black 0px 0px 1px;
@@ -628,7 +628,7 @@ a {
 	}
 
 	&:hover {
-		.fib-title {
+		.fib-title-container {
 			padding-right: 20px;
 		}
 	}
@@ -698,6 +698,18 @@ a {
 	}
 
 	.fib-title {
+		line-height: 12px;
+		padding: 2px 4px;
+		border-radius: 5px;
+		background-color: rgba(1,1,1,0.5);
+		display: inline-block;
+	}
+
+	&.focused .fib-title {
+		.input-glow();
+	}
+
+	.fib-title-container {
 		.no-select();
 
 		position: absolute;
@@ -709,7 +721,6 @@ a {
 	    line-height: 28px;
 	    text-shadow: black 0px 0px 1px, black 0px 0px 2px, black 0px 0px 2px, black 0px 0px 3px, black 0px 0px 3px;
 		z-index: 19;
-		overflow: hidden;
 		box-sizing: border-box;
 		text-overflow: ellipsis;
 		transition: all ease-in-out 0.2s;
@@ -1476,7 +1487,7 @@ iframe {
 	}
 }
 
-.form-input-outline() {
+.input-glow() {
 	border: 1px solid @ide-accent;
 	outline-offset: 0px;
 	box-shadow: 0 0px 10px 3px fade(@ide-accent, 30%), 0 6px 6px rgba(0, 0, 0, 0.23);
@@ -1495,7 +1506,7 @@ iframe {
 	}
 
 	input:focus, select:focus, button:hover {
-		.form-input-outline();
+		.input-glow();
 	}
 
 	.form-color:focus {

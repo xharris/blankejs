@@ -39,7 +39,9 @@ class FibWindow {
 		this.fib_title.ondblclick = function() {
 			this_ref.focus();
 		}
-		this.fib_container.appendChild(this.fib_title);
+		this.fib_title_container = app.createElement("div","fib-title-container");
+		this.fib_title_container.appendChild(this.fib_title);
+		this.fib_container.appendChild(this.fib_title_container);
 
 		this.fib_content = document.createElement("div");
 		this.fib_content.classList.add("content");
@@ -278,8 +280,10 @@ class FibWindow {
 		if (first_box) {
 			first_box.fib_container.classList.remove("single");
 			
-			if (boxes.length == 1 || !split_enabled)
+			if (boxes.length == 1 || !split_enabled) {
 				first_box.fib_container.classList.add("single");
+				first_box.fib_container.classList.add('focused');
+			}
 			if (first_box.bg_content && 
 				(!first_box.in_background || el_bg_workspace.focused_guid != first_box.guid)) {
 				blanke.clearElement(el_bg_workspace);
