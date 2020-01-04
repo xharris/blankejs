@@ -11,8 +11,6 @@ Entity("Player", {
 		gravity = 10,
 		can_jump = true,
 		hitbox = true,
-		net = true,
-		net_vars = {'hspeed','vspeed','scalex','animation'},
 		hitArea = {
 			left = -5,
 			right = -10
@@ -22,9 +20,6 @@ Entity("Player", {
 				self:die()
 			end
 			if v.normal.y < 0 then
-				if not self.can_jump then 
-					Net.sync(self,{'x','y'})	
-				end
 				self.can_jump = true
 				self.vspeed = 0
 			end
@@ -33,7 +28,7 @@ Entity("Player", {
 			end
 		end,
 		die = function(self)
-			if not self.dead and not self.net_obj then
+			if not self.dead then
 				self.dead = true
 				self.hitArea = 'player_dead'
 				Tween(2, self, { hspeed=0 })
@@ -47,26 +42,24 @@ Entity("Player", {
 			else 
 				-- left/right
 				dx = 125
-				if not self.net_obj then 
-					self.hspeed = 0
-					if Input.pressed('right') then
-						self.hspeed = dx
-						self.scalex = 1
-					end
-					if Input.pressed('left') then
-						self.hspeed = -dx
-						self.scalex = -1
-					end
-					if Input.pressed('right') or Input.pressed('left') then
-						self.animation = 'player_walk'
-					else
-						self.animation = 'player_stand'
-					end
-					-- jumping
-					if Input.pressed('jump') then -- and self.can_jump then
-						self.vspeed = -350
-						self.can_jump = false
-					end
+				self.hspeed = 0
+				if Input.pressed('right') then
+					self.hspeed = dx
+					self.scalex = 1
+				end
+				if Input.pressed('left') then
+					self.hspeed = -dx
+					self.scalex = -1
+				end
+				if Input.pressed('right') or Input.pressed('left') then
+					self.animation = 'player_walk'
+				else
+					self.animation = 'player_stand'
+				end
+				-- jumping
+				if Input.pressed('jump') then -- and self.can_jump then
+					self.vspeed = -350
+					self.can_jump = false
 				end
 			end
 			self.animList['player_walk'].speed = 1

@@ -14,20 +14,20 @@
     "window_size": 3,
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
-        ],
-        [
             "map0.map=map+?",
             "map0.map"
         ],
         [
             "Open image editor=?",
             "Open image editor"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
             "View project in explorer=?",
@@ -87,7 +87,8 @@
             ],
             "tool.fill": true,
             "animSpeed": 0.1,
-            "showPreview": false
+            "showPreview": false,
+            "onion_alpha": 0.5
         },
         "image/image1.png": {
             "frame_size": [
@@ -148,7 +149,8 @@
             "tool.size": [
                 6,
                 1
-            ]
+            ],
+            "onion_alpha": 0.3
         },
         "image/jimbo.png": {
             "frame_size": [

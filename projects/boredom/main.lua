@@ -18,10 +18,7 @@ Game {
 	plugins = { 'xhh-effect', 'xhh-tween' },
 	backgroundColor = "white",
     load = function()
-		Net.on('ready', function()
-			State.start('play')
-		end)
-		Net.connect()
+		State.start('play')
     end
 }
 

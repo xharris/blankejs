@@ -3,7 +3,8 @@ const DEFAULT_IMAGE_SETTINGS = {
     frame_size: [256,256],
     frames: 1,
     position: [0,0],
-    spacing: 0
+    spacing: 0,
+    onion_alpha: 0.3
 }
 const MARGIN_LEFT = 5;
 const MARGIN_TOP = 40;
@@ -42,6 +43,8 @@ class ImageEditor extends Editor {
         this.img_width = 0;
         this.img_height = 0;
         this.clear_rtx = 0;
+        this.hover_frame = 0;
+        this.hover_frame_pos = [0,0];
         this.changed = false;
         this.history_tex = [];
         this.history_cd = HISTORY_TIMER;
@@ -56,6 +59,7 @@ class ImageEditor extends Editor {
             ['frames', 'number', {'min':1}],
             ['showPreview', 'checkbox', {default:true}],
             ['animSpeed', 'number', {min:0, default:0.5, step:0.1, label:'animation speed'}],
+            ['onion_alpha', 'number', {min:0, max:1, step:0.05}],
             ['tools'],
             ...TOOLS.map(t => [t, 'icon-button']),
             ['tool settings', false],
@@ -74,9 +78,11 @@ class ImageEditor extends Editor {
         //this.el_layers = new BlankeListView({object_type:"layer"});
         this.pixi = new BlankePixi();
         this.renderer = PIXI.autoDetectRenderer();
+
         this.img_container = new PIXI.Container();        
         this.crosshair = new PIXI.Graphics();
         // image editing-related
+
         this.edit_container = new PIXI.Container(); // all the stuff that will be saved to image file
         this.render_img = this.edit_container;
         this.temp_rtx_used = false;
@@ -91,6 +97,8 @@ class ImageEditor extends Editor {
         this.edit_prvw_graphic = new PIXI.Graphics();
         this.edit_prvw_rtx = PIXI.RenderTexture.create(this.width, this.height);
         this.edit_prvw = new PIXI.Sprite(this.edit_prvw_rtx);
+        this.img_onion = new PIXI.Sprite(PIXI.Texture.EMPTY);
+        this.img_onion.alpha = DEFAULT_IMAGE_SETTINGS.onion_alpha;
         
         this.anim_container = new PIXI.Container();
 
@@ -100,7 +108,7 @@ class ImageEditor extends Editor {
         this.edit_prvw.mask = this.img_mask;
 
         this.edit_container.addChild(this.img_mask, this.img_sprite, this.img_edits, this.img_erase);
-        this.img_container.addChild(this.anim_container, this.img_background, this.edit_container, this.crosshair, this.edit_prvw);
+        this.img_container.addChild(this.anim_container, this.img_background, this.img_onion, this.edit_container, this.crosshair, this.edit_prvw);
         this.pixi.stage.addChild(this.img_container);
 
         // setup el_image_form   
@@ -121,6 +129,9 @@ class ImageEditor extends Editor {
                     }
                     if (!s[0].includes('tool'))
                         this.refreshAnimation();
+                    if (s[0] == 'onion_alpha') {
+                        this.img_onion.alpha = val;
+                    }
                 });
             }
         });
@@ -164,6 +175,10 @@ class ImageEditor extends Editor {
         this.pixi.on('mouseMove', (e, info) => {
             let { mx, my, btn } = info;
             this.cursor = [ Math.floor(mx), Math.floor(my)];
+            this.hover_frame_pos[0] = this.cursor[0] - (this.cursor[0] % this.img_settings.frame_size[0]);
+            this.hover_frame = Math.floor(this.cursor[0] / this.img_settings.frame_size[0]);
+            this.updateOnion();
+            
             this.drawCrosshair();
             toolActive(btn);
         });
@@ -349,6 +364,13 @@ class ImageEditor extends Editor {
         } else {
             this.edit_prvw_graphic.visible = false;
         }  
+    }
+    updateOnion () {
+        if (this.anim && this.hover_frame > 0 && this.anim.textures[this.hover_frame-1])
+            this.img_onion.texture = this.anim.textures[this.hover_frame-1];
+        else 
+            this.img_onion.texture = PIXI.Texture.EMPTY;
+        this.img_onion.position.set(...this.hover_frame_pos);
     }
     refreshImageList () {
         let sel_str = `<option class="placeholder" value="" disabled ${this.file ? '' : 'selected'}>Select an image</option>`;
