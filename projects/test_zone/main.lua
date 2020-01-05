@@ -28,14 +28,13 @@ Entity("player", {
 								
 				self.scalex = self.scalex - 0.5
 				self.angle = self.angle + 90
-				print(self.angle)
 			end
 		end,
 		draw = function(self, d)
 			d()
 			Draw{
 				{ 'color', 'red' },
-				{ 'circle', 'line', self.x, self.y, 2}
+				{ 'print', 'x:'..self.x..' y:'..self.y, math.floor(self.x), math.floor(self.y)}
 			}
 		end
 })

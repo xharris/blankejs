@@ -32,6 +32,7 @@ table.update = function (old_t, new_t, keys)
     else
         for _,k in ipairs(keys) do if new_t[k] ~= nil then old_t[k] = new_t[k] end end
     end
+    return old_t
 end
 table.keys = function (t) 
     ret = {}
@@ -138,7 +139,8 @@ do
             postDraw =      nil,
             effect =        nil,
             auto_require =  true,
-            backgroundColor = nil
+            backgroundColor = nil,
+            window_flags = {}
         };
         config = {};
         updatables = {};
@@ -156,7 +158,7 @@ do
 
         updateWinSize = function()
             Game.win_width, Game.win_height, flags = love.window.getMode()
-            if not Blanke.config.scale then
+            if not Game.options.scale then
                 Game.width, Game.height = Game.win_width, Game.win_height
             end
         end;
@@ -166,15 +168,21 @@ do
             -- load config.json
             config_data = love.filesystem.read('config.json')
             if config_data then Game.config = json.decode(config_data) end
+            table.update(Game.options, Game.config.export)
             -- load settings
-            Game.width, Game.height = Window.calculateSize(Blanke.config.game_size) -- game size
-            Window.setSize(Blanke.config.window_size, Blanke.config.window_flags) -- window size
+            Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
+            -- window size and flags
+            Window.setSize(Game.config.window_size, table.update({
+                borderless = Game.options.frameless,
+                resizable = Game.options.resizable,
+            }, Game.options.window_flags))
             Game.updateWinSize()
             if type(Game.options.filter) == 'table' then
                 love.graphics.setDefaultFilter(unpack(Game.options.filter))
             else 
                 love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
             end
+            Draw.setFont('04B_03.ttf', 16, true)
             scripts = Game.options.scripts or {}
             -- load plugins
             if Game.options.plugins then 
@@ -807,7 +815,7 @@ do
 
         addInput = function(name, inputs)
             name_to_input[name] = {}
-            for _,i in ipairs(inputs) do name_to_input[i] = false end
+            for _,i in ipairs(inputs) do name_to_input[name][i] = false end
             for _,i in ipairs(inputs) do
                 if not input_to_name[i] then input_to_name[i] = {} end
                 if not table.hasValue(input_to_name[i], name) then table.insert(input_to_name[i], name) end
@@ -828,7 +836,6 @@ do
                     n2i[key] = true
                     -- is input pressed now?
                     combo = table.hasValue(options.combo, name)
-                    print_r(n2i)
                     if (combo and table.every(n2i)) or (not combo and table.some(n2i)) then
                         pressed[name] = extra
                         pressed[name].count = 1
@@ -880,6 +887,16 @@ do
         end
     end
 
+    local fonts = {} -- { 'path+size': font }
+    local getFont = function(path, size)
+        size = size or 12
+        local key = path..'+'..size
+        if fonts[key] then return fonts[key] end 
+        local font = love.graphics.newFont(path, size)
+        fonts[key] = font 
+        return font
+    end
+
     Draw = class {
         crop_used = false;
         init = function(self, instructions)
@@ -889,7 +906,25 @@ do
                 Draw[name](unpack(args))
             end
         end;
-
+        setFont = function(path, size, internal)
+            if not internal then path = Game.res('font', path) end
+            local font = getFont(path, size)
+            assert(font, 'Font not found: \''..path..'\'')
+            love.graphics.setFont(font)
+        end;
+        addImageFont = function(path, glyphs, ...)
+            path = Game.res('image', path)
+            if fonts[path] then return fonts[path] end 
+            local font = love.graphics.newImageFont(path, glphs, ...)
+            fonts[path] = font 
+            return font
+        end;
+        setImageFont = function(path)
+            path = Game.res('image', path)
+            local font = fonts[path]
+            assert(font, "ImageFont not found: \'"..path.."\'")
+            love.graphics.setFont(font)
+        end;
         parseColor = function(...)
             args = {...}
             if Color[args[1]] then 
@@ -902,18 +937,15 @@ do
             if not args[4] then args[4] = 1 end
             return args[1], args[2], args[3], args[4]
         end;
-
         color = function(...)
             return love.graphics.setColor(Draw.parseColor(...))
         end;
-
         hexToRgb = function(hex) 
             if _hex_cache[hex] then return _hex_cache[hex] end
             local ret = _hex2rgb(hex)
             _hex_cache[hex] = ret 
             return ret
         end;
-
         getBlendMode = function() return love.graphics.getBlendMode() end;
         setBlendMode = function(...) love.graphics.setBlendMode(...) end;
         crop = function(x,y,w,h)
@@ -2154,8 +2186,12 @@ Window = {
         return w, h
     end;
     fullscreen = function(v,fs_type)
-        if not v then return love.window.getFullscreen()
-        else love.window.setFullscreen(v,fs_type) end
+        if v == nil then 
+            return love.window.getFullscreen()
+        else 
+            love.window.setFullscreen(v,fs_type) 
+            Game.updateWinSize()
+        end
     end;
     toggleFullscreen = function()
         return Window.fullscreen(not Window.fullscreen())
@@ -2257,7 +2293,7 @@ do
             end
 
             Blanke.game_canvas:drawTo(_draw)
-            if Blanke.config.scale == true then
+            if Game.options.scale == true then
                 local scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
                 local scale = math.min(scalex, scaley)
                 local padx, pady = 0, 0

@@ -14,16 +14,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "map0.map=map+?",
             "map0.map"
         ],
         [
             "Open image editor=?",
             "Open image editor"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ],
         [
             "Dev Tools=?",
