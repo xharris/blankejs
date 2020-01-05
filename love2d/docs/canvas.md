@@ -1,10 +1,10 @@
 ## Canvas - GameObject (drawable)
 
 ```
-mycanvas = Canvas!
-mycanvas:drawTo my_entity
+mycanvas = Canvas()
+mycanvas:drawTo(my_entity)
 
-mycanvas:draw!
+mycanvas:draw()
 ```
 
 # Constructor

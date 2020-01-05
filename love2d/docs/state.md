@@ -10,7 +10,7 @@ State('play',{
     end
 })
 
-Game {
+Game{
     load = function()
         State.start('play')
     end

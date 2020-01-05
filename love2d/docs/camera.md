@@ -1,11 +1,19 @@
 ## Camera
 
-```
-Camera "playerview", {
-    angle: 45
-}
+`Camera "playerview"`
 
-Entity, "Player", {
+or...
+
+```
+Camera("playerview", {
+    angle: 45
+})
+```
+
+and then...
+
+```
+Entity("Player", {
     camera: "playerview"
     ...
 ```

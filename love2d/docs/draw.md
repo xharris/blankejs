@@ -7,7 +7,7 @@ Draw.color()
 ```
 or
 ```
-Draw {
+Draw{
     { 'color', 'pink' }
     { 'rect', 'fill', 50, 50, 100, 100 }
     { 'color' }

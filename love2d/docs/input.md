@@ -1,12 +1,12 @@
 ## Input
 
 ```
-Input {
-    left: { "left", "a" }
-    right: { "right", "d" }
-    jump: { "up", "w" }
-    action: { 'space', 'mouse1' }
-}, { no_repeat: { "jump" }, combo: { 'action' } }
+Input({
+    left = { "left", "a" }
+    right = { "right", "d" }
+    jump = { "up", "w" }
+    action = { 'space', 'mouse1' }
+}, { no_repeat = { 'jump' }, combo = { 'action' } })
 
 update: (dt) =>
     if Input.pressed('left')

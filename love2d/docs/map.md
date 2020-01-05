@@ -1,8 +1,8 @@
 ## Map - GameObject (drawable)
 
 ```
-Map.config {
-    tile_hitbox: { img_ground:'ground' }
+Map.config{
+    tile_hitbox = { img_ground='ground' }
 }
 mymap = Map.load('level2.map')
 ```

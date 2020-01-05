@@ -594,6 +594,7 @@ do
         init = function(self, args, spawn_args, classname)
             GameObject.init(self, args, spawn_args)
 
+            self.is_entity = true
             self.hspeed = 0
             self.vspeed = 0
             self.gravity = 0
@@ -827,6 +828,7 @@ do
                     n2i[key] = true
                     -- is input pressed now?
                     combo = table.hasValue(options.combo, name)
+                    print_r(n2i)
                     if (combo and table.every(n2i)) or (not combo and table.some(n2i)) then
                         pressed[name] = extra
                         pressed[name].count = 1
@@ -1895,6 +1897,7 @@ do
                 message = {
                     type="data",
                     timestamp = love.timer.getTime(),
+                    clientid=Net.id,
                     data=data,
                     room=Net.room
                 }
@@ -1970,13 +1973,13 @@ do
             if data.event == "obj.destroy" and netdata.clientid ~= Net.id then 
                 destroyObj(netdata.clientid, netdata.objid)
             end
-        elseif data.type == "data" then
+        elseif data.type == "data" and netdata.clientid ~= Net.id then
             Signal.emit('net.data', netdata, data)
         end
     end
 
     local onFail = function()
-
+        Signal.emit('net.fail')
     end
 
     local prepNetObject = function(obj)
@@ -1998,7 +2001,6 @@ do
         address='localhost',
         port=8080,
         room=1,
-        ip='',
         connect = function(address,port)
             Net.address = address or Net.address
             Net.port = port or Net.port
@@ -2112,13 +2114,14 @@ do
                     sync_objs = sync_objs
                 })
             end
+        end,
+        ip = function()
+            local s = socket.udp()
+            s:setpeername("74.125.115.104",80)
+            local ip, _ = s:getsockname()
+            return ip
         end
     }
-
-    local s = socket.udp()
-    s:setpeername("74.125.115.104",80)
-    local ip, _ = s:getsockname()
-    Net.ip = ip
 end
 
 --WINDOW

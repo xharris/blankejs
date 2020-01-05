@@ -1,14 +1,14 @@
 ## Entity - GameObject (updateable, drawable)
 
 ```
-Entity "Player", {
+Entity("Player", {
     builtin_prop: 'value1'
     custom_prop: 4
     builtin_method: (arg1) =>
         ...
     custom_method: (arg1, arg2=5) =>
         ...
-}
+})
 
 Game.spawn("Player", { custom_prop: 5 })
 ```
