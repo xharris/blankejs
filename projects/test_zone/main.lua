@@ -18,8 +18,6 @@ Entity("player", {
 		animation = "blue_robot",
 		net = true,
 		align = "center",
-		x = 150,
-		y = 150,
 		t = 1,
 		update = function(self, dt)
 			self.t = self.t + 1
