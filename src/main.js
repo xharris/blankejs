@@ -131,7 +131,7 @@ var app = {
 	watch: function(path, cb) {
 		return nwWATCH(path, {
 			recursive: true,
-			filter: f => !/dist/.test(f) && !f.includes('.asar')
+			filter: f => !/dist/.test(f) && !f.includes('.asar') && !/love2d/.test(f) // !nwFS.statSync(f).isSymbolicLink() && 
 		}, cb);
 	},
 	getRelativePath: function(path) {

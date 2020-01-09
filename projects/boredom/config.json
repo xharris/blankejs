@@ -16,16 +16,16 @@
     ],
     "quick_access": [
         [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
             "player.lua=script+?",
             "player.lua"
         ],
         [
             "main.lua=script+?",
             "main.lua"
-        ],
-        [
-            "level1.map=map+?",
-            "level1.map"
         ],
         [
             "conf.lua=script+?",

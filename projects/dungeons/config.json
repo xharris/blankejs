@@ -1,0 +1,31 @@
+{
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns",
+    "game_size": 3,
+    "window_size": 3,
+    "quick_access": [
+        [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
+        ],
+        [
+            "conf.lua=script+?",
+            "conf.lua"
+        ]
+    ],
+    "autoplay_preview": true,
+    "write_conf": true,
+    "scene": {},
+    "export": {
+        "name": "dungeons",
+        "scale_mode": "linear"
+    },
+    "enabled_plugins": {
+        "xhh-effect": false,
+        "xhh-tween": false
+    }
+}

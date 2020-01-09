@@ -82,14 +82,21 @@ const engine = {
         writeConf();
         let eng_path = 'love'; // linux, mac?
         if (app.os == 'win') eng_path = nwPATH.join(app.ideSetting('engine_path'), 'lovec');
-
+        if (app.os == 'linux') {
+            nwFS.removeSync(nwPATH.join(app.project_path, 'love2d'));
+            nwFS.symlinkSync(nwPATH.relative(app.project_path, app.ideSetting('engine_path')), nwPATH.join(app.project_path, 'love2d'));
+        }
         let child = spawn(eng_path, ['.'], { cwd: app.getAssetPath('scripts') });
         let con = new Console(true);
         child.stdout.on('data', data => {
             data = data.toString().replace(/Could not open device.\s*/,"").trim();
             data.split(/[\r\n]+/).forEach(l => con.log(l))
         });
+        child.stderr.on('data', data => {
+            app.error(data);
+        });
         child.on('close', () => {
+            nwFS.removeSync(nwPATH.join(app.project_path, 'love2d'));
             con.tryClose();
         })
     },
