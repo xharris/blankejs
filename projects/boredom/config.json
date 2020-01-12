@@ -16,6 +16,10 @@
     ],
     "quick_access": [
         [
+            "Open .love file=?",
+            "Open .love file"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
@@ -30,10 +34,6 @@
         [
             "conf.lua=script+?",
             "conf.lua"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
         ]
     ],
     "autoplay_preview": true,

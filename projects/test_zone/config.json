@@ -14,6 +14,14 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Open .love file=?",
+            "Open .love file"
+        ],
+        [
+            "Open project=?",
+            "Open project"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
@@ -24,14 +32,6 @@
         [
             "Open image editor=?",
             "Open image editor"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
-        ],
-        [
-            "View project in explorer=?",
-            "View project in explorer"
         ]
     ],
     "autoplay_preview": true,

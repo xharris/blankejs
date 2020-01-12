@@ -142,11 +142,15 @@ var app = {
 
 	},
 
+	get template_path () {
+		return nwPATH.join(cwd(),'src','template')
+	},
+
 	newProject: function(path) {
 		nwFS.mkdir(path, function(err) {
 			if (!err) {
 				// copy template files
-				nwFS.copySync(nwPATH.join(cwd(),'src','template'), path);
+				nwFS.copySync(app.template_path, path);
 				app.hideWelcomeScreen();
 				app.openProject(path);
 			}
@@ -215,6 +219,7 @@ var app = {
 	},
 	openProject: function(path) {
 		// validate: only open if there's a main.lua
+		path = app.cleanPath(path);
 		nwFS.readdir(path, 'utf8', function(err, files){
 			if (!err) { // && files.includes('main.lua')) { // TODO add project validation
 				if (app.isProjectOpen())
@@ -248,8 +253,10 @@ var app = {
 				
 				// add to recent files
 				app.last_quick_access = '';
-				app.ideSetting("recent_files",app.ideSetting("recent_files").filter(e => !e.includes(nwPATH.basename(path))))
-				app.ideSetting("recent_files").unshift(path);
+				let recent_files = app.ideSetting("recent_files").filter(f => !f.includes(path))
+				recent_files.unshift(path);
+				app.ideSetting('recent_files', recent_files);
+				app.refreshRecentProjects();
 				app.saveAppData();
 
 				app.getElement("#search-container").classList.remove("no-project");
@@ -265,19 +272,57 @@ var app = {
 				app.closeProject();
 			}
 		});
- 
 	},
 
-	openProjectDialog: function() {
+	openProjectDialog: function(love_file) {
 		blanke.chooseFile({
-			properties:['openDirectory']
+			properties:[love_file ? null : 'openDirectory']
 		}, function(file_path){
-			app.openProject(file_path);
+			if (love_file)
+				app.openLoveProject(love_file)
+			else 
+				app.openProject(file_path);
 		});
 	},
 
 	refreshGameSource: function () {
 		if (app.game) app.game.refreshSource();
+	},
+
+	refreshRecentProjects: () => {
+		// add recent projects (max 10)
+		var el_recent = app.getElement("#welcome .recent-files");
+		app.clearElement(el_recent);
+		if (app.ideSetting("recent_files").length > 10) 
+			app.ideSetting("recent_files",app.ideSetting("recent_files").slice(0,10))
+
+		// remove duplicates
+		let files_list = [];
+		app.ideSetting('recent_files').forEach(f => {
+			f = app.cleanPath(f);
+			if (!files_list.includes(f))	
+				files_list.push(f);
+		});
+		app.ideSetting('recent_files', files_list);
+				
+		// setup welcome screen
+		let el_br = app.createElement("br");
+		elec.remote.app.clearRecentDocuments();
+		files_list.forEach((file) => {
+			if (nwFS.pathExistsSync(file) && nwFS.statSync(file).isDirectory()) {
+				let el_file = app.createElement("button", "file");
+				el_file.innerHTML = nwPATH.basename(file);
+				el_file.title = file;
+				el_file.addEventListener('click',function(){
+					app.openProject(file);
+				});
+
+				el_recent.appendChild(el_file);
+				el_recent.appendChild(el_br)
+
+				elec.remote.app.addRecentDocument(file);
+			}
+		});
 	},
 
 	autocomplete: {},
@@ -629,14 +674,40 @@ var app = {
 		});
 	},
 
-	addAsset: function(res_type, path) {
-		blanke.toast("adding file \'"+nwPATH.basename(path)+"\'");
-		nwFS.ensureDir(nwPATH.join(app.project_path, 'assets', res_type), (err) => {
-			if (err) console.error(err);
-			let asset_path = nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path))
-			nwFS.copySync(path, asset_path);
-			dispatchEvent("asset_added",{type: res_type, path: asset_path});
+	openLoveProject: (path) => {
+		blanke.toast("opening \'"+nwPATH.basename(path)+"\' as new project");
+		let zip = nwZIP2(path);
+		let entries = zip.getEntries();
+		let folder = nwPATH.parse(path).name;
+		let dist_path = nwPATH.join(nwPATH.parse(path).dir, folder);
+		//nwPATH.ensureDirSync(dist_path)
+		zip.extractAllTo(dist_path, true);
+		let walker = nwWALK.walk(app.template_path);
+		walker.on('file', (path, stats, next) => {
+			let out_file = app.cleanPath(nwPATH.join(dist_path, stats.name));
+			if (!nwFS.existsSync(out_file))
+				nwFS.copySync(nwPATH.join(app.template_path, stats.name), out_file);
+			next();
 		});
+		walker.on('end', () => {
+			app.closeProject();
+			app.openProject(dist_path);
+		});
+	},
+
+	addAsset: function(res_type, path) {
+		if (res_type == "love") {
+			app.openLoveProject(path);
+			//app.closeProject();
+		} else {
+			blanke.toast("adding file \'"+nwPATH.basename(path)+"\'");
+			nwFS.ensureDir(nwPATH.join(app.project_path, 'assets', res_type), (err) => {
+				if (err) console.error(err);
+				let asset_path = nwPATH.join(app.project_path, 'assets', res_type, nwPATH.basename(path))
+				nwFS.copySync(path, asset_path);
+				dispatchEvent("asset_added",{type: res_type, path: asset_path});
+			});
+		}
 	},
 
 	// determine an assets type based on file extension
@@ -646,7 +717,8 @@ var app = {
 		'audio':['mp3','ogg','wav'],
 		'font':['ttf','ttc','cff','woff','otf','otc','pfa','pfb','fnt','bdf','pfr'],
 		'script':['js'],
-		'map':['map']
+		'map':['map'],
+		'love':['love']
 	},
 	name_to_path: {},
 	asset_list: [],
@@ -1446,8 +1518,12 @@ app.window.webContents.once('dom-ready', ()=>{
 	window.addEventListener('drop', function(e) {
 		e.preventDefault();
 
-		if (app.isProjectOpen()) {
-			app.dropFiles(e.dataTransfer.files);
+		let files = Array.from(e.dataTransfer.files || []);
+		if (!app.isProjectOpen()) 
+			files = files.filter(f => app.findAssetType(f.name) == 'love');
+
+		if (files.length > 0) {
+			app.dropFiles(files);
 			app.getElement("#drop-zone").classList.remove("active");
 		}
 
@@ -1461,6 +1537,9 @@ app.window.webContents.once('dom-ready', ()=>{
 
 	app.addSearchKey({key: 'Open project', onSelect: function() {
 		app.openProjectDialog();
+	}});
+	app.addSearchKey({key: 'Open .love file', onSelect: function() {
+		app.openProjectDialog(true);
 	}});
 	app.addSearchKey({key: 'New project', onSelect: function() {
 		app.newProjectDialog();
@@ -1493,31 +1572,7 @@ app.window.webContents.once('dom-ready', ()=>{
 	app.loadAppData(function(){
 		// load current theme
 		app.setTheme(app.ideSetting("theme"));
-
-		// add recent projects (max 10)
-		var el_recent = app.getElement("#welcome .recent-files");
-		if (app.ideSetting("recent_files").length > 10) 
-			app.ideSetting("recent_files",app.ideSetting("recent_files").slice(0,10))
-			
-		// setup welcome screen
-		let el_br = app.createElement("br");
-
-		elec.remote.app.clearRecentDocuments();
-		app.ideSetting("recent_files").forEach((file) => {
-			if (nwFS.pathExistsSync(file) && nwFS.statSync(file).isDirectory()) {
-				let el_file = app.createElement("button", "file");
-				el_file.innerHTML = nwPATH.basename(file);
-				el_file.title = file;
-				el_file.addEventListener('click',function(){
-					app.openProject(file);
-				});
-
-				el_recent.appendChild(el_file);
-				el_recent.appendChild(el_br)
-
-				elec.remote.app.addRecentDocument(file);
-			}
-		});
+		app.refreshRecentProjects();
 
 		document.addEventListener('script_modified', (e) => {
 			if (!app.isServerRunning() && e.detail.content.includes("Net.")) {								
