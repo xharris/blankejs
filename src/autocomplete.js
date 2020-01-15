@@ -40,8 +40,8 @@ module.exports.keywords = [
 module.exports.class_list = [
 	"Math", "FS", "Game", "Canvas", "Image", "Entity",
 	"Input", "Draw", "Color", "Audio", "Effect", "Camera",
-	"Map", "Physics", "Hitbox", "State", "Window", "Net",
-	"Blanke"
+	"Map", "Physics", "Hitbox", "State", "Timer", "Window", 
+	"Net", "Blanke"
 ];
 
 module.exports.class_extends = {
@@ -167,5 +167,9 @@ module.exports.hints = {
 	],
 	"blanke-net":[
 
+	],
+	"blanke-timer":[
+		{fn:"after",vars:{t:'seconds',fn:'return true to restart the timer'}},
+		{fn:"every",vars:{t:'seconds',fn:'return true to destroy the timer'}}
 	]
 }

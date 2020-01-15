@@ -78,6 +78,22 @@ table.append = function (t, new_t)
         else table.insert(t, v) end
     end
 end
+table.filter = function(t, fn)
+    local len = table.len(t)
+    local offset = 0
+    for o = 1, len do 
+        local element = t[o]
+        if element then 
+            if fn(element, o) then -- keep element
+                t[o] = nil 
+                t[o - offset] = element 
+            else -- remove element
+                t[o] = nil 
+                offset = offset + 1
+            end
+        end
+    end
+end
 --UTIL.string
 string.contains = function (str,q) 
     return string.match(str, q) ~= nil
@@ -1552,7 +1568,7 @@ do
             return worlds[name]
         end;            
         getJointConfig = function(name) return joint_config[name] end;
-        joint = function(name, opt)
+        joint = function(name, opt) -- TODO: finish joints
             if not worlds['_default'] then Physics.world('_default', {}) end
             if opt then
                 joint_config[name] = opt
@@ -2198,6 +2214,71 @@ Window = {
     end
 }
 
+--TIMER
+Timer = nil 
+do 
+    local l_after = {}
+    local l_every = {}
+    local addTimer = function(t, fn, tbl)
+        local id = uuid()
+        local timer = {
+            fn = fn,
+            duration = t,
+            t = t,
+            iteration = 1,
+            paused = false,
+            destroy = function()
+                tbl[id] = nil
+            end
+        }
+        tbl[id] = timer
+        return timer
+    end
+
+    Timer = {
+        update = function(dt) 
+            -- after
+            for id,timer in pairs(l_after) do 
+                if not timer.paused then
+                    timer.t = timer.t - dt 
+                    if timer.t < 0 then 
+                        if timer.fn and timer.fn(timer) then 
+                            -- another one (restart timer)
+                            timer.t = timer.duration
+                            timer.iteration = timer.iteration + 1
+                        else 
+                            -- destroy it
+                            timer.destroy()
+                        end
+                    end
+                end
+            end
+            -- every
+            for id,timer in pairs(l_every) do
+                if not timer.paused then 
+                    timer.t = timer.t - dt 
+                    if timer.t < 0 then 
+                        if not timer.fn or timer.fn(timer) then 
+                            -- destroy it!
+                            timer.destroy()
+                        else
+                            -- restart timer
+                            timer.t = timer.duration
+                            timer.iteration = timer.iteration + 1
+                        end
+                    end
+                end
+            end
+        end,
+        after = function(t, fn) 
+            addTimer(t, fn, l_after)
+        end,
+        every = function(t, fn) 
+            addTimer(t, fn, l_every)
+        end
+    }
+end
+
 --BLANKE
 Blanke = nil
 do 
@@ -2255,6 +2336,7 @@ do
         update = function(dt)
             if Game.options.update(dt) == true then return end
             Physics.update(dt)
+            Timer.update(dt)
             Blanke.iterUpdate(Game.updatables, dt)
             State.update(dt)
             Signal.emit('update',dt)

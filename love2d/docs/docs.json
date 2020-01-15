@@ -14,9 +14,11 @@
     "Input": [ {"title":"", "file":"input.md"} ],
     "Draw": [ {"title":"", "file":"draw.md"} ],
     "Audio": [ {"title":"", "file":"audio.md"} ],
+    "Timer": [ {"title":"", "file":"timer.md"} ],
     "Effect": [ {"title":"", "file":"effect.md"} ],
     "Camera": [ {"title":"", "file":"camera.md"} ],
     "Map": [ {"title":"", "file":"map.md"} ],
     "State": [ {"title":"", "file":"state.md"} ],
-    "Net": [ {"title":"", "file":"net.md"} ]
+    "Net": [ {"title":"", "file":"net.md"} ],
+    "Physics": [ {"title":"", "file":"physics.md"} ]
 }
