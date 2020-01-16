@@ -22,7 +22,8 @@
     "scene": {},
     "export": {
         "name": "dungeons",
-        "scale_mode": "linear"
+        "scale_mode": "linear",
+        "scale": true
     },
     "enabled_plugins": {
         "xhh-effect": false,

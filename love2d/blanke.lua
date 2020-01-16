@@ -1532,6 +1532,32 @@ do
     local body_config = {}
     local joint_config = {}
     local worlds = {}
+    
+    --PHYSICS.BODYHELPER
+    local BodyHelper = class {
+        init = function(self, body)
+            self.body = body
+            self.body:setUserData(helper)
+            self.gravx, self.gravy = 0, 0
+            self.grav_added = false
+        end;
+        update = function(self, dt)
+            if self.grav_added then
+                self.body:applyForce(self.gravx,self.gravy)
+            end
+        end;
+        setGravity = function(self, angle, dist)
+            if dist > 0 then
+                self.gravx, self.gravy = Math.getXY(angle, dist)
+                self.body:setGravityScale(0)
+                if not self.grav_added then
+                    table.insert(Physics.custom_grav_helpers, self)
+                    self.grav_added = true
+                end
+            end
+        end;
+    }
+    
     Physics = class {
         custom_grav_helpers = {};
         debug = false;
@@ -1682,31 +1708,6 @@ do
                     end
                 end
                 Draw.color()
-            end
-        end;
-    }
-
-    --PHYSICS.BODYHELPER
-    local BodyHelper = class {
-        init = function(self, body)
-            self.body = body
-            self.body:setUserData(helper)
-            self.gravx, self.gravy = 0, 0
-            self.grav_added = false
-        end;
-        update = function(self, dt)
-            if self.grav_added then
-                self.body:applyForce(self.gravx,self.gravy)
-            end
-        end;
-        setGravity = function(self, angle, dist)
-            if dist > 0 then
-                self.gravx, self.gravy = Math.getXY(angle, dist)
-                self.body:setGravityScale(0)
-                if not self.grav_added then
-                    table.insert(Physics.custom_grav_helpers, self)
-                    self.grav_added = true
-                end
             end
         end;
     }

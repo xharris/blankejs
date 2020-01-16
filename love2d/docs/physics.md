@@ -1,10 +1,10 @@
 # Class Methods
 
-`world(name, config)`
+`world(name, [config])`
 
-`joint(name, config)` currently WIP
+`joint(name, [config])` currently WIP
 
-`body(name, config)` returns body, shapes{}
+`body(name, [config])` returns body, shapes{}
 
 `getWorldConfig(name), getJointConfig(name), getBodyConfig(name)`
 
@@ -29,7 +29,7 @@
 * bullet (bool)
 * inertia
 * linearDamping
-* shapes {list of Shapes}
+* shapes {list of Shapes} ex. {{type='rect', ....}, {}}
     * rect {width, height, offx, offy, angle}
     * circle {offx, offy, radius}
     * polygon {points[x, y, x, y, ...]}

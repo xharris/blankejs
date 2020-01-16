@@ -30,11 +30,11 @@ let prop_gameobject = [
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#Keywords
 // used Array.from(document.querySelectorAll("#Reserved_keywords_as_of_ECMAScript_2015 + .threecolumns code")).map((v)=>"'"+v.innerHTML+"'").join(',')
-module.exports.keywords = [
+module.exports.keywords = []/*
 	'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 
 	'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 
 	'until', 'while'
-]
+]*/
 
 // TestScene is included just so it looks nice
 module.exports.class_list = [
@@ -155,9 +155,9 @@ module.exports.hints = {
 		{ fn: 'spawnEntity', vars: {object_name:'',x:'',y:'',layer:'opt'} }
 	],
 	"blanke-physics":[
-		{ fn: 'world', vars: {name:'',config:''}},
-		{ fn: 'joint', vars: {name:'',config:''}},
-		{ fn: 'body',  vars: {name:'',config:''}},
+		{ fn: 'world', vars: {name:'',config:'opt'}},
+		{ fn: 'joint', vars: {name:'',config:'opt'}},
+		{ fn: 'body',  vars: {name:'',config:'opt'}},
 		{ fn: 'setGravity', vars: {body:'',angle:'degrees',dist:''}}
 	],
 	"blanke-hitbox":[
