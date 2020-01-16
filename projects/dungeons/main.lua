@@ -1,56 +1,105 @@
 local rects = {}
+local SHAPES = 40
+local tile_size = 4
+local main_room_th_scale = 0.9
+local triangles = nil
+
+function roundm(n, m) return math.floor(((n + m - 1)/m))*m end
+function getRandomPointInCircle(radius)
+	local t = 2*math.pi*math.random()
+	local u = math.random()+math.random()
+	local r = nil
+	if u > 1 then r = 2-u else r = u end 
+	return roundm(radius*r*math.cos(t), tile_size), roundm(radius*r*math.sin(t), tile_size)
+end
+function getRandomPointInEllipse(ellipse_width, ellipse_height)
+	local t = 2*math.pi*math.random()
+	local u = math.random()+math.random()
+	local r = nil
+	if u > 1 then r = 2-u else r = u end
+	return roundm(ellipse_width*r*math.cos(t)/2, tile_size), 
+		   roundm(ellipse_height*r*math.sin(t)/2, tile_size)
+end
+
+local Delaunay = require "yonaba-delaunay"
 
 Game{
 	filter = "nearest",
 	load = function()
 		-- create random rects in circle
-		function roundm(n, m) return math.floor(((n + m - 1)/m))*m end
-		function getRandomPointInCircle(radius)
-			local tile_size = 4
-			local t = 2*math.pi*math.random()
-			local u = math.random()+math.random()
-			local r = nil
-			if u > 1 then r = 2-u else r = u end 
-			return roundm(radius*r*math.cos(t), tile_size), roundm(radius*r*math.sin(t), tile_size)
-		end
-		for r = 1,100 do
-			local x, y = getRandomPointInCircle(30)
+		for r = 1,SHAPES do
+			local x, y = getRandomPointInEllipse(100,20)
 			local w, h = Math.random(32,64), Math.random(32,64)
+			x = x - (w/2)
+			y = y - (h/2)
 			table.insert(rects, {
 				x = x, y = y,
 				w = w, h = h,
-				points = {x - (w/2) + (Game.width/2), y - (h/2) + (Game.height/2), w, h}
+				points = {x, y, w, h}
 			})
 		end
+		--Physics.world():translateOrigin(Game.width/2, Game.height/2)
 		-- give each rect a body
-		for _, rect in pairs(rects) do
-			Physics.body('rect',{
-					x = rect.x,
-					y = rect.y,
-					type = 'dynamic',
-					fixedRotation = true,
-					shapes = {
-						{type='rect',width=rect.w,height=rect.h}
-					}
-			})
-			rect.body = Physics.body('rect')
-		end
+		Timer.after(1,function()
+			for _, rect in ipairs(rects) do
+				Physics.body('rect',{
+						x = rect.x,
+						y = rect.y,
+						type = 'dynamic',
+						fixedRotation = true,
+						shapes = {
+							{type='rect',width=rect.w,height=rect.h,density=1}
+						}
+				})
+				rect.body = Physics.body('rect')
+			end
+			-- pick main rooms
+			local w_avg, h_avg = 0, 0
+			for _, rect in ipairs(rects) do 
+				w_avg, h_avg = w_avg + rect.w, h_avg + rect.h
+			end
+			w_avg, h_avg = w_avg / #rects, h_avg / #rects
+			for _,rect in ipairs(rects) do
+				if rect.w > w_avg*main_room_th_scale and rect.h > h_avg*main_room_th_scale then 
+					rect.main_room = true
+				end
+			end
+		end)
 	end,
 	update = function(dt)
-		for _, rect in pairs(rects) do
-			local x, y = rect.body:getPosition()
-			rect.points[1] = x
-			rect.points[2] = y
-		end 
+		local awake_count = 0
+		for _, rect in ipairs(rects) do
+			if rect.body then
+				local x, y = rect.body:getWorldCenter()
+				rect.points[1] = x - (rect.points[3] / 2)
+				rect.points[2] = y - (rect.points[4] / 2)
+				if rect.body:isAwake() then 
+					awake_count = awake_count + 1
+				end
+			end
+		end
+		if rects[1].body and awake_count == 0 and not triangles then
+			print("triangulatin")
+			local points = {}
+			for i, rect in ipairs(rects) do 
+				table.insert(points, Delaunay.Point(rect.points[1], rect.points[2]))
+			end
+			triangles = Delaunay.triangulate(unpack(points))
+			for i, triangle in ipairs(triangles) do
+				print(unpack(triangle))
+			end
+		end
 	end,
-	draw = function()
-		for _, rect in pairs(rects) do 
+	draw = function(d)
+		Draw.translate(Game.width/2, Game.height/2)
+		for i, rect in ipairs(rects) do	
 			Draw{
 				{'lineWidth',2},
-				{'color','blue'},
-				{'rect','fill',unpack(rect.points)},
+				{'color', rect.main_room and 'red' or 'blue'},
+				{'rect', 'fill', unpack(rect.points)},
 				{'color','white'},
-				{'rect','line',unpack(rect.points)}
+				{'rect', 'line', unpack(rect.points)},
+				{'print', i, rect.points[1]+2, rect.points[2]}
 			}
 		end	
 	end

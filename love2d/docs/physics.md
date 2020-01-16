@@ -1,3 +1,12 @@
+```
+Physics.body('block',{
+    fixedRotation = true,
+    shapes = { {type='rect', width=30, height=40} }
+})
+local cube1 = Physics.body('block')
+cube1:setLinearDamping(0.1)
+```
+
 # Class Methods
 
 `world(name, [config])`
@@ -29,6 +38,7 @@
 * bullet (bool)
 * inertia
 * linearDamping
+* mass
 * shapes {list of Shapes} ex. {{type='rect', ....}, {}}
     * rect {width, height, offx, offy, angle}
     * circle {offx, offy, radius}

@@ -54,7 +54,7 @@ module.exports.instance = {
 	'canvas': /(@?\w+)\s*(?::|=)\s*Canvas[\s\(]/g
 }
 
-module.exports.user_words = {
+module.exports.user_words = {/*
 	'var':[
 		// single var
 		/([a-zA-Z_]\w+?)\s*=\s(?!function|\(\)\s*[-|=]>)/g,
@@ -68,7 +68,7 @@ module.exports.user_words = {
 		/([a-zA-Z_]\w+?)\s*=\s(?:function|\(\)\s*[-|=]>)/g,
 		// function var()
 		/function\s+([a-zA-Z_]\w+)\s*\(/g
-	]
+	]*/
 }
 
 module.exports.image = [

@@ -994,6 +994,7 @@ do
             fn()
             Draw.pop()
         end;
+        point = function(...) Draw.points(...) end
     }
     
     local draw_functions = {
@@ -1532,7 +1533,13 @@ do
     local body_config = {}
     local joint_config = {}
     local worlds = {}
-    
+
+    local setProps = function(obj, src, props)
+        for _,p in ipairs(props) do 
+            if src[p] ~= nil then obj['set'..string.capitalize(p)](obj,src[p]) end
+        end
+    end
+
     --PHYSICS.BODYHELPER
     local BodyHelper = class {
         init = function(self, body)
@@ -1556,6 +1563,9 @@ do
                 end
             end
         end;
+        setPosition = function(self, x, y)
+            self.body:setPosition(x,y)
+        end
     }
     
     Physics = class {
@@ -1574,9 +1584,10 @@ do
             if type(name) == 'table' then
                 opt = name 
                 name = '_default'
-            end
-            if opt then
-                world_config[name] = opt 
+            end 
+            name = name or '_default'
+            if opt or not world_config[name] then
+                world_config[name] = opt or {}
                 table.defaults(world_config[name], {
                     gravity = 0,
                     gravity_direction = 90,
@@ -1628,8 +1639,7 @@ do
             local body = love.physics.newBody(worlds[c.world], c.x, c.y, c.type)
             local helper = BodyHelper(body)
             -- set props
-            local props = {'angularDamping','fixedRotation','bullet','inertia','linearDamping'}
-            for _,p in ipairs(props) do body['set'..string.capitalize(p)](body,c[p]) end
+            setProps(body, c, {'angularDamping','fixedRotation','bullet','inertia','linearDamping','mass'})
             helper:setGravity(c.gravity, c.gravity_direction)
             local shapes = {}
             for _,s in ipairs(c.shapes) do
@@ -1646,7 +1656,7 @@ do
                             offy = 0,
                             angle = 0
                         })
-                        shape = love.physics.newRectangleShape(s.offx,s.offy,s.width,s.height,s.angle)
+                        shape = love.physics.newRectangleShape(c.x+s.offx,c.y+s.offy,s.width,s.height,s.angle)
                     end,
                     circle = function()
                         table.defaults(s, {
@@ -1654,7 +1664,7 @@ do
                             offy = 0,
                             radius = 1
                         })
-                        shape = love.physics.newCircleShape(s.offx,s.offy,s.radius)
+                        shape = love.physics.newCircleShape(c.x+s.offx,c.y+s.offy,s.radius)
                     end,
                     polygon = function()
                         table.defaults(s, {
@@ -1681,6 +1691,7 @@ do
                 })
                 if shape then 
                     fix = love.physics.newFixture(body,shape,s.density)
+                    setProps(fix, s, {'friction','restitution','sensor','groupIndex'})
                     table.insert(shapes, shape)
                 end
             end
@@ -1690,22 +1701,32 @@ do
             local helper = body:getUserData()
             helper:setGravity(angle, dist)
         end;
-        draw = function(world_name)
+        draw = function(body, _type)
+            for _, fixture in pairs(body:getFixtures()) do
+                shape = fixture:getShape()
+                if shape:typeOf("CircleShape") then
+                    local x, y = body:getWorldPoints(shape:getPoint())
+                    Draw.circle(_type or 'fill', floor(x), floor(y), shape:getRadius())
+                elseif shape:typeOf("PolygonShape") then
+                    local points = {body:getWorldPoints(shape:getPoints())}
+                    for i,p in ipairs(points) do points[i] = floor(p) end
+                    Draw.poly(_type or 'fill', points)
+                else 
+                    local points = {body:getWorldPoints(shape:getPoints())}
+                    for i,p in ipairs(points) do points[i] = floor(p) end
+                    Draw.line(body:getWorldPoints(shape:getPoints()))
+                end
+            end
+        end;
+        drawDebug = function(world_name)
             world_name = world_name or '_default'
             if Physics.debug then
                 world = worlds[world_name]
-                Draw.color(1,0,0,0.25)
                 for _, body in pairs(world:getBodies()) do
-                    for _, fixture in pairs(body:getFixtures()) do
-                        shape = fixture:getShape()
-                        if shape:typeOf("CircleShape") then
-                            Draw.circle('fill', body:getWorldPoints(shape:getPoint()), shape:getRadius())
-                        elseif shape:typeOf("PolygonShape") then
-                            Draw.poly('fill', body:getWorldPoints(shape:getPoints()))
-                        else 
-                            Draw.line(body:getWorldPoints(shape:getPoints()))
-                        end
-                    end
+                    Draw.color(1,0,0,.8)
+                    Physics.draw(body,'line')
+                    Draw.color(1,0,0,.5)
+                    Physics.draw(body)
                 end
                 Draw.color()
             end
@@ -2351,7 +2372,7 @@ do
             local actual_draw = function()
                 Blanke.iterDraw(Game.drawables)
                 if Game.options.postDraw then Game.options.postDraw() end
-                Physics.draw()
+                Physics.drawDebug()
                 Hitbox.draw()
 
                 State.draw()

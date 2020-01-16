@@ -27,6 +27,8 @@
     },
     "enabled_plugins": {
         "xhh-effect": false,
-        "xhh-tween": false
+        "xhh-tween": false,
+        "yonaba-delunay": false,
+        "yonaba-delaunay": true
     }
 }
