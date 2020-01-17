@@ -1,6 +1,5 @@
 const elec = require('electron');
 
-
 let main_window;
 elec.app.on('open-file', (e, path)=>{
     if (main_window)
@@ -29,6 +28,8 @@ elec.app.on('ready', function(){
     })
     if (main_window.setWindowButtonVisibility)
         main_window.setWindowButtonVisibility(false);
+    
+    // main_window.webContents.openDevTools();		
     main_window.loadFile(`src/index.html`);
     /*
     main_window.webContents.on('new-window', function(e, url) {

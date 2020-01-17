@@ -14,8 +14,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
             "Open .love file=?",
@@ -24,14 +32,6 @@
         [
             "Open project=?",
             "Open project"
-        ],
-        [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
-            "Open image editor=?",
-            "Open image editor"
         ]
     ],
     "autoplay_preview": true,
@@ -67,7 +67,8 @@
         "xhh-tween": false,
         "xhh-net": true,
         "yonaba-delaunay": false,
-        "xhh-datastructs": true
+        "xhh-datastructs": false,
+        "xhh-array": true
     },
     "imageeditor": {
         "image/blue_robot.png": {

@@ -6,7 +6,8 @@ local uuid = require "lua.uuid"
 json = require "lua.json"
 class = require "lua.clasp"
 require "lua.print_r"
-
+-- yes, plugins folder is listed twice
+love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua;./plugins/?/init.lua;./plugins/?.lua')
 lua_print = print 
 do
     local str = ''
@@ -180,7 +181,6 @@ do
         end;
         
         load = function()
-            love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua')
             -- load config.json
             config_data = love.filesystem.read('config.json')
             if config_data then Game.config = json.decode(config_data) end

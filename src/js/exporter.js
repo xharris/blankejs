@@ -26,7 +26,7 @@ class Exporter extends Editor {
 		this.container.height = 370;
 
 		// diplay list of target platforms
-		this.platforms = Object.keys(engine.export_targets || []);
+		this.platforms = Object.keys(app.engine.export_targets || []);
 
 		this.el_platforms = app.createElement("div","platforms");
 		let el_title1 = app.createElement("p","title1");
@@ -58,8 +58,8 @@ class Exporter extends Editor {
 
 		// extra options
         let engine_settings = [];
-        if (engine.export_settings) {
-            for (let form_set of engine.export_settings) {
+        if (app.engine.export_settings) {
+            for (let form_set of app.engine.export_settings) {
                 engine_settings.push(form_set);
             }
         }
@@ -89,8 +89,8 @@ class Exporter extends Editor {
 
 	// dir : target directory to write bundled files to 
 	bundle (dir, target_os, cb_done) {
-		if (engine.bundle)
-			engine.bundle(dir, target_os, cb_done);
+		if (app.engine.bundle)
+			app.engine.bundle(dir, target_os, cb_done);
 	}
 
 	static openDistFolder(os) {
@@ -178,8 +178,8 @@ class Exporter extends Editor {
 				this.errToast();
 			}
 			for (let platform in platforms) {
-				if (engine.setupBinary)
-					engine.setupBinary(os_dir, temp_dir, platform, platforms[platform], cb_done, cb_err);
+				if (app.engine.setupBinary)
+					app.engine.setupBinary(os_dir, temp_dir, platform, platforms[platform], cb_done, cb_err);
 			}
 		}
 
@@ -194,22 +194,22 @@ class Exporter extends Editor {
 				return console.error(err)
 			}
 			// move assets
-			if (engine.export_assets !== false)
+			if (app.engine.export_assets !== false)
 				nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, 'assets'));
-			let e_assets = engine.extra_bundle_assets || {}
+			let e_assets = app.engine.extra_bundle_assets || {}
 			let extra_assets = e_assets[target_os] || e_assets['.'] || [];
 			for (let a of extra_assets) {
 				a = a.replace('<project_path>',app.project_path).replace('<engine_path>',app.ideSetting('engine_path'));
 				nwFS.copySync(a, app.cleanPath(nwPATH.join(temp_dir, a)).replace(app.project_path+'/','').replace(app.ideSetting('engine_path')+'/',''));
 			}
 
-			if (engine.preBundle)
-				engine.preBundle(temp_dir, target_os);
+			if (app.engine.preBundle)
+				app.engine.preBundle(temp_dir, target_os);
 			// create js file		
 			this.toast.text = `Bundling files`
 			this.bundle(temp_dir, target_os, () => {	
 
-				let platforms = engine.export_targets[target_os]
+				let platforms = app.engine.export_targets[target_os]
 		
 				if (platforms === false)
 					this.doneToast(target_os);
@@ -231,7 +231,7 @@ document.addEventListener("openProject", function(e){
 	}});
 
 	let eng_settings = {};
-	(engine.export_settings || []).forEach(s => {
+	(app.engine.export_settings || []).forEach(s => {
 		for (let prop of s) {
 			if (typeof(prop) == "object" && prop.default)
 				eng_settings[s[0]] = prop.default;

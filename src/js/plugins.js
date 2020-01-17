@@ -61,7 +61,7 @@ function inspectPlugins(silent) {
 			return;
 		}
 
-		if (engine.file_ext.some(f => file.endsWith(f))) {
+		if (app.engine.file_ext && app.engine.file_ext.some(f => file.endsWith(f))) {
 			let data = nwFS.readFileSync(file,'utf-8');
 
 			// add file path
@@ -69,7 +69,7 @@ function inspectPlugins(silent) {
 				temp_plugin_info[info_key].files.push(file);
 
 			for (let k of info_keys) {
-				let re = new RegExp(engine.plugin_info_key(k))
+				let re = new RegExp(app.engine.plugin_info_key(k))
 				//plugin_info
 				let match = re.exec(data);
 				if (match) {
@@ -117,7 +117,7 @@ function inspectPlugins(silent) {
 			for (let f of files) {
 				let full_path = pathJoin(app.ideSetting("plugin_path"),f);
 				// .js
-				if (engine.file_ext.some(_f => f.endsWith(_f))) {
+				if (app.engine.file_ext.some(_f => f.endsWith(_f))) {
 					inspectFile(full_path);
 					//nwFS.copyFileSync(pathJoin(app.ideSetting("plugin_path"),f), pathJoin(eng_plugin_dir,f));
 				}

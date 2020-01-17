@@ -19,7 +19,7 @@ function love.conf(t)
 end
 ` : null;
 
-const engine = {
+module.exports.engine = {
     game_preview_enabled: false,
     main_file: 'main.lua',
     file_ext: ['lua'],

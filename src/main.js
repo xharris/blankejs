@@ -138,8 +138,11 @@ var app = {
 		return nwPATH.relative(app.project_path,path);
 	},
 
-	refreshWordCloud: function() {
-
+	engine: {},
+	requireEngine: () => {
+		delete require.cache[nwPATH.join(elec.remote.app.getAppPath(),'src','engine_love.js')];
+		app.engine = require(nwPATH.join(elec.remote.app.getAppPath(),'src','engine_love.js')).engine;
+		dispatchEvent('engine_config_load');
 	},
 
 	get template_path () {
@@ -369,7 +372,7 @@ var app = {
 	},
 	engine_code: '',
 	minifyEngine: function(cb, opt) {
-		if (!engine.minifyEngine) return;
+		if (!app.engine.minifyEngine) return;
 		
 		opt = opt || {};
 		blanke.cooldownFn('minify-engine',500,function(){
@@ -388,17 +391,16 @@ var app = {
 					toast.style = "bad";
 				}
 			}
-			if (engine.minifyEngine)
-				engine.minifyEngine(cb_err, cb_done, opt);
+			app.engine.minifyEngine(cb_err, cb_done, opt);
 		}, true);
 	},
 
 	extra_windows: [],
 	play: function(options) { 
-        if (app.isProjectOpen() && engine.play) {
+        if (app.isProjectOpen() && app.engine.play) {
 			if (app.ideSetting('run_save_code'))
 				Code.saveAll();
-			engine.play(options);
+			app.engine.play(options);
 		}
 	},
 
@@ -616,7 +618,7 @@ var app = {
 				ifndef_obj(app.project_settings, DEFAULT_PROJECT_SETTINGS);
 				// project settings
 				let eng_settings = {};
-				(engine.project_settings || []).forEach(s => {
+				(app.engine.project_settings || []).forEach(s => {
 					for (let prop of s) {
 						if (typeof(prop) == "object" && prop.default)
 							eng_settings[s[0]] = prop.default;
@@ -768,7 +770,7 @@ var app = {
 	getAssetPath: function(_type, name, cb) {
 		if (!name) {
 			if (_type == 'scripts')
-				return app.cleanPath(nwPATH.resolve(engine.script_path));
+				return app.cleanPath(nwPATH.resolve(app.engine.script_path));
 			else if (_type)
 				return app.cleanPath(nwPATH.resolve(nwPATH.join(app.project_path,'assets',_type)));
 			else 
@@ -1274,8 +1276,11 @@ app.window.webContents.once('dom-ready', ()=>{
 	if (process.argv[1]) {
 		// console.log(process.argv);
 	}
-
 	app.refreshQuickAccess();
+	app.requireEngine();
+	app.watch(nwPATH.join(elec.remote.app.getAppPath(),'src','engine_love.js'), () => {
+		app.requireEngine();
+	});
 
 	// remove error file
 	nwFS.remove(nwPATH.join(app.getAppDataFolder(),'error.txt'));
@@ -1544,10 +1549,11 @@ app.window.webContents.once('dom-ready', ()=>{
 	app.addSearchKey({key: 'New project', onSelect: function() {
 		app.newProjectDialog();
 	}});
-
+	
 	if (DEV_MODE) {
 		app.enableDevMode(true);
 	}
+	
 	app.addSearchKey({key: 'Start Server', category:'tools', onSelect: app.runServer});
 	app.addSearchKey({key: 'Stop Server', category:'tools', onSelect: app.stopServer});
 	app.addSearchKey({key: 'Check for updates', onSelect: app.checkForUpdates});

@@ -113,7 +113,6 @@ Game{
 		if triangles then 
 			for i, tri in ipairs(triangles) do
 				local pts = tri.points
-				print(unpack(pts))
 				Draw{
 					{'lineWidth',2},
 					{'color', 'green'},

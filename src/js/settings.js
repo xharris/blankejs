@@ -19,7 +19,7 @@ class Settings extends Editor {
         let proj_set = app.projSetting();
         let app_set = app.ideSetting();
 
-        let autoplay_settings = engine.game_preview_enabled ? [
+        let autoplay_settings = app.engine.game_preview_enabled ? [
                 ['game_preview_enabled','checkbox',{'default':app_set.game_preview_enabled,'label':'show preview of game while coding'}],
                 ['autoplay_preview','checkbox',{'default':proj_set.autoplay_preview}],
                 ['autoreload_external_run','checkbox',{'default':app_set.autoreload_external_run,'label':'auto-reload external run','desc':'when a game is run using the Play button, it can be automatically refreshed when the code changes'}],
@@ -27,8 +27,8 @@ class Settings extends Editor {
         
         let engine_settings = [];
         let engine_set_keys = [];
-        if (engine.project_settings) {
-            for (let form_set of engine.project_settings) {
+        if (app.engine.project_settings) {
+            for (let form_set of app.engine.project_settings) {
                 if (form_set.length > 1 && typeof(form_set[1]) != "boolean")
                     engine_set_keys.push(form_set[0])
                 engine_settings.push(form_set);

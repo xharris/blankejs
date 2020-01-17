@@ -8,12 +8,12 @@ var re_sprite_align = /sprite_align\s*=\s*[\"\']([\s\w]+)[\"\']/;
 var re_sprite_pivot_single = /sprite_pivot\.(x|y)\s*\=\s*(\d+)/;
 var re_sprite_pivot = /sprite_pivot\.set\(\s*(\d+)\s*,\s*(\d+)\s*\)/;
 
-var file_ext = engine.file_ext || ['lua'];
-var main_file = engine.main_file || 'main.'+file_ext[0];
+var file_ext = ['lua'];
+var main_file = 'main.'+file_ext[0];
 
 var code_instances = {};
 
-var CODE_ASSOCIATIONS = engine.code_associations || [];
+var CODE_ASSOCIATIONS = [];
 
 var ext_class_list = {};// class_extends (Player)
 var instance_list = {}; // instance (let player = new Player())
@@ -232,11 +232,11 @@ class Code extends Editor {
 
 		// add game preview
 		this.game = null;
-		if (app.ideSetting("game_preview_enabled") && engine.game_preview_enabled)
+		if (app.ideSetting("game_preview_enabled") && app.engine.game_preview_enabled)
 			this.game = new GamePreview(null,{ ide_mode: true });
 		
 		this.console = new Console();
-		if (engine.game_preview_enabled) {
+		if (app.engine.game_preview_enabled) {
 			this.console.appendTo(this.getContent());
 			this.getContainer().bg_first_only = true;
 			if (this.game)
@@ -298,7 +298,7 @@ class Code extends Editor {
 					return null;
 				}
 			};
-			return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || engine.code_mode || engine.language), blankeOverlay);
+			return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || app.engine.code_mode || app.engine.language), blankeOverlay);
 		});
 
 		let showSpritePreview = (image_name, include_img, cb) => {
@@ -713,8 +713,8 @@ class Code extends Editor {
 			}
 			// sprite info, cb.info = { offset, frame_size[], cropped }
 			let info = { path: path, cropped: false, frame_size:[0,0], offset:[0,0], frames: 1};
-			if (engine.entity_sprite_parse)
-				engine.entity_sprite_parse(text, info, (info) => { 
+			if (app.engine.entity_sprite_parse)
+				app.engine.entity_sprite_parse(text, info, (info) => { 
 					info.path = path
 					cb(null, info)
 				})	
@@ -1304,7 +1304,7 @@ document.addEventListener("openProject", function(e){
 
 	let script_templates = Object.assign({
 		'script':''
-	}, engine.add_script_templates || {})
+	}, app.engine.add_script_templates || {})
 
 	for (let s_type in script_templates) {
 		let template = script_templates[s_type];
@@ -1319,3 +1319,9 @@ document.addEventListener("openProject", function(e){
 		});
 	}
 });
+
+document.addEventListener('engine_config_load', () => {
+	file_ext = app.engine.file_ext || ['lua'];
+	main_file = app.engine.main_file || 'main.'+file_ext[0];
+	CODE_ASSOCIATIONS = app.engine.code_associations || [];
+})
