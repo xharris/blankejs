@@ -994,7 +994,6 @@ do
             fn()
             Draw.pop()
         end;
-        point = function(...) Draw.points(...) end
     }
     
     local draw_functions = {
@@ -1011,6 +1010,7 @@ do
     }
     for _,fn in ipairs(draw_functions) do 
         Draw[draw_aliases[fn] or fn] = function(...) return love.graphics[fn](...) end 
+        Draw[fn] = function(...) return love.graphics[fn](...) end 
     end
 end
 

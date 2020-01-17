@@ -14,16 +14,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "Open .love file=?",
             "Open .love file"
         ],
         [
             "Open project=?",
             "Open project"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ],
         [
             "map0.map=map+?",
@@ -65,7 +65,9 @@
     "enabled_plugins": {
         "xhh-effect": false,
         "xhh-tween": false,
-        "xhh-net": true
+        "xhh-net": true,
+        "yonaba-delaunay": false,
+        "xhh-datastructs": true
     },
     "imageeditor": {
         "image/blue_robot.png": {

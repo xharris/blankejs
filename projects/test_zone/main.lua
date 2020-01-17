@@ -1,9 +1,16 @@
 Game {
+	plugins = { 'xhh-datastructs' },
 	load = function() 
+		local myarray = Array(4,5,6)
+		print(myarray)
+		myarray[2] = 50
+		print(myarray)
+		print(myarray.length)
+		--[[
 		Net.on('ready', function()	
 			Game.spawn('player') -- Map.load("map0.map")	
 		end)
-		Net.connect()
+		Net.connect()]]
 	end
 }
 

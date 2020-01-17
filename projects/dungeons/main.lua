@@ -1,4 +1,5 @@
 local rects = {}
+local rect_size_range = {16,64}
 local SHAPES = 40
 local tile_size = 4
 local main_room_th_scale = 0.9
@@ -29,7 +30,7 @@ Game{
 		-- create random rects in circle
 		for r = 1,SHAPES do
 			local x, y = getRandomPointInEllipse(100,20)
-			local w, h = Math.random(32,64), Math.random(32,64)
+			local w, h = Math.random(unpack(rect_size_range)), Math.random(unpack(rect_size_range))
 			x = x - (w/2)
 			y = y - (h/2)
 			table.insert(rects, {
@@ -82,11 +83,17 @@ Game{
 			print("triangulatin")
 			local points = {}
 			for i, rect in ipairs(rects) do 
-				table.insert(points, Delaunay.Point(rect.points[1], rect.points[2]))
+				if rect.main_room then
+					table.insert(points, Delaunay.Point(rect.points[1] + Game.width/2 + rect.w/2, rect.points[2] + Game.height/2 + rect.h/2))
+				end
 			end
-			triangles = Delaunay.triangulate(unpack(points))
-			for i, triangle in ipairs(triangles) do
-				print(unpack(triangle))
+			local temp = Delaunay.triangulate(unpack(points))
+			triangles = {}
+			for i, tri in ipairs(temp) do
+				table.insert(triangles, {
+					points = tri:isCW() and {tri.p1.x, tri.p1.y, tri.p2.x, tri.p2.y, tri.p3.x, tri.p3.y} or {tri.p3.x, tri.p3.y, tri.p2.x, tri.p2.y, tri.p1.x, tri.p1.y},
+					
+				})
 			end
 		end
 	end,
@@ -101,6 +108,20 @@ Game{
 				{'rect', 'line', unpack(rect.points)},
 				{'print', i, rect.points[1]+2, rect.points[2]}
 			}
-		end	
+		end
+		Draw.translate(-Game.width/2, -Game.height/2)	
+		if triangles then 
+			for i, tri in ipairs(triangles) do
+				local pts = tri.points
+				print(unpack(pts))
+				Draw{
+					{'lineWidth',2},
+					{'color', 'green'},
+					{'line', 	pts[1], pts[2], pts[3], pts[4], 
+								pts[3], pts[4], pts[5], pts[6], 
+								pts[5], pts[6], pts[1], pts[2]}
+				}
+			end
+		end
 	end
 }
