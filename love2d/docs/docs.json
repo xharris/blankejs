@@ -1,4 +1,7 @@
 {
+    "Game/Misc": [
+        {"title":"","file":"game.md"}
+    ],
     "GameObject": [
         {"title":"","file":"gameobject.md"}
     ],

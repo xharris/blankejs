@@ -26,6 +26,7 @@ cube1:setLinearDamping(0.1)
 * gravity
 * gravity_direction = 90
 * sleep = true
+* step_rate = 1
 
 ## Body config
 

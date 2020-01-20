@@ -11,6 +11,8 @@ print(myarray) -- 1,2,6
 
 `length`
 
+`table` returns the lua table
+
 # Instance Methods
 
 `push(val1, val2, ...)`
@@ -29,7 +31,7 @@ print(myarray) -- 1,2,6
 
 `join(sep)`
 
-`forEach(fn)` fn(val, index)
+`forEach(fn)` fn(val, index). return true to break loop early
 
 `sort(...)` uses lua's table.sort(...)
 
@@ -39,7 +41,7 @@ print(myarray) -- 1,2,6
 
 `every(fn)` returns true if fn(val, index) returns true for all values
 
-## These functions return a new array!!
+## These functions return self reference (for chaining)
 
 `map(fn)` fn(val, index) should return new val
 

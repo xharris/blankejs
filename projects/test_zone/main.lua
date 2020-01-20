@@ -1,10 +1,11 @@
 Game {
 	plugins = { 'xhh-array' },
 	load = function() 
-		local myarray = Array({1,2,3})
-		myarray[2] = 6
-		print(myarray[2]) -- 6
-		print(myarray) -- 1,6,3
+		local myarray = Set(2,3)
+		myarray:push(1)
+		myarray:push(2)
+		myarray:push(4)
+		print(myarray) -- 1,2,3,4,
 		--[[
 		Net.on('ready', function()	
 			Game.spawn('player') -- Map.load("map0.map")	

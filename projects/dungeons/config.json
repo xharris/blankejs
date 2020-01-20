@@ -23,14 +23,15 @@
     "export": {
         "name": "dungeons",
         "scale_mode": "linear",
-        "scale": true
+        "scale": true,
+        "resizable": true
     },
     "enabled_plugins": {
         "xhh-effect": false,
         "xhh-tween": false,
         "yonaba-delunay": false,
-        "yonaba-delaunay": true,
+        "yonaba-delaunay": false,
         "xhh-datastructs": false,
-        "xhh-array": false
+        "xhh-array": true
     }
 }

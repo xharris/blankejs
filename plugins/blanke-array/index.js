@@ -7,9 +7,12 @@ exports.info = {
 }
 
 exports.autocomplete = {
-    class_list: ['Array'],
+    class_list: ['Array','Set'],
     instance: {
-        'array': /\b(\w+)\s*=\s*Array\(.*\)/g
+        'array': [
+            /\b(\w+)\s*=\s*Array\(.*\)/g,
+            /\b(\w+)\s*=\s*Set\(.*\)/g
+        ]
     },
     hints: {
         'blanke-array':[

@@ -95,6 +95,9 @@ table.filter = function(t, fn)
         end
     end
 end
+table.random = function(t)
+    return t[Math.random(1,#t)]
+end
 --UTIL.string
 string.contains = function (str,q) 
     return string.match(str, q) ~= nil
@@ -108,7 +111,8 @@ local floor = function(x) return math.floor(x+0.5) end
 Math = {
     random = function(...) return love.math.random(...) end,
     indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end,
-    getXY = function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end
+    getXY = function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end,
+    distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end
 }
 --UTIL.extra
 switch = function(val, choices)
@@ -116,9 +120,14 @@ switch = function(val, choices)
     elseif choices.default then choices.default() end
 end
 copy = function(t)
-    local ret = {}
-    for k,v in pairs(t) do ret[k] = v end 
-    return ret
+    if type(t) == 'table' then
+        local ret = {}
+        for k,v in pairs(t) do 
+            ret[k] = copy(v)
+        end 
+        return ret
+    end
+    return t
 end
 is_object = function(o) return type(o) == 'table' and o.init and type(o.init) == 'function' end
 --FS
@@ -177,6 +186,7 @@ do
             Game.win_width, Game.win_height, flags = love.window.getMode()
             if not Game.options.scale then
                 Game.width, Game.height = Game.win_width, Game.win_height
+                if Blanke.game_canvas then Blanke.game_canvas:resize(Game.width, Game.height) end
             end
         end;
         
@@ -456,7 +466,11 @@ Canvas = GameObject:extend {
             Draw.pop()
         end
     end;
-    resize = function(self,w,h) self.canvas:resize(w,h) end;
+    resize = function(self,w,h) 
+        self.width = w
+        self.height = h
+        self.canvas = love.graphics.newCanvas(w,h)
+    end;
     prepare = function(self)
         if self.auto_clear then Draw.clear() end
         -- camera transform
@@ -1006,7 +1020,8 @@ do
         polygon = 'poly',
         rectangle = 'rect',
         setLineWidth = 'lineWidth',
-        setPointSize = 'pointSize'
+        setPointSize = 'pointSize',
+        points = 'point'
     }
     for _,fn in ipairs(draw_functions) do 
         Draw[draw_aliases[fn] or fn] = function(...) return love.graphics[fn](...) end 
@@ -1573,7 +1588,8 @@ do
         debug = false;
         update = function(dt)
             for name, world in pairs(worlds) do
-                world:update(dt)
+                local config = world_config[name]
+                world:update(dt,8*config.step_rate,3*config.step_rate)
             end
             for _,helper in ipairs(Physics.custom_grav_helpers) do
                 helper:update(dt)
@@ -1591,7 +1607,8 @@ do
                 table.defaults(world_config[name], {
                     gravity = 0,
                     gravity_direction = 90,
-                    sleep = true
+                    sleep = true,
+                    step_rate = 1
                 })
             end
             if not worlds[name] then
