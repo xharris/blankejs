@@ -41,11 +41,12 @@ module.exports.class_list = [
 	"Math", "FS", "Game", "Canvas", "Image", "Entity",
 	"Input", "Draw", "Color", "Audio", "Effect", "Camera",
 	"Map", "Physics", "Hitbox", "State", "Timer", "Window", 
-	"Net", "Blanke"
+	"Net", "Blanke", "class"
 ];
 
 module.exports.class_extends = {
-    'entity': /\bEntity\s+[\'\"](\w+)[\'\"]\s*,/g
+	'entity': /\bEntity\s+[\'\"](\w+)[\'\"]\s*,/g,
+	'class': /\b(\w+)\s*=\s*class\s*\{/g
 }
 
 module.exports.instance = {

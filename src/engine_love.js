@@ -42,7 +42,7 @@ module.exports.engine = {
     ],
     fn_trigger: ':',
 	add_script_templates: {
-		'script': `import Entity, Game, Canvas, Input, Draw, Audio, Effect, Math, Map from require "blanke"`
+		'script': ``
     },
     entity_sprite_parse: (str_line, info, cb) => {
 		// use the first frame        

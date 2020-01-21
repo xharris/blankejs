@@ -5,6 +5,14 @@
     "window_size": 3,
     "quick_access": [
         [
+            "gmap.lua=script+?",
+            "gmap.lua"
+        ],
+        [
+            "Add a script=new+?",
+            "Add a script"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],

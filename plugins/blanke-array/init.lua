@@ -143,7 +143,6 @@ do
     set_methods.push = function(self, ...)
         for i,v in ipairs({...}) do
             if not self:includes(v) then
-                print('push',v)
                 table.insert(self.table, v)
             end
         end
