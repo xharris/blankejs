@@ -82,7 +82,7 @@ Game{
 				end
 			end
 		end
-		-- create doros
+		-- create doors
 		for room_type, info in pairs(room_type_info) do
 			if info.doors and info.doors > 0 then
 				

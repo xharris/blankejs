@@ -526,6 +526,9 @@ class Code extends Editor {
 			}
 		}
 
+		// disabled for now
+		let comp_fn_trigger = (v) => true; //(!app.engine.fn_trigger || v == app.engine.fn_trigger);
+
 		let showHints = (editor, in_list, input) => {
 			if (!this.file_loaded) return;
 			let hint_types = {};
@@ -537,7 +540,7 @@ class Code extends Editor {
 				let add = false;
 				let text = hint_opts.fn || hint_opts.prop;
 
-				if (input != '.' && !text.startsWith(input) && text != input) 
+				if (input != '.' && !comp_fn_trigger(input) && !text.startsWith(input) && text != input) 
 					continue;
 
 				if (hint_opts.fn) {
@@ -610,7 +613,7 @@ class Code extends Editor {
 				let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
 				let before_word = editor.getRange(before_word_pos.anchor, before_word_pos.head);//before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
 				let before_dot_pos = editor.findWordAt({line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1})
-				if (before_word == '.') {
+				if (before_word == '.' || comp_fn_trigger(before_word)) {
 					before_dot = editor.getRange(before_dot_pos.anchor, before_dot_pos.head);
 				} else {
 					before_dot = '';
@@ -619,7 +622,7 @@ class Code extends Editor {
 				// word that triggered the dot
 				let keyword = word;
 				let keyword_pos = word_pos;
-				if (word == '.') {
+				if (word == '.' || comp_fn_trigger(word)) {
 					keyword = before_word;
 					keyword_pos = before_word_pos;
 				}
@@ -632,6 +635,7 @@ class Code extends Editor {
 				let token = editor.getTokenAt(keyword_pos.head);//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
 				let tokens = (token.type || '').split(' ');
 				let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
+				console.log(before_word)
 				if (keyword != '') {
 					// this -> replace with real instance type
 					if (is_key_or_var && this_lines[this_ref.file]) {
@@ -650,11 +654,11 @@ class Code extends Editor {
 						} while (loop >= 0);
 					}
 					for (let tok of tokens) {
-						hint_list = hint_list.concat(hints[tok] || []);
+						hint_list = hint_list.concat((hints[tok] || []).filter(h => !h.fn || comp_fn_trigger(before_word)));
 					}
 				}
 				// 'global scope'
-				if (word != '.' && is_key_or_var) {
+				if (word != '.' && !comp_fn_trigger(word) && is_key_or_var) {
 					if (var_list[this_ref.file]) {
 						// variable
 						if (var_list[this_ref.file].var)
