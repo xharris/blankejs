@@ -635,7 +635,7 @@ class Code extends Editor {
 				let token = editor.getTokenAt(keyword_pos.head);//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
 				let tokens = (token.type || '').split(' ');
 				let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
-				console.log(before_word)
+				
 				if (keyword != '') {
 					// this -> replace with real instance type
 					if (is_key_or_var && this_lines[this_ref.file]) {

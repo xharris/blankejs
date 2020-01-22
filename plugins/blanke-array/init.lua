@@ -54,8 +54,7 @@ do
             self.table = new_arr
         end,
         copy = function(self)
-            local ret = Array()
-            for i = 1,self.length do ret[i] = self.table[i] end
+            local ret = Array.from(copy(self.table))
             return ret
         end,
         includes = function(self, v)
@@ -81,7 +80,7 @@ do
         end,
         filter = function(self, fn)
             local new_arr = {}
-            for i = 1, self.length do if fn(self.table[i], i) == true then table.insert(new_arr, self.table[i]) end end
+            for i = 1, self.length do if fn(self.table[i], i) then table.insert(new_arr, self.table[i]) end end
             self.table = new_arr
             return self
         end,
@@ -147,10 +146,14 @@ do
             end
         end
     end
+    set_methods.copy = function(self)
+        local ret = Set.from(copy(self.table))
+        return ret
+    end
 
     local set_metamethods = copy(arr_metamethods)
     set_metamethods.__index = function(t,k)
-        if k == 'push' then 
+        if k == 'push' or k == 'copy' then 
             return rawget(t,k)
         else
             return arr_metamethods.__index(t,k)
@@ -159,6 +162,8 @@ do
 
     Set = setmetatable({
         from = function(t)
+            print('hi')
+            print_r(t)
             return Set(unpack(t))
         end
     },{

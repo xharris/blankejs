@@ -67,13 +67,20 @@ GMap = class {
 	addRoom = function(self, _type, x, y)
 		local info = GRoom.info(_type)
 		self:expand(x + info.w, y + info.h)
+		local tiles = Array()
+		if _type ~= "grass" then
+			
+		end
 		for xtake = x, x+info.w - 1 do
 			for ytake = y, y+info.h - 1 do
-				self.map[xtake][ytake] = GRoom{x=xtake, y=ytake, type=_type, map=self}
+				local room = GRoom{x=xtake, y=ytake, type=_type, map=self}
+				self.map[xtake][ytake] = room
+				tiles:push(room)
 			end
 		end
+		GRoom.rooms:push(tiles)
 	end,
-	updateWalls = function()
+	updateWalls = function(self)
 		-- connect all grass tiles
 		for x = 1, self.size[1] do
 			for y = 1, self.size[2] do
@@ -89,33 +96,41 @@ GMap = class {
 				end
 			end
 		end
-		local getGrassEdges
-		getGrassEdges = function(room, pos)
-			if not pos then
-				getGrassEdges(room, {room.x, room.y})
-			else
-				
-			end
-		end
 		-- create doors
-		GRoom.rooms:forEach(function(r)
-			local info = GRoom.type_info[r.type]
+		GRoom.rooms:forEach(function(tiles)
+			local info = GRoom.type_info[tiles[1].type]
+			
 			-- choose x random edges as a door
 			if info.doors then
-				local grass_edges = getGrassEdges(r)
+				local temp_tiles = tiles:copy():filter(function(t) 
+					--print_r(t.walls)
+					return t.walls.length > 0 
+				end)
+				for d = 1, info.doors do
+					-- choose a random tile from the chunk
+					local new_door = table.random(temp_tiles.table)
+					-- choose a random wall from the tile
+					local door_loc = table.random(new_door.walls.table)
+					temp_tiles:filter(function(t) return t.x ~= new_door.x and t.y ~= new_door.y end)
+					new_door.walls:remove(door_loc)
+				end
 			end
 		end)
 	end,
 	draw = function(self)
 		for x = 1, self.size[1] do	
 			for y = 1, self.size[2] do
-				self.map[x][y]:draw()
+				self.map[x][y]:drawInner()
+			end
+		end
+		for x = 1, self.size[1] do	
+			for y = 1, self.size[2] do
+				self.map[x][y]:drawOuter()
 			end
 		end
 	end
 }
 
-local GRoom.size = {16,16}
 GRoom = class {
 	type='grass',
 	x=0, y=0,
@@ -124,28 +139,28 @@ GRoom = class {
 	init = function(self, opts)
 		self.walls = Set()
 		table.update(self, opts)
-		if self.type ~= 'grass' then
-			GRoom.rooms:push(self)
-		end
 	end,
 	info = function(_type)
 		return GRoom.type_info[_type]		
 	end,
-	draw = function(self)
-		local x, y, info = self.x, self.y, GRoom.info(self.type)
+	drawInner = function(self)
+		local x, y, info = self.x * GRoom.size[1], self.y * GRoom.size[2], GRoom.info(self.type)
 		Draw{
 			{'lineWidth',2},
 			{'color', info.color},
-			{'rect', 'fill', x * GRoom.size[1], y * GRoom.size[2], GRoom.size[1], GRoom.size[2]},
+			{'rect', 'fill', x, y, GRoom.size[1], GRoom.size[2]},
 			{'color','white'},
-			{'rect', 'line', x * GRoom.size[1], y * GRoom.size[2], GRoom.size[1], GRoom.size[2]}
+			{'rect', 'line', x, y, GRoom.size[1], GRoom.size[2]}
 		}
+	end,
+	drawOuter = function(self)
+		local x, y, info = self.x * GRoom.size[1], self.y * GRoom.size[2], GRoom.info(self.type)
 		self.walls:forEach(function(wall)
 			Draw.color('black')
 			if wall == 'left' then Draw.line(x,y,x,y+GRoom.size[1]) end
 			if wall == 'right' then Draw.line(x+GRoom.size[1],y,x+GRoom.size[1],y+GRoom.size[2]) end
-			if wall == 'top' then Draw.line(x,y,x+GRoom.size[1],y) end
-			if wall == 'bottom' then Draw.line(x,y+GRoom.size[2],x+GRoom.size[1]
+			if wall == 'up' then Draw.line(x,y,x+GRoom.size[1],y) end
+			if wall == 'down' then Draw.line(x,y+GRoom.size[2],x+GRoom.size[1],y+GRoom.size[2]) end
 		end)
 	end
 }
