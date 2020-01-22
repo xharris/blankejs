@@ -102,16 +102,13 @@ GMap = class {
 			
 			-- choose x random edges as a door
 			if info.doors then
-				local temp_tiles = tiles:copy():filter(function(t) 
-					--print_r(t.walls)
-					return t.walls.length > 0 
-				end)
 				for d = 1, info.doors do
 					-- choose a random tile from the chunk
-					local new_door = table.random(temp_tiles.table)
+					local new_door = table.random(tiles.table)
 					-- choose a random wall from the tile
 					local door_loc = table.random(new_door.walls.table)
-					temp_tiles:filter(function(t) return t.x ~= new_door.x and t.y ~= new_door.y end)
+					print(d,door_loc)
+					tiles:filter(function(t) return t.x ~= new_door.x and t.y ~= new_door.y end)
 					new_door.walls:remove(door_loc)
 				end
 			end
