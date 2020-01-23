@@ -434,6 +434,7 @@ GameObject = class {
     destroy = function(self)
         if not self.destroyed then
             Hitbox.remove(self)
+            if self.onDestroy then self:onDestroy() end
             if self._destroy then self:_destroy() end
             self.destroyed = true
             for _,k in ipairs(self.child_keys) do
@@ -1319,6 +1320,7 @@ do
             options[name] = copy(default_opt)
             options[name].transform = love.math.newTransform()
             table.update(options[name], opt)
+            return options[name]
         end;
         get = function(name) return assert(options[name], "Camera :'"..name.."' not found") end;
         attach = function(name)
@@ -1331,6 +1333,7 @@ do
                     o.x = o.follow.x or o.x
                     o.y = o.follow.y or o.y
                 end
+                print(o.x,o.left)
                 local half_w, half_h = w/2, h/2
                 --Draw.crop(o.x - o.left, o.y - o.top, w, h)
                 o.transform:reset()

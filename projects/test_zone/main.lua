@@ -5,7 +5,7 @@ Game {
 		myarray:push(1)
 		myarray:push(2)
 		myarray:push(4)
-		print(myarray) -- 1,2,3,4,
+		print(table.random(myarray.table)) -- 1,2,3,4,
 		--[[
 		Net.on('ready', function()	
 			Game.spawn('player') -- Map.load("map0.map")	

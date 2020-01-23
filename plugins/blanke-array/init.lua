@@ -162,8 +162,6 @@ do
 
     Set = setmetatable({
         from = function(t)
-            print('hi')
-            print_r(t)
             return Set(unpack(t))
         end
     },{

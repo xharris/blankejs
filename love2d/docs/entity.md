@@ -73,7 +73,10 @@ Game.spawn("Player", { custom_prop: 5 })
 
 # Methods
 
+`spawn()`
+
 `update(dt)`
 
 `draw()`
 
+`onDestroy()`
