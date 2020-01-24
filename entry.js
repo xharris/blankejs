@@ -31,6 +31,10 @@ elec.app.on('ready', function(){
     
     // main_window.webContents.openDevTools();		
     main_window.loadFile(`src/index.html`);
+    main_window.on('close', e => {
+        main_window.webContents.send('close', e);
+        e.preventDefault();
+    });
     /*
     main_window.webContents.on('new-window', function(e, url) {
         e.preventDefault();

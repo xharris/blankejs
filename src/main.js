@@ -1496,13 +1496,12 @@ app.window.webContents.once('dom-ready', ()=>{
 		active: function() {}
 	})
 
-	app.window.on('close', (e) => {
-		e.preventDefault();
+	elec.ipcRenderer.on('close', (e, arg) => {
 		blanke.showModal(
 			"<label>Are you sure you want to exit?</label>",
 		{
-			"yes": function() { },
-			"no": function() { e.preventDefault(); }
+			"yes": function() { app.window.destroy(); },
+			"no": function() { }
 		});
 	})
 
