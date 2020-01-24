@@ -22,8 +22,8 @@ class Exporter extends Editor {
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 400;
-		this.container.height = 370;
+		this.container.width = 384;
+		this.container.height = 112;
 
 		// diplay list of target platforms
 		this.platforms = Object.keys(app.engine.export_targets || []);
@@ -52,39 +52,6 @@ class Exporter extends Editor {
 
 		this.appendChild(this.el_platforms);
 
-		// setup default settings
-		if (!app.projSetting("export")) app.projSetting("export",{})
-		ifndef_obj(app.projSetting("export"), DEFAULT_EXPORT_SETTINGS());
-
-		// extra options
-        let engine_settings = [];
-        if (app.engine.export_settings) {
-            for (let form_set of app.engine.export_settings) {
-                engine_settings.push(form_set);
-            }
-        }
-		let form_options = [
-			['general'],
-			['name', 'text', {'default':app.projSetting("export").name}],
-			...engine_settings,
-		];
-		/*
-		for (let set of form_options) {
-			if (set.length >= 2 && typeof(set[1]) != "boolean" && !set.some(i => typeof(i) == 'object'))
-				set.push({});
-			for (let prop of set) {
-				if (typeof(prop) == "object" && prop.default == null)
-					props.default = app.projSetting("export")[set[0]];
-			}
-		}*/
-		this.el_export_form = new BlankeForm(form_options, true);
-		this.el_export_form.useValues(app.projSetting("export"));
-		this.el_export_form.container.classList.add("dark");
-		form_options.forEach((s)=>{
-			if (s.length > 1 && typeof(s[1]) != "boolean")
-				this_ref.el_export_form.onChange(s[0],(val)=>app.projSetting("export")[s[0]] = val);
-		});
-		this.appendChild(this.el_export_form.container);
 	}
 
 	// dir : target directory to write bundled files to 

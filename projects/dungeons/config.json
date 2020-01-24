@@ -5,24 +5,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "gmap.lua=script+?",
-            "gmap.lua"
+            "player.lua=script+?",
+            "player.lua"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "player.lua=script+?",
-            "player.lua"
+            "gwall.lua=script+?",
+            "gwall.lua"
         ],
         [
             "Add a script=new+?",
             "Add a script"
         ],
         [
-            "Dev Tools=?",
-            "Dev Tools"
+            "groom.lua=script+?",
+            "groom.lua"
         ]
     ],
     "autoplay_preview": true,

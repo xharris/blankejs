@@ -1969,7 +1969,7 @@ class SceneEditor extends Editor {
 		this.loadObjectsFromSettings();
 		this.pixi.resize();
 
-		if (data.images.length == 0) this.loaded = true;
+		if (!data.images || data.images.length == 0) this.loaded = true;
 	}
 
 	export () {

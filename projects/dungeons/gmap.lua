@@ -4,6 +4,10 @@ local map_size = {8,8}
 GMap = class {
 	size = {1,1},
 	map = {},
+	tiles = Array(),
+	rooms = Array(),
+	hitboxes = {}, -- { 'wall/doors_name': {#,#,#,#} }
+	focus_walls = Array(),
 	init = function(self)
 		-- check if map is big enough
 		self.size = copy(map_size)
@@ -27,7 +31,7 @@ GMap = class {
 		for x = 1,self.size[1] do
 			self.map[x] = {}
 			for y = 1, self.size[2] do
-				self.map[x][y] = GRoom{x=x,y=y,type='grass'}
+				self.map[x][y] = GRoom{x=x,y=y,type='grass',map=self}
 			end
 		end
 		-- create random area types
@@ -59,7 +63,7 @@ GMap = class {
 			if not self.map[ex] then self.map[ex] = {} end
 			for ey = 1, self.size[2] do
 				if not self.map[ex][ey] then
-					self.map[ex][ey] = GRoom{x=ex,y=ey}
+					self.map[ex][ey] = GRoom{x=ex,y=ey,map=self}	
 				end
 			end
 		end
@@ -74,33 +78,34 @@ GMap = class {
 		local tiles = Array()
 		for xtake = x, x+info.w - 1 do
 			for ytake = y, y+info.h - 1 do
-				local room = GRoom{x=xtake, y=ytake, type=_type, map=self}
+				local room = self.map[xtake][ytake] -- GRoom{x=xtake, y=ytake, type=_type, map=self}
+				room.type = _type
 				self.map[xtake][ytake] = room
 				tiles:push(room)
 			end
 		end
 		if _type ~= "grass" then	
-			GRoom.rooms:push(tiles)
+			self.rooms:push(tiles)
 		end
 	end,
 	updateWalls = function(self)
 		-- update walls
-		GRoom.rooms:forEach(function(tiles)
-			tiles:forEach(function(tile)
-				local x, y, info = tile.x, tile.y, GRoom.info(tile.type)
-				local checkWall = function(_x, _y, dir)
-					if not self.map[_x] or not self.map[_x][_y] or self.map[_x][_y].type ~= tile.type then tile.walls:push(dir) end 
-				end
-				if not info.open then
-					checkWall(x-1, y, 'left')
-					checkWall(x+1, y, 'right')
-					checkWall(x, y-1, 'up')
-					checkWall(x, y+1, 'down')
-				end
-			end)
+		self.tiles:forEach(function(tile)
+			local x, y, info = tile.x, tile.y, GRoom.info(tile.type)
+			local checkWall = function(_x, _y, dir)
+				if not self.map[_x] or not self.map[_x][_y] or self.map[_x][_y].type ~= tile.type then 
+					tile.walls:push(GWall{dir=dir}) 
+				end 
+			end
+			if not info.open then
+				checkWall(x-1, y, 'left')
+				checkWall(x+1, y, 'right')
+				checkWall(x, y-1, 'up')
+				checkWall(x, y+1, 'down')
+			end
 		end)
 		-- create doors
-		GRoom.rooms:forEach(function(tiles)
+		self.rooms:forEach(function(tiles)
 			local info = GRoom.type_info[tiles[1].type]
 			
 			-- choose x random edges as a door
@@ -110,22 +115,53 @@ GMap = class {
 					local tile = table.random(tiles.table)
 					-- choose a random wall from the tile
 					local door_loc = table.random(tile.walls.table)
-					tiles:filter(function(t) return t.x ~= tile.x and t.y ~= tile.y end)
-					tile.walls:filter(function(loc) return loc ~= door_loc end)
+					if door_loc then door_loc.is_door = true end
 				end
 			end
 		end)
 	end,
+	last_room = nil, -- for hitboxes
 	getRoom = function(self, x, y)
-		return math.floor(x / GRoom.size[1]), math.floor(y / GRoom.size[2])
+		local size = GRoom.size
+		local room_x, room_y = math.floor(x / GRoom.size[1]) + 1, math.floor(y / GRoom.size[2]) + 1
+		-- set current room's boundaries (hitboxes)
+		local room
+		if self.map[room_x] and self.map[room_x][room_y] then room = self.map[room_x][room_y] end
+		
+		local pos_x, pos_y = (room_x-1) * size[1], (room_y-1) * size[2]
+		local setHB = function(dir, dims)
+			local name = dir
+			if not self.hitboxes[name] then
+				dims.tag = 'wall'
+				self.hitboxes[name] = dims
+			else
+				table.update(self.hitboxes[name], dims)
+			end
+		end
+		if room and self.last_room ~= room then
+			self.last_room = room
+			room.walls:forEach(function(w)
+				switch(w:getFullString(), {
+					left = function() setHB('left',{
+								x=pos_x - GRoom.tile_size, y=pos_y - GRoom.tile_size, 
+								width=GRoom.tile_size, height=size[2]+(GRoom.tile_size*2) }) end,
+				})
+			end)
+			-- add hitboxes
+			print_r(self.hitboxes)
+			for name, hb in pairs(self.hitboxes) do
+				Hitbox.add(hb)
+			end
+		end
+		return room_x, room_y
 	end,
 	getFocusPos = function(self, x, y)
 		local size, outx, outy = GRoom.size, self:getRoom(x,y)
-		return (outx * size[1]) + (size[1] / 2), 
-			   (outy * size[2]) + (size[2] / 2)
+		return ((outx -1) * size[1]) + (size[1] / 2), 
+			   ((outy -1) * size[2]) + (size[2] / 2)
 	end,
 	getFocusWalls = function(self, x, y)
-		local room = 
+		return self.focus_walls
 	end,
 	draw = function(self)
 		for x = 1, self.size[1] do	
@@ -141,60 +177,3 @@ GMap = class {
 	end
 }
 
-GRoom = class {
-	type='grass',
-	x=0, y=0,
-	walls={},
-	init = function(self, opts)
-		self.walls = Set()
-		table.update(self, opts)
-	end,
-	info = function(_type)
-		return GRoom.type_info[_type]		
-	end,
-	drawInner = function(self)
-		local size = GRoom.size
-		local x, y, info = self.x * GRoom.size[1], self.y * GRoom.size[2], GRoom.info(self.type)
-		x, y = x - GRoom.size[1], y - GRoom.size[2]
-		Draw{
-			{'lineWidth',2},
-			{'color', info.color},
-			{'rect', 'fill', x, y, GRoom.size[1], GRoom.size[2]},
-			{'color','white'},
-			{'rect', 'line', x, y, GRoom.size[1], GRoom.size[2]}
-		}
-	end,
-	drawOuter = function(self)
-		local size = GRoom.size
-		local x, y, info = self.x * GRoom.size[1], self.y * GRoom.size[2], GRoom.info(self.type)
-		x, y = x - GRoom.size[1], y - GRoom.size[2]
-		self.walls:forEach(function(wall)
-			Draw.color('black')
-			if wall == 'left' then Draw.line(x,y,x,y+GRoom.size[1]) end
-			if wall == 'right' then Draw.line(x+GRoom.size[1],y,x+GRoom.size[1],y+GRoom.size[2]) end
-			if wall == 'up' then Draw.line(x,y,x+GRoom.size[1],y) end
-			if wall == 'down' then Draw.line(x,y+GRoom.size[2],x+GRoom.size[1],y+GRoom.size[2]) end
-		end)
-	end
-}
-local real_size = 10
-GRoom.size = {32*real_size,32*real_size}
-GRoom.rooms = Array()
-GRoom.type_info = {
-	grass = {
-		color='green'
-	},
-	cemetary = {
-		color='gray',
-	},
-	forest = {
-		color='indigo',
-		w=6, h=6,
-		open=true
-	},
-	house = {
-		color='brown',
-		w=4, h=4,
-		doors=2
-	}
-}

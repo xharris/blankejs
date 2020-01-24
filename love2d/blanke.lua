@@ -1311,7 +1311,7 @@ end
 --CAMERA
 Camera = nil
 do
-    local default_opt = { x=0, y=0, dx=0, dy=0, angle=0, scalex=1, scaley=nil, top=0, left=0, width=nil, height=nil, follow=nil, enabled=true }
+    local default_opt = { x=0, y=0, dx=0, dy=0, angle=0, zoom=nil, scalex=1, scaley=nil, top=0, left=0, width=nil, height=nil, follow=nil, enabled=true }
     local attach_count = 0
     local options = {}
 
@@ -1339,7 +1339,7 @@ do
                 --Draw.crop(o.x - o.left, o.y - o.top, w, h)
                 o.transform:reset()
                 o.transform:translate(floor(half_w), floor(half_h))
-                o.transform:scale(o.scalex, o.scaley or o.scalex)
+                o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
                 o.transform:rotate(math.rad(o.angle))
                 o.transform:translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
 
@@ -1760,25 +1760,23 @@ Hitbox = nil
 do
     local world = bump.newWorld()
     local checkHitArea = function(obj)
-        if obj.hasHitbox then
-            if not obj.alignx then obj.alignx = 0 end
-            if not obj.aligny then obj.aligny = 0 end
-            if not obj.hitArea then
-                obj.hitArea = {
-                    left = -obj.alignx,
-                    top = -obj.aligny,
-                    right = 0,
-                    bottom = 0
-                }
-            end
-            table.defaults(obj.hitArea, {
+        if not obj.alignx then obj.alignx = 0 end
+        if not obj.aligny then obj.aligny = 0 end
+        if not obj.hitArea then
+            obj.hitArea = {
                 left = -obj.alignx,
                 top = -obj.aligny,
                 right = 0,
                 bottom = 0
-            })
-            return obj.hitArea
+            }
         end
+        table.defaults(obj.hitArea, {
+            left = -obj.alignx,
+            top = -obj.aligny,
+            right = 0,
+            bottom = 0
+        })
+        return obj.hitArea
     end
     Hitbox = {
         debug = false;
@@ -1786,10 +1784,14 @@ do
 
         add = function(obj)
             if obj.x and obj.y and obj.width and obj.height then
-                if not obj.tag then obj.tag = obj.collTag or obj.classname end
-                obj.hasHitbox = true
+                if not obj.tag then obj.tag = obj.collTag or obj.classname or '' end
                 local ha = checkHitArea(obj)
-                world:add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)  
+                if not obj.hasHitbox then
+                    world:add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom) 
+                    obj.hasHitbox = true
+                else
+                    Hitbox.teleport(obj)
+                end
             end
         end;     
         -- ignore collisions
@@ -1840,6 +1842,8 @@ do
                 local items, len = world:getItems()
                 for _,i in ipairs(items) do
                     if i.hasHitbox and not i.destroyed then
+                        Draw.color(i.hitboxColor or {1,0,0,0.9})
+                        Draw.rect('line',world:getRect(i))
                         Draw.color(i.hitboxColor or {1,0,0,0.25})
                         Draw.rect('fill',world:getRect(i))
                     end

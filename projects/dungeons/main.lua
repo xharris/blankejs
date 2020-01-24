@@ -1,6 +1,6 @@
 local gmap, player, last_cam_pos, twn
 
-Camera("main")
+Camera("main", {zoom=1})
 
 Game{
 	plugins = { "xhh-tween" },
@@ -22,7 +22,7 @@ Game{
 		end
 		Camera.use('main', function()
 			Draw.stack(function()
-				Draw.crop((Game.width - GRoom.size[1])/2, (Game.height - GRoom.size[2])/2, GRoom.size[1], GRoom.size[2])
+				--Draw.crop((Game.width - GRoom.size[1])/2, (Game.height - GRoom.size[2])/2, GRoom.size[1], GRoom.size[2])
 				gmap:draw()
 			end)
 			d()

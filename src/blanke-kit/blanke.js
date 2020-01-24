@@ -450,24 +450,25 @@ class BlankeForm {
         let prepend_inputs = false;
         // input label
         let show_label = extra_args.label;
+        let label = input_name.replace(/\w+\.(.*)/,'$1');
 
         if (show_label === false || ['button','icon-button'].includes(input_type))
             show_label = false;
 
         el_container.setAttribute("data-type", input_type);
-        el_label.innerHTML = (show_label || input_name.replaceAll('_',' '));
+        el_label.innerHTML = (show_label || label.replaceAll('_',' '));
         if (show_label !== false) 
             el_container.appendChild(el_label);
 
         if (input_type == "button") {
             let el_button = blanke.createElement("button","form-button");
-            el_button.innerHTML = ifndef(extra_args.label, input_name);
+            el_button.innerHTML = ifndef(extra_args.label, label);
             this.prepareInput(el_button, input_name);
             el_inputs_container.appendChild(el_button);
         }
 
         if (input_type == 'icon-button') {
-            let el_button = blanke.createIconButton(extra_args.icon || input_name, input_name);
+            let el_button = blanke.createIconButton(extra_args.icon || label, input_name);
             this.prepareInput(el_button, input_name);
             el_inputs_container.appendChild(el_button);
         }

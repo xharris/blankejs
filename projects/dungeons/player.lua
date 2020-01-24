@@ -5,11 +5,16 @@ Input({
 	down = { "down", "s" }
 })
 
+Hitbox.debug = true
+
 Entity("player",{
+	hitbox = true,
+	hitArea = { left=-10, top=-10, right=20, bottom=20},
+	collList = { wall = 'slide' },
 	update = function(self, dt)
 		self.hspeed = 0
 		self.vspeed = 0
-		local dx, dy, s = 0, 0, 200
+		local dx, dy, s = 0, 0, 400
 			
 		if Input.pressed("left") 	then dx = -s end
 		if Input.pressed("right")	then dx = s end

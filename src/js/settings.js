@@ -34,12 +34,37 @@ class Settings extends Editor {
                 engine_settings.push(form_set);
             }
         }
+
+		// setup default settings
+		if (!app.projSetting("export")) app.projSetting("export",{})
+        ifndef_obj(app.projSetting("export"), DEFAULT_EXPORT_SETTINGS());
+        
+        // combine engine settings for form
+        let engine_export_settings = [];
+        let engine_export_keys = [];
+        if (app.engine.export_settings) {
+            engine_export_settings = app.engine.export_settings.map(form_set => {
+                let ret = JSON.parse(JSON.stringify(form_set))
+                if (ret.length <= 2)
+                    ret[0] = "EXPORT > "+ret[0];
+                else {
+                    ret[0] = 'export.'+ret[0];
+                    engine_export_keys.push(ret[0]);
+                    if (ret.length == 3)
+                        ret[2].default = proj_set.export[ret[0].replace(/\w+\.(.*)/,'$1')];
+                }
+                return ret;
+            })
+        }
         let form_options = [
             ['GAME'],
             //['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
             ['window_size','number',{'step':1, 'min':1, 'max':7, 'default':proj_set.window_size}],
             ['game_size','number',{'step':1, 'min':1, 'max':7, 'default':proj_set.game_size}],
             ...engine_settings,
+            ['EXPORT > GENERAL'],
+			['export.name', 'text', {'default':app.projSetting("export").name}],
+            ...engine_export_settings,
             ['IDE'],
             ...autoplay_settings,
             ['theme','select',{'choices':app.themes,'default':app_set.theme}],
@@ -65,6 +90,12 @@ class Settings extends Editor {
                     app.refreshQuickAccess();
                 if (s === 'theme')
                     app.setTheme(v);
+            });
+        });
+        ['export.name', ...engine_export_keys].forEach(s => {
+            this.el_settings.onChange(s,(val)=>{
+                app.projSetting("export")[s.replace(/\w+\.(.*)/,'$1')] = val
+                console.log(s, val)
             });
         });
         // add onChange event listener for paths
