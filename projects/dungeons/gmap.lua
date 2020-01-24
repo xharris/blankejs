@@ -124,6 +124,9 @@ GMap = class {
 		return (outx * size[1]) + (size[1] / 2), 
 			   (outy * size[2]) + (size[2] / 2)
 	end,
+	getFocusWalls = function(self, x, y)
+		local room = 
+	end,
 	draw = function(self)
 		for x = 1, self.size[1] do	
 			for y = 1, self.size[2] do

@@ -5,20 +5,20 @@
     "window_size": 3,
     "quick_access": [
         [
-            "player.lua=script+?",
-            "player.lua"
-        ],
-        [
-            "Add a script=new+?",
-            "Add a script"
+            "gmap.lua=script+?",
+            "gmap.lua"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "gmap.lua=script+?",
-            "gmap.lua"
+            "player.lua=script+?",
+            "player.lua"
+        ],
+        [
+            "Add a script=new+?",
+            "Add a script"
         ],
         [
             "Dev Tools=?",
@@ -36,7 +36,7 @@
     },
     "enabled_plugins": {
         "xhh-effect": false,
-        "xhh-tween": false,
+        "xhh-tween": true,
         "yonaba-delunay": false,
         "yonaba-delaunay": false,
         "xhh-datastructs": false,

@@ -1496,6 +1496,16 @@ app.window.webContents.once('dom-ready', ()=>{
 		active: function() {}
 	})
 
+	app.window.on('close', (e) => {
+		e.preventDefault();
+		blanke.showModal(
+			"<label>Are you sure you want to exit?</label>",
+		{
+			"yes": function() { },
+			"no": function() { e.preventDefault(); }
+		});
+	})
+
 	app.window.on('closed',function(){
 		this.hide();
 		app.closeProject();
