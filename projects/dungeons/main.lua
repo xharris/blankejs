@@ -1,6 +1,6 @@
 local gmap, player, last_cam_pos, twn
 
-Camera("main", {zoom=1})
+Camera("main", {zoom=0.1})
 
 Game{
 	plugins = { "xhh-tween" },

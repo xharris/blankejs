@@ -2,6 +2,7 @@ GWall = class {
 	dir='', -- left/right/up/down
 	is_door=false,
 	is_unlocked=false,
+	to_outside=false, -- does this wall lead to the outside of the map?
 	init = function(self, opt)
 		table.update(self, opt)
 	end,

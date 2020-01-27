@@ -93,9 +93,14 @@ GMap = class {
 		self.tiles:forEach(function(tile)
 			local x, y, info = tile.x, tile.y, GRoom.info(tile.type)
 			local checkWall = function(_x, _y, dir)
+				local wall
 				if not self.map[_x] or not self.map[_x][_y] or self.map[_x][_y].type ~= tile.type then 
-					tile.walls:push(GWall{dir=dir}) 
+					wall = GWall{dir=dir}
 				end 
+				if (not self.map[_x] or not self.map[_x][_y]) and wall then
+					wall.to_outside = true
+				end
+				tile.walls:push(wall)
 			end
 			if not info.open then
 				checkWall(x-1, y, 'left')
@@ -115,7 +120,13 @@ GMap = class {
 					local tile = table.random(tiles.table)
 					-- choose a random wall from the tile
 					local door_loc = table.random(tile.walls.table)
-					if door_loc then door_loc.is_door = true end
+					if door_loc then 
+						while door_loc.is_door or door_loc.to_outside do
+							door_loc = table.random(tile.walls.table)
+						end
+						door_loc.is_door = true 
+						-- TODO: remove wall from neighboring tile
+					end
 				end
 			end
 		end)
@@ -141,14 +152,23 @@ GMap = class {
 		if room and self.last_room ~= room then
 			self.last_room = room
 			room.walls:forEach(function(w)
+				print(w:getFullString())
 				switch(w:getFullString(), {
 					left = function() setHB('left',{
-								x=pos_x - GRoom.tile_size, y=pos_y - GRoom.tile_size, 
-								width=GRoom.tile_size, height=size[2]+(GRoom.tile_size*2) }) end,
+								x=pos_x - GRoom.tile_size, y=pos_y, 
+								width=GRoom.tile_size, height=size[2] }) end,
+					right = function() setHB('right',{
+								x=pos_x + size[1], y=pos_y,
+								width=GRoom.tile_size, height=size[2] }) end,
+					up = function() setHB('top',{
+								x=pos_x, y=pos_y - GRoom.tile_size,
+								width=size[1], height=GRoom.tile_size }) end,
+					down = function() setHB('down',{
+								x=pos_x,y=pos_y + size[2],
+								width=size[1], height=GRoom.tile_size }) end
 				})
 			end)
 			-- add hitboxes
-			print_r(self.hitboxes)
 			for name, hb in pairs(self.hitboxes) do
 				Hitbox.add(hb)
 			end

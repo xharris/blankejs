@@ -22,18 +22,24 @@ GRoom = class {
 			{'rect', 'line', x, y, GRoom.size[1], GRoom.size[2]}
 		}
 	end,
+	getNeighbor = function(self, offx, offy)
+		if self.map[self.x+offx] and self.map[self.x+offx][self.y+offy] then
+			return self.map[self.x+offx][self.y+offy]
+		end
+	end,
 	drawOuter = function(self)
 		local size = GRoom.size
 		local x, y, info = self.x * GRoom.size[1], self.y * GRoom.size[2], GRoom.info(self.type)
 		x, y = x - GRoom.size[1], y - GRoom.size[2]
 		self.walls:forEach(function(wall)
 			Draw.color('black')
+			if wall.to_outside then Draw.color('orange') end
 			if not wall.is_door then
 				if wall.dir == 'left' then Draw.line(x,y,x,y+GRoom.size[1]) end
 				if wall.dir == 'right' then Draw.line(x+GRoom.size[1],y,x+GRoom.size[1],y+GRoom.size[2]) end
 				if wall.dir == 'up' then Draw.line(x,y,x+GRoom.size[1],y) end
 				if wall.dir == 'down' then Draw.line(x,y+GRoom.size[2],x+GRoom.size[1],y+GRoom.size[2]) end
-			end	
+			end
 		end)
 	end,
 	__ = {
@@ -55,6 +61,7 @@ GRoom.type_info = {
 	},
 	cemetary = {
 		color='gray',
+		doors=1
 	},
 	forest = {
 		color='indigo',
