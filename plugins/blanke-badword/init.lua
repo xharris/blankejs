@@ -1,4 +1,5 @@
-local words = "bob cobs a dob"
+local words = "bob.cobs.a.dob"
+local word_table = {}
 
 function encrypt(str,code)
 	-- character table
@@ -56,8 +57,5 @@ local encrypted = encrypt(words, 50) -- words:gsub(".", function(bb) return "\\"
 
 
 isBadWord = function(str)
-    print('encrypt')
-    print(encrypted)
-    print('decrypt')
-    print(decrypt(encrypted, 50))
+    decrypt(encrypted, 50)
 end
