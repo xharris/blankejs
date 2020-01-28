@@ -22,7 +22,12 @@ GRoom = class {
 			{'rect', 'line', x, y, GRoom.size[1], GRoom.size[2]}
 		}
 	end,
-	getNeighbor = function(self, offx, offy)
+	getNeighbor = function(self, side) -- side = string containing "left", "right", etc
+		local offx, offy = 0, 0
+		if string.contains(side, "left") then offx = -1 end
+		if string.contains(side, "right") then offx = 1 end
+		if string.contains(side, "up") then offy = -1 end
+		if string.contains(side, "down") then offy = 1 end
 		if self.map[self.x+offx] and self.map[self.x+offx][self.y+offy] then
 			return self.map[self.x+offx][self.y+offy]
 		end

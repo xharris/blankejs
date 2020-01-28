@@ -100,7 +100,7 @@ table.random = function(t)
 end
 --UTIL.string
 string.contains = function (str,q) 
-    return string.match(str, q) ~= nil
+    return string.match(tostring(str), tostring(q)) ~= nil
 end
 string.capitalize = function (str) 
     return string.upper(string.sub(str,1,1))..string.sub(str,2)
@@ -119,15 +119,25 @@ switch = function(val, choices)
     if choices[val] then choices[val]()
     elseif choices.default then choices.default() end
 end
-copy = function(t)
-    if type(t) == 'table' then
-        local ret = {}
-        for k,v in pairs(t) do 
-            ret[k] = copy(v)
-        end 
-        return ret
+copy = function(orig, copies)
+    copies = copies or {}
+    local orig_type = type(orig)
+    local t_copy
+    if orig_type == 'table' then
+        if copies[orig] then
+            t_copy = copies[orig]
+        else
+            t_copy = {}
+            copies[orig] = t_copy
+            for orig_key, orig_value in next, orig, nil do
+                t_copy[copy(orig_key, copies)] = copy(orig_value, copies)
+            end
+            setmetatable(t_copy, copy(getmetatable(orig), copies))
+        end
+    else -- number, string, boolean, etc
+        t_copy = orig
     end
-    return t
+    return t_copy
 end
 is_object = function(o) return type(o) == 'table' and o.init and type(o.init) == 'function' end
 --FS

@@ -14,6 +14,9 @@ GWall = class {
 	__ = {
 		tostring = function(self)
 			return self.dir
+		end,
+		eq = function(self, other)
+			return self.dir == other.dir
 		end
 	}
 }

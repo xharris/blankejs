@@ -633,7 +633,9 @@ var app = {
 	saveSettings: function(){
 		blanke.cooldownFn('saveSettings',500,function(){
 			if (app.isProjectOpen()) {
-				nwFS.writeFile(nwPATH.join(app.project_path,"config.json"), JSON.stringify(app.project_settings, null, 4));
+                let str_conf = JSON.stringify(app.project_settings, null, 4);
+                if (str_conf.length > 2)
+                    nwFS.writeFile(nwPATH.join(app.project_path,"config.json"), str_conf);
 			}
 		});
 	},

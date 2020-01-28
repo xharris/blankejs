@@ -116,8 +116,16 @@ GMap = class {
 			-- choose x random edges as a door
 			if info.doors then
 				for d = 1, info.doors do
+					local new_tiles = tiles:copy()
+					new_tiles:filter(function(t)
+						print('TILE',t)
+						return t.walls:some(function(w)
+							print('> ',w,w.to_outside)
+							return w.to_outside	== true		
+						end)
+					end)
 					-- choose a random tile from the chunk
-					local tile = table.random(tiles.table)
+					local tile = table.random(new_tiles.table)
 					-- choose a random wall from the tile
 					local door_loc = table.random(tile.walls.table)
 					if door_loc then 
@@ -125,7 +133,11 @@ GMap = class {
 							door_loc = table.random(tile.walls.table)
 						end
 						door_loc.is_door = true 
-						-- TODO: remove wall from neighboring tile
+						-- remove wall from neighboring tile
+						local nb = tile:getNeighbor(door_loc)
+						if nb then
+							nb.walls:filter(function(w) return w ~= door_loc end)	
+						end
 					end
 				end
 			end

@@ -5,16 +5,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "gwall.lua=script+?",
+            "gwall.lua"
+        ],
+        [
             "groom.lua=script+?",
             "groom.lua"
         ],
         [
             "gmap.lua=script+?",
             "gmap.lua"
-        ],
-        [
-            "gwall.lua=script+?",
-            "gwall.lua"
         ],
         [
             "main.lua=script+?",

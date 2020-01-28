@@ -1,0 +1,33 @@
+{
+    "ico": "src/logo.ico",
+    "icns": "src/logo.icns",
+    "game_size": 3,
+    "window_size": 3,
+    "quick_access": [
+        [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "engine.lua=script+?",
+            "engine.lua"
+        ],
+        [
+            "Add a script=new+?",
+            "Add a script"
+        ]
+    ],
+    "autoplay_preview": true,
+    "write_conf": true,
+    "scene": {},
+    "export": {
+        "name": "rando",
+        "scale_mode": "linear"
+    },
+    "enabled_plugins": {
+        "xhh-array": true,
+        "xhh-effect": false,
+        "xhh-tween": false,
+        "yonaba-delaunay": false
+    }
+}
