@@ -99,11 +99,17 @@ table.random = function(t)
     return t[Math.random(1,#t)]
 end
 --UTIL.string
-string.contains = function (str,q) 
-    return string.match(tostring(str), tostring(q)) ~= nil
+function string:contains(q) 
+    return string.match(tostring(self), tostring(q)) ~= nil
 end
-string.capitalize = function (str) 
-    return string.upper(string.sub(str,1,1))..string.sub(str,2)
+function string:capitalize() 
+    return string.upper(string.sub(self,1,1))..string.sub(self,2)
+end
+function string:split(sep)
+    local sep, fields = sep or ":", {}
+    local pattern = string.format("([^%s]+)", sep)
+    self:gsub(pattern, function(c) fields[#fields+1] = c end)
+    return fields
 end
 --UTIL.math
 local sin, cos, rad, deg, abs = math.sin, math.cos, math.rad, math.deg, math.abs
