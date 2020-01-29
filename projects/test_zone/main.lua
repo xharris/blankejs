@@ -1,7 +1,7 @@
 Game {
 	plugins = { 'xhh-array', 'xhh-badword' },
 	load = function() 
-		isBadWord()
+		print_r(badword.check("thesh!tmatwinkien"))
 		--[[
 		Net.on('ready', function()	
 			Game.spawn('player') -- Map.load("map0.map")	

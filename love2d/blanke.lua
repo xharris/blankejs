@@ -115,6 +115,7 @@ end
 local sin, cos, rad, deg, abs = math.sin, math.cos, math.rad, math.deg, math.abs
 local floor = function(x) return math.floor(x+0.5) end
 Math = {
+    seed = function(l,h) if l then love.math.setRandomSeed(l,h) else love.math.getRandomSeed() end end,
     random = function(...) return love.math.random(...) end,
     indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end,
     getXY = function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end,
@@ -146,6 +147,32 @@ copy = function(orig, copies)
     return t_copy
 end
 is_object = function(o) return type(o) == 'table' and o.init and type(o.init) == 'function' end
+
+require 'bit'
+encrypt = function(str, code, seed)
+    local oldseed = {Math.seed()}
+    seed = seed or 31459   
+    Math.seed(seed)
+    local ret_str = ''
+    local code_len = string.len(code)
+    for c = 1, string.len(str) do
+        ret_str = ret_str .. string.char(bit.bxor(string.byte(string.sub(str,c,c)), (c + Math.random(c,code_len)) % code_len))
+    end
+    Math.seed(unpack(oldseed))
+    return ret_str
+end
+decrypt = function(str, code, seed)
+    local oldseed = {Math.seed()}
+    seed = seed or 31459   
+    Math.seed(seed)                                                                                                                                                                                                                                                         
+    local ret_str = ''
+    local code_len = string.len(code)
+    for c = 1, string.len(str) do
+        ret_str = ret_str .. string.char(bit.bxor(string.byte(string.sub(str,c,c)), (c + Math.random(c,code_len)) % code_len))
+    end
+    Math.seed(unpack(oldseed))                     
+    return ret_str
+end
 --FS
 FS = {
     basename = function (str)
@@ -165,7 +192,6 @@ FS = {
         return love.filesystem.getDirectoryItems(path)
     end
 }
-
 --GAME
 Game = nil
 do
