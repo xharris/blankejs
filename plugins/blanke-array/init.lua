@@ -119,8 +119,25 @@ do
             for i = 1, self.length do if fn(self.table[i], i) == false then return false end end 
             return true
         end,
-        sort = function(self, ...) table.sort(self.table, ...) end
-        --sort(fn)
+        sort = function(self, ...) table.sort(self.table, ...) end,
+        shuffle = function(self)
+            local tbl = {}
+            local t = self.table
+            for i = 1, #t do
+                tbl[i] = t[i]
+            end
+            for i = #tbl, 2, -1 do
+                local j = math.random(i)
+                tbl[i], tbl[j] = tbl[j], tbl[i]
+            end
+            self.table = tbl
+        end,
+        sort = function(self, fn)
+            table.sort(self.table, fn)
+        end,
+        random = function(self)
+            return table.random(self.table)
+        end
         --reduce
     }
 

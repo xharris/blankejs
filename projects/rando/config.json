@@ -5,16 +5,20 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Card.lua=script+?",
+            "Card.lua"
+        ],
+        [
+            "Add a script=new+?",
+            "Add a script"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
         [
             "engine.lua=script+?",
             "engine.lua"
-        ],
-        [
-            "Add a script=new+?",
-            "Add a script"
         ]
     ],
     "autoplay_preview": true,
@@ -28,6 +32,7 @@
         "xhh-array": true,
         "xhh-effect": false,
         "xhh-tween": false,
-        "yonaba-delaunay": false
+        "yonaba-delaunay": false,
+        "xhh-badword": false
     }
 }

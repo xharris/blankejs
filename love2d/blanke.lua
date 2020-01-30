@@ -115,7 +115,7 @@ end
 local sin, cos, rad, deg, abs = math.sin, math.cos, math.rad, math.deg, math.abs
 local floor = function(x) return math.floor(x+0.5) end
 Math = {
-    seed = function(l,h) if l then love.math.setRandomSeed(l,h) else love.math.getRandomSeed() end end,
+    seed = function(l,h) if l then love.math.setRandomSeed(l,h) else return love.math.getRandomSeed() end end,
     random = function(...) return love.math.random(...) end,
     indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end,
     getXY = function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end,
@@ -673,7 +673,25 @@ end
 --ENTITY
 Entity = nil
 do
+    local getMM = function(self, name, ...)
+        if self.__ and self.__[name] then return self.__[name](self, ...) end
+        return nil
+    end
     local _Entity = GameObject:extend {
+        __ = {
+            tostring = function(self) return getMM(self, 'tostring') or self.classname..'-'..self.uuid end,
+            unm = function(self,...) return getMM(self, 'unm', ...) or nil end,
+            add = function(self,...) return getMM(self, 'add', ...) or nil end,
+            sub = function(self,...) return getMM(self, 'sub', ...) or nil end,
+            mul = function(self,...) return getMM(self, 'mul', ...) or nil end,
+            div = function(self,...) return getMM(self, 'div', ...) or nil end,
+            mod = function(self,...) return getMM(self, 'mod', ...) or nil end,
+            pow = function(self,...) return getMM(self, 'pow', ...) or nil end,
+            concat = function(self,...) return getMM(self, 'concat', ...) or nil end,
+            eq = function(self,other) return getMM(self, 'eq', other) or self.uuid == other.uuid end,
+            lt = function(self,...) return getMM(self, 'lt', ...) or nil end,
+            le = function(self,...) return getMM(self, 'le', ...) or nil end,
+        },
         init = function(self, args, spawn_args, classname)
             GameObject.init(self, args, spawn_args)
 
@@ -2138,6 +2156,7 @@ do
         address='localhost',
         port=8080,
         room=1,
+        id='0',
         connect = function(address,port)
             Net.address = address or Net.address
             Net.port = port or Net.port

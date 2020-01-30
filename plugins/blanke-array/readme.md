@@ -41,6 +41,12 @@ print(myarray) -- 1,2,6
 
 `every(fn)` returns true if fn(val, index) returns true for all values
 
+`shuffle()` Fisher-Yates shuffle
+
+`sort([fn])` uses lua's table.sort
+
+`random()` returns random value from table
+
 ## These functions return self reference (for chaining)
 
 `map(fn)` fn(val, index) should return new val
