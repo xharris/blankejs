@@ -14,8 +14,9 @@ State('play',{
 		enter = function()
 			newDeck()
 			draw(4)
-			play(hands[Net.id][1])
-			randomize(table.random(table.keys(hands)))
+			draw(4,'gary')
+			discard(hands[Net.id][1])
+			randomize()--table.random(table.keys(hands)))
 		end,
 		leave = function()
 			

@@ -5,20 +5,20 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Card.lua=script+?",
-            "Card.lua"
+            "engine.lua=script+?",
+            "engine.lua"
         ],
         [
-            "Add a script=new+?",
-            "Add a script"
+            "Card.lua=script+?",
+            "Card.lua"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "engine.lua=script+?",
-            "engine.lua"
+            "Add a script=new+?",
+            "Add a script"
         ]
     ],
     "autoplay_preview": true,
