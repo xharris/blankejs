@@ -119,7 +119,8 @@ Math = {
     random = function(...) return love.math.random(...) end,
     indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end,
     getXY = function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end,
-    distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end
+    distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end,
+    lerp = function(a,b,t) return a * (1-t) + b * t end
 }
 --UTIL.extra
 switch = function(val, choices)
@@ -229,6 +230,7 @@ do
             if not Game.options.scale then
                 Game.width, Game.height = Game.win_width, Game.win_height
                 if Blanke.game_canvas then Blanke.game_canvas:resize(Game.width, Game.height) end
+                if entity_canvas then entity_canvas:resize(Game.width, Game.height) end
             end
         end;
         
@@ -245,6 +247,7 @@ do
                 resizable = Game.options.resizable,
             }, Game.options.window_flags))
             Game.updateWinSize()
+
             if type(Game.options.filter) == 'table' then
                 love.graphics.setDefaultFilter(unpack(Game.options.filter))
             else 
@@ -467,12 +470,6 @@ GameObject = class {
     setEffect = function(self, ...)
         self.effect = Effect(...)
     end;
-    draw = function(self) 
-        if self._draw then self:_draw() end 
-    end;
-    _update = function(self,dt) 
-        if self.update then self:update(dt) end 
-    end;
     destroy = function(self)
         if not self.destroyed then
             Hitbox.remove(self)
@@ -511,6 +508,7 @@ Canvas = GameObject:extend {
             Draw.pop()
         end
     end;
+    draw = function(self) self:_draw() end,
     resize = function(self,w,h) 
         self.width = w
         self.height = h
@@ -672,10 +670,26 @@ end
 
 --ENTITY
 Entity = nil
+local entity_canvas
 do
     local getMM = function(self, name, ...)
         if self.__ and self.__[name] then return self.__[name](self, ...) end
         return nil
+    end
+    local drawEntity = function(self)
+        return function()
+            if self.imageList then
+                for name, img in pairs(self.imageList) do
+                    img:draw()
+                end
+            end
+            if self.animation and self.animList[self.animation] then
+                local anim = self.animList[self.animation]
+                self:_updateSize(anim)
+                anim:draw()
+                self.width, self.height = anim.width, anim.height
+            end
+        end
     end
     local _Entity = GameObject:extend {
         __ = {
@@ -694,6 +708,11 @@ do
         },
         init = function(self, args, spawn_args, classname)
             GameObject.init(self, args, spawn_args)
+
+            if not entity_canvas then 
+                entity_canvas = Canvas()
+                entity_canvas:remDrawable()
+            end
 
             self.is_entity = true
             self.hspeed = 0
@@ -844,16 +863,13 @@ do
             end
         end,
         _draw = function(self)
-            if self.imageList then
-                for name, img in pairs(self.imageList) do
-                    img:draw()
-                end
-            end
-            if self.animation and self.animList[self.animation] then
-                local anim = self.animList[self.animation]
-                self:_updateSize(anim)
-                anim:draw()
-                self.width, self.height = anim.width, anim.height
+            if self.draw then 
+                entity_canvas:drawTo(function()
+                    self:draw(drawEntity(self))
+                end)
+                Game.drawObject(self, entity_canvas.canvas)
+            else
+                drawEntity(self)()
             end
         end;
         _destroy = function(self)
@@ -1116,7 +1132,7 @@ Color = {
     white =      {255,255,255},
     white2 =     {250,250,250},
     black =      {0,0,0},
-    black2 =     {33,33,3}
+    black2 =     {33,33,33}
 }
 
 --AUDIO
@@ -1293,7 +1309,7 @@ do
                 self.names = self.names[1]
             end
             for _,name in ipairs(self.names) do
-                assert(library[name], "Effect :'#{name}' not found")
+                assert(library[name], "Effect :'"..name.."' not found")
             end
             self.vars = {}
             for _,name in ipairs(self.names) do 
@@ -1332,13 +1348,14 @@ do
                 self:send(name, k, v)
             end
         end;
-        update = function(self,dt)
+        _update = function(self,dt)
             for _,name in ipairs(self.names) do
                 vars = self.vars[name]
                 vars.time = vars.time + dt
                 self:send(name, 'time', vars.time)
             end
         end;
+        update = function(self,dt) self:update(dt) end;
         draw = function(self,fn)
             self.spare_canvas:drawTo(fn)
             for _,name in ipairs(self.names) do
@@ -2434,11 +2451,13 @@ do
         end;
         drawObject = function(obj)
             Draw.stack(function()
+                --[[
                 if obj.draw then 
                     obj:draw(function()
                         if obj._draw then obj:_draw() end
                     end)
-                elseif obj._draw then obj:_draw() end
+                elseif obj._draw then obj:_draw() end]]
+                if obj._draw then obj:_draw() end
             end)
         end;
         update = function(dt)
@@ -2457,11 +2476,10 @@ do
         draw = function()
             local actual_draw = function()
                 Blanke.iterDraw(Game.drawables)
+                State.draw()
                 if Game.options.postDraw then Game.options.postDraw() end
                 Physics.drawDebug()
                 Hitbox.draw()
-
-                State.draw()
             end
 
             local _drawGame = function()

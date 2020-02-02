@@ -29,7 +29,7 @@ module.exports.engine = {
     ],
     export_settings: [
         ['window/rendering'],
-        ['scale_mode','select',{'choices':['linear','nearest'],default:'linear'}],
+        ['filter','select',{'choices':['linear','nearest'],default:'linear'}],
         ...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{default:false}]))
     ],
     get script_path () { return app.project_path },

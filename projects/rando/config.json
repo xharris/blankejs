@@ -5,16 +5,16 @@
     "window_size": 3,
     "quick_access": [
         [
-            "engine.lua=script+?",
-            "engine.lua"
-        ],
-        [
             "Card.lua=script+?",
             "Card.lua"
         ],
         [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "engine.lua=script+?",
+            "engine.lua"
         ],
         [
             "Add a script=new+?",
@@ -26,11 +26,14 @@
     "scene": {},
     "export": {
         "name": "rando",
-        "scale_mode": "linear"
+        "scale_mode": "nearest",
+        "resizable": true,
+        "scale": true,
+        "filter": "nearest"
     },
     "enabled_plugins": {
         "xhh-array": true,
-        "xhh-effect": false,
+        "xhh-effect": true,
         "xhh-tween": false,
         "yonaba-delaunay": false,
         "xhh-badword": false

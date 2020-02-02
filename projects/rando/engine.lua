@@ -84,8 +84,8 @@ function discard(card, player)
 				else points[player] = points[player] + 20 end
 			end)
 		end
-		if points[player] > 500 then
-			-- TODO: win
+		if points[player] >= 500 then
+			print(player,'wins with',points[player],'points')
 		end
 		-- and give new cards
 		draw(4, player)
