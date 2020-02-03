@@ -1,7 +1,8 @@
 Game {
 	plugins = { 'xhh-array', 'xhh-badword' },
 	load = function() 
-		print_r(badword.check("thesh!tmatwinkien"))
+		print(badword.check("thesh!tmatwinkien"))
+		Map.load("map0.map")
 		--[[
 		Net.on('ready', function()	
 			Game.spawn('player') -- Map.load("map0.map")	
@@ -25,17 +26,15 @@ Entity("player", {
 		update = function(self, dt)
 			self.t = self.t + 1
 			if Input.released('action') and not self.net_obj then
-				self.x = self.x + self.width
-								
-				self.scalex = self.scalex - 0.5
+				--self.x = self.x + self.width
+				--self.scalex = self.scalex - 0.5
 				self.angle = self.angle + 90
 			end
 		end,
-		draw = function(self, d)
-			d()
+		postdraw = function(self)
 			Draw{
 				{ 'color', 'red' },
-				{ 'print', 'x:'..self.x..' y:'..self.y, math.floor(self.x), math.floor(self.y)}
+				{ 'print', 'x:'..self.x..' y:'..self.y, 0,0}
 			}
 		end
 })

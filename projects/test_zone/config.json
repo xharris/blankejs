@@ -10,6 +10,10 @@
             "main.lua"
         ],
         [
+            "Preview a spritesheet=view+?",
+            "Preview a spritesheet"
+        ],
+        [
             "map0.map=map+?",
             "map0.map"
         ],
@@ -20,10 +24,6 @@
         [
             "Open .love file=?",
             "Open .love file"
-        ],
-        [
-            "Open project=?",
-            "Open project"
         ]
     ],
     "autoplay_preview": true,
@@ -52,7 +52,8 @@
         "minify": true,
         "scale": true,
         "resizable": false,
-        "write_conf": true
+        "write_conf": true,
+        "filter": "linear"
     },
     "enabled_plugins": {
         "xhh-effect": false,

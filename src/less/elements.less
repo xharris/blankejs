@@ -1190,9 +1190,12 @@
 
 	.platform {
 		margin: 10px;
+		background: transparent;
 		transition: all ease-in-out 0.1s;
 
 		&:hover {
+			background: radial-gradient(circle, rgba(255,255,255,1) 40%, @theme-string 100%);
+			
 			object {
 				filter: drop-shadow(1px 1px 3px black);
 			}

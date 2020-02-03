@@ -588,7 +588,7 @@ class BlankeForm {
 
         this.container.appendChild(el_container);
         if (!internal)
-            this.hideHeader(this.first_header);
+            ;// this.hideHeader(this.first_header); // TODO what is hideHeader?
     }
 
     hideInput (name) {

@@ -798,6 +798,7 @@ do
             end
             Game.drawObject(self, self.image)
         end;
+        draw = function(self) self:_draw() end
     }
 end
 
@@ -808,21 +809,6 @@ do
     local getMM = function(self, name, ...)
         if self.__ and self.__[name] then return self.__[name](self, ...) end
         return nil
-    end
-    local drawEntity = function(self)
-        return function()
-            if self.imageList then
-                for name, img in pairs(self.imageList) do
-                    img:draw()
-                end
-            end
-            if self.animation and self.animList[self.animation] then
-                local anim = self.animList[self.animation]
-                self:_updateSize(anim)
-                anim:draw()
-                self.width, self.height = anim.width, anim.height
-            end
-        end
     end
     local _Entity = GameObject:extend {
         __ = {
@@ -923,6 +909,8 @@ do
                 Net.spawn(self, spawn_args)
             end
             self.net_obj = spawn_args.net_obj
+            -- draw
+            self._custom_draw = args.draw
             -- other props
             for _, fn in ipairs(Entity.init_props) do
                 fn(self, args, spawn_args)
@@ -996,15 +984,41 @@ do
             end
         end,
         _draw = function(self)
-            if self.draw then 
+            -- predraw
+            if self.predraw then
                 entity_canvas:drawTo(function()
-                    self:draw(drawEntity(self))
+                    self:predraw()
+                end)
+                Game.drawObject(self, entity_canvas.canvas)
+            end
+            -- draw
+            if self._custom_draw then
+                entity_canvas:drawTo(function()
+                    self:_custom_draw()
                 end)
                 Game.drawObject(self, entity_canvas.canvas)
             else
-                drawEntity(self)()
+                if self.imageList then
+                    for name, img in pairs(self.imageList) do
+                        img:draw()
+                    end
+                end
+                if self.animation and self.animList[self.animation] then
+                    local anim = self.animList[self.animation]
+                    self:_updateSize(anim)
+                    anim:draw()
+                    self.width, self.height = anim.width, anim.height
+                end
+            end
+            -- postdraw
+            if self.postdraw then 
+                entity_canvas:drawTo(function()
+                    self:postdraw()
+                end)
+                Game.drawObject(self, entity_canvas.canvas)
             end
         end;
+        draw = function(self) self:_draw() end;
         _destroy = function(self)
             if self.destroyed then return end
             for name, img in pairs(self.imageList) do
@@ -2585,12 +2599,6 @@ do
         end;
         drawObject = function(obj)
             Draw.stack(function()
-                --[[
-                if obj.draw then 
-                    obj:draw(function()
-                        if obj._draw then obj:_draw() end
-                    end)
-                elseif obj._draw then obj:_draw() end]]
                 if obj._draw then obj:_draw() end
             end)
         end;

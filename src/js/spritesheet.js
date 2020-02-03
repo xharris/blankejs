@@ -373,6 +373,7 @@ class SpritesheetPreview extends Editor {
 }
 
 document.addEventListener("openProject", function(e){
+	/*
 	app.addSearchKey({
 		key: 'Preview a spritesheet',
 		onSelect: function() {
@@ -380,7 +381,7 @@ document.addEventListener("openProject", function(e){
 		},
 		tags: ['view'],
 		category: 'tools'
-	});
+	});*/
 	app.addSearchKey({
 		key: 'Add images',
 		onSelect: function() {
