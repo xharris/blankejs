@@ -4,13 +4,11 @@ Rando: uno implementation where a number randomly changes every turn
 
 require 'xhh-array'
 
-rando_effect = nil
 hand_z = 40
 
 Game{
 	plugins = { 'xhh-effect' },
 	load = function()
-		--rando_effect = Effect("static", "chroma shift")
 		State.start('play')		
 	end
 }
@@ -18,7 +16,7 @@ Game{
 State('play',{
 		enter = function()
 			newDeck()
-			draw(4)
+			draw(8)
 		end,
 		update = function(dt)
 			local hand = hands[Net.id]
@@ -29,11 +27,14 @@ State('play',{
 				local start_x = (Game.width - hand_w)/2
 				local incr_x = hand_w / hand.length
 				hand:forEach(function(card, c)
-					card.x = start_x + ((c-1) * incr_x)
-					card.y = Game.height - (card_h/3)
+					-- draw the cards in an arc at bottom of screen
+					card.x = math.floor(start_x + ((c-1) * incr_x) + card.width / 2)
+					card.y = math.floor(Game.height - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15))
 					card.z = hand_z + c
-					card.angle = 20
+					card.angle = 0 --Math.lerp(-10,10,(c-1)/(hand.length-1))
 					card.style = 'hand'
+					card.visible = true
+					card:drawRect()
 				end)
 			end
 		end,

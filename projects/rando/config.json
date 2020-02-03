@@ -5,12 +5,16 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Card.lua=script+?",
-            "Card.lua"
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "Card.lua=script+?",
+            "Card.lua"
         ],
         [
             "engine.lua=script+?",
@@ -27,7 +31,7 @@
     "export": {
         "name": "rando",
         "scale_mode": "nearest",
-        "resizable": true,
+        "resizable": false,
         "scale": true,
         "filter": "nearest"
     },
