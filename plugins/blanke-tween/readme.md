@@ -21,6 +21,14 @@ my_tween = Tween(5, player, { hspeed = 0 })
 my_tween.mod = 2.0 -- makes tween go twice as fast.
 ```
 
+# Instance properties/methods
+
+`mod = 1` changes speed of tween (larger = faster)
+
+`stop()`
+
+`resume()`
+
 # Easing functions
 
 * linear

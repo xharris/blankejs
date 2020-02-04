@@ -123,7 +123,13 @@ do
     Math.distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end
     Math.lerp = function(a,b,t) return a * (1-t) + b * t end
     Math.sinusoidal = function(min, max, spd, off) return min + -math.cos(Math.lerp(0,math.pi/2,off or 0) + Game.time * spd) * ((max - min)/2) + ((max - min)/2) end
-    Math.pointInShape = function(shape, x, y) return PointWithinShape(shape,x,y) end
+    Math.pointInShape = function(shape, x, y)  
+        local pts = {}
+        for p = 1,#shape,2 do 
+            table.insert(pts, {x=shape[p], y=shape[p+1]})
+        end
+        return PointWithinShape(pts,x,y)
+    end
 
     function PointWithinShape(shape, tx, ty)
         if #shape == 0 then 
@@ -324,7 +330,7 @@ do
             load =          function() end,
             update =        function(dt) end,
             draw =          function(d) d() end,
-            postDraw =      nil,
+            postdraw =      nil,
             effect =        nil,
             auto_require =  true,
             backgroundColor = nil,
@@ -1043,6 +1049,7 @@ end
 
 --INPUT
 Input = nil
+mouse_x, mouse_y = 0, 0
 do
     local name_to_input = {} -- name -> { key1: t/f, mouse1: t/f }
     local input_to_name = {} -- key -> { name1, name2, ... }
@@ -1125,7 +1132,7 @@ do
             released = {}
         end;
 
-        mousePos = function() return love.mouse.getPosition() end;
+        -- mousePos = function() return love.mouse.getPosition() end;
     }
 end
 
@@ -1183,8 +1190,9 @@ do
         end;
         parseColor = function(...)
             args = {...}
-            if Color[args[1]] then 
-                args = Color[args[1]]
+            local c = Color[args[1]]
+            if c then 
+                args = {c[1],c[2],c[3],args[2] or 1}
                 for a,arg in ipairs(args) do 
                     if arg > 1 then args[a] = arg / 255 end
                 end
@@ -2602,7 +2610,10 @@ do
                 if obj._draw then obj:_draw() end
             end)
         end;
+        --blanke.update
         update = function(dt)
+            mouse_x, mouse_y = love.mouse.getPosition()
+
             Game.time = Game.time + dt
             if Game.options.update(dt) == true then return end
             Physics.update(dt)
@@ -2615,12 +2626,13 @@ do
                 Window.toggleFullscreen()
             end            
             Input.keyCheck()
-        end;    
+        end; 
+        --blanke.draw   
         draw = function()
             local actual_draw = function()
                 Blanke.iterDraw(Game.drawables)
                 State.draw()
-                if Game.options.postDraw then Game.options.postDraw() end
+                if Game.options.postdraw then Game.options.postdraw() end
                 Physics.drawDebug()
                 Hitbox.draw()
             end

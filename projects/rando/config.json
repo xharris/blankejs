@@ -5,12 +5,12 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Card.lua=script+?",
-            "Card.lua"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "Card.lua=script+?",
+            "Card.lua"
         ],
         [
             "Dev Tools=?",
@@ -38,7 +38,7 @@
     "enabled_plugins": {
         "xhh-array": true,
         "xhh-effect": true,
-        "xhh-tween": false,
+        "xhh-tween": true,
         "yonaba-delaunay": false,
         "xhh-badword": false
     }

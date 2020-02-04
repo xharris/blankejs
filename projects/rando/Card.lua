@@ -7,25 +7,22 @@ card_h = 336
 -- TODO: limit the number of draw cards
 draw_card_count = 10
 
-
 calcCardRect = function(card)
 	local cx, cy, angle = card.x, card.y, math.rad(card.angle)
 	local rotatePoint = function(x,y)
-		local tempX = x - cx;
-		local tempY = y - cy;
-		-- now apply rotation
-		local rotatedX = tempX*math.cos(angle) - tempY*math.sin(angle)
-		local rotatedY = tempX*math.sin(angle) + tempY*math.cos(angle)
-		-- translate back
-		return {rotatedX + cy, rotatedY + cy}
+		-- apply rotation
+		return {
+			(x*math.cos(angle) - y*math.sin(angle)) + cx, 
+			(x*math.sin(angle) + y*math.cos(angle)) + cy
+		}
 	end
 	
 	local w2, h2 = card.width * card.scale / 2, card.height * card.scale / 2
 	local ul, ur, dl, dr = 
-		rotatePoint(cx - w2, cy - h2),
-		rotatePoint(cx + w2, cy - h2),
-		rotatePoint(cx - w2, cy + h2),
-		rotatePoint(cx + w2, cy + h2)
+		rotatePoint(-w2, -h2),
+		rotatePoint( w2, -h2),
+		rotatePoint(-w2,  h2),
+		rotatePoint( w2,  h2)
 	return {ul[1], ul[2], ur[1], ur[2], dr[1], dr[2], dl[1], dl[2], ul[1], ul[2]}	
 end
 
@@ -69,11 +66,34 @@ Entity("Card",{
 				return self.name..'.'..self.value..(self.color and '.'..self.color or '')
 			end
 		},
+		update = function(self, dt)
+			if self.last_style ~= self.style then
+				self.last_style = self.style 
+				self.rect = {0,0,0,0}
+			end
+			if self.style == "hand" then
+				self.width = card_w/2
+				self.height = card_h/2
+				self.rect = calcCardRect(self)
+				
+				if self.focused then
+					--if self.twn_scale then self.twn_scale:stop() end
+					if not self.twn_scale then
+						self.twn_scale = Tween(1, self, {scale=1.25})
+					end
+					self.focused = false
+				else
+					--self.twn_scale = Tween(1, self, {scale=1})
+				end
+			end
+		end,
 		drawRect = function(self)
-			Draw{
-				{'color','white'},
-				{'poly','fill',unpack(calcCardRect(self))}
-			}
+			if self.rect then
+				Draw{
+					{'color','white', 0.5},
+					{'poly','fill',unpack(self.rect)}
+				}
+			end
 		end,
 		draw = function(self)
 			if self.visible then
