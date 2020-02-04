@@ -28,7 +28,7 @@ end
 
 Entity("Card",{
 		name='', -- number / draw / skip / reverse
-		value=0,
+		value=-1,
 		color='black2',
 		style='hand',
 		align='center',
@@ -36,13 +36,27 @@ Entity("Card",{
 		visible=false,
 		--effect = {'static', 'chroma shift'},
 		spawn = function(self, str)
-			if card_names:includes(str) then
-				self.name = str
-				if str == 'wilddraw' then self.value = 4 end
-				if str == 'draw' then self.value = 2 end
+			local pos_name = str:split('.')[1]
+			if card_names:includes(pos_name) then
+				self.name = pos_name
+				if self.name == 'wilddraw' then self.value = 4 end
+				if self.name == 'draw' then self.value = 2 end
+				if not self.name:contains('wild') then
+					self.name, self.color = unpack(str:split('.'))
+				end				
 			else
 				self.name = 'number'
 				self.value, self.color = unpack(str:split('.'))
+				self.value = tonumber(self.value)
+			end
+			if self.name == "skip" or self.name == "reverse" then
+				self.image = Image(self.name..".png")
+			end
+			-- numbers on card
+			if self.value >= 0 then
+				self.ent_value = Game.spawn("card_element", {text=self.value, add=self.name:contains('draw')})
+			else
+				self.ent_value = Game.spawn("card_element", {image=self.name})
 			end
 		end,
 		randomize = function(self)
@@ -67,6 +81,9 @@ Entity("Card",{
 			end
 		},
 		update = function(self, dt)
+			if self.value >= 0 then 
+				self.ent_value.text = tostring(self.value)
+			end
 			if self.last_style ~= self.style then
 				self.last_style = self.style 
 				self.rect = {0,0,0,0}
@@ -77,14 +94,12 @@ Entity("Card",{
 				self.rect = calcCardRect(self)
 				
 				if self.focused then
-					--if self.twn_scale then self.twn_scale:stop() end
-					if not self.twn_scale then
-						self.twn_scale = Tween(1, self, {scale=1.25})
-					end
+					self.target_scale = 1.25
 					self.focused = false
 				else
-					--self.twn_scale = Tween(1, self, {scale=1})
+					self.target_scale = 1
 				end
+				self.scale = Math.lerp(self.scale, self.target_scale, 0.5)
 			end
 		end,
 		drawRect = function(self)
@@ -100,17 +115,51 @@ Entity("Card",{
 				if self.style == "hand" then
 					self.width = card_w/2
 					self.height = card_h/2
-					local r = 15
+					local r = 12
 					Draw{
 						{'push'},
 						{'color',self.color},
 						{'rect','fill',0,0,card_w/2,card_h/2,r,r},
-						{'color','black2'},
+						{'color','black2',0.2},
 						{'lineWidth', 1},
-						{'rect','line',0,0,card_w/2,card_h/2,r,r},
+						--{'rect','line',0,0,card_w/2,card_h/2,r,r},
 						{'pop'}
 					}
+					Draw.color('white')
+					local ev = self.ent_value
+					ev.x = self.x, self.y
+					ev.angle = 90
+					ev:draw()
+					ev.x = self.x + self.width
+					ev.y = self.y
 				end
 			end
 		end
+})
+
+Entity("card_element",{
+	text='',
+	add=false,
+	image=nil,
+	font_size=18,
+	align='center',
+	spawn = function(self)
+		if self.image and self.image ~= 'wild' then self.image = Image(self.image..'.png') end
+		self:remDrawable()
+	end,
+	draw = function(self)
+		if self.image and self.image ~= 'wild' then
+			self.width, self.height = self.image.width, self.image.height
+			self.image.x, self.image.y = 5,5
+			self.image:draw()
+		else
+			self.width, self.height = 18, 18
+			Draw{
+				{'color','white'},
+				{'font','CaviarDreams_Bold.ttf',18},
+				{'print',self.add and '+' or '',0,0},--5,8},
+				{'print',self.text,14,10},
+			}
+		end
+	end
 })

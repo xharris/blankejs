@@ -7,20 +7,25 @@ require 'xhh-array'
 hand_z = 40
 
 Game{
-	plugins = { 'xhh-effect', 'xhh-tween' },
+	background_color = 'black2',
+	plugins = { 'xhh-effect' },
+	window_flags = {
+		msaa = 8
+	},
 	load = function()
 		State.start('play')		
 	end
 }
 
+local bob
 State('play',{
 		enter = function()
 			newDeck()
 			draw(8)
+			bob = Game.spawn("card_element", {image="reverse", angle=45})
 		end,
 		update = function(dt)
 			local hand = hands[Net.id]
-			
 			-- draw my hand
 			if hand then
 				local focus_card
@@ -30,7 +35,7 @@ State('play',{
 				hand:forEach(function(card, c)
 					-- draw the cards in an arc at bottom of screen
 					card.x = math.floor(start_x + ((c-1) * incr_x) + card.width / 2)
-					card.y = math.floor(Game.height - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15))
+					card.y = math.floor(Game.height/2 - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15))
 					card.z = hand_z + c
 					card.angle = Math.lerp(-10,10,(c-1)/(hand.length-1))
 					card.style = 'hand'
@@ -52,6 +57,7 @@ State('play',{
 					--card:drawRect()
 				end)
 			end
+			bob:draw()
 		end,
 		leave = function()
 			

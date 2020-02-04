@@ -58,6 +58,8 @@ grey, gray, bluegray, white, white2, black, black2
 
 `setFont (filename, [size=12])`
 
+`setFontSize (size)` sets size using the last used font
+
 `addImageFont (filename, glyphs, [extraspacing])` call once in Game.load
 
 `setImageFont (filename)`

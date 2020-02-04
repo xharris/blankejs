@@ -9,20 +9,20 @@
             "main.lua"
         ],
         [
-            "Card.lua=script+?",
-            "Card.lua"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
-        ],
-        [
             "engine.lua=script+?",
             "engine.lua"
         ],
         [
-            "Add a script=new+?",
-            "Add a script"
+            "View assets=?",
+            "View assets"
+        ],
+        [
+            "Card.lua=script+?",
+            "Card.lua"
+        ],
+        [
+            "conf.lua=script+?",
+            "conf.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -31,15 +31,73 @@
     "export": {
         "name": "rando",
         "scale_mode": "nearest",
-        "resizable": false,
+        "resizable": true,
         "scale": true,
         "filter": "linear"
     },
     "enabled_plugins": {
         "xhh-array": true,
         "xhh-effect": true,
-        "xhh-tween": true,
+        "xhh-tween": false,
         "yonaba-delaunay": false,
         "xhh-badword": false
+    },
+    "imageeditor": {
+        "image/image0.png": {
+            "frame_size": [
+                28,
+                28
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3,
+            "tool.size": [
+                1,
+                1
+            ],
+            "tool.angle": 0,
+            "tool.fill": false
+        },
+        "image/reverse.png": {
+            "frame_size": [
+                28,
+                28
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3,
+            "tool.size": [
+                1,
+                1
+            ],
+            "showPreview": false,
+            "showBackgroundGrid": false
+        },
+        "image/image1.png": {
+            "frame_size": [
+                28,
+                28
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3,
+            "showBackgroundGrid": false,
+            "showPreview": false,
+            "tool.shape": "rect",
+            "tool.radius": 9,
+            "tool.fill": false
+        }
     }
 }

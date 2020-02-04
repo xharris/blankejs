@@ -1,3 +1,6 @@
+// TODO open editor and another file, turn off splitting, go to image editor (resize not called for canvas resizing)
+// TODO if user attempts to rename before the first save (image is image1.png), save then rename
+
 const EDITOR_TITLE = "Image Editor";
 const DEFAULT_IMAGE_SETTINGS = {
     frame_size: [256,256],
@@ -58,6 +61,7 @@ class ImageEditor extends Editor {
             ['frame_size', 'number', {'inputs':2, 'separator':'x', 'min':1}],
             ['frames', 'number', {'min':1}],
             ['showPreview', 'checkbox', {default:true}],
+            ['showBackgroundGrid','checkbox', {default:true}],
             ['animSpeed', 'number', {min:0, default:0.5, step:0.1, label:'animation speed'}],
             ['onion_alpha', 'number', {min:0, max:1, step:0.05}],
             ['tools'],
@@ -299,10 +303,10 @@ class ImageEditor extends Editor {
         
         const setupForm = () => {
             app.saveSettings();
-            this.drawBackground();
             this.pixi.setCameraPosition((this.pixi.width - this.img_width) / 2, (this.pixi.height - this.img_height) / 2);
             this.el_image_form.useValues(this.img_settings);
             this.checkFormVisibility();
+            this.drawBackground();
             
             if (nwFS.pathExistsSync(path)) {
                 this.pixi.loadRes(path, (loader, res) => {
@@ -366,7 +370,7 @@ class ImageEditor extends Editor {
         }  
     }
     updateOnion () {
-        if (this.anim && this.hover_frame > 0 && this.anim.textures[this.hover_frame-1])
+        if (this.anim && this.hover_frame > 0 && this.hover_frame < this.anim.textures.length-1 && this.anim.textures[this.hover_frame-1])
             this.img_onion.texture = this.anim.textures[this.hover_frame-1];
         else 
             this.img_onion.texture = PIXI.Texture.EMPTY;
@@ -403,13 +407,15 @@ class ImageEditor extends Editor {
 
         this.pixi.setCameraBounds(0,0,this.pixi.width-this.img_width,this.pixi.height-this.img_height);
         // draw transparency tiles
-        for (let x = 0; x < this.img_width; x += t_size) {
-            white_tile = (x/t_size % 2 == 0) ? true : false;
-            for (let y = 0; y < this.img_height; y += t_size) {
-                bg.beginFill(white_tile ? bg_colors[0] : bg_colors[1]);
-                bg.drawRect(x, y, x + t_size > this.img_width ? this.img_width - x : t_size, y + t_size > this.img_height ? this.img_height - y : t_size)
-                bg.endFill();
-                white_tile = !white_tile;
+        if (this.el_image_form.getValue('showBackgroundGrid')) {
+            for (let x = 0; x < this.img_width; x += t_size) {
+                white_tile = (x/t_size % 2 == 0) ? true : false;
+                for (let y = 0; y < this.img_height; y += t_size) {
+                    bg.beginFill(white_tile ? bg_colors[0] : bg_colors[1]);
+                    bg.drawRect(x, y, x + t_size > this.img_width ? this.img_width - x : t_size, y + t_size > this.img_height ? this.img_height - y : t_size)
+                    bg.endFill();
+                    white_tile = !white_tile;
+                }
             }
         }
         // draw frame rects

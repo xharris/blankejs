@@ -333,7 +333,7 @@ do
             postdraw =      nil,
             effect =        nil,
             auto_require =  true,
-            backgroundColor = nil,
+            background_color = nil,
             window_flags = {}
         };
         config = {};
@@ -350,8 +350,9 @@ do
             return nil
         end;
 
-        updateWinSize = function()
+        updateWinSize = function(w,h)
             Game.win_width, Game.win_height, flags = love.window.getMode()
+            if w and h then Game.win_width, Game.win_height = w, h end
             if not Game.options.scale then
                 Game.width, Game.height = Game.win_width, Game.win_height
                 if Blanke.game_canvas then Blanke.game_canvas:resize(Game.width, Game.height) end
@@ -379,7 +380,7 @@ do
             else 
                 love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
             end
-            Draw.setFont('04B_03.ttf', 16, true)
+            Draw.setFont('04B_03.ttf', 16)
             scripts = Game.options.scripts or {}
             -- load plugins
             if Game.options.plugins then 
@@ -410,8 +411,8 @@ do
             if Game.options.load then
                 Game.options.load()
             end
-            if Game.options.backgroundColor then 
-                Game.setBackgroundColor(Game.options.backgroundColor)
+            if Game.options.background_color then 
+                --Game.setBackgroundColor(Game.options.background_color)
             end
 
             Blanke.game_canvas = Canvas()
@@ -464,9 +465,6 @@ do
         drawObject = function(gobj, ...)
             local props = gobj
             if gobj.parent then props = gobj.parent end
-            if not gobj._last_z or gobj._last_z ~= gobj.z then 
-                Game.sortDrawables()
-            end
             local lobjs = {...}
             
             local draw = function()
@@ -845,7 +843,7 @@ do
             self.gravity = 0
             self.gravity_direction = 90
             self.anim_speed = 1
-
+    
             table.update(self, args)
             self.classname = classname
             self.imageList = {}
@@ -915,8 +913,6 @@ do
                 Net.spawn(self, spawn_args)
             end
             self.net_obj = spawn_args.net_obj
-            -- draw
-            self._custom_draw = args.draw
             -- other props
             for _, fn in ipairs(Entity.init_props) do
                 fn(self, args, spawn_args)
@@ -1039,6 +1035,10 @@ do
     Entity = class {
         init_props = {};
         init = function(self, name, args)
+            if args.draw then
+                args._custom_draw = args.draw
+                --args.draw = nil
+            end
             Game.addObject(name, "Entity", args, _Entity)
         end;
         addInitFn = function(fn)
@@ -1158,8 +1158,9 @@ do
         local font = love.graphics.newFont(path, size)
         fonts[key] = font 
         return font
-    end
-
+    end  
+    local DEF_FONT = "04B_03.ttf"
+    local last_font
     Draw = class {
         crop_used = false;
         init = function(self, instructions)
@@ -1169,11 +1170,16 @@ do
                 Draw[name](unpack(args))
             end
         end;
-        setFont = function(path, size, internal)
-            if not internal then path = Game.res('font', path) end
+        setFont = function(path, size)
+            path = path or last_font or DEF_FONT
+            last_font = path
+            if path ~= DEF_FONT then path = Game.res('font', path) end
             local font = getFont(path, size)
             assert(font, 'Font not found: \''..path..'\'')
             love.graphics.setFont(font)
+        end;
+        setFontSize = function(size)
+            Draw.setFont(last_font, size)
         end;
         addImageFont = function(path, glyphs, ...)
             path = Game.res('image', path)
@@ -1255,11 +1261,15 @@ do
         rectangle = 'rect',
         setLineWidth = 'lineWidth',
         setPointSize = 'pointSize',
-        points = 'point'
+        points = 'point',
+        setFont = 'font',
+        setFontSize = 'fontSize'
     }
     for _,fn in ipairs(draw_functions) do 
-        Draw[draw_aliases[fn] or fn] = function(...) return love.graphics[fn](...) end 
         Draw[fn] = function(...) return love.graphics[fn](...) end 
+    end
+    for old, new in pairs(draw_aliases) do
+        Draw[new] = Draw[old]
     end
 end
 
@@ -2454,46 +2464,61 @@ do
 end
 
 --WINDOW
-Window = {
-    os = '?';
-    aspect_ratio = nil;
-    aspect_ratios = { {4,3}, {5,4}, {16,10}, {16,9} };
-    resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 };
-    aspectRatio = function()
-        local w, h = love.window.getDesktopDimensions()
-        for _,ratio in ipairs(Window.aspect_ratios) do
-            if w * (ratio[2] / ratio[1]) == h then
-                Window.aspect_ratio = ratio
-                return ratio
+Window = {}
+do 
+    local pre_fs_size = {}
+    Window = {
+        os = '?';
+        aspect_ratio = nil;
+        aspect_ratios = { {4,3}, {5,4}, {16,10}, {16,9} };
+        resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 };
+        aspectRatio = function()
+            local w, h = love.window.getDesktopDimensions()
+            for _,ratio in ipairs(Window.aspect_ratios) do
+                if w * (ratio[2] / ratio[1]) == h then
+                    Window.aspect_ratio = ratio
+                    return ratio
+                end
             end
+        end;
+        setSize = function(r, flags)
+            local w, h = Window.calculateSize(r)
+            love.window.setMode(w, h, flags)
+        end;
+        setExactSize = function(w, h, flags)
+            love.window.setMode(w, h, flags)
+        end;
+        calculateSize = function(r)
+            r = r or Game.config.window_size
+            if not Window.aspect_ratio then Window.aspectRatio() end
+            local w = Window.resolutions[r]
+            local h = w / Window.aspect_ratio[1] * Window.aspect_ratio[2]
+            return w, h
+        end;
+        fullscreen = function(v,fs_type)
+            local res
+            if v == nil then 
+                res = love.window.getFullscreen()
+            else 
+                res = love.window.setFullscreen(v,fs_type)
+            end
+            Game.updateWinSize(unpack(pre_fs_size)) 
+            return res
+        end;
+        toggleFullscreen = function()
+            if not Window.fullscreen() then
+                pre_fs_size = {Game.width, Game.height}
+            end
+            local res = Window.fullscreen(not Window.fullscreen())
+            if res then
+                if not Window.fullscreen() then 
+                    Window.setExactSize(unpack(pre_fs_size))
+                end
+            end
+            return res
         end
-    end;
-    setSize = function(r, flags)
-        local w, h = Window.calculateSize(r)
-        love.window.setMode(w, h, flags)
-    end;
-    setExactSize = function(w, h, flags)
-        love.window.setMode(w, h, flags)
-    end;
-    calculateSize = function(r)
-        r = r or 3
-        if not Window.aspect_ratio then Window.aspectRatio() end
-        local w = Window.resolutions[r]
-        local h = w / Window.aspect_ratio[1] * Window.aspect_ratio[2]
-        return w, h
-    end;
-    fullscreen = function(v,fs_type)
-        if v == nil then 
-            return love.window.getFullscreen()
-        else 
-            love.window.setFullscreen(v,fs_type) 
-            Game.updateWinSize()
-        end
-    end;
-    toggleFullscreen = function()
-        return Window.fullscreen(not Window.fullscreen())
-    end
-}
+    }
+end
 
 --TIMER
 Timer = nil 
@@ -2585,6 +2610,9 @@ do
         config = {};
         game_canvas = nil;
         loaded = false;
+        scale = 1;
+        padx = 0;
+        pady = 0;
         load = function()
             if not Blanke.loaded then
                 Blanke.loaded = true
@@ -2599,11 +2627,19 @@ do
             end)
         end;
         iterDraw = function(t, override_drawable)
+            local reorder_drawables = false
             iterate(t, 'drawable', function(obj)
                 if not obj.skip_draw and (override_drawable or obj.drawable) and obj.draw ~= false then
+                    if not obj._last_z or obj._last_z ~= obj.z then
+                        reorder_drawables = true
+                    end
                     Blanke.drawObject(obj)
                 end
             end)
+    
+            if reorder_drawables then 
+                Game.sortDrawables()
+            end
         end;
         drawObject = function(obj)
             Draw.stack(function()
@@ -2613,6 +2649,19 @@ do
         --blanke.update
         update = function(dt)
             mouse_x, mouse_y = love.mouse.getPosition()
+            if Game.options.scale == true then
+                local scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
+                Blanke.scale = math.min(scalex, scaley)
+                Blanke.padx, Blanke.pady = 0, 0
+                if scalex > scaley then
+                    Blanke.padx = floor((Game.win_width - (Game.width * Blanke.scale)) / 2)
+                else 
+                    Blanke.pady = floor((Game.win_height - (Game.height * Blanke.scale)) / 2)
+                end
+                -- offset mouse coordinates
+                mouse_x = (mouse_x / Blanke.scale) - Blanke.padx
+                mouse_y = (mouse_y / Blanke.scale) - Blanke.pady
+            end
 
             Game.time = Game.time + dt
             if Game.options.update(dt) == true then return end
@@ -2647,6 +2696,12 @@ do
         
             local _draw = function()
                 Game.options.draw(function()
+                    Draw{
+                        {'push'},
+                        {'color',Game.options.background_color},
+                        {'rect','fill',0,0,Game.width,Game.height},
+                        {'pop'}
+                    }
                     if Game.effect then
                         Game.effect:draw(_drawGame)
                     else 
@@ -2657,21 +2712,19 @@ do
 
             Blanke.game_canvas:drawTo(_draw)
             if Game.options.scale == true then
-                local scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
-                local scale = math.min(scalex, scaley)
-                local padx, pady = 0, 0
-                if scalex > scaley then
-                    padx = floor((Game.win_width - (Game.width * scale)) / 2)
-                else 
-                    pady = floor((Game.win_height - (Game.height * scale)) / 2)
-                end
                 Draw.push()
-                Draw.translate(padx, pady)
-                Draw.scale(scale)
+                Draw.translate(Blanke.padx, Blanke.pady)
+                Draw.scale(Blanke.scale)
                 Blanke.game_canvas:draw()
                 Draw.pop()
             
             else 
+                Draw{
+                    {'push'},
+                    {'color','black'},
+                    {'rect','fill',0,0,Game.win_width,Game.win_height},
+                    {'pop'}
+                }
                 Blanke.game_canvas:draw()
             end
         end;
