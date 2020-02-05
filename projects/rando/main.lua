@@ -18,7 +18,7 @@ local bob
 State('play',{
 		enter = function()
 			newDeck()
-			draw(8)
+			draw(4)
 			bob = Game.spawn("card_text", {image="reverse", angle=45})
 		end,
 		update = function(dt)
@@ -31,10 +31,15 @@ State('play',{
 				local incr_x = hand_w / hand.length
 				hand:forEach(function(card, c)
 					-- draw the cards in an arc at bottom of screen
-					card.x = math.floor(start_x + ((c-1) * incr_x) + card.width / 2)
-					card.y = math.floor(Game.height/2 - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15))
+					card.x = start_x + ((c-1) * incr_x) + card.width / 2
+					if hand.length == 1 then
+						card.y = Game.height/2 - (card.width/4)
+						card.angle = 0--20
+					else
+						card.y = Game.height/2 - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15)
+						card.angle = 0--Math.lerp(-10,10,(c-1)/math.max(hand.length-1))
+					end
 					card.z = hand_z + c
-					card.angle = 0--Math.lerp(-10,10,(c-1)/(hand.length-1))
 					card.style = 'hand'
 					card.visible = true
 					if Math.pointInShape(card.rect, mouse_x, mouse_y) then

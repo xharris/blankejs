@@ -458,7 +458,7 @@ do
                     ay = obj.height
                 end
             end
-            obj.alignx, obj.aligny = ax / abs(obj.scalex), ay / abs(obj.scaley)
+            obj.alignx, obj.aligny = ax, ay
         end;
 
         sortDrawables = function()
@@ -487,23 +487,33 @@ do
                 end
                 for _,lobj in ipairs(lobjs) do
                     Game.checkAlign(props)
-                    local ax, ay = props.alignx, props.aligny
                     local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
-                    local x = floor(props.x + props.offx)
-                    local y = floor(props.y + props.offy)
+                    local ax, ay = (props.alignx + props.offx) * scalex, (props.aligny + props.offy) * scaley
+                    local x = props.x
+                    local y = props.y
                     if ent_canv_index > 1 and ent_canv_off[ent_canv_index] then 
                         --x = floor(props.x - ent_canv_off[ent_canv_index].x)
                         --y = floor(props.y - ent_canv_off[ent_canv_index].y)
                     end 
 
+                    --ax, ay = ax - (ax * scalex), ay - (ay * scaley)
+                    --x, y = x - (x * scalex), y - (y * scaley)
+
                     Draw.push()
-                    Draw.translate(-ax, -ay)
-                    Draw.rotate(math.rad(props.angle))
-                    Draw.scale(scalex, scaley)
-                    Draw.shear(props.shearx, props.sheary)
-                    Draw.translate(ax, ay)
-                    Draw.translate(x - ax, y - ay)
+
+                    Draw.origin()
+                    Draw.translate(-ax + x, -ay + y)
                     Draw.translate(unpack(Game.last_ent_trans))
+                    Draw.scale(scalex, scaley)
+                    Draw.rotate(props.angle)
+                    Draw.shear(props.shearx, props.sheary)
+                    Draw{
+                        {'push'},
+                        {'color','white2'},
+                        {'line',-10,0,10,0},
+                        {'line',0,-10,0,10},
+                        {'pop'}
+                    }
                     if is_fn then 
                         if gobj.is_entity then 
                             Game.last_ent_trans[1] = Game.last_ent_trans[1] - x
@@ -514,12 +524,12 @@ do
                             Game.last_ent_trans[1] = Game.last_ent_trans[1] + x
                             Game.last_ent_trans[2] = Game.last_ent_trans[2] + y
                         end
-                    elseif gobj.quad then
-                        love.graphics.draw(lobj, gobj.quad)--, math.rad(props.angle), scalex, scaley,
-                            --floor(props.offx + ax), floor(props.offy + ay), props.shearx, props.sheary)
                     else
-                        love.graphics.draw(lobj)--, math.rad(props.angle), scalex, scaley,
-                            --floor(props.offx + ax), floor(props.offy + ay), props.shearx, props.sheary)
+                        if gobj.quad then
+                            love.graphics.draw(lobj, gobj.quad)
+                        else
+                            love.graphics.draw(lobj)
+                        end
                     end
                     Draw.pop()
                 end
@@ -631,7 +641,6 @@ GameObject = class {
     addDrawable = function(self)
         self.drawable = true
         table.insert(Game.drawables, self)
-        Game.sortDrawables()
     end;
     remUpdatable = function(self)
         self.updatable = false
@@ -1277,6 +1286,12 @@ do
             -- love.graphics.setStencilTest("greater",0)
             -- Draw.crop_used = true
         end;
+        rotate = function(r)
+            love.graphics.rotate(math.rad(r))
+        end;
+        translate = function(x,y)
+            love.graphics.translate(floor(x), floor(y))
+        end;
         reset = function(only)
             if only == 'color' or not only then
                 Draw.color(1,1,1,1)
@@ -1305,7 +1320,7 @@ do
     local draw_functions = {
         'arc','circle','ellipse','line','points','polygon','rectangle','print','printf',
         'clear','discard','origin',
-        'rotate','scale','shear','translate','transformPoint',
+        'scale','shear','transformPoint',
         'setLineWidth','setPointSize'
     }
     local draw_aliases = {
@@ -2667,11 +2682,11 @@ do
         pady = 0;
         load = function()
             if not Blanke.loaded then
-                Blanke.loaded = true
                 Game.load()
+                Blanke.loaded = true
             end
         end;
-        iterUpdate = function(t, dt) 
+        iterUpdate = function(t, dt)
             iterate(t, 'updatable', function(obj)
                 if not obj.skip_update and not obj.pause and obj._update then
                     obj:_update(dt)

@@ -114,20 +114,24 @@ Entity("Card",{
 			if self.visible then
 				if self.style == "hand" then
 					local r = 12
-					Draw{
-						{'push'},
+					Draw.push()
+					Draw {
+						--{'translate',-self.width/2,-self.height/2},
+						--{'scale',self.scale,self.scale},
+						--{'rotate',self.angle},
+						--{'translate',self.x,self.y},
 						{'color',self.color},
 						{'rect','fill',0,0,card_w/2,card_h/2,r,r},
 						{'color','black2',0.2},
 						{'lineWidth', 1},
 						--{'rect','line',0,0,card_w/2,card_h/2,r,r},
-						{'pop'}
 					}
 					Draw.color('white')
 					local ev = self.ent_value
 					ev.x, ev.y = self.x, self.y
 					ev.angle = 0
-					ev:draw()
+					--ev:draw()
+					Draw.pop()
 				end
 			end
 		end
