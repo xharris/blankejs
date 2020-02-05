@@ -382,9 +382,9 @@ do
             Game.updateWinSize()
 
             if type(Game.options.filter) == 'table' then
-                --love.graphics.setDefaultFilter(unpack(Game.options.filter))
+                love.graphics.setDefaultFilter(unpack(Game.options.filter))
             else 
-                --love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
+                love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
             end
             Draw.setFont('04B_03.ttf', 16)
             scripts = Game.options.scripts or {}
@@ -468,11 +468,16 @@ do
                 return a.z < b.z 
             end)
         end;
-
+        last_ent_trans = {0,0};
         drawObject = function(gobj, ...)
             local props = gobj
             if gobj.parent then props = gobj.parent end
             local lobjs = {...}
+            local is_fn = false
+            if lobjs[2] == 'function' then
+                lobjs[2] = nil
+                is_fn = true
+            end
             
             local draw = function()
                 last_blend = nil
@@ -484,21 +489,39 @@ do
                     Game.checkAlign(props)
                     local ax, ay = props.alignx, props.aligny
                     local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
-                    local x = floor(props.x)
-                    local y = floor(props.y)
+                    local x = floor(props.x + props.offx)
+                    local y = floor(props.y + props.offy)
                     if ent_canv_index > 1 and ent_canv_off[ent_canv_index] then 
-                        print(props.classname, ent_canv_off[ent_canv_index].x, ent_canv_off[ent_canv_index].y)
-                        x = floor(props.x - ent_canv_off[ent_canv_index].x)
-                        y = floor(props.y - ent_canv_off[ent_canv_index].y)
-                    end
+                        --x = floor(props.x - ent_canv_off[ent_canv_index].x)
+                        --y = floor(props.y - ent_canv_off[ent_canv_index].y)
+                    end 
 
-                    if gobj.quad then 
-                        love.graphics.draw(lobj, gobj.quad, x, y, math.rad(props.angle), scalex, scaley,
-                            floor(props.offx + ax), floor(props.offy + ay), props.shearx, props.sheary)
+                    Draw.push()
+                    Draw.translate(-ax, -ay)
+                    Draw.rotate(math.rad(props.angle))
+                    Draw.scale(scalex, scaley)
+                    Draw.shear(props.shearx, props.sheary)
+                    Draw.translate(ax, ay)
+                    Draw.translate(x - ax, y - ay)
+                    Draw.translate(unpack(Game.last_ent_trans))
+                    if is_fn then 
+                        if gobj.is_entity then 
+                            Game.last_ent_trans[1] = Game.last_ent_trans[1] - x
+                            Game.last_ent_trans[2] = Game.last_ent_trans[2] - y
+                        end
+                        lobj(gobj)
+                        if gobj.is_entity then 
+                            Game.last_ent_trans[1] = Game.last_ent_trans[1] + x
+                            Game.last_ent_trans[2] = Game.last_ent_trans[2] + y
+                        end
+                    elseif gobj.quad then
+                        love.graphics.draw(lobj, gobj.quad)--, math.rad(props.angle), scalex, scaley,
+                            --floor(props.offx + ax), floor(props.offy + ay), props.shearx, props.sheary)
                     else
-                        love.graphics.draw(lobj, x, y, math.rad(props.angle), scalex, scaley,
-                            floor(props.offx + ax), floor(props.offy + ay), props.shearx, props.sheary)
+                        love.graphics.draw(lobj)--, math.rad(props.angle), scalex, scaley,
+                            --floor(props.offx + ax), floor(props.offy + ay), props.shearx, props.sheary)
                     end
+                    Draw.pop()
                 end
                 if last_blend then
                     Draw.setBlendMode(last_blend)
@@ -646,9 +669,9 @@ Canvas = GameObject:extend {
         self.canvas = love.graphics.newCanvas(self.width, self.height, settings)
         
         if type(Game.options.filter) == 'table' then
-            self.canvas:setFilter(unpack(Game.options.filter))
+            --self.canvas:setFilter(unpack(Game.options.filter))
         else 
-            self.canvas:setFilter(Game.options.filter, Game.options.filter)
+            --self.canvas:setFilter(Game.options.filter, Game.options.filter)
         end
         self.blendmode = {"alpha"}
         self:addDrawable()
@@ -1012,18 +1035,18 @@ do
             end
             -- predraw
             if self.predraw then
-                canv_used:drawTo(function()
-                    self:predraw()
-                end)
-                Game.drawObject(self, canv_used.canvas)
+                --canv_used:drawTo(function()
+                Game.drawObject(self, self.predraw, 'function')
+                --end)
+                --Game.drawObject(self, canv_used.canvas)
             end
             -- draw
             if self._custom_draw then
                 
-                canv_used:drawTo(function()
-                    self:_custom_draw()
-                end)
-                Game.drawObject(self, canv_used.canvas)
+                --canv_used:drawTo(function()
+                Game.drawObject(self, self._custom_draw, 'function')
+                --end)
+                --Game.drawObject(self, canv_used.canvas)
             else
                 if self.imageList then
                     for name, img in pairs(self.imageList) do
@@ -1039,10 +1062,11 @@ do
             end
             -- postdraw
             if self.postdraw then 
-                canv_used:drawTo(function()
-                    self:postdraw()
-                end)
-                Game.drawObject(self, canv_used.canvas)
+                Game.drawObject(self, self.postdraw, 'function')
+                --canv_used:drawTo(function()
+                --    self:postdraw()
+                --end)
+                --Game.drawObject(self, canv_used.canvas)
             end
             if canv_used then
                 ent_canv_index = ent_canv_index - 1

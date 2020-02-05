@@ -53,7 +53,7 @@
         "scale": true,
         "resizable": false,
         "write_conf": true,
-        "filter": "linear"
+        "filter": "nearest"
     },
     "enabled_plugins": {
         "xhh-effect": false,

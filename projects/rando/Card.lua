@@ -60,7 +60,7 @@ Entity("Card",{
 			end
 		end,
 		randomize = function(self)
-			if self.value ~= 0 then
+			if self.value >= 0 then
 				local new_val = self.value
 				while new_val == self.value do
 					new_val = Math.random(1,9)
@@ -113,8 +113,6 @@ Entity("Card",{
 		draw = function(self)
 			if self.visible then
 				if self.style == "hand" then
-					self.width = card_w/2
-					self.height = card_h/2
 					local r = 12
 					Draw{
 						{'push'},
@@ -127,11 +125,9 @@ Entity("Card",{
 					}
 					Draw.color('white')
 					local ev = self.ent_value
-					ev.x = self.x, self.y
-					--ev.angle = 90
+					ev.x, ev.y = self.x, self.y
+					ev.angle = 0
 					ev:draw()
-					ev.x = self.x + self.width
-					ev.y = self.y
 				end
 			end
 		end
@@ -144,6 +140,7 @@ Entity("card_text",{
 		font_size=18,
 		align='center',
 		spawn = function(self)
+			self.width, self.height = 18, 18
 			if self.image and self.image ~= 'wild' then self.image = Image(self.image..'.png') end
 			self:remDrawable()
 		end,
@@ -153,7 +150,6 @@ Entity("card_text",{
 				self.image.x, self.image.y = 5,5
 				self.image:draw()
 			else
-				self.width, self.height = 18, 18
 				Draw{
 					{'color','white'},
 					{'font','CaviarDreams_Bold.ttf',18},

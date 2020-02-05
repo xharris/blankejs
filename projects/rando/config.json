@@ -13,16 +13,16 @@
             "Card.lua"
         ],
         [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
             "engine.lua=script+?",
             "engine.lua"
         ],
         [
             "View assets=?",
             "View assets"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
         ]
     ],
     "autoplay_preview": true,

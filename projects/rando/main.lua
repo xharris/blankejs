@@ -51,7 +51,7 @@ State('play',{
 			local hand = hands[Net.id]
 			if hand then
 				hand:forEach(function(card, c)
-					--card:drawRect()
+					card:drawRect()
 				end)
 			end
 			bob:draw()

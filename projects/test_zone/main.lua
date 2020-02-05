@@ -8,6 +8,15 @@ Game {
 			Game.spawn('player') -- Map.load("map0.map")	
 		end)
 		Net.connect()]]
+	end,
+	draw = function(d)
+		d()
+		Draw{
+			{ 'color', 'red' },
+			{ 'scale', 1.25 },
+			{ 'rotate', 20 },
+			{ 'print', 'x:'.. 20 ..' y:'.. 20, 0,0}
+		}
 	end
 }
 
@@ -23,15 +32,29 @@ Entity("player", {
 		net = true,
 		align = "center",
 		t = 1,
+		spawn = function(self)
+			self.txt = Game.spawn("player_txt")
+		end,
 		update = function(self, dt)
 			self.t = self.t + 1
 			if Input.released('action') and not self.net_obj then
 				--self.x = self.x + self.width
 				--self.scalex = self.scalex - 0.5
-				self.angle = self.angle + 90
+				self.angle = self.angle + 20
 			end
 		end,
-		postdraw = function(self)
+		draw = function(self)
+			self.txt:draw()
+		end
+})
+
+Entity("player_txt",{
+		scale=1,
+		align="center",
+		spawn = function(self)
+			self:remDrawable()
+		end,
+		draw = function(self)
 			Draw{
 				{ 'color', 'red' },
 				{ 'print', 'x:'..self.x..' y:'..self.y, 0,0}
