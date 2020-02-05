@@ -54,9 +54,9 @@ Entity("Card",{
 			end
 			-- numbers on card
 			if self.value >= 0 then
-				self.ent_value = Game.spawn("card_element", {text=self.value, add=self.name:contains('draw')})
+				self.ent_value = Game.spawn("card_text", {text=self.value, add=self.name:contains('draw')})
 			else
-				self.ent_value = Game.spawn("card_element", {image=self.name})
+				self.ent_value = Game.spawn("card_text", {image=self.name})
 			end
 		end,
 		randomize = function(self)
@@ -128,7 +128,7 @@ Entity("Card",{
 					Draw.color('white')
 					local ev = self.ent_value
 					ev.x = self.x, self.y
-					ev.angle = 90
+					--ev.angle = 90
 					ev:draw()
 					ev.x = self.x + self.width
 					ev.y = self.y
@@ -137,29 +137,29 @@ Entity("Card",{
 		end
 })
 
-Entity("card_element",{
-	text='',
-	add=false,
-	image=nil,
-	font_size=18,
-	align='center',
-	spawn = function(self)
-		if self.image and self.image ~= 'wild' then self.image = Image(self.image..'.png') end
-		self:remDrawable()
-	end,
-	draw = function(self)
-		if self.image and self.image ~= 'wild' then
-			self.width, self.height = self.image.width, self.image.height
-			self.image.x, self.image.y = 5,5
-			self.image:draw()
-		else
-			self.width, self.height = 18, 18
-			Draw{
-				{'color','white'},
-				{'font','CaviarDreams_Bold.ttf',18},
-				{'print',self.add and '+' or '',0,0},--5,8},
-				{'print',self.text,14,10},
-			}
+Entity("card_text",{
+		text='',
+		add=false,
+		image=nil,
+		font_size=18,
+		align='center',
+		spawn = function(self)
+			if self.image and self.image ~= 'wild' then self.image = Image(self.image..'.png') end
+			self:remDrawable()
+		end,
+		draw = function(self)
+			if self.image and self.image ~= 'wild' then
+				self.width, self.height = self.image.width, self.image.height
+				self.image.x, self.image.y = 5,5
+				self.image:draw()
+			else
+				self.width, self.height = 18, 18
+				Draw{
+					{'color','white'},
+					{'font','CaviarDreams_Bold.ttf',18},
+					{'print',self.add and '+' or '',0,0},--5,8},
+					{'print',self.text,14,10},
+				}
+			end
 		end
-	end
 })

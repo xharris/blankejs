@@ -2,3 +2,11 @@
 	font-family: '04B_03';
 	src: url('04B_03.ttf');
 }
+@font-face {
+	font-family: 'CaviarDreams';
+	src: url('font/font/CaviarDreams.ttf');
+}
+@font-face {
+	font-family: 'CaviarDreams_Bold';
+	src: url('font/font/CaviarDreams_Bold.ttf');
+}

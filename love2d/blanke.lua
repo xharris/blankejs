@@ -1,6 +1,10 @@
 -- TODO Blanke.config
 math.randomseed(os.time())
 
+local ent_canv_index = 0
+local ent_canvases = {}
+local ent_canv_off = {}
+
 local bump = require "lua.bump"
 local uuid = require "lua.uuid"
 json = require "lua.json"
@@ -356,7 +360,9 @@ do
             if not Game.options.scale then
                 Game.width, Game.height = Game.win_width, Game.win_height
                 if Blanke.game_canvas then Blanke.game_canvas:resize(Game.width, Game.height) end
-                if entity_canvas then entity_canvas:resize(Game.width, Game.height) end
+                for _, canv in ipairs(ent_canvases) do 
+                    canv:resize(Game.width, Game.height)
+                end
             end
         end;
         
@@ -376,9 +382,9 @@ do
             Game.updateWinSize()
 
             if type(Game.options.filter) == 'table' then
-                love.graphics.setDefaultFilter(unpack(Game.options.filter))
+                --love.graphics.setDefaultFilter(unpack(Game.options.filter))
             else 
-                love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
+                --love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
             end
             Draw.setFont('04B_03.ttf', 16)
             scripts = Game.options.scripts or {}
@@ -417,6 +423,7 @@ do
 
             Blanke.game_canvas = Canvas()
             Blanke.game_canvas._main_canvas = true
+            
             Blanke.game_canvas:remDrawable()
         end;
 
@@ -479,6 +486,11 @@ do
                     local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
                     local x = floor(props.x)
                     local y = floor(props.y)
+                    if ent_canv_index > 1 and ent_canv_off[ent_canv_index] then 
+                        print(props.classname, ent_canv_off[ent_canv_index].x, ent_canv_off[ent_canv_index].y)
+                        x = floor(props.x - ent_canv_off[ent_canv_index].x)
+                        y = floor(props.y - ent_canv_off[ent_canv_index].y)
+                    end
 
                     if gobj.quad then 
                         love.graphics.draw(lobj, gobj.quad, x, y, math.rad(props.angle), scalex, scaley,
@@ -632,6 +644,12 @@ Canvas = GameObject:extend {
         self.width = w
         self.height = h
         self.canvas = love.graphics.newCanvas(self.width, self.height, settings)
+        
+        if type(Game.options.filter) == 'table' then
+            self.canvas:setFilter(unpack(Game.options.filter))
+        else 
+            self.canvas:setFilter(Game.options.filter, Game.options.filter)
+        end
         self.blendmode = {"alpha"}
         self:addDrawable()
     end;
@@ -662,6 +680,7 @@ Canvas = GameObject:extend {
     drawTo = function(self,obj)
         Draw.stack(function()
             -- camera transform
+            self.active = true
             if type(obj) == "function" then
                 self.canvas:renderTo(function()
                     self:prepare()
@@ -674,6 +693,7 @@ Canvas = GameObject:extend {
                     obj:draw()
                 end)
             end
+            self.active = false
         end)
     end;
 }
@@ -808,7 +828,6 @@ end
 
 --ENTITY
 Entity = nil
-local entity_canvas
 do
     local getMM = function(self, name, ...)
         if self.__ and self.__[name] then return self.__[name](self, ...) end
@@ -831,11 +850,6 @@ do
         },
         init = function(self, args, spawn_args, classname)
             GameObject.init(self, args, spawn_args)
-
-            if not entity_canvas then 
-                entity_canvas = Canvas()
-                entity_canvas:remDrawable()
-            end
 
             self.is_entity = true
             self.hspeed = 0
@@ -985,20 +999,31 @@ do
                 return 2
             end
         end,
-        _draw = function(self)
+        _draw = function(self) 
+            local canv_used = false   
+            if self.predraw or self._custom_draw or self.postdraw then
+                ent_canv_index = ent_canv_index + 1
+                if not ent_canvases[ent_canv_index] then 
+                    ent_canv_off[ent_canv_index] = self
+                    ent_canvases[ent_canv_index] = Canvas()
+                    ent_canvases[ent_canv_index]:remDrawable()
+                end
+                canv_used = ent_canvases[ent_canv_index]
+            end
             -- predraw
             if self.predraw then
-                entity_canvas:drawTo(function()
+                canv_used:drawTo(function()
                     self:predraw()
                 end)
-                Game.drawObject(self, entity_canvas.canvas)
+                Game.drawObject(self, canv_used.canvas)
             end
             -- draw
             if self._custom_draw then
-                entity_canvas:drawTo(function()
+                
+                canv_used:drawTo(function()
                     self:_custom_draw()
                 end)
-                Game.drawObject(self, entity_canvas.canvas)
+                Game.drawObject(self, canv_used.canvas)
             else
                 if self.imageList then
                     for name, img in pairs(self.imageList) do
@@ -1014,10 +1039,13 @@ do
             end
             -- postdraw
             if self.postdraw then 
-                entity_canvas:drawTo(function()
+                canv_used:drawTo(function()
                     self:postdraw()
                 end)
-                Game.drawObject(self, entity_canvas.canvas)
+                Game.drawObject(self, canv_used.canvas)
+            end
+            if canv_used then
+                ent_canv_index = ent_canv_index - 1
             end
         end;
         draw = function(self) self:_draw() end;
@@ -1037,7 +1065,7 @@ do
         init = function(self, name, args)
             if args.draw then
                 args._custom_draw = args.draw
-                --args.draw = nil
+                args.draw = nil
             end
             Game.addObject(name, "Entity", args, _Entity)
         end;

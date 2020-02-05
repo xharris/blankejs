@@ -9,9 +9,6 @@ hand_z = 40
 Game{
 	background_color = 'black2',
 	plugins = { 'xhh-effect' },
-	window_flags = {
-		msaa = 8
-	},
 	load = function()
 		State.start('play')		
 	end
@@ -22,7 +19,7 @@ State('play',{
 		enter = function()
 			newDeck()
 			draw(8)
-			bob = Game.spawn("card_element", {image="reverse", angle=45})
+			bob = Game.spawn("card_text", {image="reverse", angle=45})
 		end,
 		update = function(dt)
 			local hand = hands[Net.id]
@@ -37,7 +34,7 @@ State('play',{
 					card.x = math.floor(start_x + ((c-1) * incr_x) + card.width / 2)
 					card.y = math.floor(Game.height/2 - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15))
 					card.z = hand_z + c
-					card.angle = Math.lerp(-10,10,(c-1)/(hand.length-1))
+					card.angle = 0--Math.lerp(-10,10,(c-1)/(hand.length-1))
 					card.style = 'hand'
 					card.visible = true
 					if Math.pointInShape(card.rect, mouse_x, mouse_y) then
@@ -58,6 +55,11 @@ State('play',{
 				end)
 			end
 			bob:draw()
+			Draw{
+				{'color','white'},
+				{'font','CaviarDreams_Bold.ttf',18},
+				{'print','1234567890',20,20}
+				}
 		end,
 		leave = function()
 			

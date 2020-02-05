@@ -9,16 +9,16 @@
             "main.lua"
         ],
         [
+            "Card.lua=script+?",
+            "Card.lua"
+        ],
+        [
             "engine.lua=script+?",
             "engine.lua"
         ],
         [
             "View assets=?",
             "View assets"
-        ],
-        [
-            "Card.lua=script+?",
-            "Card.lua"
         ],
         [
             "conf.lua=script+?",
