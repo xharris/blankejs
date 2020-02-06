@@ -5,6 +5,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Dev Tools=?",
+            "Dev Tools"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
@@ -19,10 +23,6 @@
         [
             "engine.lua=script+?",
             "engine.lua"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "autoplay_preview": true,

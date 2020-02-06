@@ -19,14 +19,14 @@ State('play',{
 		enter = function()
 			newDeck()
 			draw(4)
-			bob = Game.spawn("card_text", {image="reverse", angle=45})
+			bob = Game.spawn("card_text", {x=50,y=100,image="reverse", angle=45/2})
 		end,
 		update = function(dt)
 			local hand = hands[Net.id]
 			-- draw my hand
 			if hand then
 				local focus_card
-				local hand_w = (card_w/4) * hand.length
+				local hand_w = (card_w/2) * hand.length
 				local start_x = (Game.width - hand_w)/2
 				local incr_x = hand_w / hand.length
 				hand:forEach(function(card, c)
@@ -37,7 +37,7 @@ State('play',{
 						card.angle = 0--20
 					else
 						card.y = Game.height/2 - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15)
-						card.angle = 0--Math.lerp(-10,10,(c-1)/math.max(hand.length-1))
+						card.angle = Math.lerp(-10,10,(c-1)/math.max(hand.length-1))
 					end
 					card.z = hand_z + c
 					card.style = 'hand'
@@ -56,7 +56,7 @@ State('play',{
 			local hand = hands[Net.id]
 			if hand then
 				hand:forEach(function(card, c)
-					card:drawRect()
+					--card:drawRect()
 				end)
 			end
 			bob:draw()

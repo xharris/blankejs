@@ -79,7 +79,7 @@ Game.spawn("Player", { custom_prop: 5 })
 
 `draw()`
 
-> __NOTE__: if draw() is used, width and height variables need to be set manually
+> __NOTE__: if draw() is used, width and height variables need to be set manually. 
 
 `predraw()`
 

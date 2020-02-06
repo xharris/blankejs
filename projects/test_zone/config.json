@@ -10,12 +10,12 @@
             "main.lua"
         ],
         [
-            "Preview a spritesheet=view+?",
-            "Preview a spritesheet"
-        ],
-        [
             "map0.map=map+?",
             "map0.map"
+        ],
+        [
+            "Preview a spritesheet=view+?",
+            "Preview a spritesheet"
         ],
         [
             "Dev Tools=?",
@@ -53,7 +53,7 @@
         "scale": true,
         "resizable": false,
         "write_conf": true,
-        "filter": "nearest"
+        "filter": "linear"
     },
     "enabled_plugins": {
         "xhh-effect": false,

@@ -12,8 +12,8 @@ class Settings extends Editor {
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 300;
-        this.container.height = 270;
+		this.container.width = 384;
+        this.container.height = 384;
         
 		app.refreshThemeList();
         let proj_set = app.projSetting();

@@ -31,6 +31,7 @@ Entity("player", {
 		animation = "blue_robot",
 		net = true,
 		align = "center",
+		debug=true,
 		t = 1,
 		spawn = function(self)
 			self.txt = Game.spawn("player_txt")
@@ -43,7 +44,7 @@ Entity("player", {
 				self.angle = self.angle + 20
 			end
 		end,
-		draw = function(self)
+		postdraw = function(self)
 			self.txt:draw()
 		end
 })
@@ -51,8 +52,11 @@ Entity("player", {
 Entity("player_txt",{
 		scale=1,
 		align="center",
+		debug=true,
 		spawn = function(self)
 			self:remDrawable()
+			self.width = 80
+			self.height = 20
 		end,
 		draw = function(self)
 			Draw{

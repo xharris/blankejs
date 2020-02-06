@@ -31,7 +31,6 @@ Entity("Card",{
 		value=-1,
 		color='black2',
 		style='hand',
-		align='center',
 		scale=1, --.2,
 		visible=false,
 		--effect = {'static', 'chroma shift'},
@@ -121,17 +120,15 @@ Entity("Card",{
 						--{'rotate',self.angle},
 						--{'translate',self.x,self.y},
 						{'color',self.color},
-						{'rect','fill',0,0,card_w/2,card_h/2,r,r},
+						{'rect','fill',-card_w/4,-card_h/4,card_w/2,card_h/2,r,r},
 						{'color','black2',0.2},
 						{'lineWidth', 1},
 						--{'rect','line',0,0,card_w/2,card_h/2,r,r},
 					}
+					Draw.pop()
 					Draw.color('white')
 					local ev = self.ent_value
-					ev.x, ev.y = self.x, self.y
-					ev.angle = 0
-					--ev:draw()
-					Draw.pop()
+					ev:draw()
 				end
 			end
 		end
@@ -143,22 +140,27 @@ Entity("card_text",{
 		image=nil,
 		font_size=18,
 		align='center',
+		debug = true,
 		spawn = function(self)
-			self.width, self.height = 18, 18
-			if self.image and self.image ~= 'wild' then self.image = Image(self.image..'.png') end
+			if self.image and self.image ~= 'wild' then 
+				self.image = Image(self.image..'.png')
+				--self.image.align = 'center'
+				self.width, self.height = self.image.width, self.image.height
+			else 
+				self.width, self.height = 12, 16
+			end
 			self:remDrawable()
 		end,
 		draw = function(self)
+			print(self.alignx, self.aligny)
 			if self.image and self.image ~= 'wild' then
-				self.width, self.height = self.image.width, self.image.height
-				self.image.x, self.image.y = 5,5
 				self.image:draw()
 			else
 				Draw{
 					{'color','white'},
 					{'font','CaviarDreams_Bold.ttf',18},
 					{'print',self.add and '+' or '',0,0},--5,8},
-					{'print',self.text,14,10},
+					{'print',self.text,0,-3}
 				}
 			end
 		end

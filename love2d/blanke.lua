@@ -1,10 +1,6 @@
 -- TODO Blanke.config
 math.randomseed(os.time())
 
-local ent_canv_index = 0
-local ent_canvases = {}
-local ent_canv_off = {}
-
 local bump = require "lua.bump"
 local uuid = require "lua.uuid"
 json = require "lua.json"
@@ -360,9 +356,6 @@ do
             if not Game.options.scale then
                 Game.width, Game.height = Game.win_width, Game.win_height
                 if Blanke.game_canvas then Blanke.game_canvas:resize(Game.width, Game.height) end
-                for _, canv in ipairs(ent_canvases) do 
-                    canv:resize(Game.width, Game.height)
-                end
             end
         end;
         
@@ -468,10 +461,9 @@ do
                 return a.z < b.z 
             end)
         end;
-        last_ent_trans = {0,0};
         drawObject = function(gobj, ...)
             local props = gobj
-            if gobj.parent then props = gobj.parent end
+            local parent = gobj.parent or gobj
             local lobjs = {...}
             local is_fn = false
             if lobjs[2] == 'function' then
@@ -486,50 +478,40 @@ do
                     Draw.setBlendMode(unpack(props.blendmode))
                 end
                 for _,lobj in ipairs(lobjs) do
-                    Game.checkAlign(props)
+                    Game.checkAlign(parent)
                     local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
-                    local ax, ay = (props.alignx + props.offx) * scalex, (props.aligny + props.offy) * scaley
+                    local ax, ay = (parent.alignx + props.offx) * scalex, (parent.aligny + props.offy) * scaley
                     local x = props.x
                     local y = props.y
-                    if ent_canv_index > 1 and ent_canv_off[ent_canv_index] then 
-                        --x = floor(props.x - ent_canv_off[ent_canv_index].x)
-                        --y = floor(props.y - ent_canv_off[ent_canv_index].y)
-                    end 
-
-                    --ax, ay = ax - (ax * scalex), ay - (ay * scaley)
-                    --x, y = x - (x * scalex), y - (y * scaley)
 
                     Draw.push()
-
-                    Draw.origin()
-                    Draw.translate(-ax + x, -ay + y)
-                    Draw.translate(unpack(Game.last_ent_trans))
+                    Draw.translate(x, y)
+                    if is_fn then Draw.translate(-ax, -ay) end
                     Draw.scale(scalex, scaley)
                     Draw.rotate(props.angle)
                     Draw.shear(props.shearx, props.sheary)
-                    Draw{
-                        {'push'},
-                        {'color','white2'},
-                        {'line',-10,0,10,0},
-                        {'line',0,-10,0,10},
-                        {'pop'}
-                    }
                     if is_fn then 
-                        if gobj.is_entity then 
-                            Game.last_ent_trans[1] = Game.last_ent_trans[1] - x
-                            Game.last_ent_trans[2] = Game.last_ent_trans[2] - y
-                        end
                         lobj(gobj)
-                        if gobj.is_entity then 
-                            Game.last_ent_trans[1] = Game.last_ent_trans[1] + x
-                            Game.last_ent_trans[2] = Game.last_ent_trans[2] + y
-                        end
                     else
                         if gobj.quad then
-                            love.graphics.draw(lobj, gobj.quad)
+                            love.graphics.draw(lobj, gobj.quad, 0,0,0,1,1, ax, ay)
                         else
-                            love.graphics.draw(lobj)
+                            love.graphics.draw(lobj, 0,0,0,1,1, ax, ay)
                         end
+                    end
+                    if gobj.debug then
+                        local lax, lay, rax, ray = 0,0,0,0
+                        Draw.push()
+                        Draw.color('purple',0.75)
+                        if gobj.parent then 
+                            Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
+                        else 
+                            Draw{
+                                {'line',lax-10,lay-10,lax+10,lay+10},
+                                {'line',lax-10,lay+10,lax+10,lay-10},
+                            }
+                        end
+                        Draw.pop()
                     end
                     Draw.pop()
                 end
@@ -1015,11 +997,9 @@ do
             end
             -- image/animation update
             for name, img in pairs(self.imageList) do
-                img.x, img.y = self.x, self.y
                 img:update(dt)
             end
             for name, anim in pairs(self.animList) do
-                anim.x, anim.y = self.x, self.y
                 anim:update(dt)
             end
             Net.sync(self)
@@ -1034,51 +1014,32 @@ do
         _draw = function(self) 
             local canv_used = false   
             if self.predraw or self._custom_draw or self.postdraw then
-                ent_canv_index = ent_canv_index + 1
-                if not ent_canvases[ent_canv_index] then 
-                    ent_canv_off[ent_canv_index] = self
-                    ent_canvases[ent_canv_index] = Canvas()
-                    ent_canvases[ent_canv_index]:remDrawable()
-                end
-                canv_used = ent_canvases[ent_canv_index]
             end
             -- predraw
             if self.predraw then
-                --canv_used:drawTo(function()
                 Game.drawObject(self, self.predraw, 'function')
-                --end)
-                --Game.drawObject(self, canv_used.canvas)
             end
             -- draw
             if self._custom_draw then
-                
-                --canv_used:drawTo(function()
                 Game.drawObject(self, self._custom_draw, 'function')
-                --end)
-                --Game.drawObject(self, canv_used.canvas)
             else
-                if self.imageList then
-                    for name, img in pairs(self.imageList) do
-                        img:draw()
+                Game.drawObject(self, function()
+                    if self.imageList then
+                        for name, img in pairs(self.imageList) do
+                            img:draw()
+                        end
                     end
-                end
-                if self.animation and self.animList[self.animation] then
-                    local anim = self.animList[self.animation]
-                    self:_updateSize(anim)
-                    anim:draw()
-                    self.width, self.height = anim.width, anim.height
-                end
+                    if self.animation and self.animList[self.animation] then
+                        local anim = self.animList[self.animation]
+                        self:_updateSize(anim)
+                        anim:draw()
+                        self.width, self.height = anim.width, anim.height
+                    end
+                end, 'function')
             end
             -- postdraw
             if self.postdraw then 
                 Game.drawObject(self, self.postdraw, 'function')
-                --canv_used:drawTo(function()
-                --    self:postdraw()
-                --end)
-                --Game.drawObject(self, canv_used.canvas)
-            end
-            if canv_used then
-                ent_canv_index = ent_canv_index - 1
             end
         end;
         draw = function(self) self:_draw() end;
@@ -2779,11 +2740,9 @@ do
 
             Blanke.game_canvas:drawTo(_draw)
             if Game.options.scale == true then
-                Draw.push()
-                Draw.translate(Blanke.padx, Blanke.pady)
-                Draw.scale(Blanke.scale)
+                Blanke.game_canvas.x, Blanke.game_canvas.y = Blanke.padx, Blanke.pady
+                Blanke.game_canvas.scale = Blanke.scale
                 Blanke.game_canvas:draw()
-                Draw.pop()
             
             else 
                 Draw{
