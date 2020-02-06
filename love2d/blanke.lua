@@ -484,35 +484,47 @@ do
                     local x = props.x
                     local y = props.y
 
+                    local tform = props._draw_transform
+                    if not tform then 
+                        props._draw_transform = Draw.newTransform()
+                        tform = props._draw_transform
+                    end
+
+                    tform:reset()
+                    tform:translate(x,y)
+                    tform:translate(-ax / scalex, -ay / scaley) 
+                    if is_fn then 
+                        tform:scale(scalex, scaley)
+                        tform:rotate(math.rad(props.angle))
+                        tform:shear(props.shearx, props.sheary)
+                    end 
+
                     Draw.push()
-                    Draw.translate(x, y)
-                    if is_fn then Draw.translate(-ax, -ay) end
-                    Draw.scale(scalex, scaley)
-                    Draw.rotate(props.angle)
-                    Draw.shear(props.shearx, props.sheary)
+                    Draw.applyTransform(props._draw_transform)
                     if is_fn then 
                         lobj(gobj)
                     else
                         if gobj.quad then
-                            love.graphics.draw(lobj, gobj.quad, 0,0,0,1,1, ax, ay)
+                            love.graphics.draw(lobj, gobj.quad, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
                         else
-                            love.graphics.draw(lobj, 0,0,0,1,1, ax, ay)
+                            love.graphics.draw(lobj, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
                         end
                     end
                     if gobj.debug then
-                        local lax, lay, rax, ray = 0,0,0,0
+                        local lax, lay, rax, ray = 0,0,ax,ay
                         Draw.push()
                         Draw.color('purple',0.75)
-                        if gobj.parent then 
+                        --if gobj.parent then 
                             Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
-                        else 
+                        --else 
                             Draw{
                                 {'line',lax-10,lay-10,lax+10,lay+10},
                                 {'line',lax-10,lay+10,lax+10,lay-10},
                             }
-                        end
+                        --end
                         Draw.pop()
                     end
+                    Draw.applyTransform(props._draw_transform:inverse())
                     Draw.pop()
                 end
                 if last_blend then
@@ -1011,7 +1023,8 @@ do
                 return 2
             end
         end,
-        _draw = function(self) 
+        _draw = function(self, ...)
+            local args = {...} 
             local canv_used = false   
             if self.predraw or self._custom_draw or self.postdraw then
             end
@@ -1021,7 +1034,8 @@ do
             end
             -- draw
             if self._custom_draw then
-                Game.drawObject(self, self._custom_draw, 'function')
+                print_r(args)
+                Game.drawObject(self, function() self:_custom_draw(unpack(args)) end, 'function')
             else
                 Game.drawObject(self, function()
                     if self.imageList then
@@ -1042,7 +1056,7 @@ do
                 Game.drawObject(self, self.postdraw, 'function')
             end
         end;
-        draw = function(self) self:_draw() end;
+        draw = function(self, ...) self:_draw(...) end;
         _destroy = function(self)
             if self.destroyed then return end
             for name, img in pairs(self.imageList) do
@@ -1200,6 +1214,7 @@ do
             assert(font, 'Font not found: \''..path..'\'')
             love.graphics.setFont(font)
         end;
+        getFont = function() return love.graphics.getFont() end;
         setFontSize = function(size)
             Draw.setFont(last_font, size)
         end;
@@ -1215,6 +1230,12 @@ do
             local font = fonts[path]
             assert(font, "ImageFont not found: \'"..path.."\'")
             love.graphics.setFont(font)
+        end;
+        print = function(txt,x,y,char_limit,align,...)
+            if not char_limit then 
+                char_limit = Draw.getFont():getWidth(txt)
+            end
+            love.graphics.printf(txt,x,y,char_limit,align,...)
         end;
         parseColor = function(...)
             args = {...}
@@ -1276,13 +1297,17 @@ do
             fn()
             Draw.pop()
         end;
+        newTransform = function()
+            return love.math.newTransform()
+        end 
     }
     
     local draw_functions = {
-        'arc','circle','ellipse','line','points','polygon','rectangle','print','printf',
+        'arc','circle','ellipse','line','points','polygon','rectangle',--'print','printf',
         'clear','discard','origin',
         'scale','shear','transformPoint',
-        'setLineWidth','setPointSize'
+        'setLineWidth','setPointSize',
+        'applyTransform', 'replaceTransform'
     }
     local draw_aliases = {
         polygon = 'poly',
@@ -2706,6 +2731,7 @@ do
         end; 
         --blanke.draw   
         draw = function()
+            Draw.origin()
             local actual_draw = function()
                 Blanke.iterDraw(Game.drawables)
                 State.draw()

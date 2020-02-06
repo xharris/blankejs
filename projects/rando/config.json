@@ -5,8 +5,8 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Dev Tools=?",
-            "Dev Tools"
+            "Open image editor=?",
+            "Open image editor"
         ],
         [
             "main.lua=script+?",
@@ -17,12 +17,12 @@
             "Card.lua"
         ],
         [
-            "View project in explorer=?",
-            "View project in explorer"
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
-            "engine.lua=script+?",
-            "engine.lua"
+            "View project in explorer=?",
+            "View project in explorer"
         ]
     ],
     "autoplay_preview": true,
@@ -33,7 +33,7 @@
         "scale_mode": "nearest",
         "resizable": true,
         "scale": true,
-        "filter": "linear"
+        "filter": "nearest"
     },
     "enabled_plugins": {
         "xhh-array": true,
@@ -98,6 +98,19 @@
             "tool.shape": "rect",
             "tool.radius": 9,
             "tool.fill": false
+        },
+        "image/image2.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
         }
     }
 }

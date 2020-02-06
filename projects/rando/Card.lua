@@ -115,19 +115,29 @@ Entity("Card",{
 					local r = 12
 					Draw.push()
 					Draw {
-						--{'translate',-self.width/2,-self.height/2},
-						--{'scale',self.scale,self.scale},
-						--{'rotate',self.angle},
-						--{'translate',self.x,self.y},
 						{'color',self.color},
 						{'rect','fill',-card_w/4,-card_h/4,card_w/2,card_h/2,r,r},
 						{'color','black2',0.2},
 						{'lineWidth', 1},
-						--{'rect','line',0,0,card_w/2,card_h/2,r,r},
 					}
 					Draw.pop()
 					Draw.color('white')
 					local ev = self.ent_value
+					if self.color == 'yellow' then
+						ev.color = 'black2'
+					else 
+						ev.color = 'white2'
+					end
+					ev.big = false
+					-- top left
+					ev.x, ev.y, ev.angle = -card_w/4, -card_h/4, 0
+					ev:draw()
+					-- bottom right
+					ev.x, ev.y, ev.angle = card_w/4, card_h/4, 180
+					ev:draw()
+					-- center
+					ev.big = true
+					ev.x, ev.y, ev.angle = 0, 0, 0
 					ev:draw()
 				end
 			end
@@ -139,12 +149,11 @@ Entity("card_text",{
 		add=false,
 		image=nil,
 		font_size=18,
-		align='center',
-		debug = true,
+		color='white2',
+		big=false,
 		spawn = function(self)
 			if self.image and self.image ~= 'wild' then 
 				self.image = Image(self.image..'.png')
-				--self.image.align = 'center'
 				self.width, self.height = self.image.width, self.image.height
 			else 
 				self.width, self.height = 12, 16
@@ -152,16 +161,29 @@ Entity("card_text",{
 			self:remDrawable()
 		end,
 		draw = function(self)
-			print(self.alignx, self.aligny)
+			Draw.color(self.color)
 			if self.image and self.image ~= 'wild' then
+				if self.big then 
+					self.image.x = 0
+					self.image.y = 0
+					self.image.scale = 2.5
+					self.image.align = "center"
+				else	
+					self.image.x = 5
+					self.image.y = 5
+					self.image.scale = 1
+					self.image.align = "top left"
+				end
 				self.image:draw()
 			else
-				Draw{
-					{'color','white'},
-					{'font','CaviarDreams_Bold.ttf',18},
-					{'print',self.add and '+' or '',0,0},--5,8},
-					{'print',self.text,0,-3}
-				}
+				Draw.font('CaviarDreams_Bold.ttf',self.big and 30 or 18)
+				local txt = (self.add and '+' or '')..self.text
+				if self.big then
+					local fnt = Draw.getFont()
+					Draw.print(txt,-fnt:getWidth(txt)/2,-fnt:getHeight()/2,nil,"center")
+				else 
+					Draw.print(txt,10,10,nil,"center")
+				end				
 			end
 		end
 })
