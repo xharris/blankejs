@@ -182,7 +182,7 @@ class Editor {
 			app.setHistoryClick(this.container.history_id, fn);
 	}
 
-	onBeforeClose() { console.log('okoi')}
+	onBeforeClose(res) { res(); }
 	onClose() {}
 
 	close(...args) {

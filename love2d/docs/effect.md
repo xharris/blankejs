@@ -1,3 +1,5 @@
+[Shader Variables](https://love2d.org/wiki/Shader_Variables)
+
 ## Effect - GameObject (Updatable)
 
 ```
@@ -25,6 +27,27 @@ my_entity.effect:set('chroma shift', 'radius', 4)
 # Props
 
 `vars` { effect_name: { prop1: value } }
+
+`effect` effect code string
+
+> ```
+>   vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
+>       vec4 pixel = Texel(texture, texCoord);
+>       -- effect code
+>       return pixel * in_color;
+>   }
+> ```
+
+`vertex` vertex code string
+
+> ```
+>   vec4 position(mat4 transform_projection, vec4 vertex_position) {
+>       -- vertex code
+>       return transform_projection * vertex_position;
+>   }
+> ```     
+
+`code` full shader code string (overrides effect and vertex)
 
 # Methods
 

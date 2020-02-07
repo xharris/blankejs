@@ -48,7 +48,7 @@ State('play',{
 						card.angle = 0--20
 					else
 						card.y = Game.height - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15)
-						card.angle = Math.lerp(-10,10,(c-1)/math.max(hand.length-1))
+						card.angle = 0--Math.lerp(-10,10,(c-1)/math.max(hand.length-1))
 					end
 					card.z = hand_z + c
 					card.style = 'hand'

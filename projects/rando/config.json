@@ -9,16 +9,16 @@
             "main.lua"
         ],
         [
+            "Card.lua=script+?",
+            "Card.lua"
+        ],
+        [
             "Open image editor=?",
             "Open image editor"
         ],
         [
             "engine.lua=script+?",
             "engine.lua"
-        ],
-        [
-            "Card.lua=script+?",
-            "Card.lua"
         ],
         [
             "Dev Tools=?",

@@ -26,6 +26,24 @@ calcCardRect = function(card)
 	return {ul[1], ul[2], ur[1], ur[2], dr[1], dr[2], dl[1], dl[2], ul[1], ul[2]}	
 end
 
+Effect.new('tablecard',{
+	vars={ rect={0,0,1,1} },
+	effect=[[
+		vec2 coord = texCoord;
+		float x = rect.x;
+		float y = rect.y;
+		float r = rect.x + rect[2];
+		float b = rect.y + rect[3];
+		float scale = 0.75;
+		if (coord.x > x && coord.y > y && coord.x < r && coord.y < b) {
+			float x_perc = (coord.x - x) / (r - x);
+			float y_perc = (coord.y - y) / (b - y);
+			texCoord += vec2( lerp(-scale, scale, x_perc) * lerp(0.0, 1.25, y_perc), 0);
+		}
+		pixel = Texel(texture, texCoord);
+	]]
+})
+
 Entity("Card",{
 		name='', -- number / draw / skip / reverse
 		value=-1,
@@ -33,14 +51,12 @@ Entity("Card",{
 		style='hand',
 		scale=1, --.2,
 		visible=false,
-		mesh={
-			{ 0,0, 0,0, 1,0,0 },
-			{ card_w/2,0, 1,0, 0,1,0},
-			{ card_w/2,card_h/2, 1,1, 0,0,1},
-			{ 0,card_h/2, 0,1, 1,1,0}
-		},
-		--effect = {'static', 'chroma shift'},
+		effect = { 'tablecard', 'static', 'chroma shift'},
 		spawn = function(self, str)	
+			--print_r(self.effect)
+			self.effect:disable('chroma shift')
+			self.effect:disable('static')
+			
 			local pos_name = str:split('.')[1]
 			if card_names:includes(pos_name) then
 				self.name = pos_name
@@ -93,11 +109,13 @@ Entity("Card",{
 			if self.last_style ~= self.style then
 				self.last_style = self.style 
 				self.rect = {0,0,0,0}
+				self.effect:set("tablecard", self.rect)
 			end
 			if self.style == "hand" then
 				self.width = card_w/2
 				self.height = card_h/2
 				self.rect = calcCardRect(self)
+				self.effect:set("tablecard", self.rect)
 				
 				if self.focused then
 					self.target_scale = 1.25
@@ -117,36 +135,34 @@ Entity("Card",{
 			end
 		end,
 		draw = function(self)
-			if self.visible then
-				if self.style == "hand" then
-					local r = 12
-					Draw.push()
-					Draw {
-						{'color',self.color},
-						{'rect','fill',-card_w/4,-card_h/4,card_w/2,card_h/2,r,r},
-						{'color','black2',0.2},
-						{'lineWidth', 1},
-					}
-					Draw.pop()
-					Draw.color('white')
-					local ev = self.ent_value
-					if self.color == 'yellow' then
-						ev.color = 'black2'
-					else 
-						ev.color = 'white2'
-					end
-					ev.big = false
-					-- top left
-					ev.x, ev.y, ev.angle = -card_w/4, -card_h/4, 0
-					ev:draw()
-					-- bottom right
-					ev.x, ev.y, ev.angle = card_w/4, card_h/4, 180
-					ev:draw()
-					-- center
-					ev.big = true
-					ev.x, ev.y, ev.angle = 0, 0, 0
-					ev:draw()
+			if self.style == "hand" then
+				local r = 12
+				Draw.push()
+				Draw {
+					{'color',self.color},
+					{'rect','fill',-card_w/4,-card_h/4,card_w/2,card_h/2,r,r},
+					{'color','black2',0.2},
+					{'lineWidth', 1},
+				}
+				Draw.pop()
+				Draw.color('white')
+				local ev = self.ent_value
+				if self.color == 'yellow' then
+					ev.color = 'black2'
+				else 
+					ev.color = 'white2'
 				end
+				ev.big = false
+				-- top left
+				ev.x, ev.y, ev.angle = -card_w/4, -card_h/4, 0
+				ev:draw()
+				-- bottom right
+				ev.x, ev.y, ev.angle = card_w/4, card_h/4, 180
+				ev:draw()
+				-- center
+				ev.big = true
+				ev.x, ev.y, ev.angle = 0, 0, 0
+				ev:draw()
 			end
 		end
 })

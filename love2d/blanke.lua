@@ -321,7 +321,9 @@ FS = {
 --GAME
 Game = nil
 do
+    local skip_tf = false
     local mesh_canvas
+    local meshes = {}
     local objects = {}
     Game = class {
         options = {
@@ -465,6 +467,7 @@ do
         drawObject = function(gobj, ...)
             local props = gobj
             local parent = gobj.parent or gobj
+            if not props.visible then return end
             local lobjs = {...}
             local is_fn = false
             if lobjs[2] == 'function' then
@@ -503,7 +506,7 @@ do
                     Draw.push()
 
                     local draw_obj = function()
-                        Draw.applyTransform(props._draw_transform)
+                        if not skip_tf then Draw.applyTransform(props._draw_transform) end
                         if is_fn then 
                             lobj(gobj)
                         else
@@ -513,35 +516,31 @@ do
                                 love.graphics.draw(lobj, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
                             end
                         end
-                        
-                        --if gobj.parent then 
-                        local lax, lay, rax, ray = 0,0,ax,ay
-                        Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
-                        --else 
-                            Draw{
-                                {'line',lax-10,lay-10,lax+10,lay+10},
-                                {'line',lax-10,lay+10,lax+10,lay-10},
-                            }
-                        --end
                     end
 
-                    if props.mesh then 
+                    if props.mesh and props.mesh.vertices then 
                         if not mesh_canvas then 
                             mesh_canvas = Canvas()
                             mesh_canvas:remDrawable()
                         end
-                        if (props.classname == "Card") then Draw.color('purple',0.75) end
+                        local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
+                        if not meshes[mesh_str] then 
+                            meshes[mesh_str] = love.graphics.newMesh(props.mesh.vertices, props.mesh.mode or 'fan', props.mesh.usage or 'dynamic')
+                        end 
+                        local mesh = meshes[mesh_str]
+                        skip_tf = true
                         mesh_canvas:drawTo(draw_obj)
-                        --love.graphics.draw(props.mesh, 0, 0)
+                        mesh:setTexture(mesh_canvas.canvas)
+                        love.graphics.draw(mesh)
+                        skip_tf = false
                     else
-                        if (props.classname == "Card") then Draw.color('pink',0.75) end
                         draw_obj()
                     end
 
                     if gobj.debug then
                         local lax, lay, rax, ray = 0,0,ax,ay
                         Draw.push()
-                        Draw.color('purple',0.75)
+                        --Draw.color('purple',0.75)
                         --if gobj.parent then 
                             Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
                         --else 
@@ -603,6 +602,7 @@ GameObject = class {
         self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = spawn_args.width or args.width or 0, spawn_args.height or args.height or 0, 0, 0, 0, 0
         self.align = nil
         self.blendmode = nil
+        self.visible = true
         self.child_keys = {}
         self.parent = nil
 
@@ -613,6 +613,7 @@ GameObject = class {
         -- so far only allowed from Entity
         if not self.classname then self.classname = "GameObject" end
         if args then
+            args = copy(args)
             if args.net_vars then self.net_vars = args.net_vars end
             if args.classname then self.classname = args.classname end
             for k, v in pairs(args) do
@@ -649,19 +650,20 @@ GameObject = class {
                     Camera.get(args.camera).follow = self
                 end
             end
-            -- mesh
-            if args.mesh then
-                local mesh = args.mesh
-                args.mesh = nil
-                self:setMesh(mesh) 
-            end 
+            -- effect
+            if args.effect then 
+                self:setEffect(args.effect)
+                args.effect = nil
+            end
+
+            table.update(self, args)
         end
         if spawn_args then table.update(self,spawn_args) end
                     
         State.addObject(self)
 
-        if self._spawn then self:_spawn() end
-        if self.spawn then self:spawn() end
+        if self._spawn then self:_spawn(unpack(spawn_args or {})) end
+        if self.spawn then self:spawn(unpack(spawn_args or {})) end
     end;
     addUpdatable = function(self)
         self.updatable = true
@@ -922,7 +924,6 @@ do
             self.gravity_direction = 90
             self.anim_speed = 1
     
-            table.update(self, args)
             self.classname = classname
             self.imageList = {}
             self.animList = {}
@@ -966,8 +967,6 @@ do
             for _,img in pairs(self.imageList) do img.parent = self end
             for _,anim in pairs(self.animList) do anim.parent = self end
             Game.checkAlign(self)
-            -- effect
-            if args.effect then self:setEffect(args.effect) end
             -- physics
             assert(not (args.body and args.fixture), "Entity can have body or fixture. Not both!")
             if args.body then
@@ -998,6 +997,7 @@ do
 
             self:addUpdatable()
             self:addDrawable()
+            table.update(self, spawn_args or {})
             if self.spawn then 
                 if spawn_args then self:spawn(unpack(spawn_args))
                 else self:spawn() end 
@@ -1524,6 +1524,7 @@ do
     }
     float getX(float amt) { return amt / love_ScreenSize.x; }
     float getY(float amt) { return amt / love_ScreenSize.y; }
+    float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
     ]]
             if opt.code then
                 code = var_str.."\n"..helper_fns.."\n"..opt.code
@@ -1612,8 +1613,10 @@ do
         update = function(self,dt) self:update(dt) end;
         draw = function(self,fn)
             self.spare_canvas:drawTo(fn)
+            local one_draw = false -- was there at least one draw?
             for _,name in ipairs(self.names) do
                 if not self.disabled[name] then
+                    one_draw = true
                     info = library[name]
                     
                     local applyShader = function()
@@ -1634,7 +1637,9 @@ do
                     applyShader()
                 end
             end
-            self.main_canvas:draw()
+            if not one_draw then fn() else
+                self.main_canvas:draw()
+            end
         end;
     }
 end
