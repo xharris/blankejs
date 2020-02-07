@@ -26,6 +26,8 @@ class Editor {
 		this.container.btn_menu.onclick = function(e) {
 			this_ref.onMenuClick(e);
 		}
+		this.container.onClose = (...args) => this.onClose(...args);
+		this.container.onBeforeClose = (...args) => this.onBeforeClose(...args);
 		app.refreshQuickAccess();
 		return this;
 	}
@@ -44,6 +46,7 @@ class Editor {
 			this.onClose(...args);	
 			app.refreshQuickAccess();
 		}
+		this.container.onBeforeClose = (...args) => this.onBeforeClose(...args);
 		app.refreshQuickAccess();
 		return this;
 	}
@@ -61,10 +64,11 @@ class Editor {
 		app.setHistoryContextMenu(this.container.history_id, function(e) {
 			this_ref.onMenuClick(e);
 		});
-		this.container.onClose = (...args)=>{
+		this.container.onClose = (...args) => {
 			this.onClose(...args);	
 			app.refreshQuickAccess();
 		}
+		this.container.onBeforeClose = (...args) => this.onBeforeClose(...args);
 		app.refreshQuickAccess();
 		return this;
 	}
@@ -99,7 +103,7 @@ class Editor {
 			items.push({label:'close', click:() => { this.close(); }});
 		}
 
-		// file_key : where filename is stored
+		// file_key='file' : where filename is stored
 		// rename : callback when file is renamed
 		if (opt.rename) {
 			items.push({label:'rename', click:() => {
@@ -125,7 +129,7 @@ class Editor {
 			}});
 		}
 
-		// file_key
+		// file_key='file'
 		// delete
 		if (opt.delete) {
 			items.push({label:'delete', click:() => {
@@ -133,6 +137,7 @@ class Editor {
 					"delete \'"+nwPATH.basename(this[opt.file_key])+"\'?",
 				{
 					"yes": () => { 
+						this.deleted = true;
 						nwFS.remove(this[opt.file_key]);
 						if (typeof(opt.delete) == "function") opt.delete();
 					},
@@ -141,7 +146,13 @@ class Editor {
 			}});
 		}
 
-		this.onMenuClick = (e) => { app.contextMenu(e.x, e.y, items); }
+
+		this.onMenuClick = (e) => { 
+			let items_copy = [...items];
+			if (opt.extra)
+				items_copy = items_copy.concat(opt.extra());
+			app.contextMenu(e.x, e.y, items_copy);
+		}
 	}
 
 	removeHistory() {
@@ -171,13 +182,20 @@ class Editor {
 			app.setHistoryClick(this.container.history_id, fn);
 	}
 
+	onBeforeClose() { console.log('okoi')}
 	onClose() {}
 
 	close(...args) {
-		app.setHistoryActive(this.container.history_id, false);
-		this.container.close(...args);
-		if (this.onClose) this.onClose();
-		this.closed = true;
+		let real_close = () => {	
+			app.setHistoryActive(this.container.history_id, false);
+			this.container.close(...args);
+			if (this.onClose) this.onClose();
+			this.closed = true;
+		}
+		if (this.onBeforeClose) { // return TRUE to prevent closing
+			(new Promise((res,rej) => this.onBeforeClose(res, rej))).then(real_close, () => {})
+		} else 
+			real_close();
 	}
 
 	static closeAll (type) {

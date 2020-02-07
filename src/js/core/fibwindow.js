@@ -318,22 +318,28 @@ class FibWindow {
 	}
 
 	close (remove_history) {
-		this.fib_container.remove();
+		let real_close = () => {	
+			this.fib_container.remove();
 
-		if (this.onClose) remove_history = ifndef(this.onClose(), remove_history);
-		
-		for (let b = 0; b < boxes.length; b++) {
-			if (boxes[b].history_id == this.history_id) {
-				boxes.splice(b,1);
+			if (this.onClose) remove_history = ifndef(this.onClose(), remove_history);
+			
+			for (let b = 0; b < boxes.length; b++) {
+				if (boxes[b].history_id == this.history_id) {
+					boxes.splice(b,1);
+				}
 			}
+			FibWindow.resizeWindows();
+			FibWindow.checkBackground();
+	
+			if (remove_history)
+				app.removeHistory(this.history_id);
+			else
+				app.setHistoryActive(this.history_id, false);
 		}
-		FibWindow.resizeWindows();
-		FibWindow.checkBackground();
-
-		if (remove_history)
-			app.removeHistory(this.history_id);
-		else
-			app.setHistoryActive(this.history_id, false);
+		if (this.onBeforeClose) { // return TRUE to prevent closing
+			(new Promise((res,rej) => this.onBeforeClose(res, rej))).then(real_close, () => {})
+		} else 
+			real_close();
 	}
 
 	static closeAll (type) {

@@ -424,20 +424,36 @@ class Code extends Editor {
 
 		this.codemirror.refresh();
 
-		// prevents user from saving a million times by holding the button down
-		/*document.addEventListener('keyup', function(e){
-			if (e.key == "s" && e.ctrlKey) {
-				this_ref.save();
-        		this_ref.removeAsterisk();
-			}
-		});*/
-
-		/* tab click
-		this.setOnClick(function(self){
-			Code.openScript(self.file);
-			Code.setFontSize(font_size);
-		}, this);
-		*/
+		this.setupMenu({
+            close:true,
+            rename: () => {
+                this.setTitle(nwPATH.basename(this.file));
+				this.refreshGame();
+            },
+            delete: () => {
+                this.close(true);
+			},
+			extra: () => [
+				{
+					label: this.edit_box2 ? 'unsplit' : 'split', 
+					click: () => {
+						this.edit_box2 ? this.unsplitView() : this.splitView();
+					}
+				},
+				{
+					label:'show console',
+					type:'checkbox',
+					checked:this.console.isVisible(),
+					click:() => {this.console.toggleVisibility()}
+				},
+				{
+					label:'console auto-scroll',
+					type:'checkbox',
+					checked:this.console.auto_scrolling,
+					click:() => {this.console.auto_scrolling = !this.console.auto_scrolling}
+				}
+			]
+		});
 	}
 
 	setupEditor(el_container) {
@@ -808,6 +824,19 @@ class Code extends Editor {
 		})
 	}
 
+	onBeforeClose (res, rej) {
+		if (this.not_saved) {
+			blanke.showModal(
+				"<label>'"+nwPATH.basename(this.file)+"' has unsaved changes! Save before closing?</label>",
+			{
+				"yes": function() { this.save(); res(); },
+				"no": function() { rej(); }
+			});
+		} else {
+			res();
+		}
+	}
+
 	onClose () {
 		delete code_instances[this.file];
 	}
@@ -899,11 +928,13 @@ class Code extends Editor {
 	}
 
 	addAsterisk () {
+		this.not_saved = true;
 		if (this.file_loaded)
 			this.setSubtitle("*");
 	}
 
 	removeAsterisk() {
+		this.not_saved = false;
 		this.setSubtitle();
 	}
 
@@ -950,32 +981,6 @@ class Code extends Editor {
 		this.edit_box2 = null;
 		this.edit_box.classList.remove("split");
 		this.codemirror.refresh();
-	}
-
-	onMenuClick (e) {
-		var this_ref = this;
-
-		let split = {label:'split', click:function(){this_ref.splitView()}};
-		if (this.edit_box2)
-			split = {label:'unsplit', click:function(){this_ref.unsplitView()}};
-
-		app.contextMenu(e.x, e.y, [
-			split,
-			{
-				label:'show console',
-				type:'checkbox',
-				checked:this_ref.console.isVisible(),
-				click:function(){this_ref.console.toggleVisibility()}
-			},
-			{
-				label:'console auto-scroll',
-				type:'checkbox',
-				checked:this_ref.console.auto_scrolling,
-				click:function(){this_ref.console.auto_scrolling = !this_ref.console.auto_scrolling}
-			},
-			{label:'rename', click:function(){this_ref.renameModal()}},
-			{label:'delete', click:function(){this_ref.deleteModal()}}
-		]);
 	}
 
 	edit (file_path) {
@@ -1030,54 +1035,6 @@ class Code extends Editor {
 
 	static saveAll () {
 		for (let i in code_instances) { code_instances[i].save(); }
-	}
-
-	delete (path) {
-		this.deleted = true;
-		nwFS.remove(path);
-
-		if (this.file == path) {
-			this.close(true);
-		}
-	}
-
-	deleteModal () {
-		var name = this.file;
-        var this_ref = this;
-        blanke.showModal(
-            "delete \'"+name+"\'?",
-        {
-            "yes": function() { this_ref.delete(name); },
-            "no": function() {}
-        });
-	}
-
-	rename (old_path, new_path) {
-		var this_ref = this;
-		app.renameSafely(old_path, new_path, (success) => {
-			if (success) {
-				this.file = new_path;
-				this.setTitle(nwPATH.basename(this.file));
-				this.refreshGame();
-
-			} else
-				blanke.toast("could not rename \'"+nwPATH.basename(old_path)+"\'");
-		})
-	}
-
-	renameModal () {
-		var filename = this.file;
-        var this_ref = this;
-        blanke.showModal(
-            "<label>new name: </label>"+
-            "<input class='ui-input' id='new-file-name' style='width:100px;' value='"+nwPATH.basename(filename, nwPATH.extname(filename))+"'/>",
-        {
-            "yes": function() { 
-                let new_path = nwPATH.join(nwPATH.dirname(filename), app.getElement('#new-file-name').value+nwPATH.extname(filename));
-                this_ref.rename(filename, new_path);
-            },
-            "no": function() {}
-        });
 	}
 
 	static refreshCodeList(path) {

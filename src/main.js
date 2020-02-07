@@ -1499,12 +1499,16 @@ app.window.webContents.once('dom-ready', ()=>{
 	})
 
 	elec.ipcRenderer.on('close', (e, arg) => {
-		blanke.showModal(
-			"<label>Are you sure you want to exit?</label>",
-		{
-			"yes": function() { app.window.destroy(); },
-			"no": function() { }
-		});
+		if (app.isProjectOpen()) {
+			blanke.showModal(
+				"<label>Are you sure you want to exit?</label>",
+			{
+				"yes": function() { app.window.destroy(); },
+				"no": function() { }
+			});
+		} else {
+			app.window.destroy();
+		}
 	})
 
 	app.window.on('closed',function(){
