@@ -5,12 +5,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "Open image editor=?",
             "Open image editor"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
+            "engine.lua=script+?",
+            "engine.lua"
         ],
         [
             "Card.lua=script+?",
@@ -19,10 +23,6 @@
         [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "View project in explorer=?",
-            "View project in explorer"
         ]
     ],
     "autoplay_preview": true,
@@ -111,6 +111,21 @@
             ],
             "spacing": 0,
             "onion_alpha": 0.3
+        },
+        "image/skip.png": {
+            "frame_size": [
+                28,
+                28
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3,
+            "showBackgroundGrid": false,
+            "showPreview": false
         }
     }
 }

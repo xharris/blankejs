@@ -321,6 +321,7 @@ FS = {
 --GAME
 Game = nil
 do
+    local mesh_canvas
     local objects = {}
     Game = class {
         options = {
@@ -500,16 +501,43 @@ do
                     end 
 
                     Draw.push()
-                    Draw.applyTransform(props._draw_transform)
-                    if is_fn then 
-                        lobj(gobj)
-                    else
-                        if gobj.quad then
-                            love.graphics.draw(lobj, gobj.quad, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+
+                    local draw_obj = function()
+                        Draw.applyTransform(props._draw_transform)
+                        if is_fn then 
+                            lobj(gobj)
                         else
-                            love.graphics.draw(lobj, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+                            if gobj.quad then
+                                love.graphics.draw(lobj, gobj.quad, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+                            else
+                                love.graphics.draw(lobj, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+                            end
                         end
+                        
+                        --if gobj.parent then 
+                        local lax, lay, rax, ray = 0,0,ax,ay
+                        Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
+                        --else 
+                            Draw{
+                                {'line',lax-10,lay-10,lax+10,lay+10},
+                                {'line',lax-10,lay+10,lax+10,lay-10},
+                            }
+                        --end
                     end
+
+                    if props.mesh then 
+                        if not mesh_canvas then 
+                            mesh_canvas = Canvas()
+                            mesh_canvas:remDrawable()
+                        end
+                        if (props.classname == "Card") then Draw.color('purple',0.75) end
+                        mesh_canvas:drawTo(draw_obj)
+                        --love.graphics.draw(props.mesh, 0, 0)
+                    else
+                        if (props.classname == "Card") then Draw.color('pink',0.75) end
+                        draw_obj()
+                    end
+
                     if gobj.debug then
                         local lax, lay, rax, ray = 0,0,ax,ay
                         Draw.push()
@@ -610,6 +638,7 @@ GameObject = class {
                     args[k] = nil
                 end
             end
+            -- camera
             if args.camera and not spawn_args.net_obj then
                 local cam_type = type(args.camera)
                 if cam_type == 'table' then
@@ -620,6 +649,12 @@ GameObject = class {
                     Camera.get(args.camera).follow = self
                 end
             end
+            -- mesh
+            if args.mesh then
+                local mesh = args.mesh
+                args.mesh = nil
+                self:setMesh(mesh) 
+            end 
         end
         if spawn_args then table.update(self,spawn_args) end
                     
@@ -644,6 +679,9 @@ GameObject = class {
     end;
     setEffect = function(self, ...)
         self.effect = Effect(...)
+    end;
+    setMesh = function(self, verts)
+        self.mesh = love.graphics.newMesh(verts,'fan')
     end;
     destroy = function(self)
         if not self.destroyed then
@@ -1023,8 +1061,7 @@ do
                 return 2
             end
         end,
-        _draw = function(self, ...)
-            local args = {...} 
+        _draw = function(self) 
             local canv_used = false   
             if self.predraw or self._custom_draw or self.postdraw then
             end
@@ -1034,8 +1071,7 @@ do
             end
             -- draw
             if self._custom_draw then
-                print_r(args)
-                Game.drawObject(self, function() self:_custom_draw(unpack(args)) end, 'function')
+                Game.drawObject(self, self._custom_draw, 'function')
             else
                 Game.drawObject(self, function()
                     if self.imageList then
@@ -1056,7 +1092,7 @@ do
                 Game.drawObject(self, self.postdraw, 'function')
             end
         end;
-        draw = function(self, ...) self:_draw(...) end;
+        draw = function(self) self:_draw() end;
         _destroy = function(self)
             if self.destroyed then return end
             for name, img in pairs(self.imageList) do
@@ -2712,8 +2748,8 @@ do
                     Blanke.pady = floor((Game.win_height - (Game.height * Blanke.scale)) / 2)
                 end
                 -- offset mouse coordinates
-                mouse_x = (mouse_x / Blanke.scale) - Blanke.padx
-                mouse_y = (mouse_y / Blanke.scale) - Blanke.pady
+                mouse_x = floor((mouse_x - Blanke.padx) / Blanke.scale)
+                mouse_y = floor((mouse_y - Blanke.pady) / Blanke.scale)
             end
 
             Game.time = Game.time + dt

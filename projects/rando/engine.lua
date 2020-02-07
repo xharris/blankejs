@@ -62,7 +62,34 @@ function draw(num, player)
 		end
 		hands[player]:push(deck:pop())
 	end
+	sortHand(player)
 	print(player, 'draws', hands[player])
+end
+
+function sortHand(player)
+	player = player or Net.id
+	if hands[player] then 
+		hands[player]:sort(function(a,b)
+			a = a.orig
+			b = b.orig
+			if a.value > -1 and b.value > -1 then
+				if a.value == b.value then 
+					return card_colors:indexOf(a.value) < card_colors:indexOf(b.value)
+				end 
+				return a.value < b.value	
+			elseif a.value > -1 then
+				return true	
+			elseif b.value > -1 then
+				return false	
+			else
+				if a.name == b.name then 
+					return card_colors:indexOf(a.value) < card_colors:indexOf(b.value)
+				else
+					return card_names:indexOf(a.value) < card_names:indexOf(b.value) 
+				end
+			end
+		end)
+	end
 end
 
 function discard(card, player)

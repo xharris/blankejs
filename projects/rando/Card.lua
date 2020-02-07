@@ -33,8 +33,14 @@ Entity("Card",{
 		style='hand',
 		scale=1, --.2,
 		visible=false,
+		mesh={
+			{ 0,0, 0,0, 1,0,0 },
+			{ card_w/2,0, 1,0, 0,1,0},
+			{ card_w/2,card_h/2, 1,1, 0,0,1},
+			{ 0,card_h/2, 0,1, 1,1,0}
+		},
 		--effect = {'static', 'chroma shift'},
-		spawn = function(self, str)
+		spawn = function(self, str)	
 			local pos_name = str:split('.')[1]
 			if card_names:includes(pos_name) then
 				self.name = pos_name
@@ -57,6 +63,7 @@ Entity("Card",{
 			else
 				self.ent_value = Game.spawn("card_text", {image=self.name})
 			end
+			self.orig = {value=self.value, color=self.color, name=self.name}
 		end,
 		randomize = function(self)
 			if self.value >= 0 then
@@ -104,7 +111,7 @@ Entity("Card",{
 		drawRect = function(self)
 			if self.rect then
 				Draw{
-					{'color','white', 0.5},
+					{'color','blue', 0.5},
 					{'poly','fill',unpack(self.rect)}
 				}
 			end

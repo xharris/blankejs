@@ -2,6 +2,8 @@
 	re_class_list: removed ^ at beginning
 	changed order in defineMode: instance > class_list
 */
+// TODO ask if use wants to save before closing when there are unsaved changes
+
 var re_add_sprite = /this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/;
 var re_new_sprite = /new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/;
 var re_sprite_align = /sprite_align\s*=\s*[\"\']([\s\w]+)[\"\']/;

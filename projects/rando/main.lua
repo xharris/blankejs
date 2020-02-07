@@ -7,36 +7,47 @@ require 'xhh-array'
 hand_z = 40
 
 Game{
-	background_color = 'black2',
+	background_color = 'white2',
 	plugins = { 'xhh-effect' },
 	load = function()
 		State.start('play')		
 	end
 }
 
-local bob
+Input({
+	action = { 'space' }
+})
+
+
 State('play',{
 		enter = function()
 			newDeck()
-			draw(4)
-			bob = Game.spawn("card_text", {x=50,y=100,image="reverse", angle=45/2})
+			draw(1, Net.id)
 		end,
 		update = function(dt)
+			if Input.released('action') then
+				draw(1, Net.id)
+			end
+			-- draw the draw pile
+			--draw_pile:forEach(function(card)
+					
+			--end)
 			local hand = hands[Net.id]
 			-- draw my hand
 			if hand then
 				local focus_card
-				local hand_w = (card_w/2) * hand.length
+				local hand_w = (card_w/3) * math.min(hand.length,12)
 				local start_x = (Game.width - hand_w)/2
 				local incr_x = hand_w / hand.length
+				local offx = Math.lerp(0, (mouse_x - (Game.width/2)), hand_w / Game.width)
 				hand:forEach(function(card, c)
 					-- draw the cards in an arc at bottom of screen
-					card.x = start_x + ((c-1) * incr_x) + card.width / 2
+					card.x = Math.lerp(-hand_w/2,hand_w/2, c/hand.length) - (card_w/6) + (Game.width/2) - offx
 					if hand.length == 1 then
-						card.y = Game.height/2 - (card.width/4)
+						card.y = Game.height - (card.width/4)
 						card.angle = 0--20
 					else
-						card.y = Game.height/2 - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15)
+						card.y = Game.height - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15)
 						card.angle = Math.lerp(-10,10,(c-1)/math.max(hand.length-1))
 					end
 					card.z = hand_z + c
@@ -59,12 +70,6 @@ State('play',{
 					--card:drawRect()
 				end)
 			end
-			bob:draw()
-			Draw{
-				{'color','white'},
-				{'font','CaviarDreams_Bold.ttf',18},
-				{'print','1234567890',20,20}
-				}
 		end,
 		leave = function()
 			
