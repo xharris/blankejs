@@ -5,12 +5,12 @@
     "window_size": 3,
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
             "Card.lua=script+?",
             "Card.lua"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "Open image editor=?",

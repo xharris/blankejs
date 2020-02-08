@@ -27,20 +27,23 @@ calcCardRect = function(card)
 end
 
 Effect.new('tablecard',{
-	vars={ rect={0,0,1,1} },
+	use_canvas=false,
 	effect=[[
-		vec2 coord = texCoord;
-		float x = rect.x;
-		float y = rect.y;
-		float r = rect.x + rect[2];
-		float b = rect.y + rect[3];
-		float scale = 0.75;
-		if (coord.x > x && coord.y > y && coord.x < r && coord.y < b) {
-			float x_perc = (coord.x - x) / (r - x);
-			float y_perc = (coord.y - y) / (b - y);
-			texCoord += vec2( lerp(-scale, scale, x_perc) * lerp(0.0, 1.25, y_perc), 0);
-		}
-		pixel = Texel(texture, texCoord);
+		// vec2 coord = tex_coord;
+		// float x = rect.x;
+		// float y = rect.y;
+		// float r = rect.x + rect[2];
+		// float b = rect.y + rect[3];
+		// float scale = 0.75;
+		
+		//if (coord.x > x && coord.y > y && coord.x < r && coord.y < b) {
+			//float x_perc = (coord.x - x) / (r - x);
+			//float y_perc = (coord.y - y) / (b - y);
+			//tex_coord += vec2( lerp(-scale, scale, x_perc) * lerp(0.0, 1.25, y_perc), 0);
+		//}
+		
+		tex_coord.x *= 2; // screen_coords.x / 
+		pixel = Texel(texture, tex_coord);
 	]]
 })
 
@@ -53,9 +56,9 @@ Entity("Card",{
 		visible=false,
 		effect = { 'tablecard', 'static', 'chroma shift'},
 		spawn = function(self, str)	
-			--print_r(self.effect)
 			self.effect:disable('chroma shift')
 			self.effect:disable('static')
+			--self.effect:disable('tablecard')
 			
 			local pos_name = str:split('.')[1]
 			if card_names:includes(pos_name) then
@@ -109,13 +112,12 @@ Entity("Card",{
 			if self.last_style ~= self.style then
 				self.last_style = self.style 
 				self.rect = {0,0,0,0}
-				self.effect:set("tablecard", self.rect)
+				-- self.effect:set("tablecard", self.rect)
 			end
 			if self.style == "hand" then
 				self.width = card_w/2
 				self.height = card_h/2
 				self.rect = calcCardRect(self)
-				self.effect:set("tablecard", self.rect)
 				
 				if self.focused then
 					self.target_scale = 1.25
@@ -125,6 +127,7 @@ Entity("Card",{
 				end
 				self.scale = Math.lerp(self.scale, self.target_scale, 0.5)
 			end
+			-- self.effect:set("tablecard", {self.x - (self.width/4), self.y - (self.height/4), self.x + (self.width/4), self.y + (self.height/4)})
 		end,
 		drawRect = function(self)
 			if self.rect then

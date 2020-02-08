@@ -293,28 +293,28 @@ a {
 	}
 
 	.history, .title {
-		display: block;
 		width: 80%;
 		margin: auto;
 		background: transparent;
 		text-align: left;
 		padding-top: 2.5px;
 		padding-bottom: 2.5px;
+		padding-left: calc(15% + 38px);
 	}
 
 	.title {
+		display: inline-block;
 		color: fade(@ide-accent, 50%);
 		font-weight: 900;
-		padding-left: 17%;
 	}
 
 	.history {
+		display: block;
 		color: #fafafa;
 		text-decoration: none;
 		transition: all ease-in-out 0.1s;
 		width: 100%;
 		font-weight: 100;
-		padding-left: calc(15% + 38px);
 
 		background: linear-gradient(to bottom, fade(@ide-accent, 50%) 0%, fade(@ide-accent, 50%) 100%) no-repeat;
 		background-position: center;

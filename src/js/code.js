@@ -829,8 +829,8 @@ class Code extends Editor {
 			blanke.showModal(
 				"<label>'"+nwPATH.basename(this.file)+"' has unsaved changes! Save before closing?</label>",
 			{
-				"yes": function() { this.save(); res(); },
-				"no": function() { rej(); }
+				"yes": () => { this.save(); res(); },
+				"no": () => { res(); }
 			});
 		} else {
 			res();

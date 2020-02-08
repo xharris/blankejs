@@ -116,6 +116,8 @@ local sin, cos, rad, deg, abs = math.sin, math.cos, math.rad, math.deg, math.abs
 local floor = function(x) return math.floor(x+0.5) end
 Math = {}
 do
+    for name, fn in pairs(math) do Math[name] = function(...) return fn(...) end end
+
     Math.seed = function(l,h) if l then love.math.setRandomSeed(l,h) else return love.math.getRandomSeed() end end
     Math.random = function(...) return love.math.random(...) end
     Math.indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end
@@ -1479,7 +1481,7 @@ do
     local library = {}
     Effect = GameObject:extend {
         new = function(name, in_opt)
-            local opt = { vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
+            local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
             table.update(opt, in_opt)
             -- mandatory vars
             if not opt.vars['texSize'] or opt.vars['textureSize'] then
@@ -1540,8 +1542,8 @@ do
     #endif
 
     #ifdef PIXEL
-    vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
-        vec4 pixel = Texel(texture, texCoord);
+    vec4 effect(vec4 in_color, Image texture, vec2 tex_coord, vec2 screen_coords){
+        vec4 pixel = Texel(texture, tex_coord);
     ]]..opt.effect..[[
         return pixel * in_color;
     }
@@ -1563,17 +1565,17 @@ do
             if type(self.names[1]) == 'table' then
                 self.names = self.names[1]
             end
-            for _,name in ipairs(self.names) do
-                assert(library[name], "Effect :'"..name.."' not found")
-            end
+
             self.vars = {}
-            for _,name in ipairs(self.names) do 
-                self.vars[name] = copy(library[name].opt.vars)
-            end
             self.unused_vars = {}
-            for _,name in ipairs(self.names) do
+            self.use_canvas = {} 
+            for _,name in ipairs(self.names) do 
+                assert(library[name], "Effect :'"..name.."' not found")
+                self.vars[name] = copy(library[name].opt.vars)
                 self.unused_vars[name] = copy(library[name].opt.unused_vars)
+                self.use_canvas[name] = library[name].opt.use_canvas
             end
+
             self.disabled = {}
 
             self.spare_canvas = Canvas()
@@ -1614,8 +1616,11 @@ do
         draw = function(self,fn)
             self.spare_canvas:drawTo(fn)
             local one_draw = false -- was there at least one draw?
+            local use_canvas = true
             for _,name in ipairs(self.names) do
                 if not self.disabled[name] then
+                    if not self.use_canvas[name] then use_canvas = false end 
+
                     one_draw = true
                     info = library[name]
                     
@@ -1625,9 +1630,15 @@ do
                         end
                         last_shader = love.graphics.getShader()
                         love.graphics.setShader(info.shader)
-                        self.main_canvas:drawTo(self.spare_canvas)
+                        if use_canvas then 
+                            self.main_canvas:drawTo(self.spare_canvas)
+                        else
+                            fn()
+                        end
                         love.graphics.setShader(last_shader)
-                        self.spare_canvas:drawTo(self.main_canvas)
+                        if use_canvas then 
+                            self.spare_canvas:drawTo(self.main_canvas)
+                        end
                     end
 
                     if info.opt.draw then
@@ -1637,7 +1648,9 @@ do
                     applyShader()
                 end
             end
-            if not one_draw then fn() else
+            if not one_draw then 
+                fn() 
+            elseif use_canvas then
                 self.main_canvas:draw()
             end
         end;
