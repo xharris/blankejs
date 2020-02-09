@@ -5,58 +5,72 @@ class Docview extends Editor {
 	constructor (...args) {
 		super(...args);
 
-		if (DragBox.focus('Docs', true)) return;
+		if (DragBox.focus('Docs')) return;
 
 		this.setupDragbox();
 		this.setTitle('Docs');
 		this.removeHistory();
 		this.hideMenuButton();
 
-		this.container.width = 400;
-		this.container.height = 448;
+		this.container.width = 528;
+		this.container.height = 272;
 
 		var this_ref = this;
 
 		this.doc_data = {};
 		this.doc_container = app.createElement("div","doc-container");
+		this.doc_body_container = app.createElement("div",["doc-body-container","markdown"]);
+		this.appendChild(this.doc_container);
+		this.appendChild(this.doc_body_container);
 
 		let doc_path = getDocPath();
-		nwFS.readFile(nwPATH.join(doc_path,'docs.json'), 'utf-8', function(err, data){
+		nwFS.readFile(nwPATH.join(doc_path,'docs.json'), 'utf-8', (err, data) => {
 			if (!err) {
-				this_ref.doc_sections = JSON.parse(data);
-				this_ref.doc_sections.Plugins = plugin_md_list;
+				this.doc_sections = JSON.parse(data);
+				this.doc_sections.Plugins = plugin_md_list;
 
 				// put the divs together
-				for (let category in this_ref.doc_sections) {
+				for (let category in this.doc_sections) {
 					// CATEGORY
 					let el_section = app.createElement("div","section");
 					let el_header = app.createElement("p","header");
 					let el_body = app.createElement("div",["body","hidden"]);
 
-					let num_sections = Object.keys(this_ref.doc_sections[category]).length;
-					for (let subsection in this_ref.doc_sections[category]) {
-						let info = this_ref.doc_sections[category][subsection];
+					let num_sections = Object.keys(this.doc_sections[category]).length;
+					for (let subsection in this.doc_sections[category]) {
+						let info = this.doc_sections[category][subsection];
 
 						let el_subsection = app.createElement("div","subsection");
 						let el_subheader = app.createElement("p","subheader");
-						let el_subbody = app.createElement("div",["subbody","hidden","markdown"]);
+						let el_subbody = this.doc_body_container;
+						let el_doc = this.doc_container;
 
 						let md_path = nwPATH.join(doc_path,info.file);
 						el_subsection._tags = info.tags;
 						el_subheader.innerHTML = info.title;
 						
-						el_subbody.reveal = () => {
+						let reveal = () => {
 							// get .md content
-							nwFS.readFile(md_path,'utf-8',function(err,data){
+							nwFS.readFile(md_path,'utf-8',(err,data) => {
 								if (!err) {
+									this.setSubtitle(" - "+(num_sections > 1 ? info.title : category));
 
 									// el_subbody.innerHTML = markdown.toHTML(data);
 									el_subbody.innerHTML = nwMD.render(data);
 
 									if (el_subbody.innerHTML.trim() == "")
 										el_subbody.innerHTML = "No information on this topic found";
-									el_subbody.classList.toggle('hidden');
-									el_subsection.classList.toggle('expanded');
+									
+									for (let c = 0; c < el_doc.children.length; c++) {
+										el_doc.children[c].classList.remove('selected');
+									}
+									document.querySelectorAll('.subsection').forEach(sec => sec.classList.remove('selected'));
+
+									if (num_sections > 1) {
+										el_subsection.classList.add('selected');
+									}
+									if (num_sections == 1)
+										el_section.classList.add('selected');
 
 									// syntax highlighting
 									document.querySelectorAll('code').forEach(block => {
@@ -73,35 +87,25 @@ class Docview extends Editor {
 
 						if (num_sections == 1) {
 							// ONLY 1 SUBSECTION
-							el_body.appendChild(el_subbody);
-							el_body.classList.add("single");
-							el_header.addEventListener('click',el_subbody.reveal);
+							el_section.classList.add('single');
+							el_header.addEventListener('click', reveal);
 
 						} else {
 							// SUBSECTION
 							el_subsection.appendChild(el_subheader);
-							el_subsection.appendChild(el_subbody);
-
-							el_body.appendChild(el_subsection);
-
-							el_subheader.addEventListener('click',el_subbody.reveal);
+							el_section.appendChild(el_subsection);
+							el_subheader.addEventListener('click', reveal);
 						}
 					}
 
 					el_header.innerHTML = category;
 					el_header.title = category;
 
-					el_section.appendChild(el_header);
-					el_section.appendChild(el_body);
-					
-					el_header.addEventListener('click',function(){
-						el_body.classList.toggle('hidden');
-					});
+					el_section.prepend(el_header);
 
-					this_ref.doc_container.appendChild(el_section);
+					this.doc_container.appendChild(el_section);
 				}
 
-				this_ref.appendChild(this_ref.doc_container);
 				app.sanitizeURLs();
 			}
 		});

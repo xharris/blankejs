@@ -33,7 +33,7 @@
         "scale_mode": "nearest",
         "resizable": true,
         "scale": true,
-        "filter": "nearest"
+        "filter": "linear"
     },
     "enabled_plugins": {
         "xhh-array": true,

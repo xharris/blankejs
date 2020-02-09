@@ -1082,6 +1082,19 @@
 .content[data-type="Docview"] {
 	.editor-content {
 		overflow-x: hidden;
+		display: flex;
+	}
+	.doc-container {
+		height: 100%;
+		overflow-y: auto;
+		flex: 0 0 170px;
+	}
+	.doc-body-container {
+		color: #E0E0E0;
+		margin: 3px;
+		padding: 3px;
+		overflow-y: auto;
+		width: 100%;
 	}
 	.section {
 		background-color: rgb(127, 140, 161);
@@ -1097,9 +1110,16 @@
 			color: #E0E0E0;
 			background-color: #596578;
 			transition: all ease-in-out 0.2s;
-			cursor: pointer;
 		}
-		.header:hover {
+		&.single {
+			cursor: pointer;
+
+			.header {
+				background: transparent;
+				line-height: 2px;
+			}
+		}
+		&.single > .header:hover, &.single.selected > .header {
 			color: #212121;
 			background-color: #E0E0E0;
 
@@ -1107,31 +1127,14 @@
 				border: 1px solid #E0E0E0;
 			}
 		}
-		.body {
-			overflow: auto;
-			transition: all ease-out 0.2s;
-			border: 1px solid #596578;
-			padding: 2px 5px;
-			max-height: 350px;
-
-			&.hidden {
-				height: 0px;
-				padding: 0px;
-				border-width: 0px;
-			}
-
-			&.single {
-				padding: 0px;
-			}
-		}
 	}
 	.subsection {
-		background: #596578;
+		background: #414a58;
 		border-radius: 3px;
-		margin: 4px 0px;
+		margin: 2px 0px;
 		transition: box-shadow ease-in-out 0.1s;
 
-		&:hover:not(.expanded) {
+		&:hover:not(.expanded), &.selected {
 			.input-outline();
 			background: #414a58;
 		}

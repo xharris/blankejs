@@ -42,7 +42,7 @@ Effect.new('tablecard',{
 			//tex_coord += vec2( lerp(-scale, scale, x_perc) * lerp(0.0, 1.25, y_perc), 0);
 		//}
 		
-		tex_coord.x *= 2; // screen_coords.x / 
+		tex_coord.x /= lerp(-1,1,tex_coord.y); // screen_coords.x / 
 		pixel = Texel(texture, tex_coord);
 	]]
 })
