@@ -88,7 +88,7 @@ class Docview extends Editor {
 						if (num_sections == 1) {
 							// ONLY 1 SUBSECTION
 							el_section.classList.add('single');
-							el_header.addEventListener('click', reveal);
+							el_section.addEventListener('click', reveal);
 
 						} else {
 							// SUBSECTION

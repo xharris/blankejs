@@ -1099,16 +1099,18 @@
 	.section {
 		background-color: rgb(127, 140, 161);
 		color: #E0E0E0;
-		margin: 3px;
-		padding: 3px;
+		margin: 1px;
+		padding: 1px;
+		border-radius: 2px;
 
 		.header {
 			.no-select();
 
 			margin: 0;
 			padding: 6px;
+			line-height: 8px;
 			color: #E0E0E0;
-			background-color: #596578;
+			border-radius: 2px;
 			transition: all ease-in-out 0.2s;
 		}
 		&.single {
@@ -1116,10 +1118,12 @@
 
 			.header {
 				background: transparent;
-				line-height: 2px;
 			}
 		}
-		&.single > .header:hover, &.single.selected > .header {
+		&.single:hover > .header {
+			background-color: #596578;
+		}
+		&.single.selected > .header {
 			color: #212121;
 			background-color: #E0E0E0;
 
@@ -1131,7 +1135,8 @@
 	.subsection {
 		background: #414a58;
 		border-radius: 3px;
-		margin: 2px 0px;
+		margin: 1px 1px;
+		margin-left: 5px;
 		transition: box-shadow ease-in-out 0.1s;
 
 		&:hover:not(.expanded), &.selected {
