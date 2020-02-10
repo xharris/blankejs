@@ -27,8 +27,8 @@ calcCardRect = function(card)
 end
 
 Effect.new('tablecard',{
-	use_canvas=false,
-	effect=[[
+	--use_canvas=false,
+	vertex=[[
 		// vec2 coord = tex_coord;
 		// float x = rect.x;
 		// float y = rect.y;
@@ -41,9 +41,7 @@ Effect.new('tablecard',{
 			//float y_perc = (coord.y - y) / (b - y);
 			//tex_coord += vec2( lerp(-scale, scale, x_perc) * lerp(0.0, 1.25, y_perc), 0);
 		//}
-		
-		tex_coord.x /= lerp(-1,1,tex_coord.y); // screen_coords.x / 
-		pixel = Texel(texture, tex_coord);
+		return transform_projection * vertex_position + vec4(0.5,0,0.25,0);
 	]]
 })
 
