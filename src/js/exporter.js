@@ -167,7 +167,6 @@ class Exporter extends Editor {
 			let extra_assets = e_assets[target_os] || e_assets['.'] || [];
 			for (let a of extra_assets) {
 				a = a.replace('<project_path>',app.project_path).replace('<engine_path>',app.ideSetting('engine_path'));
-				console.log(a, app.cleanPath(nwPATH.join(temp_dir, a)).replace(app.ideSetting('engine_path')+'/',''))
 				nwFS.copySync(a, app.cleanPath(nwPATH.join(temp_dir, a)).replace(app.ideSetting('engine_path')+'/',''));
 			}
 

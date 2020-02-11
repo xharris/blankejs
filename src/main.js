@@ -44,6 +44,7 @@ const DEFAULT_IDE_SETTINGS = {
 	plugin_path:'plugins',
 	engine_path:'love2d',
 	themes_path:'themes',
+	js_engine_path:'engines/engine_love.js',
 	autocomplete_path:'./autocomplete.js',
 	theme:'green',
 	quick_access_size:5,
@@ -129,6 +130,7 @@ var app = {
 		app.window.minimize();
 	},
 	watch: function(path, cb) {
+		if (!nwFS.existsSync(path)) return;
 		return nwWATCH(path, {
 			recursive: true,
 			filter: f => !/dist/.test(f) && !f.includes('.asar') && !/love2d/.test(f) // !nwFS.statSync(f).isSymbolicLink() && 
@@ -136,13 +138,6 @@ var app = {
 	},
 	getRelativePath: function(path) {
 		return nwPATH.relative(app.project_path,path);
-	},
-
-	engine: {},
-	requireEngine: () => {
-		delete require.cache[nwPATH.join(elec.remote.app.getAppPath(),'src','engine_love.js')];
-		app.engine = require(nwPATH.join(elec.remote.app.getAppPath(),'src','engine_love.js')).engine;
-		dispatchEvent('engine_config_load');
 	},
 
 	get template_path () {
@@ -370,18 +365,26 @@ var app = {
 		});
 		app.ignore_errors = false;
 	},
+
+	setBusyStatus: (v) => {
+		if (v)
+			app.getElement("#status-icons > .engine-status").classList.add('active');
+		else 
+			blanke.cooldownFn('busy-status-off', 500, () => {
+				app.getElement("#status-icons > .engine-status").classList.remove('active');
+			})
+	},
+
 	engine_code: '',
 	minifyEngine: function(cb, opt) {
 		if (!app.engine.minifyEngine) return;
 		
 		opt = opt || {};
 		blanke.cooldownFn('minify-engine',500,function(){
-			app.getElement("#status-icons > .engine-status").classList.add('active');
+			app.setBusyStatus(true);
 			let cb_done = (...args) => {
 				if (cb) cb(...args);
-				blanke.cooldownFn('engine-status-off',1000,function(){
-					app.getElement("#status-icons > .engine-status").classList.remove('active');
-				},true);
+				app.setBusyStatus(false);
 				dispatchEvent('engineChange');
 			}
 			let cb_err = () => {
@@ -583,8 +586,30 @@ var app = {
 	},
 
 	require: (path) => {
+		if (!module.paths.includes(elec.remote.app.getAppPath()))
+			module.paths.push(elec.remote.app.getAppPath())
+		if (!nwFS.existsSync(path)) return;
 		delete require.cache[require.resolve(path)];
 		return require(path);
+	},
+
+	engine: {},
+	requireEngine: () => {
+		delete require.cache[app.ideSetting("js_engine_path")];
+		app.engine = app.require(app.ideSetting("js_engine_path")).engine;
+		app.setBusyStatus(true);
+		app.setBusyStatus(false);
+		dispatchEvent('engine_config_load');
+	},
+
+	js_engine_watch: null,
+	watchJsEngine: () => {
+		if (app.js_engine_watch) 
+			app.js_engine_watch.close();
+		app.requireEngine();
+		app.js_engine_watch = app.watch(app.ideSetting("js_engine_path"), () => {
+			app.requireEngine();
+		});
 	},
 
 	plugin_watch:null,
@@ -1279,10 +1304,7 @@ app.window.webContents.once('dom-ready', ()=>{
 		// console.log(process.argv);
 	}
 	app.refreshQuickAccess();
-	app.requireEngine();
-	app.watch(nwPATH.join(elec.remote.app.getAppPath(),'src','engine_love.js'), () => {
-		app.requireEngine();
-	});
+	// app.watchJsEngine();
 
 	// remove error file
 	nwFS.remove(nwPATH.join(app.getAppDataFolder(),'error.txt'));
@@ -1591,6 +1613,8 @@ app.window.webContents.once('dom-ready', ()=>{
 	});
 
 	app.loadAppData(function(){
+		app.watchJsEngine();
+
 		// load current theme
 		app.setTheme(app.ideSetting("theme"));
 		app.refreshRecentProjects();

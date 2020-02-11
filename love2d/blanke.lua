@@ -98,6 +98,10 @@ end
 table.random = function(t)
     return t[Math.random(1,#t)]
 end
+table.includes = function(t, v)
+    for i = 1,#t do if t[i] == v then return true end end
+    return false
+end
 --UTIL.string
 function string:contains(q) 
     return string.match(tostring(self), tostring(q)) ~= nil
@@ -338,7 +342,7 @@ do
             postdraw =      nil,
             effect =        nil,
             auto_require =  true,
-            background_color = nil,
+            background_color = 'black',
             window_flags = {}
         };
         config = {};
@@ -402,7 +406,11 @@ do
                     end
                 end
             end
-            for _,script in ipairs(scripts) do Game.require(script) end
+            for _,script in ipairs(scripts) do
+                if script ~= 'main' then 
+                    Game.require(script)
+                end
+            end
             -- fullscreen toggle
             Input({ _fs_toggle = { 'alt', 'enter' } }, { 
                 combo = { '_fs_toggle' },
@@ -2221,6 +2229,7 @@ do
     local states = {}
     local stateCB = function(name, fn_name, ...)
         local state = states[name]
+        assert(state, "State '"..name.."' not found")
         if state then 
             state.running = true
             State.curr_state = name
@@ -2247,6 +2256,7 @@ do
         end,
         start = function(name)
             local state = states[name]
+            assert(state, "State '"..name.."' not found")
             if state and not state.running then
                 stateCB(name, 'enter')
             end
@@ -2261,13 +2271,16 @@ do
         draw = function()
             for name, state in pairs(states) do 
                 if state.running then 
+                    Draw.push()
                     stateCB(name, 'draw')
+                    Draw.pop()
                 end
             end
         end,
         stop = function(name) 
             if name then
                 local state = states[name]
+                assert(state, "State '"..name.."' not found")
                 if state and state.running then
                     state = stateCB(name, 'leave')
                     for _,obj in ipairs(state.objects) do 

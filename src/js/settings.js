@@ -1,5 +1,5 @@
 let paths = ['plugin','engine','themes'];
-let files = ['autocomplete'];
+let files = ['autocomplete','js_engine'];
 
 class Settings extends Editor {
 	constructor (...args) {
@@ -95,7 +95,6 @@ class Settings extends Editor {
         ['export.name', ...engine_export_keys].forEach(s => {
             this.el_settings.onChange(s,(val)=>{
                 app.projSetting("export")[s.replace(/\w+\.(.*)/,'$1')] = val
-                console.log(s, val)
             });
         });
         // add onChange event listener for paths
@@ -125,6 +124,8 @@ class Settings extends Editor {
                 }
                 app.ideSetting(path+'_path', app.cleanPath(value));
                 app.saveAppData();
+                if (path == 'js_engine')
+                    app.watchJsEngine();
             });
         });
 		this.appendChild(this.el_settings.container);

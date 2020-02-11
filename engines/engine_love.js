@@ -103,7 +103,8 @@ module.exports.engine = {
     },
     export_targets: {
         "love":false,
-        "windows":true
+        "windows":true,
+        "web":true
     },
     export_assets: false,
     bundle: (dir, target_os, cb_done) => {

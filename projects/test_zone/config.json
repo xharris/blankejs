@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
-            "Preview a spritesheet=view+?",
-            "Preview a spritesheet"
-        ],
-        [
             "Dev Tools=?",
             "Dev Tools"
         ],
         [
-            "Open .love file=?",
-            "Open .love file"
+            "entitytest.lua=script+?",
+            "entitytest.lua"
+        ],
+        [
+            "Add a script=new+?",
+            "Add a script"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "matrixmath.lua=script+?",
+            "matrixmath.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -63,7 +63,8 @@
         "xhh-datastructs": false,
         "xhh-array": true,
         "xhh-badword": true,
-        "cmpl": true
+        "cmpl": true,
+        "xhh-vector": true
     },
     "imageeditor": {
         "image/blue_robot.png": {
