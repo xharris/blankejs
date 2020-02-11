@@ -1,6 +1,8 @@
 -- TODO Blanke.config
 math.randomseed(os.time())
 
+local bitop = require 'lua.bitop'
+local bit = bitop.bit
 local bump = require "lua.bump"
 local uuid = require "lua.uuid"
 json = require "lua.json"
@@ -280,7 +282,6 @@ copy = function(orig, copies)
 end
 is_object = function(o) return type(o) == 'table' and o.init and type(o.init) == 'function' end
 
-require 'bit'
 encrypt = function(str, code, seed)
     local oldseed = {Math.seed()}
     seed = seed or 31459   
