@@ -15,7 +15,7 @@ let temp_plugin_info = {};
 function inspectPlugins(silent) {
 	function inspectFile (file) {
 		file = app.cleanPath(file);
-		let info_key = nwPATH.relative(app.ideSetting("plugin_path"), nwPATH.dirname(file));
+		let info_key = app.cleanPath(nwPATH.relative(app.ideSetting("plugin_path"), nwPATH.dirname(file))).replace(/\/.*/g,'');
 		let info_keys = ['Name','Author','Description','ID','Enabled'];
 		
 		if (!temp_plugin_info[info_key]) {
@@ -101,10 +101,17 @@ function inspectPlugins(silent) {
 	}
 
 	function inspectFolder(folder) {
-		let files = nwFS.readdirSync(folder);
-		for (let f of files) {
-			inspectFile(pathJoin(folder,f));
-		}
+		let walker = nwWALK.walk(folder);
+		walker.on('file', (path, stats, next) => {
+			if (stats.isFile())
+				inspectFile(pathJoin(path, stats.name));
+			else
+				inspectFolder(pathJoin(path, stats.name));
+			next();
+		});
+		walker.on('end', () => {
+			Plugins.refreshList();
+		});
 	}
 
 	nwFS.ensureDir(app.ideSetting("plugin_path"), err => {
@@ -140,35 +147,7 @@ function inspectPlugins(silent) {
 				// if (!silent) blanke.toast("Plugins loaded!")
 			}
 
-			// check which plugins are valid
-			for (let key in temp_plugin_info) {
-				let info = temp_plugin_info[key];
-				if (info.id) {
-					if (info.enabled !== false) {
-						plugin_info[info.id] = info;
-					} else {
-						// disabled and remove docs
-						for (let file of info.docs) {
-							Docview.removePlugin(file);
-						}
-					}
-				}
-			}
-
-			if (plugin_window) {
-				plugin_window.refreshList();
-			}
-
-			// copy files if the plugin is already enabled
-			if (app.projSetting("enabled_plugins")) {
-				for (let id in plugin_info) {
-					if (app.projSetting("enabled_plugins")[id] == true) {
-						Plugins.enable(id);
-					} else {
-						Plugins.disable(id);
-					}
-				}
-			}
+			Plugins.refreshList();
 
 			app.sanitizeURLs();
 			dispatchEvent('loadedPlugins');
@@ -199,13 +178,41 @@ class Plugins extends Editor {
 		this.appendChild(this.el_list_container);
 
 		this.el_reference = {};
-		this.refreshList();
+		Plugins.refreshList();
 	}
 
-	refreshList () {
+	static refreshList () {
+		// check which plugins are valid
+		for (let key in temp_plugin_info) {
+			let info = temp_plugin_info[key];
+			if (info.id) {
+				if (info.enabled !== false) {
+					plugin_info[info.id] = info;
+				} else {
+					// disabled and remove docs
+					for (let file of info.docs) {
+						Docview.removePlugin(file);
+					}
+				}
+			}
+		}
+		
+		// copy files if the plugin is already enabled
+		if (app.projSetting("enabled_plugins")) {
+			for (let id in plugin_info) {
+				if (app.projSetting("enabled_plugins")[id] == true) {
+					Plugins.enable(id);
+				} else {
+					Plugins.disable(id);
+				}
+			}
+		}
+
+		if (!plugin_window) return;
+
 		for (let key in plugin_info) {
 			// create the list item elements
-			if (!this.el_reference[key]) {
+			if (!plugin_window.el_reference[key]) {
 				let el_ref = {};
 				el_ref.el_toggle = app.createElement('label',['toggle','form-group']);
 				el_ref.el_toggle.dataset.type = 'checkbox';
@@ -213,12 +220,12 @@ class Plugins extends Editor {
 				el_ref.el_container = app.createElement('div',['container','dark']);
 				el_ref.el_container.appendChild(el_ref.el_toggle);
 				
-				this.el_list_container.appendChild(el_ref.el_container);
-				this.el_reference[key] = el_ref;
+				plugin_window.el_list_container.appendChild(el_ref.el_container);
+				plugin_window.el_reference[key] = el_ref;
 			}
 		}
 		// remove el references that are no longer a plugin
-		for (let key in this.el_reference) {
+		for (let key in plugin_window.el_reference) {
 			let exists = true;
 			if (!plugin_info[key] || plugin_info[key].enabled == false)
 				exists = false;
@@ -233,13 +240,13 @@ class Plugins extends Editor {
 				for (let doc of plugin_info[key].docs) {
 					Docview.removePlugin(doc);
 				}
-				this.el_reference[key].el_container.remove();
-				delete this.el_reference[key];
+				plugin_window.el_reference[key].el_container.remove();
+				delete plugin_window.el_reference[key];
 			}
 		}
 		// edit values of plugin elements
-		for (let key in this.el_reference) {
-			let el_ref = this.el_reference[key];
+		for (let key in plugin_window.el_reference) {
+			let el_ref = plugin_window.el_reference[key];
 			let info = plugin_info[key];
 			el_ref.el_toggle.innerHTML = `
 				<div class='form-inputs'>
@@ -285,7 +292,8 @@ class Plugins extends Editor {
 		
 		if (plugin_info[key]) {
 			for (let path of plugin_info[key].files) {
-				nwFS.copySync(path, pathJoin(app.ideSetting("engine_path"), 'plugins', key, nwPATH.basename(path)));
+				let rel_path = nwPATH.relative(app.ideSetting("plugin_path"), path);
+				nwFS.copySync(path, pathJoin(app.ideSetting("engine_path"), 'plugins', rel_path));
 			}
 			app.projSetting("enabled_plugins")[key] = true;
 			dispatchEvent('pluginChanged',{ key: key, info: plugin_info[key] });

@@ -62,7 +62,8 @@
         "yonaba-delaunay": false,
         "xhh-datastructs": false,
         "xhh-array": true,
-        "xhh-badword": true
+        "xhh-badword": true,
+        "cmpl": true
     },
     "imageeditor": {
         "image/blue_robot.png": {

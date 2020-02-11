@@ -27,23 +27,13 @@ calcCardRect = function(card)
 end
 
 Effect.new('tablecard',{
-	--use_canvas=false,
+	use_canvas=false,
+	vars={angle=math.rad(45)},
 	vertex=[[
-		// vec2 coord = tex_coord;
-		// float x = rect.x;
-		// float y = rect.y;
-		// float r = rect.x + rect[2];
-		// float b = rect.y + rect[3];
-		// float scale = 0.75;
-		
-		//if (coord.x > x && coord.y > y && coord.x < r && coord.y < b) {
-			//float x_perc = (coord.x - x) / (r - x);
-			//float y_perc = (coord.y - y) / (b - y);
-			//tex_coord += vec2( lerp(-scale, scale, x_perc) * lerp(0.0, 1.25, y_perc), 0);
-		//}
-		return transform_projection * vertex_position + vec4(0.5,0,0.25,0);
+		vertex_position.z += lerp(-50, 50, vertex_position.y / texSize.y);
 	]]
 })
+print(Effect.info('tablecard').code)
 
 Entity("Card",{
 		name='', -- number / draw / skip / reverse

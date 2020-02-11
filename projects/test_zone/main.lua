@@ -1,22 +1,34 @@
+local points
+
 Game {
 	plugins = { 'xhh-array', 'xhh-badword' },
 	load = function() 
-		print(badword.check("thesh!tmatwinkien"))
+		--print(badword.check("thesh!tmatwinkien"))
 		Map.load("map0.map")
 		--[[
 		Net.on('ready', function()	
 			Game.spawn('player') -- Map.load("map0.map")	
 		end)
 		Net.connect()]]
+		points = Array(
+			{x=-100, 	y=100, z=-100},
+			{x=100,		y=100, z=-100},
+			{x=100,		y=100, z=100},
+			{x=-100,	y=100, z=100}
+		)
 	end,
 	draw = function(d)
-		d()
-		Draw{
-			{ 'color', 'red' },
-			{ 'scale', 1.25 },
-			{ 'rotate', 20 },
-			{ 'print', 'x:'.. 20 ..' y:'.. 20, 0,0}
-		}
+		local last_pt = points[points.length]
+		
+		Draw.translate(Game.width/2, Game.height/2)
+		points:forEach(function(pt)
+			local amt = Math.lerp(0,200,mouse_x / Game.width)
+			local z = 1/(amt - pt.z)
+				
+			local last_z = amt/(amt + last_pt.z)
+			Draw.line(last_pt.x, last_pt.y * last_z, pt.x, pt.y * z)
+			last_pt = pt
+		end)
 	end
 }
 

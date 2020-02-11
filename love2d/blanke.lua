@@ -1532,7 +1532,10 @@ do
                 code = var_str.."\n"..helper_fns.."\n"..opt.code
             
             else
-                code = var_str.."\n"..helper_fns..[[
+                code = var_str.."\n"..helper_fns
+                
+                if opt.vertex:len() > 1 then 
+                    code = code .. [[
     #ifdef VERTEX
     vec4 position(mat4 transform_projection, vec4 vertex_position) {
     ]]..opt.vertex..[[
@@ -1540,7 +1543,11 @@ do
     }
 
     #endif
-
+    ]]
+                end
+                
+                if opt.effect:len() > 1 then 
+                    code = code .. [[
     #ifdef PIXEL
     vec4 effect(vec4 in_color, Image texture, vec2 tex_coord, vec2 screen_coords){
         vec4 pixel = Texel(texture, tex_coord);
@@ -1548,15 +1555,19 @@ do
         return pixel * in_color;
     }
     #endif]]
+                end
             end
             for old, new in pairs(love_replacements) do
                 code, r = string.gsub(code, old, new)
             end
             library[name] = {
                 opt = copy(opt),
+                code = code,
                 shader = love.graphics.newShader(code)
             }
         end;
+
+        info = function(name) return library[name] end;
         
         init = function(self, ...)
             GameObject.init(self, {classname="Effect"})

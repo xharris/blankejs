@@ -44,7 +44,7 @@ State('play',{
 					-- draw the cards in an arc at bottom of screen
 					card.x = Math.lerp(-hand_w/2,hand_w/2, c/hand.length) - (card_w/6) + (Game.width/2) - offx
 					if hand.length == 1 then
-						card.y = Game.height - (card.width/4)
+						card.y = Game.height / 2 --Game.height - (card.width/4)
 						card.angle = 0--20
 					else
 						card.y = Game.height - (card.width/4) - (math.sin(Math.lerp(0,math.pi,(c-1)/(hand.length-1))) * 15)
