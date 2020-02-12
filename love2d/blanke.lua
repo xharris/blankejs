@@ -131,6 +131,7 @@ do
     Math.distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end
     Math.lerp = function(a,b,t) return a * (1-t) + b * t end
     Math.sinusoidal = function(min, max, spd, off) return min + -math.cos(Math.lerp(0,math.pi/2,off or 0) + Game.time * spd) * ((max - min)/2) + ((max - min)/2) end
+    Math.angle = function(x1, y1, x2, y2) return math.deg(math.atan2((y2-y1), (x2-x1))) end
     Math.pointInShape = function(shape, x, y)  
         local pts = {}
         for p = 1,#shape,2 do 
@@ -1498,8 +1499,8 @@ do
             local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
             table.update(opt, in_opt)
             -- mandatory vars
-            if not opt.vars['texSize'] or opt.vars['textureSize'] then
-                opt.vars['texSize'] = {Game.width, Game.height}
+            if not opt.vars['tex_size'] then
+                opt.vars['tex_size'] = {Game.width, Game.height}
             end
             if not opt.vars['time'] then
                 opt.vars['time'] = 0
@@ -1563,10 +1564,10 @@ do
                 if opt.effect:len() > 1 then 
                     code = code .. [[
     #ifdef PIXEL
-    vec4 effect(vec4 in_color, Image texture, vec2 tex_coord, vec2 screen_coords){
-        vec4 pixel = Texel(texture, tex_coord);
+    vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
+        vec4 pixel = Texel(texture, texture_coords);
     ]]..opt.effect..[[
-        return pixel * in_color;
+        return pixel * color;
     }
     #endif]]
                 end
@@ -1635,6 +1636,7 @@ do
                 vars = self.vars[name]
                 vars.time = vars.time + dt
                 self:send(name, 'time', vars.time)
+                self:send(name, 'tex_size', {Game.width,Game.height})
             end
         end;
         update = function(self,dt) self:update(dt) end;

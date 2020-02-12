@@ -27,12 +27,12 @@ State("math",{
 		}
 	end,
 	update = function(dt)
-		angle = angle + math.rad(1)
+		angle = math.rad(Math.angle(Game.width/2,Game.height/2,mouse_x,mouse_y))
 		
 	end,
 	draw = function()
 		Draw.color('white')
-		Draw.print(Window.full_os, 50, 50)
+		Draw.print(angle, 50, 50)
 			
 		--angle = 45
 		rotationZ = {
@@ -58,8 +58,9 @@ State("math",{
 		points:forEach(function(v)		
 			-- perform transformations
 			
-			local rotated = matmul(rotationX, v);
-			rotated = matmul(rotationZ, rotated);
+			local rotated 
+			rotated = matmul(rotationX, v);
+			rotated = matmul(rotationY, rotated);
 			rotated = matmul(rotationZ, rotated);
 					
 			-- perspective conversion

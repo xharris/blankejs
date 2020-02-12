@@ -1,5 +1,12 @@
-Vector = setmetatable({
+local range = 10000000
 
+Vector = setmetatable({
+    random2D = function()
+        return Vector(Math.random(-range,range)/range, Math.random(-range,range)/range)
+    end,
+    random3D = function()
+        return Vector(Math.random(-range,range)/range, Math.random(-range,range)/range, Math.random(-range,range)/range)
+    end
 },{
     __call = function(self, x, y, z)
         return setmetatable({
@@ -16,7 +23,24 @@ Vector = setmetatable({
                 self.y = self.y * s 
                 self.z = self.z * s 
                 return self
-            end
+            end,
+            set = function(self, x, y, z)
+                if not y and not z then
+                    -- x = vector
+                    if x.is_vector then 
+                        self.x, self.y, self.z = x.x, x.y, x.z
+                    else 
+                    -- x = table 
+                        self.x, self.y, self.z = x[1] or self.x, x[2] or self.y, x[3] or self.z
+                    end 
+                elseif not z then 
+                    self.x, self.y = x, y
+                elseif x and y and z then 
+                    self.x, self.y, self.z = x, y, z
+                end 
+                return self
+            end,
+
         },{
             __tostring = function(self)
                 return string.format("Vector(%d, %d, %d)", self.x, self.y, self.z)

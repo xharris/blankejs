@@ -27,13 +27,16 @@ calcCardRect = function(card)
 end
 
 Effect.new('tablecard',{
-	use_canvas=false,
-	vars={angle=math.rad(45)},
-	vertex=[[
-		vertex_position.z += lerp(-50, 50, vertex_position.y / texSize.y);
+	effect=[[
+		float size = 2.0;
+		float size_y = 2.0;
+		texture_coords.x *= lerp(size,1,texture_coords.y);
+		texture_coords.x -= lerp(1/size,0,texture_coords.y);
+		texture_coords.y *= size_y;
+		texture_coords.y -= 1/size_y;
+		pixel = Texel(texture, texture_coords);
 	]]
 })
-print(Effect.info('tablecard').code)
 
 Entity("Card",{
 		name='', -- number / draw / skip / reverse

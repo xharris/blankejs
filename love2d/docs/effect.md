@@ -31,11 +31,11 @@ my_entity.effect:set('chroma shift', 'radius', 4)
 `effect` effect code string, returns output color of pixel
 
 > ```
->   vec4 effect(vec4 in_color, Image texture, vec2 texCoord, vec2 screen_coords){
->       vec4 pixel = Texel(texture, texCoord);
->       -- effect code
->       return pixel * in_color;
->   }
+> vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
+>     vec4 pixel = Texel(texture, texture_coords);
+>     -- effect code
+>     return pixel * color;
+> }
 > ```
 
 * in_color: set by Draw.color() or mesh color
@@ -46,10 +46,10 @@ my_entity.effect:set('chroma shift', 'radius', 4)
 `vertex` vertex code string, returns final position of vertex
 
 > ```
->   vec4 position(mat4 transform_projection, vec4 vertex_position) {
->       -- vertex code
->       return transform_projection * vertex_position;
->   }
+> vec4 position(mat4 transform_projection, vec4 vertex_position) {
+>     -- vertex code
+>     return transform_projection * vertex_position;
+> }
 > ```     
 
 * transform_project: transform matrix affected by Draw.translate/rotate/etc combined with ortho projection matrix

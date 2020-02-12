@@ -6,16 +6,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "matrixmath.lua=script+state+?",
+            "matrixmath.lua"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
         [
             "View project in explorer=?",
             "View project in explorer"
-        ],
-        [
-            "matrixmath.lua=script+state+?",
-            "matrixmath.lua"
         ],
         [
             "entitytest.lua=script+?",
@@ -53,7 +53,7 @@
         "scale": true,
         "resizable": false,
         "write_conf": true,
-        "filter": "nearest",
+        "filter": "linear",
         "web_memory": 24,
         "web_stack": 2,
         "os": "windows",

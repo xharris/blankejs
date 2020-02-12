@@ -33,14 +33,18 @@
         "scale_mode": "nearest",
         "resizable": true,
         "scale": true,
-        "filter": "linear"
+        "filter": "nearest",
+        "web_memory": 24,
+        "web_stack": 2
     },
     "enabled_plugins": {
         "xhh-array": true,
         "xhh-effect": true,
         "xhh-tween": false,
         "yonaba-delaunay": false,
-        "xhh-badword": false
+        "xhh-badword": false,
+        "xhh-vector": false,
+        "cmpl": false
     },
     "imageeditor": {
         "image/image0.png": {

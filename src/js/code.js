@@ -52,7 +52,7 @@ var reloadCompletions = () => {
 
 	// add classes as globals if they have properties
 	for (let c of class_list) {
-		if (hints['blanke-'+c.toLowerCase()] && !hints.global.find(p => p.prop == c || p.fn == c))
+		if (hints['blanke-'+c.toLowerCase()] && hints.global && !hints.global.find(p => p.prop == c || p.fn == c))
 			hints.global.push({ prop: c });
 	}
 }

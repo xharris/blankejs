@@ -45,7 +45,7 @@ const DEFAULT_IDE_SETTINGS = {
 	engine_path:'love2d',
 	themes_path:'themes',
 	js_engine_path:'engines/engine_love.js',
-	autocomplete_path:'./autocomplete.js',
+	autocomplete_path:'autocomplete.js',
 	theme:'green',
 	quick_access_size:5,
 	game_preview_enabled:true,
@@ -355,7 +355,7 @@ var app = {
             dispatchEvent("autocompleteChanged");
         }
 		app.ignore_errors = true;
-	    autocomplete_watch = nwFS.watch(nwPATH.resolve('src',app.ideSetting("autocomplete_path")), function(e){
+	    autocomplete_watch = app.watch(app.ideSetting("autocomplete_path"), function(e){
             app.refreshAutocomplete();
 			dispatchEvent("autocompleteChanged");
 			if (!app.autocomplete_toast)
