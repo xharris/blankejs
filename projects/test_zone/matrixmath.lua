@@ -31,7 +31,8 @@ State("math",{
 		
 	end,
 	draw = function()
-		local last_v
+		Draw.color('white')
+		Draw.print(Window.full_os, 50, 50)
 			
 		--angle = 45
 		rotationZ = {
@@ -74,7 +75,7 @@ State("math",{
 			
 			-- draw the point
 			Draw.pointSize(5)
-			Draw.point(projected2d.x, projected2d.y)
+			Draw.circle('fill',projected2d.x, projected2d.y,3)
 			
 			projected:push(projected2d)
 		end)

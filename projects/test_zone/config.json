@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Dev Tools=?",
-            "Dev Tools"
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
+            "matrixmath.lua=script+state+?",
+            "matrixmath.lua"
         ],
         [
             "entitytest.lua=script+?",
             "entitytest.lua"
         ],
         [
-            "Add a script=new+?",
-            "Add a script"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "matrixmath.lua=script+?",
-            "matrixmath.lua"
+            "Dev Tools=?",
+            "Dev Tools"
         ]
     ],
     "autoplay_preview": true,
@@ -53,10 +53,14 @@
         "scale": true,
         "resizable": false,
         "write_conf": true,
-        "filter": "linear"
+        "filter": "nearest",
+        "web_memory": 24,
+        "web_stack": 2,
+        "os": "windows",
+        "vsync": false
     },
     "enabled_plugins": {
-        "xhh-effect": false,
+        "xhh-effect": true,
         "xhh-tween": false,
         "xhh-net": true,
         "yonaba-delaunay": false,

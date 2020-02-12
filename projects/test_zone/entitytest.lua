@@ -46,8 +46,8 @@ Entity("player_txt",{
 
 State("entitytest",{
 	enter = function()
-		--print(badword.check("thesh!tmatwinkien"))
-		--Map.load("map0.map")
+		print(badword.check("thesh!tmatwinkien"))
+		Map.load("map0.map")
 		Net.on('ready', function()	
 			Game.spawn('player') -- Map.load("map0.map")	
 		end)

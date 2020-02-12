@@ -82,7 +82,7 @@ function inspectPlugins(silent) {
 			if (!temp_plugin_info[info_key].name)
 				temp_plugin_info[info_key].name = nwPATH.basename(file);
 		}
-		if (file.endsWith('.md')) {
+		if (file.endsWith('.md') && !['license.md','readme.md'].includes(nwPATH.basename(file).toLowerCase())) {
 			let data = nwFS.readFileSync(file,'utf-8');
 			let info_keys = ['Name','Author'];
 			let info = { Name:nwPATH.basename(file), Author:null };
@@ -292,8 +292,8 @@ class Plugins extends Editor {
 		
 		if (plugin_info[key]) {
 			for (let path of plugin_info[key].files) {
-				let rel_path = nwPATH.relative(app.ideSetting("plugin_path"), path);
-				nwFS.copySync(path, pathJoin(app.ideSetting("engine_path"), 'plugins', rel_path));
+				let rel_path = nwPATH.relative(app.ideSetting("plugin_path"), path).replace(/^(.+?)[\\\/]/,'');
+				nwFS.copySync(path, pathJoin(app.ideSetting("engine_path"), 'plugins', key, rel_path));
 			}
 			app.projSetting("enabled_plugins")[key] = true;
 			dispatchEvent('pluginChanged',{ key: key, info: plugin_info[key] });

@@ -344,7 +344,9 @@ do
             effect =        nil,
             auto_require =  true,
             background_color = 'black',
-            window_flags = {}
+            window_flags = {
+                vsync = false
+            }
         };
         config = {};
         updatables = {};
@@ -375,6 +377,9 @@ do
             config_data = love.filesystem.read('config.json')
             if config_data then Game.config = json.decode(config_data) end
             table.update(Game.options, Game.config.export)
+            -- get current os
+            Window.os = ({ ["OS X"]="mac", ["Windows"]="win", ["Linux"]="linux", ["Android"]="android", ["iOS"]="ios" })[love.system.getOS()]-- Game.options.os or 'ide'
+            Window.full_os = love.system.getOS()
             -- load settings
             Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
             -- window size and flags
