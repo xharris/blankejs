@@ -82,21 +82,8 @@ function inspectPlugins(silent) {
 			if (!temp_plugin_info[info_key].name)
 				temp_plugin_info[info_key].name = nwPATH.basename(file);
 		}
-		if (file.endsWith('.md') && !['license.md','readme.md'].includes(nwPATH.basename(file).toLowerCase())) {
-			let data = nwFS.readFileSync(file,'utf-8');
-			let info_keys = ['Name','Author'];
-			let info = { Name:nwPATH.basename(file), Author:null };
-			// get info about plugrin from readme
-			for (let k of info_keys) {
-				let re = new RegExp(`\\[\\/\\/\\]: # \\(${k}:\\s*([\\w\\s\\.]+)\\s*\\)`)
-				let match = re.exec(data);
-				if (match) info[k] = match[1].trim();
-			}
+		if (file.endsWith('.md') && !['license.md'].includes(nwPATH.basename(file).toLowerCase())) {
 			temp_plugin_info[info_key].docs.push(file);
-			if (temp_plugin_info[info_key].enabled)
-				Docview.addPlugin(info.Name+(info.Author ? ' ('+info.Author+')' : ''), file);
-			else
-				Docview.removePlugin(file);
 		}
 	}
 
@@ -194,6 +181,31 @@ class Plugins extends Editor {
 						Docview.removePlugin(file);
 					}
 				}
+			}
+		}
+
+		// enable docs
+		for (let key in plugin_info) {
+			let p_info = plugin_info[key];
+
+			if (p_info.docs.length > 0) {
+				let file = p_info.docs[0]; // only allow first doc file for now
+				let doc_info = { name:p_info['name'] || nwPATH.basename(file), author:null };
+
+				let data = nwFS.readFileSync(file,'utf-8');
+				let info_keys = ['Name','Author'];
+				// get info about plugrin from readme
+				for (let k of info_keys) {
+					let re = new RegExp(`\\[\\/\\/\\]: # \\(${k}:\\s*([\\w\\s\\.]+)\\s*\\)`)
+					let match = re.exec(data);
+					if (match) doc_info[k.toLowerCase()] = match[1].trim();
+				}
+
+				let getInfo = k => doc_info[k] != null ? doc_info[k] : p_info[k];
+				if (getInfo('enabled'))
+					Docview.addPlugin(getInfo('name')+(getInfo('author') ? ' ('+getInfo('author')+')' : ''), file);
+				else
+					Docview.removePlugin(file);
 			}
 		}
 		

@@ -6,6 +6,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
@@ -20,10 +24,6 @@
         [
             "entitytest.lua=script+?",
             "entitytest.lua"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
         ]
     ],
     "autoplay_preview": true,

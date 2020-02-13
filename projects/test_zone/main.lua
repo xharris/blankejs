@@ -3,6 +3,6 @@ Game {
 	load = function() 
 		State.start('math')
 		local myarr = Array()
-		myarr
+		-- myarr
 	end
 }
