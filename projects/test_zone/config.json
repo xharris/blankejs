@@ -6,12 +6,12 @@
     "window_size": 3,
     "quick_access": [
         [
-            "matrixmath.lua=script+state+?",
-            "matrixmath.lua"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "matrixmath.lua=script+state+?",
+            "matrixmath.lua"
         ],
         [
             "View project in explorer=?",
