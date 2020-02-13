@@ -19,7 +19,8 @@ exports.autocomplete = {
             {fn:'from',vars:{table:''}}
         ],
         'blanke-array-instance':[
-            {fn:'push',vars:{val:'',etc:'opt'}}
+            {fn:'push',vars:{val:'',etc:'opt'}},
+            {prop:'length'}
         ]
     }
 }

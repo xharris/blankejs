@@ -667,9 +667,12 @@ class Code extends Editor {
 					}
 					for (let tok of tokens) {
 						hint_list = hint_list.concat((hints[tok] || []).filter(h => {
-							if (tok.includes('instance'))
-								return !h.fn || !app.engine.fn_trigger || comp_fn_trigger(trigger);
-							else if (token_str.includes('class'))
+							if (tok.includes('instance')) {
+								if (h.prop)
+									return !comp_fn_trigger(trigger);
+								else 
+									return !app.engine.fn_trigger || comp_fn_trigger(trigger);
+							} else if (token_str.includes('class'))
 								return !app.engine.fn_trigger || !comp_fn_trigger(trigger);
 							return true;
 						}));
