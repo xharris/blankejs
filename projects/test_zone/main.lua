@@ -6,6 +6,3 @@ Game {
 		myarr
 	end
 }
-
-Entity("bob",{
-	update = function(self, dt)

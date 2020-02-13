@@ -312,7 +312,7 @@ class Code extends Editor {
 			let closers = Object.values(body);
 			let body_entries = Object.entries(body);
 			let re_body = new RegExp(body_entries.reduce((acc, cur) => acc.concat(cur.map(v => v.charAt(0).match(/\w/) ? v : '\\'+v)), []).join('|'), 'g');
-			baseMode.electricInput = /end/;
+			baseMode.electricInput = /end|\]|\}/;
 
 			const getLineLevel = (line) => {
 				let open = 0;
@@ -338,21 +338,25 @@ class Code extends Editor {
 				let base_indent = state.indentDepth;
 
 				let curr_line_open = getLineLevel(line);
+				let indentation = (base_indent + curr_line_open) * 4;
 
 				if (cur.line > 0) {
 					let prev_line = doc.getLine(cur.line - 1);
 					let tok = doc.getEditor().getTokenAt({line:cur.line-1, ch:cur.ch});
 					base_indent = tok.state.base.indentDepth;
 
+					let match;
+					if (match = prev_line.match(/(\s+).?/)) base_indent = match[1].length;
+					indentation = (base_indent + curr_line_open) * 4;
+
 					let prev_line_open = getLineLevel(prev_line);
-					// console.log({state, line, prev_line});
+					
+					// console.log(match, base_indent, prev_line_open, curr_line_open);
 
-					console.log(state.indentDepth, base_indent, prev_line_open, curr_line_open);
-
-					if (prev_line_open > 0) return (base_indent + 1) * 4;
-					if (prev_line_open < 0) return (Math.max(0,base_indent - 1) - Math.min(0,curr_line_open)) * 4;
-				}
-				return (base_indent + curr_line_open) * 4; 
+					if (prev_line_open > 0) indentation = (base_indent + 1) * 4;
+					if (prev_line_open < 0) indentation = (Math.max(0,base_indent) - Math.min(0,curr_line_open)) * 4;
+				} 
+				return indentation;
 			}
 			return CodeMirror.overlayMode(baseMode, blankeOverlay);
 		});
