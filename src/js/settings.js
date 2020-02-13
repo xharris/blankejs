@@ -130,18 +130,6 @@ class Settings extends Editor {
         });
 		this.appendChild(this.el_settings.container);
     }
-    
-    static watchEngine () {
-        app.minifyEngine(null,{ save_internal: true });
-        if (engine_watch)
-            engine_watch.close();
-        engine_watch = app.watch(app.ideSetting("engine_path"), (e, file) => {   
-            app.minifyEngine(null,{ save_internal: true });
-        });
-    }
-
-    static watchAutocomplete () {
-    }
 }
 
 document.addEventListener('openProject',()=>{
@@ -153,7 +141,7 @@ document.addEventListener('openProject',()=>{
 
 let engine_watch, autocomplete_watch;
 document.addEventListener('ideReady',(e)=>{
-    Settings.watchEngine();
+    app.watchJsEngine();
     app.watchAutocomplete();
 
     paths.forEach(p => { app.ideSetting(p+'_path', app.cleanPath(app.ideSetting(p+'_path'))) });

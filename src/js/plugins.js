@@ -351,7 +351,7 @@ document.addEventListener("appdataSave", (e) => {
 	nwFS.ensureDir(app.ideSetting("plugin_path"), (err) => {
 		if (plugin_watch) 
 			plugin_watch.close();
-		plugin_watch = app.watch(app.ideSetting("plugin_path"), function(evt_type, file) {
+		plugin_watch = app.watch(app.ideSetting("plugin_path"), (evt_type, file) => {
 			refreshPluginList();
 		});
 	});

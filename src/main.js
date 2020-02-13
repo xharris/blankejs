@@ -129,7 +129,7 @@ var app = {
 	minimize: function() {
 		app.window.minimize();
 	},
-	watch: function(path, cb) {
+	watch: (path, cb) => {
 		if (!nwFS.existsSync(path)) return;
 		return nwWATCH(path, {
 			recursive: true,
@@ -226,7 +226,7 @@ var app = {
 				app.project_path = path;
 
 				// watch for file changes
-				app.proj_watch = app.watch(app.project_path, function(evt_type, file) {
+				app.proj_watch = app.watch(app.project_path, (evt_type, file) => {
 					if (evt_type == 'remove')
 						app.removeQuickAccess(nwPATH.basename(file));
 					if (file) { dispatchEvent("fileChange", {type:evt_type, file:file}); }
@@ -1304,7 +1304,6 @@ app.window.webContents.once('dom-ready', ()=>{
 		// console.log(process.argv);
 	}
 	app.refreshQuickAccess();
-	// app.watchJsEngine();
 
 	// remove error file
 	nwFS.remove(nwPATH.join(app.getAppDataFolder(),'error.txt'));
@@ -1613,8 +1612,6 @@ app.window.webContents.once('dom-ready', ()=>{
 	});
 
 	app.loadAppData(function(){
-		app.watchJsEngine();
-
 		// load current theme
 		app.setTheme(app.ideSetting("theme"));
 		app.refreshRecentProjects();
