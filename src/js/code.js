@@ -300,7 +300,61 @@ class Code extends Editor {
 					return null;
 				}
 			};
-			return CodeMirror.overlayMode(CodeMirror.getMode(config, parserConfig.backdrop || app.engine.code_mode || app.engine.language), blankeOverlay);
+			let baseMode = CodeMirror.getMode(config, parserConfig.backdrop || app.engine.code_mode || app.engine.language);
+			let body = {
+				'(': ')',
+				'[': ']',
+				'{': '}',
+				'function': 'end',
+				'do': 'end'
+			}
+			let openers = Object.keys(body);
+			let closers = Object.values(body);
+			let body_entries = Object.entries(body);
+			let re_body = new RegExp(body_entries.reduce((acc, cur) => acc.concat(cur.map(v => v.charAt(0).match(/\w/) ? v : '\\'+v)), []).join('|'), 'g');
+			baseMode.electricInput = /end/;
+
+			const getLineLevel = (line) => {
+				let open = 0;
+				let matches = line.match(re_body);
+				if (matches) {
+					let m = 0, w = matches.length - 1;
+					while (m <= w) {
+						if (closers.includes(matches[m])) {
+							open--;
+						}
+						if (openers.includes(matches[m])) {
+							open++;
+						}
+						m++;
+					}
+				}
+				return open;
+			}
+
+			baseMode.indent = (state, line) => {
+				let doc = this.codemirror.getDoc();
+				let cur = doc.getCursor();
+				let base_indent = state.indentDepth;
+
+				let curr_line_open = getLineLevel(line);
+
+				if (cur.line > 0) {
+					let prev_line = doc.getLine(cur.line - 1);
+					let tok = doc.getEditor().getTokenAt({line:cur.line-1, ch:cur.ch});
+					base_indent = tok.state.base.indentDepth;
+
+					let prev_line_open = getLineLevel(prev_line);
+					// console.log({state, line, prev_line});
+
+					console.log(state.indentDepth, base_indent, prev_line_open, curr_line_open);
+
+					if (prev_line_open > 0) return (base_indent + 1) * 4;
+					if (prev_line_open < 0) return (Math.max(0,base_indent - 1) - Math.min(0,curr_line_open)) * 4;
+				}
+				return (base_indent + curr_line_open) * 4; 
+			}
+			return CodeMirror.overlayMode(baseMode, blankeOverlay);
 		});
 
 		let showSpritePreview = (image_name, include_img, cb) => {

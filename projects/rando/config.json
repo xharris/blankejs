@@ -33,7 +33,7 @@
         "scale_mode": "nearest",
         "resizable": true,
         "scale": true,
-        "filter": "nearest",
+        "filter": "linear",
         "web_memory": 24,
         "web_stack": 2
     },
