@@ -125,7 +125,7 @@ var script_list = [];
 var getKeywords = (file, content) => {
     blanke.cooldownFn('getKeywords.'+file, 500, ()=>{
 		dispatchEvent('script_modified',{path:file, content:content})
-		if (file.includes(main_file)) return; // main file makes while loop freeze for some reason
+		// if (file.includes(main_file)) return; // main file makes while loop freeze for some reason
         ext_class_list[file] = {};
         instance_list[file] = {};
         var_list[file] = {};
@@ -255,7 +255,7 @@ class Code extends Editor {
 					else baseCur += " ";
 					var ch;
 
-					getKeywords(this_ref.file, this_ref.codemirror.getValue());
+					getKeywords(this.file, this.codemirror.getValue());
 
 					// comment
 					if (stream.match(/\s*\/\//) || baseCur.includes("comment")) {
@@ -598,9 +598,6 @@ class Code extends Editor {
 			}
 		}
 
-		// disabled for now
-		let comp_fn_trigger = (v) => true; //(!app.engine.fn_trigger || v == app.engine.fn_trigger);
-
 		let showHints = (editor, in_list, input) => {
 			if (!this.file_loaded) return;
 			let hint_types = {};
@@ -612,7 +609,7 @@ class Code extends Editor {
 				let add = false;
 				let text = hint_opts.fn || hint_opts.prop;
 
-				if (input != '.' && !comp_fn_trigger(input) && !text.startsWith(input) && text != input) 
+				if (!text.startsWith(input) || text == input) 
 					continue;
 
 				if (hint_opts.fn) {
@@ -659,97 +656,105 @@ class Code extends Editor {
 			});
 		}
 
-		let before_dot = '';
-		new_editor.on("inputRead", function(cm, e){
+		let comp_fn_trigger = v => (v == (app.engine.fn_trigger || '.'));
+
+		new_editor.on("cursorActivity", (cm, e) => {
 			let editor = cm;
 			let cursor = editor.getCursor();
 
-/*
-			if (this_ref.last_word == word) return;
-			this_ref.last_word = word;
-			*/
-
 			checkGutterEvents(editor);
-			this_ref.parseFunctions();
-			this_ref.addAsterisk();
+			this.parseFunctions();
+			this.addAsterisk();
 			
 			blanke.cooldownFn('checkLineWidgets',500,()=>{
 				otherActivity(cm,e)
 
-				this_ref.refreshFnHelperTimer();
+				this.refreshFnHelperTimer();
 
 				let hint_list = [];
 				// dot activation
 				let word_pos = editor.findWordAt(cursor); // TODO: check if cursor is outside of document (line count)
 				let word = editor.getRange(word_pos.anchor, word_pos.head);
-				let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
+				let before_word_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch -1});
 				let before_word = editor.getRange(before_word_pos.anchor, before_word_pos.head);//before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
-				let before_dot_pos = editor.findWordAt({line: before_word_pos.anchor.line, ch: before_word_pos.anchor.ch-1})
-				if (before_word == '.' || comp_fn_trigger(before_word)) {
-					before_dot = editor.getRange(before_dot_pos.anchor, before_dot_pos.head);
-				} else {
-					before_dot = '';
-				}
-
+				
 				// word that triggered the dot
 				let keyword = word;
 				let keyword_pos = word_pos;
+				let trigger;
 				if (word == '.' || comp_fn_trigger(word)) {
-					keyword = before_word;
 					keyword_pos = before_word_pos;
+					keyword = before_word;
+					trigger = word;
+					word = '';
 				}
-				else if (before_dot != '') {
-					keyword = before_dot;
-					keyword_pos = before_dot_pos;
+				if (before_word == "." || comp_fn_trigger(before_word)) {
+					keyword_pos = editor.findWordAt({line: word_pos.anchor.line, ch: word_pos.anchor.ch -2});
+					keyword = editor.getRange(keyword_pos.anchor,keyword_pos.head);
+					trigger = before_word
 				}
 				keyword = keyword.trim();
 
-				let token = editor.getTokenAt(keyword_pos.head);//{line: word_pos.anchor.line, ch: word_pos.anchor.ch-1});
-				let tokens = (token.type || '').split(' ');
+				// keyword (Draw), word (./line), trigger (./:)
+
+				let token = editor.getTokenAt(keyword_pos.head);
+				let token_str = token.type || '';
+				let tokens = token_str.split(' ');
 				let is_key_or_var = tokens.includes('variable-2') || tokens.includes('variable') || tokens.includes('keyword');
 				
 				if (keyword != '') {
 					// this -> replace with real instance type
-					if (is_key_or_var && this_lines[this_ref.file]) {
+					if (is_key_or_var && this_lines[this.file]) {
 						// look at previous lines until a 'this regex' is hit
 						let loop = keyword_pos.head.line - 1;
-						let this_lines_keys = Object.keys(this_lines[this_ref.file]);
+						let this_lines_keys = Object.keys(this_lines[this.file]);
 						do {
 							let line = (editor.getLine(loop) || '').trim();
 							for (let l of this_lines_keys) {
 								if (line.includes(l) && 
 									(keyword == 'this')) { // || this_lines[this_ref.file][l].includes(keyword))) { // TODO: DOESNT WORK ATM
-									tokens.push(this_lines[this_ref.file][l][0]);
+									tokens.push(this_lines[this.file][l][0]);
 								}
 							}
 							loop--;
 						} while (loop >= 0);
 					}
 					for (let tok of tokens) {
-						hint_list = hint_list.concat((hints[tok] || []).filter(h => !h.fn || comp_fn_trigger(before_word)));
+						hint_list = hint_list.concat((hints[tok] || []).filter(h => {
+							if (tok.includes('instance')) {
+								if (h.prop)
+									return !comp_fn_trigger(trigger);
+								else 
+									return !app.engine.fn_trigger || comp_fn_trigger(trigger);
+							} else if (token_str.includes('class'))
+								return !app.engine.fn_trigger || !comp_fn_trigger(trigger);
+							return true;
+						}));
 					}
 				}
 				// 'global scope'
-				if (word != '.' && !comp_fn_trigger(word) && is_key_or_var) {
-					if (var_list[this_ref.file]) {
+				if (keyword && is_key_or_var) {
+					if (var_list[this.file]) {
 						// variable
-						if (var_list[this_ref.file].var)
-							var_list[this_ref.file].var.forEach(v => {
+						if (var_list[this.file].var)
+							var_list[this.file].var.forEach(v => {
 								if (v.startsWith(word))
 									hint_list.push({ prop: v });
 							})
 						// function
-						if (var_list[this_ref.file].fn)
-							var_list[this_ref.file].fn.forEach(v => {
-								if (v.startsWith(word))
+						if (var_list[this.file].fn)
+							var_list[this.file].fn.forEach(v => {
+								if (v.startsWith(keyword))
 									hint_list.push({ fn: v });
 							})
 					}
 					// globals
-					hint_list = hint_list.concat(hints.global);
+					if (!trigger)
+						hint_list = hint_list.concat(hints.global);
 				}
-				if (hint_list.length > 0)
-					showHints(editor, hint_list, word);
+				if (hint_list.length > 0) {
+					showHints(editor, hint_list, word, app.engine.fn_trigger && tokens.includes('blanke-instance'));
+				}
 			});
 		});
 
@@ -759,7 +764,7 @@ class Code extends Editor {
 		})
 		new_editor.on('click', function(cm, obj){
 
-			this_ref.focus();
+			this.focus();
 		});
 		new_editor.on('focus', function(cm){
 			// TODO: this_ref.game.resume(); // NOTE: has a couple edge cases!
@@ -1051,7 +1056,7 @@ class Code extends Editor {
 
 		this.setTitle(nwPATH.basename(file_path));
 		this.removeAsterisk();
-		getKeywords(this.file, this.codemirror.getValue());
+		getKeywords(this.file, text);
 		this.parseFunctions();
 
 		this.setOnClick(function(){

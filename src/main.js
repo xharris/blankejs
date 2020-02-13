@@ -355,7 +355,7 @@ var app = {
             dispatchEvent("autocompleteChanged");
         }
 		app.ignore_errors = true;
-	    autocomplete_watch = app.watch(app.ideSetting("autocomplete_path"), function(e){
+	    autocomplete_watch = app.watch(app.ideSetting("autocomplete_path"), (e, file) => {
             app.refreshAutocomplete();
 			dispatchEvent("autocompleteChanged");
 			if (!app.autocomplete_toast)
