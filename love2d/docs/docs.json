@@ -2,18 +2,10 @@
     "Game/Misc": [
         {"title":"","file":"game.md"}
     ],
-    "GameObject": [
-        {"title":"","file":"gameobject.md"}
-    ],
-    "Entity": [
-        {"title":"","file":"entity.md"}
-    ],
-    "Canvas": [
-        {"title":"","file":"canvas.md"}
-    ],
-    "Image": [
-        {"title":"","file":"image.md"}
-    ],
+    "GameObject": [ {"title":"","file":"gameobject.md"} ],
+    "Entity": [ {"title":"","file":"entity.md"} ],
+    "Canvas": [ {"title":"","file":"canvas.md"} ],
+    "Image": [ {"title":"","file":"image.md"} ],
     "Input": [ {"title":"", "file":"input.md"} ],
     "Draw": [ {"title":"", "file":"draw.md"} ],
     "Audio": [ {"title":"", "file":"audio.md"} ],

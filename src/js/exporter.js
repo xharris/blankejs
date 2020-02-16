@@ -204,5 +204,6 @@ document.addEventListener("openProject", function(e){
 				eng_settings[s[0]] = prop.default;
 		}
 	});
-	app.projSetting("export",Object.assign(DEFAULT_EXPORT_SETTINGS(), app.projSetting("export"), eng_settings))
+	console.log(app.projSetting('export'))
+	app.projSetting("export",Object.assign(DEFAULT_EXPORT_SETTINGS(), eng_settings, app.projSetting("export")))
 });

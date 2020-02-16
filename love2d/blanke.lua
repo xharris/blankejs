@@ -285,7 +285,12 @@ is_object = function(o) return type(o) == 'table' and o.init and type(o.init) ==
 
 encrypt = function(str, code, seed)
     local oldseed = {Math.seed()}
-    seed = seed or 31459   
+    if not seed then 
+        seed = 0
+        for c = 1, string.len(code) do 
+            seed = seed + string.byte(string.sub(code,c,c))
+        end 
+    end 
     Math.seed(seed)
     local ret_str = ''
     local code_len = string.len(code)
@@ -297,7 +302,12 @@ encrypt = function(str, code, seed)
 end
 decrypt = function(str, code, seed)
     local oldseed = {Math.seed()}
-    seed = seed or 31459   
+    if not seed then 
+        seed = 0
+        for c = 1, string.len(code) do 
+            seed = seed + string.byte(string.sub(code,c,c))
+        end 
+    end 
     Math.seed(seed)                                                                                                                                                                                                                                                         
     local ret_str = ''
     local code_len = string.len(code)
@@ -326,6 +336,26 @@ FS = {
         return love.filesystem.getDirectoryItems(path)
     end
 }
+
+--SIGNAL
+Signal = nil
+do
+    local fns = {}
+    Signal = {
+        emit = function(event, ...)
+            if fns[event] then 
+                for _,fn in ipairs(fns[event]) do 
+                    fn(...)
+                end
+            end
+        end,
+        on = function(event, fn) 
+            if not fns[event] then fns[event] = {} end
+            table.insert(fns[event], fn)
+        end
+    }
+end
+
 --GAME
 Game = nil
 do
@@ -333,6 +363,11 @@ do
     local mesh_canvas
     local meshes = {}
     local objects = {}
+
+    Signal.on('__main', function()
+        mesh_canvas = CanvasStack()
+    end)
+
     Game = class {
         options = {
             res =           'assets',
@@ -345,6 +380,7 @@ do
             effect =        nil,
             auto_require =  true,
             background_color = 'black',
+            auto_draw =     true,
             window_flags = {
                 vsync = false
             }
@@ -425,7 +461,7 @@ do
             })
             -- effect
             if Game.options.effect then
-                Game.effect = Effect(Game.options.effect)
+                Game.setEffect(unpack(Game.options.effect))
             end
             if Game.options.load then
                 Game.options.load()
@@ -435,10 +471,14 @@ do
             end
 
             Blanke.game_canvas = Canvas()
-            Blanke.game_canvas._main_canvas = true
+            Blanke.game_canvas.__ide_obj = true
             
             Blanke.game_canvas:remDrawable()
         end;
+
+        setEffect = function(...)
+            Game.effect = Effect({...})
+        end,
 
         addObject = function(name, _type, args, spawn_class)
             -- store in object 'library' and update initial props
@@ -484,7 +524,6 @@ do
         drawObject = function(gobj, ...)
             local props = gobj
             local parent = gobj.parent or gobj
-            if not props.visible then return end
             local lobjs = {...}
             local is_fn = false
             if lobjs[2] == 'function' then
@@ -536,19 +575,17 @@ do
                     end
 
                     if props.mesh and props.mesh.vertices then 
-                        if not mesh_canvas then 
-                            mesh_canvas = Canvas()
-                            mesh_canvas:remDrawable()
-                        end
+                        mesh_canvas:getCanvas()
                         local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
                         if not meshes[mesh_str] then 
                             meshes[mesh_str] = love.graphics.newMesh(props.mesh.vertices, props.mesh.mode or 'fan', props.mesh.usage or 'dynamic')
                         end 
                         local mesh = meshes[mesh_str]
                         skip_tf = true
-                        mesh_canvas:drawTo(draw_obj)
-                        mesh:setTexture(mesh_canvas.canvas)
+                        mesh_canvas:drawTo(function() draw_obj:draw() end)
+                        mesh:setTexture(mesh_canvas.canvas.canvas) -- yes twice (since it's a canvasstack)
                         love.graphics.draw(mesh)
+                        mesh_canvas:release()
                         skip_tf = false
                     else
                         draw_obj()
@@ -604,7 +641,7 @@ do
         end;
 
         setBackgroundColor = function(...)
-            return love.graphics.setBackgroundColor(Draw.parseColor(...))
+            Game.options.background_color = ...
         end;
     }
 end
@@ -687,8 +724,10 @@ GameObject = class {
         table.insert(Game.updatables, self)
     end;
     addDrawable = function(self)
-        self.drawable = true
-        table.insert(Game.drawables, self)
+        if self.__ide_obj or Game.options.auto_draw then 
+            self.drawable = true
+            table.insert(Game.drawables, self)
+        end
     end;
     remUpdatable = function(self)
         self.updatable = false
@@ -719,6 +758,7 @@ GameObject = class {
 }
 
 --CANVAS
+local canv_len = 0
 Canvas = GameObject:extend {
     init = function(self, w, h, settings)
         GameObject.init(self, {classname="Canvas"})
@@ -733,16 +773,17 @@ Canvas = GameObject:extend {
         else 
             --self.canvas:setFilter(Game.options.filter, Game.options.filter)
         end
+        canv_len = canv_len + 1
         self.blendmode = {"alpha"}
         self:addDrawable()
     end;
     _draw = function(self)  
-        if not self._main_canvas then
+        if not self.__ide_obj then
             Draw.push()
             love.graphics.origin()
         end
         Game.drawObject(self, self.canvas)
-        if not self._main_canvas then
+        if not self.__ide_obj then
             Draw.pop()
         end
     end;
@@ -756,7 +797,7 @@ Canvas = GameObject:extend {
         if self.auto_clear then Draw.clear() end
         -- camera transform
         love.graphics.origin()
-        if Camera.transform and not self._main_canvas then
+        if Camera.transform and not self.__ide_obj then
             love.graphics.replaceTransform(Camera.transform)
         end
     end;
@@ -764,22 +805,51 @@ Canvas = GameObject:extend {
         Draw.stack(function()
             -- camera transform
             self.active = true
-            if type(obj) == "function" then
-                self.canvas:renderTo(function()
-                    self:prepare()
-                    obj()
-                end)
-            
-            elseif is_object(obj) and obj.draw then
-                self.canvas:renderTo(function()
-                    self:prepare()
-                    obj:draw()
-                end)
-            end
+            self.canvas:renderTo(function()
+                self:prepare()
+                obj()
+            end)
             self.active = false
         end)
     end;
 }
+
+--CANVASSTACK
+CanvasStack = nil
+do 
+    local stack = {} -- { }
+    CanvasStack = class{
+        getCanvas = function(self)
+            if not self.canvas then 
+                local found = false 
+                -- recycle a canvas
+                for c, canv in ipairs(stack) do 
+                    if not canv._used then 
+                        self.canvas = canv
+                        found = true
+                    end 
+                end 
+                -- add a new canvas
+                if not found then 
+                    self.canvas = Canvas()
+                    self.canvas:remDrawable()
+                    table.insert(stack, self.canvas)
+                end
+                self.canvas._used = true
+            end
+        end,
+        drawTo = function(self, ...)
+            self.canvas:drawTo(...)
+        end,
+        draw = function(self)
+            self.canvas:draw()
+        end,
+        release = function(self)
+            self.canvas._used = false
+            self.canvas = nil
+        end
+    }
+end
 
 --IMAGE
 Image = nil
@@ -1494,10 +1564,22 @@ do
         gl_FragCoord = "screen_coords"
     }
     local library = {}
+    local canv_front, canv_back
+    local getCanv = function(self)
+        self.front:getCanvas()
+        self.back:getCanvas()
+        self.front, self.back = self.back, self.front
+        return self.front, self.back
+    end 
+    local switchCanv = function(self)
+        self.front, self.back = self.back, self.front
+        return self.front, self.back
+    end
     Effect = GameObject:extend {
         new = function(name, in_opt)
             local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
             table.update(opt, in_opt)
+            
             -- mandatory vars
             if not opt.vars['tex_size'] then
                 opt.vars['tex_size'] = {Game.width, Game.height}
@@ -1580,6 +1662,7 @@ do
                 code = code,
                 shader = love.graphics.newShader(code)
             }
+
         end;
 
         info = function(name) return library[name] end;
@@ -1604,10 +1687,7 @@ do
 
             self.disabled = {}
 
-            self.spare_canvas = Canvas()
-            self.main_canvas = Canvas()
-            self.spare_canvas:remDrawable()
-            self.main_canvas:remDrawable()
+            self.front, self.back = CanvasStack(), CanvasStack()
 
             self:addUpdatable()
         end;
@@ -1640,10 +1720,55 @@ do
             end
         end;
         update = function(self,dt) self:update(dt) end;
-        draw = function(self,fn)
+        draw = function(self, fn)
+            local last_shader = love.graphics.getShader()
+            local front, back = getCanv(self)
+            front:drawTo(function()
+                fn()
+            end)
+            local last_blend = love.graphics.getBlendMode()
+
+            for _, name in ipairs(self.names) do 
+                self:sendVars(name)
+                local info = library[name]
+                if not self.disabled[name] then 
+
+                    local applied = false
+                    local apply_shader = function()
+                        applied = true
+                        front, back = switchCanv(self)
+                        front:drawTo(function()
+                            if info.opt.blend then 
+                                love.graphics.setBlendMode(unpack(info.opt.blend))
+                            else
+                                love.graphics.setBlendMode("alpha","premultiplied")
+                            end
+                            love.graphics.setShader(info.shader)
+                            back:draw()
+                        end)
+                    end 
+
+                    if info.opt.draw then
+                        info.opt.draw(self.vars[name], apply_shader)
+                    end
+                    if not applied then       
+                        apply_shader()
+                    end 
+                end
+            end 
+
+            love.graphics.setShader()
+            front:draw()
+            love.graphics.setBlendMode(last_blend)
+            love.graphics.setShader(last_shader)
+
+            front:release()
+            back:release()
+        end;
+        old_draw = function(self,fn)
             self.spare_canvas:drawTo(fn)
             local one_draw = false -- was there at least one draw?
-            local use_canvas = true
+            local use_canvas = false
             for _,name in ipairs(self.names) do
                 if not self.disabled[name] then
                     if not self.use_canvas[name] then use_canvas = false end 
@@ -2309,25 +2434,6 @@ do
     }
 end 
 
---SIGNAL
-Signal = nil
-do
-    local fns = {}
-    Signal = {
-        emit = function(event, ...)
-            if fns[event] then 
-                for _,fn in ipairs(fns[event]) do 
-                    fn(...)
-                end
-            end
-        end,
-        on = function(event, fn) 
-            if not fns[event] then fns[event] = {} end
-            table.insert(fns[event], fn)
-        end
-    }
-end
-
 --NET
 Net = nil
 do
@@ -2768,7 +2874,7 @@ do
         iterDraw = function(t, override_drawable)
             local reorder_drawables = false
             iterate(t, 'drawable', function(obj)
-                if not obj.skip_draw and (override_drawable or obj.drawable) and obj.draw ~= false then
+                if obj.visible and not obj.skip_draw and (override_drawable or obj.drawable) and obj.draw ~= false then
                     if not obj._last_z or obj._last_z ~= obj.z then
                         reorder_drawables = true
                     end
@@ -2883,6 +2989,7 @@ do
     }
 end
 
+Signal.emit('__main')
 
 love.load = function() Blanke.load() end
 love.update = function(dt) 

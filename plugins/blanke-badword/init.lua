@@ -4,7 +4,7 @@ local mykey = "forkingshirt"
 --local f = io.open('words.txt','w+')
 --f:write(encrypt(table.concat(string.split([[ words ]],'\n'), '.'),mykey))
 
-local decrypted = decrypt(words, mykey)
+local decrypted = decrypt(words, mykey, 31459)
 local word_table = decrypted:split('.')
 local word_dict = {}
 local storeWord, hasWord

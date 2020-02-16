@@ -5,20 +5,20 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Card.lua=script+?",
-            "Card.lua"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "Open image editor=?",
-            "Open image editor"
+            "Card.lua=script+?",
+            "Card.lua"
         ],
         [
             "engine.lua=script+?",
             "engine.lua"
+        ],
+        [
+            "Open image editor=?",
+            "Open image editor"
         ],
         [
             "Dev Tools=?",
@@ -30,12 +30,11 @@
     "scene": {},
     "export": {
         "name": "rando",
-        "scale_mode": "nearest",
-        "resizable": true,
-        "scale": true,
-        "filter": "linear",
+        "filter": "nearest",
         "web_memory": 24,
-        "web_stack": 2
+        "web_stack": 2,
+        "resizable": true,
+        "scale": true
     },
     "enabled_plugins": {
         "xhh-array": true,

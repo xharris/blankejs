@@ -41,7 +41,7 @@ module.exports.class_list = [
 	"Math", "FS", "Game", "Canvas", "Image", "Entity",
 	"Input", "Draw", "Color", "Audio", "Effect", "Camera",
 	"Map", "Physics", "Hitbox", "State", "Timer", "Window", 
-	"Net", "Blanke", "class"
+	"Net", "Blanke", "class", "table"
 ];
 
 module.exports.class_extends = {
@@ -91,12 +91,37 @@ module.exports.this_ref = {
 */
 module.exports.hints = {
 	"global":[
-		{ fn: "Draw", vars: { args:'...' } }
+		{fn: "Draw", vars: { args:'...' } },
+		{fn:'switch', vars:{v:'',choices_t:'{ choice1 = function() end, ... }'}},
+		{fn:'copy', vars:{t:''}, info:'returns deepcopy of table'},
+		{fn:'is_object', vars:{v:''}, info:'is v an instance of a class'},
+		{fn:'encrypt', vars:{str:'',code:'hashing key',seed:'opt number'}},
+		{fn:'decrypt', vars:{hashed_str:'',code:'hashing key used to encrypt',seed:'opt number used to encrypt'}}
+	],
+	"blanke-table":[
+		{fn:'update', vars: { old:'', 'new':'', keys:'opt' } },
+		{fn:'keys', vars: { t:'' }},
+		{fn:'every', vars:{t:''}},
+		{fn:'some', vars:{t:''}},
+		{fn:'len', vars:{t:''}},
+		{fn:'hasValue', vars:{t:'',val:''}},
+		{fn:'slice', vars:{t:'',start:'opt 1',end:'opt #t'}, info:'returns segment of table'},
+		{fn:'defaults', vars:{t:'',defaults_t:''}},
+		{fn:'append', vars:{t:'',new_t:''}},
+		{fn:'filter', vars:{t:'',fn:'(item, index) => true to keep value, false to remove'}},
+		{fn:'random', vars:{t:''}},
+		{fn:'includes', vars:{t:'',val:''}}
 	],
 	"blanke-math":[
-		{ fn: 'random', vars: { min:'opt', max:'opt' } },
-		{ fn: 'indexTo2d', vars: { i:'', col:'' } },
-		{ fn: 'getXY', vars: { angle:'', dist:'' } }
+		{fn:'seed', vars:{low:'opt',high:'opt'}, args:'set/get rng seed'},
+		{fn:'random', vars: { min:'opt', max:'opt' } },
+		{fn:'indexTo2d', vars: { i:'', col:'' } },
+		{fn:'getXY', vars: { angle:'', dist:'' } },
+		{fn:'distance', vars:{x1:'',y1:'',x2:'',y2:''}},
+		{fn:'lerp', vars:{a:'',b:'',t:''}},
+		{fn:'sinusoidal', vars:{min:'',max:'',speed:'',offset:'opt'}},
+		{fn:'angle', vars:{x1:'',y1:'',x2:'',y2:''}, args:'returns angle between two points abs(atan2)'},
+		{fn:'pointInShape', vars:{shape:'{x1,y1,x2,y2,...}',x:'',y:''}}
 	],
 	"blanke-fs":[
 		{fn:'basename',vars:{path:''}},
@@ -107,10 +132,16 @@ module.exports.hints = {
 	],
 	"blanke-game":[
 		{ prop: 'options' },
+		{prop:'width'},
+		{prop:'height'},
+		{prop:'win_width'},
+		{prop:'win_height'},
 		{ prop: 'config' },
 		{ fn: 'res', vars: { type:'image/audio/map', file:'' } },
 		{ fn: 'spawn', vars: { classname:'', args:'opt' } },
-		{ fn: 'setBackgroundColor', vars: { r:'', g:'', b:'', a:'' } }
+		{ fn: 'setBackgroundColor', vars: { r:'', g:'', b:'', a:'' } },
+		{prop:'updatables'},
+		{prop:'drawables'}
 	],
 	"blanke-canvas-instance":[
 		{ fn: 'resize', vars: { w:'', h:'' } },

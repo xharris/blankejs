@@ -45,9 +45,9 @@ Entity("Card",{
 	style='hand',
 	scale=1, --.2,
 	visible=false,
-	effect = { 'tablecard', 'static', 'chroma shift'},
+	effect = { 'static', 'chroma shift' },
 	spawn = function(self, str)	
-		self.effect:disable('chroma shift')
+		--self.effect:disable('chroma shift')
 		self.effect:disable('static')
 		--self.effect:disable('tablecard')
 
@@ -105,6 +105,7 @@ Entity("Card",{
 			self.rect = {0,0,0,0}
 			-- self.effect:set("tablecard", self.rect)
 		end
+		-- card in hand
 		if self.style == "hand" then
 			self.width = card_w/2
 			self.height = card_h/2
@@ -118,6 +119,13 @@ Entity("Card",{
 			end
 			self.scale = Math.lerp(self.scale, self.target_scale, 0.5)
 		end
+		-- card on table
+		if self.style == 'table' then
+			self.width = card_w/4
+			self.height = card_h/4
+			self.scale = 0.75
+			self.rect = calcCardRect(self)
+		end
 		-- self.effect:set("tablecard", {self.x - (self.width/4), self.y - (self.height/4), self.x + (self.width/4), self.y + (self.height/4)})
 	end,
 	drawRect = function(self)
@@ -129,7 +137,7 @@ Entity("Card",{
 		end
 	end,
 	draw = function(self)
-		if self.style == "hand" then
+		if self.style == "hand" or self.style == 'table' then
 			local r = 12
 			Draw.push()
 			Draw {

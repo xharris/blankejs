@@ -37,6 +37,15 @@ Effect.new("chroma shift", {
     end
 })
 
+--[[
+      vec4 px_minus = Texel(texture, texture_coords - direction);
+      vec4 px_plus = Texel(texture, texture_coords + direction);
+      pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);
+      if ((px_minus.a == 0 || px_plus.a == 0) && pixel.a > 0) {
+          pixel.a = 1.0;
+      }
+]]
+
 Effect.new("zoom blur", {
   vars = { center={0,0}, strength=0.1 },
   effect = [[

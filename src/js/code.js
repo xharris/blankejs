@@ -329,7 +329,7 @@ class Code extends Editor {
 						m++;
 					}
 				}
-				return open;
+				return Math.max(-1, open);
 			}
 
 			baseMode.indent = (state, line) => {
@@ -337,8 +337,9 @@ class Code extends Editor {
 				let cur = doc.getCursor();
 				let base_indent = state.indentDepth;
 
-				let curr_line_open = getLineLevel(line);
-				let indentation = (base_indent + curr_line_open) * 4;
+				let prev_line_level = 0;
+				let curr_line_level = getLineLevel(line);
+				let indentation = (base_indent + curr_line_level) * 4;
 
 				if (cur.line > 0) {
 					let prev_line = doc.getLine(cur.line - 1);
@@ -347,15 +348,14 @@ class Code extends Editor {
 
 					let match;
 					if (match = prev_line.match(/(\s+).?/)) base_indent = match[1].length;
-					indentation = (base_indent + curr_line_open) * 4;
+					indentation = (base_indent + curr_line_level) * 4;
 
-					let prev_line_open = getLineLevel(prev_line);
-					
-					// console.log(match, base_indent, prev_line_open, curr_line_open);
+					prev_line_level = getLineLevel(prev_line);
 
-					if (prev_line_open > 0) indentation = (base_indent + 1) * 4;
-					if (prev_line_open < 0) indentation = (Math.max(0,base_indent) - Math.min(0,curr_line_open)) * 4;
+					if (prev_line_level > 0) indentation = (base_indent + 1) * 4;
+					if (prev_line_level < 0) indentation = (Math.max(0,base_indent) + Math.min(0,curr_line_level)) * 4;
 				} 
+				// console.log({curr_line_level, base_indent, prev_line_level, indentation});
 				return indentation;
 			}
 			return CodeMirror.overlayMode(baseMode, blankeOverlay);
@@ -662,13 +662,16 @@ class Code extends Editor {
 
 		let comp_fn_trigger = v => (v == (app.engine.fn_trigger || '.'));
 
+		new_editor.on('change', () => {
+			this.addAsterisk();
+		})
+
 		new_editor.on("cursorActivity", (cm, e) => {
 			let editor = cm;
 			let cursor = editor.getCursor();
 
 			checkGutterEvents(editor);
 			this.parseFunctions();
-			this.addAsterisk();
 			
 			blanke.cooldownFn('checkLineWidgets',500,()=>{
 				otherActivity(cm,e)

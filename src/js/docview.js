@@ -27,16 +27,21 @@ class Docview extends Editor {
 		nwFS.readFile(nwPATH.join(doc_path,'docs.json'), 'utf-8', (err, data) => {
 			if (!err) {
 				this.doc_sections = JSON.parse(data);
-				this.doc_sections.Plugins = plugin_md_list;
 
+				let categories = Object.keys(this.doc_sections).sort((a, b) => a < b ? -1 : 1);
+
+				this.doc_sections.Plugins = plugin_md_list;
+				categories.push('Plugins');
+			
 				// put the divs together
-				for (let category in this.doc_sections) {
+				for (let category of categories) {
 					// CATEGORY
 					let el_section = app.createElement("div","section");
 					let el_header = app.createElement("p","header");
 					let el_body = app.createElement("div",["body","hidden"]);
 
 					let num_sections = Object.keys(this.doc_sections[category]).length;
+
 					for (let subsection in this.doc_sections[category]) {
 						let info = this.doc_sections[category][subsection];
 
@@ -126,6 +131,7 @@ class Docview extends Editor {
 		});
 		if (!found)
 			plugin_md_list.push({"title":title, "file":file});
+		plugin_md_list = plugin_md_list.sort((a, b) => a.title < b.title ? -1 : 1)
 	}
 
 	static removePlugin(file) {

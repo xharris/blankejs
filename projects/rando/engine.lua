@@ -1,5 +1,5 @@
 --[[ 
-cards in uno deck:
+cards in uno draw_pile:
 - for all colors
 	- one 0
 	- two 1 - 9
@@ -10,7 +10,7 @@ cards in uno deck:
 - four wild draw4 (wilddraw)
 ]]
 
-deck = Array()
+draw_pile = Array()
 discard_pile = Array()
 hand_limit = 7
 max_hand_size = 10
@@ -19,36 +19,36 @@ points = {} -- { netid = # }
 player_turn = 1 -- whose turn is it
 
 function newDeck()
-	deck = Array()
+	draw_pile = Array()
 	card_colors:forEach(function(color)
 		for n = 0, 9 do
 			if n ~= 0 then
-				deck:push(tostring(n)..'.'..color)
+				draw_pile:push(tostring(n)..'.'..color)
 			end
-			deck:push(tostring(n)..'.'..color)
+			draw_pile:push(tostring(n)..'.'..color)
 		end		
 		for _,t in ipairs({ 'draw', 'skip', 'reverse' }) do
-			deck:push(
+			draw_pile:push(
 				t..'.'..color,
 				t..'.'..color
 			)
 		end
 	end)
 	for _,t in ipairs({ 'wild', 'wilddraw' }) do
-		deck:push(t,t,t,t)
+		draw_pile:push(t,t,t,t)
 	end
 	-- shuffle
-	deck:shuffle()
+	draw_pile:shuffle()
 	-- convert to card objects
-	deck:map(function(c) return Game.spawn("Card", {c}) end)
+	draw_pile:map(function(c) return Game.spawn("Card", {c}) end)
 end
 
--- shuffle discarded cards into deck
-function refillDeck()
-	deck = discard_pile
+-- shuffle discarded cards into draw_pile
+function refilldraw_pile()
+	draw_pile = discard_pile
 	discard_pile = Array()
-	deck:shuffle()
-	print('out of cards. shuffling discard pile into deck...')
+	draw_pile:shuffle()
+	print('out of cards. shuffling discard pile into draw_pile...')
 end
 
 function draw(num, player)
@@ -57,10 +57,10 @@ function draw(num, player)
 		hands[player] = Array()
 	end
 	for d = 1, num or 1 do 
-		if deck.length == 0 then
-			refillDeck()
+		if draw_pile.length == 0 then
+			refilldraw_pile()
 		end
-		hands[player]:push(deck:pop())
+		hands[player]:push(draw_pile:pop())
 	end
 	sortHand(player)
 	print(player, 'draws', hands[player])

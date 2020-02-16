@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "map0.map=map+?",
-            "map0.map"
+            "entitytest.lua=script+state+?",
+            "entitytest.lua"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
             "matrixmath.lua=script+state+?",
             "matrixmath.lua"
-        ],
-        [
-            "View project in explorer=?",
-            "View project in explorer"
-        ],
-        [
-            "entitytest.lua=script+?",
-            "entitytest.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -46,6 +46,9 @@
     },
     "export": {
         "name": "test_zone",
+        "filter": "nearest",
+        "web_memory": 24,
+        "web_stack": 2,
         "web_autoplay": false,
         "scale_mode": "linear",
         "frameless": false,
@@ -53,9 +56,6 @@
         "scale": true,
         "resizable": false,
         "write_conf": true,
-        "filter": "linear",
-        "web_memory": 24,
-        "web_stack": 2,
         "os": "windows",
         "vsync": false
     },
