@@ -21,14 +21,17 @@ Effect.new("bloom", {
 
 Effect.new("chroma shift", {
     vars = { angle=0, radius=2, direction={0,0} },
-    blend = {"replace", "alphamultiply"},
     effect = [[
-      vec4 px_minus = Texel(texture, texture_coords - direction);
-      vec4 px_plus = Texel(texture, texture_coords + direction);
-      pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);
-      if ((px_minus.a == 0 || px_plus.a == 0) && pixel.a > 0) {
-          pixel.a = 1.0;
-      }
+      vec2 tc = texture_coords;
+      // fake chromatic aberration
+      float sx = direction.x;///love_ScreenSize.x;
+      float sy = direction.y;///love_ScreenSize.y;
+      vec4 r = Texel(texture, vec2(tc.x + sx, tc.y - sy));
+      vec4 g = Texel(texture, vec2(tc.x, tc.y + sy));
+      vec4 b = Texel(texture, vec2(tc.x - sx, tc.y - sy));
+      number a = (r.a + g.a + b.a)/3.0;
+  
+      return vec4(r.r, g.g, b.b, a);
     ]],
     draw = function(vars, applyShader)
       dx = (math.cos(math.rad(vars.angle)) * vars.radius) / Game.width
@@ -38,6 +41,7 @@ Effect.new("chroma shift", {
 })
 
 --[[
+    blend = {"replace", "alphamultiply"},
       vec4 px_minus = Texel(texture, texture_coords - direction);
       vec4 px_plus = Texel(texture, texture_coords + direction);
       pixel = vec4(px_minus.r, pixel.g, px_plus.b, pixel.a);

@@ -516,6 +516,8 @@ do
 
         sortDrawables = function()
             table.sort(Game.drawables, function(a, b) 
+                a = a or { z=0 }
+                b = b or { z=0 }
                 a._last_z = a.z
                 b._last_z = b.z
                 return a.z < b.z 
@@ -594,7 +596,7 @@ do
                     if gobj.debug then
                         local lax, lay, rax, ray = 0,0,ax,ay
                         Draw.push()
-                        --Draw.color('purple',0.75)
+                        Draw.color('purple',0.75)
                         --if gobj.parent then 
                             Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
                         --else 
@@ -767,15 +769,14 @@ Canvas = GameObject:extend {
         self.width = w
         self.height = h
         self.canvas = love.graphics.newCanvas(self.width, self.height, settings)
-        
-        if type(Game.options.filter) == 'table' then
-            --self.canvas:setFilter(unpack(Game.options.filter))
-        else 
-            --self.canvas:setFilter(Game.options.filter, Game.options.filter)
-        end
+      
         canv_len = canv_len + 1
         self.blendmode = {"alpha"}
         self:addDrawable()
+    end;
+    reset = function(self)
+        self.blendmode = {"alpha"}
+        self.auto_clear = true
     end;
     _draw = function(self)  
         if not self.__ide_obj then
@@ -846,6 +847,7 @@ do
         end,
         release = function(self)
             self.canvas._used = false
+            self.canvas:reset()
             self.canvas = nil
         end
     }
@@ -1362,6 +1364,7 @@ do
         end;
         parseColor = function(...)
             args = {...}
+            if #args == 0 then return end
             local c = Color[args[1]]
             if c then 
                 args = {c[1],c[2],c[3],args[2] or 1}
@@ -1422,12 +1425,15 @@ do
         end;
         newTransform = function()
             return love.math.newTransform()
-        end 
+        end;
+        clear = function(...)
+            love.graphics.clear(Draw.parseColor(...))
+        end
     }
     
     local draw_functions = {
         'arc','circle','ellipse','line','points','polygon','rectangle',--'print','printf',
-        'clear','discard','origin',
+        'discard','origin',
         'scale','shear','transformPoint',
         'setLineWidth','setPointSize',
         'applyTransform', 'replaceTransform'
@@ -1723,6 +1729,7 @@ do
         draw = function(self, fn)
             local last_shader = love.graphics.getShader()
             local front, back = getCanv(self)
+            local used = false
             front:drawTo(function()
                 fn()
             end)
@@ -1731,18 +1738,23 @@ do
             for _, name in ipairs(self.names) do 
                 self:sendVars(name)
                 local info = library[name]
-                if not self.disabled[name] then 
+                local blendmode = {"alpha","premultiplied"}
+                local disabled = self.disabled[name] 
+
+                if not disabled then 
+                    used = true
+
+                    if info.opt.blend then 
+                        blendmode = info.opt.blend
+                    end
 
                     local applied = false
                     local apply_shader = function()
                         applied = true
                         front, back = switchCanv(self)
+                        front.canvas.blendmode = blendmode
+                        back.canvas.blendmode = blendmode
                         front:drawTo(function()
-                            if info.opt.blend then 
-                                love.graphics.setBlendMode(unpack(info.opt.blend))
-                            else
-                                love.graphics.setBlendMode("alpha","premultiplied")
-                            end
                             love.graphics.setShader(info.shader)
                             back:draw()
                         end)
@@ -1758,7 +1770,11 @@ do
             end 
 
             love.graphics.setShader()
-            front:draw()
+            if used then 
+                front:draw() 
+            else 
+                fn()
+            end 
             love.graphics.setBlendMode(last_blend)
             love.graphics.setShader(last_shader)
 
@@ -1837,7 +1853,7 @@ do
                     o.y = o.follow.y or o.y
                 end
                 local half_w, half_h = w/2, h/2
-                --Draw.crop(o.x - o.left, o.y - o.top, w, h)
+                -- Draw.crop(o.x - o.left, o.y - o.top, w, h)
                 o.transform:reset()
                 o.transform:translate(floor(half_w), floor(half_h))
                 o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
@@ -2933,6 +2949,12 @@ do
             end
 
             local _drawGame = function()
+                Draw{
+                    {'push'},
+                    {'color',Game.options.background_color},
+                    {'rect','fill',0,0,Game.width,Game.height},
+                    {'pop'}
+                }
                 if Camera.count() > 0 then
                     Camera.useAll(actual_draw)
                 else 
@@ -2942,12 +2964,6 @@ do
         
             local _draw = function()
                 Game.options.draw(function()
-                    Draw{
-                        {'push'},
-                        {'color',Game.options.background_color},
-                        {'rect','fill',0,0,Game.width,Game.height},
-                        {'pop'}
-                    }
                     if Game.effect then
                         Game.effect:draw(_drawGame)
                     else 
