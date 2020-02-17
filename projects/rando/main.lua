@@ -4,13 +4,15 @@ Rando: uno implementation where a number randomly changes every turn
 
 require 'xhh-array'
 
+randomness = 30
+be_random = function() return Math.random(0,randomness) == 0 end
+		
 draw_pile_z = 30
 hand_z = 40
 
 Game{
 	background_color = 'white2',
 	plugins = { 'xhh-effect' },
-	effect = { 'chroma shift' },
 	load = function()
 		State.start('play')		
 	end
@@ -29,6 +31,7 @@ State('play',{
 	update = function(dt)
 		if Input.released('action') then
 			draw(1, Net.id)
+			randomize(Net.id)
 		end
 		-- draw the draw pile
 		if draw_pile then
@@ -72,17 +75,10 @@ State('play',{
 		end
 	end,
 	draw = function()
-		local hand = hands[Net.id]
-		if hand then
-			hand:forEach(function(card, c)
-				--card:drawRect()
-			end)
-		end
 		-- draw the draw pile
-		if draw_pile then
-			draw_pile:forEach(function(card)
-				card:draw()
-			end)
+		if draw_pile and draw_pile.length > 0 then
+			draw_pile[draw_pile.length].visible = true
+			draw_pile[draw_pile.length]:draw()
 		end
 	end,
 	leave = function()

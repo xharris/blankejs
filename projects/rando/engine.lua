@@ -17,6 +17,7 @@ max_hand_size = 10
 hands = {} -- { netid = '1', 'skip', 'draw', 'reverse' }
 points = {} -- { netid = # }
 player_turn = 1 -- whose turn is it
+turn_direction = 'cw' -- or ccw
 
 function newDeck()
 	draw_pile = Array()
@@ -64,6 +65,10 @@ function draw(num, player)
 	end
 	sortHand(player)
 	print(player, 'draws', hands[player])
+end
+	
+function play(player, card)
+	
 end
 
 function sortHand(player)

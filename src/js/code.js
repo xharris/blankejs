@@ -355,7 +355,7 @@ class Code extends Editor {
 					if (prev_line_level > 0) indentation = (base_indent + 1) * 4;
 					if (prev_line_level < 0) indentation = (Math.max(0,base_indent) + Math.min(0,curr_line_level)) * 4;
 				} 
-				// console.log({curr_line_level, base_indent, prev_line_level, indentation});
+				console.log({curr_line_level, base_indent, prev_line_level, indentation});
 				return indentation;
 			}
 			return CodeMirror.overlayMode(baseMode, blankeOverlay);

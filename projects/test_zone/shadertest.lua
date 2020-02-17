@@ -1,0 +1,32 @@
+State("shadertest",{
+	enter = function()
+		Game.setBackgroundColor('white2')
+		for i = 1, Game.width/10 do 
+			Game.spawn("sprite", {x=(i*10), y = Game.height/2})
+		end
+	end
+})
+		
+Entity("sprite",{
+	animations = { "blue_robot" },
+	animation = "blue_robot",
+	align = "center",
+	effect = { 'static' },
+	my_uncle = { "uncle" },
+	update = function(self, dt)
+		self.my_uncle.x = self.x
+		self.my_uncle.y = self.y
+		self.y = (Game.height/2) + (Math.sinusoidal(-1,1,4,self.x/Game.width) * 100)
+	end
+})
+		
+Entity("uncle",{
+	effect = { 'chroma shift' },
+	draw = function(self)
+		Draw{
+			{ 'color', 'red' },
+			{ 'rotate', 45 },
+			{ 'print', math.floor(self.y), 50,40}
+		}
+	end
+})

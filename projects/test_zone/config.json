@@ -10,20 +10,20 @@
             "entitytest.lua"
         ],
         [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "conf.lua=script+?",
-            "conf.lua"
+            "shadertest.lua=script+?",
+            "shadertest.lua"
         ],
         [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
-            "matrixmath.lua=script+state+?",
-            "matrixmath.lua"
+            "Add a script=new+?",
+            "Add a script"
         ]
     ],
     "autoplay_preview": true,
@@ -54,7 +54,7 @@
         "frameless": false,
         "minify": true,
         "scale": true,
-        "resizable": false,
+        "resizable": true,
         "write_conf": true,
         "os": "windows",
         "vsync": false

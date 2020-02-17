@@ -1,6 +1,8 @@
 -- TODO Blanke.config
 math.randomseed(os.time())
 
+local do_profiling = false
+
 local bitop = require 'lua.bitop'
 local bit = bitop.bit
 local bump = require "lua.bump"
@@ -104,6 +106,16 @@ table.includes = function(t, v)
     for i = 1,#t do if t[i] == v then return true end end
     return false
 end
+table.join = function(t, sep)
+    local str = ''
+    for i = 1, #t do
+        str = str .. tostring(t[i])
+        if i ~= #t then 
+            str = str .. tostring(sep)
+        end
+    end
+    return str
+end
 --UTIL.string
 function string:contains(q) 
     return string.match(tostring(self), tostring(q)) ~= nil
@@ -130,7 +142,13 @@ do
     Math.getXY = function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end
     Math.distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end
     Math.lerp = function(a,b,t) return a * (1-t) + b * t end
-    Math.sinusoidal = function(min, max, spd, off) return min + -math.cos(Math.lerp(0,math.pi/2,off or 0) + Game.time * spd) * ((max - min)/2) + ((max - min)/2) end
+    Math.prel = function(a,b,v) -- returns what percent v is between a and b
+        if v >= b then return 1 
+        elseif v <= a then return 0 
+        else return (v - a) / (b - a) end
+    end
+    Math.sinusoidal = function(min, max, spd, percent) return Math.lerp(min, max, Math.prel(-1, 1, math.cos(Math.lerp(0,math.pi/2,percent or 0) + (Game.time * spd))) ) end 
+    --  return min + -math.cos(Math.lerp(0,math.pi/2,off or 0) + (Game.time * spd)) * ((max - min)/2) + ((max - min)/2) end
     Math.angle = function(x1, y1, x2, y2) return math.deg(math.atan2((y2-y1), (x2-x1))) end
     Math.pointInShape = function(shape, x, y)  
         local pts = {}
@@ -368,6 +386,93 @@ do
         mesh_canvas = CanvasStack()
     end)
 
+    local draw = function(gobj, lobj, is_fn)
+        local props = gobj
+        local parent = gobj.parent or gobj
+
+        last_blend = nil
+        if props.blendmode then
+            last_blend = Draw.getBlendMode()
+            Draw.setBlendMode(unpack(props.blendmode))
+        end
+        
+        Game.checkAlign(parent)
+        local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
+        local ax, ay = (parent.alignx + props.offx) * scalex, (parent.aligny + props.offy) * scaley
+        local x = props.x
+        local y = props.y
+
+        local tform = props._draw_transform
+        if not tform then 
+            props._draw_transform = Draw.newTransform()
+            tform = props._draw_transform
+        end
+
+        tform:reset()
+        tform:translate(x,y)
+        tform:translate(-ax / scalex, -ay / scaley) 
+        if is_fn then 
+            tform:scale(scalex, scaley)
+            tform:rotate(math.rad(props.angle))
+            tform:shear(props.shearx, props.sheary)
+        end 
+
+        Draw.push()
+
+        local draw_obj = function()
+            if not skip_tf then 
+                Draw.applyTransform(props._draw_transform)
+            end
+            if is_fn then 
+                lobj(gobj)
+            else
+                if gobj.quad then
+                    love.graphics.draw(lobj, gobj.quad, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+                else
+                    love.graphics.draw(lobj, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+                end
+            end
+        end
+
+        if props.mesh and props.mesh.vertices then 
+            mesh_canvas:getCanvas()
+            local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
+            if not meshes[mesh_str] then 
+                meshes[mesh_str] = love.graphics.newMesh(props.mesh.vertices, props.mesh.mode or 'fan', props.mesh.usage or 'dynamic')
+            end 
+            local mesh = meshes[mesh_str]
+            skip_tf = true
+            mesh_canvas:drawTo(function() draw_obj:draw() end)
+            mesh:setTexture(mesh_canvas.canvas.canvas) -- yes twice (since it's a canvasstack)
+            love.graphics.draw(mesh)
+            mesh_canvas:release()
+            skip_tf = false
+        else
+            draw_obj()
+        end
+
+        if gobj.debug then
+            local lax, lay, rax, ray = 0,0,ax,ay
+            Draw.push()
+            Draw.color('purple',0.75)
+            --if gobj.parent then 
+                Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
+            --else 
+                Draw{
+                    {'line',lax-10,lay-10,lax+10,lay+10},
+                    {'line',lax-10,lay+10,lax+10,lay-10},
+                }
+            --end
+            Draw.pop()
+        end
+        Draw.applyTransform(props._draw_transform:inverse())
+        Draw.pop()
+        
+        if last_blend then
+            Draw.setBlendMode(last_blend)
+        end
+    end
+
     Game = class {
         options = {
             res =           'assets',
@@ -523,102 +628,19 @@ do
                 return a.z < b.z 
             end)
         end;
-        drawObject = function(gobj, ...)
-            local props = gobj
-            local parent = gobj.parent or gobj
-            local lobjs = {...}
-            local is_fn = false
-            if lobjs[2] == 'function' then
-                lobjs[2] = nil
-                is_fn = true
-            end
-            
-            local draw = function()
-                last_blend = nil
-                if props.blendmode then
-                    last_blend = Draw.getBlendMode()
-                    Draw.setBlendMode(unpack(props.blendmode))
-                end
-                for _,lobj in ipairs(lobjs) do
-                    Game.checkAlign(parent)
-                    local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
-                    local ax, ay = (parent.alignx + props.offx) * scalex, (parent.aligny + props.offy) * scaley
-                    local x = props.x
-                    local y = props.y
+        
+        updateObject = function(dt, obj)
+            obj:_update(dt)
+        end;
 
-                    local tform = props._draw_transform
-                    if not tform then 
-                        props._draw_transform = Draw.newTransform()
-                        tform = props._draw_transform
-                    end
-
-                    tform:reset()
-                    tform:translate(x,y)
-                    tform:translate(-ax / scalex, -ay / scaley) 
-                    if is_fn then 
-                        tform:scale(scalex, scaley)
-                        tform:rotate(math.rad(props.angle))
-                        tform:shear(props.shearx, props.sheary)
-                    end 
-
-                    Draw.push()
-
-                    local draw_obj = function()
-                        if not skip_tf then Draw.applyTransform(props._draw_transform) end
-                        if is_fn then 
-                            lobj(gobj)
-                        else
-                            if gobj.quad then
-                                love.graphics.draw(lobj, gobj.quad, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
-                            else
-                                love.graphics.draw(lobj, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
-                            end
-                        end
-                    end
-
-                    if props.mesh and props.mesh.vertices then 
-                        mesh_canvas:getCanvas()
-                        local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
-                        if not meshes[mesh_str] then 
-                            meshes[mesh_str] = love.graphics.newMesh(props.mesh.vertices, props.mesh.mode or 'fan', props.mesh.usage or 'dynamic')
-                        end 
-                        local mesh = meshes[mesh_str]
-                        skip_tf = true
-                        mesh_canvas:drawTo(function() draw_obj:draw() end)
-                        mesh:setTexture(mesh_canvas.canvas.canvas) -- yes twice (since it's a canvasstack)
-                        love.graphics.draw(mesh)
-                        mesh_canvas:release()
-                        skip_tf = false
-                    else
-                        draw_obj()
-                    end
-
-                    if gobj.debug then
-                        local lax, lay, rax, ray = 0,0,ax,ay
-                        Draw.push()
-                        Draw.color('purple',0.75)
-                        --if gobj.parent then 
-                            Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
-                        --else 
-                            Draw{
-                                {'line',lax-10,lay-10,lax+10,lay+10},
-                                {'line',lax-10,lay+10,lax+10,lay-10},
-                            }
-                        --end
-                        Draw.pop()
-                    end
-                    Draw.applyTransform(props._draw_transform:inverse())
-                    Draw.pop()
-                end
-                if last_blend then
-                    Draw.setBlendMode(last_blend)
-                end
-            end
-
-            if props.effect then 
-                props.effect:draw(draw)
+        drawObject = function(obj, lobj, is_fn)
+            if obj.visible == false then return end
+            if obj.effect then 
+                obj.effect:draw(function()
+                    draw(obj, lobj, is_fn)
+                end)
             else 
-                draw()
+                draw(obj, lobj, is_fn)
             end
         end;
 
@@ -788,7 +810,7 @@ Canvas = GameObject:extend {
             Draw.pop()
         end
     end;
-    draw = function(self) self:_draw() end,
+    draw = function(self) print(canv_len) self:_draw() end,
     resize = function(self,w,h) 
         self.width = w
         self.height = h
@@ -797,7 +819,7 @@ Canvas = GameObject:extend {
     prepare = function(self)
         if self.auto_clear then Draw.clear() end
         -- camera transform
-        love.graphics.origin()
+        --love.graphics.origin()
         if Camera.transform and not self.__ide_obj then
             love.graphics.replaceTransform(Camera.transform)
         end
@@ -839,11 +861,11 @@ do
                 self.canvas._used = true
             end
         end,
-        drawTo = function(self, ...)
-            self.canvas:drawTo(...)
+        drawTo = function(self, fn)
+            self.canvas:drawTo(fn)
         end,
-        draw = function(self)
-            self.canvas:draw()
+        draw = function(self)     
+            self.canvas:draw()  
         end,
         release = function(self)
             self.canvas._used = false
@@ -984,6 +1006,7 @@ end
 --ENTITY
 Entity = nil
 do
+    -- (getMetaMethod)
     local getMM = function(self, name, ...)
         if self.__ and self.__[name] then return self.__[name](self, ...) end
         return nil
@@ -1159,9 +1182,7 @@ do
                 Game.drawObject(self, self.predraw, 'function')
             end
             -- draw
-            if self._custom_draw then
-                Game.drawObject(self, self._custom_draw, 'function')
-            else
+            local draw_fn = function()
                 Game.drawObject(self, function()
                     if self.imageList then
                         for name, img in pairs(self.imageList) do
@@ -1175,6 +1196,13 @@ do
                         self.width, self.height = anim.width, anim.height
                     end
                 end, 'function')
+            end
+            if self._custom_draw then
+                Game.drawObject(self, function()
+                    self:_custom_draw(draw_fn)
+                end, 'function')
+            else
+                draw_fn()
             end
             -- postdraw
             if self.postdraw then 
@@ -1690,6 +1718,7 @@ do
                 self.unused_vars[name] = copy(library[name].opt.unused_vars)
                 self.use_canvas[name] = library[name].opt.use_canvas
             end
+            self._shader_str = table.join(self.names,'+')
 
             self.disabled = {}
 
@@ -1697,11 +1726,16 @@ do
 
             self:addUpdatable()
         end;
-
-        disable = function(self, ...) 
+        __ = {
+            eq = function(self, other) return self._shader_str == other._shader_str end,
+            tostring = function(self) return self._shader_str end
+        };
+        disable = function(self, ...)
+            self._shader_str = table.join(self.names,'+')
             for _,name in ipairs({...}) do self.disabled[name] = true end 
         end;
         enable = function(self, ...)
+            self._shader_str = table.join(self.names,'+')
             for _,name in ipairs({...}) do self.disabled[name] = false end
         end;
         set = function(self,name,k,v)
@@ -1712,37 +1746,42 @@ do
                 library[name].shader:send(k,v)
             end
         end;
-        sendVars = function(self,name)
-            for k,v in pairs(self.vars[name]) do
+        sendVars = function(self,name,vars)
+            vars = vars or self.vars
+            for k,v in pairs(vars[name]) do
                 self:send(name, k, v)
             end
         end;
         _update = function(self,dt)
             for _,name in ipairs(self.names) do
+                self:sendVars(name, self.vars)
                 vars = self.vars[name]
                 vars.time = vars.time + dt
                 self:send(name, 'time', vars.time)
                 self:send(name, 'tex_size', {Game.width,Game.height})
             end
         end;
-        update = function(self,dt) self:update(dt) end;
+        update = function(self,dt) 
+            self:_update(dt) 
+        end;
         draw = function(self, fn)
             local last_shader = love.graphics.getShader()
+            local last_blend = love.graphics.getBlendMode()
             local front, back = getCanv(self)
             local used = false
-            front:drawTo(function()
-                fn()
-            end)
-            local last_blend = love.graphics.getBlendMode()
 
             for _, name in ipairs(self.names) do 
-                self:sendVars(name)
                 local info = library[name]
                 local blendmode = {"alpha","premultiplied"}
                 local disabled = self.disabled[name] 
 
                 if not disabled then 
-                    used = true
+                    if not used then 
+                        used = true
+                        front:drawTo(function()
+                            fn()
+                        end)
+                    end
 
                     if info.opt.blend then 
                         blendmode = info.opt.blend
@@ -1769,58 +1808,17 @@ do
                 end
             end 
 
-            love.graphics.setShader()
             if used then 
-                front:draw() 
+                love.graphics.setShader()
+                front:draw()
+                love.graphics.setBlendMode(last_blend)
+                love.graphics.setShader(last_shader)
             else 
                 fn()
             end 
-            love.graphics.setBlendMode(last_blend)
-            love.graphics.setShader(last_shader)
 
             front:release()
             back:release()
-        end;
-        old_draw = function(self,fn)
-            self.spare_canvas:drawTo(fn)
-            local one_draw = false -- was there at least one draw?
-            local use_canvas = false
-            for _,name in ipairs(self.names) do
-                if not self.disabled[name] then
-                    if not self.use_canvas[name] then use_canvas = false end 
-
-                    one_draw = true
-                    info = library[name]
-                    
-                    local applyShader = function()
-                        if info.opt.blend then
-                            self.spare_canvas.blendmode = info.opt.blend
-                        end
-                        last_shader = love.graphics.getShader()
-                        love.graphics.setShader(info.shader)
-                        if use_canvas then 
-                            self.main_canvas:drawTo(self.spare_canvas)
-                        else
-                            fn()
-                        end
-                        love.graphics.setShader(last_shader)
-                        if use_canvas then 
-                            self.spare_canvas:drawTo(self.main_canvas)
-                        end
-                    end
-
-                    if info.opt.draw then
-                        info.opt.draw(self.vars[name], applyShader)
-                    end
-                    self:sendVars(name)
-                    applyShader()
-                end
-            end
-            if not one_draw then 
-                fn() 
-            elseif use_canvas then
-                self.main_canvas:draw()
-            end
         end;
     }
 end
@@ -2883,7 +2881,7 @@ do
         iterUpdate = function(t, dt)
             iterate(t, 'updatable', function(obj)
                 if not obj.skip_update and not obj.pause and obj._update then
-                    obj:_update(dt)
+                    Game.updateObject(dt, obj)
                 end
             end)
         end;
@@ -3007,11 +3005,36 @@ end
 
 Signal.emit('__main')
 
-love.load = function() Blanke.load() end
+love.load = function() 
+    if do_profiling then
+        love.profiler = require 'profile'
+        love.profiler.start()
+    end
+
+    Blanke.load() 
+end
+love.frame = 0
 love.update = function(dt) 
+    if do_profiling then
+        love.frame = love.frame + 1
+        if love.frame > 60 and not love.report then 
+            love.profiler.stop()
+            love.report = love.profiler.report(do_profiling)
+            print(love.report)
+        end
+    end
+
     Blanke.update(dt)
 end
-love.draw = function() Blanke.draw() end
+love.draw = function() 
+    Blanke.draw() 
+    Draw.push()
+    Draw.color('black')
+    if do_profiling then
+        love.graphics.print(love.report or "Please wait...")
+    end
+    Draw.pop()
+end
 love.resize = function(w, h) Game.updateWinSize() end
 love.keypressed = function(key, scancode, isrepeat) Blanke.keypressed(key, scancode, isrepeat) end
 love.keyreleased = function(key, scancode) Blanke.keyreleased(key, scancode) end

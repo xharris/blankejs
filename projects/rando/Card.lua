@@ -37,7 +37,7 @@ Effect.new('tablecard',{
 		pixel = Texel(texture, texture_coords);
 	]]
 })
-
+		
 Entity("Card",{
 	name='', -- number / draw / skip / reverse
 	value=-1,
@@ -45,11 +45,10 @@ Entity("Card",{
 	style='hand',
 	scale=1, --.2,
 	visible=false,
-	effect = { 'static', 'chroma shift' },
+	effect = { 'static','chroma shift' },
 	spawn = function(self, str)	
-		--self.effect:disable('chroma shift')
-		self.effect:disable('static')
-		--self.effect:disable('tablecard')
+		self.effect:set("static", "strength", {20, 0})
+		self.effect:disable('static','chroma shift')
 
 		local pos_name = str:split('.')[1]
 		if card_names:includes(pos_name) then
@@ -76,20 +75,28 @@ Entity("Card",{
 		self.orig = {value=self.value, color=self.color, name=self.name}
 	end,
 	randomize = function(self)
-		if self.value >= 0 then
-			local new_val = self.value
-			while new_val == self.value do
-				new_val = Math.random(1,9)
-			end
-			self.value = new_val
-		end
-		if self.color ~= 'black2' then
-			local new_color = self.color
-			while new_color == self.color do
-				new_color = table.random(card_colors.table)
-			end
-			self.color = new_color
-		end
+		if not be_random() then return end
+		Timer.after(0.5,function()
+			self.effect:enable('static','chroma shift')
+			Timer.after(0.5,function()
+				if self.value >= 0 then
+					local new_val = self.value
+					while new_val == self.value do
+						new_val = Math.random(1,9)
+					end
+					self.value = new_val
+				end
+				if self.color ~= 'black2' then
+					local new_color = self.color
+					while new_color == self.color do
+						new_color = table.random(card_colors.table)
+					end
+					self.color = new_color
+				end
+
+				self.effect:disable('static','chroma shift')
+			end)
+		end)
 	end,
 	__ = {
 		tostring = function(self)
@@ -123,10 +130,9 @@ Entity("Card",{
 		if self.style == 'table' then
 			self.width = card_w/4
 			self.height = card_h/4
-			self.scale = 0.75
+			self.scale = 0.6
 			self.rect = calcCardRect(self)
 		end
-		-- self.effect:set("tablecard", {self.x - (self.width/4), self.y - (self.height/4), self.x + (self.width/4), self.y + (self.height/4)})
 	end,
 	drawRect = function(self)
 		if self.rect then

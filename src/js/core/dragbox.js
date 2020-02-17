@@ -157,8 +157,8 @@ class DragBox {
 			}).on('resizeend', function(e){
 				let width = parseInt(e.target.style.width);
 				let height = parseInt(e.target.style.height);
-				width = width - (width % snap);
-				height = height - ((height) % snap);
+				//width = width - (width % snap);
+				//height = height - ((height) % snap);
 
 			    e.target.style.width = width+'px';
 			    e.target.style.height = height+'px';
@@ -215,8 +215,8 @@ class DragBox {
 				    target.setAttribute('data-y', this_ref.y);
 				},
 				onend: function(e) {
-					let x = this_ref.x - (this_ref.x % snap);
-					let y = this_ref.y - (this_ref.y % snap);
+					let x = this_ref.x;// - (this_ref.x % snap);
+					let y = this_ref.y;// - (this_ref.y % snap);
 
 
 				    e.target.style.webkitTransform = e.target.style.transform =

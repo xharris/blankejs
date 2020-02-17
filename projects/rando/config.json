@@ -5,16 +5,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "engine.lua=script+?",
+            "engine.lua"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
         [
             "Card.lua=script+?",
             "Card.lua"
-        ],
-        [
-            "engine.lua=script+?",
-            "engine.lua"
         ],
         [
             "Open image editor=?",
@@ -30,7 +30,7 @@
     "scene": {},
     "export": {
         "name": "rando",
-        "filter": "nearest",
+        "filter": "linear",
         "web_memory": 24,
         "web_stack": 2,
         "resizable": true,
