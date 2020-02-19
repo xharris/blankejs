@@ -37,7 +37,7 @@ Effect.new('tablecard',{
 		pixel = Texel(texture, texture_coords);
 	]]
 })
-		
+
 Entity("Card",{
 	name='', -- number / draw / skip / reverse
 	value=-1,
@@ -128,8 +128,8 @@ Entity("Card",{
 		end
 		-- card on table
 		if self.style == 'table' then
-			self.width = card_w/4
-			self.height = card_h/4
+			self.width = card_w/5
+			self.height = card_h/5
 			self.scale = 0.6
 			self.rect = calcCardRect(self)
 		end

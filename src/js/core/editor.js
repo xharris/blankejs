@@ -208,6 +208,11 @@ class Editor {
 		this.container[cb_name] = new_func;
 	}
 
+	getCenter() {
+		if (this.container.getCenter) return this.container.getCenter();
+		return [ this.width/2, this.height/2 ];
+	}
+
 	get width() {
 		return this.container.width;
 	}

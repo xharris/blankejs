@@ -67,15 +67,20 @@ class FibWindow {
 	}
 
 	// mainly for boxes with bg_content
-	// 0 - full window, 1 - half-window, 2 - quarter window
+	// 0 - full window, 1 - half-window
 	getSizeType () {
-		if (this.bg_content && this.index == 0) {
-			if (boxes.length == 1)
-				return 1;
-			if (boxes.length == 2)
-				return 2;
-		}
+		if (!split_enabled) return 0;
+		if (this.index == 0)
+			return boxes.length == 1 ? 0 : 1;
 		return 0;
+	}
+
+	// returns [x,y]
+	getCenter () {
+		if (this.getSizeType() == 1) // half-window
+			return [this.bg_content.clientWidth / 4, this.bg_content.clientHeight / 2];
+		// full window, quarter
+		return [this.bg_content.clientWidth / 2, this.bg_content.clientHeight / 2];
 	}
 
 	callResize () {

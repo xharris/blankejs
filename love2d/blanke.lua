@@ -782,7 +782,7 @@ GameObject = class {
 }
 
 --CANVAS
-local canv_len = 0
+local canv_len = 0 -- just a debug thing to see how many canvases exist
 Canvas = GameObject:extend {
     init = function(self, w, h, settings)
         GameObject.init(self, {classname="Canvas"})
@@ -810,7 +810,7 @@ Canvas = GameObject:extend {
             Draw.pop()
         end
     end;
-    draw = function(self) print(canv_len) self:_draw() end,
+    draw = function(self) self:_draw() end,
     resize = function(self,w,h) 
         self.width = w
         self.height = h

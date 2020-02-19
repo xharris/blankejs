@@ -5,8 +5,8 @@
     "window_size": 3,
     "quick_access": [
         [
-            "engine.lua=script+?",
-            "engine.lua"
+            "Open image editor=?",
+            "Open image editor"
         ],
         [
             "main.lua=script+?",
@@ -17,8 +17,8 @@
             "Card.lua"
         ],
         [
-            "Open image editor=?",
-            "Open image editor"
+            "engine.lua=script+?",
+            "engine.lua"
         ],
         [
             "Dev Tools=?",

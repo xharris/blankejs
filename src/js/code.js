@@ -329,7 +329,7 @@ class Code extends Editor {
 						m++;
 					}
 				}
-				return Math.max(-1, open);
+				return Math.min(0, Math.max(-1, open));
 			}
 
 			baseMode.indent = (state, line) => {
@@ -353,9 +353,9 @@ class Code extends Editor {
 					prev_line_level = getLineLevel(prev_line);
 
 					if (prev_line_level > 0) indentation = (base_indent + 1) * 4;
-					if (prev_line_level < 0) indentation = (Math.max(0,base_indent) + Math.min(0,curr_line_level)) * 4;
+					if (prev_line_level < 0) indentation = (Math.max(0,base_indent) + curr_line_level) * 4;
 				} 
-				console.log({curr_line_level, base_indent, prev_line_level, indentation});
+				// console.log({curr_line_level, base_indent, prev_line_level, indentation});
 				return indentation;
 			}
 			return CodeMirror.overlayMode(baseMode, blankeOverlay);

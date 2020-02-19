@@ -43,8 +43,8 @@ class ImageEditor extends Editor {
         this.cursor = [0,0];
         this.img_left = 0;
         this.img_top = 0;
-        this.img_width = 0;
-        this.img_height = 0;
+        this.img_width = DEFAULT_IMAGE_SETTINGS.frame_size[0];
+        this.img_height = DEFAULT_IMAGE_SETTINGS.frame_size[1];
         this.clear_rtx = 0;
         this.hover_frame = 0;
         this.hover_frame_pos = [0,0];
@@ -303,7 +303,9 @@ class ImageEditor extends Editor {
         
         const setupForm = () => {
             app.saveSettings();
-            this.pixi.setCameraPosition((this.pixi.width - this.img_width) / 2, (this.pixi.height - this.img_height) / 2);
+            let [cx, cy] = this.getCenter();
+            console.log(cx, cy)
+            this.pixi.setCameraPosition(cx - (this.img_width / 2), cy - (this.img_height / 2));
             this.el_image_form.useValues(this.img_settings);
             this.checkFormVisibility();
             this.drawBackground();

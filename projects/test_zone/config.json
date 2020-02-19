@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "Open image editor=?",
+            "Open image editor"
+        ],
+        [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
             "entitytest.lua=script+state+?",
             "entitytest.lua"
         ],
         [
             "View project in explorer=?",
             "View project in explorer"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "shadertest.lua=script+?",
-            "shadertest.lua"
-        ],
-        [
-            "Add a script=new+?",
-            "Add a script"
         ]
     ],
     "autoplay_preview": true,
@@ -111,7 +111,8 @@
             "tool.size": [
                 1,
                 1
-            ]
+            ],
+            "onion_alpha": 0.3
         },
         "image/image2.png": {
             "frame_size": [
@@ -135,7 +136,8 @@
             "tool.radius": 7,
             "tool.fill": true,
             "tool.thickness": 16,
-            "showPreview": true
+            "showPreview": true,
+            "onion_alpha": 0.3
         },
         "image/image3.png": {
             "frame_size": [
