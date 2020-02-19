@@ -129,6 +129,12 @@ function string:split(sep)
     self:gsub(pattern, function(c) fields[#fields+1] = c end)
     return fields
 end
+function string:replace(find, replace, wholeword)
+    if wholeword then
+        find = '%f[%a]'..find..'%f[%A]'
+    end
+    return (self:gsub(find,replace))
+end
 --UTIL.math
 local sin, cos, rad, deg, abs = math.sin, math.cos, math.rad, math.deg, math.abs
 local floor = function(x) return math.floor(x+0.5) end
@@ -860,6 +866,7 @@ do
                 end
                 self.canvas._used = true
             end
+            return self.canvas
         end,
         drawTo = function(self, fn)
             self.canvas:drawTo(fn)
@@ -1596,21 +1603,100 @@ do
         texture2D = "Texel",
         gl_FragColor = "pixel",
         gl_FragCoord = "screen_coords"
-    }
+    }          
+    local helper_fns = [[
+/* From glfx.js : https://github.com/evanw/glfx.js */
+float random(vec2 scale, vec2 pixelcoord, float seed) {
+    /* use the fragment position for a different seed per-pixel */
+    return fract(sin(dot(pixelcoord + seed, scale)) * 43758.5453 + seed);
+}
+float getX(float amt) { return amt / love_ScreenSize.x; }
+float getY(float amt) { return amt / love_ScreenSize.y; }
+float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
+]]
     local library = {}
-    local canv_front, canv_back
-    local getCanv = function(self)
-        self.front:getCanvas()
-        self.back:getCanvas()
-        self.front, self.back = self.back, self.front
-        return self.front, self.back
-    end 
-    local switchCanv = function(self)
-        self.front, self.back = self.back, self.front
-        return self.front, self.back
+    local shaders = {} -- { 'eff1+eff2' = { shader: Love2dShader } }
+
+    local safe_names = {}
+    local generateShader = function(names, override)
+        local full_name = table.join(names, '+')
+        if shaders[full_name] and not override then 
+            return shaders[full_name]
+        end
+        shaders[full_name] = { vars = {}, unused_vars = {} }
+
+        local shader_code = ''
+        local var_code = ''
+        local eff_call_code = ''
+        local pos_call_code = ''
+
+        for _,name in ipairs(names) do 
+            local safe_name = name:replace(' ','_')
+            safe_names[name] = safe_name
+            local info = library[name]
+            assert(info, "Effect :'"..name.."' not found")
+            assert(info.code.solo == nil or (info.code.solo and #names == 1), "Effect '"..name.."' is a solo effect. It cannot be combine with other shaders.")
+            shaders[full_name].vars[name] = copy(info.opt.vars)
+            shaders[full_name].unused_vars[name] = copy(info.opt.unused_vars)
+            local solo_shader
+
+            if info.code.solo then
+                solo_shader = true 
+                shader_code = info.code.solo
+
+            else
+                -- add pixel shader code
+                if info.code.position then
+                    shader_code = shader_code .. info.code.position .. '\n\n'
+                    pos_call_code = pos_call_code .. "vertex_position = "..safe_name:replace(' ','_').."__position(transform_projection, vertex_position);\n";
+                end 
+                -- add vertex shader code
+                if info.code.effect then
+                    shader_code = shader_code .. info.code.effect .. '\n\n'
+                    eff_call_code = eff_call_code .. "color = "..safe_name:replace(' ','_').."__effect(color, texture, texture_coords, screen_coords);\n";
+                end 
+                -- add vars
+                if info.code.vars then 
+                    var_code = var_code .. info.code.vars .. '\n'
+                end 
+            end
+        end
+        -- put it all together in one shader
+        if not solo_shader then 
+            shader_code = var_code..'\n'..helper_fns..'\n'..shader_code..[[   
+
+#ifdef VERTEX
+vec4 position(mat4 transform_projection, vec4 vertex_position) {
+]]..pos_call_code..[[
+return transform_projection * vertex_position;
+}
+#endif
+
+
+#ifdef PIXEL
+vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
+]]..eff_call_code..[[
+return color;
+}
+#endif]]
+        end
+
+        for old, new in pairs(love_replacements) do
+            shader_code, r = string.gsub(shader_code, old, new)
+        end
+
+        print(shader_code)
+        shaders[full_name].name = full_name
+        shaders[full_name].solo = solo_shader
+        shaders[full_name].code = shader_code
+        shaders[full_name].shader = love.graphics.newShader(shader_code)
+
+        return shaders[full_name]
     end
+
     Effect = GameObject:extend {
         new = function(name, in_opt)
+            local safe_name = name:replace(' ','_')
             local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
             table.update(opt, in_opt)
             
@@ -1621,13 +1707,18 @@ do
             if not opt.vars['time'] then
                 opt.vars['time'] = 0
             end
-            code = ""
+            code_solo = nil
+            code_effect = nil
+            code_position = nil
             -- create var string
             var_str = ""
             for key, val in pairs(opt.vars) do
                 -- unused vars?
                 if not string.contains(opt.code or (opt.effect..' '..opt.vertex), key) then
                     opt.unused_vars[key] = true
+                end
+                if not opt.code then  -- not a solo shader, prepend shader name
+                    key = safe_name.."__"..key
                 end
                 -- get var type
                 switch(type(val),{
@@ -1649,52 +1740,47 @@ do
                 })
             end
 
-            local helper_fns = [[
-    /* From glfx.js : https://github.com/evanw/glfx.js */
-    float random(vec2 scale, vec2 pixelcoord, float seed) {
-        /* use the fragment position for a different seed per-pixel */
-        return fract(sin(dot(pixelcoord + seed, scale)) * 43758.5453 + seed);
-    }
-    float getX(float amt) { return amt / love_ScreenSize.x; }
-    float getY(float amt) { return amt / love_ScreenSize.y; }
-    float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
-    ]]
             if opt.code then
-                code = var_str.."\n"..helper_fns.."\n"..opt.code
+                code_solo = var_str.."\n"..helper_fns.."\n"..opt.code
             
             else
-                code = var_str.."\n"..helper_fns
-                
                 if opt.vertex:len() > 1 then 
-                    code = code .. [[
-    #ifdef VERTEX
-    vec4 position(mat4 transform_projection, vec4 vertex_position) {
+                    code_position = [[
+    vec4 ]]..safe_name..[[__position(mat4 transform_projection, vec4 vertex_position) {
     ]]..opt.vertex..[[
         return transform_projection * vertex_position;
     }
-
-    #endif
     ]]
                 end
                 
                 if opt.effect:len() > 1 then 
-                    code = code .. [[
-    #ifdef PIXEL
-    vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
+                    code_effect = [[
+    vec4 ]]..safe_name..[[__effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
         vec4 pixel = Texel(texture, texture_coords);
     ]]..opt.effect..[[
         return pixel * color;
     }
-    #endif]]
+    ]]
                 end
             end
-            for old, new in pairs(love_replacements) do
-                code, r = string.gsub(code, old, new)
+
+            for key, val in pairs(opt.vars) do
+                if code_effect then 
+                    code_effect = code_effect:replace(key,safe_name.."__"..key,true)
+                end
+                if code_position then 
+                    code_position = code_position:replace(key,safe_name.."__"..key,true)
+                end
             end
+
             library[name] = {
                 opt = copy(opt),
-                code = code,
-                shader = love.graphics.newShader(code)
+                code = {
+                    vars = var_str,
+                    effect = code_effect,
+                    position = code_position,
+                    solo = code_solo
+                }
             }
 
         end;
@@ -1708,54 +1794,60 @@ do
             if type(self.names[1]) == 'table' then
                 self.names = self.names[1]
             end
-
-            self.vars = {}
-            self.unused_vars = {}
-            self.use_canvas = {} 
-            for _,name in ipairs(self.names) do 
-                assert(library[name], "Effect :'"..name.."' not found")
-                self.vars[name] = copy(library[name].opt.vars)
-                self.unused_vars[name] = copy(library[name].opt.unused_vars)
-                self.use_canvas[name] = library[name].opt.use_canvas
-            end
-            self._shader_str = table.join(self.names,'+')
-
+            
+            self.shader_info = generateShader(self.names)
+            self.canvas_stack = CanvasStack()
             self.disabled = {}
-
-            self.front, self.back = CanvasStack(), CanvasStack()
 
             self:addUpdatable()
         end;
         __ = {
-            eq = function(self, other) return self._shader_str == other._shader_str end,
-            tostring = function(self) return self._shader_str end
+            eq = function(self, other) return self.shader_info.name == other.shader_info.name end,
+            tostring = function(self) return self.shader_info.code end
         };
         disable = function(self, ...)
-            self._shader_str = table.join(self.names,'+')
             for _,name in ipairs({...}) do self.disabled[name] = true end 
+            local new_names = {}
+            for _,name in ipairs(self.names) do 
+                if not self.disabled[name] then 
+                    table.insert(new_names)
+                end
+            end
+            self.shader_info = generateShader(new_names)
         end;
         enable = function(self, ...)
-            self._shader_str = table.join(self.names,'+')
-            for _,name in ipairs({...}) do self.disabled[name] = false end
+            for _,name in ipairs({...}) do self.disabled[name] = false end 
+            local new_names = {}
+            for _,name in ipairs(self.names) do 
+                if not self.disabled[name] then 
+                    table.insert(new_names)
+                end
+            end
+            self.shader_info = generateShader(new_names)
         end;
         set = function(self,name,k,v)
-            self.vars[name][k] = v
+            self.shader_info.vars[name][k] = v
         end;
         send = function(self,name,k,v)
-            if not self.unused_vars[name][k] then
-                library[name].shader:send(k,v)
+            if not self.shader_info.unused_vars[name][k] then
+                local safe_name = safe_names[name]
+                if self.shader_info.solo then
+                    self.shader_info.shader:send(k,v)
+                else
+                    self.shader_info.shader:send(safe_name.."__"..k,v)
+                end
             end
         end;
         sendVars = function(self,name,vars)
-            vars = vars or self.vars
-            for k,v in pairs(vars[name]) do
+            vars = vars or self.shader_info.vars[name]
+            for k,v in pairs(vars) do
                 self:send(name, k, v)
             end
         end;
         _update = function(self,dt)
             for _,name in ipairs(self.names) do
                 self:sendVars(name, self.vars)
-                vars = self.vars[name]
+                vars = self.shader_info.vars[name]
                 vars.time = vars.time + dt
                 self:send(name, 'time', vars.time)
                 self:send(name, 'tex_size', {Game.width,Game.height})
@@ -1767,58 +1859,22 @@ do
         draw = function(self, fn)
             local last_shader = love.graphics.getShader()
             local last_blend = love.graphics.getBlendMode()
-            local front, back = getCanv(self)
+            
+            local c = self.canvas_stack:getCanvas()
             local used = false
 
-            for _, name in ipairs(self.names) do 
-                local info = library[name]
-                local blendmode = {"alpha","premultiplied"}
-                local disabled = self.disabled[name] 
-
-                if not disabled then 
-                    if not used then 
-                        used = true
-                        front:drawTo(function()
-                            fn()
-                        end)
-                    end
-
-                    if info.opt.blend then 
-                        blendmode = info.opt.blend
-                    end
-
-                    local applied = false
-                    local apply_shader = function()
-                        applied = true
-                        front, back = switchCanv(self)
-                        front.canvas.blendmode = blendmode
-                        back.canvas.blendmode = blendmode
-                        front:drawTo(function()
-                            love.graphics.setShader(info.shader)
-                            back:draw()
-                        end)
-                    end 
-
-                    if info.opt.draw then
-                        info.opt.draw(self.vars[name], apply_shader)
-                    end
-                    if not applied then       
-                        apply_shader()
-                    end 
-                end
-            end 
-
-            if used then 
-                love.graphics.setShader()
-                front:draw()
-                love.graphics.setBlendMode(last_blend)
-                love.graphics.setShader(last_shader)
-            else 
+            local blendmode = {"alpha","premultiplied"}
+            c.blendmode = blendmode
+            c:drawTo(function()
+                love.graphics.setShader(self.shader_info.shader)
                 fn()
-            end 
+            end)
+            love.graphics.setShader()
+            c:draw()
+            love.graphics.setBlendMode(last_blend)
+            love.graphics.setShader(last_shader)
 
-            front:release()
-            back:release()
+            self.canvas_stack:release()
         end;
     }
 end

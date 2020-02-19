@@ -16,12 +16,12 @@ Entity("sprite",{
 	update = function(self, dt)
 		self.my_uncle.x = self.x
 		self.my_uncle.y = self.y
-		self.y = (Game.height/2) + (Math.sinusoidal(-1,1,4,self.x/Game.width) * 100)
+		--self.y = (Game.height/2) + (Math.sinusoidal(-1,1,4,self.x/Game.width) * 100)
 	end
 })
 		
 Entity("uncle",{
-	effect = { 'chroma shift' },
+		effect = { 'grayscale' }, -- TODO test chroma shift
 	draw = function(self)
 		Draw{
 			{ 'color', 'red' },
