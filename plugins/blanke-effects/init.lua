@@ -27,7 +27,7 @@ Effect.new("chroma shift", {
         Texel(texture, tc - direction).r,
         Texel(texture, tc).g,
         Texel(texture, tc + direction).b,
-        1.0);
+        Texel(texture, tc).a);
     ]],
     draw = function(vars)
       dx = (math.cos(math.rad(vars.angle)) * vars.radius) / Game.width

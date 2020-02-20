@@ -6,6 +6,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "View assets=?",
+            "View assets"
+        ],
+        [
             "shadertest.lua=script+?",
             "shadertest.lua"
         ],
@@ -20,10 +24,6 @@
         [
             "map0.map=map+?",
             "map0.map"
-        ],
-        [
-            "entitytest.lua=script+state+?",
-            "entitytest.lua"
         ]
     ],
     "autoplay_preview": true,

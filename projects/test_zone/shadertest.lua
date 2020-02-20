@@ -1,8 +1,18 @@
+local i = 0
+
 State("shadertest",{
 	enter = function()
-		Game.setBackgroundColor('black2')
-		for i = 1, 2 do 
-			Game.spawn("sprite", {x=(i*10) + 20, y = Game.height/2})
+		Input({
+			new_ent = { 'mouse1' }
+		})
+		
+		Game.setBackgroundColor('white2')
+		Game.spawn("sprite", {x=(i*10) + (Game.width/2), y = Game.height/2})
+	end,
+	update = function(dt)
+		if Input.released('new_ent') then 
+			i = i + 1
+			Game.spawn("sprite", {x=(i*10) + (Game.width/2), y = Game.height/2})
 		end
 	end
 })
@@ -12,7 +22,7 @@ Entity("sprite",{
 	animations = { "blue_robot" },
 	animation = "blue_robot",
 	align = "center",
-	effect = { 'grayscale', 'chroma shift' },
+	effect = { 'chroma shift', 'grayscale' },
 	my_uncle = { "uncle" },
 	update = function(self, dt)
 		self.my_uncle.x = self.x

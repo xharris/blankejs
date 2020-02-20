@@ -577,9 +577,8 @@ do
             if Game.options.load then
                 Game.options.load()
             end
-            if Game.options.background_color then 
-                --Game.setBackgroundColor(Game.options.background_color)
-            end
+            
+            love.graphics.setBackgroundColor(0,0,0)
 
             Blanke.game_canvas = Canvas()
             Blanke.game_canvas.__ide_obj = true
@@ -679,7 +678,8 @@ do
         end;
 
         setBackgroundColor = function(...)
-            Game.options.background_color = ...
+            --love.graphics.setBackgroundColor(Draw.parseColor(...))
+            Game.options.background_color = {Draw.parseColor(...)}
         end;
     }
 end
@@ -807,6 +807,7 @@ Canvas = GameObject:extend {
         self.width = w
         self.height = h
         self.canvas = love.graphics.newCanvas(self.width, self.height, settings)
+        self.quad = love.graphics.newQuad(0,0,Game.width,Game.height,Game.width,Game.height)
       
         canv_len = canv_len + 1
         self.blendmode = {"alpha"}
@@ -881,7 +882,8 @@ do
         drawTo = function(self, fn)
             self.canvas:drawTo(fn)
         end,
-        draw = function(self)     
+        draw = function(self)   
+            if self.quad then self.canvas.quad = self.quad end  
             self.canvas:draw()  
         end,
         release = function(self)
@@ -1898,17 +1900,17 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                 
                 local c = self.canvas_stack:getCanvas()
                 c.blendmode = {"alpha","premultiplied"}
-                c.auto_clear = {1,1,1,0}
+                c.auto_clear = {1,1,1,1}
 
                 c:drawTo(function()
+                    --love.graphics.clear(love.graphics.getBackgroundColor())
                     fn()
                 end)
                 love.graphics.setShader(self.shader_info.shader)
                 c:draw()
-                love.graphics.setShader()
+                love.graphics.setShader(last_shader)
                 
                 love.graphics.setBlendMode(last_blend)
-                love.graphics.setShader(last_shader)
                 self.canvas_stack:release()
             end
         end;
