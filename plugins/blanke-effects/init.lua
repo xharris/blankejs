@@ -26,14 +26,14 @@ Effect.new("chroma shift", {
       // fake chromatic aberration
       float sx = direction.x;///love_ScreenSize.x;
       float sy = direction.y;///love_ScreenSize.y;
-      vec4 r = Texel(texture, vec2(tc.x + sx, tc.y - sy));
-      vec4 g = Texel(texture, vec2(tc.x, tc.y + sy));
+      vec4 r = Texel(texture, vec2(tc.x + sx, tc.y + sy));
+      vec4 g = Texel(texture, vec2(tc.x , tc.y + sy));
       vec4 b = Texel(texture, vec2(tc.x - sx, tc.y - sy));
       number a = (r.a + g.a + b.a)/3.0;
   
       return vec4(r.r, g.g, b.b, a);
     ]],
-    draw = function(vars, applyShader)
+    draw = function(vars)
       dx = (math.cos(math.rad(vars.angle)) * vars.radius) / Game.width
       dy = (math.sin(math.rad(vars.angle)) * vars.radius) / Game.height
       vars.direction = {dx,dy}

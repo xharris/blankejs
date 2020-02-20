@@ -5,6 +5,7 @@ class Console extends Editor {
 		super();
 		if (windowed) {
 			this.setupDragbox();
+			this.setTitle("Console");
 			this.width = 400;
 			this.height = 160;
 		}

@@ -627,11 +627,18 @@ do
 
         sortDrawables = function()
             table.sort(Game.drawables, function(a, b) 
-                a = a or { z=0 }
-                b = b or { z=0 }
+                if a == nil and b == nil then
+                    return false
+                  end
+                  if a == nil then
+                    return true
+                  end
+                  if b == nil then
+                    return false
+                  end
                 a._last_z = a.z
                 b._last_z = b.z
-                return a.z < b.z 
+                return a.z < b.z
             end)
         end;
         
@@ -657,6 +664,7 @@ do
         spawn = function(name, args)
             local obj_info = objects[name]
             if obj_info ~= nil and obj_info.spawn_class then
+                args.is_entity = true
                 local instance = obj_info.spawn_class(obj_info.args, args or {}, name)
                 return instance
             end
@@ -746,8 +754,7 @@ GameObject = class {
                     
         State.addObject(self)
 
-        if self._spawn then self:_spawn(unpack(spawn_args or {})) end
-        if self.spawn then self:spawn(unpack(spawn_args or {})) end
+        if not self.is_entity and self.spawn then self:spawn(unpack(spawn_args or {})) end
     end;
     addUpdatable = function(self)
         self.updatable = true
@@ -785,6 +792,9 @@ GameObject = class {
             Net.destroy(self)
         end
     end;
+    __ = {
+        tostring = function(self) return self.classname..'-'..self.uuid end
+    }
 }
 
 --CANVAS
@@ -1015,7 +1025,7 @@ Entity = nil
 do
     -- (getMetaMethod)
     local getMM = function(self, name, ...)
-        if self.__ and self.__[name] then return self.__[name](self, ...) end
+        if self.__fn and self.__fn[name] then return self.__fn[name](self, ...) end
         return nil
     end
     local _Entity = GameObject:extend {
@@ -1036,7 +1046,6 @@ do
         init = function(self, args, spawn_args, classname)
             GameObject.init(self, args, spawn_args)
 
-            self.is_entity = true
             self.hspeed = 0
             self.vspeed = 0
             self.gravity = 0
@@ -1107,6 +1116,11 @@ do
                 spawn_args.x = spawn_args.x or self.x 
                 spawn_args.y = spawn_args.y or self.y 
                 Net.spawn(self, spawn_args)
+            end
+            -- metamethods
+            if args.__ then 
+                self.__fn = args.__
+                args.__ = nil
             end
             self.net_obj = spawn_args.net_obj
             -- other props
@@ -1599,7 +1613,7 @@ do
     local love_replacements = {
         float = "number",
         sampler2D = "Image",
-        uniform = "extern",
+        extern = "uniform",
         texture2D = "Texel",
         gl_FragColor = "pixel",
         gl_FragCoord = "screen_coords"
@@ -1648,22 +1662,22 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
                 -- add pixel shader code
                 if info.code.position then
                     shader_code = shader_code .. info.code.position .. '\n\n'
-                    pos_call_code = pos_call_code .. "vertex_position = "..safe_name:replace(' ','_').."__position(transform_projection, vertex_position);\n";
+                    pos_call_code = pos_call_code .. "vertex_position = "..safe_name:replace(' ','_').."_shader_position(transform_projection, vertex_position);\n";
                 end 
                 -- add vertex shader code
                 if info.code.effect then
                     shader_code = shader_code .. info.code.effect .. '\n\n'
-                    eff_call_code = eff_call_code .. "color = "..safe_name:replace(' ','_').."__effect(color, texture, texture_coords, screen_coords);\n";
+                    eff_call_code = eff_call_code .. "color = "..safe_name:replace(' ','_').."_shader_effect(color, texture, texture_coords, screen_coords);\n";
                 end 
                 -- add vars
                 if info.code.vars then 
-                    var_code = var_code .. info.code.vars .. '\n'
+                    var_code = var_code..'\n'.. info.code.vars .. '\n'
                 end 
             end
         end
         -- put it all together in one shader
         if not solo_shader then 
-            shader_code = var_code..'\n'..helper_fns..'\n'..shader_code..[[   
+            shader_code = "// BEGIN "..full_name.."\n"..var_code..'\n'..helper_fns..'\n'..shader_code..[[   
 
 #ifdef VERTEX
 vec4 position(mat4 transform_projection, vec4 vertex_position) {
@@ -1678,14 +1692,14 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
 ]]..eff_call_code..[[
 return color;
 }
-#endif]]
+#endif
+// END ]]..full_name
         end
 
         for old, new in pairs(love_replacements) do
-            shader_code, r = string.gsub(shader_code, old, new)
+            shader_code = shader_code:replace(old, new, true)
         end
 
-        print(shader_code)
         shaders[full_name].name = full_name
         shaders[full_name].solo = solo_shader
         shaders[full_name].code = shader_code
@@ -1718,7 +1732,7 @@ return color;
                     opt.unused_vars[key] = true
                 end
                 if not opt.code then  -- not a solo shader, prepend shader name
-                    key = safe_name.."__"..key
+                    key = safe_name.."_"..key
                 end
                 -- get var type
                 switch(type(val),{
@@ -1746,30 +1760,30 @@ return color;
             else
                 if opt.vertex:len() > 1 then 
                     code_position = [[
-    vec4 ]]..safe_name..[[__position(mat4 transform_projection, vec4 vertex_position) {
-    ]]..opt.vertex..[[
-        return transform_projection * vertex_position;
-    }
-    ]]
+vec4 ]]..safe_name..[[_shader_position(mat4 transform_projection, vec4 vertex_position) {
+]]..opt.vertex..[[
+    return transform_projection * vertex_position;
+}
+]]
                 end
                 
                 if opt.effect:len() > 1 then 
                     code_effect = [[
-    vec4 ]]..safe_name..[[__effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
-        vec4 pixel = Texel(texture, texture_coords);
-    ]]..opt.effect..[[
-        return pixel * color;
-    }
-    ]]
+vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
+    vec4 pixel = Texel(texture, texture_coords);
+]]..opt.effect..[[
+    return pixel * color;
+}
+]]
                 end
             end
 
             for key, val in pairs(opt.vars) do
                 if code_effect then 
-                    code_effect = code_effect:replace(key,safe_name.."__"..key,true)
+                    code_effect = code_effect:replace(key,safe_name.."_"..key,true)
                 end
                 if code_position then 
-                    code_position = code_position:replace(key,safe_name.."__"..key,true)
+                    code_position = code_position:replace(key,safe_name.."_"..key,true)
                 end
             end
 
@@ -1834,7 +1848,7 @@ return color;
                 if self.shader_info.solo then
                     self.shader_info.shader:send(k,v)
                 else
-                    self.shader_info.shader:send(safe_name.."__"..k,v)
+                    self.shader_info.shader:send(safe_name.."_"..k,v)
                 end
             end
         end;
@@ -1846,7 +1860,7 @@ return color;
         end;
         _update = function(self,dt)
             for _,name in ipairs(self.names) do
-                self:sendVars(name, self.vars)
+                self:sendVars(name)
                 vars = self.shader_info.vars[name]
                 vars.time = vars.time + dt
                 self:send(name, 'time', vars.time)
@@ -1857,24 +1871,35 @@ return color;
             self:_update(dt) 
         end;
         draw = function(self, fn)
-            local last_shader = love.graphics.getShader()
-            local last_blend = love.graphics.getBlendMode()
-            
-            local c = self.canvas_stack:getCanvas()
             local used = false
+            for _, name in ipairs(self.names) do 
+                if not self.disabled[name] then 
+                    used = true
+                end
+                if not self.disabled[name] and library[name] and library[name].opt.draw then 
+                    library[name].opt.draw(self.shader_info.vars[name])
+                end
+            end
+            
+            if used then 
+                local last_shader = love.graphics.getShader()
+                local last_blend = love.graphics.getBlendMode()
+                
+                local c = self.canvas_stack:getCanvas()
+                local blendmode = {"alpha","premultiplied"}
+                c.blendmode = blendmode
 
-            local blendmode = {"alpha","premultiplied"}
-            c.blendmode = blendmode
-            c:drawTo(function()
-                love.graphics.setShader(self.shader_info.shader)
-                fn()
-            end)
-            love.graphics.setShader()
-            c:draw()
-            love.graphics.setBlendMode(last_blend)
-            love.graphics.setShader(last_shader)
-
-            self.canvas_stack:release()
+                c:drawTo(function()
+                    love.graphics.setShader(self.shader_info.shader)
+                    fn()
+                end)
+                love.graphics.setShader()
+                c:draw()
+                
+                love.graphics.setBlendMode(last_blend)
+                love.graphics.setShader(last_shader)
+                self.canvas_stack:release()
+            end
         end;
     }
 end
