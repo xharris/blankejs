@@ -503,6 +503,7 @@ do
         win_height = 0;
         width = 0;
         height = 0;
+        time = 0;
 
         init = function(self,args)
             table.update(Game.options, args)
@@ -578,7 +579,7 @@ do
                 Game.options.load()
             end
             
-            love.graphics.setBackgroundColor(0,0,0)
+            love.graphics.setBackgroundColor(0,0,0,0)
 
             Blanke.game_canvas = Canvas()
             Blanke.game_canvas.__ide_obj = true
@@ -693,7 +694,7 @@ GameObject = class {
         self.x, self.y, self.z, self.angle, self.scalex, self.scaley, self.scale = 0, 0, 0, 0, 1, 1, 1
         self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = spawn_args.width or args.width or 0, spawn_args.height or args.height or 0, 0, 0, 0, 0
         self.align = nil
-        self.blendmode = nil
+        self.blendmode = {'alpha'}
         self.visible = true
         self.child_keys = {}
         self.parent = nil
@@ -835,8 +836,9 @@ Canvas = GameObject:extend {
     end;
     prepare = function(self)
         if self.auto_clear then Draw.clear(self.auto_clear) end
+        Draw.setBlendMode('alpha')
         -- camera transform
-        --love.graphics.origin()
+        love.graphics.origin()
         if Camera.transform and not self.__ide_obj then
             love.graphics.replaceTransform(Camera.transform)
         end
@@ -1614,6 +1616,7 @@ Effect = nil
 do
     local love_replacements = {
         float = "number",
+        int = "number",
         sampler2D = "Image",
         uniform = "extern",
         texture2D = "Texel",
@@ -1634,6 +1637,9 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
     local shaders = {} -- { 'eff1+eff2' = { shader: Love2dShader } }
 
     local safe_names = {}
+    local tryEffect = function(name)
+        assert(library[name], "Effect :'"..name.."' not found")
+    end
     local generateShader = function(names, override)
         local full_name = table.join(names, '+')
         if shaders[full_name] and not override then 
@@ -1650,7 +1656,7 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
             local safe_name = name:replace(' ','_')
             safe_names[name] = safe_name
             local info = library[name]
-            assert(info, "Effect :'"..name.."' not found")
+            tryEffect(name)
             assert(info.code.solo == nil or (info.code.solo and #names == 1), "Effect '"..name.."' is a solo effect. It cannot be combine with other shaders.")
             shaders[full_name].vars[name] = copy(info.opt.vars)
             shaders[full_name].unused_vars[name] = copy(info.opt.unused_vars)
@@ -1814,7 +1820,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             end
             
             self.shader_info = generateShader(self.names)
-            self.canvas_stack = CanvasStack()
+            self.front, self.back = CanvasStack(), CanvasStack()
             self.disabled = {}
 
             self:addUpdatable()
@@ -1828,6 +1834,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             for _,name in ipairs(disable_names) do self.disabled[name] = true end 
             local new_names = {}
             for _,name in ipairs(self.names) do 
+                tryEffect(name)
                 if not self.disabled[name] then 
                     table.insert(new_names, name)
                 end
@@ -1839,6 +1846,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             for _,name in ipairs(enable_names) do self.disabled[name] = false end 
             local new_names = {}
             for _,name in ipairs(self.names) do 
+                tryEffect(name)
                 if not self.disabled[name] then 
                     table.insert(new_names, name)
                 end
@@ -1846,6 +1854,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             self.shader_info = generateShader(new_names)
         end;
         set = function(self,name,k,v)
+            tryEffect(name)
             if not self.disabled[name] then
                 self.shader_info.vars[name][k] = v
             end
@@ -1854,6 +1863,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             local info = self.shader_info
             local safe_name = (safe_names[name] or '').."_"..k
             if not info.unused_vars[name][k] then
+                tryEffect(name)
                 if info.solo and info.shader:hasUniform(k) then
                     info.shader:send(k,v)
                 elseif info.shader:hasUniform(safe_name) then
@@ -1898,20 +1908,24 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                 local last_shader = love.graphics.getShader()
                 local last_blend = love.graphics.getBlendMode()
                 
-                local c = self.canvas_stack:getCanvas()
-                c.blendmode = {"alpha","premultiplied"}
-                c.auto_clear = {1,1,1,1}
+                local front, back = self.front:getCanvas(), self.back:getCanvas()
+                front.blendmode = self.blendmode
+                front.auto_clear = {1,1,1,0}
 
-                c:drawTo(function()
-                    --love.graphics.clear(love.graphics.getBackgroundColor())
+                front:drawTo(function()
+                    love.graphics.setShader()
                     fn()
                 end)
+                
                 love.graphics.setShader(self.shader_info.shader)
-                c:draw()
+                front:draw()
                 love.graphics.setShader(last_shader)
                 
                 love.graphics.setBlendMode(last_blend)
-                self.canvas_stack:release()
+                self.front:release()
+                self.back:release()
+            else 
+                fn()
             end
         end;
     }

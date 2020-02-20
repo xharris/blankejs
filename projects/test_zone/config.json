@@ -6,16 +6,16 @@
     "window_size": 3,
     "quick_access": [
         [
-            "View assets=?",
-            "View assets"
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "shadertest.lua=script+?",
             "shadertest.lua"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
+            "View assets=?",
+            "View assets"
         ],
         [
             "Open image editor=?",

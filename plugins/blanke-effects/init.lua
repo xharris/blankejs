@@ -4,12 +4,12 @@ Effect.new("bloom", {
     effect = [[
   vec4 source = Texel(texture, texture_coords);
   vec4 sum = vec4(0);
-  int diff = (samples - 1) / 2;
+  number diff = (samples - 1) / 2;
   vec2 sizeFactor = vec2(1) / love_ScreenSize.xy * quality;
   
-  for (int x = -diff; x <= diff; x++)
+  for (number x = -diff; x <= diff; x++)
   {
-    for (int y = -diff; y <= diff; y++)
+    for (number y = -diff; y <= diff; y++)
     {
       vec2 offset = vec2(x, y) * sizeFactor;
       sum += Texel(texture, texture_coords + offset);
@@ -19,15 +19,18 @@ Effect.new("bloom", {
   ]]
 })
 
+-- doesn't look the same as chromatic abberation, but looks better for gaming imo
 Effect.new("chroma shift", {
     vars = { angle=0, radius=2, direction={0,0} },
     effect = [[
       vec2 tc = texture_coords;
-      return color * vec4(
-        Texel(texture, tc - direction).r,
-        Texel(texture, tc).g,
-        Texel(texture, tc + direction).b,
-        Texel(texture, tc).a);
+
+      vec4 r = Texel(texture, vec2(tc.x + direction.x, tc.y - direction.y));
+      vec4 g = Texel(texture, vec2(tc.x, tc.y + direction.y));
+      vec4 b = Texel(texture, vec2(tc.x - direction.x, tc.y - direction.y));
+      number a = (r.a + g.a + b.a)/3.0;
+  
+      pixel = vec4(r.r, g.g, b.b, a) * color;
     ]],
     draw = function(vars)
       dx = (math.cos(math.rad(vars.angle)) * vars.radius) / Game.width
