@@ -23,15 +23,11 @@ Effect.new("chroma shift", {
     vars = { angle=0, radius=2, direction={0,0} },
     effect = [[
       vec2 tc = texture_coords;
-      // fake chromatic aberration
-      float sx = direction.x;///love_ScreenSize.x;
-      float sy = direction.y;///love_ScreenSize.y;
-      vec4 r = Texel(texture, vec2(tc.x + sx, tc.y + sy));
-      vec4 g = Texel(texture, vec2(tc.x , tc.y + sy));
-      vec4 b = Texel(texture, vec2(tc.x - sx, tc.y - sy));
-      number a = (r.a + g.a + b.a)/3.0;
-  
-      return vec4(r.r, g.g, b.b, a);
+      return color * vec4(
+        Texel(texture, tc - direction).r,
+        Texel(texture, tc).g,
+        Texel(texture, tc + direction).b,
+        1.0);
     ]],
     draw = function(vars)
       dx = (math.cos(math.rad(vars.angle)) * vars.radius) / Game.width

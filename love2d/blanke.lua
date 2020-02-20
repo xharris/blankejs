@@ -833,7 +833,7 @@ Canvas = GameObject:extend {
         self.canvas = love.graphics.newCanvas(w,h)
     end;
     prepare = function(self)
-        if self.auto_clear then Draw.clear() end
+        if self.auto_clear then Draw.clear(self.auto_clear) end
         -- camera transform
         --love.graphics.origin()
         if Camera.transform and not self.__ide_obj then
@@ -1613,7 +1613,7 @@ do
     local love_replacements = {
         float = "number",
         sampler2D = "Image",
-        extern = "uniform",
+        uniform = "extern",
         texture2D = "Texel",
         gl_FragColor = "pixel",
         gl_FragCoord = "screen_coords"
@@ -1681,16 +1681,16 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
 
 #ifdef VERTEX
 vec4 position(mat4 transform_projection, vec4 vertex_position) {
-]]..pos_call_code..[[
-return transform_projection * vertex_position;
+    ]]..pos_call_code..[[
+    return transform_projection * vertex_position;
 }
 #endif
 
 
 #ifdef PIXEL
-vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
-]]..eff_call_code..[[
-return color;
+vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+    ]]..eff_call_code..[[
+    return color;
 }
 #endif
 // END ]]..full_name
@@ -1699,6 +1699,8 @@ return color;
         for old, new in pairs(love_replacements) do
             shader_code = shader_code:replace(old, new, true)
         end
+
+        print(shader_code)
 
         shaders[full_name].name = full_name
         shaders[full_name].solo = solo_shader
@@ -1820,51 +1822,60 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             tostring = function(self) return self.shader_info.code end
         };
         disable = function(self, ...)
-            for _,name in ipairs({...}) do self.disabled[name] = true end 
+            local disable_names = {...}
+            for _,name in ipairs(disable_names) do self.disabled[name] = true end 
             local new_names = {}
             for _,name in ipairs(self.names) do 
                 if not self.disabled[name] then 
-                    table.insert(new_names)
+                    table.insert(new_names, name)
                 end
             end
             self.shader_info = generateShader(new_names)
         end;
         enable = function(self, ...)
-            for _,name in ipairs({...}) do self.disabled[name] = false end 
+            local enable_names = {...}
+            for _,name in ipairs(enable_names) do self.disabled[name] = false end 
             local new_names = {}
             for _,name in ipairs(self.names) do 
                 if not self.disabled[name] then 
-                    table.insert(new_names)
+                    table.insert(new_names, name)
                 end
             end
             self.shader_info = generateShader(new_names)
         end;
         set = function(self,name,k,v)
-            self.shader_info.vars[name][k] = v
+            if not self.disabled[name] then
+                self.shader_info.vars[name][k] = v
+            end
         end;
         send = function(self,name,k,v)
-            if not self.shader_info.unused_vars[name][k] then
-                local safe_name = safe_names[name]
-                if self.shader_info.solo then
-                    self.shader_info.shader:send(k,v)
-                else
-                    self.shader_info.shader:send(safe_name.."_"..k,v)
+            local info = self.shader_info
+            local safe_name = (safe_names[name] or '').."_"..k
+            if not info.unused_vars[name][k] then
+                if info.solo and info.shader:hasUniform(k) then
+                    info.shader:send(k,v)
+                elseif info.shader:hasUniform(safe_name) then
+                    info.shader:send(safe_name,v)
                 end
             end
         end;
         sendVars = function(self,name,vars)
-            vars = vars or self.shader_info.vars[name]
-            for k,v in pairs(vars) do
-                self:send(name, k, v)
+            if not self.disabled[name] then
+                vars = vars or self.shader_info.vars[name]
+                for k,v in pairs(vars) do
+                    self:send(name, k, v)
+                end
             end
         end;
         _update = function(self,dt)
             for _,name in ipairs(self.names) do
-                self:sendVars(name)
-                vars = self.shader_info.vars[name]
-                vars.time = vars.time + dt
-                self:send(name, 'time', vars.time)
-                self:send(name, 'tex_size', {Game.width,Game.height})
+                if not self.disabled[name] then
+                    self:sendVars(name)
+                    vars = self.shader_info.vars[name]
+                    vars.time = vars.time + dt
+                    self:send(name, 'time', vars.time)
+                    self:send(name, 'tex_size', {Game.width,Game.height})
+                end
             end
         end;
         update = function(self,dt) 
@@ -1886,15 +1897,15 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                 local last_blend = love.graphics.getBlendMode()
                 
                 local c = self.canvas_stack:getCanvas()
-                local blendmode = {"alpha","premultiplied"}
-                c.blendmode = blendmode
+                c.blendmode = {"alpha","premultiplied"}
+                c.auto_clear = {1,1,1,0}
 
                 c:drawTo(function()
-                    love.graphics.setShader(self.shader_info.shader)
                     fn()
                 end)
-                love.graphics.setShader()
+                love.graphics.setShader(self.shader_info.shader)
                 c:draw()
+                love.graphics.setShader()
                 
                 love.graphics.setBlendMode(last_blend)
                 love.graphics.setShader(last_shader)
