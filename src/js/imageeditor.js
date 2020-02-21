@@ -304,7 +304,6 @@ class ImageEditor extends Editor {
         const setupForm = () => {
             app.saveSettings();
             let [cx, cy] = this.getCenter();
-            console.log(cx, cy)
             this.pixi.setCameraPosition(cx - (this.img_width / 2), cy - (this.img_height / 2));
             this.el_image_form.useValues(this.img_settings);
             this.checkFormVisibility();
@@ -506,8 +505,13 @@ class ImageEditor extends Editor {
         let i = (y * this.edit_container.width + x) * 4;
         return { r:pixels[i], g:pixels[i+1], b:pixels[i+2], a:pixels[i+3] }
     }
-    performDrawOps (obj, color, alpha) {
-        let tset = (v,i) => this.el_image_form.getValue(v,i);
+    performDrawOps (obj, color, alpha, overrides) {
+        let tset = (v,i) => {
+            if (overrides && overrides[v])
+                return i != null ? overrides[v][i] : overrides[v];
+            else
+                return this.el_image_form.getValue(v,i);
+        }
         let x = this.cursor[0], y = this.cursor[1];
         let shape = tset('tool.shape');
         let fill = tset('tool.fill');

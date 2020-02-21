@@ -35,13 +35,13 @@ elec.app.on('ready', function(){
         main_window.webContents.send('close', e);
         e.preventDefault();
     });
-    /*
+    
     main_window.webContents.on('new-window', function(e, url) {
         e.preventDefault();
-        console.log(url,'target',e.target.target);
+        console.log(url);
         if (url.length > 1)
             require('electron').shell.openExternal(url);
-    });*/
+    });
 });
 
 elec.app.commandLine.appendSwitch('ignore-gpu-blacklist');

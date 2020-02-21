@@ -86,6 +86,7 @@ class Docview extends Editor {
 									document.querySelectorAll('a').forEach(block => {
 										block.title = block.href;
 									});
+									app.sanitizeURLs();
 								}
 							});	
 						}
@@ -110,8 +111,6 @@ class Docview extends Editor {
 
 					this.doc_container.appendChild(el_section);
 				}
-
-				app.sanitizeURLs();
 			}
 		});
 	}

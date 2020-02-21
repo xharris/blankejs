@@ -48,7 +48,7 @@ Entity("Card",{
 	effect = { 'static','chroma shift' },
 	spawn = function(self, str)	
 		self.effect:set("static", "strength", {20, 0})
-		self.effect:disable('static','chroma shift')
+		--self.effect:disable('static','chroma shift')
 
 		local pos_name = str:split('.')[1]
 		if card_names:includes(pos_name) then

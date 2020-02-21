@@ -1820,7 +1820,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             end
             
             self.shader_info = generateShader(self.names)
-            self.front, self.back = CanvasStack(), CanvasStack()
+            self.front = CanvasStack()
             self.disabled = {}
 
             self:addUpdatable()
@@ -1908,7 +1908,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                 local last_shader = love.graphics.getShader()
                 local last_blend = love.graphics.getBlendMode()
                 
-                local front, back = self.front:getCanvas(), self.back:getCanvas()
+                local front = self.front:getCanvas()
                 front.blendmode = self.blendmode
                 front.auto_clear = {1,1,1,0}
 
@@ -1923,7 +1923,6 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                 
                 love.graphics.setBlendMode(last_blend)
                 self.front:release()
-                self.back:release()
             else 
                 fn()
             end
