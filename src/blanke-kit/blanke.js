@@ -74,7 +74,7 @@ String.prototype.toRgb = function() {
 }
 
 String.prototype.replaceAll = function(find, replace) {
-    return this.replace(new RegExp(find, 'g'), replace);
+    return this.split(find).join(replace);
 };
 
 String.prototype.escapeSlashes = function() {

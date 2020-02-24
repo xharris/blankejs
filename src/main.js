@@ -599,6 +599,14 @@ var app = {
 		app.engine = app.require(app.ideSetting("js_engine_path")).engine;
 		app.setBusyStatus(true);
 		app.setBusyStatus(false);
+		// change allowed extentensions
+		if (app.engine.file_ext) 
+			app.allowed_extensions.script = [...app.engine.file_ext];
+		if (app.engine.allowed_extensions) {
+			for (let type in app.engine.allowed_extensions) {
+				app.allowed_extensions[type] = [...app.engine.allowed_extensions[type]];
+			}
+		}
 		dispatchEvent('engine_config_load');
 	},
 
@@ -745,7 +753,7 @@ var app = {
 		'image':['png','jpg','jpeg'],
 		'audio':['mp3','ogg','wav'],
 		'font':['ttf','ttc','cff','woff','otf','otc','pfa','pfb','fnt','bdf','pfr'],
-		'script':['js'],
+		'script':['lua'],
 		'map':['map'],
 		'love':['love']
 	},

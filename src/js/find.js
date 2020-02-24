@@ -10,8 +10,10 @@ class Find extends Editor {
 
 		this.el_search_form = new BlankeForm([
 			['search','text',{'label':false}],
-			['submit','button',{'label':'search'}]
+			['submit','button',{'label':'search'}],
+			['regex','checkbox', {default: false}]
 		]);
+		this.el_search_form.container.classList.add("dark");
 		this.el_search_form.onChange('submit',function(){
 			this_ref.search(this_ref.el_search_form.getValue("search"));
 		});
@@ -32,26 +34,37 @@ class Find extends Editor {
 	}
 
 	search (query) {
-		let this_ref = this;
+		let re_query;
+		try {
+			if (!this.el_search_form.getValue('regex'))
+				['\\','(',')',']','[','{','}',
+				'+','.','-','|','?',
+				':','^','$','=','!','&'].forEach( s => query = query.replaceAll(s,'\\'+s) );
+			re_query = new RegExp(query);
 
-		app.getAssets('script', function(files){
-			let re_query = new RegExp(query);
-			this_ref.el_result_container.innerHTML = `<p class='no-result'>No results for "${query}"</p>`;
-
-			let first = true;
-			for (let f of files) {
-				// check if file contains query
-				nwFS.readFile(f,'utf-8',function(err, data){
-					if (!err && re_query.test(data)) {
-						if (first) {
-							first = false;
-							this_ref.el_result_container.innerHTML = '';
+			app.getAssets('script', files => {			
+				this.el_result_container.innerHTML = `<p class='no-result'>No results for "${query}"</p>`;
+	
+				let first = true;
+				for (let f of files) {
+					// check if file contains query
+					nwFS.readFile(f,'utf-8', (err, data) => {
+						if (err) return;
+						
+						if (re_query.test(data)) {
+							if (first) {
+								first = false;
+								this.el_result_container.innerHTML = '';
+							}
+							this.parseResult(f,data,re_query);
 						}
-						this_ref.parseResult(f,data,re_query);
-					}
-				});
-			}
-		});
+					});
+				}
+			});
+
+		} catch (err) {
+			this.el_result_container.innerHTML = `<p class='no-result'>"${err.message}"</p>`;
+		}
 	}
 
 	parseResult (filename, text, regex) {

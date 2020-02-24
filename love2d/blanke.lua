@@ -10,6 +10,7 @@ local uuid = require "lua.uuid"
 json = require "lua.json"
 class = require "lua.clasp"
 require "lua.print_r"
+local HC = require 'hc'
 -- yes, plugins folder is listed twice
 love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua;./plugins/?/init.lua;./plugins/?.lua')
 lua_print = print 
@@ -664,6 +665,7 @@ do
         spawn = function(name, args)
             local obj_info = objects[name]
             if obj_info ~= nil and obj_info.spawn_class then
+                args = args or {}
                 args.is_entity = true
                 local instance = obj_info.spawn_class(obj_info.args, args or {}, name)
                 return instance
@@ -709,6 +711,24 @@ GameObject = class {
             args = copy(args)
             if args.net_vars then self.net_vars = args.net_vars end
             if args.classname then self.classname = args.classname end
+            -- camera
+            if args.camera and not spawn_args.net_obj then
+                local cam_type = type(args.camera)
+                if cam_type == 'table' then
+                    for _,name in ipairs(self.camera) do
+                        Camera.get(name).follow = self
+                    end
+                else
+                    Camera.get(args.camera).follow = self
+                end
+                args.camera = nil
+            end
+            -- effect
+            if args.effect then 
+                self:setEffect(args.effect)
+                args.effect = nil
+            end
+            -- child entity
             for k, v in pairs(args) do
                 local arg_type = type(v)
                 local new_obj = nil
@@ -732,23 +752,6 @@ GameObject = class {
                     args[k] = nil
                 end
             end
-            -- camera
-            if args.camera and not spawn_args.net_obj then
-                local cam_type = type(args.camera)
-                if cam_type == 'table' then
-                    for _,name in ipairs(self.camera) do
-                        Camera.get(name).follow = self
-                    end
-                else
-                    Camera.get(args.camera).follow = self
-                end
-            end
-            -- effect
-            if args.effect then 
-                self:setEffect(args.effect)
-                args.effect = nil
-            end
-
             table.update(self, args)
         end
         if spawn_args then table.update(self,spawn_args) end
@@ -1048,14 +1051,14 @@ do
             le = function(self,...) return getMM(self, 'le', ...) or nil end,
         },
         init = function(self, args, spawn_args, classname)
-            GameObject.init(self, args, spawn_args)
-
             self.hspeed = 0
             self.vspeed = 0
             self.gravity = 0
             self.gravity_direction = 90
             self.anim_speed = 1
-    
+
+            GameObject.init(self, args, spawn_args)
+
             self.classname = classname
             self.imageList = {}
             self.animList = {}
@@ -1199,37 +1202,35 @@ do
             end
         end,
         _draw = function(self)       
-            if self.predraw or self._custom_draw or self.postdraw then
-                Game.drawObject(self, function()
-                    -- predraw
-                    if self.predraw then
-                        self:predraw()
-                    end
-                    -- draw
-                    local draw_fn = function()
-                        if self.imageList then
-                            for name, img in pairs(self.imageList) do
-                                img:draw()
-                            end
-                        end
-                        if self.animation and self.animList[self.animation] then
-                            local anim = self.animList[self.animation]
-                            self:_updateSize(anim)
-                            anim:draw()
-                            self.width, self.height = anim.width, anim.height
+            Game.drawObject(self, function()
+                -- predraw
+                if self.predraw then
+                    self:predraw()
+                end
+                -- draw
+                local draw_fn = function()
+                    if self.imageList then
+                        for name, img in pairs(self.imageList) do
+                            img:draw()
                         end
                     end
-                    if self._custom_draw then
-                        self:_custom_draw(draw_fn)
-                    else
-                        draw_fn()
+                    if self.animation and self.animList[self.animation] then
+                        local anim = self.animList[self.animation]
+                        self:_updateSize(anim)
+                        anim:draw()
+                        self.width, self.height = anim.width, anim.height
                     end
-                    -- postdraw
-                    if self.postdraw then 
-                        self:postdraw()
-                    end
-                end, 'function')
-            end
+                end
+                if self._custom_draw then
+                    self:_custom_draw(draw_fn)
+                else
+                    draw_fn()
+                end
+                -- postdraw
+                if self.postdraw then 
+                    self:postdraw()
+                end
+            end, 'function')
         end;
         draw = function(self) self:_draw() end;
         _destroy = function(self)
@@ -1247,7 +1248,7 @@ do
         init_props = {};
         init = function(self, name, args)
             if args.draw then
-                args._custom_draw = args.draw
+                self._custom_draw = args.draw
                 args.draw = nil
             end
             Game.addObject(name, "Entity", args, _Entity)
@@ -1414,7 +1415,7 @@ do
         end;
         parseColor = function(...)
             args = {...}
-            if #args == 0 then return end
+            if #args == 0 then return 0, 0, 0, 1 end
             local c = Color[args[1]]
             if c then 
                 args = {c[1],c[2],c[3],args[2] or 1}
@@ -2029,20 +2030,26 @@ do
                     end
                 end
             end
-            -- spawn entities
+            -- spawn entities/hitboxes
             for obj_uuid, info in pairs(data.objects) do
                 local obj_info = getObjInfo(obj_uuid)
                 if obj_info then
                     for l_uuid, coord_list in pairs(info) do
                         for _,c in ipairs(coord_list) do
                             local hb_color = Draw.hexToRgb(obj_info.color)
-                            hb_color[4] = 0.25
-                            local obj = new_map:_spawnEntity(obj_info.name,{
-                                x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid],
-                                width=obj_info.size[1], height=obj_info.size[2], hitboxColor=hb_color, align="center"
-                            })
-                            if obj then 
-                                obj.mapTag = c[1]
+                            hb_color[4] = 0.3
+                            -- spawn entity
+                            if Game.isSpawnable(obj_info.name) then
+                                local obj = new_map:_spawnEntity(obj_info.name,{
+                                    x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
+                                    width=obj_info.size[1], height=obj_info.size[2], hitboxColor=hb_color, align="center"
+                                })
+                                if obj then 
+                                    obj.mapTag = c[1]
+                                end
+                            -- spawn hitbox
+                            else 
+                                new_map:addHitbox(obj_info.name, table.slice(c,2), hb_color)
                             end
                         end
                     end
@@ -2079,7 +2086,7 @@ do
             local hb_name = nil
             if options.tile_hitbox then hb_name = options.tile_hitbox[FS.removeExt(FS.basename(file))] end
             local body = nil
-            local tile_info = { id=id, x=x, y=y, width=tw, height=th }
+            local tile_info = { id=id, x=x, y=y, width=tw, height=th, collTag=hb_name }
             if hb_name then
                 tile_info.tag = hb_name
                 if options.use_physics then
@@ -2107,7 +2114,14 @@ do
                 table.insert(self.hb_list, tile_info)
             end
         end;
-
+        addHitbox = function(self,tag,pts,color) 
+            print(color)
+            Hitbox.add{
+                hitArea = pts,
+                tag = tag,
+                hitboxColor = color
+            }
+        end,
         _spawnEntity = function(self, ent_name, opt)
             local obj = Game.spawn(ent_name, opt)
             if obj then
@@ -2376,8 +2390,9 @@ end
 --HITBOX
 Hitbox = nil
 do
-    local world = bump.newWorld()
+    local shapes = {}
     local checkHitArea = function(obj)
+        local x, y = obj.x or 0, obj.y or 0
         if not obj.alignx then obj.alignx = 0 end
         if not obj.aligny then obj.aligny = 0 end
         if not obj.hitArea then
@@ -2385,15 +2400,23 @@ do
                 left = -obj.alignx,
                 top = -obj.aligny,
                 right = 0,
-                bottom = 0
+                bottom = 0,
+                points = { 
+                    x,y, 
+                    obj.width,obj.height
+                },
+                tag = obj.collTag or obj.classname or ''
+            }
+        else 
+            obj.hitArea = {
+                left = -obj.alignx,
+                top = -obj.aligny,
+                right = 0,
+                bottom = 0,
+                points = copy(obj.hitArea),
+                tag = obj.tag or obj.collTag or obj.classname or '',
             }
         end
-        table.defaults(obj.hitArea, {
-            left = -obj.alignx,
-            top = -obj.aligny,
-            right = 0,
-            bottom = 0
-        })
         return obj.hitArea
     end
     Hitbox = {
@@ -2401,70 +2424,105 @@ do
         default_coll_response = 'slide';
 
         add = function(obj)
-            if obj.x and obj.y and obj.width and obj.height then
-                if not obj.tag then obj.tag = obj.collTag or obj.classname or '' end
-                Game.checkAlign(obj)
-                local ha = checkHitArea(obj)
-                if not obj.hasHitbox then
-                    world:add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom) 
-                    obj.hasHitbox = true
+            Game.checkAlign(obj)
+            local ha = checkHitArea(obj)
+
+            if not obj.hasHitbox then
+                local len = #ha.points
+                if len == 2 then
+                    obj._hitbox = HC.point(unpack(ha.points))
+                elseif len == 3 then 
+                    obj._hitbox = HC.circle(unpack(ha.points))
+                elseif len == 4 then 
+                    obj._hitbox = HC.rectangle(unpack(ha.points))
                 else
-                    Hitbox.teleport(obj)
+                    obj._hitbox = HC.polygon(unpack(ha.points))
                 end
+
+                obj._hitbox.parent = obj
+                table.insert(shapes, obj._hitbox)
+                obj.hasHitbox = true
+            else
+                Hitbox.teleport(obj)
             end
         end;     
         -- ignore collisions
         teleport = function(obj)
             if obj.hasHitbox then
                 local ha = checkHitArea(obj)
-                world:update(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
+                obj._hitbox:moveTo(obj.x + ha.left, obj.y + ha.top)
+                return ha
             end
         end;
         move = function(obj)
-            if obj.hasHitbox then
-                local filter = function(item, other)
+            if not obj.destroyed and obj.hasHitbox then
+                local trigger = function(item, info)
+                    if item.collision then 
+                        item:collision(info)
+                    end
+                    if info.type == 'slide' then 
+                        print(info.normal.x, info.normal.y)
+                        item._hitbox:move(info.normal.x/2, info.normal.y/2)
+                    end
+                    --[[
                     if obj.collList and obj.collList[other.tag] then return obj.collList[other.tag] end
                     if obj.collFilter then return obj:collFilter(item, other) end
                     return obj.defaultCollRes or Hitbox.default_coll_response
+                    ]]
                 end
-                local ha = checkHitArea(obj)
-                local new_x, new_y, cols, len = world:move(obj, obj.x + ha.left, obj.y + ha.top, filter)
-                if obj.destroyed then return end
+                local ha = Hitbox.teleport(obj)
+                -- check all collisions and how to react to them
+                local collisions = HC.collisions(obj._hitbox)
+                if obj.collision and #collisions > 0 then
+                    for other, sep_vec in pairs(collisions) do
+                        if obj.destroyed then return end 
+                        trigger(obj, {
+                            item = other,
+                            normal = sep_vec,
+                            type = Hitbox.default_coll_response
+                        })
+                        if not other.destroyed then 
+                            trigger(other, {
+                                item = obj,
+                                normal = sep_vec,
+                                type = Hitbox.default_coll_response
+                            })
+                        end
+                    end 
+                end
+
+                local new_x, new_y = obj._hitbox:center()
                 obj.x = new_x - ha.left
                 obj.y = new_y - ha.top
-                local swap = function(t, key1, key2)
-                    local temp = t[key1]
-                    t[key1] = t[key2]
-                    t[key2] = temp
-                end
-                if obj.collision and len > 0 then
-                    for i=1,len do
-                        if obj.destroyed then return end
-                        obj:collision(cols[i])
-                        local info = cols[i]
-                        local other = info.other
-                        swap(info, 'item', 'other')
-                        swap(info, 'itemRect', 'otherRect')
-                        if other and not other.destroyed and other.collision then other:collision(info) end
-                    end
-                end
             end
         end;
         remove = function(obj)
             if obj and obj.hasHitbox then 
                 obj.hasHitbox = false
-                world:remove(obj) 
+                obj._hitbox.destroyed = true
+                HC.remove(obj._hitbox)
+                obj._hitbox = nil 
             end 
         end;
         draw = function()
             if Hitbox.debug then
-                local items, len = world:getItems()
-                for _,i in ipairs(items) do
-                    if i.hasHitbox and not i.destroyed then
-                        Draw.color(i.hitboxColor or {1,0,0,0.9})
-                        Draw.rect('line',world:getRect(i))
-                        Draw.color(i.hitboxColor or {1,0,0,0.25})
-                        Draw.rect('fill',world:getRect(i))
+                local t, len = shapes, #shapes 
+                local offset = 0
+                for o = 1, len do
+                    local obj = t[o]
+                    if obj then 
+                        if obj.destroyed then 
+                            t[o] = nil
+                            offset = offset + 1
+                        else
+                            t[o] = nil 
+                            t[o - offset] = obj
+                            -- draw shape 
+                            Draw.color(obj.parent.hitboxColor or {1,0,0,0.9})
+                            obj:draw('line')
+                            Draw.color(obj.parent.hitboxColor or {1,0,0,0.25})
+                            obj:draw('fill')
+                        end
                     end
                 end
                 Draw.color()

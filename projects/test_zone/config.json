@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
+            "platformer.map=map+?",
+            "platformer.map"
+        ],
+        [
             "platformer.lua=script+?",
             "platformer.lua"
         ],
         [
-            "Dev Tools=?",
-            "Dev Tools"
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
-            "Add a script=new+?",
-            "Add a script"
+            "Find in files=?",
+            "Find in files"
         ],
         [
-            "map0.map=map+?",
-            "map0.map"
-        ],
-        [
-            "Open image editor=?",
-            "Open image editor"
+            "View project in explorer=?",
+            "View project in explorer"
         ]
     ],
     "autoplay_preview": true,
@@ -38,10 +38,21 @@
                     32
                 ],
                 "uuid": "526dedde"
+            },
+            "25c737ad": {
+                "name": "ground",
+                "char": "&",
+                "color": "#f7ff67",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "25c737ad"
             }
         },
         "object_order": [
-            "526dedde"
+            "526dedde",
+            "25c737ad"
         ]
     },
     "export": {

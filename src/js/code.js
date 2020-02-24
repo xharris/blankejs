@@ -313,7 +313,8 @@ class Code extends Editor {
 			let body_entries = Object.entries(body);
 			let re_body = new RegExp(body_entries.reduce((acc, cur) => acc.concat(cur.map(v => v.charAt(0).match(/\w/) ? v : '\\'+v)), []).join('|'), 'g');
 			baseMode.electricInput = /end|\]|\}/;
-
+			console.log(baseMode)
+			
 			const getLineOffset = (line) => {
 				let open = 0;
 				let matches = line.match(re_body);
@@ -582,7 +583,8 @@ class Code extends Editor {
             	"Shift-Tab": "indentLess",
             	"Ctrl-F": "findPersistent",
 				"Ctrl-Space": "autocomplete",
-				"Ctrl-Shift-Tab": "indentAuto"
+				"Ctrl-Shift-Tab": "indentAuto",
+				"Ctrl-/": "toggleComment"
             }
 		});
 

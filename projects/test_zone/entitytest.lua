@@ -1,10 +1,8 @@
-Image.animation("blue_robot.png", {}, { rows=1, cols=8, frames={ '2-5' } })
-
 Input {
 	action = { "space" }	
 }
 
-Entity("player", {
+Entity("shader_player", {
 		animations = { "blue_robot" },
 		animation = "blue_robot",
 		net = true,
@@ -54,7 +52,7 @@ State("entitytest",{
 		print(badword.check("thesh!tmatwinkien"))
 		Map.load("map0.map")
 		Net.on('ready', function()	
-			Game.spawn('player', {x=Game.width/2, y=Game.height/2}) -- Map.load("map0.map")	
+			Game.spawn('shader_player', {x=Game.width/2, y=Game.height/2}) -- Map.load("map0.map")	
 		end)
 		Net.connect()	
 	end,
