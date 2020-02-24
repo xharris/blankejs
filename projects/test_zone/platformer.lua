@@ -1,0 +1,2 @@
+State('platformer',{
+	enter = function()

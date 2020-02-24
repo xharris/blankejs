@@ -40,12 +40,10 @@ Effect.new('tablecard',{
 
 Entity("Card",{
 	name='', -- number / draw / skip / reverse
-	value=-1,
-	color='black2',
-	style='hand',
+	value=-1, color='black2', style='hand',
 	scale=1, --.2,
 	visible=false,
-	effect = { 'static','chroma shift' },
+	effect = { 'chroma shift', 'static' },
 	spawn = function(self, str)	
 		self.effect:set("static", "strength", {20, 0})
 		--self.effect:disable('static','chroma shift')

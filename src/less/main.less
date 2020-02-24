@@ -29,7 +29,6 @@ body {
 	background-color: @window-background;
 
 	position: relative;
-    border: 1px solid black;
     border-top: none;
 }
 
@@ -39,7 +38,7 @@ body:after { bottom: -3px; }
 body:before, body:after {
     content: "";
     position: absolute;
-    background-image: linear-gradient(to right, black, fade(@ide-accent, 75%), black); /* 100, 221, 23 */
+    background-image: linear-gradient(to right, transparent, fade(@ide-accent, 75%), transparent); /* 100, 221, 23 */
     left: 0px;
     right: 0px;
     height: 1px;
@@ -76,7 +75,7 @@ a {
 	.no-select();
 	position: absolute;
 	top: 0px;
-	right: 0px;
+	right: 1px;
 	z-index: 1000;
 	background: linear-gradient(to right, transparent 0%, fade(@window-background, 70%) 20%);
 

@@ -114,11 +114,13 @@ Effect.new('warp sphere', {
 })
 
 Effect.new('static', {
-  vars = { strength={5,5} },
+  vars = { strength={5,0} },
   effect = [[
+  vec2 new_tc = texture_coords;
+  number off = random(vec2(0, 1.0), new_tc, time);
   pixel = Texel(texture, vec2(
-			texture_coords.x + getX(random(vec2(0, 2.0), screen_coords, time) - 1.0) * strength.x,
-			texture_coords.y + getY(random(vec2(0, 2.0), screen_coords, time) - 1.0) * strength.y
+			texture_coords.x + getX(off - 1.0) * strength.x,
+			texture_coords.y + getY(off - 1.0) * strength.y
 		));
   ]]
 })

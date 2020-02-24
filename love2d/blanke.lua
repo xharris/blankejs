@@ -838,7 +838,7 @@ Canvas = GameObject:extend {
         if self.auto_clear then Draw.clear(self.auto_clear) end
         Draw.setBlendMode('alpha')
         -- camera transform
-        love.graphics.origin()
+        --love.graphics.origin()
         if Camera.transform and not self.__ide_obj then
             love.graphics.replaceTransform(Camera.transform)
         end
@@ -1198,40 +1198,37 @@ do
                 return 2
             end
         end,
-        _draw = function(self) 
-            local canv_used = false   
+        _draw = function(self)       
             if self.predraw or self._custom_draw or self.postdraw then
-            end
-            -- predraw
-            if self.predraw then
-                Game.drawObject(self, self.predraw, 'function')
-            end
-            -- draw
-            local draw_fn = function()
                 Game.drawObject(self, function()
-                    if self.imageList then
-                        for name, img in pairs(self.imageList) do
-                            img:draw()
+                    -- predraw
+                    if self.predraw then
+                        self:predraw()
+                    end
+                    -- draw
+                    local draw_fn = function()
+                        if self.imageList then
+                            for name, img in pairs(self.imageList) do
+                                img:draw()
+                            end
+                        end
+                        if self.animation and self.animList[self.animation] then
+                            local anim = self.animList[self.animation]
+                            self:_updateSize(anim)
+                            anim:draw()
+                            self.width, self.height = anim.width, anim.height
                         end
                     end
-                    if self.animation and self.animList[self.animation] then
-                        local anim = self.animList[self.animation]
-                        self:_updateSize(anim)
-                        anim:draw()
-                        self.width, self.height = anim.width, anim.height
+                    if self._custom_draw then
+                        self:_custom_draw(draw_fn)
+                    else
+                        draw_fn()
+                    end
+                    -- postdraw
+                    if self.postdraw then 
+                        self:postdraw()
                     end
                 end, 'function')
-            end
-            if self._custom_draw then
-                Game.drawObject(self, function()
-                    self:_custom_draw(draw_fn)
-                end, 'function')
-            else
-                draw_fn()
-            end
-            -- postdraw
-            if self.postdraw then 
-                Game.drawObject(self, self.postdraw, 'function')
             end
         end;
         draw = function(self) self:_draw() end;
@@ -1629,6 +1626,7 @@ float random(vec2 scale, vec2 pixelcoord, float seed) {
     /* use the fragment position for a different seed per-pixel */
     return fract(sin(dot(pixelcoord + seed, scale)) * 43758.5453 + seed);
 }
+float mod(float a, float b) { return - (a / b) * b; }
 float getX(float amt) { return amt / love_ScreenSize.x; }
 float getY(float amt) { return amt / love_ScreenSize.y; }
 float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
@@ -1707,8 +1705,6 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
         for old, new in pairs(love_replacements) do
             shader_code = shader_code:replace(old, new, true)
         end
-
-        print(shader_code)
 
         shaders[full_name].name = full_name
         shaders[full_name].solo = solo_shader

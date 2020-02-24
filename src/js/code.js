@@ -314,7 +314,7 @@ class Code extends Editor {
 			let re_body = new RegExp(body_entries.reduce((acc, cur) => acc.concat(cur.map(v => v.charAt(0).match(/\w/) ? v : '\\'+v)), []).join('|'), 'g');
 			baseMode.electricInput = /end|\]|\}/;
 
-			const getLineLevel = (line) => {
+			const getLineOffset = (line) => {
 				let open = 0;
 				let matches = line.match(re_body);
 				if (matches) {
@@ -329,34 +329,72 @@ class Code extends Editor {
 						m++;
 					}
 				}
-				return Math.min(0, Math.max(-1, open));
+				return open; // Math.min(1, Math.max(-1, open));
+			}
+
+			const getClosers = (line) => {
+				let closers = [];
+				let matches = line.match(re_body);
+				if (matches) {
+					let m = 0, w = matches.length - 1;
+					while (m <= w) {
+						if (closers.includes(matches[m])) {
+							closers.push(matches[m])
+						}
+					}
+				}
+				return closers;
+			}
+
+			const getIndent = (line) => {
+				let match;
+				if (match = line.match(/(\s+).?/)) return match[1].length;
+				return 0;
 			}
 
 			baseMode.indent = (state, line) => {
 				let doc = this.codemirror.getDoc();
 				let cur = doc.getCursor();
-				let base_indent = state.indentDepth;
 
-				let prev_line_level = 0;
-				let curr_line_level = getLineLevel(line);
-				let indentation = (base_indent + curr_line_level) * 4;
+				let indentation = 0;
 
+				// previous line indentation
 				if (cur.line > 0) {
-					let prev_line = doc.getLine(cur.line - 1);
-					let tok = doc.getEditor().getTokenAt({line:cur.line-1, ch:cur.ch});
-					base_indent = tok.state.base.indentDepth;
+					let prev_line_i = cur.line - 1;
+					let prev_line = doc.getLine(prev_line_i);
+					while (prev_line_i > 0 && prev_line.trim().length == 0) {
+						prev_line_i--;
+						prev_line = doc.getLine(prev_line_i);
+					}
+					let prev_line_offset = getLineOffset(prev_line);
+					indentation = getIndent(prev_line);
+					// line has an opener
+					if (prev_line_offset > 0)
+						indentation++;
 
-					let match;
-					if (match = prev_line.match(/(\s+).?/)) base_indent = match[1].length;
-					indentation = (base_indent + curr_line_level) * 4;
+					//console.log({prev_line, prev_line_offset, indentation})
+				}
 
-					prev_line_level = getLineLevel(prev_line);
+				/*
+				let curr_line_off = getLineOffset(line);
+				// line has closer(s)?
+				if (cur.line > 0 && curr_line_off < 0) {
+					// move backwards through lines until we find the matching opener		
+					let prev_line_i = cur.line - 1;
+					let prev_line = doc.getLine(prev_line_i);
+					while (prev_line_i > 0 && curr_line_off != 0) {
+						prev_line_i--;
+						prev_line = doc.getLine(prev_line_i);
+						curr_line_off += getLineOffset(prev_line);
+					}
+					// use indentation of matching opener's line
+					if (curr_line_off == 0)
+						indentation = getIndent(prev_line);
+				}*/
 
-					if (prev_line_level > 0) indentation = (base_indent + 1) * 4;
-					if (prev_line_level < 0) indentation = (Math.max(0,base_indent) + curr_line_level) * 4;
-				} 
-				// console.log({curr_line_level, base_indent, prev_line_level, indentation});
-				return indentation;
+				// console.log({curr_line_off, indentation});
+
+				return indentation * 4;
 			}
 			return CodeMirror.overlayMode(baseMode, blankeOverlay);
 		});

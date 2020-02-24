@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
+            "platformer.lua=script+?",
+            "platformer.lua"
         ],
         [
-            "shadertest.lua=script+?",
-            "shadertest.lua"
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "Open image editor=?",
-            "Open image editor"
+            "Add a script=new+?",
+            "Add a script"
         ],
         [
             "map0.map=map+?",
             "map0.map"
+        ],
+        [
+            "Open image editor=?",
+            "Open image editor"
         ]
     ],
     "autoplay_preview": true,
@@ -182,6 +182,19 @@
             ],
             "spacing": 0,
             "image": "D:\\Documents\\PROJECTS\\blankejs\\projects\\test_zone\\assets\\image\\jimbo.png"
+        },
+        "image/image4.png": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
         }
     },
     "write_conf": true
