@@ -6,12 +6,12 @@
     "window_size": 3,
     "quick_access": [
         [
-            "platformer.map=map+?",
-            "platformer.map"
-        ],
-        [
             "platformer.lua=script+?",
             "platformer.lua"
+        ],
+        [
+            "platformer.map=map+?",
+            "platformer.map"
         ],
         [
             "main.lua=script+?",

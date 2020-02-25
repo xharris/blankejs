@@ -21,21 +21,28 @@ Entity("player",{
 	animation = 'blue_robot',
 	align = 'center',
 	--camera = "player",
-	--gravity = 10,
 	hitbox = true,
-	collision = function(self, other, normal)
-		if v.normal.y < 0 then 
+	reaction = { ground = 'slide' },
+	collision = function(self, v)
+		if v.normal.y < 0 and not Hitbox.check(self,Math.sign(self.hspeed),0,'ground') then 
 			self.vspeed = 0
 		end
 		if v.normal.y > 0 then 
 			self.vspeed = -self.vspeed / 2
 		end
 	end,
-	update = function(self, dt)
-		local hspd = 100
-		self.hspeed = 0
-		if Input.pressed('right') then self.hspeed = self.hspeed + hspd end
-		if Input.pressed('left') then self.hspeed = self.hspeed - hspd end
-		if Input.released('up') then self.vspeed = -300 end
+	gravity = 10,
+	update = function(self, dt)		
+		local hspd = 80
+		local dx, dy = 0, 0
+		
+		-- horizontal
+		if Input.pressed('right') then dx = dx + hspd end
+		if Input.pressed('left') then dx = dx - hspd end
+		self.hspeed = dx
+		
+		if Input.pressed('up') then 
+			self.vspeed = -300 
+		end
 	end
 })

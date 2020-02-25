@@ -136,13 +136,14 @@ function string:replace(find, replace, wholeword)
     end
     return (self:gsub(find,replace))
 end
---UTIL.math
+--math
 local sin, cos, rad, deg, abs = math.sin, math.cos, math.rad, math.deg, math.abs
 local floor = function(x) return math.floor(x+0.5) end
 Math = {}
 do
     for name, fn in pairs(math) do Math[name] = function(...) return fn(...) end end
 
+    Math.sign = function(x) return (x < 0) and -1 or 1 end
     Math.seed = function(l,h) if l then love.math.setRandomSeed(l,h) else return love.math.getRandomSeed() end end
     Math.random = function(...) return love.math.random(...) end
     Math.indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end
@@ -1161,19 +1162,20 @@ do
                 self.hitArea = {}
                 self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
                 Game.checkAlign(self)
-                Hitbox.teleport(self)
+                Hitbox.move(self)
             end
             self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
         end;
         _update = function(self,dt)
             local last_x, last_y = self.x, self.y
-            if self.update then self:update(dt) end
+            local diff_pos = (self.x ~= last_x or self.y ~= last_y)
             if self.destroyed then return end
             if self.gravity ~= 0 then
                 local gravx, gravy = Math.getXY(self.gravity_direction, self.gravity)
                 self.hspeed = self.hspeed + gravx
                 self.vspeed = self.vspeed + gravy
             end
+            if self.update then self:update(dt) end
             self.x = self.x + self.hspeed * dt
             self.y = self.y + self.vspeed * dt
             Hitbox.move(self)
@@ -1181,7 +1183,7 @@ do
                 local new_x, new_y = self.body:getPosition()
                 if self.x == last_x then self.x = new_x end
                 if self.y == last_y then self.y = new_y end
-                if self.x ~= last_x or self.y ~= last_y then
+                if diff_pos then
                     self.body:setPosition(self.x, self.y)
                 end
             end
@@ -2115,7 +2117,6 @@ do
             end
         end;
         addHitbox = function(self,tag,pts,color) 
-            print(color)
             Hitbox.add{
                 hitArea = pts,
                 tag = tag,
@@ -2405,7 +2406,7 @@ do
                     x,y, 
                     obj.width,obj.height
                 },
-                tag = obj.collTag or obj.classname or ''
+                tag = obj.tag or obj.classname or ''
             }
         else 
             obj.hitArea = {
@@ -2414,14 +2415,51 @@ do
                 right = 0,
                 bottom = 0,
                 points = copy(obj.hitArea),
-                tag = obj.tag or obj.collTag or obj.classname or '',
+                tag = obj.tag or obj.classname or '',
             }
         end
         return obj.hitArea
     end
+    local trigger = function(obj, info)
+        if obj.reaction and obj.reaction[info.tag] then info.type = obj.reaction[info.tag] end
+        local repos = false
+        if obj.collision then 
+            obj:collision(info)
+        end
+        if info.type == 'slide' then 
+            obj._hitbox:move(info.normal.x/2, info.normal.y/2)
+            repos = true
+        end
+        if repos then
+            local new_x, new_y = obj._hitbox:center()
+            obj.x = new_x - obj.hitArea.left
+            obj.y = new_y - obj.hitArea.top
+        end
+    end
+    local checkCollisions = function(obj) 
+        if obj.collision  then
+            for other, sep_vec in pairs(HC.collisions(obj._hitbox)) do
+                if obj.destroyed then return end 
+                trigger(obj, {
+                    other = other.parent,
+                    tag = other.tag,
+                    normal = sep_vec,
+                    type = Hitbox.default_coll_response
+                })
+                if not other.parent.destroyed then 
+                    trigger(other.parent, {
+                        other = obj,
+                        tag = obj._hitbox.tag,
+                        normal = { x=-sep_vec.x, y=-sep_vec.y },
+                        type = Hitbox.default_coll_response
+                    })
+                end
+            end 
+        end
+    end
     Hitbox = {
         debug = false;
-        default_coll_response = 'slide';
+        default_coll_response = 'touch';
 
         add = function(obj)
             Game.checkAlign(obj)
@@ -2440,61 +2478,46 @@ do
                 end
 
                 obj._hitbox.parent = obj
+                obj._hitbox.tag = ha.tag
                 table.insert(shapes, obj._hitbox)
                 obj.hasHitbox = true
             else
-                Hitbox.teleport(obj)
+                Hitbox.move(obj)
             end
-        end;     
-        -- ignore collisions
-        teleport = function(obj)
+        end;  
+        move = function(obj)
+            if obj.destroyed then 
+                Hitbox.remove(obj)
+                return 
+            end
             if obj.hasHitbox then
-                local ha = checkHitArea(obj)
+                local ha = obj.hitArea
                 obj._hitbox:moveTo(obj.x + ha.left, obj.y + ha.top)
-                return ha
+                obj._hitbox:setRotation(obj.angle or 0)
+                checkCollisions(obj)
             end
         end;
-        move = function(obj)
-            if not obj.destroyed and obj.hasHitbox then
-                local trigger = function(item, info)
-                    if item.collision then 
-                        item:collision(info)
-                    end
-                    if info.type == 'slide' then 
-                        print(info.normal.x, info.normal.y)
-                        item._hitbox:move(info.normal.x/2, info.normal.y/2)
-                    end
-                    --[[
-                    if obj.collList and obj.collList[other.tag] then return obj.collList[other.tag] end
-                    if obj.collFilter then return obj:collFilter(item, other) end
-                    return obj.defaultCollRes or Hitbox.default_coll_response
-                    ]]
-                end
-                local ha = Hitbox.teleport(obj)
-                -- check all collisions and how to react to them
-                local collisions = HC.collisions(obj._hitbox)
-                if obj.collision and #collisions > 0 then
-                    for other, sep_vec in pairs(collisions) do
-                        if obj.destroyed then return end 
-                        trigger(obj, {
-                            item = other,
-                            normal = sep_vec,
-                            type = Hitbox.default_coll_response
-                        })
-                        if not other.destroyed then 
-                            trigger(other, {
-                                item = obj,
-                                normal = sep_vec,
-                                type = Hitbox.default_coll_response
-                            })
-                        end
-                    end 
-                end
-
-                local new_x, new_y = obj._hitbox:center()
-                obj.x = new_x - ha.left
-                obj.y = new_y - ha.top
+        at = function(x, y, tag) 
+            local coll = HC.shapesAt(x,y)
+            for other,_ in pairs(coll) do
+                if not tag then return coll
+                elseif other.tag == tag then return true end
             end
+        end;
+        check = function(obj, offx, offy, tag)
+            obj._hitbox:move(offx, offy)
+            local coll = HC.collisions(obj._hitbox)
+            obj._hitbox:move(-offx, -offy)
+            for other, sep_vec in pairs(coll) do
+                if other.tag == tag then return true end
+            end 
+            return false
+        end;
+        rotate = function(obj, angle, cx, cy)
+            if obj.hasHitbox then obj._hitbox:rotate(angle, cx, cy) end
+        end;
+        scale = function(obj, scale)
+            if obj.hasHitbox then obj._hitbox:scale(scale) end
         end;
         remove = function(obj)
             if obj and obj.hasHitbox then 
