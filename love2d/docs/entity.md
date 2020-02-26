@@ -29,6 +29,14 @@ Game.spawn("Player", { custom_prop: 5 })
 
 `hitArea` { left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
 
+`collList {}` optional list of { other_tag:'response' }. default response is `Hitbox.default_coll_response (slide)`
+
+* responses can be:
+  * cross : move throught other object
+  * touch : stick to other object
+  * slide : stop and slide across
+  * bounce : <--
+
 `collision (self, info)` info = { <see below> }
 
 * item
@@ -41,7 +49,7 @@ Game.spawn("Player", { custom_prop: 5 })
 
 * touch { x, y }
 
-`collFilter (self, item, other)` return nil to ignore collision or a response string:
+`filter (self, item, other)` return nil to ignore collision or a response string:
 
 * `"touch"`
 
@@ -51,13 +59,11 @@ Game.spawn("Player", { custom_prop: 5 })
 
 * `"bounce"`
 
-`collList {}` list of { other_tag:response }. default response is `Hitbox.default_coll_response (slide)`
-
 ## physics
 
 `body` Physics.body <body>
 
-`joint` Physics.join <joint>
+`joint` Physics.joint <joint>
 
 # Props
 
@@ -85,4 +91,4 @@ Game.spawn("Player", { custom_prop: 5 })
 
 `postdraw()`
 
-`onDestroy()`
+`ondestroy()`

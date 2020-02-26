@@ -10,7 +10,6 @@ local uuid = require "lua.uuid"
 json = require "lua.json"
 class = require "lua.clasp"
 require "lua.print_r"
-local HC = require 'hc'
 -- yes, plugins folder is listed twice
 love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua;./plugins/?/init.lua;./plugins/?.lua')
 lua_print = print 
@@ -404,9 +403,9 @@ do
             Draw.setBlendMode(unpack(props.blendmode))
         end
         
-        Game.checkAlign(parent)
+        Game.checkAlign(props)
         local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
-        local ax, ay = (parent.alignx + props.offx) * scalex, (parent.aligny + props.offy) * scaley
+        local ax, ay = (props.alignx + props.offx) * scalex, (props.aligny + props.offy) * scaley
         local x = props.x
         local y = props.y
 
@@ -460,17 +459,17 @@ do
         end
 
         if gobj.debug then
-            local lax, lay, rax, ray = 0,0,ax,ay
+            local lax, lay = 0,0
+            local rax, ray = Math.abs(ax), Math.abs(ay)
+            
+            local r = 5
             Draw.push()
             Draw.color('purple',0.75)
-            --if gobj.parent then 
-                Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
-            --else 
-                Draw{
-                    {'line',lax-10,lay-10,lax+10,lay+10},
-                    {'line',lax-10,lay+10,lax+10,lay-10},
-                }
-            --end
+            Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
+            Draw{
+                {'line',lax-r,lay-r,lax+r,lay+r},
+                {'line',lax-r,lay+r,lax+r,lay-r},
+            }
             Draw.pop()
         end
         Draw.applyTransform(props._draw_transform:inverse())
@@ -605,22 +604,24 @@ do
         end;
 
         checkAlign = function(obj)
+            local align = obj.align 
+            if obj.parent then align = obj.parent.align end
             local ax, ay = 0, 0
-            if obj.align then
-                if string.contains(obj.align, 'center') then
+            if align then
+                if string.contains(align, 'center') then
                     ax = obj.width/2 
                     ay = obj.height/2
                 end
-                if string.contains(obj.align,'left') then
+                if string.contains(align,'left') then
                     ax = 0
                 end
-                if string.contains(obj.align, 'right') then
+                if string.contains(align, 'right') then
                     ax = obj.width
                 end
-                if string.contains(obj.align, 'top') then
+                if string.contains(align, 'top') then
                     ay = 0
                 end
-                if string.contains(obj.align, 'bottom') then
+                if string.contains(align, 'bottom') then
                     ay = obj.height
                 end
             end
@@ -786,7 +787,7 @@ GameObject = class {
     destroy = function(self)
         if not self.destroyed then
             Hitbox.remove(self)
-            if self.onDestroy then self:onDestroy() end
+            if self.ondestroy then self:ondestroy() end
             if self._destroy then self:_destroy() end
             self.destroyed = true
             if self.child_keys then
@@ -1063,6 +1064,10 @@ do
             self.classname = classname
             self.imageList = {}
             self.animList = {}
+            -- width/height already set?
+            if self.width ~= 0 or self.height ~= 0 then 
+                self._preset_size = true
+            end
             -- image
             if args.images then
                 if type(args.images) == 'table' then
@@ -1160,11 +1165,15 @@ do
             if type(self.hitArea) == "string" and (self.animList[self.hitArea] or self.imageList[self.hitArea]) then
                 local other_obj = self.animList[self.hitArea] or self.imageList[self.hitArea]
                 self.hitArea = {}
-                self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
+                if not self._preset_size then
+                    self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
+                end
                 Game.checkAlign(self)
                 Hitbox.move(self)
             end
-            self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
+            if not self._preset_size then
+                self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
+            end
         end;
         _update = function(self,dt)
             local last_x, last_y = self.x, self.y
@@ -1176,8 +1185,11 @@ do
                 self.vspeed = self.vspeed + gravy
             end
             if self.update then self:update(dt) end
-            self.x = self.x + self.hspeed * dt
+            -- moving x and y in separate steps solves 'sticking' issue (ty https://jonathanwhiting.com/tutorial/collision/)
+            
             self.y = self.y + self.vspeed * dt
+            Hitbox.move(self)
+            self.x = self.x + self.hspeed * dt
             Hitbox.move(self)
             if self.body then
                 local new_x, new_y = self.body:getPosition()
@@ -1220,7 +1232,9 @@ do
                         local anim = self.animList[self.animation]
                         self:_updateSize(anim)
                         anim:draw()
-                        self.width, self.height = anim.width, anim.height
+                        if not self._preset_size then
+                            self.width, self.height = anim.width, anim.height
+                        end
                     end
                 end
                 if self._custom_draw then
@@ -1962,7 +1976,7 @@ do
                 o.transform:translate(floor(half_w), floor(half_h))
                 o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
                 o.transform:rotate(math.rad(o.angle))
-                o.transform:translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
+                o.transform:translate(-(o.x - o.left + o.dx), -(o.y - o.top + o.dy))
 
                 Camera.transform = o.transform
                 love.graphics.replaceTransform(o.transform)
@@ -2044,7 +2058,7 @@ do
                             if Game.isSpawnable(obj_info.name) then
                                 local obj = new_map:_spawnEntity(obj_info.name,{
                                     x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
-                                    width=obj_info.size[1], height=obj_info.size[2], hitboxColor=hb_color, align="center"
+                                    width=obj_info.size[1], height=obj_info.size[2], hitboxColor=hb_color
                                 })
                                 if obj then 
                                     obj.mapTag = c[1]
@@ -2053,6 +2067,12 @@ do
                             else 
                                 new_map:addHitbox(obj_info.name, table.slice(c,2), hb_color)
                             end
+                            -- add info to entity_info table
+                            if not new_map.entity_info[obj_info.name] then new_map.entity_info[obj_info.name] = {} end 
+                            table.insert(new_map.entity_info[obj_info.name], {
+                                x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
+                                width=obj_info.size[1], height=obj_info.size[2], color=hb_color
+                            })
                         end
                     end
                 end
@@ -2067,6 +2087,7 @@ do
             self.batches = {} -- { layer: { img_name: SpriteBatch } }
             self.hb_list = {}
             self.layer_z = {}
+            self.entity_info = {} -- { obj_name: { info_list... } }
             self.entities = {} -- { layer: { entities... } }
             self:addDrawable()
         end;
@@ -2142,6 +2163,10 @@ do
                 obj_info.layer = layer
                 return self:_spawnEntity(ent_name, obj_info)
             end
+        end;
+        -- return { {x,y,z,layer(name),points,width,height,color} }
+        getEntities = function(self, name)
+            return self.entity_info[name] or {}
         end;
         getLayerZ = function(self, l_name)
             for i, name in ipairs(options.layer_order) do
@@ -2391,161 +2416,95 @@ end
 --HITBOX
 Hitbox = nil
 do
-    local shapes = {}
+    local world = bump.newWorld()
     local checkHitArea = function(obj)
-        local x, y = obj.x or 0, obj.y or 0
         if not obj.alignx then obj.alignx = 0 end
         if not obj.aligny then obj.aligny = 0 end
         if not obj.hitArea then
             obj.hitArea = {
-                left = -obj.alignx,
-                top = -obj.aligny,
+                left = -obj.alignx*2,
+                top = -obj.aligny*2,
                 right = 0,
-                bottom = 0,
-                points = { 
-                    x,y, 
-                    obj.width,obj.height
-                },
-                tag = obj.tag or obj.classname or ''
-            }
-        else 
-            obj.hitArea = {
-                left = -obj.alignx,
-                top = -obj.aligny,
-                right = 0,
-                bottom = 0,
-                points = copy(obj.hitArea),
-                tag = obj.tag or obj.classname or '',
+                bottom = 0
             }
         end
+        table.defaults(obj.hitArea, {
+            left = -obj.alignx*2,
+            top = -obj.aligny*2,
+            right = 0,
+            bottom = 0
+        })
         return obj.hitArea
-    end
-    local trigger = function(obj, info)
-        if obj.reaction and obj.reaction[info.tag] then info.type = obj.reaction[info.tag] end
-        local repos = false
-        if obj.collision then 
-            obj:collision(info)
-        end
-        if info.type == 'slide' then 
-            obj._hitbox:move(info.normal.x/2, info.normal.y/2)
-            repos = true
-        end
-        if repos then
-            local new_x, new_y = obj._hitbox:center()
-            obj.x = new_x - obj.hitArea.left
-            obj.y = new_y - obj.hitArea.top
-        end
-    end
-    local checkCollisions = function(obj) 
-        if obj.collision  then
-            for other, sep_vec in pairs(HC.collisions(obj._hitbox)) do
-                if obj.destroyed then return end 
-                trigger(obj, {
-                    other = other.parent,
-                    tag = other.tag,
-                    normal = sep_vec,
-                    type = Hitbox.default_coll_response
-                })
-                if not other.parent.destroyed then 
-                    trigger(other.parent, {
-                        other = obj,
-                        tag = obj._hitbox.tag,
-                        normal = { x=-sep_vec.x, y=-sep_vec.y },
-                        type = Hitbox.default_coll_response
-                    })
-                end
-            end 
-        end
     end
     Hitbox = {
         debug = false;
-        default_coll_response = 'touch';
+        default_coll_response = 'slide';
 
         add = function(obj)
-            Game.checkAlign(obj)
-            local ha = checkHitArea(obj)
-
-            if not obj.hasHitbox then
-                local len = #ha.points
-                if len == 2 then
-                    obj._hitbox = HC.point(unpack(ha.points))
-                elseif len == 3 then 
-                    obj._hitbox = HC.circle(unpack(ha.points))
-                elseif len == 4 then 
-                    obj._hitbox = HC.rectangle(unpack(ha.points))
+            if not obj.tag then obj.tag = obj.collTag or obj.classname or '' end
+            if obj.x and obj.y and obj.width and obj.height then
+                Game.checkAlign(obj)
+                local ha = checkHitArea(obj)
+                if not obj.hasHitbox then
+                    world:add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom) 
+                    obj.hasHitbox = true
                 else
-                    obj._hitbox = HC.polygon(unpack(ha.points))
+                    Hitbox.teleport(obj)
                 end
-
-                obj._hitbox.parent = obj
-                obj._hitbox.tag = ha.tag
-                table.insert(shapes, obj._hitbox)
-                obj.hasHitbox = true
-            else
-                Hitbox.move(obj)
             end
-        end;  
-        move = function(obj)
-            if obj.destroyed then 
-                Hitbox.remove(obj)
-                return 
-            end
+        end;     
+        -- ignore collisions
+        teleport = function(obj)
             if obj.hasHitbox then
-                local ha = obj.hitArea
-                obj._hitbox:moveTo(obj.x + ha.left, obj.y + ha.top)
-                obj._hitbox:setRotation(obj.angle or 0)
-                checkCollisions(obj)
+                local ha = checkHitArea(obj)
+                world:update(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
             end
         end;
-        at = function(x, y, tag) 
-            local coll = HC.shapesAt(x,y)
-            for other,_ in pairs(coll) do
-                if not tag then return coll
-                elseif other.tag == tag then return true end
+        move = function(obj)
+            if obj.hasHitbox then
+                local filter = function(item, other)
+                    if obj.reaction and obj.reaction[other.tag] then return obj.reaction[other.tag] end
+                    if obj.filter then return obj:filter(item, other) end
+                    return obj.default_coll_response or Hitbox.default_coll_response
+                end
+                local ha = checkHitArea(obj)
+                local new_x, new_y, cols, len = world:move(obj, obj.x + ha.left, obj.y + ha.top, filter)
+                if obj.destroyed then return end
+                obj.x = new_x - ha.left
+                obj.y = new_y - ha.top
+                local swap = function(t, key1, key2)
+                    local temp = t[key1]
+                    t[key1] = t[key2]
+                    t[key2] = temp
+                end
+                if obj.collision and len > 0 then
+                    for i=1,len do
+                        if obj.destroyed then return end
+                        obj:collision(cols[i])
+                        local info = cols[i]
+                        local other = info.other
+                        swap(info, 'item', 'other')
+                        swap(info, 'itemRect', 'otherRect')
+                        if other and not other.destroyed and other.collision then other:collision(info) end
+                    end
+                end
             end
-        end;
-        check = function(obj, offx, offy, tag)
-            obj._hitbox:move(offx, offy)
-            local coll = HC.collisions(obj._hitbox)
-            obj._hitbox:move(-offx, -offy)
-            for other, sep_vec in pairs(coll) do
-                if other.tag == tag then return true end
-            end 
-            return false
-        end;
-        rotate = function(obj, angle, cx, cy)
-            if obj.hasHitbox then obj._hitbox:rotate(angle, cx, cy) end
-        end;
-        scale = function(obj, scale)
-            if obj.hasHitbox then obj._hitbox:scale(scale) end
         end;
         remove = function(obj)
             if obj and obj.hasHitbox then 
                 obj.hasHitbox = false
-                obj._hitbox.destroyed = true
-                HC.remove(obj._hitbox)
-                obj._hitbox = nil 
+                world:remove(obj) 
             end 
         end;
         draw = function()
             if Hitbox.debug then
-                local t, len = shapes, #shapes 
-                local offset = 0
-                for o = 1, len do
-                    local obj = t[o]
-                    if obj then 
-                        if obj.destroyed then 
-                            t[o] = nil
-                            offset = offset + 1
-                        else
-                            t[o] = nil 
-                            t[o - offset] = obj
-                            -- draw shape 
-                            Draw.color(obj.parent.hitboxColor or {1,0,0,0.9})
-                            obj:draw('line')
-                            Draw.color(obj.parent.hitboxColor or {1,0,0,0.25})
-                            obj:draw('fill')
-                        end
+                local items, len = world:getItems()
+                for _,i in ipairs(items) do
+                    if i.hasHitbox and not i.destroyed then
+                        Draw.color(i.hitboxColor or {1,0,0,0.9})
+                        Draw.rect('line',world:getRect(i))
+                        Draw.color(i.hitboxColor or {1,0,0,0.25})
+                        Draw.rect('fill',world:getRect(i))
                     end
                 end
                 Draw.color()

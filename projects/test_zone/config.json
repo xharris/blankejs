@@ -6,10 +6,6 @@
     "window_size": 3,
     "quick_access": [
         [
-            "platformer.lua=script+?",
-            "platformer.lua"
-        ],
-        [
             "platformer.map=map+?",
             "platformer.map"
         ],
@@ -18,12 +14,16 @@
             "main.lua"
         ],
         [
-            "Find in files=?",
-            "Find in files"
+            "Add a map=new+?",
+            "Add a map"
         ],
         [
-            "View project in explorer=?",
-            "View project in explorer"
+            "platformer.lua=script+?",
+            "platformer.lua"
+        ],
+        [
+            "Find in files=?",
+            "Find in files"
         ]
     ],
     "autoplay_preview": true,
@@ -34,10 +34,11 @@
                 "char": "A",
                 "color": "#00ff00",
                 "size": [
-                    32,
+                    20,
                     32
                 ],
-                "uuid": "526dedde"
+                "uuid": "526dedde",
+                "size_changed": true
             },
             "25c737ad": {
                 "name": "ground",
