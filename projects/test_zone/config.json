@@ -10,20 +10,20 @@
             "platformer.map"
         ],
         [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
-        ],
-        [
             "platformer.lua=script+?",
             "platformer.lua"
-        ],
-        [
-            "Find in files=?",
-            "Find in files"
         ]
     ],
     "autoplay_preview": true,

@@ -393,9 +393,8 @@ do
         mesh_canvas = CanvasStack()
     end)
 
-    local draw = function(gobj, lobj, is_fn)
-        local props = gobj
-        local parent = gobj.parent or gobj
+    local draw = function(props, lobj, is_fn)
+        local parent = props.parent or props
 
         last_blend = nil
         if props.blendmode then
@@ -424,23 +423,23 @@ do
             tform:shear(props.shearx, props.sheary)
         end 
 
-        Draw.push()
 
         local draw_obj = function()
             if not skip_tf then 
                 Draw.applyTransform(props._draw_transform)
             end
             if is_fn then 
-                lobj(gobj)
+                lobj(props)
             else
-                if gobj.quad then
-                    love.graphics.draw(lobj, gobj.quad, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+                if props.quad then
+                    love.graphics.draw(lobj, props.quad, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
                 else
                     love.graphics.draw(lobj, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
                 end
             end
         end
 
+        Draw.push()
         if props.mesh and props.mesh.vertices then 
             mesh_canvas:getCanvas()
             local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
@@ -458,14 +457,14 @@ do
             draw_obj()
         end
 
-        if gobj.debug then
+        if props.debug then
             local lax, lay = 0,0
             local rax, ray = Math.abs(ax), Math.abs(ay)
             
             local r = 5
             Draw.push()
             Draw.color('purple',0.75)
-            Draw.rect('line',-rax,-ray,gobj.width or 0,gobj.height or 0)
+            Draw.rect('line',-rax,-ray,props.width or 0,props.height or 0)
             Draw{
                 {'line',lax-r,lay-r,lax+r,lay+r},
                 {'line',lax-r,lay+r,lax+r,lay-r},
@@ -1999,12 +1998,56 @@ do
     }
 end
 
+--SPRITEBATCH
+SpriteBatch = nil
+do 
+    local images = {} -- { name: Image }
+    local quads = {} -- { hash: Quad }
+    SpriteBatch = GameObject:extend {
+        init = function(self)
+            GameObject.init(self, {classname="Map"})
+    
+            self.batches = {} -- { 'file_name' = SpriteBatch }
+            self:addDrawable()
+        end;
+        add = function(self, img_path, x, y, tx, ty, tw, th)
+            -- get image
+            local img = images[img_path]
+            if not img then images[img_path] = love.graphics.newImage(img_path) end 
+            img = images[img_path]
+    
+            -- get quad
+            local quad_hash = tx..","..ty..","..tw..","..ty
+            if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img:getWidth(),img:getHeight()) end
+            local quad = quads[quad_hash]
+    
+            -- get spritebatch
+            local sb = self.batches[img_path]
+            if not sb then sb = love.graphics.newSpriteBatch(img) end 
+            self.batches[img_path] = sb
+    
+            return sb:add(quad,floor(x),floor(y),0)
+        end;
+        remove = function(self, img_path, id)
+            local sb = self.batches[img_path]
+            if sb then 
+                sb:set(id, 0, 0, 0, 0, 0) 
+                return true 
+            end
+        end;
+        _draw = function(self)
+            for _, sb in pairs(self.batches) do 
+                Game.drawObject(self, sb)
+            end
+        end;
+        draw = function(self) self:_draw() end;
+    }
+end
+
 --MAP
 Map = nil
 do
     local options = {}
-    local images = {} -- { name: Image }
-    local quads = {} -- { hash: Quad }
     local getObjInfo = function(uuid, is_name)
         if Game.config.scene and Game.config.scene.objects then 
             if is_name then
@@ -2084,32 +2127,26 @@ do
         config = function(opt) options = opt end;
         init = function(self)
             GameObject.init(self, {classname="Map"})
-            self.batches = {} -- { layer: { img_name: SpriteBatch } }
+            self.batches = {} -- { layer: SpriteBatch }
             self.hb_list = {}
-            self.layer_z = {}
             self.entity_info = {} -- { obj_name: { info_list... } }
             self.entities = {} -- { layer: { entities... } }
-            self:addDrawable()
         end;
         addTile = function(self,file,x,y,tx,ty,tw,th,layer)
             layer = layer or '_'
-            -- get image
-            if not images[file] then images[file] = love.graphics.newImage(file) end
-            local img = images[file]
-            -- get spritebatch
-            if not self.batches[layer] then self.batches[layer] = {} end
-            if not self.batches[layer][file] then self.batches[layer][file] = love.graphics.newSpriteBatch(img) end
-            local sb = self.batches[layer][file]
-            -- get quad
-            local quad_hash = tx..","..ty..","..tw..","..ty
-            if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img:getWidth(),img:getHeight()) end
-            local quad = quads[quad_hash]
-            local id = sb:add(quad,floor(x),floor(y),0)
+    
+            -- get spritebatch 
+            local sb = self.batches[layer]
+            if not sb then sb = SpriteBatch(file) end 
+            self.batches[layer] = sb
+            local id = sb:add(file, x, y, tx, ty, tw, th)
+            sb.z = self:getLayerZ(layer)
+            
             -- hitbox
             local hb_name = nil
             if options.tile_hitbox then hb_name = options.tile_hitbox[FS.removeExt(FS.basename(file))] end
             local body = nil
-            local tile_info = { id=id, x=x, y=y, width=tw, height=th, collTag=hb_name }
+            local tile_info = { id=id, x=x, y=y, width=tw, height=th, tag=hb_name }
             if hb_name then
                 tile_info.tag = hb_name
                 if options.use_physics then
@@ -2138,17 +2175,18 @@ do
             end
         end;
         addHitbox = function(self,tag,pts,color) 
-            Hitbox.add{
+            local new_hb = {
                 hitArea = pts,
                 tag = tag,
                 hitboxColor = color
             }
+            table.insert(self.hb_list, new_hb)
+            Hitbox.add(new_hb)
         end,
         _spawnEntity = function(self, ent_name, opt)
             local obj = Game.spawn(ent_name, opt)
             if obj then
                 opt.layer = opt.layer or "_"
-                obj:remDrawable()
                 if not self.entities[opt.layer] then self.entities[opt.layer] = {} end
                 table.insert(self.entities[opt.layer], obj)
                 return obj
@@ -2159,34 +2197,24 @@ do
             obj_info = getObjInfo(ent_name, true)
             if obj_info then
                 obj_info.x = x
-                obj_info.y = y 
+                obj_info.y = y
+                obj_info.z = self:getLayerZ(layer)
                 obj_info.layer = layer
                 return self:_spawnEntity(ent_name, obj_info)
             end
         end;
         -- return { {x,y,z,layer(name),points,width,height,color} }
-        getEntities = function(self, name)
+        getEntityInfo = function(self, name)
             return self.entity_info[name] or {}
+        end;
+        getEntities = function(self, name)
+            return self.entities
         end;
         getLayerZ = function(self, l_name)
             for i, name in ipairs(options.layer_order) do
                 if name == l_name then return i end
             end
             return 0
-        end;
-        _draw = function(self) 
-            for _,l_name in ipairs(options.layer_order) do
-                if self.batches[l_name] then
-                    for f_name, batch in pairs(self.batches[l_name]) do
-                        Game.drawObject(self, batch)
-                    end
-                end
-                if self.entities[l_name] then 
-                    for _,obj in ipairs(self.entities[l_name]) do 
-                        Blanke.drawObject(obj)
-                    end
-                end
-            end
         end;
         _destroy = function(self) 
             -- destroy hitboxes

@@ -7,7 +7,7 @@ State('platformer',{
 			down = { 'down', 's' }
 		})
 		
-		Camera("player", {zoom=2})
+		Camera("player")--, {zoom=2})
 		--Hitbox.debug = true
 		
 		Map.config{
@@ -24,7 +24,7 @@ Entity("player",{
 	camera = "player",
 	hitbox = true,
 	gravity = 10,
-	debug = true,
+	--debug = true,
 	collision = function(self, v)
 		if v.normal.y < 0 then 
 			self.vspeed = 0
