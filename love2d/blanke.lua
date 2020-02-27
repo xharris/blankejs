@@ -405,8 +405,8 @@ do
         Game.checkAlign(props)
         local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
         local ax, ay = (props.alignx + props.offx) * scalex, (props.aligny + props.offy) * scaley
-        local x = props.x
-        local y = props.y
+        local x = floor(props.x)
+        local y = floor(props.y)
 
         local tform = props._draw_transform
         if not tform then 
@@ -1161,9 +1161,9 @@ do
                 end
                 Net.sync(self, {'anim_speed'})
             end 
-            if type(self.hitArea) == "string" and (self.animList[self.hitArea] or self.imageList[self.hitArea]) then
-                local other_obj = self.animList[self.hitArea] or self.imageList[self.hitArea]
-                self.hitArea = {}
+            if type(self.hit_area) == "string" and (self.animList[self.hit_area] or self.imageList[self.hit_area]) then
+                local other_obj = self.animList[self.hit_area] or self.imageList[self.hit_area]
+                self.hit_area = {}
                 if not self._preset_size then
                     self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
                 end
@@ -1183,13 +1183,12 @@ do
                 self.hspeed = self.hspeed + gravx
                 self.vspeed = self.vspeed + gravy
             end
-            if self.update then self:update(dt) end
             -- moving x and y in separate steps solves 'sticking' issue (ty https://jonathanwhiting.com/tutorial/collision/)
-            
             self.y = self.y + self.vspeed * dt
             Hitbox.move(self)
             self.x = self.x + self.hspeed * dt
             Hitbox.move(self)
+            if self.update then self:update(dt) end
             if self.body then
                 local new_x, new_y = self.body:getPosition()
                 if self.x == last_x then self.x = new_x end
@@ -1975,7 +1974,7 @@ do
                 o.transform:translate(floor(half_w), floor(half_h))
                 o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
                 o.transform:rotate(math.rad(o.angle))
-                o.transform:translate(-(o.x - o.left + o.dx), -(o.y - o.top + o.dy))
+                o.transform:translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
 
                 Camera.transform = o.transform
                 love.graphics.replaceTransform(o.transform)
@@ -2104,7 +2103,7 @@ do
                                     width=obj_info.size[1], height=obj_info.size[2], hitboxColor=hb_color
                                 })
                                 if obj then 
-                                    obj.mapTag = c[1]
+                                    obj.map_tag = c[1]
                                 end
                             -- spawn hitbox
                             else 
@@ -2176,7 +2175,7 @@ do
         end;
         addHitbox = function(self,tag,pts,color) 
             local new_hb = {
-                hitArea = pts,
+                hit_area = pts,
                 tag = tag,
                 hitboxColor = color
             }
@@ -2448,33 +2447,40 @@ do
     local checkHitArea = function(obj)
         if not obj.alignx then obj.alignx = 0 end
         if not obj.aligny then obj.aligny = 0 end
-        if not obj.hitArea then
-            obj.hitArea = {
-                left = -obj.alignx*2,
-                top = -obj.aligny*2,
+        
+        local left = obj.alignx
+        local top = obj.aligny
+        
+        if not obj.hit_area then
+            obj.hit_area = {
+                left = left,
+                top = top,
                 right = 0,
                 bottom = 0
             }
         end
-        table.defaults(obj.hitArea, {
-            left = -obj.alignx*2,
-            top = -obj.aligny*2,
+        table.defaults(obj.hit_area, {
+            left = left,
+            top = top,
             right = 0,
             bottom = 0
         })
-        return obj.hitArea
+        return obj.hit_area
     end
     Hitbox = {
         debug = false;
-        default_coll_response = 'slide';
+        default_reaction = 'slide';
 
         add = function(obj)
-            if not obj.tag then obj.tag = obj.collTag or obj.classname or '' end
+            if not obj.tag then obj.tag = obj.classname or '' end
             if obj.x and obj.y and obj.width and obj.height then
                 Game.checkAlign(obj)
                 local ha = checkHitArea(obj)
                 if not obj.hasHitbox then
-                    world:add(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom) 
+                    world:add(obj, 
+                        obj.x - ha.left, 
+                        obj.y - ha.top, 
+                        abs(obj.width) + ha.right, abs(obj.height) + ha.bottom) 
                     obj.hasHitbox = true
                 else
                     Hitbox.teleport(obj)
@@ -2485,7 +2491,10 @@ do
         teleport = function(obj)
             if obj.hasHitbox then
                 local ha = checkHitArea(obj)
-                world:update(obj, obj.x + ha.left, obj.y + ha.top, abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
+                world:update(obj, 
+                    obj.x - ha.left, 
+                    obj.y - ha.top,
+                    abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
             end
         end;
         move = function(obj)
@@ -2493,13 +2502,16 @@ do
                 local filter = function(item, other)
                     if obj.reaction and obj.reaction[other.tag] then return obj.reaction[other.tag] end
                     if obj.filter then return obj:filter(item, other) end
-                    return obj.default_coll_response or Hitbox.default_coll_response
+                    return obj.default_reaction or Hitbox.default_reaction
                 end
                 local ha = checkHitArea(obj)
-                local new_x, new_y, cols, len = world:move(obj, obj.x + ha.left, obj.y + ha.top, filter)
+                local new_x, new_y, cols, len = world:move(obj, 
+                    obj.x - ha.left, 
+                    obj.y - ha.top, 
+                    filter)
                 if obj.destroyed then return end
-                obj.x = new_x - ha.left
-                obj.y = new_y - ha.top
+                obj.x = new_x + ha.left
+                obj.y = new_y + ha.top
                 local swap = function(t, key1, key2)
                     local temp = t[key1]
                     t[key1] = t[key2]

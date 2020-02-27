@@ -2,7 +2,7 @@ Entity("MovingBlock", {
 		images = { "block_corner.png" },
 		align = "center",
 		hitbox = true,
-		defaultCollRes = 'cross',
+		default_reaction = 'cross',
 		collision = function(self, v)
 			if v.other.tag == "Player" and v.normal.y == -1 then 
 				self.moving = true
@@ -15,7 +15,7 @@ Entity("MovingBlock", {
 			if self.moving and not self.started then 
 				self.started = true
 				local mv_speed = 50
-				switch(self.mapTag,{
+				switch(self.map_tag,{
 					R = function() Tween(2, self, { hspeed = mv_speed }) end,
 					L = function() Tween(2, self, { hspeed = -mv_speed }) end
 				})
@@ -24,5 +24,6 @@ Entity("MovingBlock", {
 })
 
 Entity("BlockDestroyer", {
-	hitbox=true
+	hitbox=true,
+	default_reaction = 'cross'
 })

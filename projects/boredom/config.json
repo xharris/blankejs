@@ -16,10 +16,6 @@
     ],
     "quick_access": [
         [
-            "Open .love file=?",
-            "Open .love file"
-        ],
-        [
             "level1.map=map+?",
             "level1.map"
         ],
@@ -28,12 +24,16 @@
             "player.lua"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
+            "Add a map=new+?",
+            "Add a map"
         ],
         [
-            "conf.lua=script+?",
-            "conf.lua"
+            "movingblock.lua=script+?",
+            "movingblock.lua"
+        ],
+        [
+            "main.lua=script+state+?",
+            "main.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -44,8 +44,8 @@
                 "char": ">",
                 "color": "#47abe0",
                 "size": [
-                    33,
-                    33
+                    15,
+                    30
                 ],
                 "uuid": "e6d1877c",
                 "size_changed": true
@@ -81,6 +81,9 @@
     },
     "export": {
         "name": "boredom",
+        "filter": "linear",
+        "web_memory": 24,
+        "web_stack": 2,
         "web_autoplay": false,
         "scale_mode": "linear",
         "frameless": false,
@@ -92,7 +95,12 @@
         "xhh-platformer": false,
         "xhh-tween": true,
         "xhh-effect": true,
-        "xhh-net": false
+        "xhh-net": false,
+        "xhh-array": false,
+        "xhh-badword": false,
+        "xhh-vector": false,
+        "yonaba-delaunay": false,
+        "cmpl": false
     },
     "game_size": 3,
     "window_size": 3,

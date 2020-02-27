@@ -176,14 +176,13 @@ class FibWindow {
 				box_ref.fib_container.classList.remove("no-split");
 			}
 
-			if (split_enabled) {
-				box_ref.fib_container.classList.remove("invisible");
-				box_ref.fib_container.style.webkitTransform = "translate("+x+"%, "+y+"%)";
+			box_ref.fib_container.classList.remove("invisible");
+			box_ref.fib_container.style.webkitTransform = "translate("+x+"%, "+y+"%)";
 
-				box_ref.fib_container.style.width = width+'%';
-				box_ref.fib_container.style.height = height+'%';
+			box_ref.fib_container.style.width = width+'%';
+			box_ref.fib_container.style.height = height+'%';
 
-			} else {
+			if (!split_enabled) {
 				if (b == 0) {
 					box_ref.fib_container.classList.remove("invisible");
 
@@ -194,10 +193,12 @@ class FibWindow {
 
 			}
 			
-			if (b2 % 2 == 0) {
-				if (b2 < boxes.length - 1) width /= 2;
-			} else {
-				if (b2 < boxes.length - 1) height /= 2;
+			if (split_enabled) {
+				if (b2 % 2 == 0) {
+					if (b2 < boxes.length - 1) width /= 2;
+				} else {
+					if (b2 < boxes.length - 1) height /= 2;
+				}
 			}
 		}
 

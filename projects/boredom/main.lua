@@ -16,7 +16,7 @@ Game {
     res = 'assets',
     filter = 'nearest',
 	plugins = { 'xhh-effect', 'xhh-tween' },
-	backgroundColor = "white",
+	background_color = "white",
     load = function()
 		State.start('play')
     end
