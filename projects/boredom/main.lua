@@ -9,8 +9,8 @@ Input({
     left = { "left", "a" },
     right = { "right", "d" },
     jump = { "up", "w" },
-    action = { 'space' }
-}, { no_repeat = { "jump" } })
+	action = { 'space' },	
+})
 
 Game { 
     res = 'assets',

@@ -1,7 +1,9 @@
+-- weird buggs
+-- -- Boredom: immediately switching state after player dies 3 times causes player to stop spawning
 -- TODO Blanke.config
 math.randomseed(os.time())
 
-local do_profiling = false
+local do_profiling = false -- false/#
 
 local bitop = require 'lua.bitop'
 local bit = bitop.bit
@@ -492,9 +494,8 @@ do
             auto_require =  true,
             background_color = 'black',
             auto_draw =     true,
-            window_flags = {
-                vsync = false
-            }
+            vsync =         1,
+            window_flags = {},
         };
         config = {};
         updatables = {};
@@ -535,8 +536,14 @@ do
             Window.setSize(Game.config.window_size, table.update({
                 borderless = Game.options.frameless,
                 resizable = Game.options.resizable,
-            }, Game.options.window_flags))
+            }, Game.options.window_flags or {}))
             Game.updateWinSize()
+            -- vsync
+            switch(Game.options.vsync, {
+                on = function() Window.vsync(1) end,
+                off = function() Window.vsync(0) end,
+                adaptive = function() Window.vsync(-1) end
+            })
 
             if type(Game.options.filter) == 'table' then
                 love.graphics.setDefaultFilter(unpack(Game.options.filter))
@@ -624,7 +631,7 @@ do
                     ay = obj.height
                 end
             end
-            obj.alignx, obj.aligny = ax, ay
+            obj.alignx, obj.aligny = floor(ax), floor(ay)
         end;
 
         sortDrawables = function()
@@ -2474,6 +2481,8 @@ do
         })
         return obj.hit_area
     end
+    local new_boxes = true
+    local hb_items, hb_len
     Hitbox = {
         debug = false;
         default_reaction = 'slide';
@@ -2489,6 +2498,7 @@ do
                         obj.y - ha.top, 
                         abs(obj.width) + ha.right, abs(obj.height) + ha.bottom) 
                     obj.hasHitbox = true
+                    new_boxes = true
                 else
                     Hitbox.teleport(obj)
                 end
@@ -2540,13 +2550,17 @@ do
         remove = function(obj)
             if obj and obj.hasHitbox then 
                 obj.hasHitbox = false
-                world:remove(obj) 
+                world:remove(obj)
+                new_boxes = true 
             end 
         end;
         draw = function()
             if Hitbox.debug then
-                local items, len = world:getItems()
-                for _,i in ipairs(items) do
+                if new_boxes then 
+                    new_boxes = false
+                    hb_items, hb_len = world:getItems()
+                end
+                for _,i in ipairs(hb_items) do
                     if i.hasHitbox and not i.destroyed then
                         Draw.color(i.hitboxColor or {1,0,0,0.9})
                         Draw.rect('line',world:getRect(i))
@@ -2929,6 +2943,10 @@ do
                     return ratio
                 end
             end
+        end;
+        vsync = function(v) 
+            if not v then return love.window.getVSync()
+            else love.window.setVSync(v) end
         end;
         setSize = function(r, flags)
             local w, h = Window.calculateSize(r)

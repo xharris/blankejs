@@ -17,19 +17,18 @@ Entity("Player", {
 			end
 			if v.normal.y < 0 then
 				self.can_jump = true
-				self.vspeed = 0
 			end
-			if v.normal.y > 0 then 
-				self.vspeed = -self.vspeed/2
+			if v.normal.y ~= 0 then 
+				self.vspeed = 0
 			end
 		end,
 		die = function(self)
 			if not self.dead then
 				self.dead = true
-				self.hitArea = 'player_dead'
-				Tween(2, self, { hspeed=0 })
-				State.stop()
-				State.start('play')
+				self.hit_area = 'player_dead'
+				Tween(2, self, { hspeed=0 }, nil, function()
+					State.switch('play')
+				end)
 			end
 		end,
 		update = function(self, dt)
@@ -53,7 +52,7 @@ Entity("Player", {
 					self.animation = 'player_stand'
 				end
 				-- jumping
-				if Input.pressed('jump') then -- and self.can_jump then
+				if Input.pressed('jump') and self.can_jump then
 					self.vspeed = -350
 					self.can_jump = false
 				end

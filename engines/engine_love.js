@@ -36,8 +36,9 @@ module.exports.engine = {
     ],
     export_settings: [
         ['window/rendering'],
-        ['filter','select',{'choices':['linear','nearest'],default:'linear'}],
+        ['filter','select',{choices:['linear','nearest'],default:'linear'}],
         ...(['frameless','scale','resizable'].map((o)=>[o,'checkbox',{default:false}])),
+        ['vsync','select',{choices:['on','off','adaptive'],default:'on'}],
         ['web'],
         [ 'web_autoplay', 'checkbox', {label:'autoplay',defalt:false}],
         [ 'web_memory', 'number', {label:'memory size',default:24}],

@@ -989,6 +989,7 @@ var blanke = {
         while(e.firstChild) {
             document.body.appendChild(e.firstChild);
         }
+        blanke.getElement("body").classList.add('greyed-out');
 
         // bind button events with their choice functions
         choice_keys.forEach(function(c){
@@ -998,6 +999,7 @@ var blanke = {
                 choice_fn();
                 blanke.modal_shown = false;
                 blanke.getElement("body > .ui-modal[data-uuid='"+uuid+"']").remove();
+                blanke.getElement("body").classList.remove('greyed-out');
             };
         });
     },
