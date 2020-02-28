@@ -16,20 +16,20 @@
     ],
     "quick_access": [
         [
-            "level1.map=map+?",
-            "level1.map"
-        ],
-        [
             "player.lua=script+?",
             "player.lua"
         ],
         [
-            "Add a map=new+?",
-            "Add a map"
-        ],
-        [
             "movingblock.lua=script+?",
             "movingblock.lua"
+        ],
+        [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
+            "Add a map=new+?",
+            "Add a map"
         ],
         [
             "main.lua=script+state+?",
@@ -103,7 +103,7 @@
         "cmpl": false
     },
     "game_size": 3,
-    "window_size": 3,
+    "window_size": 2,
     "frameless": false,
     "resizable": false,
     "imageeditor": {

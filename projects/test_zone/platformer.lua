@@ -1,3 +1,5 @@
+Hitbox.debug = true
+
 State('platformer',{
 	enter = function()
 		Input({
@@ -14,7 +16,20 @@ State('platformer',{
 			tile_hitbox = { megman = 'ground' }	
 		}
 		Map.load('platformer.map')
+	end,
+	draw = function()
+		Draw{
+			{'color','white'},
+			{'line',-100,0,100,0},
+			{'line',0,-100,0,100}
+		}
 	end
+})
+
+Entity("heart", {
+	images = { 'image2.png' },
+	align = 'center',
+	hitbox = true 	
 })
 
 Entity("player",{

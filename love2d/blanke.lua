@@ -1147,6 +1147,11 @@ do
                 if spawn_args then self:spawn(unpack(spawn_args))
                 else self:spawn() end 
             end
+            if self.hasHitbox then
+                self.x = self.x + self.alignx
+                self.y = self.y + self.aligny
+                Hitbox.teleport(self)
+            end
             if self.body then self.body:setPosition(self.x, self.y) end
         end;
         _updateSize = function(self,obj,skip_anim_check)
@@ -2145,7 +2150,7 @@ do
             local hb_name = nil
             if options.tile_hitbox then hb_name = options.tile_hitbox[FS.removeExt(FS.basename(file))] end
             local body = nil
-            local tile_info = { id=id, x=x, y=y, width=tw, height=th, tag=hb_name }
+            local tile_info = { id=id, x=x, y=y, width=tw, height=th, tag=hb_name, alignx=tw/2, aligny=th/2 }
             if hb_name then
                 tile_info.tag = hb_name
                 if options.use_physics then
@@ -2445,11 +2450,13 @@ Hitbox = nil
 do
     local world = bump.newWorld()
     local checkHitArea = function(obj)
-        if not obj.alignx then obj.alignx = 0 end
-        if not obj.aligny then obj.aligny = 0 end
-        
-        local left = obj.alignx
-        local top = obj.aligny
+        local left =  obj.alignx
+        local top =   obj.aligny
+
+        if obj.is_entity then 
+            left = obj.alignx + (obj.width/2)
+            top =  obj.aligny + (obj.height/2)
+        end
         
         if not obj.hit_area then
             obj.hit_area = {
@@ -2488,12 +2495,12 @@ do
             end
         end;     
         -- ignore collisions
-        teleport = function(obj)
+        teleport = function(obj, x, y)
             if obj.hasHitbox then
                 local ha = checkHitArea(obj)
                 world:update(obj, 
-                    obj.x - ha.left, 
-                    obj.y - ha.top,
+                    x or (obj.x - ha.left),
+                    y or (obj.y - ha.top),
                     abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
             end
         end;

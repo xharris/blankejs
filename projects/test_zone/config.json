@@ -2,28 +2,28 @@
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "first_scene": null,
-    "game_size": 3,
+    "game_size": 1,
     "window_size": 3,
     "quick_access": [
+        [
+            "View assets=?",
+            "View assets"
+        ],
+        [
+            "platformer.lua=script+?",
+            "platformer.lua"
+        ],
         [
             "platformer.map=map+?",
             "platformer.map"
         ],
         [
+            "map1.map=map+?",
+            "map1.map"
+        ],
+        [
             "map0.map=map+?",
             "map0.map"
-        ],
-        [
-            "View project in explorer=?",
-            "View project in explorer"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "platformer.lua=script+?",
-            "platformer.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -49,11 +49,22 @@
                     32
                 ],
                 "uuid": "25c737ad"
+            },
+            "6457c01e": {
+                "name": "heart",
+                "char": "Z",
+                "color": "#f991f9",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "6457c01e"
             }
         },
         "object_order": [
             "526dedde",
-            "25c737ad"
+            "25c737ad",
+            "6457c01e"
         ]
     },
     "export": {
