@@ -16,20 +16,20 @@
     ],
     "quick_access": [
         [
-            "player.lua=script+?",
-            "player.lua"
-        ],
-        [
             "main.lua=script+state+?",
             "main.lua"
         ],
         [
-            "Open image editor=?",
-            "Open image editor"
+            "player.lua=script+?",
+            "player.lua"
         ],
         [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "Find in files=?",
+            "Find in files"
         ],
         [
             "movingblock.lua=script+?",

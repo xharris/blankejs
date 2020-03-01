@@ -2,16 +2,16 @@
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "first_scene": null,
-    "game_size": 1,
+    "game_size": 2,
     "window_size": 3,
     "quick_access": [
         [
-            "View assets=?",
-            "View assets"
-        ],
-        [
             "platformer.lua=script+?",
             "platformer.lua"
+        ],
+        [
+            "View assets=?",
+            "View assets"
         ],
         [
             "platformer.map=map+?",
@@ -70,6 +70,7 @@
     "export": {
         "name": "test_zone",
         "filter": "nearest",
+        "vsync": false,
         "web_memory": 24,
         "web_stack": 2,
         "web_autoplay": false,
@@ -79,8 +80,7 @@
         "scale": true,
         "resizable": true,
         "write_conf": true,
-        "os": "windows",
-        "vsync": false
+        "os": "windows"
     },
     "enabled_plugins": {
         "xhh-effect": true,

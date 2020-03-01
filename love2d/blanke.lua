@@ -675,7 +675,8 @@ do
             if obj_info ~= nil and obj_info.spawn_class then
                 args = args or {}
                 args.is_entity = true
-                local instance = obj_info.spawn_class(obj_info.args, args or {}, name)
+                args.classname = name
+                local instance = obj_info.spawn_class(obj_info.args, args or {})
                 return instance
             end
         end;
@@ -714,11 +715,11 @@ GameObject = class {
 
         -- custom properties were provided
         -- so far only allowed from Entity
-        if not self.classname then self.classname = "GameObject" end
+        self.classname = spawn_args.classname or args.classname or 'GameObject'
+        spawn_args.classname = nil; args.classname = nil
         if args then
             args = copy(args)
             if args.net_vars then self.net_vars = args.net_vars end
-            if args.classname then self.classname = args.classname end
             -- camera
             if args.camera and not spawn_args.net_obj then
                 local cam_type = type(args.camera)
@@ -795,13 +796,13 @@ GameObject = class {
             Hitbox.remove(self)
             if self.ondestroy then self:ondestroy() end
             if self._destroy then self:_destroy() end
-            self.destroyed = true
             if self.child_keys then
                 for _,k in ipairs(self.child_keys) do
                     self[k]:destroy() 
                 end
             end
             Net.destroy(self)
+            self.destroyed = true
         end
     end;
     __ = {
@@ -1058,7 +1059,7 @@ do
             lt = function(self,...) return getMM(self, 'lt', ...) or nil end,
             le = function(self,...) return getMM(self, 'le', ...) or nil end,
         },
-        init = function(self, args, spawn_args, classname)
+        init = function(self, args, spawn_args)
             self.hspeed = 0
             self.vspeed = 0
             self.gravity = 0
@@ -1067,7 +1068,6 @@ do
 
             GameObject.init(self, args, spawn_args)
 
-            self.classname = classname
             self.imageList = {}
             self.animList = {}
             -- width/height already set?
@@ -1146,7 +1146,6 @@ do
             for _, fn in ipairs(Entity.init_props) do
                 fn(self, args, spawn_args)
             end
-
             self:addUpdatable()
             self:addDrawable()
             table.update(self, spawn_args or {})
@@ -1173,19 +1172,19 @@ do
                 end
                 Net.sync(self, {'anim_speed'})
             end 
-            if type(self.hit_area) == "string" and (self.animList[self.hit_area] or self.imageList[self.hit_area]) then
-                local other_obj = self.animList[self.hit_area] or self.imageList[self.hit_area]
-                self.hit_area = {}
-                if not self._preset_size then
-                    self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
-                end
-                Game.checkAlign(self)
-                Hitbox.move(self)
-            end
             if not self._preset_size then
                 self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
             end
         end;
+        _checkForAnimHitbox = function(self)
+            if self.animList[self.hit_area] or self.imageList[self.hit_area] then
+                local other_obj = self.animList[self.hit_area] or self.imageList[self.hit_area]
+                self.hit_area = nil
+                self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
+                Game.checkAlign(self)
+                return true
+            end
+        end,
         _update = function(self,dt)
             local last_x, last_y = self.x, self.y
             local diff_pos = (self.x ~= last_x or self.y ~= last_y)
@@ -2078,6 +2077,7 @@ do
             assert(data,"Error loading map '"..name.."'")
             local new_map = Map()
             data = json.decode(data)
+            new_map.data = data
             local layer_name = {}
             -- get layer names
             local store_layer_order = false
@@ -2132,7 +2132,6 @@ do
                 end
             end
             
-            new_map.data = data
             return new_map
         end;
         config = function(opt) options = opt end;
@@ -2237,6 +2236,10 @@ do
                 for _,ent in ipairs(entities) do
                     ent:destroy()
                 end
+            end
+            -- destroy spritebatches
+            for _,batch in pairs(self.batches) do 
+                batch:destroy()
             end
         end
     }
@@ -2457,6 +2460,10 @@ Hitbox = nil
 do
     local world = bump.newWorld()
     local checkHitArea = function(obj)
+        local repos = false
+        if obj.is_entity then 
+            repos = obj:_checkForAnimHitbox()
+        end
         local left =  obj.alignx
         local top =   obj.aligny
 
@@ -2479,6 +2486,9 @@ do
             right = 0,
             bottom = 0
         })
+        if repos then 
+            Hitbox.teleport(obj)
+        end
         return obj.hit_area
     end
     local new_boxes = true
@@ -2506,7 +2516,7 @@ do
         end;     
         -- ignore collisions
         teleport = function(obj, x, y)
-            if obj.hasHitbox then
+            if obj and not obj.destroyed and obj.hasHitbox then
                 local ha = checkHitArea(obj)
                 world:update(obj, 
                     x or (obj.x - ha.left),
@@ -2515,7 +2525,7 @@ do
             end
         end;
         move = function(obj)
-            if obj.hasHitbox then
+            if obj and not obj.destroyed and obj.hasHitbox then
                 local filter = function(item, other)
                     if obj.reaction and obj.reaction[other.tag] then return obj.reaction[other.tag] end
                     if obj.filter then return obj:filter(item, other) end
@@ -2536,7 +2546,7 @@ do
                 end
                 if obj.collision and len > 0 then
                     for i=1,len do
-                        if obj.destroyed then return end
+                        if not obj or obj.destroyed then return end
                         obj:collision(cols[i])
                         local info = cols[i]
                         local other = info.other
@@ -2548,7 +2558,7 @@ do
             end
         end;
         remove = function(obj)
-            if obj and obj.hasHitbox then 
+            if obj and not obj.destroyed and obj.hasHitbox then 
                 obj.hasHitbox = false
                 world:remove(obj)
                 new_boxes = true 
@@ -2589,6 +2599,7 @@ do
             return state
         end
     end
+    local switch_to
     State = class {
         curr_state = nil;
         init = function(self, name, cbs)
@@ -2634,7 +2645,9 @@ do
                 assert(state, "State '"..name.."' not found")
                 if state and state.running then
                     state = stateCB(name, 'leave')
-                    for _,obj in ipairs(state.objects) do 
+                    local objs = state.objects
+                    state.objects = {}
+                    for _,obj in ipairs(objs) do 
                         if obj then obj:destroy() end 
                     end
                     state.running = false
@@ -2646,8 +2659,14 @@ do
             end
         end,
         switch = function(name)
-            State.stop()
-            State.start(name)
+            switch_to = name
+        end,
+        _checkSwitch = function()
+            if switch_to then 
+                State.stop()
+                State.start(switch_to)
+            end
+            switch_to = nil
         end
     }
 end 
@@ -3058,19 +3077,19 @@ do
     local iterate = function(t, test_val, fn) 
         local len = #t
         local offset = 0
+        local new_t = {}
         for o = 1, len do
             local obj = t[o]
             if obj then 
                 if obj.destroyed or not obj[test_val] then 
-                    t[o] = nil
                     offset = offset + 1
                 else
-                    t[o] = nil 
-                    t[o - offset] = obj
                     fn(obj, o)
+                    new_t[o - offset] = obj
                 end
             end
         end
+        return new_t
     end
 
     Blanke = {
@@ -3087,7 +3106,7 @@ do
             end
         end;
         iterUpdate = function(t, dt)
-            iterate(t, 'updatable', function(obj)
+            Game.updatables = iterate(t, 'updatable', function(obj)
                 if not obj.skip_update and not obj.pause and obj._update then
                     Game.updateObject(dt, obj)
                 end
@@ -3095,7 +3114,7 @@ do
         end;
         iterDraw = function(t, override_drawable)
             local reorder_drawables = false
-            iterate(t, 'drawable', function(obj)
+            Game.drawables = iterate(t, 'drawable', function(obj)
                 if obj.visible and not obj.skip_draw and (override_drawable or obj.drawable) and obj.draw ~= false then
                     if not obj._last_z or obj._last_z ~= obj.z then
                         reorder_drawables = true
@@ -3136,6 +3155,7 @@ do
             Timer.update(dt)
             Blanke.iterUpdate(Game.updatables, dt)
             State.update(dt)
+            State._checkSwitch()
             Signal.emit('update',dt)
             local key = Input.pressed('_fs_toggle') 
             if key and key.count == 1 then
@@ -3147,7 +3167,7 @@ do
         draw = function()
             Draw.origin()
             local actual_draw = function()
-                Blanke.iterDraw(Game.drawables)
+               Blanke.iterDraw(Game.drawables)
                 State.draw()
                 if Game.options.postdraw then Game.options.postdraw() end
                 Physics.drawDebug()

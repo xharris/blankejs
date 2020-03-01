@@ -26,15 +26,14 @@ Entity("Player", {
 			if not self.dead then
 				self.dead = true
 				self.hit_area = 'player_dead'
-				Tween(2, self, { hspeed=0 }, nil, function()
+				self.animation = "player_dead"
+				Tween(1, self, { hspeed=0 }, nil, function()
 					State.switch('play')
 				end)
 			end
 		end,
 		update = function(self, dt)
-			if self.dead then	
-				self.animation = "player_dead"
-			else 
+			if not self.dead then
 				-- left/right
 				dx = 125
 				self.hspeed = 0
@@ -56,12 +55,14 @@ Entity("Player", {
 					self.vspeed = -350
 					self.can_jump = false
 				end
-			end
-			self.animList['player_walk'].speed = 1
-			if self.vspeed ~= 0 or not self.can_jump then
-				self.animation = 'player_walk'
-				self.animList['player_walk'].speed = 0
-				self.animList['player_walk'].frame_index = 2
+				
+				self.animList['player_walk'].speed = 1
+
+				if self.vspeed ~= 0 or not self.can_jump then
+					self.animation = 'player_walk'
+					self.animList['player_walk'].speed = 0
+					self.animList['player_walk'].frame_index = 2
+				end
 			end
 		end
 })

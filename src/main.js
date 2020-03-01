@@ -72,7 +72,11 @@ var app = {
 	ignore_errors: false,
 	
 	get window() {
-		return elec.remote.getCurrentWindow()
+		return elec.remote.getCurrentWindow();
+	},
+
+	get size() {
+		return self.window.getSize();
 	},
 
 	getElement: function(sel) {

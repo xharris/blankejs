@@ -1,12 +1,14 @@
 Hitbox.debug = true
 
+local map
 State('platformer',{
 	enter = function()
 		Input({
 			right = { 'right', 'd' },
 			left = { 'left', 'a' },
 			up = { 'up', 'w' },
-			down = { 'down', 's' }
+			down = { 'down', 's' },
+			action = { 'space' }
 		})
 		
 		Camera("player")--, {zoom=2})
@@ -15,7 +17,13 @@ State('platformer',{
 		Map.config{
 			tile_hitbox = { megman = 'ground' }	
 		}
-		Map.load('platformer.map')
+		map = Map.load('platformer.map')
+	end,
+	update = function(dt)
+		if Input.released('action') then 
+			map:destroy()
+			map = Map.load('platformer.map')
+		end
 	end,
 	draw = function()
 		Draw{
