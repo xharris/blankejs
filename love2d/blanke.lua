@@ -780,13 +780,11 @@ GameObject = class {
         if not self.is_entity and self.spawn then self:spawn(unpack(spawn_args or {})) end
     end;
     addUpdatable = function(self)
-        self.updatable = true
-        table.insert(Game.updatables, self)
+        Blanke.addUpdatable(self)
     end;
     addDrawable = function(self)
         if self.__ide_obj or Game.options.auto_draw then 
-            self.drawable = true
-            table.insert(Game.drawables, self)
+            Blanke.addDrawable(self)
         end
     end;
     remUpdatable = function(self)
@@ -3088,19 +3086,18 @@ do
     local iterate = function(t, test_val, fn) 
         local len = #t
         local offset = 0
-        local new_t = {}
-        for o = 1, len do
+        for o, obj in ipairs(t) do
             local obj = t[o]
             if obj then 
                 if obj.destroyed or not obj[test_val] then 
                     offset = offset + 1
                 else
                     fn(obj, o)
-                    new_t[o - offset] = obj
+                    t[o] = nil
+                    t[o - offset] = obj
                 end
             end
         end
-        return new_t
     end
 
     Blanke = {
@@ -3116,9 +3113,16 @@ do
                 Blanke.loaded = true
             end
         end;
+        addUpdatable = function(obj)
+            obj.updatable = true
+            table.insert(Game.updatables, obj)
+        end;
+        addDrawable = function(obj)
+            obj.drawable = true
+            table.insert(Game.drawables, obj)
+        end;
         iterUpdate = function(t, dt)
-            Game.updatables = iterate(t, 'updatable', function(obj)
-                if obj.classname == "Tween" then print("omg its me") end
+            iterate(t, 'updatable', function(obj)
                 if obj.skip_update ~= true and obj.pause ~= true and obj._update then
                     Game.updateObject(dt, obj)
                 end
@@ -3126,7 +3130,7 @@ do
         end;
         iterDraw = function(t, override_drawable)
             local reorder_drawables = false
-            Game.drawables = iterate(t, 'drawable', function(obj)
+            iterate(t, 'drawable', function(obj)
                 if obj.visible == true and obj.skip_draw ~= true and (override_drawable or obj.drawable == true) and obj.draw ~= false then
                     if not obj._last_z or obj._last_z ~= obj.z then
                         reorder_drawables = true

@@ -521,6 +521,22 @@ class Code extends Editor {
 
 		this.codemirror.refresh();
 
+		let game_window_menu = [];
+		if (app.ideSetting("game_preview_enabled")) {
+			game_window_menu = [{
+				label:'show console',
+				type:'checkbox',
+				checked:this.console.isVisible(),
+				click:() => {this.console.toggleVisibility()}
+			},
+			{
+				label:'console auto-scroll',
+				type:'checkbox',
+				checked:this.console.auto_scrolling,
+				click:() => {this.console.auto_scrolling = !this.console.auto_scrolling}
+			}];
+		}
+
 		this.setupMenu({
             close:true,
             rename: () => {
@@ -537,18 +553,7 @@ class Code extends Editor {
 						this.edit_box2 ? this.unsplitView() : this.splitView();
 					}
 				},
-				{
-					label:'show console',
-					type:'checkbox',
-					checked:this.console.isVisible(),
-					click:() => {this.console.toggleVisibility()}
-				},
-				{
-					label:'console auto-scroll',
-					type:'checkbox',
-					checked:this.console.auto_scrolling,
-					click:() => {this.console.auto_scrolling = !this.console.auto_scrolling}
-				}
+				...game_window_menu
 			]
 		});
 	}

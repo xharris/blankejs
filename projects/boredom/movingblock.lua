@@ -27,4 +27,3 @@ Entity("BlockDestroyer", {
 	hitbox=true,
 	default_reaction = 'cross'
 })
-Hitbox.debug = true

@@ -10,7 +10,6 @@ Tween = GameObject:extend {
         self.mod = 1
         self.onFinish = onFinish
         self:addUpdatable()
-        print("here i am")
     end,
     complete = function(self)
         if self.onFinish then self.onFinish() end
@@ -28,9 +27,7 @@ Tween = GameObject:extend {
         self.mod = self._old_mod or self.mod
     end,
     _update = function(self, dt)
-        print("WHERE IS IT")
         if Tween.ms then dt = dt * 1000 end
-        print(self)
         if self.tween:update(dt * self.mod) then
             self:complete()
         end

@@ -27,12 +27,11 @@ Entity("Player", {
 				self.dead = true
 				self.hit_area = 'player_dead'
 				self.animation = "player_dead"
-				Tween(1, self, { hspeed=0 }, nil, function()
-					State.switch('play')
-				end)
+				Tween(3, self, { hspeed=0 })
 			end
 		end,
 		update = function(self, dt)
+			print(self.hspeed)
 			if not self.dead then
 				-- left/right
 				dx = 125
