@@ -194,7 +194,8 @@ module.exports.hints = {
 	],
 	"blanke-hitbox":[
 		{ fn: 'add', vars: {obj:''}},
-		{ fn: 'move', vars: {obj:''}, info:'call after changing x/y/hitArea'},
+		{ fn: 'move', vars: {obj:''}, info:'call after changing x/y/hit_area'},
+		{ fn: 'adjust', vars: {obj:'', left:'',top:'',width:'',height:''}, info:'resize a hitbox'},
 		{ fn: 'remove', vars: {obj:''}}
 	],
 	"blanke-net":[

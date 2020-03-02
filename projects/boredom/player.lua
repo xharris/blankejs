@@ -5,6 +5,7 @@ Image.animation('player_dead.png')
 Image.animation('player_walk.png', { { rows=1, cols=2, duration=0.1 } })
 	
 Entity("Player", {
+		z = -1000,
 		camera = 'player',
 		animations = {'player_stand','player_walk','player_dead'},
 		align = "center",
@@ -25,13 +26,13 @@ Entity("Player", {
 		die = function(self)
 			if not self.dead then
 				self.dead = true
-				self.hit_area = 'player_dead'
 				self.animation = "player_dead"
-				Tween(3, self, { hspeed=0 })
+				self.hit_area = "player_dead"
+				Hitbox.adjust(self, -5, -20, -10, -25)
+				Tween(1, self, { hspeed=0 })
 			end
 		end,
 		update = function(self, dt)
-			print(self.hspeed)
 			if not self.dead then
 				-- left/right
 				dx = 125

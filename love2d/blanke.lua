@@ -1,9 +1,8 @@
--- weird buggs
--- -- Boredom: immediately switching state after player dies 3 times causes player to stop spawning
+-- TODO Images have their own hit_area instead of entity. Entity just uses the current animations hit_area
 -- TODO Blanke.config
 math.randomseed(os.time())
 
-local do_profiling = false -- false/#
+local do_profiling = 20 -- false/#
 
 local bitop = require 'lua.bitop'
 local bit = bitop.bit
@@ -928,9 +927,9 @@ do
                 info = info_cache[name]
                 if not info then
                     info = {}
-                    info.img = love.graphics.newImage(Game.res('image',file))
-                    info.w = info.img:getWidth()
-                    info.h = info.img:getHeight()
+                    info.img = love.graphics.newImage(Game.res('image',name))
+                    info.width = info.img:getWidth()
+                    info.height = info.img:getHeight()
                     info_cache[name] = info
                 end
                 return info_cache[name]
@@ -2521,7 +2520,17 @@ do
                     Hitbox.teleport(obj)
                 end
             end
-        end;     
+        end;  
+        adjust = function(obj, left, top, right, bottom) 
+            if obj and obj.hasHitbox then 
+                local ha = checkHitArea(obj)
+                if left then ha.left = ha.left + left end 
+                if top then ha.top = ha.top + top end 
+                if right then ha.right = ha.right + right end 
+                if bottom then ha.bottom = ha.bottom + bottom end 
+                Hitbox.teleport(obj)
+            end
+        end;
         -- ignore collisions
         teleport = function(obj, x, y)
             if obj and not obj.destroyed and obj.hasHitbox then

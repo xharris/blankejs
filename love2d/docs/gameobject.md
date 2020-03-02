@@ -4,7 +4,7 @@ A parent class for some classes
 
 # Props
 
-`x, y, z`
+`x, y, z` z: larger = closer, smaller = farther away
 
 `angle` degrees
 

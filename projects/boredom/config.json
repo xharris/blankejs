@@ -16,20 +16,20 @@
     ],
     "quick_access": [
         [
-            "main.lua=script+state+?",
-            "main.lua"
-        ],
-        [
-            "Find in files=?",
-            "Find in files"
-        ],
-        [
             "player.lua=script+?",
             "player.lua"
         ],
         [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "main.lua=script+state+?",
+            "main.lua"
+        ],
+        [
+            "Find in files=?",
+            "Find in files"
         ],
         [
             "movingblock.lua=script+?",
