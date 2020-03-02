@@ -71,10 +71,13 @@ class DragBox {
 		// place at an offset of the last box
 		if (last_box) {
 			let size = app.size;
-			if (size[0] > last_box.x) last_box.x = 0;
-			if (size[1] > last_box.y) last_box.y = 0;
 			this.x = last_box.x + (20 * last_box_direction);
 			this.y = last_box.y + (20 * last_box_direction);
+			// box position constraints
+			if (last_box.x < 0) last_box.x = 0;
+			if (last_box.y < 34) last_box.y = 34;
+			if (size[0] > last_box.x) last_box.x = 0;
+			if (size[1] > last_box.y) last_box.y = 34;
 			last_box_direction *= -1;
 		}
 		

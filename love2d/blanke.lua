@@ -30,6 +30,14 @@ do
     end
 end
 
+-- is given version greater than or equal to current LoVE version?
+local ge_version = function(major, minor, rev)
+    if major and major > Game.love_version[1] then return false end
+    if minor and minor > Game.love_version[2] then return false end 
+    if rev and rev > Game.love_version[3] then return false end 
+    return true
+end
+
 --UTIL.table
 table.update = function (old_t, new_t, keys) 
     if keys == nil then
@@ -505,6 +513,7 @@ do
         width = 0;
         height = 0;
         time = 0;
+        love_version = {0,0,0};
 
         init = function(self,args)
             table.update(Game.options, args)
@@ -523,6 +532,7 @@ do
         
         load = function()
             Game.time = 0
+            Game.love_version = {love.getVersion()}
             -- load config.json
             config_data = love.filesystem.read('config.json')
             if config_data then Game.config = json.decode(config_data) end
@@ -2963,7 +2973,8 @@ do
                 end
             end
         end;
-        vsync = function(v) 
+        vsync = function(v)
+            if not ge_version(11,3) then return end
             if not v then return love.window.getVSync()
             else love.window.setVSync(v) end
         end;
@@ -3107,7 +3118,8 @@ do
         end;
         iterUpdate = function(t, dt)
             Game.updatables = iterate(t, 'updatable', function(obj)
-                if not obj.skip_update and not obj.pause and obj._update then
+                if obj.classname == "Tween" then print("omg its me") end
+                if obj.skip_update ~= true and obj.pause ~= true and obj._update then
                     Game.updateObject(dt, obj)
                 end
             end)
@@ -3115,7 +3127,7 @@ do
         iterDraw = function(t, override_drawable)
             local reorder_drawables = false
             Game.drawables = iterate(t, 'drawable', function(obj)
-                if obj.visible and not obj.skip_draw and (override_drawable or obj.drawable) and obj.draw ~= false then
+                if obj.visible == true and obj.skip_draw ~= true and (override_drawable or obj.drawable == true) and obj.draw ~= false then
                     if not obj._last_z or obj._last_z ~= obj.z then
                         reorder_drawables = true
                     end

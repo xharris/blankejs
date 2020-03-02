@@ -76,7 +76,7 @@ var app = {
 	},
 
 	get size() {
-		return self.window.getSize();
+		return app.window.getSize();
 	},
 
 	getElement: function(sel) {

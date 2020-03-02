@@ -20,13 +20,12 @@ Game {
 	plugins = { 'xhh-effect', 'xhh-tween' },
 	background_color = "white",
     load = function()
-		Tween(1, { hspeed=5}, { hspeed=0 }, nil, function() print('wow') end)
 		State.start('play')
 	end
 }
 
 State("play", {
 	enter = function()
-        map = Map.load('level1.map')
+		map = Map.load('level1.map')
 	end
 })
