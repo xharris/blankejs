@@ -5,13 +5,13 @@ Image.animation('player_dead.png')
 Image.animation('player_walk.png', { { rows=1, cols=2, duration=0.1 } })
 	
 Entity("Player", {
-		z = -1000,
 		camera = 'player',
 		animations = {'player_stand','player_walk','player_dead'},
 		align = "center",
 		gravity = 10,
 		can_jump = true,
 		hitbox = true,
+		effect = 'static',
 		collision = function(self, v)
 			if v.other.tag == 'death' then
 				self:die()
@@ -29,7 +29,9 @@ Entity("Player", {
 				self.animation = "player_dead"
 				self.hit_area = "player_dead"
 				Hitbox.adjust(self, -5, -20, -10, -25)
-				Tween(1, self, { hspeed=0 })
+				Tween(1, self, { hspeed=0 }, nil, function()
+					State.restart('play')
+				end)
 			end
 		end,
 		update = function(self, dt)

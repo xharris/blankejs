@@ -2,7 +2,7 @@
 -- TODO Blanke.config
 math.randomseed(os.time())
 
-local do_profiling = 20 -- false/#
+local do_profiling = false -- false/#
 
 local bitop = require 'lua.bitop'
 local bit = bitop.bit
@@ -542,10 +542,12 @@ do
             -- load settings
             Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
             -- window size and flags
-            Window.setSize(Game.config.window_size, table.update({
+            Game.options.window_flags = table.update({
                 borderless = Game.options.frameless,
                 resizable = Game.options.resizable,
-            }, Game.options.window_flags or {}))
+            }, Game.options.window_flags or {})
+
+            Window.setSize(Game.config.window_size)
             Game.updateWinSize()
             -- vsync
             switch(Game.options.vsync, {
@@ -2605,6 +2607,7 @@ end
 State = nil
 do 
     local states = {}
+    local stop_states = {}
     local stateCB = function(name, fn_name, ...)
         local state = states[name]
         assert(state, "State '"..name.."' not found")
@@ -2616,7 +2619,27 @@ do
             return state
         end
     end
-    local switch_to
+    local stop_states, start_states
+    local stateStart = function(name)
+        local state = states[name]
+        assert(state, "State '"..name.."' not found")
+        if state and not state.running then
+            stateCB(name, 'enter')
+        end
+    end
+    local stateStop = function(name)
+        local state = states[name]
+        assert(state, "State '"..name.."' not found")
+        if state and state.running then
+            state = stateCB(name, 'leave')
+            local objs = state.objects
+            state.objects = {}
+            for _,obj in ipairs(objs) do 
+                if obj then obj:destroy() end 
+            end
+            state.running = false
+        end
+    end
     State = class {
         curr_state = nil;
         init = function(self, name, cbs)
@@ -2632,13 +2655,6 @@ do
             if state then 
                 table.insert(state.objects, obj)
             end 
-        end,
-        start = function(name)
-            local state = states[name]
-            assert(state, "State '"..name.."' not found")
-            if state and not state.running then
-                stateCB(name, 'enter')
-            end
         end,
         update = function(name, dt)
             for name, state in pairs(states) do 
@@ -2656,34 +2672,42 @@ do
                 end
             end
         end,
+        start = function(name)
+            if name then 
+                if not start_states then start_states = {} end
+                start_states[name] = true
+            end
+        end,
         stop = function(name) 
-            if name then
-                local state = states[name]
-                assert(state, "State '"..name.."' not found")
-                if state and state.running then
-                    state = stateCB(name, 'leave')
-                    local objs = state.objects
-                    state.objects = {}
-                    for _,obj in ipairs(objs) do 
-                        if obj then obj:destroy() end 
-                    end
-                    state.running = false
-                end
-            else 
-                for name, state in pairs(states) do 
-                    State.stop(name)
-                end
+            if stop_states == 'all' then return end
+            if not name then stop_states = 'all' else
+                if not stop_states then stop_states = {} end
+                stop_states[name] = true
             end
         end,
-        switch = function(name)
-            switch_to = name
-        end,
-        _checkSwitch = function()
-            if switch_to then 
-                State.stop()
-                State.start(switch_to)
+        restart = function(name)
+            if name then 
+                stateStop(name)
+                stateStart(name)
             end
-            switch_to = nil
+        end,
+        _check = function()
+            if stop_states == 'all' then 
+                for name,_ in pairs(states) do 
+                    stateStop(name)
+                end
+            elseif stop_states then 
+                for name,_ in pairs(stop_states) do 
+                    stateStop(name)
+                end
+            end
+            if start_states then 
+                for name,_ in pairs(start_states) do 
+                    stateStart(name)
+                end
+            end
+            stop_states = nil
+            start_states = nil
         end
     }
 end 
@@ -2987,7 +3011,7 @@ do
         end;
         setSize = function(r, flags)
             local w, h = Window.calculateSize(r)
-            love.window.setMode(w, h, flags)
+            love.window.setMode(w, h, flags or Game.options.window_flags)
         end;
         setExactSize = function(w, h, flags)
             love.window.setMode(w, h, flags)
@@ -3180,7 +3204,7 @@ do
             Timer.update(dt)
             Blanke.iterUpdate(Game.updatables, dt)
             State.update(dt)
-            State._checkSwitch()
+            State._check()
             Signal.emit('update',dt)
             local key = Input.pressed('_fs_toggle') 
             if key and key.count == 1 then

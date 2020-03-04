@@ -12,7 +12,11 @@ Tween = GameObject:extend {
         self:addUpdatable()
     end,
     complete = function(self)
-        if self.onFinish then self.onFinish() end
+        if self.onFinish then 
+            self.onFinish()
+            self:pause()
+            self:set(0)
+        end
     end,
     set = function(self, v)
         if self.tween:set(v) then 

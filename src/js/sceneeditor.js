@@ -1860,6 +1860,7 @@ class SceneEditor extends Editor {
 		}
 		this.refreshLayers()
 		this.drawGrid();
+		this.pixi.snap = this.curr_layer.snap.slice();
 	}
 
 	// refresh z-indexing of pixi layers
