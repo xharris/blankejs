@@ -28,11 +28,17 @@ class Settings extends Editor {
         let engine_settings = [];
         let engine_set_keys = [];
         if (app.engine.project_settings) {
-            for (let form_set of app.engine.project_settings) {
-                if (form_set.length > 1 && typeof(form_set[1]) != "boolean")
-                    engine_set_keys.push(form_set[0])
-                engine_settings.push(form_set);
-            }
+            engine_settings = app.engine.project_settings.map(form_set => {
+                let ret = JSON.parse(JSON.stringify(form_set))
+                if (ret.length <= 2)
+                    ret[0] = "GAME > "+ret[0];
+                else {
+                    engine_set_keys.push(ret[0]);
+                    if (ret.length == 3 && ret[2].default != null)
+                        ret[2].default = proj_set[ret[0]];
+                }
+                return ret;
+            })
         }
 
 		// setup default settings
@@ -50,7 +56,7 @@ class Settings extends Editor {
                 else {
                     ret[0] = 'export.'+ret[0];
                     engine_export_keys.push(ret[0]);
-                    if (ret.length == 3)
+                    if (ret.length == 3 && ret[2].default != null)
                         ret[2].default = proj_set.export[ret[0].replace(/\w+\.(.*)/,'$1')];
                 }
                 return ret;

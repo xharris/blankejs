@@ -1,4 +1,4 @@
-Hitbox.debug = true
+-- Hitbox.debug = true
 
 local map
 State('platformer',{
@@ -47,6 +47,7 @@ Entity("player",{
 	camera = "player",
 	hitbox = true,
 	gravity = 10,
+	--effect = 'static',
 	--debug = true,
 	collision = function(self, v)
 		if v.normal.y < 0 then 

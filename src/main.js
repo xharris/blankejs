@@ -631,7 +631,8 @@ var app = {
 			app.saveAppData();
 		}
 		if (!k) return app.settings;
-		return app.settings[k] || DEFAULT_IDE_SETTINGS[k]
+		if (app.settings[k] != null) return app.settings[k];
+		return DEFAULT_IDE_SETTINGS[k]
 	},
 
 	projSetting: function (k, v) {
@@ -640,7 +641,8 @@ var app = {
 			app.saveSettings();
 		}
 		if (!k) return app.project_settings;
-		return app.project_settings[k] || DEFAULT_PROJECT_SETTINGS[k]
+		if (app.project_settings[k] != null) return app.project_settings[k];
+		return DEFAULT_PROJECT_SETTINGS[k]
 	},
 
 	project_settings:{},
@@ -1274,7 +1276,7 @@ var app = {
 		nwFS.appendFile(nwPATH.join(app.getAppDataFolder(),'error.txt'),'[[ '+Date.now()+' ]]\r\n'+Array.prototype.slice.call(arguments).join('\r\n')+'\r\n\r\n',(err)=>{
 			if (!app.error_occured) {
 				app.error_occured = e;
-				blanke.toast(`Error! See <a href="#" title="open error.txt" role="button" onclick="app.openErrorFile()">error.txt</a> for more info`,-1);
+				blanke.toast(`Error! See <a href="#" title="open error.txt" role="button" onclick="app.openErrorFile()">error.txt</a> for more info`);
 				app.sanitizeURLs();
 			}
 		});

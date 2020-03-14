@@ -76,13 +76,14 @@ class Exporter extends Editor {
 			this.toast.text = "Export done! <a href='#' onclick='Exporter.openDistFolder(\""+os+"\");'>View files</a>";
 			this.toast.die(8000);
 
+			/*
 			app.notify({
 				title: 'Export complete!',
 				body: `\\( ^o^ )/`,
 				onclick: () => {
 					Exporter.openDistFolder(os);
 				}
-			})
+			})*/
 		}
 	}
 

@@ -13,21 +13,6 @@ class = require "lua.clasp"
 require "lua.print_r"
 -- yes, plugins folder is listed twice
 love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua;./plugins/?/init.lua;./plugins/?.lua')
-lua_print = print 
-do
-    local str = ''
-    local args
-    print = function(...)
-        str = ''
-        args = {...}
-        len = table.len(args)
-        for i = 1,len do 
-            str = str .. tostring(args[i] or 'nil') 
-            if i ~= len then str = str .. ' ' end
-        end
-        lua_print(str)
-    end
-end
 
 -- is given version greater than or equal to current LoVE version?
 local ge_version = function(major, minor, rev)
@@ -351,6 +336,22 @@ decrypt = function(str, code, seed)
     Math.seed(unpack(oldseed))                     
     return ret_str
 end
+lua_print = print 
+do
+    local str = ''
+    local args
+    print = function(...)
+        str = ''
+        args = {...}
+        len = table.len(args)
+        for i = 1,len do 
+            str = str .. tostring(args[i] or 'nil') 
+            if i ~= len then str = str .. ' ' end
+        end
+        lua_print(str)
+    end
+end
+
 --FS
 FS = {
     basename = function (str)
@@ -516,7 +517,7 @@ do
 
         init = function(self,args)
             table.update(Game.options, args)
-            --Game.load()
+            Game.load()
             return nil
         end;
 
@@ -777,7 +778,6 @@ GameObject = class {
         if spawn_args then table.update(self,spawn_args) end
                     
         State.addObject(self)
-
         if not self.is_entity and self.spawn then self:spawn(unpack(spawn_args or {})) end
     end;
     addUpdatable = function(self)
@@ -3317,7 +3317,7 @@ love.keypressed = function(key, scancode, isrepeat) Blanke.keypressed(key, scanc
 love.keyreleased = function(key, scancode) Blanke.keyreleased(key, scancode) end
 love.mousepressed = function(x, y, button, istouch, presses) Blanke.mousepressed(x, y, button, istouch, presses) end
 love.mousereleased = function(x, y, button, istouch, presses) Blanke.mousereleased(x, y, button, istouch, presses) end
--- from https://github.com/adnzzzzZ/STALKER-X
+--BEGIN:LOVE.RUN
 love.run = function()
   if love.math then love.math.setRandomSeed(os.time()) end
   if love.load then love.load(arg) end
@@ -3359,3 +3359,4 @@ love.run = function()
     if love.timer then love.timer.sleep(0.0001) end
   end
 end
+--END:LOVE.RUN

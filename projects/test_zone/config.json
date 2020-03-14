@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
+            "entitytest.lua=script+state+?",
+            "entitytest.lua"
+        ],
+        [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
+        ],
+        [
             "platformer.lua=script+?",
             "platformer.lua"
-        ],
-        [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "platformer.map=map+?",
-            "platformer.map"
-        ],
-        [
-            "map1.map=map+?",
-            "map1.map"
-        ],
-        [
-            "map0.map=map+?",
-            "map0.map"
         ]
     ],
     "autoplay_preview": true,
@@ -71,8 +71,12 @@
         "name": "test_zone",
         "filter": "nearest",
         "vsync": false,
-        "web_memory": 24,
+        "web_memory": 0,
         "web_stack": 2,
+        "web_game_size": [
+            400,
+            400
+        ],
         "web_autoplay": false,
         "scale_mode": "linear",
         "frameless": false,
@@ -80,7 +84,8 @@
         "scale": true,
         "resizable": true,
         "write_conf": true,
-        "os": "windows"
+        "os": "windows",
+        "window_size": 1
     },
     "enabled_plugins": {
         "xhh-effect": true,
