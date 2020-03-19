@@ -1277,6 +1277,9 @@ var app = {
 			if (!app.error_occured) {
 				app.error_occured = e;
 				blanke.toast(`Error! See <a href="#" title="open error.txt" role="button" onclick="app.openErrorFile()">error.txt</a> for more info`);
+				app.addSearchKey({key: 'Open error file', onSelect: function() {
+					app.openErrorFile();
+				}});
 				app.sanitizeURLs();
 			}
 		});
@@ -1581,7 +1584,7 @@ app.window.webContents.once('dom-ready', ()=>{
 			app.dropFiles(files);
 			app.getElement("#drop-zone").classList.remove("active");
 		}
-
+		app.hideDropZone();
 		return false;
 	});
 	window.addEventListener('dragleave', function(e) {

@@ -352,6 +352,30 @@ do
     end
 end
 
+--CACHE
+Cache = {}
+do 
+    local storage = {}
+    Cache.group = function(name) return Cache[name] end
+    Cache.key = function(group_name, key) return (Cache[group_name] and Cache[group_name][key]) end
+    Cache.get = function(group_name, key, fn_not_found)
+        if not storage[group_name] then storage[group_name] = {} end 
+        if storage[group_name][key] then 
+            return storage[group_name][key] 
+        elseif fn_not_found then
+            storage[group_name][key] = fn_not_found(key)
+            return storage[group_name][key]
+        end
+    end
+    Cache.stats = function()
+        local str = '' 
+        for name, list in pairs(storage) do 
+            str = str .. name .. '=' .. table.len(list) .. ' '
+        end
+        print(str)
+    end
+end
+
 --FS
 FS = {
     basename = function (str)
@@ -396,7 +420,6 @@ Game = nil
 do
     local skip_tf = false
     local mesh_canvas
-    local meshes = {}
     local objects = {}
 
     Signal.on('__main', function()
@@ -453,10 +476,9 @@ do
         if props.mesh and props.mesh.vertices then 
             mesh_canvas:getCanvas()
             local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
-            if not meshes[mesh_str] then 
-                meshes[mesh_str] = love.graphics.newMesh(props.mesh.vertices, props.mesh.mode or 'fan', props.mesh.usage or 'dynamic')
-            end 
-            local mesh = meshes[mesh_str]
+            local mesh = Cache.get('mesh', mesh_str, function(key)
+                return love.graphics.newMesh(props.mesh.vertices, props.mesh.mode or 'fan', props.mesh.usage or 'dynamic')
+            end)
             skip_tf = true
             mesh_canvas:drawTo(function() draw_obj:draw() end)
             mesh:setTexture(mesh_canvas.canvas.canvas) -- yes twice (since it's a canvasstack)
@@ -922,25 +944,28 @@ Image = nil
 do 
     local animations = {}
     local info_cache = {}
+    local getImage = function(name)
+        return Cache.get('Image', Game.res('image',name), function(key)
+            return love.graphics.newImage(key)
+        end)
+    end
     Image = GameObject:extend {
         info = function(name)
             if animations[name] then return animations[name]
             else
-                info = info_cache[name]
-                if not info then
-                    info = {}
-                    info.img = love.graphics.newImage(Game.res('image',name))
-                    info.width = info.img:getWidth()
-                    info.height = info.img:getHeight()
-                    info_cache[name] = info
-                end
-                return info_cache[name]
+                return Cache.get('Image.info', Game.res('image',name), function(key)
+                    return {
+                        img = love.graphics.newImage(key),
+                        width = info.img:getWidth(),
+                        height = info.img:getHeight()
+                    }
+                end)
             end
         end;
         -- options: cols, rows, offx, offy, frames ('1-3',4,5), duration, durations
         animation = function(file, anims, all_opt)
             all_opt = all_opt or {}
-            img = love.graphics.newImage(Game.res('image',file))
+            local img = getImage(file)
             if not anims then 
                 anims = {
                     { name=FS.removeExt(FS.basename(file)), cols=1, rows=1, frames={1} }
@@ -1001,7 +1026,9 @@ do
                 -- static image
                 args = {file=args}
             end
-            self.image = love.graphics.newImage(Game.res('image',args.file))
+
+            self.image = getImage(args.file)
+
             self:updateSize()
             if self._spawn then self:_spawn() end
             if self.spawn then self:spawn() end
@@ -1596,19 +1623,28 @@ do
         
         source = function(name, options)
             local o = opt(name)
+            if options then o = table.update(o, options) end
+
+            local src = Cache.get('Audio.source',name,function(key)
+                return love.audio.newSource(Game.res('audio',o.file), o.type)
+            end)
+            
             if not sources[name] then
                 sources[name] = love.audio.newSource(Game.res('audio',o.file), o.type)
             end
             if not new_sources[name] then new_sources[name] = {} end
+
             local src = sources[name]:clone()
-            table.insert(new_sources[name], src)
-            local props = {'looping','volume','airAbsorption','pitch','relative','rolloff'}
-            local t_props = {'position','attenuationDistances','cone','direction','velocity','filter','effect','volumeLimits'}
-            for _,n in ipairs(props) do
-                if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,o[n]) end
-            end
-            for _,n in ipairs(t_props) do
-                if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,unpack(o[n])) end
+            if options then
+                table.insert(new_sources[name], src)
+                local props = {'looping','volume','airAbsorption','pitch','relative','rolloff'}
+                local t_props = {'position','attenuationDistances','cone','direction','velocity','filter','effect','volumeLimits'}
+                for _,n in ipairs(props) do
+                    if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,o[n]) end
+                end
+                for _,n in ipairs(t_props) do
+                    if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,unpack(o[n])) end
+                end
             end
             return src
         end;
@@ -2990,6 +3026,12 @@ end
 Window = {}
 do 
     local pre_fs_size = {}
+    local last_win_size = {0,0}
+    local setMode = function(w,h,flags)
+        if not (not flags and last_win_size[1] == w and last_win_size[2] == h) then
+            love.window.setMode(w, h, flags or Game.options.window_flags)
+        end
+    end
     Window = {
         os = '?';
         aspect_ratio = nil;
@@ -3011,10 +3053,10 @@ do
         end;
         setSize = function(r, flags)
             local w, h = Window.calculateSize(r)
-            love.window.setMode(w, h, flags or Game.options.window_flags)
+            setMode(w,h,flags)
         end;
         setExactSize = function(w, h, flags)
-            love.window.setMode(w, h, flags)
+            setMode(w,h,falgs)
         end;
         calculateSize = function(r)
             r = r or Game.config.window_size

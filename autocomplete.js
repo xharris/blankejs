@@ -45,7 +45,7 @@ module.exports.class_list = [
 ];
 
 module.exports.class_extends = {
-	'entity': /\bEntity\s+[\'\"](\w+)[\'\"]\s*,/g,
+	'entity': /\bEntity\s*\(\s*[\'\"](\w+)[\'\"],\s*/g,
 	'class': /\b(\w+)\s*=\s*class\s*\{/g
 }
 
@@ -73,14 +73,25 @@ module.exports.user_words = {/*
 }
 
 module.exports.image = [
-	/images[\s=]+\{\s*['"]([\w\s\/.-]+)['"]/,
-	/Image\.animation\s*\(\s*['"]([\w\s\/.-]+)['"]/
-
+	/Image\.animation\s*\(\s*['"]([\w\s\/.-]+)['"]\s*(?:,[\s\{]*(['"\w\s\/.\-=\s,{}]+)\s*})?\s*\)/g
 ];
 
+module.exports.entity_using_image = [
+	/Entity\s*\(\s*[\'\"](\w+)[\'\"],.*[\s,{]animation[\s=]+['"]([\w\s\/.-]+)['"]/g,
+	/Entity\s*\(\s*[\'\"](\w+)[\'\"],.*[\s,{]image[\s=]+['"]([\w\s\/.-]+)['"]/g,
+	/Entity\s*\(\s*[\'\"](\w+)[\'\"],.*[\s,{]animations[\s=]+\{\s*['"]([\w\s\/.-]+)['"]/g,
+	/Entity\s*\(\s*[\'\"](\w+)[\'\"],.*[\s,{]images[\s=]+\{\s*['"]([\w\s\/.-]+)['"]/g,
+];
+
+module.exports.sprite_align = [
+	/Entity\s*\(\s*[\'\"](\w+)[\'\"],.*align[\s=]+['"]([\w\s\/.-]+)['"]/g
+]
+
 module.exports.this_ref = {
-	'blanke-entity-instance':/\bEntity\s+[\'\"]\w+[\'\"]\s*,/g
+	'blanke-entity-instance':/\bEntity\s*\(\s*[\'\"](\w+)[\'\"],\s*/g
 }
+
+module.exports.this_keyword = 'self';
 
 /*
 	{ fn: "name", info, vars }

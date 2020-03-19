@@ -37,7 +37,7 @@ State('platformer',{
 Entity("heart", {
 	images = { 'image2.png' },
 	align = 'center',
-	hitbox = true 	
+	hitbox = true
 })
 
 Entity("player",{

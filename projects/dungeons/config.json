@@ -5,16 +5,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "gmap.lua=script+?",
+            "gmap.lua"
+        ],
+        [
             "gwall.lua=script+?",
             "gwall.lua"
         ],
         [
             "groom.lua=script+?",
             "groom.lua"
-        ],
-        [
-            "gmap.lua=script+?",
-            "gmap.lua"
         ],
         [
             "main.lua=script+?",
@@ -30,6 +30,14 @@
     "scene": {},
     "export": {
         "name": "dungeons",
+        "filter": "linear",
+        "vsync": "on",
+        "web_memory": 24,
+        "web_stack": 2,
+        "web_game_size": [
+            800,
+            600
+        ],
         "scale_mode": "linear",
         "scale": true,
         "resizable": true
@@ -40,6 +48,9 @@
         "yonaba-delunay": false,
         "yonaba-delaunay": false,
         "xhh-datastructs": false,
-        "xhh-array": true
+        "xhh-array": true,
+        "xhh-badword": false,
+        "cmpl": false,
+        "xhh-vector": false
     }
 }

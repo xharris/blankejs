@@ -16,24 +16,24 @@
     ],
     "quick_access": [
         [
-            "player.lua=script+?",
-            "player.lua"
-        ],
-        [
             "level1.map=map+?",
             "level1.map"
         ],
         [
+            "movingblock.lua=script+?",
+            "movingblock.lua"
+        ],
+        [
+            "player.lua=script+?",
+            "player.lua"
+        ],
+        [
+            "View assets=?",
+            "View assets"
+        ],
+        [
             "Dev Tools=?",
             "Dev Tools"
-        ],
-        [
-            "main.lua=script+state+?",
-            "main.lua"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -85,6 +85,10 @@
         "vsync": "on",
         "web_memory": 24,
         "web_stack": 2,
+        "web_game_size": [
+            800,
+            600
+        ],
         "web_autoplay": false,
         "scale_mode": "linear",
         "frameless": false,

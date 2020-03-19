@@ -126,6 +126,7 @@ GMap = class {
 					end)
 					-- choose a random tile from the chunk
 					local tile = table.random(new_tiles.table)
+					while not tile do tile = table.random(new_tiles.table) end
 					-- choose a random wall from the tile
 					local door_loc = table.random(tile.walls.table)
 					if door_loc then 

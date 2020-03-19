@@ -3,5 +3,5 @@ package.path = package.path .. ";D:/Documents/PROJECTS/blankejs/love2d/?.lua;D:/
 require "blanke"
 function love.conf(t)
     t.console = true
-    --t.window = false
+    t.window = nil
 end

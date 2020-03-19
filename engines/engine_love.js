@@ -1,4 +1,6 @@
-const writeConf = () => {
+const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g;
+
+const runConf = () => {
     if (app.projSetting('write_conf')) {
         nwFS.writeFileSync(
             nwPATH.join(app.getAssetPath('scripts'),'conf.lua'),
@@ -7,7 +9,7 @@ package.path = package.path .. ";${['/?.lua','/?/init.lua','/lua/?/init.lua','/l
 require "blanke"
 function love.conf(t)
     t.console = true
-    --t.window = false
+    t.window = nil
 end
 `)
 }
@@ -21,7 +23,9 @@ function love.conf(t)
     t.window.title = "${app.ideSetting('engine_path').name}"
     ${os == 'web' ? 
 `   t.window.width = ${resolution[0]}
-    t.window.height = ${resolution[1]}` : ''}
+    t.window.height = ${resolution[1]}` : `
+    t.window = nil
+    `}
 end
 ` : '';
 }
@@ -81,44 +85,42 @@ module.exports.engine = {
 	add_script_templates: {
 		'script': ``
     },
-    entity_sprite_parse: (str_line, info, cb) => {
-		// use the first frame        
-        let re_rows = /rows\s*=\s*(\d+)/;
-        let re_cols = /cols\s*=\s*(\d+)/;
-        let re_offx = /offx\s*=\s*(\d+)/;
-        let re_offy = /offy\s*=\s*(\d+)/;
-        let re_frames = /frames\s*=\s*\{[\s'"]*?(\d+)/;
+    sprite_parse: (match, info, cb) => {
+        // console.log('sprite',match,info)
+        let img = new Image();
+        img.onload = () => {
+            info.frame_size = [img.width, img.height];
 
-        /*
-		let match;
-		if (match = re_frame_size.exec(text.replace(re_comment,''))) {
-			info.cropped = true;
-			info.frame_size = [parseInt(match[1]),parseInt(match[2])];
-		} else {
-			// get image size
-			let img = new Image();
-			img.onload = () => {
-				info.frame_size = [img.width, img.height];
-				cb(null, info);
-			}
-			img.src = 'file://'+info.path;
-		}
-		if (match = re_offset.exec(text.replace(re_comment,''))) 
-			info.offset = [parseInt(match[1]),parseInt(match[2])];
+            // console.log(match)
 
-		if (match = re_frame.exec(text.replace(re_comment,''))) 
-			info.frames = parseInt(match[1]);
+            let props = match.splice(-1,1)
+            let new_match;
+            let offx = 0, offy = 0, rows = 1, cols = 1, frame = 0, name;
+            while (new_match = re_sprite_props.exec(props)) {
+                switch (new_match[1]) {
+                    case "cols": cols = parseInt(new_match[2]); break;
+                    case "rows": rows = parseInt(new_match[2]); break;
+                    case "frames": frame = parseInt(new_match[2].split('-')[0]); break;
+                    case "offx": offx = parseInt(new_match[2]); break;
+                    case "offy": offy = parseInt(new_match[2]); break; 
+                }
+            }
 
-		if (match = re_spacing.exec(text.replace(re_comment,''))) {
-			info.offset[0] += parseInt(match[1]);
-			info.offset[1] += parseInt(match[1]);
-		}
-        if (info.cropped) cb(info);
-        */
+            info.offset = [offx, offy];
+            info.frame_size = [img.width / Math.max(cols,0), img.height / Math.max(rows,0)]
+            
+            cb(info);
+        }
+        // info.name = name || nwPATH.basename(info.path).split('.').slice(0,-1).join('.');
+
+        if (app.findAssetType(info.path) === 'image')
+            img.src = 'file://'+info.path;
+        else 
+            cb(info);
     },
     play: (options) => {
         // checkOS('ide');
-        writeConf();
+        runConf();
         let eng_path = 'love'; // linux, mac?
         if (app.os == 'win') eng_path = nwPATH.join(app.ideSetting('engine_path'), 'lovec');
         if (app.os == 'linux') {

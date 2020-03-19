@@ -228,22 +228,20 @@ class SceneEditor extends Editor {
 		// OBJECT elements
 
 		// object name
-		this.el_object_form.onChange('name', function(value){
+		this.el_object_form.onChange('name', (value) => {
 			value = value.trim();
-			if (this_ref.curr_object) {
+			if (this.curr_object) {
 				if (value == '')
-					return this_ref.curr_object.name;
+					return this.curr_object.name;
 				else {
-					let curr_obj = this_ref.curr_object;
-					delete this_ref.obj_info[curr_obj.name];
-					this_ref.el_obj_list.renameItem(curr_obj.name, value);
+					let curr_obj = this.curr_object;
+					delete this.obj_info[curr_obj.name];
+					this.el_obj_list.renameItem(curr_obj.name, value);
 					curr_obj.name = value;
-					this_ref.iterObject(curr_obj.name, function(obj) {
-						this_ref.drawObjImage(curr_obj, obj.image, obj.points);
-					});
+					this.refreshObjImages(curr_obj.name);
 
-					if (!this_ref.checkObjectSize(curr_obj.uuid))
-						this_ref.export();
+					if (!this.checkObjectSize(curr_obj.uuid))
+						this.export();
 				}
 			}
 		});
@@ -689,9 +687,7 @@ class SceneEditor extends Editor {
 			this.loadObjectsFromSettings();
 			// refresh image aligns
 			if (this.curr_object)
-				this.iterObject(this.curr_object.name, (obj) => {
-					this.drawObjImage(this.curr_object, obj.image, obj.points);
-				});
+				this.refreshObjImages(this.curr_object.name);
 			this.has_focus = true;
 		}
 		this.addCallback("onFocus", () => focus());
@@ -709,6 +705,10 @@ class SceneEditor extends Editor {
 				if (this_ref.curr_image && app.findAssetType(e.detail.file) == "image")
 					this_ref.refreshImageList();
 			}
+		});
+
+		document.addEventListener('code.updateEntity', e => {
+			this.refreshObjImages(e.detail.entity_name);
 		});
 
 		this.addCallback('onResize', () => {
@@ -1110,24 +1110,42 @@ class SceneEditor extends Editor {
 		return poly;
 	}
 
+	refreshObjImages (name) {
+		this.iterObject(name, obj => {
+			obj.name = name;
+			this.drawObjImage(obj, obj.image, obj.points);
+		});
+	}
+
 	// get an image to show behind polygon
 	drawObjImage (obj, spr, points) {
 		if (!spr) spr = new PIXI.Sprite();
 		let info = Code.sprites[obj.name];
-		if (info) {
-			spr.visible = true;
-			let tex = PIXI.Texture.from('file://'+info.path);
-			spr.texture = tex;
-
-		} else {
+		let fail = () => {
 			spr.visible = false;
 			return spr;
 		}
-		// change frame
+		if (info) {
+			spr.visible = true;
+			let img = new Image();
+			img.src = 'file://'+info.path;
+			let base = new PIXI.BaseTexture(img);
+			let tex = new PIXI.Texture(base);// return you the texture
+			spr.texture = tex;
+
+		} else {
+			return fail();
+		}
+		// does frame fit inside base Texture dimensions?
+		if (!spr.texture || 
+			info.offset[0] + info.frame_size[0] > spr.texture.width || 
+			info.offset[1] + info.frame_size[1] > spr.texture.height)
+			return fail();
 		spr.texture.frame = new PIXI.Rectangle(
 			info.offset[0], info.offset[1],
 			info.frame_size[0], info.frame_size[1]
 		);
+		
 		// reposition sprite
 		if (points.length > 1) {
 			let min_x, min_y;
@@ -1135,11 +1153,15 @@ class SceneEditor extends Editor {
 				if (min_x == null || min_x > points[p]) min_x = points[p];
 				if (min_y == null || min_y > points[p+1]) min_y = points[p+1];
 			}
-			spr.x = min_x - info.pivot[0];
-			spr.y = min_y - info.pivot[1];
+			if (info.pivot) {
+				spr.x = min_x - info.pivot[0];
+				spr.y = min_y - info.pivot[1];
+			}
 		} else {
-			spr.x = points[0] - info.pivot[0];
-			spr.y = points[1] - info.pivot[1];
+			if (info.pivot) {
+				spr.x = points[0] - info.pivot[0];
+				spr.y = points[1] - info.pivot[1];
+			}
 		}
 		return spr;
 	}

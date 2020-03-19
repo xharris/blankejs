@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "entitytest.lua=script+state+?",
-            "entitytest.lua"
+            "platformer.lua=script+?",
+            "platformer.lua"
         ],
         [
-            "conf.lua=script+?",
-            "conf.lua"
+            "platformer.map=map+?",
+            "platformer.map"
+        ],
+        [
+            "Open error file=?",
+            "Open error file"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "Dev Tools=?",
-            "Dev Tools"
-        ],
-        [
-            "platformer.lua=script+?",
-            "platformer.lua"
+            "Find in files=?",
+            "Find in files"
         ]
     ],
     "autoplay_preview": true,
@@ -55,8 +55,8 @@
                 "char": "Z",
                 "color": "#f991f9",
                 "size": [
-                    32,
-                    32
+                    16,
+                    16
                 ],
                 "uuid": "6457c01e"
             }

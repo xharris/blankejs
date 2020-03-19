@@ -6,9 +6,6 @@
 
 var re_add_sprite = /this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/;
 var re_new_sprite = /new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/;
-var re_sprite_align = /sprite_align\s*=\s*[\"\']([\s\w]+)[\"\']/;
-var re_sprite_pivot_single = /sprite_pivot\.(x|y)\s*\=\s*(\d+)/;
-var re_sprite_pivot = /sprite_pivot\.set\(\s*(\d+)\s*,\s*(\d+)\s*\)/;
 
 var file_ext = ['lua'];
 var main_file = 'main.'+file_ext[0];
@@ -23,9 +20,11 @@ var var_list = {};      // user_words (let player;)
 var class_list = []     // class_list (Map, Scene, Effect)
 var keywords = [];
 var this_lines = {};	// { file: {line_text : token_type (blanke-entity-instance) } }
+var this_lines_num = []; // { file: [ { start, end, class_name} ] }
+var this_keyword = 'this';
 
 var autocomplete, hints;
-var re_class_extends, re_instance, re_user_words, re_image, re_this;
+var re_class_extends, re_instance, re_user_words, re_image, re_entity_using_image, re_this, re_sprite_align;
 
 function isReservedWord(word) {
 	return keywords.includes(word) || autocomplete.class_list.includes(word);
@@ -49,6 +48,9 @@ var reloadCompletions = () => {
 	class_list = autocomplete.class_list || [];
 	re_image = autocomplete.image || [];
 	re_this = autocomplete.this_ref || {};
+	this_keyword = autocomplete.this_keyword || 'this';
+	re_entity_using_image = autocomplete.entity_using_image || [];
+	re_sprite_align = autocomplete.sprite_align || [];
 
 	// add classes as globals if they have properties
 	for (let c of class_list) {
@@ -186,12 +188,23 @@ var getKeywords = (file, content) => {
 
 		// for 'this' keyword
 		this_lines[file] = {};
+		this_lines_num[file] = [];
 		for (let name in re_this) {
 			let regexs = [].concat(re_this[name]);
 			for (let re of regexs) {
 				let match;
 				while (match = re.exec(content)) {
 					this_lines[file][match[0].trim()] = [name].concat(match.slice(1));
+					this_lines_num[file].push({
+						start: match.index,
+						end: -1,
+						class_name: name
+					})
+					let len = this_lines_num[file].length;
+					if (len > 1) {
+						this_lines_num[file][len-2].end = match.index;
+					}
+					// console.log(match);
 				}
 			}
 		}
@@ -333,23 +346,9 @@ class Code extends Editor {
 				return open; // Math.min(1, Math.max(-1, open));
 			}
 
-			const getClosers = (line) => {
-				let closers = [];
-				let matches = line.match(re_body);
-				if (matches) {
-					let m = 0, w = matches.length - 1;
-					while (m <= w) {
-						if (closers.includes(matches[m])) {
-							closers.push(matches[m])
-						}
-					}
-				}
-				return closers;
-			}
-
 			const getIndent = (line) => {
 				let match;
-				if (match = line.match(/(\s+).?/)) return match[1].length;
+				if (match = line.match(/^(\s+).?/)) return match[1].length;
 				return 0;
 			}
 
@@ -368,12 +367,16 @@ class Code extends Editor {
 						prev_line = doc.getLine(prev_line_i);
 					}
 					let prev_line_offset = getLineOffset(prev_line);
+					let curr_line_offset = getLineOffset(line)
 					indentation = getIndent(prev_line);
 					// line has an opener
 					if (prev_line_offset > 0)
 						indentation++;
+					// this line is closing someting
+					if (curr_line_offset < 0)
+						indentation--;
 
-					//console.log({prev_line, prev_line_offset, indentation})
+					// console.log({prev_line, prev_line_offset, indentation})
 				}
 
 				/*
@@ -575,8 +578,10 @@ class Code extends Editor {
 			cursorScrollMargin: 40,
             extraKeys: {
             	"Cmd-S": function(cm) {
-					this_ref.save();
-					cm.focus();
+					blanke.cooldownFn("codeSave."+this.file, 200, ()=>{
+						this_ref.save();
+						cm.focus();
+					});
             	},
             	"Ctrl-S": function(cm) {
             		this_ref.save();
@@ -717,9 +722,13 @@ class Code extends Editor {
 
 			checkGutterEvents(editor);
 			this.parseFunctions();
-			
-			blanke.cooldownFn('checkLineWidgets',500,()=>{
+
+			blanke.cooldownFn('editor_other_activity',1000,()=>{
 				otherActivity(cm,e)
+			});
+			Code.updateSpriteList(this.file, editor.getValue())
+			
+			blanke.cooldownFn('editor_get_hints',500,()=>{
 
 				this.refreshFnHelperTimer();
 
@@ -764,7 +773,7 @@ class Code extends Editor {
 							let line = (editor.getLine(loop) || '').trim();
 							for (let l of this_lines_keys) {
 								if (line.includes(l) && 
-									(keyword == 'this')) { // || this_lines[this_ref.file][l].includes(keyword))) { // TODO: DOESNT WORK ATM
+									(keyword == this_keyword)) { // || this_lines[this_ref.file][l].includes(keyword))) { // TODO: DOESNT WORK ATM
 									tokens.push(this_lines[this.file][l][0]);
 								}
 							}
@@ -832,31 +841,125 @@ class Code extends Editor {
 		return new_editor;
 	}
 
-	static parseLineSprite (text, cb) {
-		let match;
-		for (let re of re_image) {
-			if (!match) match = re.exec(text);
+	static parseSprites (text, file, cb, only_entities) {
+		text = text.replace(/(\r\n|\n|\r)/gm," ");
+		
+		const infoDefault = path => ({ path: path, cropped: false, frame_size:[0,0], offset:[0,0], frames: 1});
+		const img_asset_path = app.getAssetPath('image')+'/';
+		const imagePathToKey = (path) => {
+			path = app.cleanPath(path).replace(img_asset_path,'').split('.')
+			if (path.length > 1) return path.slice(0,-1).join('.');
+			else return path[0];
 		}
-		if (!match) return;
-		// found image path
-		app.getAssetPath("image",match[1],(err, path)=>{	
-			if (err) {	// no asset found
-				cb(err, null);
-				return;
+
+		const storeImageInfo = (info) => {
+			let name = imagePathToKey(info.path || info.name);
+			Code.images[name] = Object.assign(Code.images[name] || {}, info);
+		}
+
+		const storeSpriteInfo = (entity_name, img_name, cb) => {
+			Code.sprites[entity_name] = Object.assign(Code.images[img_name], {})
+			cb(null, Code.sprites[entity_name])
+		}
+
+		const getImageInfo = new Promise((res, rej) => {
+			let stop_matching = false;
+			let match;
+			while (!stop_matching) {
+				match = null;
+				for (let re of re_image) {
+					if (!match) match = re.exec(text);
+				}
+				if (!match) {
+					stop_matching = true;
+					return res();
+				}
+				// found image path
+				let match_copy = [...match];
+				app.getAssetPath("image",match_copy[1],(err, path)=>{	
+					if (err) {	// no asset found
+						rej(err);
+					}
+					// sprite info, cb.info = { offset, frame_size[], cropped }
+					let info = infoDefault(path);
+					if (!nwFS.exists(path)) return cb(`image doesn't exist: ${path}`);
+					
+					if (app.engine.sprite_parse)
+						app.engine.sprite_parse(match_copy, info, (info) => { 
+							storeImageInfo(info);
+							return res(info)
+						});
+				});
 			}
-			// sprite info, cb.info = { offset, frame_size[], cropped }
-			let info = { path: path, cropped: false, frame_size:[0,0], offset:[0,0], frames: 1};
-			if (app.engine.entity_sprite_parse)
-				app.engine.entity_sprite_parse(text, info, (info) => { 
-					info.path = path
-					cb(null, info)
-				})	
 		});
+		
+		const getEntityImageInfo = () => {
+			let check = (cb) => {
+				// isolate text to one entity at a time
+				let new_texts = [text];
+				if (this_lines_num[file]) {
+					new_texts = this_lines_num[file].map(l => [l.end === -1 ? text.slice(l.start) : text.slice(l.start, l.end), l.class_name])
+				}
+				let promises = [];
+				new_texts.forEach(([new_text, class_name]) => {
+					promises.push(new Promise((res, rej) => {
+						let stop_matching = false;
+						let match;
+						while(!stop_matching) {
+							match = null;
+							for (let re of re_entity_using_image) {
+								if (!match) {
+									match = re.exec(new_text);
+								}
+							}
+							if (!match) {
+								stop_matching = true;
+								delete Code.sprites[class_name];
+								return rej('no entity sprite matches');
+							}
+							
+							let entity_name = match[1];
+							let img_name = imagePathToKey(match[2]);
+		
+							if (!Code.images[img_name] && match[2].includes('.') && app.engine.sprite_parse) {
+									let info = infoDefault(app.lengthenAsset('image/'+match[2]))
+									if (!nwFS.exists(info.path)) return cb(`image doesn't exist: ${info.path}`);
+									app.engine.sprite_parse(match, info, (info) => { 
+										storeImageInfo(info)
+										storeSpriteInfo(entity_name, img_name, cb);
+		
+										cb(null, info);
+									});
+							} else {
+								img_name = match[2];
+								storeSpriteInfo(entity_name, img_name, cb);
+							}					
+						}
+						return;
+					}));
+				})
+				Promise.all(promises).catch(err => {
+					cb(err, null)
+				})
+			}
+			if (only_entities) {
+				check(cb);
+			} else {
+				getImageInfo.then(() => {
+					check(cb);
+				}).catch(err => {
+					cb(err, null);
+				})
+			}
+		}
+
+		getEntityImageInfo();
 	}
 
 	checkLineWidgets (line, editor) {
 		let l_info = editor.lineInfo(line);
-		Code.parseLineSprite(l_info.text, (err, info) => {
+		/* // TODO: rework later or something
+		Code.parseSprites(l_info.text, (err, info) => {
 			if (err) {
 				// remove previous image
 				if (l_info.widgets) {
@@ -896,7 +999,7 @@ class Code extends Editor {
 						
 				el_image.style.backgroundImage = "url('file://"+app.cleanPath(info.path)+"')";
 			}
-		});
+		});*/
 	}
 
 	// TODO: not updated since hinting rework
@@ -1129,19 +1232,17 @@ class Code extends Editor {
 	}
 
 	save () {
-		blanke.cooldownFn("codeSave."+this.file, 200, ()=>{
-			let data = this.codemirror.getValue();
-			nwFS.writeFileSync(this.file, data);
-			getKeywords(this.file, data);
-			this.parseFunctions();
-			Code.updateSpriteList(this.file, data);
-			this.removeAsterisk();
-			this.focus_after_save = true;
-			if (this.game)
-				this.game.clearErrors();
-			this.refreshGame();
-			dispatchEvent("codeSaved");
-		});
+		let data = this.codemirror.getValue();
+		nwFS.writeFileSync(this.file, data);
+		getKeywords(this.file, data);
+		this.parseFunctions();
+		Code.updateSpriteList(this.file, data);
+		this.removeAsterisk();
+		this.focus_after_save = true;
+		if (this.game)
+			this.game.clearErrors();
+		this.refreshGame();
+		dispatchEvent("codeSaved");
 	}
 
 	static saveAll () {
@@ -1152,6 +1253,7 @@ class Code extends Editor {
 		app.removeSearchGroup("Scripts");
 		Code.scripts = {other:[]};
 		Code.sprites = {} // { EntitClassname: { image, crop: {x,y,w,h} } }
+		Code.images = {}
 		for (let assoc of CODE_ASSOCIATIONS) {
 			Code.scripts[assoc[1]] = [];
 		}
@@ -1169,34 +1271,20 @@ class Code extends Editor {
 	}
 
 	static updateSpriteList(path, data) {
-		blanke.cooldownFn('updateSpriteList.'+path, 500, ()=>{
+		blanke.cooldownFn('updateSpriteList.'+path, 1000, ()=>{
 			if (!data) data = nwFS.readFileSync(path, 'utf-8');
 			if (!Code.sprites) Code.sprites = {};
+			if (!Code.images) Code.images = {};
 
-			let lines = data.split("\n");
-			let entity_class, token;
 			let pivots = {};
-			for (let line of lines) {
-				// get token if passing one
-				for (let txt in this_lines[path]) {
-					if (line.includes(txt)) 
-						token = this_lines[path][txt][0];
-				}
-				// convert token to class name
-				if (token == 'blanke-entity-instance') {
-					let match;
-					for (let re of [].concat(re_class_extends.entity)) {
-						match = re.exec(line);
-						if (match) entity_class = match[1]
-					}
-				}
-				let calcPivot = (e_class) => {
-					let info = Code.sprites[e_class];
-					let pivot = pivots[e_class];
-					let x = 0, y = 0;
-					if (info && pivot) {
-						if (pivot.type == 1) { // sprite_align
-							let align = pivot.match[1];
+			Code.parseSprites(data, path, (err, info) => {
+				if (!err) {
+					let calcPivot = (e_class) => {
+						let info = Code.sprites[e_class];
+						let pivot = pivots[e_class];
+						let align = pivot.align;
+						let x = 0, y = 0;
+						if (info && pivot) {
 							if (align.includes('center')) {
 								x = info.frame_size[0]/2;
 								y = info.frame_size[1]/2;
@@ -1209,38 +1297,31 @@ class Code extends Editor {
 								y = 0;
 							if (align.includes('bottom'))
 								y = info.frame_size[1];
-						} else if (info.type == 2) { // sprite_pivot.set(x,y)
-							x = pivot.match[1];
-							y = pivot.match[2];
-						} else if (info.type == 3) { // sprite_pivot.x = ?
-							if (pivot.match[1] == 'x') x = pivot.match[2];
-							if (pivot.match[1] == 'y') y = pivot.match[2];
+							delete pivots[e_class];
+							
+							info.pivot = [x,y];
 						}
-						delete pivots[entity_class];
-						
-						info.pivot = [x,y];
+					}
+					// optional: sprite alignment
+					let match;
+					data = data.replace(/(\r\n|\n|\r)/gm," ");
+					for (let re of re_sprite_align) {
+						while (match = re.exec(data)) {
+							pivots[match[1]] = {
+								align: match[2],
+								match: match
+							};
+							calcPivot(match[1]);
+						}
+					}
+				} 
+				
+				if (ext_class_list[path]) {
+					for (let e_class of ext_class_list[path].entity) {
+						dispatchEvent('code.updateEntity', { entity_name: e_class })
 					}
 				}
-				Code.parseLineSprite(line, (err, info) => {
-					if (!err) {
-						Code.sprites[entity_class] = Object.assign(Code.sprites[entity_class] || {},info);
-						calcPivot(entity_class);
-					}
-				})
-				// optional: sprite alignment
-				let match1 = re_sprite_align.exec(line);
-				let match2 = re_sprite_pivot.exec(line);
-				let match3 = re_sprite_pivot_single.exec(line);
-				if (!pivots[entity_class])
-					pivots[entity_class] = [];
-				if (match1 || match2 || match3) {
-					pivots[entity_class] = {
-						type: (match1 ? 1 : match2 ? 2 : 3),
-						match: (match1 || match2 || match3)
-					};
-					calcPivot(entity_class);
-				}
-			}
+			});
 		});
 	}
 	static isScript (file) {
@@ -1265,6 +1346,7 @@ function addScripts(folder_path) {
 	nwFS.readdir(folder_path, function(err, files) {
 		if (err) return;
 		script_list = files.map(f => app.cleanPath(nwPATH.join(folder_path,f))).filter(f => Code.isScript(f));
+		const file_data = {};
 		for (let file of files) {
 			var full_path = app.cleanPath(nwPATH.join(folder_path, file));
 			
@@ -1272,6 +1354,7 @@ function addScripts(folder_path) {
 			if (Code.isScript(file)) {
 				// get what kind of script it is
 				let data = nwFS.readFileSync(full_path, 'utf-8');
+				file_data[full_path] = data;
 				getKeywords(full_path, data);
 				// get what kind of script it is
 				let tags = ['script'];
@@ -1309,6 +1392,9 @@ function addScripts(folder_path) {
 				Code.updateSpriteList(full_path, data)
 			}
 		};
+
+		for (let file in file_data)
+			Code.parseSprites(file_data[file], file, ()=>{}, true)
 
 		// first scene setting
 		let first_scene = app.projSetting("first_scene");

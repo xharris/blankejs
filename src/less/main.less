@@ -1090,6 +1090,9 @@ iframe {
 		left: 50%;
 		background: url("logo.png");
 		background-size: 100%;
+		transform: scale(4) translate(25%,-12.5%);
+		image-rendering: pixelated;
+		opacity: 0.25;
 
 		&::before {
 			content: "";
@@ -1125,6 +1128,7 @@ iframe {
 
 		display: inline-block;
 		width: 100%;
+		z-index: 100;
 	}
 
 	.header-buttons {

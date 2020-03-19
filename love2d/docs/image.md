@@ -23,7 +23,6 @@
     * `duration` ms duration of each frame
     * `durations{}` ms duration of certain frames ex. { '2': 1.5 }
     * `speed=1` higher makes animation faster
-* `global_options` table of default options for all given animations
 
 # Props
 

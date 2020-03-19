@@ -1,5 +1,8 @@
 const elec = require('electron');
 
+const WIN_WIDTH = 1000;
+const WIN_HEIGHT = 700;
+
 let main_window;
 elec.app.on('open-file', (e, path)=>{
     if (main_window)
@@ -10,10 +13,10 @@ elec.app.on('ready', function(){
     let display = elec.screen.getPrimaryDisplay();
 
     main_window = new elec.BrowserWindow({
-        x: display.bounds.x + ((display.bounds.width - 800)/2),
-        y: display.bounds.y + ((display.bounds.height - 600)/2),
-        width: 800,
-        height: 600,
+        x: display.bounds.x + ((display.bounds.width - WIN_WIDTH)/2),
+        y: display.bounds.y + ((display.bounds.height - WIN_HEIGHT)/2),
+        width: WIN_WIDTH,
+        height: WIN_HEIGHT,
         frame: false,
         titleBarStyle: 'hidden',
         backgroundColor: '#fff',
