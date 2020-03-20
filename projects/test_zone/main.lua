@@ -7,7 +7,7 @@ Game {
 			} }
 		)
  
-		State.start('platformer')
+		State.start('ecs')
 	end,
 	update = function()
 		-- Cache.stats()

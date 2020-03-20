@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
+            "ecs.lua=script+?",
+            "ecs.lua"
+        ],
+        [
+            "Add a script=new+?",
+            "Add a script"
+        ],
+        [
             "platformer.lua=script+?",
             "platformer.lua"
         ],
         [
             "platformer.map=map+?",
             "platformer.map"
-        ],
-        [
-            "Open error file=?",
-            "Open error file"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "Find in files=?",
-            "Find in files"
         ]
     ],
     "autoplay_preview": true,

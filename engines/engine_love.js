@@ -9,7 +9,7 @@ package.path = package.path .. ";${['/?.lua','/?/init.lua','/lua/?/init.lua','/l
 require "blanke"
 function love.conf(t)
     t.console = true
-    t.window = nil
+    --t.window = nil
 end
 `)
 }
@@ -24,7 +24,7 @@ function love.conf(t)
     ${os == 'web' ? 
 `   t.window.width = ${resolution[0]}
     t.window.height = ${resolution[1]}` : `
-    t.window = nil
+    --t.window = nil
     `}
 end
 ` : '';
