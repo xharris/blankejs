@@ -20,6 +20,7 @@
     "lodash": "^4.17.15",
     "lodash.clonedeep": "^4.5.0",
     "markdown-it": "^9.1.0",
+    "minimist": "^1.2.5",
     "node-watch": "^0.6.0",
     "request": "^2.88.0",
     "uglify-es": "^3.3.9",
