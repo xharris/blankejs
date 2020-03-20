@@ -112,7 +112,7 @@ module.exports.engine = {
             cb(info);
         }
         // info.name = name || nwPATH.basename(info.path).split('.').slice(0,-1).join('.');
-
+        
         if (app.findAssetType(info.path) === 'image')
             img.src = 'file://'+info.path;
         else 

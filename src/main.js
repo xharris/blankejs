@@ -793,6 +793,7 @@ var app = {
 		});
 	},
 	findAssetType: function(path) {
+		if (!path) return;
 		let ext = nwPATH.extname(path).substr(1);
 		for (let a_type in app.allowed_extensions) {
 			if (app.allowed_extensions[a_type].includes(ext))
@@ -801,10 +802,12 @@ var app = {
 		return 'other';
 	},
 	shortenAsset: function(path){
+		if (!path) return;
 		path = app.cleanPath(path);
 		return app.cleanPath(nwPATH.relative(app.project_path,path)).replace(/assets[/\\]/,'');
 	},
 	lengthenAsset: function(path){
+		if (!path) return;
 		path = app.cleanPath(path);
 		return nwPATH.resolve(nwPATH.join(app.project_path,'assets',path));
 	},

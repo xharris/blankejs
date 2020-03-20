@@ -71,12 +71,24 @@
                 ],
                 "uuid": "76703fef",
                 "size_changed": true
+            },
+            "46440b61": {
+                "name": "Dialogue",
+                "char": "5",
+                "color": "#ff80c0",
+                "size": [
+                    33,
+                    132
+                ],
+                "uuid": "46440b61",
+                "size_changed": true
             }
         },
         "object_order": [
             "e6d1877c",
             "bc08a4cd",
-            "76703fef"
+            "76703fef",
+            "46440b61"
         ]
     },
     "export": {

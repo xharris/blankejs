@@ -1,6 +1,4 @@
 -- basic components
-require 'blanke_ecs'
-
 Component{
     position        = { x = 0, y = 0 },
     size            = { width = 0, height = 0 },
@@ -51,16 +49,17 @@ System{
     end
 }
 
+--DRAWING
 System{
-    'draw','predraw','postdraw',
-    draw = function(obj)
-        if obj.draw then obj:draw() end
+    'predraw',
+    predraw = function(obj)
+        if obj.predraw then obj:predraw() end
     end
 }
 
---GAME
-Game = callable{
-    __call = function(_, options)
-        if options.load then options.load() end
+System{
+    'postdraw',
+    postdraw = function(obj)
+        if obj.postdraw then obj:postdraw() end
     end
 }

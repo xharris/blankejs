@@ -5,7 +5,8 @@ class BlankePixi {
     constructor (opt) {
 		opt = opt || { 
 			w: window.innerWidth,
-			h: window.innerHeight
+			h: window.innerHeight,
+			zoom_clamp: [0.1, 15]
 		}
 		this.options = opt;
 		this.evt_list = {};
@@ -130,8 +131,12 @@ class BlankePixi {
 					this.setZoom(this.zoom + (this.zoom_incr * (this.zoom)));
 				}
 				if (e.key == "0") {
-					// reset zoom
-					this.setZoom(1);
+					if (e.ctrlKey)
+						// reset camera position
+						this.setCameraPosition(0, 0);
+					else
+						// reset zoom
+						this.setZoom(1);
 				}
 				if (e.key == "Delete" || e.key == "Backspace") {
 					this.dispatchEvent('keyDelete',e);
@@ -278,7 +283,10 @@ class BlankePixi {
 		let diff = this.zoom_target - this.zoom;
 		if (Math.abs(diff) < 0.01) {
 			this.zoom = this.zoom_target;
+			this.dispatchEvent('zoomChange', { zoom:this.zoom });
 			return;
+		} else {
+			this.dispatchEvent('zoomChanging', { zoom:this.zoom });
 		}
 		 
 		// look at https://github.com/anvaka/ngraph/tree/master/examples/pixi.js/03%20-%20Zoom%20And%20Pan instead
@@ -297,7 +305,6 @@ class BlankePixi {
 		requestAnimationFrame(this.updateZoom.bind(this));
 		let new_s = this.zoom + (diff / 10);
 	
-		let pre_zoom = this.zoom;
 		this.zoom = new_s;
 
 		if (this.stage.children.length >= 1) {
@@ -316,12 +323,18 @@ class BlankePixi {
 		}
 	}
 	setZoom (scale) {
-		this.zoom_target = scale > 0 ? scale : this.zoom;
+		this.zoom_target = Math.min(Math.max(scale > 0 ? scale : this.options.zoom_clamp[0]), this.options.zoom_clamp[1]);
 		this.old_cam = [this.camera[0] * this.zoom, this.camera[1] * this.zoom];
 		requestAnimationFrame(this.updateZoom.bind(this));
 	}
 	moveCamera (dx, dy) {
 		this.setCameraPosition(this.camera[0] + (dx), this.camera[1] + (dy));
+	}
+	getCameraPosition () { // needs work
+		return [
+			this.camera[0] / this.zoom,
+			this.camera[1] / this.zoom
+		]
 	}
 	setCameraPosition (x, y) {
 		let xclamp = [x,x];

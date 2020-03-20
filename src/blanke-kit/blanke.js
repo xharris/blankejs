@@ -145,20 +145,16 @@ class BlankeListView {
             }],
             "move-up":[
                 "chevron-up",`move ${this.options.object_type} up`,
-                function(e){
-                    if (this_ref.el_selected && this_ref.el_selected.previousElementSibling) {
-                        let el_other = this_ref.el_selected.previousElementSibling;
-                        el_other.parentNode.insertBefore(this_ref.el_selected, el_other);
-                        this_ref.onItemSwap(this_ref.el_selected.el_text.innerHTML, el_other.el_text.innerHTML);
+                e => {
+                    if (this.el_selected) {
+                        this.moveItemUp(this.el_selected.el_text.innerHTML);
                     }
             }],
             "move-down":[
                 "chevron-down",`move ${this.options.object_type} down`,
-                function(e){
-                    if (this_ref.el_selected && this_ref.el_selected.nextElementSibling) {
-                        let el_other = this_ref.el_selected.nextElementSibling;
-                        el_other.parentNode.insertBefore(this_ref.el_selected, el_other.nextSibling);
-                        this_ref.onItemSwap(this_ref.el_selected.el_text.innerHTML, el_other.el_text.innerHTML);
+                e => {
+                    if (this.el_selected) {
+                        this.moveItemDown(this.el_selected.el_text.innerHTML);
                     }
             }]
         };
@@ -331,11 +327,47 @@ class BlankeListView {
         return ret_list;
     }
 
+    moveItemUp (text) {
+        let children = this.el_items_container.children;
+        for (let c = 0; c < children.length; c++) {
+            if (children[c].el_text.innerHTML == text) {
+                let item = children[c];
+                if (item.previousElementSibling) {
+                    let el_other = item.previousElementSibling;
+                    el_other.parentNode.insertBefore(item, el_other);
+                    this.onItemMoveUp(item.el_text.innerHTML);
+                    this.onItemSwap(item.el_text.innerHTML, el_other.el_text.innerHTML);
+                }
+                return;
+            }
+        }
+    }
+
+    moveItemDown (text) {
+        let children = this.el_items_container.children;
+        for (let c = 0; c < children.length; c++) {
+            if (children[c].el_text.innerHTML == text) {
+                let item = children[c];
+                if (item.nextElementSibling) {
+                    let el_other = item.nextElementSibling;
+                    el_other.parentNode.insertBefore(item, el_other.nextElementSibling);
+                    this.onItemMoveDown(item.el_text.innerHTML);
+                    this.onItemSwap(item.el_text.innerHTML, el_other.el_text.innerHTML);
+                }
+                return;
+            }
+        }
+    }
+
     onItemAdd (text) { }
 
     onItemAction (item_icon, item_text) { }
 
     onItemSelect (item_text) { }
+
+    onItemMoveUp (item_text) { }
+
+    onItemMoveDown (item_text) { }
 
     // for move-up and move-down
     onItemSwap (item1_text, item2_text) {}

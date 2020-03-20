@@ -295,6 +295,8 @@ sort = function(t, key)
         if b == nil then
             return false
         end
+        if not a[key] then a[key] = 0 end 
+        if not b[key] then b[key] = 0 end
         a['_last_'..key] = a[key]
         b['_last_'..key] = b[key]
         return a[key] < b[key]
@@ -747,4 +749,174 @@ Color = {
     white2 =     {250,250,250},
     black =      {0,0,0},
     black2 =     {33,33,33}
+}
+
+--WINDOW
+Window = {}
+do 
+    local pre_fs_size = {}
+    local last_win_size = {0,0}
+    local setMode = function(w,h,flags)
+        if not (not flags and last_win_size[1] == w and last_win_size[2] == h) then
+            love.window.setMode(w, h, flags or Game.options.window_flags)
+        end
+    end
+    Window = {
+        os = '?';
+        aspect_ratio = nil;
+        aspect_ratios = { {4,3}, {5,4}, {16,10}, {16,9} };
+        resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 };
+        aspectRatio = function()
+            local w, h = love.window.getDesktopDimensions()
+            for _,ratio in ipairs(Window.aspect_ratios) do
+                if w * (ratio[2] / ratio[1]) == h then
+                    Window.aspect_ratio = ratio
+                    return ratio
+                end
+            end
+        end;
+        vsync = function(v)
+            if not ge_version(11,3) then return end
+            if not v then return love.window.getVSync()
+            else love.window.setVSync(v) end
+        end;
+        setSize = function(r, flags)
+            local w, h = Window.calculateSize(r)
+            setMode(w,h,flags)
+        end;
+        setExactSize = function(w, h, flags)
+            setMode(w,h,falgs)
+        end;
+        calculateSize = function(r)
+            r = r or Game.config.window_size
+            if not Window.aspect_ratio then Window.aspectRatio() end
+            local w = Window.resolutions[r]
+            local h = w / Window.aspect_ratio[1] * Window.aspect_ratio[2]
+            return w, h
+        end;
+        fullscreen = function(v,fs_type)
+            local res
+            if v == nil then 
+                res = love.window.getFullscreen()
+            else 
+                res = love.window.setFullscreen(v,fs_type)
+            end
+            Game.updateWinSize(unpack(pre_fs_size)) 
+            return res
+        end;
+        toggleFullscreen = function()
+            if not Window.fullscreen() then
+                pre_fs_size = {Game.width, Game.height}
+            end
+            local res = Window.fullscreen(not Window.fullscreen())
+            if res then
+                if not Window.fullscreen() then 
+                    Window.setExactSize(unpack(pre_fs_size))
+                end
+            end
+            return res
+        end
+    }
+end
+
+--GAME
+Game = callable{
+    options = {
+        persistent =    true,
+        res =           'assets',
+        scripts =       {},
+        filter =        'linear',
+        vsync =         1,
+        auto_require =  true,
+        background_color = 'black',
+        window_flags = {},
+        load = function() end,
+        draw =          function() end,
+        postdraw =      nil,
+        update = function(dt) end,
+        canvas = { }
+    },
+    __call = function(_, options)
+        table.update(Game.options, options or {})
+        Game.options.persistent = true
+        World.add(Game.options)
+
+        -- load config.json
+        config_data = love.filesystem.read('config.json')
+        if config_data then Game.config = json.decode(config_data) end
+        table.update(Game.options, Game.config.export)
+        -- get current os
+        Window.os = ({ ["OS X"]="mac", ["Windows"]="win", ["Linux"]="linux", ["Android"]="android", ["iOS"]="ios" })[love.system.getOS()]-- Game.options.os or 'ide'
+        Window.full_os = love.system.getOS()
+        -- load settings
+        Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
+        -- window size and flags
+        Game.options.window_flags = table.update({
+            borderless = Game.options.frameless,
+            resizable = Game.options.resizable,
+        }, Game.options.window_flags or {})
+
+        Window.setSize(Game.config.window_size)
+        Game.updateWinSize()
+        -- vsync
+        switch(Game.options.vsync, {
+            on = function() Window.vsync(1) end,
+            off = function() Window.vsync(0) end,
+            adaptive = function() Window.vsync(-1) end
+        })
+
+        if type(Game.options.filter) == 'table' then
+            love.graphics.setDefaultFilter(unpack(Game.options.filter))
+        else 
+            love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
+        end
+        Draw.setFont('04B_03.ttf', 16)
+        scripts = Game.options.scripts or {}
+        -- load plugins
+        if Game.options.plugins then 
+            for _,f in ipairs(Game.options.plugins) do 
+                table.insert(scripts,'plugins.'..f)
+            end
+        end
+        -- load scripts
+        if Game.options.auto_require then
+            files = FS.ls ''
+            for _,f in ipairs(files) do
+                print(f)
+                if FS.extname(f) == 'lua' and not table.hasValue(scripts, f) then
+                    new_f = FS.removeExt(f)
+                    table.insert(scripts, new_f)
+                end
+            end
+        end
+        for _,script in ipairs(scripts) do
+            if script ~= 'main' then 
+                Game.require(script)
+            end
+        end
+        -- fullscreen toggle
+        Input({ _fs_toggle = { 'alt', 'enter' } }, { 
+            combo = { '_fs_toggle' },
+            no_repeat = { '_fs_toggle' },
+        })
+
+        love.graphics.setBackgroundColor(0,0,0,0)
+    end,
+
+    updateWinSize = function(w,h)
+        Game.win_width, Game.win_height, flags = love.window.getMode()
+        if w and h then Game.win_width, Game.win_height = w, h end
+        if not Game.options.scale then
+            Game.width, Game.height = Game.win_width, Game.win_height
+            Game.options.canvas.size = {Game.width, Game.height}
+        end
+    end,
+    
+    res = function(_type, file)
+        return Game.options.res.."/".._type.."/"..file
+    end, 
+
+    require = function(path)
+        return require(path) 
+    end
 }

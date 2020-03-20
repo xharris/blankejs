@@ -43,7 +43,7 @@ class SceneEditor extends Editor {
 		this.game_width = window.innerWidth;
 		this.game_height = window.innerHeight;
 
-		this.pixi = new BlankePixi({ w: this.game_width, h: this.game_height });
+		this.pixi = new BlankePixi({ w: this.game_width, h: this.game_height, zoom_clamp:[0.1,12] });
 		this.grid_color = 0xBDBDBD;
 		this.appendBackground(this.pixi.view);
 
@@ -234,27 +234,15 @@ class SceneEditor extends Editor {
 				if (value == '')
 					return this.curr_object.name;
 				else {
-					let curr_obj = this.curr_object;
-					delete this.obj_info[curr_obj.name];
-					this.el_obj_list.renameItem(curr_obj.name, value);
-					curr_obj.name = value;
-					this.refreshObjImages(curr_obj.name);
-
-					if (!this.checkObjectSize(curr_obj.uuid))
-						this.export();
+					this.renameObject(this.curr_object.uuid, value)
 				}
 			}
 		});
 
 		// object color
-		this.el_object_form.onChange('color', function(value){
-			if (this_ref.curr_object) {
-				this_ref.curr_object.color = value;
-				this_ref.iterObject(this_ref.curr_object.name, function(obj) {
-					this_ref.drawPoly(this_ref.curr_object, obj.points, obj.poly);
-				});
-				this_ref.el_obj_list.setItemColor(this_ref.curr_object.name, value);
-				this_ref.export();
+		this.el_object_form.onChange('color', value => {
+			if (this.curr_object) {
+				this.recolorObject(this.curr_object.uuid, value)
 			}
 		});
 
@@ -272,40 +260,17 @@ class SceneEditor extends Editor {
 		this.el_obj_list.onItemAction = (icon, text) => {
 			// object deletion
 			if (icon == "delete") {
-				blanke.showModal(
-					"delete \'"+text+"\'?",
+				let obj = this.getObjByName(text);
+				if (obj) {
+					blanke.showModal(
+						"<label>Remove '"+obj.name+"'?<br/>Objects are global and it will be removed from all maps.</label>",
 					{
-						"yes": () => { 
-							if (this.curr_object) {
-								for (let uuid in this.objects) { 
-									if (uuid == this.curr_object.uuid) {
-										let obj = this.objects[uuid];
-										blanke.showModal(
-											"<label>Remove '"+obj.name+"'?<br/>Objects are global and it will be removed from all maps.</label>",
-										{
-										"yes": function() {
-											// remove instances
-											this.iterObject(obj.name, function(obj) {
-												obj.image.destroy();
-												obj.poly.destroy();
-											});
-				
-											// remove the object
-											this.setObject(this.el_obj_list.removeItem(obj.name, true));
-											this.deleteObject(uuid);
-										 },
-											"no": function() {}
-										});
-				
-										break;
-									}
-								}
-							}
-						 },
+					"yes": () => {
+						this.deleteObject(obj.uuid);
+						},
 						"no": () => {}
-					}
-				);
-				
+					});
+				}
 			}
 		}
 		this.el_obj_list.onItemSelect = function(text) {
@@ -316,19 +281,25 @@ class SceneEditor extends Editor {
 			this_ref.export();
 			return false;
 		}
-		this.el_obj_list.onItemSwap = function(text1, text2) {
+		this.el_obj_list.onItemMoveUp = text => {
+			this.objChangeEvent(text, 'move_up');
+		}
+		this.el_obj_list.onItemMoveDown = text => {
+			this.objChangeEvent(text, 'move_down');
+		}
+		this.el_obj_list.onItemSwap = (text1, text2) => {
 			let obj1, obj2;
-			for (let uuid in this_ref.objects) {
-				if (this_ref.objects[uuid].name == text1) obj1 = uuid;
-				if (this_ref.objects[uuid].name == text2) obj2 = uuid;
+			for (let uuid in this.objects) {
+				if (this.objects[uuid].name == text1) obj1 = uuid;
+				if (this.objects[uuid].name == text2) obj2 = uuid;
 			}
 			let new_list = {};
-			Object.keys(this_ref.objects).map(key => (key == obj1) ? obj2 : (key == obj2) ? obj1 : key)
-				.forEach(function(key){
-					new_list[key] = this_ref.objects[key];
+			Object.keys(this.objects).map(key => (key == obj1) ? obj2 : (key == obj2) ? obj1 : key)
+				.forEach(key => {
+					new_list[key] = this.objects[key];
 				});
-			this_ref.objects = new_list;
-			this_ref.export();
+			this.objects = new_list;
+			this.export();
 		}
 
 		this.el_layer_form = new BlankeForm([
@@ -578,7 +549,9 @@ class SceneEditor extends Editor {
 		this.pixi.on('cameraChange', (e, info) => {
 			this.refreshCamera();
 		});
-
+		this.pixi.on('zoomChanging', (e, info) => {
+			this.drawGrid();
+		});
 		let old_sel_rect;
 		this.pixi.on('mouseMove', (e, info) => {
 			this.drawCrosshair();
@@ -710,6 +683,36 @@ class SceneEditor extends Editor {
 		document.addEventListener('code.updateEntity', e => {
 			this.refreshObjImages(e.detail.entity_name);
 		});
+
+		document.addEventListener('sceneeditor.objectchanged', e => {
+			this.skip_change_event = true;
+			if (e.detail.src_file !== this.file) {
+				switch(e.detail.action) {
+					case 'add':
+						this.addObject(e.detail.info);
+						break;
+					case 'name':
+						this.renameObject(e.detail.uuid, e.detail.info.new_name, e.detail.info.old_name);
+						break;
+					case 'color':
+						this.recolorObject(e.detail.uuid, e.detail.info.color);
+						break;
+					case 'size':
+						this.setObjectSize(e.detail.uuid, e.detail.info.size);
+						break;	
+					case 'move_up': // uuid is actually name
+						this.el_obj_list.moveItemUp(e.detail.uuid);
+						break;
+					case 'move_down': // uuid is actually name
+						this.el_obj_list.moveItemDown(e.detail.uuid);
+						break;
+					case 'delete':
+						this.deleteObject(e.detail.uuid);
+						break;
+				}
+			}
+			this.skip_change_event = false;
+		})
 
 		this.addCallback('onResize', () => {
 			this.pixi.resize();
@@ -1605,6 +1608,12 @@ class SceneEditor extends Editor {
 		return this.objects[uuid];
 	}
 
+	getObjByName (name) {
+		for (let obj_uuid in this.objects) {
+			if (this.objects[obj_uuid].name === name) return this.objects[obj_uuid];
+		}
+	}
+
 	// https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 	addObject (info) {
 		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%<>?&+=";
@@ -1623,6 +1632,8 @@ class SceneEditor extends Editor {
 		this.el_obj_list.setItemColor(info.name, info.color);
 		this.setObject(info.name);
 		this.drawDotPreview();
+
+		this.objChangeEvent(info.uuid, 'add', info);
 
 		return info.uuid;
 	}
@@ -1729,14 +1740,58 @@ class SceneEditor extends Editor {
 			});
 
 			this.export();
+			
+			this.objChangeEvent(uuid, 'size', { size:size });
 		}
 	}
 
 	deleteObject (uuid) {
+		let obj = this.objects[uuid];
+		// remove the object
+		this.setObject(this.el_obj_list.removeItem(obj.name, true));
+		
+		// remove instances
+		this.iterObject(obj.name, obj => {
+			obj.image.destroy();
+			obj.poly.destroy();
+		});
+
 		delete app.projSetting("scene").objects[uuid];
 		app.projSetting("scene").object_order.splice(app.projSetting("scene").object_order.indexOf(uuid),1);
 		delete this.objects[uuid];
+		this.objChangeEvent(uuid, 'delete');
 		this.export();
+	}
+
+	renameObject (uuid, new_name, old_name) {
+		let obj = this.objects[uuid];
+		old_name = old_name || obj.name;
+		delete this.obj_info[obj.name];
+		this.el_obj_list.renameItem(old_name, new_name);
+		obj.name = new_name;
+		this.refreshObjImages(obj.name);
+
+		if (!this.checkObjectSize(obj.uuid))
+			this.export();
+			
+		this.objChangeEvent(uuid, 'name', { old_name:old_name, new_name:new_name });
+	}
+
+	recolorObject (uuid, new_color) {
+		let obj = this.objects[uuid];
+		obj.color = new_color;
+		this.iterObject(obj.name, _obj => {
+			this.drawPoly(obj, _obj.points, _obj.poly);
+		});
+		this.el_obj_list.setItemColor(obj.name, new_color);
+		this.export();
+
+		this.objChangeEvent(uuid, 'color', { color:new_color });
+	}
+
+	objChangeEvent (uuid, action, info) {
+		if (!this.skip_change_event)
+			dispatchEvent('sceneeditor.objectchanged', { src_file:this.file, uuid:uuid, action:action, info:info });
 	}
 
 	getImage (path) {
@@ -1910,6 +1965,7 @@ class SceneEditor extends Editor {
 		this.loaded = false;
 
 		var data = nwFS.readFileSync(file_path, 'utf-8');
+		this.skip_change_event = true;
 
 		if (data.length > 5) {
 			data = JSON.parse(data);
@@ -1993,13 +2049,15 @@ class SceneEditor extends Editor {
 		this.pixi.resize();
 
 		if (!data.images || data.images.length == 0) this.loaded = true;
+	
+		this.skip_change_event = false;
 	}
 
 	export () {
 		if (this.deleted || !this.loaded) return;
 
 		let export_data = {'objects':{}, 'layers':[], 'images':[], 'settings':{
-			camera:this.pixi.camera,
+			camera:this.pixi.getCameraPosition(),
 			last_active_layer:this.curr_layer.uuid,
 			last_object_type:this.obj_type,
 			last_object_name:ifndef(this.curr_object, {name:null}).name

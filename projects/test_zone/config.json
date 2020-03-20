@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
+            "platformer.map=map+?",
+            "platformer.map"
+        ],
+        [
+            "map1.map=map+?",
+            "map1.map"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
         [
             "ecs.lua=script+?",
             "ecs.lua"
-        ],
-        [
-            "Add a script=new+?",
-            "Add a script"
-        ],
-        [
-            "platformer.lua=script+?",
-            "platformer.lua"
-        ],
-        [
-            "platformer.map=map+?",
-            "platformer.map"
         ]
     ],
     "autoplay_preview": true,
@@ -32,13 +32,13 @@
             "526dedde": {
                 "name": "player",
                 "char": "A",
-                "color": "#00ff00",
                 "size": [
                     20,
                     32
                 ],
                 "uuid": "526dedde",
-                "size_changed": true
+                "size_changed": true,
+                "color": "#00ff00"
             },
             "25c737ad": {
                 "name": "ground",
@@ -62,8 +62,8 @@
             }
         },
         "object_order": [
-            "526dedde",
             "25c737ad",
+            "526dedde",
             "6457c01e"
         ]
     },
