@@ -81,6 +81,7 @@ class Settings extends Editor {
             ...files.map((path)=>[path,'file',{default:app_set[path+'_path']}])
         ]
         this.el_settings = new BlankeForm(form_options, true);
+        console.log(engine_set_keys, engine_export_keys);
         ['game_size','window_size','autoplay_preview',...engine_set_keys].forEach(s => {
             this.el_settings.onChange(s, v => {
                 app.projSetting(s, v);
@@ -100,6 +101,7 @@ class Settings extends Editor {
         });
         ['export.name', ...engine_export_keys].forEach(s => {
             this.el_settings.onChange(s,(val)=>{
+                console.log(s.replace(/\w+\.(.*)/,'$1'), val)
                 app.projSetting("export")[s.replace(/\w+\.(.*)/,'$1')] = val
             });
         });

@@ -12,8 +12,13 @@ class Editor {
 		this.content_area.classList.add('editor-content');
 	}
 
+	setupPopup(content) {
+		this.container_type = 'dragbox';
+		// create drag box
+		this.container = new DragBox(content || this.constructor.name);
+	}
+
 	setupDragbox(content) {
-		var this_ref = this;
 		this.container_type = 'dragbox';
 		// create drag box
 		this.container = new DragBox(content || this.constructor.name)
@@ -23,8 +28,8 @@ class Editor {
 		this.container.drag_container.appendChild(this.asset_list);
 		this.container.appendChild(this.content_area);
 		// menu button click
-		this.container.btn_menu.onclick = function(e) {
-			this_ref.onMenuClick(e);
+		this.container.btn_menu.onclick = (e) => {
+			this.onMenuClick(e);
 		}
 		this.container.onClose = (...args) => this.onClose(...args);
 		this.container.onBeforeClose = (...args) => this.onBeforeClose(...args);

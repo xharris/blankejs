@@ -558,16 +558,23 @@ do
         height = 0;
         time = 0;
         love_version = {0,0,0};
+        loaded = false;
 
         init = function(self,args)
-            table.update(Game.options, args)
-            Game.load()
+            if not Game.loaded then
+                Game.loaded = true
+                table.update(Game.options, args)
+                Game.load()
+            end
             return nil
         end;
 
         updateWinSize = function(w,h)
             Game.win_width, Game.win_height, flags = love.window.getMode()
             if w and h then Game.win_width, Game.win_height = w, h end
+            if Window.os == 'web' then
+                Game.width, Game.height = Game.win_width, Game.win_height
+            end
             if not Game.options.scale then
                 Game.width, Game.height = Game.win_width, Game.win_height
                 if Blanke.game_canvas then Blanke.game_canvas:resize(Game.width, Game.height) end
@@ -582,17 +589,24 @@ do
             if config_data then Game.config = json.decode(config_data) end
             table.update(Game.options, Game.config.export)
             -- get current os
-            Window.os = ({ ["OS X"]="mac", ["Windows"]="win", ["Linux"]="linux", ["Android"]="android", ["iOS"]="ios" })[love.system.getOS()]-- Game.options.os or 'ide'
-            Window.full_os = love.system.getOS()
+            if not Window.os then
+                Window.os = ({ ["OS X"]="mac", ["Windows"]="win", ["Linux"]="linux", ["Android"]="android", ["iOS"]="ios" })[love.system.getOS()]-- Game.options.os or 'ide'
+                Window.full_os = love.system.getOS()
+            end
             -- load settings
-            Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
+            if Window.os ~= 'web' then
+                Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
+            end
+            
             -- window size and flags
             Game.options.window_flags = table.update({
                 borderless = Game.options.frameless,
                 resizable = Game.options.resizable,
             }, Game.options.window_flags or {})
 
-            Window.setSize(Game.config.window_size)
+            if Window.os ~= 'web' then
+                Window.setSize(Game.config.window_size)
+            end
             Game.updateWinSize()
             -- vsync
             switch(Game.options.vsync, {
@@ -767,7 +781,7 @@ GameObject = class {
             if args.camera and not spawn_args.net_obj then
                 local cam_type = type(args.camera)
                 if cam_type == 'table' then
-                    for _,name in ipairs(self.camera) do
+                    for _,name in ipairs(args.camera) do
                         Camera.get(name).follow = self
                     end
                 else
@@ -1134,12 +1148,19 @@ do
             end
             -- animation
             if args.animations then
+                local first_anim
                 if type(args.animations) == 'table' then
-                    for _,anim_name in ipairs(args.animations) do 
+                    for _, anim_name in ipairs(args.animations) do 
+                        if not args.animation then 
+                            args.animation = anim_name 
+                        end
                         self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
                     end
                     self:_updateSize(self.animList[args.animations[1]], true)
-                else 
+                else  
+                    if not args.animation then 
+                        args.animation = args.animations 
+                    end
                     self.animList[args.animations] = Image{file=args, animation=args.animations, skip_update=true}
                     self:_updateSize(self.animList[args.animations], true)
                 end
@@ -1147,6 +1168,7 @@ do
                     self.animList[args.animation].speed = spawn_args.anim_speed or args.anim_speed
                     self.animList[args.animation].frame_index = spawn_args.anim_frame or args.anim_frame
                 end
+                self.animation = args.animation
             end
 
             if not self.defaultCollRes then
@@ -2753,6 +2775,7 @@ do
                 for name,_ in pairs(start_states) do 
                     stateStart(name)
                 end
+                Game.sortDrawables()
             end
             stop_states = nil
             start_states = nil
@@ -3045,7 +3068,7 @@ do
         end
     end
     Window = {
-        os = '?';
+        os = nil;
         aspect_ratio = nil;
         aspect_ratios = { {4,3}, {5,4}, {16,10}, {16,9} };
         resolutions = { 512, 640, 800, 1024, 1280, 1366, 1920 };
@@ -3196,7 +3219,7 @@ do
         pady = 0;
         load = function()
             if not Blanke.loaded then
-                Game.load()
+                --Game.load()
                 Blanke.loaded = true
             end
         end;
@@ -3345,17 +3368,29 @@ love.load = function()
     Blanke.load() 
 end
 love.frame = 0
-love.update = function(dt) 
-    if do_profiling then
-        love.frame = love.frame + 1
-        if love.frame > 60 and not love.report then 
-            love.profiler.stop()
-            love.report = love.profiler.report(do_profiling)
-            print(love.report)
+
+do
+    local dt = 0
+    local fixed_dt = 1/60
+    local accumulator = 0
+    love.update = function(dt) 
+        
+        accumulator = accumulator + dt
+        while accumulator >= fixed_dt do
+
+            if do_profiling then
+                love.frame = love.frame + 1
+                if love.frame > 60 and not love.report then 
+                    love.profiler.stop()
+                    love.report = love.profiler.report(do_profiling)
+                    print(love.report)
+                end
+            end
+
+            Blanke.update(fixed_dt)
+            accumulator = accumulator - fixed_dt
         end
     end
-
-    Blanke.update(dt)
 end
 love.draw = function() 
     Blanke.draw() 
@@ -3371,23 +3406,23 @@ love.keypressed = function(key, scancode, isrepeat) Blanke.keypressed(key, scanc
 love.keyreleased = function(key, scancode) Blanke.keyreleased(key, scancode) end
 love.mousepressed = function(x, y, button, istouch, presses) Blanke.mousepressed(x, y, button, istouch, presses) end
 love.mousereleased = function(x, y, button, istouch, presses) Blanke.mousereleased(x, y, button, istouch, presses) end
---BEGIN:LOVE.RUN
+--[[BEGIN:LOVE.RUN
 love.run = function()
   if love.math then love.math.setRandomSeed(os.time()) end
-  if love.load then love.load(arg) end
+  if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
   if love.timer then love.timer.step() end
 
   local dt = 0
   local fixed_dt = 1/60
   local accumulator = 0
 
-  while true do
+  return function()
     if love.event then
       love.event.pump()
       for name, a, b, c, d, e, f in love.event.poll() do
         if name == "quit" then
           if not love.quit or not love.quit() then
-            return a
+            return a or 0
           end
         end
         love.handlers[name](a, b, c, d, e, f)
@@ -3404,13 +3439,13 @@ love.run = function()
       accumulator = accumulator - fixed_dt
     end
     if love.graphics and love.graphics.isActive() then
+      love.graphics.origin()  
       love.graphics.clear(love.graphics.getBackgroundColor())
-      love.graphics.origin()
       if love.draw then love.draw() end
       love.graphics.present()
     end
 
-    if love.timer then love.timer.sleep(0.0001) end
+    if love.timer then love.timer.sleep(0.001) end
   end
 end
---END:LOVE.RUN
+--END:LOVE.RUN]]

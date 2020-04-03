@@ -5,6 +5,9 @@ Component{
     velocity        = { x = 0, y = 0 }
 }
 
+--CANVAS
+require 'systems.canvas'
+
 --IMAGE
 do 
     Component('image', { index=nil, align='top left' } )

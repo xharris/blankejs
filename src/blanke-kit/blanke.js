@@ -714,8 +714,9 @@ class BlankeForm {
                         val = input_args.default || '';
                 }
                 
-                if (input_type == "checkbox")
-                    val = this.checked;
+                if (input_type == "checkbox") {
+                    val = e.target.checked;
+                }
 
                 if (input_type == "number") 
                     val = isFloat(e.target.value) ? parseFloat(e.target.value) : parseInt(e.target.value);

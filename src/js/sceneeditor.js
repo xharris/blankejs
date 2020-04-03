@@ -1654,9 +1654,7 @@ class SceneEditor extends Editor {
 		}
 	}
 
-	loadObjectsFromSettings() {
-		let this_ref = this;
-		
+	loadObjectsFromSettings() {		
 		if (app.projSetting("scene") && app.projSetting("scene").objects) {
 			let last_obj_name = '';
 			if (this.curr_object)
@@ -1671,10 +1669,11 @@ class SceneEditor extends Editor {
 				if (!obj) continue;
 
 				this.addObject(obj);
-				this.iterObject(obj.name, function(i_obj) {
-					this_ref.drawPoly(obj, i_obj.points, i_obj.poly);
-					this_ref.drawObjImage(obj, i_obj.image, i_obj.points);
+				this.iterObject(obj.name, (i_obj) => {
+					this.drawPoly(obj, i_obj.points, i_obj.poly);
+					this.drawObjImage(obj, i_obj.image, i_obj.points);
 				});
+				this.refreshObjImages(obj.name);
 			}
 			this.setObject(last_obj_name);
 		}

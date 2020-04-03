@@ -122,14 +122,18 @@ var getCompletionList = (_type) => {
     }
 }
 
+const resetClassInstanceList = file => {
+	ext_class_list[file] = {entity:[], class:[]};
+	instance_list[file] = {};
+}
+
 // ** called when a file is modified
 var script_list = [];
 var getKeywords = (file, content) => {
     blanke.cooldownFn('getKeywords.'+file, 500, ()=>{
 		dispatchEvent('script_modified',{path:file, content:content})
 		// if (file.includes(main_file)) return; // main file makes while loop freeze for some reason
-        ext_class_list[file] = {};
-        instance_list[file] = {};
+        resetClassInstanceList(file);
         var_list[file] = {};
 
         let match = (regex_obj, store_list) => {
@@ -155,10 +159,9 @@ var getKeywords = (file, content) => {
             	}
 			}
         }
-        // start scanning
-        ext_class_list[file] = {};
+		// start scanning
+		resetClassInstanceList(file);
         match(re_class_extends, ext_class_list);        // user-made classes
-        instance_list[file] = {};
         // add user class regexes
         let new_re_instance = {};
         for (let cat in re_instance) {

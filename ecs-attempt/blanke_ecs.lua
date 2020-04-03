@@ -312,11 +312,12 @@ World = {
             end)
         end
     
-        Blanke.game_canvas:drawTo(_draw)
+        local game_canvas = Game.canvas
+        game_canvas:drawTo(_draw)
         if Game.options.scale == true then
-            Blanke.game_canvas.x, Blanke.game_canvas.y = Blanke.padx, Blanke.pady
-            Blanke.game_canvas.scale = Blanke.scale
-            Blanke.game_canvas:draw()
+            game_canvas.x, game_canvas.y = Game.padx, Game.pady
+            game_canvas.scale = Game.scale
+            game_canvas:draw()
         
         else 
             Draw{
@@ -325,7 +326,7 @@ World = {
                 {'rect','fill',0,0,Game.win_width,Game.win_height},
                 {'pop'}
             }
-            Blanke.game_canvas:draw()
+            Game.canvas:draw()
         end
     
         if do_profiling then

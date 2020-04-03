@@ -19,6 +19,7 @@ C 	sceneeditor: image search keys still remain after closing scene editor
 C	sceneeditor: re-opening opens 3 instances
 */
 const elec = require('electron');
+const { remote } = elec;
 
 var nwFS = require('fs-extra');
 var nwWALK = require('walk');
@@ -47,9 +48,10 @@ const DEFAULT_IDE_SETTINGS = {
 	js_engine_path:'engines/engine_love.js',
 	autocomplete_path:'autocomplete.js',
 	theme:'green',
+	window_splitting: false,
 	quick_access_size:5,
-	game_preview_enabled:true,
-	autoreload_external_run:false,
+	// game_preview_enabled:true,
+	// autoreload_external_run:false,
 	run_save_code:true
 };
 
@@ -72,7 +74,7 @@ var app = {
 	ignore_errors: false,
 	
 	get window() {
-		return elec.remote.getCurrentWindow();
+		return remote.getCurrentWindow();
 	},
 
 	get size() {
@@ -113,9 +115,9 @@ var app = {
 	},
 
 	contextMenu: function(x, y, items) {
-		var menu = new elec.remote.Menu();
+		var menu = new remote.Menu();
 		for (var i = 0; i < items.length; i++) {
-			var menuitem = menu.append(new elec.remote.MenuItem(items[i]));
+			var menuitem = menu.append(new remote.MenuItem(items[i]));
 		}
 		menu.popup({x:x, y:y});
 	},
@@ -309,7 +311,7 @@ var app = {
 				
 		// setup welcome screen
 		let el_br = app.createElement("br");
-		elec.remote.app.clearRecentDocuments();
+		remote.app.clearRecentDocuments();
 		files_list.forEach((file) => {
 			if (nwFS.pathExistsSync(file) && nwFS.statSync(file).isDirectory()) {
 				let el_file = app.createElement("button", "file");
@@ -322,7 +324,7 @@ var app = {
 				el_recent.appendChild(el_file);
 				el_recent.appendChild(el_br)
 
-				elec.remote.app.addRecentDocument(file);
+				remote.app.addRecentDocument(file);
 			}
 		});
 	},
@@ -412,7 +414,7 @@ var app = {
 	},
 
 	notify: function (opt) {
-		let notif = new elec.remote.Notification(opt.title, opt);
+		let notif = new remote.Notification(opt.title, opt);
 		notif.onclick = opt.onclick;
 		notif.show();
 	},
@@ -423,7 +425,7 @@ var app = {
 			options = {};
 		}
 		options.parent = app.window;
-		let child = new elec.remote.BrowserWindow(options);
+		let child = new remote.BrowserWindow(options);
 		child.loadFile(nwPATH.relative('',html));
 		app.extra_windows.push(child);
 		if (cb) cb(child);
@@ -505,8 +507,10 @@ var app = {
 		if (!app.search_hashvals.includes(hash_val))
 			app.search_hashvals.push(hash_val);
 		if (options.group) {
-			if (!app.search_group[options.group]) app.search_group[options.group] = [];
-			app.search_group[options.group].push(hash_val);
+			if (!app.search_group[options.group]) 
+				app.search_group[options.group] = [];
+			if (!app.search_group[options.group].includes(hash_val)) 
+				app.search_group[options.group].push(hash_val);
 		}
 		// quick access pending
 		if (app.pending_quick_access.includes(options.key)) {
@@ -573,7 +577,7 @@ var app = {
 
 	settings: {},
 	getAppDataFolder: function(){
-		let path = nwPATH.join(elec.remote.app.getPath("appData"), "BlankE"); 
+		let path = nwPATH.join(remote.app.getPath("appData"), "BlankE"); 
 		nwFS.ensureDirSync(path);
 		return path;
 	},
@@ -590,8 +594,8 @@ var app = {
 	},
 
 	require: (path) => {
-		if (!module.paths.includes(elec.remote.app.getAppPath()))
-			module.paths.push(elec.remote.app.getAppPath())
+		if (!module.paths.includes(remote.app.getAppPath()))
+			module.paths.push(remote.app.getAppPath())
 		if (!nwFS.existsSync(path)) return;
 		delete require.cache[require.resolve(path)];
 		return require(path);
@@ -642,6 +646,17 @@ var app = {
 		}
 		if (!k) return app.project_settings;
 		if (app.project_settings[k] != null) return app.project_settings[k];
+		return DEFAULT_PROJECT_SETTINGS[k]
+	},
+	
+	// untested
+	exportSetting: function (k, v) {
+		if (v != null) {
+			app.project_settings['export'][k] = v;
+			app.saveSettings();
+		}
+		if (!k) return app.project_settings;
+		if (app.project_settings['export'][k] != null) return app.project_settings['export'][k];
 		return DEFAULT_PROJECT_SETTINGS[k]
 	},
 
@@ -1165,10 +1180,11 @@ var app = {
 		if (!DEV_MODE || force_search_keys) {
 			DEV_MODE = true;
 			app.addSearchKey({key: 'Dev Tools', onSelect: app.window.webContents.openDevTools});
-			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ elec.remote.shell.openItem(app.getAppDataFolder()); }});
+			app.addSearchKey({key: 'View APPDATA folder', onSelect:function(){ remote.shell.openItem(app.getAppDataFolder()); }});
 			app.window.webContents.openDevTools();
 			blanke.toast("Dev mode enabled");
 		} else {
+			app.window.webContents.openDevTools();
 			blanke.toast("Dev mode already enabled!");
 		}
 	},
@@ -1271,8 +1287,8 @@ var app = {
 	},
 
 	restart () {
-		elec.remote.app.relaunch();
-		elec.remote.app.exit();
+		remote.app.relaunch();
+		remote.app.exit();
 	},
 	error_toast: null,
 	error (e) {
@@ -1289,13 +1305,13 @@ var app = {
 	},
 
 	openErrorFile () {
-		elec.remote.shell.openItem(nwPATH.join(app.getAppDataFolder(),'error.txt'));
+		remote.shell.openItem(nwPATH.join(app.getAppDataFolder(),'error.txt'));
 	},
 
 	shortcut_log: {},
 	newShortcut (options) {
 		app.shortcut_log[options.key] = options;
-		elec.remote.globalShortcut.register(options.key,options.active)
+		remote.globalShortcut.register(options.key,options.active)
 	}
 }
 
@@ -1314,7 +1330,7 @@ app.window.webContents.once('dom-ready', ()=>{
 	process.chdir(nwPATH.join(__dirname,'..'));
 	blanke.elec_ref = elec;
 
-	app.window.on('blur', ()=>{ elec.remote.globalShortcut.unregisterAll(); })
+	app.window.on('blur', ()=>{ remote.globalShortcut.unregisterAll(); })
 	app.window.on('focus', ()=>{
 		for (let name in app.shortcut_log) {
 			app.newShortcut(app.shortcut_log[name]);
@@ -1330,15 +1346,15 @@ app.window.webContents.once('dom-ready', ()=>{
 
 	// index.html button events
 	app.getElement("#btn-close").addEventListener('click',()=> { app.window.close() });
-	app.getElement("#btn-maximize").addEventListener('click',()=> { app.window.isMaximized() ? app.window.unmaximize() : app.window.maximize() });
+	app.getElement("#btn-maximize").addEventListener('click',()=> { app.window.isMaximized() ? app.window.restore() : app.window.maximize() });
 	app.getElement("#btn-minimize").addEventListener('click',()=> { app.window.minimize() });
 	app.getElement("#btn-play").addEventListener('click',()=> { app.play() });
-	app.getElement("#btn-export").addEventListener('click',()=> { new Exporter() });
+	app.getElement("#btn-export").addEventListener('click',()=> { new Exporter(app.getElement("#btn-export")) });
 	app.getElement("#btn-winvis").addEventListener('click',()=> { app.toggleWindowVis() });
 	app.getElement("#btn-winsplit").addEventListener('click',()=> { app.toggleSplit() });
 	app.getElement("#btn-docs").addEventListener('click',()=> { new Docview() });
-	app.getElement("#btn-plugins").addEventListener('click',()=> { new Plugins() });
-	app.getElement("#btn-settings").addEventListener('click',()=> { new Settings() });
+	app.getElement("#btn-plugins").addEventListener('click',()=> { new Plugins(app.getElement("#btn-plugins")) });
+	app.getElement("#btn-settings").addEventListener('click',()=> { new Settings(app.getElement("#btn-settings")) });
 
 	app.getElement("#btn-winsplit").title = "toggle window splitting "+(split_enabled == true ? '(ON)' : '(OFF)');
 	
@@ -1616,7 +1632,7 @@ app.window.webContents.once('dom-ready', ()=>{
 
 	document.addEventListener("openProject",function(){
 		app.addSearchKey({key: 'View project in explorer', onSelect: function() {
-			elec.remote.shell.openItem(app.project_path);
+			remote.shell.openItem(app.project_path);
 		}});
 		app.addSearchKey({key: 'Close project', onSelect: function() {
 			app.closeProject();

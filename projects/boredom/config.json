@@ -16,24 +16,24 @@
     ],
     "quick_access": [
         [
-            "level1.map=map+?",
-            "level1.map"
+            "main.lua=script+state+?",
+            "main.lua"
         ],
         [
-            "movingblock.lua=script+?",
-            "movingblock.lua"
+            "level1.map=map+?",
+            "level1.map"
         ],
         [
             "player.lua=script+?",
             "player.lua"
         ],
         [
-            "View assets=?",
-            "View assets"
+            "movingblock.lua=script+?",
+            "movingblock.lua"
         ],
         [
-            "Dev Tools=?",
-            "Dev Tools"
+            "View assets=?",
+            "View assets"
         ]
     ],
     "autoplay_preview": true,
@@ -95,18 +95,19 @@
         "name": "boredom",
         "filter": "linear",
         "vsync": "on",
-        "web_memory": 24,
+        "web_memory": 0,
         "web_stack": 2,
         "web_game_size": [
-            800,
-            600
+            400,
+            300
         ],
         "web_autoplay": false,
         "scale_mode": "linear",
         "frameless": false,
         "minify": true,
         "scale": true,
-        "resizable": true
+        "resizable": true,
+        "override_game_size": true
     },
     "enabled_plugins": {
         "xhh-platformer": false,

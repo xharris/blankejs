@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
             "map0.map=map+?",
             "map0.map"
         ],
         [
-            "platformer.map=map+?",
-            "platformer.map"
-        ],
-        [
-            "map1.map=map+?",
-            "map1.map"
+            "Dev Tools=?",
+            "Dev Tools"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "ecs.lua=script+?",
-            "ecs.lua"
+            "View project in explorer=?",
+            "View project in explorer"
         ]
     ],
     "autoplay_preview": true,
@@ -85,7 +85,8 @@
         "resizable": true,
         "write_conf": true,
         "os": "windows",
-        "window_size": 1
+        "window_size": 1,
+        "override_game_size": true
     },
     "enabled_plugins": {
         "xhh-effect": true,

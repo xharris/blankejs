@@ -138,14 +138,15 @@ class DragBox {
 					elementRect: { top: 0, left: 0, bottom: 23, right: 1 }
 				}
 			})
-			.on('resizemove', function (event) {
+			.on('resizemove', (event) => {
 			    var target = event.target;
 		        this_ref.x = (parseFloat(target.getAttribute('data-x')) || 0);
 		        this_ref.y = (parseFloat(target.getAttribute('data-y')) || 0);
 
 			    // update the element's style
-			    target.style.width  = event.rect.width + 'px';
-			    target.style.height = event.rect.height + 'px';
+			    // target.style.width  = event.rect.width + 'px';
+				// target.style.height = event.rect.height + 'px';
+				this.setSize(event.rect.width, event.rect.height)
 
 			    // translate when resizing from top or left edges
 			    this_ref.x += event.deltaRect.left;
@@ -160,14 +161,13 @@ class DragBox {
 			    target.setAttribute('data-x', this_ref.x);
 			    target.setAttribute('data-y', this_ref.y);
 
-			}).on('resizeend', function(e){
+			}).on('resizeend', e => {
 				let width = parseInt(e.target.style.width);
 				let height = parseInt(e.target.style.height);
 				//width = width - (width % snap);
 				//height = height - ((height) % snap);
 
-			    e.target.style.width = width+'px';
-			    e.target.style.height = height+'px';
+				this.setSize(width, height);
 
 				app.flashCrosshair(this_ref.x + width, this_ref.y + height);
 
@@ -244,12 +244,24 @@ class DragBox {
 			this.drag_handle.innerHTML = value+this.subtitle;
 			this.title = value;
 			if (box_sizes[value]) {
-				this.drag_container.style.width = box_sizes[value][0]+"px";
-				this.drag_container.style.height = box_sizes[value][1]+"px";
+				this.setSize(box_sizes[value][0], box_sizes[value][1]);
 			} else {
 				box_sizes[value] = [this.drag_container.offsetWidth, this.drag_container.offsetHeight];
 			}
 			app.setHistoryText(this.history_id, this.title);
+		}
+	}
+
+	setSize (w, h) {
+		if (w) {
+			this.drag_container.style.width = w+"px";
+			// this.drag_container.style.minWidth = w+"px";
+			// this.drag_container.style.maxWidth = w+"px";
+		}
+		if (h) {
+			this.drag_container.style.height = h+"px";
+			// this.drag_container.style.minHeight = h+"px";
+			// this.drag_container.style.maxHeight = h+"px";
 		}
 	}
 
@@ -292,11 +304,11 @@ class DragBox {
 	}
 
 	set width(w) {
-		this.drag_container.style.width = w.toString()+"px";
+		this.setSize(w, null);
 	}
 
 	set height(h) {
-		this.drag_container.style.height = h.toString()+"px";
+		this.setSize(null, h);
 	}
 
 	setContent (element) {

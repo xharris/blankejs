@@ -218,7 +218,7 @@ a {
 	background-color: transparent;
     overflow: visible;
     position: absolute;
-    margin-bottom: 22px;
+    margin-bottom: 23px;
     margin-top: 34px;
     top: 0px;
     left: 0px;
@@ -577,7 +577,7 @@ a {
 .fib-container {
 	background-color: transparent;
 	position: absolute;
-	border: 2px solid transparent;
+	border: 1px solid transparent;
 	border-radius: 4px;
 	transition: all ease-in-out 0.2s;
 	will-change: transform;
@@ -959,14 +959,6 @@ iframe {
 		transition: all ease-in-out 0.2s;
     }
 
-    &.no-project {
-    	* {
-			.win-drag();
-    		opacity: 0;
-    		pointer-events: none;
-    	}
-    }
-
     #search-input {
 		.win-nodrag();
 		display: inline-flex;
@@ -996,6 +988,18 @@ iframe {
 	    		color: white;
 	    	}
 	    }
+	}
+	
+    &.no-project {
+    	* {
+			.win-drag();
+    		opacity: 0;
+    		pointer-events: none;
+		}
+		
+		#search-input {
+			.win-drag();
+		}
     }
 }
 

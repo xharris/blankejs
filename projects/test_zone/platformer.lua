@@ -42,7 +42,6 @@ Entity("heart", {
 
 Entity("player",{
 	animations = { 'blue_robot' },
-	animation = 'blue_robot',
 	align = 'center',
 	camera = "player",
 	hitbox = true,
