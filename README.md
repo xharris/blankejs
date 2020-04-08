@@ -26,7 +26,7 @@ src: https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watch
 
 - [Software dependencies](https://github.com/xharris/blankejs/blob/master/package.json)
 
-- [Engine dependencies](https://github.com/xharris/blankejs/blob/master/blankejs/love2d/license.md)
+- [Engine dependencies](https://github.com/xharris/blankejs/blob/master/love2d/license.md)
 
 - There is an [End-User License Agreement (EULA)](https://github.com/xharris/blankejs/blob/master/EULA.txt)
 
