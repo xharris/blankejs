@@ -16,6 +16,10 @@
     ],
     "quick_access": [
         [
+            "movingblock.lua=script+?",
+            "movingblock.lua"
+        ],
+        [
             "conf.lua=script+?",
             "conf.lua"
         ],
@@ -30,10 +34,6 @@
         [
             "Dialogue.lua=script+?",
             "Dialogue.lua"
-        ],
-        [
-            "Add a script=new+?",
-            "Add a script"
         ]
     ],
     "autoplay_preview": true,

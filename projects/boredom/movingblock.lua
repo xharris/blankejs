@@ -23,4 +23,4 @@ Entity("MovingBlock", {
 Entity("BlockDestroyer", {
 	hitbox=true,
 	default_reaction = 'cross'
-})
+})0
