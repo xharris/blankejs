@@ -6,6 +6,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "ecs.lua=script+?",
+            "ecs.lua"
+        ],
+        [
             "map0.map=map+?",
             "map0.map"
         ],
@@ -16,10 +20,6 @@
         [
             "main.lua=script+?",
             "main.lua"
-        ],
-        [
-            "ecs.lua=script+?",
-            "ecs.lua"
         ],
         [
             "Dev Tools=?",

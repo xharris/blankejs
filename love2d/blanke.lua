@@ -597,7 +597,10 @@ do
             if Window.os ~= 'web' then
                 Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
             end
-            
+            -- disable effects for web (SharedArrayBuffer or whatever)
+            if Window.os == 'web' then
+                Feature.disable('effect')
+            end            
             -- window size and flags
             Game.options.window_flags = table.update({
                 borderless = Game.options.frameless,
@@ -665,7 +668,9 @@ do
         end;
 
         setEffect = function(...)
-            Game.effect = Effect({...})
+            if Feature('effect') then
+                Game.effect = Effect({...})
+            end
         end,
 
         addObject = function(name, _type, args, spawn_class)
@@ -840,7 +845,9 @@ GameObject = class {
         self.drawable = false
     end;
     setEffect = function(self, ...)
-        self.effect = Effect(...)
+        if Feature('effect') then
+            self.effect = Effect(...)
+        end
     end;
     setMesh = function(self, verts)
         self.mesh = love.graphics.newMesh(verts,'fan')
@@ -1098,6 +1105,42 @@ end
 --ENTITY
 Entity = nil
 do
+    local updateEntity = function(self, dt) 
+        local last_x, last_y = self.x, self.y
+        local diff_pos = (self.x ~= last_x or self.y ~= last_y)
+        if self.destroyed then return end
+        if self.gravity ~= 0 then
+            local gravx, gravy = Math.getXY(self.gravity_direction, self.gravity)
+            self.hspeed = self.hspeed + gravx
+            self.vspeed = self.vspeed + gravy
+        end
+        -- moving x and y in separate steps solves 'sticking' issue (ty https://jonathanwhiting.com/tutorial/collision/)
+        self.y = self.y + self.vspeed * dt
+        if self.y ~= last_y then
+            Hitbox.move(self)
+        end
+        self.x = self.x + self.hspeed * dt
+        if self.x ~= last_x then 
+            Hitbox.move(self)
+        end
+        if self.update then self:update(dt) end
+        if self.body then
+            local new_x, new_y = self.body:getPosition()
+            if self.x == last_x then self.x = new_x end
+            if self.y == last_y then self.y = new_y end
+            if diff_pos then
+                self.body:setPosition(self.x, self.y)
+            end
+        end
+        -- image/animation update
+        for name, img in pairs(self.imageList) do
+            img:update(dt)
+        end
+        for name, anim in pairs(self.animList) do
+            anim:update(dt)
+        end
+        Net.sync(self)
+    end
     -- (getMetaMethod)
     local getMM = function(self, name, ...)
         if self.__fn and self.__fn[name] then return self.__fn[name](self, ...) end
@@ -1253,36 +1296,7 @@ do
             end
         end,
         _update = function(self,dt)
-            local last_x, last_y = self.x, self.y
-            local diff_pos = (self.x ~= last_x or self.y ~= last_y)
-            if self.destroyed then return end
-            if self.gravity ~= 0 then
-                local gravx, gravy = Math.getXY(self.gravity_direction, self.gravity)
-                self.hspeed = self.hspeed + gravx
-                self.vspeed = self.vspeed + gravy
-            end
-            -- moving x and y in separate steps solves 'sticking' issue (ty https://jonathanwhiting.com/tutorial/collision/)
-            self.y = self.y + self.vspeed * dt
-            Hitbox.move(self)
-            self.x = self.x + self.hspeed * dt
-            Hitbox.move(self)
-            if self.update then self:update(dt) end
-            if self.body then
-                local new_x, new_y = self.body:getPosition()
-                if self.x == last_x then self.x = new_x end
-                if self.y == last_y then self.y = new_y end
-                if diff_pos then
-                    self.body:setPosition(self.x, self.y)
-                end
-            end
-            -- image/animation update
-            for name, img in pairs(self.imageList) do
-                img:update(dt)
-            end
-            for name, anim in pairs(self.animList) do
-                anim:update(dt)
-            end
-            Net.sync(self)
+            updateEntity(self, dt)
         end;
         netSync = function(self, props, spawning) 
             if self.animation and (spawning or self.anim_speed ~= nil) then
@@ -1996,6 +2010,10 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
         end;
         draw = function(self, fn)
             local used = false
+            if Feature('effect') then
+                fn()
+                return
+            end 
             for _, name in ipairs(self.names) do 
                 if not self.disabled[name] then 
                     used = true
@@ -2190,20 +2208,17 @@ do
                             -- spawn entity
                             if Game.isSpawnable(obj_info.name) then
                                 local obj = new_map:_spawnEntity(obj_info.name,{
-                                    x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
+                                    map_tag=c[1], x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
                                     width=obj_info.size[1], height=obj_info.size[2], hitboxColor=hb_color
                                 })
-                                if obj then 
-                                    obj.map_tag = c[1]
-                                end
                             -- spawn hitbox
                             else 
-                                new_map:addHitbox(obj_info.name, table.slice(c,2), hb_color)
+                                new_map:addHitbox(table.join({obj_info.name, c[1]},'.'), table.slice(c,2), hb_color)
                             end
                             -- add info to entity_info table
                             if not new_map.entity_info[obj_info.name] then new_map.entity_info[obj_info.name] = {} end 
                             table.insert(new_map.entity_info[obj_info.name], {
-                                x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
+                                map_tag=c[1], x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
                                 width=obj_info.size[1], height=obj_info.size[2], color=hb_color
                             })
                         end
@@ -2537,7 +2552,7 @@ end
 --HITBOX
 Hitbox = nil
 do
-    local world = bump.newWorld()
+    local world = bump.newWorld(40)
     local checkHitArea = function(obj)
         local repos = false
         if obj.is_entity then 
@@ -2616,9 +2631,22 @@ do
         move = function(obj)
             if obj and not obj.destroyed and obj.hasHitbox then
                 local filter = function(item, other)
-                    if obj.reaction and obj.reaction[other.tag] then return obj.reaction[other.tag] end
-                    if obj.filter then return obj:filter(item, other) end
-                    return obj.default_reaction or Hitbox.default_reaction
+                    local ret = obj.default_reaction or Hitbox.default_reaction
+                    if obj.reaction then
+                        if type(obj.reaction) == "string" then ret = obj.reaction else 
+                            if obj.reaction[other.tag] then ret = obj.reaction[other.tag] end
+                        end
+                    end
+                    if other.reaction then
+                        if type(other.reaction) == "string" then ret = other.reaction else 
+                            if other.reaction[obj.tag] then ret = other.reaction[other.tag] end
+                        end
+                    end
+                    if obj.filter then 
+                        local new_ret = obj:filter(item, other) 
+                        if new_ret then ret = new_ret end
+                    end
+                    return ret
                 end
                 local ha = checkHitArea(obj)
                 local new_x, new_y, cols, len = world:move(obj, 
@@ -3186,6 +3214,30 @@ do
         end,
         every = function(t, fn) 
             addTimer(t, fn, l_every)
+        end
+    }
+end
+
+--FEATURE
+Feature = {}
+do
+    local disabled = {}
+    Feature = callable {
+        -- returns true if feature is enabled
+        __call = function(name)
+            return not disabled[name]
+        end,
+        disable = function(...)
+            local flist = {...}
+            for _, f in ipairs(flist) do 
+                disabled[f] = true 
+            end
+        end,
+        enable = function(...)
+            local flist = {...}
+            for _, f in ipairs(flist) do 
+                disabled[f] = false 
+            end
         end
     }
 end

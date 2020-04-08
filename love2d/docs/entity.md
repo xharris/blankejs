@@ -11,6 +11,12 @@ Entity("Player", {
 })
 
 Game.spawn("Player", { custom_prop: 5 })
+
+-- or --
+
+Player = Entity("Player", { ... })
+
+Player({custom_prop: 5})
 ```
 
 # Construction Props
@@ -29,35 +35,42 @@ Game.spawn("Player", { custom_prop: 5 })
 
 `hitArea` { left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
 
-`collList {}` optional list of { other_tag:'response' }. default response is `Hitbox.default_coll_response (slide)`
+`reaction {}` optional list of { other_tag:'response' }. default reaction is `Hitbox.default_reaction (slide)`
 
-* responses can be:
-  * cross : move throught other object
-  * touch : stick to other object
-  * slide : stop and slide across
-  * bounce : <--
+- reaction can be:
+
+  - cross : move throught other object
+  - touch : stick to other object
+  - slide : stop and slide across
+  - bounce : bounces...
+
+- reaction checking order:
+  1. self.reaction
+  2. other.reaction
+  3. self.filter
+  4. Hitbox.default_reaction
 
 `collision (self, info)` info = { <see below> }
 
-* item
+- item
 
-* other
+- other
 
-* normal { x, y }
+- normal { x, y }
 
-* move { x, y }
+- move { x, y }
 
-* touch { x, y }
+- touch { x, y }
 
 `filter (self, item, other)` return nil to ignore collision or a response string:
 
-* `"touch"`
+- `"touch"`
 
-* `"cross"`
+- `"cross"`
 
-* `"slide"`
+- `"slide"`
 
-* `"bounce"`
+- `"bounce"`
 
 ## physics
 
@@ -77,6 +90,8 @@ Game.spawn("Player", { custom_prop: 5 })
 
 `animation` currently drawn animation
 
+`map_tag` set if the Entity is given a tag in the Scene editor
+
 # Methods
 
 `spawn()`
@@ -85,7 +100,7 @@ Game.spawn("Player", { custom_prop: 5 })
 
 `draw()`
 
-> __NOTE__: if draw() is used, width and height variables need to be set manually. 
+> **NOTE**: if draw() is used, width and height variables need to be set manually.
 
 `predraw()`
 

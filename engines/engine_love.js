@@ -3,6 +3,11 @@ const nwZIP = require("archiver"); // used for zipping
 
 const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g;
 
+const generalConf = () => `
+    t.window.title = "${app.exportSetting("name")}"
+    -- t.gammacorrect = nil
+`;
+
 const runConf = () => {
   if (app.projSetting("write_conf")) {
     nwFS.writeFileSync(
@@ -21,8 +26,7 @@ package.path = package.path .. ";${[
 require "blanke"
 function love.conf(t)
     t.console = true
-    t.gammacorrect = nil
-    --t.window = nil
+    ${generalConf()}
 end
 `
     );
@@ -36,13 +40,13 @@ const exportConf = os => {
 require "blanke"
 ${os == "web" ? 'Window.os = "web"' : ""}
 function love.conf(t)
-    t.window.title = "${app.ideSetting("engine_path").name}"
     ${
       os == "web"
-        ? `   t.window.width = ${resolution[0]}
+        ? `   
+    t.window.width = ${resolution[0]}
     t.window.height = ${resolution[1]}`
         : `
-    --t.window = nil
+    ${generalConf()}
     `
     }
 end

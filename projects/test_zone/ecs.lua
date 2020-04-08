@@ -37,15 +37,23 @@ State('ecs',{
 	end
 })
 
-Entity("heart_ecs", {
+local heart_ecs = {
 	image = { 'image2.png', align='center' },
 	hitbox = true
-})
+}
 
-Entity("player_ecs",{
+Map.entity.heart_ecs = heart_ecs
+
+local player_ecs = {
 	animation = { 'blue_robot', align='center' },
 	camera = { "player" },
-	platforming = { gravity=10 },
+	platforming = { gravity=10 }
+	hitbox = true
+}
+
+Map.entity.player_ecs = player_ecs
+
+
 	hitbox = {
 		collision = function(self, v)
 			if v.normal.y < 0 then 
