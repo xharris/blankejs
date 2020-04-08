@@ -21,30 +21,27 @@ C	sceneeditor: re-opening opens 3 instances
 const elec = require("electron");
 const { remote } = elec;
 
+var fs = require("fs").promises;
 var nwFS = require("fs-extra");
 var nwWALK = require("walk");
 var nwPATH = require("path");
 var nwOS = require("os");
-const { spawn, execFile, exec } = require("child_process");
-const { cwd, env, platform } = require("process");
+const { cwd } = require("process");
 var nwNOOB = require("./js/server.js");
-var nwZIP = require("archiver"); // used for zipping
 var nwZIP2 = require("adm-zip"); // used for unzipping
 var nwWATCH = require("node-watch");
 var nwREQ = require("request");
-var nwUGLY = require("uglify-es");
-var nwUTIL = require("util");
-var nwDEL = require("del");
-var nwCLONE = require("lodash.clonedeep");
-var nwMD = require("markdown-it")();
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
 const DEFAULT_IDE_SETTINGS = {
   recent_files: [],
+
   plugin_path: "plugins",
   engine_path: "love2d",
   themes_path: "themes",
+  background_image_path: "",
+  background_image_data: "",
   js_engine_path: "engines/engine_love.js",
   autocomplete_path: "autocomplete.js",
   theme: "green",
@@ -463,6 +460,32 @@ var app = {
     child.loadFile(nwPATH.relative("", html));
     app.extra_windows.push(child);
     if (cb) cb(child);
+  },
+
+  setBackgroundImage: async value => {
+    const img_path = value || app.ideSetting("background_image_path");
+    return await nwFS
+      .pathExists(img_path)
+      .then(async exists => {
+        if (exists) {
+          const data = await nwFS.readFile(img_path);
+          if (data)
+            app.ideSetting(
+              "background_image_data",
+              `data:${nwPATH
+                .extname(img_path)
+                .replace(/\./, "")};base64,${data.toString("base64")}`
+            );
+        }
+      })
+      .then(() => {
+        const bg_img_data = app.ideSetting("background_image_data");
+        if (bg_img_data.length > 0) {
+          app.getElement(
+            "body > .bg-image"
+          ).style.backgroundImage = `url(${bg_img_data})`;
+        }
+      });
   },
 
   toggleWindowVis: function () {
@@ -1861,6 +1884,7 @@ app.window.webContents.once("dom-ready", () => {
   app.loadAppData(function () {
     // load current theme
     app.setTheme(app.ideSetting("theme"));
+    app.setBackgroundImage();
     app.refreshRecentProjects();
 
     document.addEventListener("script_modified", e => {
@@ -1874,6 +1898,8 @@ app.window.webContents.once("dom-ready", () => {
     dispatchEvent("ideReady");
 
     // app.openProject('projects/test zone');
-    app.window.show();
+    setTimeout(() => {
+      app.window.show();
+    }, 500);
   });
 });

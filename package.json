@@ -23,7 +23,6 @@
   "dependencies": {
     "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
-    "del": "^5.0.0",
     "fs-extra": "^5.0.0",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.15",

@@ -10,12 +10,12 @@
             "map0.map"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
             "conf.lua=script+?",
             "conf.lua"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "ecs.lua=script+?",
