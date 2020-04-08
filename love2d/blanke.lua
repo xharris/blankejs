@@ -1166,7 +1166,6 @@ do
             self.vspeed = 0
             self.gravity = 0
             self.gravity_direction = 90
-            self.anim_speed = 1
 
             GameObject.init(self, args, spawn_args)
 
@@ -1191,7 +1190,6 @@ do
             end
             -- animation
             if args.animations then
-                local first_anim
                 if type(args.animations) == 'table' then
                     for _, anim_name in ipairs(args.animations) do 
                         if not args.animation then 
@@ -1199,25 +1197,22 @@ do
                         end
                         self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
                     end
-                    self:_updateSize(self.animList[args.animations[1]], true)
                 else  
                     if not args.animation then 
                         args.animation = args.animations 
                     end
                     self.animList[args.animations] = Image{file=args, animation=args.animations, skip_update=true}
-                    self:_updateSize(self.animList[args.animations], true)
-                end
-                if self.animList[args.animation] and (args.anim_frame or args.anim_speed or spawn_args.anim_frame or spawn_args.anim_speed) then 
-                    self.animList[args.animation].speed = spawn_args.anim_speed or args.anim_speed
-                    self.animList[args.animation].frame_index = spawn_args.anim_frame or args.anim_frame
-                end
-                self.animation = args.animation
+                end    
+                self.anim_speed = args.anim_speed or spawn_args.anim_speed or self.anim_speed
+                self.anim_frame = args.anim_frame or spawn_args.anim_frame or self.anim_frame
+                self.animation = args.animation or spawn_args.animation 
+                self:_updateSize(self.animList[self.animation], true)
             end
 
-            if not self.defaultCollRes then
-                self.defaultCollRes = 'cross'
+            if not self.reaction then
+                self.reaction = 'cross'
                 if args.animations or args.images then 
-                    self.defaultCollRes = 'slide'
+                    self.reaction = 'slide'
                 end
             end
 
@@ -1272,15 +1267,17 @@ do
         end;
         _updateSize = function(self,obj,skip_anim_check)
             if self.animation then
-                assert(skip_anim_check or self.animList[self.animation], self.classname.." missing animation '"..self.animation.."'")
-                self.animList[self.animation].speed = self.anim_speed
-                if self.anim_speed == 0 then 
-                    self.animList[self.animation].frame_index = self.anim_frame
-                    Net.sync(self, {'anim_speed','anim_frame'})
-                else 
-                    self.anim_frame = self.animList[self.animation].frame_index
+                local anim = self.animList[self.animation]
+                assert(skip_anim_check or anim, self.classname.." missing animation '"..self.animation.."'")
+                -- change animation values from here?
+                if self.anim_speed then 
+                    anim.speed = self.anim_speed
+                    Net.sync(self, {'anim_speed'})
                 end
-                Net.sync(self, {'anim_speed'})
+                if self.anim_frame then 
+                    anim.frame_index = self.anim_frame
+                    Net.sync(self, {'anim_frame'})
+                end
             end 
             if not self._preset_size then
                 self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
@@ -1358,8 +1355,8 @@ do
                 args.draw = nil
             end
             Game.addObject(name, "Entity", args, _Entity)
-            return function(...)
-                return Game.spawn(name, {...})
+            return function(args)
+                return Game.spawn(name, args)
             end
         end;
         addInitFn = function(fn)

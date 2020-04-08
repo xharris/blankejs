@@ -1,0 +1,39 @@
+{
+    "ico": "src\\logo.ico",
+    "icns": "src\\logo.icns",
+    "game_size": 3,
+    "window_size": 3,
+    "quick_access": [
+        [
+            "View assets=?",
+            "View assets"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
+        ]
+    ],
+    "autoplay_preview": true,
+    "write_conf": true,
+    "scene": {},
+    "export": {
+        "name": "dodgem",
+        "filter": "linear",
+        "vsync": "on",
+        "web_memory": 24,
+        "web_stack": 2,
+        "web_game_size": [
+            800,
+            600
+        ]
+    },
+    "enabled_plugins": {
+        "xhh-array": false,
+        "xhh-badword": false,
+        "xhh-effect": false,
+        "xhh-tween": false,
+        "xhh-vector": false,
+        "cmpl": false,
+        "yonaba-delaunay": false
+    }
+}
