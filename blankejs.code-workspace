@@ -11,6 +11,8 @@
 		}
 	],
 	"settings": {
-		"javascript.suggest.autoImports": false
+		"javascript.suggest.autoImports": false,
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true
 	}
 }

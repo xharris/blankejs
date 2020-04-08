@@ -1,4 +1,5 @@
 const elec = require('electron');
+const path = require('path')
 
 const WIN_WIDTH = 1000;
 const WIN_HEIGHT = 700;
@@ -32,8 +33,8 @@ elec.app.on('ready', function(){
     if (main_window.setWindowButtonVisibility)
         main_window.setWindowButtonVisibility(false);
     
-    //main_window.webContents.openDevTools();		
-    main_window.loadFile(`src/index.html`);
+    main_window.webContents.openDevTools();		
+    main_window.loadFile(path.join(__dirname,'src','index.html'));
     main_window.on('close', e => {
         main_window.webContents.send('close', e);
         e.preventDefault();
@@ -41,7 +42,6 @@ elec.app.on('ready', function(){
     
     main_window.webContents.on('new-window', function(e, url) {
         e.preventDefault();
-        console.log(url);
         if (url.length > 1)
             require('electron').shell.openExternal(url);
     });

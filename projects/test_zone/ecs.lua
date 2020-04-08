@@ -1,4 +1,4 @@
--- bHitbox.debug = true
+-- Hitbox.debug = true
 
 local map
 

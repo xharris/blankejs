@@ -6,24 +6,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "conf.lua=script+?",
-            "conf.lua"
-        ],
-        [
             "map0.map=map+?",
             "map0.map"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
-            "View project in explorer=?",
-            "View project in explorer"
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
+            "ecs.lua=script+?",
+            "ecs.lua"
+        ],
+        [
+            "Dev Tools=?",
+            "Dev Tools"
         ]
     ],
     "autoplay_preview": true,

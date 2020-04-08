@@ -31,8 +31,13 @@
     "export": {
         "name": "rando",
         "filter": "linear",
+        "vsync": "on",
         "web_memory": 24,
         "web_stack": 2,
+        "web_game_size": [
+            800,
+            600
+        ],
         "resizable": true,
         "scale": true
     },

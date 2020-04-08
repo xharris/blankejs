@@ -7,14 +7,23 @@
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
   "scripts": {
     "electron": "electron .",
+    "build": "electron-builder",
     "dist": "node package.js"
+  },
+  "build": {
+    "appId": "com.electron.blanke",
+    "win": {
+      "target": "portable",
+      "icon": "logo.ico"
+    },
+    "directories": {
+      "buildResources": "src"
+    }
   },
   "dependencies": {
     "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
     "del": "^5.0.0",
-    "electron": "^5.0.3",
-    "electron-packager": "^14.0.1",
     "fs-extra": "^5.0.0",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.15",
@@ -26,5 +35,9 @@
     "uglify-es": "^3.3.9",
     "walk": "^2.3.13"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "electron-packager": "^14.0.1",
+    "electron": "^5.0.3",
+    "electron-builder": "^22.4.1"
+  }
 }

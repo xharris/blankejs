@@ -1,8 +1,8 @@
 Map.config {
-    tile_hitbox = { 
-		ground='ground',
-		spike='death'
-	}
+--     tile_hitbox = { 
+-- 		ground='ground',
+-- 		spike='death'
+-- 	}
 }
 
 local map
@@ -19,6 +19,7 @@ Game {
     filter = 'nearest',
 	plugins = { 'xhh-effect', 'xhh-tween' },
 	background_color = "white",
+	effect = {"chroma shift"},
     load = function()
 		State.start('play')
 	end

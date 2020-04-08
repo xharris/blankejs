@@ -656,7 +656,7 @@ do
                 Game.options.load()
             end
             
-            love.graphics.setBackgroundColor(0,0,0,0)
+            love.graphics.setBackgroundColor(1,1,1,0)
 
             Blanke.game_canvas = Canvas()
             Blanke.game_canvas.__ide_obj = true
