@@ -1,5 +1,8 @@
 let paths = ["plugin", "engine", "themes"];
 let files = ["autocomplete", "js_engine", "background_image"];
+let can_be_empty_path = {
+  background_image: true,
+};
 
 class Settings extends Editor {
   constructor(...args) {
@@ -173,17 +176,20 @@ class Settings extends Editor {
     files.forEach(path => {
       this.el_settings.onChange(path, value => {
         try {
-          nwFS.statSync(value);
+          if (!can_be_empty_path[path]) nwFS.statSync(value);
         } catch (e) {
           return app.ideSetting(path + "_path");
         }
-        app.ideSetting(path + "_path", app.cleanPath(value));
+        app.ideSetting(
+          path + "_path",
+          can_be_empty_path[path] && value.length <= 1
+            ? value
+            : app.cleanPath(value)
+        );
 
         if (path == "autocomplete") app.watchAutocomplete();
         if (path == "background_image")
           app.setBackgroundImage(app.cleanPath(value));
-        app.saveAppData();
-
         app.saveAppData();
         if (path == "js_engine") app.watchJsEngine();
       });

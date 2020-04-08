@@ -476,6 +476,8 @@ var app = {
                 .extname(img_path)
                 .replace(/\./, "")};base64,${data.toString("base64")}`
             );
+        } else {
+          app.ideSetting("background_image_data", "");
         }
       })
       .then(() => {
@@ -484,6 +486,8 @@ var app = {
           app.getElement(
             "body > .bg-image"
           ).style.backgroundImage = `url(${bg_img_data})`;
+        } else {
+          app.getElement("body > .bg-image").style.backgroundImage = "";
         }
       });
   },
