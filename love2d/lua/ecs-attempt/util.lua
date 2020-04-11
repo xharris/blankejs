@@ -27,12 +27,25 @@ end
 
 --UTIL.table
 table.update = function (old_t, new_t, keys) 
+    if old_t == nil then old_t = {} end
     if keys == nil then
         for k, v in pairs(new_t) do 
             old_t[k] = v 
         end
     else
         for _,k in ipairs(keys) do if new_t[k] ~= nil then old_t[k] = new_t[k] end end
+    end
+    return old_t
+end
+-- recursive table.update
+table.update_more = function (old_t, new_t)
+    if old_t == nil then old_t = {} end
+    for k, v in pairs(new_t) do 
+        if type(v) == 'table' then 
+            old_t[k] = table.update_more(old_t[k], v)
+        else 
+            old_t[k] = v
+        end
     end
     return old_t
 end
@@ -134,7 +147,7 @@ function string:replace(find, replace, wholeword)
 end
 --math
 local sin, cos, rad, deg, abs = math.sin, math.cos, math.rad, math.deg, math.abs
-local floor = function(x) return math.floor(x+0.5) end
+floor = function(x) return math.floor(x+0.5) end
 Math = {}
 do
     for name, fn in pairs(math) do Math[name] = function(...) return fn(...) end end
@@ -526,46 +539,6 @@ do
     }
 end
 
---CANVASSTACK
-CanvasStack = nil
-do 
-    local stack = {} -- { }
-    CanvasStack = class{
-        getCanvas = function(self)
-            if not self.canvas then 
-                local found = false 
-                -- recycle a canvas
-                for c, canv in ipairs(stack) do 
-                    if not canv._used then 
-                        self.canvas = canv
-                        found = true
-                    end 
-                end 
-                -- add a new canvas
-                if not found then 
-                    self.canvas = Canvas()
-                    self.canvas:remDrawable()
-                    table.insert(stack, self.canvas)
-                end
-                self.canvas._used = true
-            end
-            return self.canvas
-        end,
-        drawTo = function(self, fn)
-            self.canvas:drawTo(fn)
-        end,
-        draw = function(self)   
-            if self.quad then self.canvas.quad = self.quad end  
-            self.canvas:draw()  
-        end,
-        release = function(self)
-            self.canvas._used = false
-            self.canvas:reset()
-            self.canvas = nil
-        end
-    }
-end
-
 --DRAW
 Draw = nil 
 do
@@ -757,8 +730,9 @@ do
     local pre_fs_size = {}
     local last_win_size = {0,0}
     local setMode = function(w,h,flags)
-        if not (not flags and last_win_size[1] == w and last_win_size[2] == h) then
+        if not (last_win_size[1] == w and last_win_size[2] == h) then
             love.window.setMode(w, h, flags or Game.options.window_flags)
+            last_win_size = {w, h}
         end
     end
     Window = {
@@ -801,7 +775,7 @@ do
             else 
                 res = love.window.setFullscreen(v,fs_type)
             end
-            Game.updateWinSize(unpack(pre_fs_size)) 
+            Blanke.resize(unpack(pre_fs_size)) 
             return res
         end;
         toggleFullscreen = function()
@@ -821,6 +795,7 @@ end
 
 --GAME
 Game = callable{
+    time = 0,
     options = {
         persistent =    true,
         res =           'assets',
@@ -830,15 +805,17 @@ Game = callable{
         auto_require =  true,
         background_color = 'black',
         window_flags = {},
-        load = function() end,
-        draw =          function() end,
+        load =          function() end,
+        draw =          function(fn) fn() end,
         postdraw =      nil,
-        update = function(dt) end,
-        canvas = { }
+        update = function(dt) end
     },
     __call = function(_, options)
         table.update(Game.options, options or {})
+        Game.options.canvas = Canvas
+        Game.options.canvas._game_canvas = true
         Game.options.persistent = true
+        
         World.add(Game.options)
 
         -- load config.json
@@ -857,7 +834,7 @@ Game = callable{
         }, Game.options.window_flags or {})
 
         Window.setSize(Game.config.window_size)
-        Game.updateWinSize()
+        Blanke.resize()
         -- vsync
         switch(Game.options.vsync, {
             on = function() Window.vsync(1) end,
@@ -882,7 +859,6 @@ Game = callable{
         if Game.options.auto_require then
             files = FS.ls ''
             for _,f in ipairs(files) do
-                print(f)
                 if FS.extname(f) == 'lua' and not table.hasValue(scripts, f) then
                     new_f = FS.removeExt(f)
                     table.insert(scripts, new_f)
@@ -901,15 +877,6 @@ Game = callable{
         })
 
         love.graphics.setBackgroundColor(0,0,0,0)
-    end,
-
-    updateWinSize = function(w,h)
-        Game.win_width, Game.win_height, flags = love.window.getMode()
-        if w and h then Game.win_width, Game.win_height = w, h end
-        if not Game.options.scale then
-            Game.width, Game.height = Game.win_width, Game.win_height
-            Game.options.canvas.size = {Game.width, Game.height}
-        end
     end,
     
     res = function(_type, file)

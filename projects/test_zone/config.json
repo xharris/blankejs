@@ -1,4 +1,5 @@
 {
+    "write_conf": false,
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "first_scene": null,
@@ -6,24 +7,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "ecs.lua=script+?",
-            "ecs.lua"
+            "Open .love file=?",
+            "Open .love file"
         ],
         [
-            "map0.map=map+?",
-            "map0.map"
+            "Enable/disable plugins=?",
+            "Enable/disable plugins"
+        ],
+        [
+            "Open image editor=?",
+            "Open image editor"
         ],
         [
             "conf.lua=script+?",
             "conf.lua"
         ],
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "Dev Tools=?",
-            "Dev Tools"
+            "ecs.lua=script+?",
+            "ecs.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -111,7 +112,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/blue_robot.png",
+            "image": "image/image1.png",
             "tool.shape": "rect",
             "tool.size": [
                 1,
@@ -120,7 +121,8 @@
             "tool.fill": true,
             "animSpeed": 0.1,
             "showPreview": false,
-            "onion_alpha": 0.5
+            "onion_alpha": 0.5,
+            "tool.alpha": 255
         },
         "image/image1.png": {
             "frame_size": [
@@ -133,7 +135,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "D:/Documents/PROJECTS/blankejs/projects/test_zone/assets/image/image2.png",
+            "image": "image/blue_robot.png",
             "tool.shape": "rect",
             "tool.fill": true,
             "tool.length": 1,
@@ -223,8 +225,8 @@
                 0
             ],
             "spacing": 0,
-            "onion_alpha": 0.3
+            "onion_alpha": 0.3,
+            "image": "image/blue_robot.png"
         }
-    },
-    "write_conf": true
+    }
 }

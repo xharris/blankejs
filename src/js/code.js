@@ -953,14 +953,17 @@ class Code extends Editor {
     });
     const img_asset_path = app.getAssetPath("image") + "/";
     const imagePathToKey = path => {
-      path = app.cleanPath(path).replace(img_asset_path, "").split(".");
+      path = app.cleanPath(path);
+      if (path) path = path.replace(img_asset_path, "").split(".");
+      else return;
       if (path.length > 1) return path.slice(0, -1).join(".");
       else return path[0];
     };
 
     const storeImageInfo = info => {
       let name = imagePathToKey(info.path || info.name);
-      Code.images[name] = Object.assign(Code.images[name] || {}, info);
+      if (name)
+        Code.images[name] = Object.assign(Code.images[name] || {}, info);
     };
 
     const storeSpriteInfo = (entity_name, img_name, cb) => {

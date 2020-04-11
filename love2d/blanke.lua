@@ -1,4 +1,4 @@
--- TODO Images have their own hit_area instead of entity. Entity just uses the current animations hit_area
+-- TODO Images have their own hitbox instead of entity. Entity just uses the current animations hitbox
 -- TODO Blanke.config
 math.randomseed(os.time())
 local do_profiling = false -- false/#
@@ -75,6 +75,7 @@ table.defaults = function (t,defaults)
         if t[k] == nil then t[k] = v 
         elseif type(v) == 'table' then table.defaults(t[k],defaults[k]) end
     end
+    return t
 end
 table.append = function (t, new_t) 
     for k,v in pairs(new_t) do
@@ -765,7 +766,7 @@ GameObject = class {
         spawn_args = spawn_args or {}
         self.uuid = uuid()
         self.x, self.y, self.z, self.angle, self.scalex, self.scaley, self.scale = 0, 0, 0, 0, 1, 1, 1
-        self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = spawn_args.width or args.width or 0, spawn_args.height or args.height or 0, 0, 0, 0, 0
+        self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = spawn_args.width or args.width or 1, spawn_args.height or args.height or 1, 0, 0, 0, 0
         self.align = nil
         self.blendmode = {'alpha'}
         self.visible = true
@@ -1033,6 +1034,7 @@ do
                     w=fw, h=fh, frame_size={fw,fh}, 
                     speed=o('speed') or 1
                 }
+                --print_r(animations)
             end
         end;
         init = function(self,args)
@@ -1056,7 +1058,6 @@ do
                 -- static image
                 args = {file=args}
             end
-
             self.image = getImage(args.file)
 
             self:updateSize()
@@ -1195,7 +1196,7 @@ do
                         if not args.animation then 
                             args.animation = anim_name 
                         end
-                        self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
+                        self.animList[anim_name] = Image{file=args.animation, animation=args.animation, skip_update=true}
                     end
                 else  
                     if not args.animation then 
@@ -1231,6 +1232,7 @@ do
             end
             -- hitbox
             if args.hitbox then
+                self.hitbox = args.hitbox
                 Hitbox.add(self)
             end
             -- net
@@ -1284,9 +1286,8 @@ do
             end
         end;
         _checkForAnimHitbox = function(self)
-            if self.animList[self.hit_area] or self.imageList[self.hit_area] then
-                local other_obj = self.animList[self.hit_area] or self.imageList[self.hit_area]
-                self.hit_area = nil
+            if self.animList[self.hitbox] or self.imageList[self.hitbox] then
+                local other_obj = self.animList[self.hitbox] or self.imageList[self.hitbox]
                 self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
                 Game.checkAlign(self)
                 return true
@@ -2277,7 +2278,7 @@ do
         end;
         addHitbox = function(self,tag,pts,color) 
             local new_hb = {
-                hit_area = pts,
+                hitbox = pts,
                 tag = tag,
                 hitboxColor = color
             }
@@ -2563,25 +2564,55 @@ do
             top =  obj.aligny + (obj.height/2)
         end
         
-        if not obj.hit_area then
-            obj.hit_area = {
+        local hb_var_type = type(obj.hitbox)
+        local hb_type, radius
+        -- figure out what type of hitbox this is
+        if hb_var_type == 'string' then 
+            hb_type = obj.hitbox
+        elseif hb_var_type == 'table' then 
+            hb_type = obj.hitbox.type or 'rect'
+            radius = obj.hitbox.radius
+        end
+        -- circle: get the radius
+        if hb_type == 'circle' and not radius then 
+            radius = Math.sqrt(Math.pow(obj.width,2)+Math.pow(obj.height,2))/2
+            left = obj.alignx - radius
+            top = obj.aligny - radius
+        end
+
+        if not hb_var_type ~= 'table' then
+            obj.hitbox = {
+                type = hb_type,
                 left = left,
                 top = top,
                 right = 0,
-                bottom = 0
+                bottom = 0,
+                radius = radius
             }
         end
-        table.defaults(obj.hit_area, {
+        table.defaults(obj.hitbox, {
+            type = hb_type,
             left = left,
             top = top,
             right = 0,
-            bottom = 0
+            bottom = 0,
+            radius = radius
         })
         if repos then 
             Hitbox.teleport(obj)
         end
-        return obj.hit_area
+        return obj.hitbox
     end
+    local checkCollision = function(obj1, obj2) 
+        --[[
+            0 - rect rect
+            1 - circle rect / rect circle
+            2 - circle circle
+        ]]
+        local coll_type = 0
+        -- if obj1.hitbox.type == 'rect' and obj1.hitbox.type == 'circle'
+    end
+
     local new_boxes = true
     local hb_items, hb_len
     Hitbox = {
@@ -2626,6 +2657,8 @@ do
             end
         end;
         move = function(obj)
+            local allow_collision = true
+
             if obj and not obj.destroyed and obj.hasHitbox then
                 local filter = function(item, other)
                     local ret = obj.default_reaction or Hitbox.default_reaction
@@ -2686,10 +2719,26 @@ do
                 end
                 for _,i in ipairs(hb_items) do
                     if i.hasHitbox and not i.destroyed then
+                        local x, y, w, h = world:getRect(i)
+                        local r = i.hitbox.radius
+                        local hb_type = i.hitbox.type
+
                         Draw.color(i.hitboxColor or {1,0,0,0.9})
-                        Draw.rect('line',world:getRect(i))
+
+                        if hb_type == 'rect' then 
+                            Draw.rect('line',world:getRect(i))
+                        elseif hb_type == 'circle' then
+                            local x, y, w, h = world:getRect(i)
+                            Draw.circle('line',x+(w/2),y+(h/2),r)
+                        end
+
                         Draw.color(i.hitboxColor or {1,0,0,0.25})
-                        Draw.rect('fill',world:getRect(i))
+
+                        if hb_type == 'rect' then 
+                            Draw.rect('fill',world:getRect(i))
+                        elseif hb_type == 'circle' then 
+                            Draw.circle('fill',x+(w/2),y+(h/2),r)
+                        end
                     end
                 end
                 Draw.color()
@@ -3263,7 +3312,7 @@ do
         config = {};
         game_canvas = nil;
         loaded = false;
-        scale = 1;
+        scale = { x=1, y=1 };
         padx = 0;
         pady = 0;
         load = function()
@@ -3309,34 +3358,7 @@ do
         end;
         --blanke.update
         update = function(dt)
-            mouse_x, mouse_y = love.mouse.getPosition()
-            if Game.options.scale == true then
-                local scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
-                Blanke.scale = math.min(scalex, scaley)
-                Blanke.padx, Blanke.pady = 0, 0
-                if scalex > scaley then
-                    Blanke.padx = floor((Game.win_width - (Game.width * Blanke.scale)) / 2)
-                else 
-                    Blanke.pady = floor((Game.win_height - (Game.height * Blanke.scale)) / 2)
-                end
-                -- offset mouse coordinates
-                mouse_x = floor((mouse_x - Blanke.padx) / Blanke.scale)
-                mouse_y = floor((mouse_y - Blanke.pady) / Blanke.scale)
-            end
-
-            Game.time = Game.time + dt
-            if Game.options.update(dt) == true then return end
-            Physics.update(dt)
-            Timer.update(dt)
-            Blanke.iterUpdate(Game.updatables, dt)
-            State.update(dt)
-            State._check()
-            Signal.emit('update',dt)
-            local key = Input.pressed('_fs_toggle') 
-            if key and key.count == 1 then
-                Window.toggleFullscreen()
-            end            
-            Input.keyCheck()
+            Game.update(dt)
         end; 
         --blanke.draw   
         draw = function()

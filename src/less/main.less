@@ -105,7 +105,7 @@ body > #header {
   background: rgba(57, 65, 78, 0.4);
   margin: @title-bar-margin;
   height: @title-bar-height;
-  border-radius: 2px;
+  border-radius: @title-bar-border-radius;
 
   > *,
   > * * {
@@ -117,7 +117,7 @@ body > #header {
     white-space: nowrap;
     background: rgba(57, 65, 78, 0.4);
     display: flex;
-    border-radius: @title-bar-border-radius;
+    border-radius: @title-bar-border-radius 0px 0px @title-bar-border-radius;
     transition: all ease-in-out 0.2s;
 
     * {
@@ -195,6 +195,7 @@ body > #header {
     flex-direction: row-reverse;
     background: rgba(57, 65, 78, 0.9);
     z-index: 1000;
+    border-radius: 0px @title-bar-border-radius @title-bar-border-radius 0px;
 
     button {
       .win-nodrag();

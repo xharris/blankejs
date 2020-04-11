@@ -1,10 +1,10 @@
 -- Hitbox.debug = true
 
 local map
+local heart_ecs
 
 State('ecs',{
 	enter = function()
-		print("hi")
 		Input({
 			right = { 'right', 'd' },
 			left = { 'left', 'a' },
@@ -13,6 +13,11 @@ State('ecs',{
 			action = { 'space' }
 		})
 		
+		for i = 1, 3 do -- 5000 do 
+			HeartSpawner()
+		end
+		
+		--[[
 		Camera("player_ecs")--, {zoom=2})
 		--Hitbox.debug = true
 		
@@ -20,40 +25,65 @@ State('ecs',{
 			tile_hitbox = { megman = 'ground' }	
 		}
 		map = Map.load('platformer.map')
+		]]
 	end,
 	update = function(dt)
-		print('going')
 		if Input.released('action') then 
-			map:destroy()
-			map = Map.load('platformer.map')
+-- 			destroy(map)
+-- 			map = Map.load('platformer.map')
 		end
+		if Input.pressed('action') then 
+			HeartSpawner()
+		end
+		-- print(System.stats())
+		-- print(Cache.stats())
 	end,
 	draw = function()
 		Draw{
 			{'color','white'},
-			{'line',-100,0,100,0},
-			{'line',0,-100,0,100}
+			{'line',Game.width/2,Game.height/2,mouse_x, mouse_y}
 		}
 	end
 })
 
-local heart_ecs = {
-	image = { 'image2.png', align='center' },
-	hitbox = true
+heart_ecs = {
+	type='heart_ecs',
+	image = { path='image2.png' },
+	align = 'center',
+	hitbox = true,
 }
 
-Map.entity.heart_ecs = heart_ecs
+HeartSpawner = System{
+	template=heart_ecs,
+	add = function(obj)
+		obj.pos = {
+			x = Math.random(0, Game.width),
+			y = Math.random(0, Game.height)
+		}
+		local scale = Math.random(0.5, 4.0)
+		obj.scale = {
+			x = scale,
+			y = scale
+		}
+	end,
+	update = function(obj, dt)
+		obj.angle = Math.sinusoidal(-45,45,5)
+		if Game.time > 1 then 
+			obj.image.path = 'blue_robot.png'
+		end
+	end
+}
 
 local player_ecs = {
-	animation = { 'blue_robot', align='center' },
+	animation = { 'blue_robot' },
+	align='center',
 	camera = { "player" },
-	platforming = { gravity=10 }
+	platforming = { gravity=10 },
 	hitbox = true
 }
 
-Map.entity.player_ecs = player_ecs
-
-
+--[[
+System({
 	hitbox = {
 		collision = function(self, v)
 			if v.normal.y < 0 then 
@@ -83,4 +113,4 @@ Map.entity.player_ecs = player_ecs
 			self.vspeed =  -250 
 		end
 	end
-})
+})]]

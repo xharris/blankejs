@@ -752,14 +752,14 @@ var app = {
           let eng_settings = {};
           (app.engine.project_settings || []).forEach(s => {
             for (let prop of s) {
-              if (typeof prop == "object" && prop.default)
+              if (typeof prop == "object" && prop.default != null)
                 eng_settings[s[0]] = prop.default;
             }
           });
           app.project_settings = Object.assign(
             {},
-            app.project_settings,
-            eng_settings
+            eng_settings,
+            app.project_settings
           );
           app.saveSettings();
           if (callback) callback();
@@ -927,14 +927,14 @@ var app = {
     return "other";
   },
   shortenAsset: function (path) {
-    if (!path) return;
+    if (!path || (path && path.search(/(^\w:)|(^\/\w+)/) == -1)) return path;
     path = app.cleanPath(path);
     return app
       .cleanPath(nwPATH.relative(app.project_path, path))
       .replace(/assets[/\\]/, "");
   },
   lengthenAsset: function (path) {
-    if (!path) return;
+    if (!path || (path && path.search(/(^\w:)|(^\/\w+)/) > -1)) return path;
     path = app.cleanPath(path);
     return nwPATH.resolve(nwPATH.join(app.project_path, "assets", path));
   },
@@ -1637,13 +1637,6 @@ app.window.webContents.once("dom-ready", () => {
   el_search_input.addEventListener("focus", function (e) {
     el_search_input.placeholder = "Search...";
   });
-
-  el_search_input.addEventListener("blur", function (e) {
-    e.target.value = "";
-    onSearchInput();
-    if (document.activeElement !== e.target)
-      el_search_input.placeholder = app.win_title;
-  });
   el_search_input.addEventListener("mouseleave", function (e) {
     if (document.activeElement !== e.target)
       el_search_input.placeholder = app.win_title;
@@ -1663,6 +1656,15 @@ app.window.webContents.once("dom-ready", () => {
 
   // prepare search box
   app.getElement("#search-input").addEventListener("input", onSearchInput);
+  app.getElement("#search-input").addEventListener("keydown", e => {
+    if (e && e.keyCode === 27) {
+      // esc
+      e.target.value = "";
+      onSearchInput();
+      if (document.activeElement !== e.target)
+        el_search_input.placeholder = app.win_title;
+    }
+  });
 
   function selectSearchResult(hash_val) {
     selected_index = -1;
@@ -1672,6 +1674,8 @@ app.window.webContents.once("dom-ready", () => {
   app.getElement("#search-results").addEventListener("click", function (e) {
     if (e.target && e.target.classList.contains("result")) {
       selectSearchResult(e.target.dataset.hashval);
+      el_search_input.value = "";
+      onSearchInput();
     }
   });
 
