@@ -13,104 +13,58 @@ State('ecs',{
 			action = { 'space' }
 		})
 		
-		for i = 1, 3 do -- 5000 do 
-			HeartSpawner()
+		for i = 1, 500 do -- 00 do 
+			Heart()
 		end
-		
-		--[[
-		Camera("player_ecs")--, {zoom=2})
-		--Hitbox.debug = true
-		
-		Map.config{
-			tile_hitbox = { megman = 'ground' }	
-		}
-		map = Map.load('platformer.map')
-		]]
-	end,
-	update = function(dt)
-		if Input.released('action') then 
--- 			destroy(map)
--- 			map = Map.load('platformer.map')
-		end
-		if Input.pressed('action') then 
-			HeartSpawner()
-		end
-		-- print(System.stats())
-		-- print(Cache.stats())
 	end,
 	draw = function()
 		Draw{
 			{'color','white'},
-			{'line',Game.width/2,Game.height/2,mouse_x, mouse_y}
+			{'line',Game.width/2,Game.height/2,mouse_x, mouse_y},
+			{'fontSize',40},
+			{'print',#World.get_type('heart_ecs'), 30, 30}
 		}
 	end
 })
 
-heart_ecs = {
-	type='heart_ecs',
-	image = { path='image2.png' },
+Heart = Entity("heart_ecs",{
+	image = {
+		path='image2.png', batch=false
+	},
 	align = 'center',
 	hitbox = true,
-}
-
-HeartSpawner = System{
-	template=heart_ecs,
+	--gravity = { v=5 },
+	effect = { 'static' },
 	add = function(obj)
 		obj.pos = {
 			x = Math.random(0, Game.width),
 			y = Math.random(0, Game.height)
 		}
+		obj.vel.x = Math.random(20,40)*table.random{-1,1}
 		local scale = Math.random(0.5, 4.0)
-		obj.scale = {
-			x = scale,
-			y = scale
-		}
+		obj.effect.vars.static.strength = { 20, 0 }
 	end,
 	update = function(obj, dt)
-		obj.angle = Math.sinusoidal(-45,45,5)
+		--obj.angle = Math.sinusoidal(-45,45,5)
 		if Game.time > 1 then 
 			obj.image.path = 'blue_robot.png'
 		end
+		if obj.pos.y > Game.height then 
+			obj.vel.y = -Math.max(obj.vel.y,Game.height*1.2)
+		end
+		if obj.pos.x > Game.width or obj.pos.x < 0 then 
+			obj.vel.x = -obj.vel.x
+		end 
+		obj.effect.enabled.static = obj.pos.x < Game.width /2
 	end
-}
+})
 
 local player_ecs = {
-	animation = { 'blue_robot' },
+	animation = { 
+		'blue_robot'
+	},
 	align='center',
 	camera = { "player" },
 	platforming = { gravity=10 },
 	hitbox = true
 }
-
---[[
-System({
-	hitbox = {
-		collision = function(self, v)
-			if v.normal.y < 0 then 
-				self.vspeed = 0
-			end
-			if v.normal.y > 0 then 
-				self.vspeed = -self.vspeed / 2
-			end
-		end
-	},
-	update = function(self, dt)		
-		local hspd = 80
-		local dx, dy = 0, 0
-		
-		-- horizontal
-		if Input.pressed('right') then 
-			dx = dx + hspd 
-			self.scalex = 1
-		end
-		if Input.pressed('left') then 
-			dx = dx - hspd 
-			self.scalex = -1
-		end
-		self.hspeed = dx
-		
-		if Input.released('up') then 
-			self.vspeed =  -250 
-		end
-	end
-})]]

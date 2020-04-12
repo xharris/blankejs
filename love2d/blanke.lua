@@ -1,7 +1,8 @@
 -- TODO Images have their own hitbox instead of entity. Entity just uses the current animations hitbox
 -- TODO Blanke.config
 math.randomseed(os.time())
-local do_profiling = false -- false/#
+local do_profiling = 20 -- false/#
+local profiling_color = {1,0,0,1}
 
 local bitop = require 'lua.bitop'
 local bit = bitop.bit
@@ -549,6 +550,7 @@ do
             auto_draw =     true,
             vsync =         1,
             window_flags = {},
+            fps =           60
         };
         config = {};
         updatables = {};
@@ -756,6 +758,37 @@ do
             --love.graphics.setBackgroundColor(Draw.parseColor(...))
             Game.options.background_color = {Draw.parseColor(...)}
         end;
+
+        update = function(dt)
+            mouse_x, mouse_y = love.mouse.getPosition()
+            if Game.options.scale == true then
+                local scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
+                Blanke.scale = math.min(scalex, scaley)
+                Blanke.padx, Blanke.pady = 0, 0
+                if scalex > scaley then
+                    Blanke.padx = floor((Game.win_width - (Game.width * Blanke.scale)) / 2)
+                else 
+                    Blanke.pady = floor((Game.win_height - (Game.height * Blanke.scale)) / 2)
+                end
+                -- offset mouse coordinates
+                mouse_x = floor((mouse_x - Blanke.padx) / Blanke.scale)
+                mouse_y = floor((mouse_y - Blanke.pady) / Blanke.scale)
+            end
+
+            Game.time = Game.time + dt
+            if Game.options.update(dt) == true then return end
+            Physics.update(dt)
+            Timer.update(dt)
+            Blanke.iterUpdate(Game.updatables, dt)
+            State.update(dt)
+            State._check()
+            Signal.emit('update',dt)
+            local key = Input.pressed('_fs_toggle') 
+            if key and key.count == 1 then
+                Window.toggleFullscreen()
+            end            
+            Input.keyCheck()
+        end
     }
 end
 
@@ -976,9 +1009,11 @@ do
     local animations = {}
     local info_cache = {}
     local getImage = function(name)
-        return Cache.get('Image', Game.res('image',name), function(key)
+        local new_img = Cache.get('Image', Game.res('image',name), function(key)
             return love.graphics.newImage(key)
         end)
+        assert(new_img, "Image not found:\'"..name.."\'")
+        return new_img
     end
     Image = GameObject:extend {
         info = function(name)
@@ -3312,7 +3347,7 @@ do
         config = {};
         game_canvas = nil;
         loaded = false;
-        scale = { x=1, y=1 };
+        scale = 1;
         padx = 0;
         pady = 0;
         load = function()
@@ -3440,34 +3475,41 @@ love.load = function()
 end
 love.frame = 0
 
+local update = function(dt)
+    if do_profiling then
+        love.frame = love.frame + 1
+        if love.frame > 60 then 
+            love.profiler.stop()
+            love.report = love.profiler.report(do_profiling)
+            print(love.report)
+        end
+    end
+
+    Blanke.update(dt)
+end
+
 do
     local dt = 0
-    local fixed_dt = 1/60
     local accumulator = 0
+    local fixed_dt
     love.update = function(dt) 
-        
-        accumulator = accumulator + dt
-        while accumulator >= fixed_dt do
-
-            if do_profiling then
-                love.frame = love.frame + 1
-                if love.frame > 60 and not love.report then 
-                    love.profiler.stop()
-                    love.report = love.profiler.report(do_profiling)
-                    print(love.report)
-                end
+        fixed_dt = Game.options.fps and 1/Game.options.fps or nil
+        if fixed_dt == nil then 
+            update(dt)
+        else 
+            accumulator = accumulator + dt
+            while accumulator >= fixed_dt do
+                update(fixed_dt)
+                accumulator = accumulator - fixed_dt
             end
-
-            Blanke.update(fixed_dt)
-            accumulator = accumulator - fixed_dt
         end
     end
 end
 love.draw = function() 
     Blanke.draw() 
     Draw.push()
-    Draw.color('black')
     if do_profiling then
+        love.graphics.setColor(unpack(profiling_color))
         love.graphics.print(love.report or "Please wait...")
     end
     Draw.pop()

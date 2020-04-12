@@ -26,29 +26,22 @@ local ge_version = function(major, minor, rev)
 end
 
 --UTIL.table
-table.update = function (old_t, new_t, keys) 
-    if old_t == nil then old_t = {} end
-    if keys == nil then
-        for k, v in pairs(new_t) do 
-            old_t[k] = v 
+-- recursive table update
+table.update = function (old_t, new_t)
+    local update_more
+    update_more = function(ot, nt)
+        for k, v in pairs(nt) do 
+            if type(v) == 'table' and type(ot[k]) == 'table' then 
+                ot[k] = update_more(ot[k], v)
+            else
+                ot[k] = v
+            end
         end
-    else
-        for _,k in ipairs(keys) do if new_t[k] ~= nil then old_t[k] = new_t[k] end end
+        return ot
     end
-    return old_t
+    return update_more(old_t, new_t)
 end
--- recursive table.update
-table.update_more = function (old_t, new_t)
-    if old_t == nil then old_t = {} end
-    for k, v in pairs(new_t) do 
-        if type(v) == 'table' then 
-            old_t[k] = table.update_more(old_t[k], v)
-        else 
-            old_t[k] = v
-        end
-    end
-    return old_t
-end
+
 table.keys = function (t) 
     ret = {}
     for k, v in pairs(t) do table.insert(ret,k) end
@@ -297,8 +290,9 @@ switch = function(val, choices)
     elseif choices.default then choices.default() end
 end
 -- for sorting a table of objects
-sort = function(t, key) 
+sort = function(t, key, default) 
     table.sort(t, function(a, b) 
+        --[[
         if a == nil and b == nil then
             return false
         end
@@ -307,11 +301,11 @@ sort = function(t, key)
         end
         if b == nil then
             return false
-        end
-        if not a[key] then a[key] = 0 end 
-        if not b[key] then b[key] = 0 end
+        end]]
+        if a[key] == nil then a[key] = default end 
+        if b[key] == nil then b[key] = default end
         a['_last_'..key] = a[key]
-        b['_last_'..key] = b[key]
+        b['_last_'..key] = b[key] 
         return a[key] < b[key]
     end)
 end
@@ -385,6 +379,30 @@ do
         end
         lua_print(str)
     end
+end
+
+--FEATURE
+Feature = {}
+do
+    local disabled = {}
+    Feature = callable {
+        -- returns true if feature is enabled
+        __call = function(name)
+            return not disabled[name]
+        end,
+        disable = function(...)
+            local flist = {...}
+            for _, f in ipairs(flist) do 
+                disabled[f] = true 
+            end
+        end,
+        enable = function(...)
+            local flist = {...}
+            for _, f in ipairs(flist) do 
+                disabled[f] = false 
+            end
+        end
+    }
 end
 
 --CACHE
@@ -564,14 +582,15 @@ do
     end  
     local DEF_FONT = "04B_03.ttf"
     local last_font
-    Draw = class {
+    Draw = callable {
         crop_used = false;
-        init = function(self, instructions)
+        __call = function(_, instructions)
             for _,instr in ipairs(instructions) do
                 name, args = instr[1], table.slice(instr,2)
                 assert(Draw[name], "bad draw instruction '"..name.."'")
                 Draw[name](unpack(args))
             end
+            return Draw
         end;
         setFont = function(path, size)
             path = path or last_font or DEF_FONT
@@ -723,6 +742,16 @@ Color = {
     black =      {0,0,0},
     black2 =     {33,33,33}
 }
+Color.random = function(any, a)
+    if any then 
+        return {Math.random(0,100)/100,Math.random(0,100)/100,Math.random(0,100)/100, a or Math.random(0,100)/100}
+    end 
+    local rand = table.random(table.keys(Color))
+    while type(Color[rand]) == 'function' do 
+        rand = table.random(table.keys(Color)) 
+    end
+    return {Color[rand][1], Color[rand][2], Color[rand][3], a or Math.random(0,100)/100}
+end
 
 --WINDOW
 Window = {}
@@ -793,11 +822,11 @@ do
     }
 end
 
---GAME
+--GAME, note: Game should only hold configuration stuff (with some expections)
 Game = callable{
     time = 0,
+    love_version = {0,0,0},
     options = {
-        persistent =    true,
         res =           'assets',
         scripts =       {},
         filter =        'linear',
@@ -808,16 +837,16 @@ Game = callable{
         load =          function() end,
         draw =          function(fn) fn() end,
         postdraw =      nil,
-        update = function(dt) end
+        update = function(dt) end,
+        fps =           60,
     },
     __call = function(_, options)
         table.update(Game.options, options or {})
-        Game.options.canvas = Canvas
-        Game.options.canvas._game_canvas = true
-        Game.options.persistent = true
-        
-        World.add(Game.options)
-
+        Game.canvas = Canvas{
+            type=Canvas.type,
+            auto_draw=false,
+            persistent=true 
+        }        
         -- load config.json
         config_data = love.filesystem.read('config.json')
         if config_data then Game.config = json.decode(config_data) end
@@ -826,14 +855,22 @@ Game = callable{
         Window.os = ({ ["OS X"]="mac", ["Windows"]="win", ["Linux"]="linux", ["Android"]="android", ["iOS"]="ios" })[love.system.getOS()]-- Game.options.os or 'ide'
         Window.full_os = love.system.getOS()
         -- load settings
-        Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
+        if Window.os ~= 'web' then
+            Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
+        end
+        -- disable effects for web (SharedArrayBuffer or whatever)
+        if Window.os == 'web' then
+            Feature.disable('effect')
+        end 
         -- window size and flags
         Game.options.window_flags = table.update({
             borderless = Game.options.frameless,
             resizable = Game.options.resizable,
         }, Game.options.window_flags or {})
 
-        Window.setSize(Game.config.window_size)
+        if Window.os ~= 'web' then
+            Window.setSize(Game.config.window_size)
+        end
         Blanke.resize()
         -- vsync
         switch(Game.options.vsync, {

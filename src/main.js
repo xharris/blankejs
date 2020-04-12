@@ -867,22 +867,14 @@ var app = {
 
   // determine an assets type based on file extension
   // returns: image, audio, other
+  // prettier-ignore
   allowed_extensions: {
-    image: ["png", "jpg", "jpeg"],
-    audio: ["mp3", "ogg", "wav"],
-    font: [
-      "ttf",
-      "ttc",
-      "cff",
-      "woff",
-      "otf",
-      "otc",
-      "pfa",
-      "pfb",
-      "fnt",
-      "bdf",
-      "pfr",
-    ],
+    image: ["bmp","cut","dcx","dcm","dds","exr","fits","fit","ftx","hdr","icns","ico","cur","iff",
+            "iwi","gif","jpg","jpe","jpeg","jp2","lbm","lif","mdl","pal","pcd","pcx","pic","png",
+            "pbm","pgm","pnm","pix","psd","psp","pxr","rot","sgi","bw","rgb","rgba","texture","tga",
+            "tif","tpl","utx","wal","vtf","wdp","hdp","xpm"],
+    audio: ["mp3", "ogg", "wav", "oga", "ogv"],
+    font: ["ttf","ttc","cff","woff","otf","otc","pfa","pfb","fnt","bdf","pfr"],
     script: ["lua"],
     map: ["map"],
     love: ["love"],

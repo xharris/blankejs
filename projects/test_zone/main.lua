@@ -1,7 +1,8 @@
 Game {
 	-- plugins = { 'xhh-array', 'xhh-badword', 'xhh-vector', 'xhh-effect' },
+	plugins = {'xhh-effect'},
 	auto_require = false,
-	scripts = { 'ecs' },
+	scripts = { 'ecs' },-- 'bunnymark' },
 	load = function() 
 		--[[
 		Image.animation(
@@ -13,6 +14,6 @@ Game {
 		State.start('ecs')
 	end,
 	update = function(dt)
-		-- Cache.stats()
+		-- print(System.stats())
 	end
 }

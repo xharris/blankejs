@@ -15,8 +15,11 @@ Blanke = {
             love.profiler.start()
         end 
         Game.options.load()
+        Game.love_version = {love.getVersion()}
+        World.draw_modifier = function(obj, fn)
+            Effect.apply(obj, fn)
+        end
         World.update(0)
-        -- print_r(Game.options)
         Window.setSize()
     end,
     update = function(dt)   
@@ -39,9 +42,7 @@ Blanke = {
             }
         end
 
-        accumulator = accumulator + dt
-        while accumulator >= fixed_dt do
-
+        local update = function(_dt)
             if do_profiling then
                 love.frame = love.frame + 1
                 if love.frame > 60 and not love.report then 
@@ -50,13 +51,26 @@ Blanke = {
                     print(love.report)
                 end
             end
-            World.update(dt)
-            
-            accumulator = accumulator - fixed_dt
+            World.update(_dt)
+
+            Game.time = Game.time + _dt
+            if Game.options.update(_dt) == true then return end
         end
 
-        Game.time = Game.time + dt
-        if Game.options.update(dt) == true then return end
+        if Game.options.fps then 
+            fixed_dt = 1/Game.options.fps
+        else 
+            fixed_dt = nil
+        end
+        if fixed_dt ~= nil then
+            accumulator = accumulator + dt
+            while accumulator >= fixed_dt do
+                update(fixed_dt)
+                accumulator = accumulator - fixed_dt
+            end
+        else 
+            update(dt)
+        end
 
         -- Physics.update(dt)
         -- Timer.update(dt)
@@ -75,7 +89,7 @@ Blanke = {
         if w and h then Game.win_width, Game.win_height = w, h end
         if not Game.options.scale then
             Game.width, Game.height = Game.win_width, Game.win_height
-            Game.options.canvas.size = {Game.width, Game.height}
+            Game.canvas.size = {Game.width, Game.height}
         end
     end,
     keypressed = function(key, scancode, isrepeat)

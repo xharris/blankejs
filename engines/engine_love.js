@@ -3,6 +3,19 @@ const nwZIP = require("archiver"); // used for zipping
 
 const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g;
 
+const requireConf = () => {
+  const type = app.projSetting("engine_type");
+  switch (type) {
+    case "oop":
+      return `require "blanke"`;
+
+    case "ecs":
+      return `require "lua.ecs"
+      Game.options.auto_require = false
+      `;
+  }
+};
+
 const generalConf = () => `
     t.window.title = "${app.exportSetting("name")}"
     -- t.gammacorrect = nil
@@ -23,7 +36,7 @@ package.path = package.path .. ";${[
       ]
         .map(p => app.ideSetting("engine_path") + p)
         .join(";")}"
-require "blanke"
+${requireConf()}
 function love.conf(t)
     t.console = true
     ${generalConf()}
@@ -37,7 +50,7 @@ const exportConf = os => {
   let resolution = getGameSize(os);
   return app.projSetting("write_conf")
     ? `
-require "blanke"
+${requireConf()}
 ${os == "web" ? 'Window.os = "web"' : ""}
 function love.conf(t)
     ${
@@ -86,6 +99,7 @@ module.exports.engine = {
       "checkbox",
       { default: true, label: "auto-generate conf.lua" },
     ],
+    ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
   ],
   export_settings: [
     ["window/rendering"],
@@ -221,11 +235,21 @@ module.exports.engine = {
 
     let str_conf = exportConf(target_os);
     if (str_conf) archive.append(str_conf, { name: "conf.lua" });
+
     archive.glob("**/*", {
       cwd: app.project_path,
       ignore: ["*.css", "dist", "dist/**/*", ...(str_conf ? ["conf.lua"] : [])],
     });
-    archive.glob("**/*.lua", { cwd: nwPATH.join(engine_path) });
+
+    const engine_ignore = [];
+    const eng_type = app.projSetting("engine_type");
+    if (eng_type === "oop") engine_ignore.push("lua/ecs", "lua/ecs/**/*");
+    if (eng_type === "ecs") engine_ignore.push("blanke.lua");
+
+    archive.glob("**/*.lua", {
+      cwd: nwPATH.join(engine_path),
+      ignore: engine_ignore,
+    });
     archive.finalize();
   },
   extra_bundle_assets: {

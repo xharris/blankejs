@@ -1,11 +1,13 @@
 -- @global
 NO_STATE = '_'
 
-local iterate, sortEntities
+local iterate
+local all_entities = {}
 -- sys vars
 local systems, system_ids
-local system_effect
+local system_effect, system_entity
 local sys_add
+local system_callback_count
 -- component vars
 local component_defaults
 local component_type
@@ -14,9 +16,10 @@ local entity_defaults, entity_functions
 -- world vars
 local sys_callback
 local state_callback, check_obj_state
-local all_entities, entity_sys_count, entity_state, last_world_state, world_state
+local stray_entities, entity_sys_count, entity_state, last_world_state, world_state
 local process_system
 local world_add
+local type_list, type_add, type_remove
 -- state vars
 local states
 -- track vars
@@ -26,42 +29,55 @@ local reset_tracks
 iterate = function(t, fn) -- fn(): return true to remove an object
     local len = #t
     local offset = 0
-    local resort = false
-    for o, obj in ipairs(t) do
+    for o = 1, len do
         local obj = t[o]
+        if obj then 
+            if fn(obj, o) == true then
+                offset = offset + 1 
+            else 
+                t[o] = nil
+                t[o - offset] = obj
+            end
+        end
+    end
+end
+
+iterate_entities = function(t, fn) -- fn(): return true to remove an object
+    local len = #t
+    local offset = 0
+    local resort = false
+    for o, uuid in ipairs(t) do
+        local uuid = t[o]
+        local obj = all_entities[uuid]
         if obj then 
             if obj.destroyed then 
                 offset = offset + 1
+                type_remove(obj)
             else
                 if fn(obj, o) == true then
                     offset = offset + 1 
                 else 
                     t[o] = nil
-                    t[o - offset] = obj
+                    t[o - offset] = obj.uuid
+                    if obj.z == nil then obj.z = 0 end
                     -- sort later?
-                    if obj.z then 
-                        if obj.z then obj.z = floor(obj.z) end
-                    end
-                    if not obj._last_z or obj._last_z ~= obj.z then
+                    if obj._last_z ~= obj.z then
                         resort = true
+                        obj._last_z = obj.z
                     end
                 end
             end
         end
     end
-    if resort then 
-        sortEntities(t)
-    end
+    return resort
 end
 
-sortEntities = function(t)
-    sort(t, 'z')
-end
-
-systems = {} -- { sys_id: { entity:{ uuid }, entity:{ uuid:t/nil/'new' }, component:{ name }, callback:{ name:fn}, prop:{ k:v } } }
+systems = {} -- { sys_id: { entity:{ uuid }, component:{ name }, callback:{ name:fn }, prop:{ k:v } } }
 system_ids = {} -- { sys_id1, sys_id2 }
-system_entity = {} -- { sys_id: { ent_uuid:t/f } }
+system_entity = {} -- { sys_id: { ent_uuid:t/nil/'new' } }
 system_type = {} -- { sys_id: type_str }
+system_callback_count = {} -- { callback_name: # }
+callback_entity_count = {} -- { callback_name: # }
 
 -- @global
 destroy = function(obj)
@@ -75,17 +91,24 @@ destroy = function(obj)
     end
 end
 
-sys_add = function(sys_ref, obj)
-    if not sys_ref.entity[obj.uuid] then 
+sys_add = function(sys_id, obj)
+    local sys_ref = systems[sys_id]
+    if not system_entity[sys_id] then system_entity[sys_id] = {} end 
+    
+    if not system_entity[sys_id][obj.uuid] then 
         entity_sys_count[obj.uuid] = entity_sys_count[obj.uuid] + 1
-        sys_ref.entity[obj.uuid] = 'new'
-        table.insert(sys_ref.entity, obj)
+        system_entity[sys_id][obj.uuid] = 'new'
+        table.insert(sys_ref.entity, obj.uuid)
     end
     -- obj was recently added
-    if sys_ref.entity[obj.uuid] == 'new' then
+    if system_entity[sys_id][obj.uuid] == 'new' then
+        for cb_name, _ in pairs(sys_ref.callback) do 
+            if not callback_entity_count[cb_name] then callback_entity_count[cb_name] = 1 else 
+            callback_entity_count[cb_name] = callback_entity_count[cb_name] + 1 end
+        end
+
         sys_callback(sys_ref, 'add', obj)
-        obj_callback('spawn', obj)
-        sys_ref.entity[obj.uuid] = true
+        system_entity[sys_id][obj.uuid] = true
     end
 end
 
@@ -99,7 +122,7 @@ System = callable {
             args.type = args.template.type
         end
 
-        systems[sys_id] = { entity={}, entity={}, type=(args.type or nil), component={}, callback={}, prop={ index=1 } }
+        systems[sys_id] = { uuid=sys_id, entity={}, type=(args.type or nil), component={}, callback={}, prop={ index=1 } }
         table.insert(system_ids, sys_id)
 
         local sys_ref = systems[sys_id]
@@ -112,6 +135,11 @@ System = callable {
             if type(v) == 'function' then
                 -- store callback
                 sys_ref.callback[name] = v
+                if not system_callback_count[name] then 
+                    system_callback_count[name] = 1 
+                else 
+                    system_callback_count[name] = system_callback_count[name] + 1
+                end
             else 
                 -- store system property
                 sys_ref.prop[name] = v
@@ -137,33 +165,41 @@ System = callable {
             sys_ref = systems[sys_id]
             if obj.type and obj.type == system_type[sys_id] then 
                 -- this system handles entities of this type
-                sys_add(sys_ref, obj)
+                sys_add(sys_id, obj)
+                found_a_system = true
             end
             for _, component in ipairs(sys_ref.component) do 
                 if obj[component] ~= nil then 
                     -- this system handles entities with this component
-                    sys_add(sys_ref, obj)
+                    sys_add(sys_id, obj)
                     found_a_system = true
                 end
             end
         end
         return found_a_system
     end,
-    remove = function(obj, sys_ref)
-        if not sys_ref then
+    remove = function(obj, sys_id)
+        if not sys_id then
             -- remove object from all systems
             for _, sys_id in ipairs(system_ids) do 
-                System.remove(obj, systems[sys_id])
+                System.remove(obj, sys_id)
             end
         else
+            local sys_ref = systems[sys_id]
             -- remove object from one system
-            if sys_ref.entity[obj.uuid] then 
-                obj_callback(sys_ref, 'destroy', obj)
+            if system_entity[sys_id][obj.uuid] then 
                 sys_callback(sys_ref, 'remove', obj)                        
                 entity_sys_count[obj.uuid] = entity_sys_count[obj.uuid] - 1
+                system_entity[sys_id][obj.uuid] = nil
                 if entity_sys_count[obj.uuid] == 0 then 
                     -- entity is no longer part of any system
-                    table.insert(all_entities, obj)
+                    table.insert(stray_entities, obj.uuid)
+                end
+            end
+            
+            for cb_name, _ in pairs(sys_ref.callback) do  
+                if callback_entity_count[name] then
+                        callback_entity_count[cb_name] = callback_entity_count[cb_name] - 1 
                 end
             end
         end
@@ -171,16 +207,29 @@ System = callable {
     -- is the object in at least one system
     contains = function(obj)
         for _, sys_id in ipairs(system_ids) do
-            if systems[sys_id].entity[obj.uuid] then 
+            if systems_entity[sys_id] and systems_entity[sys_id][obj.uuid] then 
                 return true
             end
         end 
     end,
-    stats = function()
+    callback_count = function(name)
+        return system_callback_count[name] or 0
+    end,
+    callback_entity_count = function(name)
+        return callback_entity_count[name] or 0
+    end,
+    stats = function(_type)
         local stats = {} 
-        for _, sys_id in ipairs(system_ids) do 
-            local sys_ref = systems[sys_id]
-            table.insert(stats, (system_type[sys_id] or table.join(sys_ref.component, '-')) .. '=' .. #sys_ref.entity)
+        if _type == 'callback' then 
+            for name, count in pairs(callback_entity_count) do 
+                table.insert(stats, name..'='..count)
+            end
+        else 
+            for _, sys_id in ipairs(system_ids) do 
+                local sys_ref = systems[sys_id]
+                table.insert(stats, (system_type[sys_id] or table.join(sys_ref.component, '-')) .. '=' .. #sys_ref.entity)
+            end
+            table.insert(stats, ('none=' .. #stray_entities))
         end
         return table.join(stats, ', ') 
     end
@@ -189,7 +238,7 @@ System = callable {
 -- register defaults for a component
 component_defaults = {} -- { name={ prop=value } }
 component_type = {} -- { name=type(prop) }
--- @global
+--COMPONENT @global
 Component = callable{
     __call = function(_, name, props)
         if type(name) == "table" then 
@@ -203,7 +252,7 @@ Component = callable{
             component_defaults[name] = copy(props)
             component_type[name] = comp_type
             -- add just the keys
-            if comp_type == "table" then 
+            if comp_type == "table" and props[1] == nil then 
                 for k, _ in pairs(props) do 
                     table.insert(component_defaults[name], k)
                 end
@@ -242,6 +291,9 @@ extract = function(obj, comp_name, defaults, override)
     end
     -- iterate keys 
     if type(default) == 'table' then 
+        if type(obj[comp_name]) ~= 'table' then 
+            obj[comp_name] = {}
+        end
         if override then 
             table.update(obj[comp_name], default)
         else
@@ -258,9 +310,13 @@ tracks_changed = {} -- { table_ref={ var=new_value } }
 
 -- call track(obj, 'myvar') after it's been set
 --@global
-track = function(obj, comp_name) 
+--local i = 0
+track = function(obj, comp_name)
+    assert(obj, "track(): Object is nil") 
     if not entity_track[obj] then entity_track[obj] = {} end 
     entity_track[obj][comp_name] = obj[comp_name]
+    --i = i + 1
+    --print(i)
 end
 
 -- changed(obj, 'myvar') will return true/false if myvar has changed since the last track()/changed()
@@ -281,7 +337,7 @@ changed = function(obj, comp_name)
 end
 
 reset_tracks = function()
-    table.update_more(entity_track, tracks_changed)
+    table.update(entity_track, tracks_changed)
     tracks_changed = {}
 end
 
@@ -310,11 +366,6 @@ Entity = callable{
 }
 ]]
 
--- @global
-obj_callback = function(obj, name, ...)
-    if obj[name] then obj[name](...) end
-end
-
 sys_callback = function(sys_ref, name, obj, ...)
     if sys_ref.callback[name] then 
         return sys_ref.callback[name](obj, ...)
@@ -339,21 +390,30 @@ process_system = function(sys_id, cb_name, args, wrapper_fn)
     local sys_ref = systems[sys_id]
     if sys_ref.callback[cb_name] then
         -- iterate entities
-        iterate(sys_ref.entity, function(obj)
+        local resort = iterate_entities(sys_ref.entity, function(obj)
             local rem 
-            if wrapper_fn then 
-                wrapper_fn(obj, function() 
+            if check_obj_state(obj) then
+                if wrapper_fn then 
+                    wrapper_fn(obj, function() 
+                        rem = sys_callback(sys_ref, cb_name, obj, unpack(args))
+                    end)
+                else
                     rem = sys_callback(sys_ref, cb_name, obj, unpack(args))
-                end)
-            else
-                rem = sys_callback(sys_ref, cb_name, obj, unpack(args))
-            end
-            if rem then 
-                -- remove the obj from the system
-                System.remove(obj, sys_ref)
+                end
+                if rem then 
+                    -- remove the obj from the system
+                    System.remove(obj, sys_id)
+                end
+            else 
+                rem = true 
             end
             return rem
         end)
+        if resort then
+            table.sort(sys_ref.entity, function(a, b)
+                return all_entities[a].z < all_entities[b].z
+            end)
+        end
     end
 end
 
@@ -366,23 +426,42 @@ Spawner = callable{
         return callable{
             is_spawner=true,
             type=sys_type,
-            template=template,
+            template=copy(template),
             __call = function(self, args)
                 local new_entity = copy(self.template)
                 if args and type(args) == 'table' then 
                     table.update(new_entity, args)
                 end
                 return World.add(new_entity)
+            end,
+            bind = function(self, new_template)
+                return Spawner(self.type, new_template)
             end
         }
     end
 }
 
-all_entities = {} -- {}
+stray_entities = {} -- {}
 entity_sys_count = {} -- { uuid:# } (how many systems an entity belongs to)
 entity_state = {} -- { uuid:state_name/nil } (what state the entity started in)
 last_world_state = NO_STATE
 world_state = NO_STATE
+type_list = {} -- { type:{ entities... } }
+
+type_add = function(obj)
+    if obj.type ~= nil then 
+        if not type_list[obj.type] then type_list[obj.type] = {} end 
+        table.insert(type_list[obj.type], obj.uuid)
+    end
+end
+
+type_remove = function(obj)
+    if obj.type ~= nil and type_list[obj.type] ~= nil then 
+        iterate(type_list[obj.type], function(_uuid)
+            if _uuid == obj.uuid then return true end
+        end)
+    end
+end
 
 --WORLD @global
 World = {
@@ -398,7 +477,9 @@ World = {
         entity_state[obj.uuid] = world_state
         entity_sys_count[obj.uuid] = 0  
 
-        table.insert(all_entities, obj)
+        all_entities[obj.uuid] = obj
+        table.insert(stray_entities, obj.uuid)
+        type_add(obj)
 
         -- spawn any children?
         local children
@@ -415,21 +496,26 @@ World = {
             end
         end
         obj._children = children
+        
         return obj
     end,
     remove = function(obj)
         System.remove(obj)
         entity_state[obj.uuid] = nil
+        all_entities[obj.uuid] = nil
+    end,
+    get_type = function(_type)
+        return type_list[_type] or {}
     end,
     update = function(dt)
         -- see if any system can use a stray entity
-        iterate(all_entities, function(obj)
+        iterate_entities(stray_entities, function(obj)
             if check_obj_state(obj) then
                 return System.add(obj)
-            else 
-                return true
             end
         end)
+        stray_entities = {}
+        
         -- changing state
         if world_state ~= last_world_state then
             state_callback('enter')
@@ -457,13 +543,8 @@ World = {
     draw = function()    
         Draw.origin()
         local draw_world = function()
-            World.process('predraw')
-            
-            World.process('draw') -- , nil, Effect.process)
-            
-            World.process('postdraw')
+            World.process('draw', nil, World.draw_modifier)            
             state_callback('draw',dt)
-            if Game.options.postdraw then Game.options.postdraw() end
             -- Physics.drawDebug()
             -- Hitbox.draw()
         end
@@ -492,10 +573,10 @@ World = {
             end)
         end
     
-        local game_canvas = Game.options.canvas
+        local game_canvas = Game.canvas
         game_canvas:drawTo(draw_game)
         if Game.options.scale == true then
-            game_canvas.pos.x, game_canvas.pos.y = Game.padx, Game.pady
+            game_canvas.pos.x, game_canvas.pos.y = Blanke.padx, Blanke.pady
             game_canvas.scale = Blanke.scale
         end
         game_canvas:draw()
@@ -544,7 +625,7 @@ do
         for name, list in pairs(storage) do 
             str = str .. name .. '=' .. table.len(list) .. ' '
         end
-        print(str)
+        return str
     end
 end
 
@@ -559,6 +640,7 @@ Stack = class{
         local found = false
         for _, s in ipairs(self.stack) do 
             if not s.used then 
+                found = true
                 s.used = true 
                 if remake then 
                     s.value = self.fn_new(obj)
@@ -572,10 +654,7 @@ Stack = class{
                 uuid=new_uuid,
                 used=true,
                 value=self.fn_new(obj),
-                is_stack=true,
-                release=function()
-                    self:release(new_uuid)
-                end
+                is_stack=true
             }
             table.insert(self.stack, new_stack_obj)
             return new_stack_obj

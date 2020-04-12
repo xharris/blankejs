@@ -14,36 +14,42 @@ Component{
     scale           = { x = 1, y = 1 },
     offset          = { x = 0, y = 0 },
     shear           = { x = 0, y = 0 },
-    align           = false
+    align           = false,
+    blendmode       = { 'alpha' }
 }
 
 EcsUtil = {
     extract_draw_components = function(obj, override)
         override = override or {}
-        local comps = {'quad','pos','angle','size','scale','offset','shear'}
+        local comps = {'quad','pos','angle','size','scale','offset','shear','blendmode'}
         for _, comp_name in ipairs(comps) do 
-            obj[comp_name] = extract(obj, comp_name, override[comp_name], true)
+            extract(obj, comp_name, override[comp_name], true)
         end
     end,
-    draw_object = function(obj)
-        local object = (obj.object and obj.object.is_stack) and obj.object.value or obj.object
+    draw_object = function(obj, prop_obj)
+        local object = obj.object 
+        if object and object.is_stack then 
+            object = object.value
+        end
         if object then 
-            love.graphics.draw(object, EcsUtil.get_draw_components(obj))
+            local main_obj = prop_obj ~= nil and prop_obj or obj
+            Draw.setBlendMode(unpack(main_obj.blendmode))
+            love.graphics.draw(object, EcsUtil.get_draw_components(main_obj))
         end
     end,
     get_draw_components = function(obj)
         if obj.quad then 
             return obj.quad or nil, 
-            obj.pos.x, obj.pos.y,
+            floor(obj.pos.x), floor(obj.pos.y),
             Math.rad(obj.angle),
             obj.scale.x, obj.scale.y,
-            obj.offset.x, obj.offset.y,
+            floor(obj.offset.x), floor(obj.offset.y),
             obj.shear.x, obj.shear.y
         else 
-            return obj.pos.x, obj.pos.y,
+            return floor(obj.pos.x), floor(obj.pos.y),
             Math.rad(obj.angle),
             obj.scale.x, obj.scale.y,
-            obj.offset.x, obj.offset.y,
+            floor(obj.offset.x), floor(obj.offset.y),
             obj.shear.x, obj.shear.y
         end
     end
@@ -52,16 +58,24 @@ EcsUtil = {
 --CANVAS
 require(_NAME..".canvas")
 require(_NAME..".image")
--- require(_NAME..".effect")
--- require(_NAME..".platforming")
+require(_NAME..".entity")
+require(_NAME..".effect")
+require(_NAME..".movement")
+-- animation
+-- camera
+-- audio?
+-- map
+-- physics
+-- hitbox
+-- net
 
 
 local calc_align = function(obj)
     local align = obj.align 
     local ax, ay = 0, 0
     if align then
-        obj.size = extract(obj, 'size')
-        obj.offset = extract(obj, 'offset')
+        extract(obj, 'size')
+        extract(obj, 'offset')
 
         if string.contains(align, 'center') then
             ax = obj.size.width/2 
@@ -82,6 +96,7 @@ local calc_align = function(obj)
         obj.offset = { x=floor(ax), y=floor(ay) }
     end
 end
+
 System{
     'align',
     add = function(obj)
@@ -105,17 +120,9 @@ System{
     end
 }
 
---DRAWING
 System{
-    'predraw',
-    predraw = function(obj)
-        if obj.predraw then obj:predraw() end
-    end
-}
-
-System{
-    'postdraw',
-    postdraw = function(obj)
-        if obj.postdraw then obj:postdraw() end
+    'draw',
+    draw = function(obj)
+        obj:draw()
     end
 }

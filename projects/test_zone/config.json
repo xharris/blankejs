@@ -1,5 +1,6 @@
 {
-    "write_conf": false,
+    "write_conf": true,
+    "engine_type": "ecs",
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "first_scene": null,
@@ -7,24 +8,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Open .love file=?",
-            "Open .love file"
+            "platformer.lua=script+?",
+            "platformer.lua"
         ],
         [
-            "Enable/disable plugins=?",
-            "Enable/disable plugins"
-        ],
-        [
-            "Open image editor=?",
-            "Open image editor"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "ecs.lua=script+?",
             "ecs.lua"
+        ],
+        [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
+            "bunnymark.lua=script+?",
+            "bunnymark.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -71,7 +72,7 @@
     "export": {
         "name": "test_zone",
         "filter": "nearest",
-        "vsync": false,
+        "vsync": "off",
         "web_memory": 0,
         "web_stack": 2,
         "web_game_size": [

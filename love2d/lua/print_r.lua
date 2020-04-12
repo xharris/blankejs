@@ -22,5 +22,7 @@ function print_r ( t )
             end
         end
     end
+    print("*"..tostring(t)..": {")
     sub_print_r(t,"\t")
+    print("}")
 end
