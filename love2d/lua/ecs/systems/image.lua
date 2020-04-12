@@ -2,6 +2,8 @@ local draw_object = EcsUtil.draw_object
 local extract_draw_components = EcsUtil.extract_draw_components
 local get_draw_components = EcsUtil.get_draw_components
 
+local update_batch_image, remove_batch_image, update_image, remove_image
+
 local BATCH_LIMIT = 2001
 local AUTO_BATCH_LIMIT = 20 -- TODO implement later (automatically starts batching an image after this limit)
 
@@ -10,8 +12,15 @@ local get_batch_key = function(obj, sb_index)
 end
 
 local batches = {} -- { 'blanke.imagebatch.<z>.<sb_index>.res_path' = batch_obj }
-local update_batch_image = function(obj) 
+update_batch_image = function(obj) 
     obj.image.object = nil
+
+    if not obj.image.path then 
+        remove_batch_image(obj)
+        return 
+    end
+    remove_image(obj)
+    
     local sb_index = 1
     local batch_key = get_batch_key(obj, sb_index)
     local img_object = Cache.get('Image', Game.res('image',obj.image.path), function(key)
@@ -48,7 +57,7 @@ local update_batch_image = function(obj)
     obj.image.batch_id = batch.object:add(get_draw_components(obj))
     extract(obj, 'size', { width=img_object:getWidth(), height=img_object:getHeight() }, true)
 end
-local remove_batch_image = function(obj)
+remove_batch_image = function(obj)
     local image_obj = obj.image
     local batch_key = image_obj.batch_key
     if batch_key then 
@@ -57,44 +66,60 @@ local remove_batch_image = function(obj)
             -- remove from batch
             old_batch.object:set(image_obj.batch_id, 0, 0, 0, 0, 0)
         end
-        image_obj.batch_key = nil
-        image_obj.batch_id = nil
     end
+    obj.image.object = nil
+    image_obj.batch_key = nil
+    image_obj.batch_id = nil
 end 
-local update_image = function(obj)
+update_image = function(obj)
     local image_obj = obj.image
-    image_obj.batch = false
-    image_obj.object = Cache.get('Image', Game.res('image',image_obj.path), function(key)
-        return love.graphics.newImage(key)
-    end)
-    extract(obj, 'size', { width=image_obj.object:getWidth(), height=image_obj.object:getHeight() }, true)
+    
+    if image_obj.path then
+        remove_batch_image(obj)
+        image_obj.object = Cache.get('Image', Game.res('image',image_obj.path), function(key)
+            return love.graphics.newImage(key)
+        end)
+        if image_obj.use_size then extract(obj, 'size', { width=image_obj.object:getWidth(), height=image_obj.object:getHeight() }, true) end
+    else 
+        remove_image(obj)
+    end
+end
+remove_image = function(obj)
+    obj.image.object = nil
+    if obj.image.use_size then extract(obj, 'size', nil, true) end
 end
 
-Component('image', { path='', batch=true } )
+Component('image', { batch=true, use_size=true } )
 Image = System{
     'image',
     type="blanke.image",
     add = function(obj)
+        extract(obj, 'image')
         extract_draw_components(obj)
         track(obj.image, 'path')
         track(obj.image, 'batch')
         track(obj, 'z')
-        if obj.image.batch then 
-            update_batch_image(obj)
-        else 
-            update_image(obj)
+
+        if obj.image.path then 
+            if obj.image.batch then 
+                update_batch_image(obj)
+            else 
+                update_image(obj)
+            end
         end
     end,
     update = function(obj, dt)
         if changed(obj.image, 'path') or (obj.image.batch and changed(obj, 'z')) then 
-            if obj.image.batch then 
+            if not obj.image.path then 
+                remove_image(obj)
+                remove_batch_image(obj)
+            elseif obj.image.batch then 
                 update_batch_image(obj)
             else 
-                remove_batch_image(obj)
                 update_image(obj)
             end
         end
-        if obj.image.batch then
+        if obj.image.batch_key then
             local batch = batches[obj.image.batch_key]
             batch.object:set(obj.image.batch_id, get_draw_components(obj))
         end
@@ -117,14 +142,3 @@ System{
         draw_object(obj)
     end
 }
-
---[[
-Image = callable {
-    __call = function(_)
-
-    end,
-    animation = function()
-
-    end
-}
-]]

@@ -5,15 +5,14 @@ Game {
 	scripts = { 'ecs' },-- 'bunnymark' },
 	load = function() 
 		--[[
-		Image.animation(
-			"blue_robot.png", { { 
-				rows=1, cols=8, frames={ '2-5' } 
-			} }
+		Animation(
+			file="blue_robot.png", 
+			{ name='walk', rows=1, cols=8, frames={ '2-5' } }
 		)]]
  
 		State.start('ecs')
 	end,
 	update = function(dt)
-		-- print(System.stats())
+		print(System.stats())
 	end
 }

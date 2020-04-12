@@ -41,6 +41,7 @@ Canvas = System{
         obj.setup = function(obj)
             if not obj.object then 
                 obj.object = canvas_stack:new(obj)
+                obj.is_setup = true
             end
             return obj
         end
@@ -49,6 +50,7 @@ Canvas = System{
                 obj:drawTo()
                 canvas_stack:release(obj.object)
                 obj.object = nil
+                obj.is_setup = false
             end
             return obj
         end

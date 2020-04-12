@@ -106,6 +106,13 @@ local get_shader = function(obj, names)
   table.update(obj.effect.vars, obj.effect.shader_info.vars)
 end
 
+local disable_image_batching = function(obj)
+    -- shaders dont work well with spritebatch
+    if obj.effect.canvas.is_setup and obj.image and obj.image.batch then 
+      obj.image.batch = false
+    end
+end
+
 EffectSpawner = System{
   'effect',
   add = function(obj) 
@@ -119,6 +126,7 @@ EffectSpawner = System{
     extract(obj, 'effect', { names=names, enabled={}, vars={}, time=0 })
     obj.effect.canvas = Canvas{auto_clear={1,1,1,0}, auto_draw=false}
     get_shader(obj, obj.effect.names)
+    disable_image_batching(obj)
     -- track enabling/disabling
     for _, name in ipairs(obj.effect.names) do 
       obj.effect.enabled[name] = true
@@ -144,10 +152,12 @@ EffectSpawner = System{
     if remake_shader then 
       if #remake_shader > 0 then 
         get_shader(obj, remake_shader)
-      else 
+      else
         obj.effect.canvas:release()
       end
     end
+    
+    disable_image_batching(obj)
     
     local shader_info = obj.effect.shader_info
     local shader_object = shader_info.shader

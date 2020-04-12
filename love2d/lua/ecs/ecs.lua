@@ -107,7 +107,6 @@ sys_add = function(sys_id, obj)
             callback_entity_count[cb_name] = callback_entity_count[cb_name] + 1 end
         end
 
-        sys_callback(sys_ref, 'add', obj)
         system_entity[sys_id][obj.uuid] = true
     end
 end
@@ -163,17 +162,23 @@ System = callable {
         local found_a_system = false
         for _, sys_id in ipairs(system_ids) do 
             sys_ref = systems[sys_id]
+            local this_system = false
             if obj.type and obj.type == system_type[sys_id] then 
                 -- this system handles entities of this type
                 sys_add(sys_id, obj)
                 found_a_system = true
+                this_system = true
             end
             for _, component in ipairs(sys_ref.component) do 
                 if obj[component] ~= nil then 
                     -- this system handles entities with this component
                     sys_add(sys_id, obj)
                     found_a_system = true
+                    this_system = true
                 end
+            end
+            if this_system then 
+                sys_callback(sys_ref, 'add', obj)
             end
         end
         return found_a_system

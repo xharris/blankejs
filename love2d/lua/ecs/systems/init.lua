@@ -9,7 +9,7 @@ Component{
 -- drawing components
 Component{
     quad            = false,
-    size            = { width = 0, height = 0 },
+    size            = { width = 1, height = 1 },
     angle           = 0,
     scale           = { x = 1, y = 1 },
     offset          = { x = 0, y = 0 },
@@ -61,7 +61,7 @@ require(_NAME..".image")
 require(_NAME..".entity")
 require(_NAME..".effect")
 require(_NAME..".movement")
--- animation
+require(_NAME..".animation")
 -- camera
 -- audio?
 -- map
