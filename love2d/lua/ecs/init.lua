@@ -17,7 +17,12 @@ Blanke = {
         Game.options.load()
         Game.love_version = {love.getVersion()}
         World.draw_modifier = function(obj, fn)
+            print_r(obj)
             Effect.apply(obj, fn)
+        end
+        World.add(Game)
+        if Game.options.initial_state then 
+            State.start(Game.options.initial_state)
         end
         World.update(0)
         Window.setSize()
@@ -52,6 +57,7 @@ Blanke = {
                 end
             end
             World.update(_dt)
+            Timer.update(_dt)
 
             Game.time = Game.time + _dt
             if Game.options.update(_dt) == true then return end

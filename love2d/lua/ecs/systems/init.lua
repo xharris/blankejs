@@ -32,7 +32,8 @@ EcsUtil = {
             object = object.value
         end
         if object then 
-            local main_obj = prop_obj ~= nil and prop_obj or obj
+            local main_obj = obj 
+            if prop_obj then main_obj = prop_obj end
             Draw.setBlendMode(unpack(main_obj.blendmode))
             love.graphics.draw(object, EcsUtil.get_draw_components(main_obj))
         end
@@ -62,6 +63,7 @@ require(_NAME..".entity")
 require(_NAME..".effect")
 require(_NAME..".movement")
 require(_NAME..".animation")
+require(_NAME..".timer")
 -- camera
 -- audio?
 -- map

@@ -1,7 +1,7 @@
 -- TODO Images have their own hitbox instead of entity. Entity just uses the current animations hitbox
 -- TODO Blanke.config
 math.randomseed(os.time())
-local do_profiling = 20 -- false/#
+local do_profiling = false -- false/#
 local profiling_color = {1,0,0,1}
 
 local bitop = require 'lua.bitop'
@@ -2043,7 +2043,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
         end;
         draw = function(self, fn)
             local used = false
-            if Feature('effect') then
+            if not Feature('effect') then
                 fn()
                 return
             end 

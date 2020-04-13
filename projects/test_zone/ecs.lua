@@ -1,4 +1,50 @@
--- Hitbox.debug = true
+local count = 0
+Bunny = Entity("bunny",{
+	image = { path="bunny.bmp" },
+	gravity = { v=10 },
+	--effect= { 'chroma shift' },
+	add = function(self)
+		self.pos.x = Game.width/2
+		self.vel.x = Math.random(40,150)*table.random{-1,1}
+		count = count + 1
+	end,
+	update = function(self, dt)
+		if self.pos.x > Game.width then self.vel.x = -self.vel.x end
+		if self.pos.x < 0 then self.vel.x = -self.vel.x end 
+		if self.pos.y > Game.height then self.vel.y = -self.vel.y end 
+	end
+})
+
+local mark = 0 -- 3429
+
+State("bunnymark",{
+	enter = function()
+		Input({
+			action = { 'space' }
+		})
+		Timer.every(0.01, function()
+			Bunny()
+		end)
+	end,
+	update = function(dt)
+		if Input.pressed("action") then
+			for i = 0, 10 do 
+				Bunny()
+			end
+		end
+		if mark == 0 and count > 100 and love.timer.getFPS() <= Game.options.fps then 
+			mark = count
+		end
+	end,
+	draw = function()
+		Draw{
+			{'color','white'},
+			{'fontSize',40},
+			{'print',table.join({count,'FPS: '..love.timer.getFPS(),mark},'\n'), 30, 30}
+		}
+	end
+})
+
 
 local map
 local heart_ecs
@@ -13,9 +59,19 @@ State('ecs',{
 			action = { 'space' }
 		})
 		
+		--print_r(Game.canvas)
+		
 		for i = 1, 5 do -- 00 do 
 			Heart()
 		end
+	end,
+	update = function()
+		if Input.pressed("action") then
+			for i = 0, 10 do 
+				Heart()
+			end
+		end
+		print(System.stats())
 	end,
 	draw = function()
 		Draw{
@@ -32,6 +88,7 @@ Heart = Entity("Heart",{
 	animation = { name="walk" },
 	align = 'center',
 	hitbox = true,
+	effect = { 'chroma shift' },
 	--gravity = { v=5 },
 	add = function(obj)
 		obj.pos = {
@@ -46,6 +103,7 @@ Heart = Entity("Heart",{
 		--obj.angle = Math.sinusoidal(-45,45,5)
 		if Game.time > 1 then 
 			obj.image.path = 'blue_robot.png'
+			--obj.effect.names = {"static"}
 		end
 		if obj.pos.y > Game.height then 
 			obj.vel.y = -Math.max(obj.vel.y,Game.height*1.2)

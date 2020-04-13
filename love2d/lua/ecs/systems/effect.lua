@@ -1,3 +1,6 @@
+local disable_image_batching
+local get_shader
+
 local love_replacements = {
   float = "number",
   int = "number",
@@ -101,12 +104,23 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
   return shaders[full_name]
 end
 
-local get_shader = function(obj, names) 
+get_shader = function(obj, names) 
   obj.effect.shader_info = generateShader(names)
   table.update(obj.effect.vars, obj.effect.shader_info.vars)
+
+  disable_image_batching(obj)
+  -- track enabling/disabling
+  for _, name in ipairs(obj.effect.names) do 
+    if obj.effect.enabled[name] == nil then 
+      obj.effect.enabled[name] = true
+    end
+  end
+  for i, name in ipairs(obj.effect.names) do 
+    track(obj.effect.enabled, name)
+  end
 end
 
-local disable_image_batching = function(obj)
+disable_image_batching = function(obj)
     -- shaders dont work well with spritebatch
     if obj.effect.canvas.is_setup and obj.image and obj.image.batch then 
       obj.image.batch = false
@@ -115,7 +129,9 @@ end
 
 EffectSpawner = System{
   'effect',
+  type='blanke.effect',
   add = function(obj) 
+    EcsUtil.extract_draw_components(obj)
     -- parse initial shader names
     local names = {}
     if type(obj.effect) == 'table' then 
@@ -126,23 +142,15 @@ EffectSpawner = System{
     extract(obj, 'effect', { names=names, enabled={}, vars={}, time=0 })
     obj.effect.canvas = Canvas{auto_clear={1,1,1,0}, auto_draw=false}
     get_shader(obj, obj.effect.names)
-    disable_image_batching(obj)
-    -- track enabling/disabling
-    for _, name in ipairs(obj.effect.names) do 
-      obj.effect.enabled[name] = true
-    end
-    for _, name in ipairs(obj.effect.names) do 
-      track(obj.effect.enabled, name)
-    end
+    print_r(obj)
   end,
 
   update = function(obj, dt)
     -- did the enabled shaders change?
-    local remake_shader
-    for _, name in ipairs(obj.effect.names) do 
-      if changed(obj.effect.enabled, name) then 
-        if obj.effect.enabled[name] then
-          if not remake_shader then remake_shader = {} end
+    local remake_shader = {}
+    for i, name in ipairs(obj.effect.names) do 
+      if changed(obj.effect.enabled, name) or obj.effect.enabled[name] == nil then 
+        if obj.effect.enabled[name] ~= false then
           tryEffect(name)
           table.insert(remake_shader, name)
         end
@@ -182,6 +190,9 @@ EffectSpawner = System{
 }
 
 Effect = callable {
+    __call = function(...) 
+      return EffectSpawner(...)
+    end,
     new = function(name, in_opt)
         local safe_name = name:replace(' ','_')
         local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
@@ -275,9 +286,9 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
     apply = function(obj, fn)
         local used = false
         local effect_obj = obj.effect
-        if effect_obj == nil or not Feature('effect') then
+        if effect_obj == nil or not effect_obj.is_entity or not Feature('effect') then
             fn()
-            return
+            return true
         end 
         
         for _, name in ipairs(effect_obj.names) do 
@@ -290,7 +301,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             end
         end
         
-        local canvas = effect_obj.canvas
+        local canvas = obj.canvas or effect_obj.canvas
         if used then 
             local last_shader = love.graphics.getShader()
             

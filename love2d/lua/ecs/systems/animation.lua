@@ -19,7 +19,7 @@ Animation = callable{
       local o = function(k) return anim[k] or opt[k] end
 
       local path = o('path')
-      local img, size = 
+      local img, size = {width=0,height=0}
       if path then 
         img = Cache.get('Image', Game.res('image',o('path')), function(key)
             return love.graphics.newImage(key)

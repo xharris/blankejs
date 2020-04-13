@@ -94,6 +94,7 @@ end
 sys_add = function(sys_id, obj)
     local sys_ref = systems[sys_id]
     if not system_entity[sys_id] then system_entity[sys_id] = {} end 
+    obj.is_entity = true
     
     if not system_entity[sys_id][obj.uuid] then 
         entity_sys_count[obj.uuid] = entity_sys_count[obj.uuid] + 1
@@ -192,7 +193,8 @@ System = callable {
         else
             local sys_ref = systems[sys_id]
             -- remove object from one system
-            if system_entity[sys_id][obj.uuid] then 
+            if system_entity[sys_id] and system_entity[sys_id][obj.uuid] then
+                print('rem',obj.type) 
                 sys_callback(sys_ref, 'remove', obj)                        
                 entity_sys_count[obj.uuid] = entity_sys_count[obj.uuid] - 1
                 system_entity[sys_id][obj.uuid] = nil
@@ -270,7 +272,8 @@ Component = callable{
     use = function(entity, name)
         if component_defaults[name] ~= nil then 
             if component_type[name] == "table" then 
-                entity[name] = copy(component_defaults[name])
+                if not entity[name] then entity[name] = {} end
+                table.update(entity[name], component_defaults[name])
             else 
                 entity[name] = component_defaults[name]
             end
@@ -400,12 +403,17 @@ process_system = function(sys_id, cb_name, args, wrapper_fn)
             if check_obj_state(obj) then
                 if wrapper_fn then 
                     wrapper_fn(obj, function() 
-                        rem = sys_callback(sys_ref, cb_name, obj, unpack(args))
+                        if sys_callback(sys_ref, cb_name, obj, unpack(args)) then 
+                            rem = true
+                        end
                     end)
                 else
-                    rem = sys_callback(sys_ref, cb_name, obj, unpack(args))
+                    if sys_callback(sys_ref, cb_name, obj, unpack(args)) then 
+                        rem = true
+                    end
                 end
                 if rem then 
+                    print('rem',obj.type, sys_ref.type)
                     -- remove the obj from the system
                     System.remove(obj, sys_id)
                 end
@@ -477,14 +485,16 @@ World = {
 
         if not obj.z then obj.z = 0 end
         if not obj.uuid then obj.uuid = uuid() end 
-        if entity_state[obj.uuid] ~= nil then return obj end -- obj already in the world
-        
-        entity_state[obj.uuid] = world_state
-        entity_sys_count[obj.uuid] = 0  
-
-        all_entities[obj.uuid] = obj
-        table.insert(stray_entities, obj.uuid)
-        type_add(obj)
+        -- obj already in the world?
+        if entity_state[obj.uuid] == nil then 
+            entity_state[obj.uuid] = world_state
+            entity_sys_count[obj.uuid] = 0  
+    
+            all_entities[obj.uuid] = obj
+            table.insert(stray_entities, obj.uuid)
+    
+            type_add(obj)
+        end         
 
         -- spawn any children?
         local children
@@ -545,13 +555,10 @@ World = {
     processOne = function(sys_id, cb_name, args, wrapper_fn)
         process_system(sys_id, cb_name, args or {}, wrapper_fn)
     end,
-    draw = function()    
-        Draw.origin()
+    draw = function()   
         local draw_world = function()
             World.process('draw', nil, World.draw_modifier)            
             state_callback('draw',dt)
-            -- Physics.drawDebug()
-            -- Hitbox.draw()
         end
     
         local draw_camera = function()
@@ -577,22 +584,28 @@ World = {
                 -- end
             end)
         end
-    
+     
+        Draw.origin()
         local game_canvas = Game.canvas
         game_canvas:drawTo(draw_game)
         if Game.options.scale == true then
             game_canvas.pos.x, game_canvas.pos.y = Blanke.padx, Blanke.pady
             game_canvas.scale = Blanke.scale
         end
-        game_canvas:draw()
-    
+
+        -- World.draw_modifier(Game.canvas, function() game_canvas:draw() end)
+        Effect.apply(Game, function()
+            game_canvas:draw()
+        end)
+
         if do_profiling then
             Draw.push()
             Draw.color('black')
             love.graphics.print(love.report or "Please wait...")
             Draw.pop()
         end
-    end
+    end,
+    draw_modifier = function(obj, fn) fn() end
 }
 
 --STATE

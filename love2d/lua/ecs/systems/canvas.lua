@@ -31,9 +31,9 @@ Canvas = System{
             end
             return obj
         end
-        obj.draw = function(obj)
+        obj.draw = function(obj, props_obj)
             if not obj.active and obj.drawn then
-                draw_object(obj)
+                draw_object(obj, props_obj)
                 obj.drawn = false
             end
             return obj

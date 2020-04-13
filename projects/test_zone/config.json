@@ -8,24 +8,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "platformer.lua=script+?",
-            "platformer.lua"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "ecs.lua=script+state+?",
+            "ecs.lua"
+        ],
+        [
+            "bunnymark.lua=script+?",
+            "bunnymark.lua"
         ],
         [
             "ecs.lua=script+?",
             "ecs.lua"
         ],
         [
-            "View project in explorer=?",
-            "View project in explorer"
-        ],
-        [
-            "bunnymark.lua=script+?",
-            "bunnymark.lua"
+            "platformer.lua=script+?",
+            "platformer.lua"
         ]
     ],
     "autoplay_preview": true,

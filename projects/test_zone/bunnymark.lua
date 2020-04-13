@@ -2,6 +2,7 @@ local count = 0
 local Bunny = Entity("bunny",{
 	images = { "bunny.bmp" },
 	gravity = 10,
+	--effect= { 'chroma shift' },
 	spawn = function(self)
 		self.x = Game.width/2
 		self.hspeed = Math.random(40,150)*table.random{-1,1}
@@ -14,11 +15,16 @@ local Bunny = Entity("bunny",{
 	end
 })
 
-State("bunny",{
+local mark = 0 -- 988
+
+State("bunnymark",{
 	enter = function()
 		Input({
 			action = { 'space' }
 		})
+		Timer.every(0.01, function()
+			Bunny()
+		end)
 	end,
 	update = function(dt)
 		if Input.pressed("action") then
@@ -26,12 +32,15 @@ State("bunny",{
 				Bunny()
 			end
 		end
+		if mark == 0 and count > 100 and love.timer.getFPS() <= Game.options.fps then 
+			mark = count
+		end
 	end,
 	draw = function()
 		Draw{
 			{'color','white'},
 			{'fontSize',40},
-			{'print',count, 30, 30}
+			{'print',table.join({count,'FPS: '..love.timer.getFPS(),mark},'\n'), 30, 30}
 		}
 	end
 })
