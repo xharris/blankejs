@@ -23,13 +23,13 @@ State("bunnymark",{
 			action = { 'space' }
 		})
 		Timer.every(0.01, function()
-			Bunny()
+			-- Bunny()
 		end)
 	end,
 	update = function(dt)
 		if Input.pressed("action") then
 			for i = 0, 10 do 
-				Bunny()
+				-- Bunny()
 			end
 		end
 		if mark == 0 and count > 100 and love.timer.getFPS() <= Game.options.fps then 

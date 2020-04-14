@@ -2,21 +2,22 @@ local draw_object = EcsUtil.draw_object
 local extract_draw_components = EcsUtil.extract_draw_components
 
 local canvas_stack = Stack(function(obj)
-    return love.graphics.newCanvas(obj.size.width, obj.size.height)
+    return love.graphics.newCanvas(Game.width, Game.height)
 end)
 
-Canvas = System{
+Canvas = Spawner("blanke.canvas", {
+    auto_clear=true,
+    auto_draw=true,
+    setup=true
+})
+
+System{
     type="blanke.canvas",
-    template={
-        auto_clear=true,
-        auto_draw=true,
-        setup=true
-    },
+    requires=EcsUtil.require_draw_components(),
     add = function(obj)
-        extract_draw_components(obj, {
-            pos={ x=0, y=0 },
-            size={ width=Game.width, height=Game.height }
-        })
+        local entity = get_entity(obj)
+        local pos = extract(entity, 'pos', { x=0, y=0 })
+
         local pre_setup = obj.setup
         -- functions
         obj.drawTo = function(obj, fn)

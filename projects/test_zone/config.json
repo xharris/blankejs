@@ -8,24 +8,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
             "ecs.lua=script+state+?",
             "ecs.lua"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "bunnymark.lua=script+?",
             "bunnymark.lua"
         ],
         [
-            "ecs.lua=script+?",
-            "ecs.lua"
+            "ecs2.lua=script+?",
+            "ecs2.lua"
         ],
         [
-            "platformer.lua=script+?",
-            "platformer.lua"
+            "Clear history=?",
+            "Clear history"
         ]
     ],
     "autoplay_preview": true,

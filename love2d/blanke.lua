@@ -400,6 +400,91 @@ do
     end
 end
 
+--STACK
+Stack = class{
+    init = function(self, fn_new)
+        self.stack = {} -- { { used:t/f, value:?, is_stack:true, release:fn() } }
+        self.fn_new = fn_new
+    end,
+    new = function(self, remake)
+        local found = false
+        for _, s in ipairs(self.stack) do 
+            if not s.used then 
+                found = true
+                s.used = true 
+                if remake then 
+                    s.value = self.fn_new()
+                end
+                return s
+            end
+        end
+        if not found then 
+            local new_uuid = uuid()
+            local new_stack_obj = {
+                uuid=new_uuid,
+                used=true,
+                value=self.fn_new(obj),
+                is_stack=true
+            }
+            table.insert(self.stack, new_stack_obj)
+            return new_stack_obj
+        end
+    end,
+    release = function(self, object)
+        for _, s in ipairs(self.stack) do 
+            if s.uuid == object.uuid then 
+                s.used = false
+                return 
+            end
+        end
+    end
+}
+
+CanvasStack = Stack(function()
+    local canv = Canvas()
+    canv:remDrawable()
+    return canv
+end)
+
+--TRACK
+track = nil
+changed = nil
+do 
+    local obj_track = {} -- { table_ref={ var=last_val } }
+    local tracks_changed = {} -- { table_ref={ var=new_value } }
+    
+    -- call track(obj, 'myvar') after it's been set
+    --@global
+    track = function(obj, comp_name)
+        assert(obj, "track(): Object is nil") 
+        if not obj_track[obj] then obj_track[obj] = {} end 
+        obj_track[obj][comp_name] = obj[comp_name]
+        --i = i + 1
+        --print(i)
+    end
+    
+    -- changed(obj, 'myvar') will return true/false if myvar has changed since the last track()/changed()
+    changed = function(obj, comp_name)
+        local last_vars = obj_track[obj]
+        if last_vars then 
+            if last_vars[comp_name] ~= obj[comp_name] then 
+                if not tracks_changed[obj] then 
+                    table.insert(tracks_changed, obj)
+                    tracks_changed[obj] = {}
+                end 
+                tracks_changed[obj][comp_name] = obj[comp_name]
+                return true
+            end
+        end
+        return false
+    end
+    
+    reset_tracks = function()
+        table.update(obj_track, tracks_changed)
+        tracks_changed = {}
+    end
+end
+
 --FS
 FS = {
     basename = function (str)
@@ -443,12 +528,7 @@ end
 Game = nil
 do
     local skip_tf = false
-    local mesh_canvas
     local objects = {}
-
-    Signal.on('__main', function()
-        mesh_canvas = CanvasStack()
-    end)
 
     local draw = function(props, lobj, is_fn)
         local parent = props.parent or props
@@ -497,17 +577,17 @@ do
         end
 
         Draw.push()
-        if props.mesh and props.mesh.vertices then 
-            mesh_canvas:getCanvas()
+        if props.mesh and props.mesh.vertices then
+            local mesh_canvas = CanvasStack:new()
             local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
             local mesh = Cache.get('mesh', mesh_str, function(key)
                 return love.graphics.newMesh(props.mesh.vertices, props.mesh.mode or 'fan', props.mesh.usage or 'dynamic')
             end)
             skip_tf = true
-            mesh_canvas:drawTo(function() draw_obj:draw() end)
-            mesh:setTexture(mesh_canvas.canvas.canvas) -- yes twice (since it's a canvasstack)
+            mesh_canvas.value:drawTo(function() draw_obj:draw() end)
+            mesh:setTexture(mesh_canvas.value) -- yes twice (since it's a canvasstack)
             love.graphics.draw(mesh)
-            mesh_canvas:release()
+            CanvasStack:release(mesh_canvas)
             skip_tf = false
         else
             draw_obj()
@@ -568,6 +648,9 @@ do
                 Game.loaded = true
                 table.update(Game.options, args)
                 Game.load()
+                if Game.options.initial_state then 
+                    State.start(Game.options.initial_state)
+                end
             end
             return nil
         end;
@@ -963,46 +1046,6 @@ Canvas = GameObject:extend {
     end;
 }
 
---CANVASSTACK
-CanvasStack = nil
-do 
-    local stack = {} -- { }
-    CanvasStack = class{
-        getCanvas = function(self)
-            if not self.canvas then 
-                local found = false 
-                -- recycle a canvas
-                for c, canv in ipairs(stack) do 
-                    if not canv._used then 
-                        self.canvas = canv
-                        found = true
-                    end 
-                end 
-                -- add a new canvas
-                if not found then 
-                    self.canvas = Canvas()
-                    self.canvas:remDrawable()
-                    table.insert(stack, self.canvas)
-                end
-                self.canvas._used = true
-            end
-            return self.canvas
-        end,
-        drawTo = function(self, fn)
-            self.canvas:drawTo(fn)
-        end,
-        draw = function(self)   
-            if self.quad then self.canvas.quad = self.quad end  
-            self.canvas:draw()  
-        end,
-        release = function(self)
-            self.canvas._used = false
-            self.canvas:reset()
-            self.canvas = nil
-        end
-    }
-end
-
 --IMAGE
 Image = nil
 do 
@@ -1015,6 +1058,14 @@ do
         assert(new_img, "Image not found:\'"..name.."\'")
         return new_img
     end
+    
+    ImageBatch = GameObject:extend {
+        init = function(self, file)
+            GameObject.init(self, {classname="ImageBatch"})
+            
+        end
+    }
+
     Image = GameObject:extend {
         info = function(name)
             if animations[name] then return animations[name]
@@ -1029,7 +1080,13 @@ do
             end
         end;
         -- options: cols, rows, offx, offy, frames ('1-3',4,5), duration, durations
-        animation = function(file, anims, all_opt)
+        animation = function(opt)
+            local file = opt.file 
+            local animations = {}
+            for _, anim in ipairs(opt) do 
+                
+            end
+
             all_opt = all_opt or {}
             local img = getImage(file)
             if not anims then 
@@ -1968,7 +2025,6 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             end
             
             self.shader_info = generateShader(self.names)
-            self.front = CanvasStack()
             self.disabled = {}
 
             self:addUpdatable()
@@ -2041,6 +2097,11 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
         update = function(self,dt) 
             self:_update(dt) 
         end;
+        active = 0;
+        --@static
+        isActive = function()
+            return Effect.active > 0
+        end;
         draw = function(self, fn)
             local used = false
             if not Feature('effect') then
@@ -2054,27 +2115,28 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                 if not self.disabled[name] and library[name] and library[name].opt.draw then 
                     library[name].opt.draw(self.shader_info.vars[name])
                 end
-            end
-            
+            end            
             if used then 
+                Effect.active = Effect.active + 1
                 local last_shader = love.graphics.getShader()
                 local last_blend = love.graphics.getBlendMode()
                 
-                local front = self.front:getCanvas()
-                front.blendmode = self.blendmode
-                front.auto_clear = {1,1,1,0}
+                local canvas = CanvasStack:new()
+                canvas.value.blendmode = self.blendmode
+                canvas.value.auto_clear = {1,1,1,0}
 
-                front:drawTo(function()
+                canvas.value:drawTo(function()
                     love.graphics.setShader()
                     fn()
                 end)
                 
                 love.graphics.setShader(self.shader_info.shader)
-                front:draw()
+                canvas.value:draw()
                 love.graphics.setShader(last_shader)
                 
                 love.graphics.setBlendMode(last_blend)
-                self.front:release()
+                CanvasStack:release(canvas)
+                Effect.active = Effect.active - 1
             else 
                 fn()
             end

@@ -11,7 +11,7 @@ local Bunny = Entity("bunny",{
 	update = function(self, dt)
 		if self.x > Game.width then self.hspeed = -self.hspeed end
 		if self.x < 0 then self.hspeed = -self.hspeed end 
-		if self.y > Game.height then self.vspeed = -self.vspeed end 
+		if self.y > Game.height then self.vspeed = -Math.abs(self.vspeed) end 
 	end
 })
 
@@ -23,7 +23,9 @@ State("bunnymark",{
 			action = { 'space' }
 		})
 		Timer.every(0.01, function()
-			Bunny()
+			if mark == 0 then 
+				Bunny()
+			end
 		end)
 	end,
 	update = function(dt)

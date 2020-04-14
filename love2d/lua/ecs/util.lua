@@ -39,6 +39,9 @@ table.update = function (old_t, new_t)
         end
         return ot
     end
+    if type(new_t) ~= 'table' then 
+        return new_t
+    end
     return update_more(old_t, new_t)
 end
 
@@ -380,6 +383,109 @@ do
         lua_print(str)
     end
 end
+
+entity_track = {} -- { table_ref={ var=last_val } }
+tracks_changed = {} -- { table_ref={ var=new_value } }
+
+-- call track(obj, 'myvar') after it's been set
+--@global
+--local i = 0
+track = function(obj, comp_name)
+    assert(obj, "track(): Object is nil") 
+    if not entity_track[obj] then entity_track[obj] = {} end 
+    entity_track[obj][comp_name] = obj[comp_name]
+    --i = i + 1
+    --print(i)
+end
+
+-- changed(obj, 'myvar') will return true/false if myvar has changed since the last track()/changed()
+--@global
+changed = function(obj, comp_name)
+    local last_vars = entity_track[obj]
+    if last_vars then 
+        if last_vars[comp_name] ~= obj[comp_name] then 
+            if not tracks_changed[obj] then 
+                table.insert(tracks_changed, obj)
+                tracks_changed[obj] = {}
+            end 
+            tracks_changed[obj][comp_name] = obj[comp_name]
+            return true
+        end
+    end
+    return false
+end
+
+-- call at the end of update
+reset_tracks = function()
+    table.update(entity_track, tracks_changed)
+    tracks_changed = {}
+end
+
+--CACHE
+-- @global
+Cache = {}
+do 
+    local storage = {}
+    Cache.group = function(name) return Cache[name] end
+    Cache.key = function(group_name, key) return (Cache[group_name] and Cache[group_name][key]) end
+    Cache.get = function(group_name, key, fn_not_found)
+        if not storage[group_name] then storage[group_name] = {} end 
+        if storage[group_name][key] then 
+            return storage[group_name][key] 
+        elseif fn_not_found then
+            storage[group_name][key] = fn_not_found(key)
+            return storage[group_name][key]
+        end
+    end
+    Cache.stats = function()
+        local str = '' 
+        for name, list in pairs(storage) do 
+            str = str .. name .. '=' .. table.len(list) .. ' '
+        end
+        return str
+    end
+end
+
+--STACK
+-- @global
+Stack = class{
+    init = function(self, fn_new)
+        self.stack = {} -- { { used:t/f, value:?, is_stack:true, release:fn() } }
+        self.fn_new = fn_new
+    end,
+    new = function(self, obj, remake)
+        local found = false
+        for _, s in ipairs(self.stack) do 
+            if not s.used then 
+                found = true
+                s.used = true 
+                if remake then 
+                    s.value = self.fn_new(obj)
+                end
+                return s
+            end
+        end
+        if not found then 
+            local new_uuid = uuid()
+            local new_stack_obj = {
+                uuid=new_uuid,
+                used=true,
+                value=self.fn_new(obj),
+                is_stack=true
+            }
+            table.insert(self.stack, new_stack_obj)
+            return new_stack_obj
+        end
+    end,
+    release = function(self, object)
+        for _, s in ipairs(self.stack) do 
+            if s.uuid == object.uuid then 
+                s.used = false
+                return 
+            end
+        end
+    end
+}
 
 --FEATURE
 Feature = {}
@@ -843,7 +949,6 @@ Game = callable{
     __call = function(_, options)
         table.update(Game.options, options or {})
         Game.canvas = Canvas{
-            type=Canvas.type,
             auto_draw=false,
             persistent=true 
         }        

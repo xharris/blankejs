@@ -22,9 +22,6 @@ local world_add
 local type_list, type_add, type_remove
 -- state vars
 local states
--- track vars
-local entity_track, tracks_changed
-local reset_tracks
 
 iterate = function(t, fn) -- fn(): return true to remove an object
     local len = #t
@@ -283,72 +280,6 @@ Component = callable{
     end
 }
 
--- get a component from an entity or return some defaults
--- defaults do not override component_defaults unless override=True
--- @global
-extract = function(obj, comp_name, defaults, override)
-    assert(Component.exists(comp_name) or defaults ~= nil, "No such component '"..comp_name.."'")
-    
-    -- make sure object has component
-    if obj[comp_name] == nil then 
-        Component.use(obj, comp_name)
-    end 
-    local default = component_defaults[comp_name]
-    if defaults ~= nil then 
-        default = defaults 
-    end
-    -- iterate keys 
-    if type(default) == 'table' then 
-        if type(obj[comp_name]) ~= 'table' then 
-            obj[comp_name] = {}
-        end
-        if override then 
-            table.update(obj[comp_name], default)
-        else
-            table.defaults(obj[comp_name], default)
-        end
-    elseif obj[comp_name] == nil then
-        obj[comp_name] = default
-    end
-    return obj[comp_name]
-end
-
-entity_track = {} -- { table_ref={ var=last_val } }
-tracks_changed = {} -- { table_ref={ var=new_value } }
-
--- call track(obj, 'myvar') after it's been set
---@global
---local i = 0
-track = function(obj, comp_name)
-    assert(obj, "track(): Object is nil") 
-    if not entity_track[obj] then entity_track[obj] = {} end 
-    entity_track[obj][comp_name] = obj[comp_name]
-    --i = i + 1
-    --print(i)
-end
-
--- changed(obj, 'myvar') will return true/false if myvar has changed since the last track()/changed()
---@global
-changed = function(obj, comp_name)
-    local last_vars = entity_track[obj]
-    if last_vars then 
-        if last_vars[comp_name] ~= obj[comp_name] then 
-            if not tracks_changed[obj] then 
-                table.insert(tracks_changed, obj)
-                tracks_changed[obj] = {}
-            end 
-            tracks_changed[obj][comp_name] = obj[comp_name]
-            return true
-        end
-    end
-    return false
-end
-
-reset_tracks = function()
-    table.update(entity_track, tracks_changed)
-    tracks_changed = {}
-end
-
 --[[ -- remove this 'class'?
 entity_defaults = {} -- { name={ prop=value } }
 entity_functions = {} -- { entity_name={ fn_name=fn() } }
@@ -539,7 +470,6 @@ World = {
             state_callback('update',dt)
         end
         World.process('update',{dt}) -- calls every system with an update
-        reset_tracks()
     end,
     set_state = function(name)
         state_callback('exit') 
@@ -620,70 +550,4 @@ State = callable{
     switch      = function(name) World.set_state(name) end,
     restart     = function() World.set_state(world_state) end,
     stop        = function() World.set_state(NO_STATE) end
-}
-
---CACHE
--- @global
-Cache = {}
-do 
-    local storage = {}
-    Cache.group = function(name) return Cache[name] end
-    Cache.key = function(group_name, key) return (Cache[group_name] and Cache[group_name][key]) end
-    Cache.get = function(group_name, key, fn_not_found)
-        if not storage[group_name] then storage[group_name] = {} end 
-        if storage[group_name][key] then 
-            return storage[group_name][key] 
-        elseif fn_not_found then
-            storage[group_name][key] = fn_not_found(key)
-            return storage[group_name][key]
-        end
-    end
-    Cache.stats = function()
-        local str = '' 
-        for name, list in pairs(storage) do 
-            str = str .. name .. '=' .. table.len(list) .. ' '
-        end
-        return str
-    end
-end
-
---STACK
--- @global
-Stack = class{
-    init = function(self, fn_new)
-        self.stack = {} -- { { used:t/f, value:?, is_stack:true, release:fn() } }
-        self.fn_new = fn_new
-    end,
-    new = function(self, obj, remake)
-        local found = false
-        for _, s in ipairs(self.stack) do 
-            if not s.used then 
-                found = true
-                s.used = true 
-                if remake then 
-                    s.value = self.fn_new(obj)
-                end
-                return s
-            end
-        end
-        if not found then 
-            local new_uuid = uuid()
-            local new_stack_obj = {
-                uuid=new_uuid,
-                used=true,
-                value=self.fn_new(obj),
-                is_stack=true
-            }
-            table.insert(self.stack, new_stack_obj)
-            return new_stack_obj
-        end
-    end,
-    release = function(self, object)
-        for _, s in ipairs(self.stack) do 
-            if s.uuid == object.uuid then 
-                s.used = false
-                return 
-            end
-        end
-    end
 }

@@ -1,6 +1,6 @@
 local _NAME = ...
 require(_NAME..'.util')
-require(_NAME..'.ecs')
+require(_NAME..'.ecs2')
 require(_NAME..'.systems')
 
 local dt = 0
@@ -17,7 +17,6 @@ Blanke = {
         Game.options.load()
         Game.love_version = {love.getVersion()}
         World.draw_modifier = function(obj, fn)
-            print_r(obj)
             Effect.apply(obj, fn)
         end
         World.add(Game)
@@ -86,9 +85,44 @@ Blanke = {
             Window.toggleFullscreen()
         end            
         Input.keyCheck()
+        reset_tracks()
     end,
     draw = function()
-        World.draw()
+        local draw_camera = function()
+            Draw{
+                {'push'},
+                {'color',Game.options.background_color},
+                {'rect','fill',0,0,Game.width,Game.height},
+                {'pop'}
+            }
+            -- if Camera.count() > 0 then
+            --     Camera.useAll(draw_world)
+            -- else 
+                World.draw()
+            -- end
+        end
+    
+        local draw_game = function()
+            Game.options.draw(function()
+                -- if Game.effect then
+                --     Game.effect:draw(draw_camera)
+                -- else 
+                    draw_camera()
+                -- end
+            end)
+        end
+     
+        Draw.origin()
+        local game_canvas = Game.canvas
+        --
+        --print_r(game_canvas)
+        game_canvas:drawTo(draw_game)
+        if Game.options.scale == true then
+            game_canvas.pos.x, game_canvas.pos.y = Blanke.padx, Blanke.pady
+            game_canvas.scale = Blanke.scale
+        end
+        game_canvas:draw()
+        
     end,
     resize = function(w,h)
         Game.win_width, Game.win_height, flags = love.window.getMode()
