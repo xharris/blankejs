@@ -2,7 +2,9 @@ Entity("MovingBlock", {
 		images = { "block_corner.png" },
 		align = "center",
 		hitbox = true,
-		default_reaction = 'cross',
+		reaction = {
+			ground='cross'
+		},
 		collision = function(self, v)
 			if v.other.tag == "Player" and v.normal.y == -1 then 
 				if not self.started then 

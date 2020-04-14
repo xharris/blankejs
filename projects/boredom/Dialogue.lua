@@ -2,7 +2,7 @@ local dialogs = {}
 
 Entity("Dialogue",{
 	hitbox=true,
-	reaction="cross",
+	default_reaction="cross",
 	collision=function(self, info)
 		if info.other.tag == "Player" and not self.activated then
 			self.activated = true

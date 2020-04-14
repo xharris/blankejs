@@ -1347,7 +1347,6 @@ do
             if self.body then self.body:setPosition(self.x, self.y) end
         end;
         _updateSize = function(self,obj,skip_anim_check)
-            --[[
             if self.animation then
                 local anim = self.animList[self.animation]
                 assert(skip_anim_check or anim, self.classname.." missing animation '"..self.animation.."'")
@@ -1361,20 +1360,6 @@ do
                     Net.sync(self, {'anim_frame'})
                 end
             end 
-            ]]
-            if self.animation then	
-                assert(skip_anim_check or self.animList[self.animation], self.classname.." missing animation '"..self.animation.."'")	
-                if self.anim_speed ~= nil then
-                    self.animList[self.animation].speed = self.anim_speed 
-                end
-                if self.anim_speed == 0 then 	
-                    self.animList[self.animation].frame_index = self.anim_frame	
-                    Net.sync(self, {'anim_speed','anim_frame'})	
-                else 	
-                    self.anim_frame = self.animList[self.animation].frame_index	
-                end	
-                Net.sync(self, {'anim_speed'})
-            end
             if not self._preset_size then
                 self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
             end
@@ -2761,27 +2746,15 @@ do
 
             if obj and not obj.destroyed and obj.hasHitbox then
                 local filter = function(item, other)
-                    --[[ TODO FIX
                     local ret = obj.default_reaction or Hitbox.default_reaction
-                    if obj.reaction then
-                        if type(obj.reaction) == "string" then ret = obj.reaction else 
-                            if obj.reaction[other.tag] then ret = obj.reaction[other.tag] end
-                        end
+                    if obj.reaction and obj.reaction[other.tag] then ret = obj.reaction[other.tag] else
+                        if obj.default_reaction then ret = obj.default_reaction end 
                     end
-                    if other.reaction then
-                        if type(other.reaction) == "string" then ret = other.reaction else 
-                            if other.reaction[obj.tag] then ret = other.reaction[other.tag] end
-                        end
+                    if other.reaction and other.reaction[obj.tag] then ret = other.reaction[obj.tag] else 
+                        if other.default_reaction then ret = other.default_reaction end
                     end
-                    if obj.filter then 
-                        local new_ret = obj:filter(item, other) 
-                        if new_ret then ret = new_ret end
-                    end
+                    if obj.filter then ret = obj:filter(item, other) end	
                     return ret
-                    ]]
-                    if obj.reaction and obj.reaction[other.tag] then return obj.reaction[other.tag] end	
-                    if obj.filter then return obj:filter(item, other) end	
-                    return obj.default_reaction or Hitbox.default_reaction
                 end
                 local ha = checkHitArea(obj)
                 local new_x, new_y, cols, len = world:move(obj, 
@@ -2802,9 +2775,7 @@ do
                         local info = cols[i]
                         local other = info.other
 
-                        -- if info.type ~= 'cross' then -- TODO FIX
-                            obj:collision(info)
-                        -- end
+                        obj:collision(info)
                         
                         swap(info, 'item', 'other')
                         swap(info, 'itemRect', 'otherRect')

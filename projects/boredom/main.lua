@@ -28,5 +28,3 @@ State("play", {
 		map = Map.load('level1.map')
 	end
 })
-
-Hitbox.debug = true

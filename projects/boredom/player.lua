@@ -15,12 +15,13 @@ Entity("Player", {
 		if v.other.tag == 'death' then
 			self:die()
 		end
-		
-		if v.normal.y < 0 then
-			self.can_jump = true
-		end
-		if v.normal.y ~= 0 then 
-			self.vspeed = 0
+		if v.type ~= 'cross' then
+			if v.normal.y < 0 then
+				self.can_jump = true
+			end
+			if v.normal.y ~= 0 then 
+				self.vspeed = 0
+			end
 		end
 	end,
 	die = function(self)

@@ -18,20 +18,20 @@
     ],
     "quick_access": [
         [
-            "movingblock.lua=script+?",
-            "movingblock.lua"
+            "player.lua=script+?",
+            "player.lua"
         ],
         [
             "Dialogue.lua=script+?",
             "Dialogue.lua"
         ],
         [
-            "main.lua=script+state+?",
-            "main.lua"
+            "movingblock.lua=script+?",
+            "movingblock.lua"
         ],
         [
-            "player.lua=script+?",
-            "player.lua"
+            "main.lua=script+state+?",
+            "main.lua"
         ],
         [
             "level1.map=map+?",
