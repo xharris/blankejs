@@ -1,10 +1,12 @@
 local count = 0
 local Bunny = Entity("bunny",{
 	images = { "bunny.bmp" },
-	gravity = 10,
+	--gravity = 10,
 	--effect= { 'chroma shift' },
 	spawn = function(self)
 		self.x = Game.width/2
+		self.x = Math.random(0,Game.width)
+		self.y = Math.random(0,Game.height)
 		self.hspeed = Math.random(40,150)*table.random{-1,1}
 		count = count + 1
 	end,
@@ -15,7 +17,7 @@ local Bunny = Entity("bunny",{
 	end
 })
 
-local mark = 0 -- 988
+local mark = 0 -- 1103
 
 State("bunnymark",{
 	enter = function()

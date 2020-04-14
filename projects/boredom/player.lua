@@ -15,6 +15,7 @@ Entity("Player", {
 		if v.other.tag == 'death' then
 			self:die()
 		end
+		
 		if v.normal.y < 0 then
 			self.can_jump = true
 		end

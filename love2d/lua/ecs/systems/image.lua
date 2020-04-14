@@ -4,104 +4,105 @@ local get_draw_components = EcsUtil.get_draw_components
 
 local update_batch_image, remove_batch_image, update_image, remove_image
 
-local BATCH_LIMIT = 2001
+local BATCH_LIMIT = 5000
 local AUTO_BATCH_LIMIT = 20 -- TODO implement later (automatically starts batching an image after this limit)
 
 local get_batch_key = function(obj, sb_index)
-    return 'imagebatch' .. '.' .. (obj.z or 0) .. '.' .. sb_index .. '.' .. Game.res('image',obj.image.path)
+    obj_entity = get_entity(obj)
+    return 'imagebatch' .. '.' .. (obj_entity.z or 0) .. '.' .. sb_index .. '.' .. Game.res('image',obj.path)
 end
 
 local batches = {} -- { 'blanke.imagebatch.<z>.<sb_index>.res_path' = batch_obj }
 update_batch_image = function(obj) 
-    obj.image.object = nil
+    local obj_entity = get_entity(obj)
+    obj.object = nil -- remove ordinary Image
 
-    if not obj.image.path then 
+    if not obj.path then 
         remove_batch_image(obj)
         return 
     end
     remove_image(obj)
     
-    local sb_index = 1
-    local batch_key = get_batch_key(obj, sb_index)
-    local img_object = Cache.get('Image', Game.res('image',obj.image.path), function(key)
+    local img_object = Cache.get('Image', Game.res('image',obj.path), function(key)
         return love.graphics.newImage(key)
     end)
+
+    local sb_index = 1
+    local batch_key = get_batch_key(obj, sb_index)
     -- is this batch full?
     local sb = Cache.get('blanke.imagebatch', batch_key, function(key)
-        return love.graphics.newSpriteBatch(img_object)
+        return love.graphics.newSpriteBatch(img_object, BATCH_LIMIT)
     end)
-    while sb:getCount() > (BATCH_LIMIT or sb:getBufferSize()) do 
+    while sb:getCount() >= sb:getBufferSize() do 
         sb_index = sb_index+1
         batch_key = get_batch_key(obj, sb_index)
         sb = Cache.get('blanke.imagebatch', batch_key, function(key)
-            return love.graphics.newSpriteBatch(img_object)
+            return love.graphics.newSpriteBatch(img_object, BATCH_LIMIT)
         end)
     end
     if not batches[batch_key] then
         -- create spritebatch if it doesn't exist
-        batches[batch_key] = {
-            type='blanke.imagebatch',
+        batches[batch_key] = ImageBatch{
             key=batch_key,
             object=sb,
-            z=obj.z
+            z=obj_entity.z
         }
-        World.add(batches[batch_key])
     end
     local batch = batches[batch_key]
-    local old_batch = batches[obj.image.batch_key] 
-    if old_batch and batch_key ~= obj.image.batch_key then 
+    local old_batch = batches[obj_entity.batch_key] 
+    if old_batch and batch_key ~= obj_entity.batch_key then 
         -- remove from old batch
-        old_batch.object:set(obj.image.batch_id, 0, 0, 0, 0, 0)
+        old_batch.object:set(obj_entity.batch_id, 0, 0, 0, 0, 0)
     end
-    obj.image.batch_key = batch_key
-    obj.image.batch_id = batch.object:add(get_draw_components(obj))
-    extract(obj, 'size', { width=img_object:getWidth(), height=img_object:getHeight() }, true)
+    obj_entity.batch_key = batch_key
+    if not obj_entity.batch_id then 
+        obj_entity.batch_id = batch.object:add(0, 0, 0, 0, 0)
+    end
+    if obj.use_size then obj_entity.size = { width=img_object:getWidth(), height=img_object:getHeight() } end
 end
 remove_batch_image = function(obj)
-    local image_obj = obj.image
-    local batch_key = image_obj.batch_key
+    local obj_entity = get_entity(obj)
+    local batch_key = obj_entity.batch_key
     if batch_key then 
-        local old_batch = batches[image_obj.batch_key] 
+        local old_batch = batches[obj_entity.batch_key] 
         if old_batch then 
             -- remove from batch
-            old_batch.object:set(image_obj.batch_id, 0, 0, 0, 0, 0)
+            old_batch.object:set(obj_entity.batch_id, 0, 0, 0, 0, 0)
         end
     end
-    obj.image.object = nil
-    image_obj.batch_key = nil
-    image_obj.batch_id = nil
+    obj.object = nil
+    obj_entity.batch_key = nil
+    obj_entity.batch_id = nil
 end 
-update_image = function(obj)
-    local image_obj = obj.image
-    
-    if image_obj.path then
+update_image = function(obj)    
+    if obj.path then
         remove_batch_image(obj)
-        image_obj.object = Cache.get('Image', Game.res('image',image_obj.path), function(key)
+        obj.object = Cache.get('Image', Game.res('image',obj.path), function(key)
             return love.graphics.newImage(key)
         end)
-        if image_obj.use_size then extract(obj, 'size', { width=image_obj.object:getWidth(), height=image_obj.object:getHeight() }, true) end
+        if obj.use_size then get_entity(obj).size = { width=obj.object:getWidth(), height=obj.object:getHeight() } end
     else 
         remove_image(obj)
     end
 end
 remove_image = function(obj)
-    obj.image.object = nil
-    if obj.image.use_size then extract(obj, 'size', nil, true) end
+    obj.object = nil
+    if obj.use_size then get_entity(obj).size = { width=1, height=1 } end
 end
 
 Component('image', { batch=true, use_size=true } )
 Image = System{
-    'image',
-    type="blanke.image",
+    component='image',
+    requires=EcsUtil.require_draw_components(),
     add = function(obj)
-        extract(obj, 'image')
+        local obj_entity = get_entity(obj)
         extract_draw_components(obj)
-        track(obj.image, 'path')
-        track(obj.image, 'batch')
-        track(obj, 'z')
+        track(obj, 'path')
+        track(obj, 'batch')
+        track(obj_entity, 'z')
 
-        if obj.image.path then 
-            if obj.image.batch then 
+        if obj.path then 
+            if obj.batch then 
                 update_batch_image(obj)
             else 
                 update_image(obj)
@@ -109,29 +110,33 @@ Image = System{
         end
     end,
     update = function(obj, dt)
-        if changed(obj.image, 'path') or (obj.image.batch and changed(obj, 'z')) then 
-            if not obj.image.path then 
+        local obj_entity = get_entity(obj)
+        if changed(obj, 'path') or (obj.batch and changed(obj_entity, 'z')) then 
+            if not obj.path then 
                 remove_image(obj)
                 remove_batch_image(obj)
-            elseif obj.image.batch then 
+            elseif obj.batch then 
                 update_batch_image(obj)
             else 
                 update_image(obj)
             end
         end
-        if obj.image.batch_key then
-            local batch = batches[obj.image.batch_key]
-            batch.object:set(obj.image.batch_id, get_draw_components(obj))
+        if obj_entity.batch_key then
+            local batch = batches[obj_entity.batch_key]
+            local comps = {get_draw_components(obj_entity)}
+            -- print(batch.object:getCount(), obj_entity.batch_key, '<-', obj_entity.batch_id)
+            batch.object:set(obj_entity.batch_id, get_draw_components(obj_entity))
         end
     end,
     draw = function(obj)
-        local image_obj = obj.image
-        if not image_obj then return true end
-        if image_obj.object then 
-            draw_object(image_obj, obj)
+        if not obj then return true end
+        if obj.object then
+            draw_object(obj, get_entity(obj))
         end
     end
 }
+
+ImageBatch = Spawner("blanke.imagebatch")
 
 System{
     type='blanke.imagebatch',

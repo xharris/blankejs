@@ -1,553 +1,512 @@
--- @global
-NO_STATE = '_'
+local entities = {} -- { uuid={ } }
+local components = {} -- { uuid{ entity=uuid } }
+local systems = {} -- { uuid={ } }
+--system
+local callback2system = {} -- { callback={ sys_id } }
+local component2system = {} -- { comp_name={ sys_id } }
+local type2system = {} -- { type={ sys_id } }
+local addSystem, removeSystem
+local component_requirements = {} -- { comp_name={ comp_names } }
+--component
+local comp_name2uuid = {} -- { comp_name={ comp_id } }
+local component_defaults = {} -- { comp_name=props }
+--entity
+local entity_templates = {} -- { name={} }
+local add_template
+ENTITY_REQUIRES = {'pos','quad','angle','size','scale','offset','shear','blendmode'}
+--world
+local require_component
+local check_obj_requirements
+local type2entity = {} -- { type={ uuid } }
+local type_count = {} -- { type=# }
+local type_count_incr
+local type_count_decr
+local destroyed_entities = {} -- { uuid }
+local destroyed_components = {} -- { uuid }
+local need_cleaning = false
+local remove_from_world
+local system_add_fresh_obj
+--state
+local states = {} -- { name={fns} }
+local STATES = {
+  NONE=1,
+  RESTART=2,
+  STOP=3
+}
 
-local iterate
-local all_entities = {}
--- sys vars
-local systems, system_ids
-local system_effect, system_entity
-local sys_add
-local system_callback_count
--- component vars
-local component_defaults
-local component_type
--- entity vars
-local entity_defaults, entity_functions
--- world vars
-local sys_callback
-local state_callback, check_obj_state
-local stray_entities, entity_sys_count, entity_state, last_world_state, world_state
-local process_system
-local world_add
-local type_list, type_add, type_remove
--- state vars
-local states
+local iterate 
 
 iterate = function(t, fn) -- fn(): return true to remove an object
-    local len = #t
-    local offset = 0
-    for o = 1, len do
-        local obj = t[o]
-        if obj then 
-            if fn(obj, o) == true then
-                offset = offset + 1 
-            else 
-                t[o] = nil
-                t[o - offset] = obj
-            end
-        end
-    end
+  local len = #t
+  local offset = 0
+  if len == 0 then return end
+  for o = 1, len do
+      local obj = t[o]
+      if obj then 
+          if fn(obj, o) == true then
+              offset = offset + 1 
+          else 
+              t[o] = nil
+              t[o - offset] = obj
+          end
+      end
+  end
 end
 
-iterate_entities = function(t, fn) -- fn(): return true to remove an object
-    local len = #t
-    local offset = 0
-    local resort = false
-    for o, uuid in ipairs(t) do
-        local uuid = t[o]
-        local obj = all_entities[uuid]
-        if obj then 
-            if obj.destroyed then 
-                offset = offset + 1
-                type_remove(obj)
-            else
-                if fn(obj, o) == true then
-                    offset = offset + 1 
-                else 
-                    t[o] = nil
-                    t[o - offset] = obj.uuid
-                    if obj.z == nil then obj.z = 0 end
-                    -- sort later?
-                    if obj._last_z ~= obj.z then
-                        resort = true
-                        obj._last_z = obj.z
-                    end
-                end
-            end
-        end
+--SYSTEM
+System = function(opt)
+  local sys_id = uuid()
+  local comp_name = opt.component
+  if comp_name then
+    -- store name of component this system deals with
+    if not component2system[comp_name] then 
+      component2system[comp_name] = {}
     end
-    return resort
+    table.insert(component2system[comp_name], sys_id)
+    -- store other requirements
+    if opt.requires and #opt.requires > 0 then 
+      if not component_requirements[comp_name] then 
+        component_requirements[comp_name] = {}
+      end
+      local comp_req = component_requirements[comp_name]
+      for _, req in ipairs(opt.requires) do 
+        if not comp_req[req] then 
+          table.insert(comp_req, req)
+          comp_req[req] = true
+        end
+      end
+    end
+  end
+  -- store callbacks this system has
+  for k, v in pairs(opt) do 
+    if k ~= 'requires' and k ~= 'type' and k ~= 'component' then 
+      if not callback2system[k] then 
+        callback2system[k] = {}
+      end
+      table.insert(callback2system[k], sys_id)
+    end
+  end
+  if opt.type and not type2entity[opt.type] then 
+    if not type2system[opt.type] then type2system[opt.type] = {} end
+    table.insert(type2system[opt.type], sys_id)
+    type2entity[opt.type] = {}
+  end
+
+  systems[sys_id] = opt
 end
 
-systems = {} -- { sys_id: { entity:{ uuid }, component:{ name }, callback:{ name:fn }, prop:{ k:v } } }
-system_ids = {} -- { sys_id1, sys_id2 }
-system_entity = {} -- { sys_id: { ent_uuid:t/nil/'new' } }
-system_type = {} -- { sys_id: type_str }
-system_callback_count = {} -- { callback_name: # }
-callback_entity_count = {} -- { callback_name: # }
-
--- @global
-destroy = function(obj)
-    if obj and not obj.destroyed then 
-        obj.destroyed = true
-        if obj._children then 
-            for k, v in ipairs(obj._children) do 
-                destroy(v)
-            end
-        end
+--COMPOENT
+Component = function(name, props)
+  if type(name) == 'table' then 
+    for name2, props2 in pairs(name) do 
+      Component(name2, props2)
     end
+    return 
+  end
+  -- add component name list
+  if not comp_name2uuid[name] then 
+    comp_name2uuid[name] = {} 
+  end
+
+  component_defaults[name] = props
+
+  return function(new_props)
+    return use(name, new_props)
+  end
 end
 
-sys_add = function(sys_id, obj)
-    local sys_ref = systems[sys_id]
-    if not system_entity[sys_id] then system_entity[sys_id] = {} end 
-    obj.is_entity = true
-    
-    if not system_entity[sys_id][obj.uuid] then 
-        entity_sys_count[obj.uuid] = entity_sys_count[obj.uuid] + 1
-        system_entity[sys_id][obj.uuid] = 'new'
-        table.insert(sys_ref.entity, obj.uuid)
+--@global: to be used before World.add, retrieves a loose component (one wihtout uuid)
+use = function(name, props, obj)
+  if comp_name2uuid[name] and (not props or not props.is_component) then
+    props = props or {}
+    props.is_component = name
+    local new_props = table.update(copy_shallow(component_defaults[name]), props)
+    if obj and not obj[name] then 
+      obj[name] = new_props
     end
-    -- obj was recently added
-    if system_entity[sys_id][obj.uuid] == 'new' then
-        for cb_name, _ in pairs(sys_ref.callback) do 
-            if not callback_entity_count[cb_name] then callback_entity_count[cb_name] = 1 else 
-            callback_entity_count[cb_name] = callback_entity_count[cb_name] + 1 end
-        end
-
-        system_entity[sys_id][obj.uuid] = true
-    end
+    if obj then require_component(obj, name) end
+    return new_props
+  end
+  return props
 end
 
--- @global
-System = callable {
-    __call = function(_, args)
-        local sys_id = uuid()
-    
-        args = args or {}
-        if args.template and args.template.type then
-            args.type = args.template.type
-        end
-
-        systems[sys_id] = { uuid=sys_id, entity={}, type=(args.type or nil), component={}, callback={}, prop={ index=1 } }
-        table.insert(system_ids, sys_id)
-
-        local sys_ref = systems[sys_id]
-        -- parse args
-        for c = 1, #args do 
-            -- required components
-            table.insert(sys_ref.component, args[c])
-        end
-        for name, v in pairs(args) do 
-            if type(v) == 'function' then
-                -- store callback
-                sys_ref.callback[name] = v
-                if not system_callback_count[name] then 
-                    system_callback_count[name] = 1 
-                else 
-                    system_callback_count[name] = system_callback_count[name] + 1
-                end
-            else 
-                -- store system property
-                sys_ref.prop[name] = v
-            end
-        end
-        if args.type then 
-            system_type[sys_id] = args.type
-        end
-        
-        table.sort(system_ids, function(a, b) 
-            return systems[a].prop.index < systems[b].prop.index
-        end)
-
-        if args.type then 
-            return Spawner(args.type, args.template)
-        end
-    end,
-    -- see if the object fits into any systems
-    add = function(obj, system_id) 
-        local sys_ref
-        local found_a_system = false
-        for _, sys_id in ipairs(system_ids) do 
-            sys_ref = systems[sys_id]
-            local this_system = false
-            if obj.type and obj.type == system_type[sys_id] then 
-                -- this system handles entities of this type
-                sys_add(sys_id, obj)
-                found_a_system = true
-                this_system = true
-            end
-            for _, component in ipairs(sys_ref.component) do 
-                if obj[component] ~= nil then 
-                    -- this system handles entities with this component
-                    sys_add(sys_id, obj)
-                    found_a_system = true
-                    this_system = true
-                end
-            end
-            if this_system then 
-                sys_callback(sys_ref, 'add', obj)
-            end
-        end
-        return found_a_system
-    end,
-    remove = function(obj, sys_id)
-        if not sys_id then
-            -- remove object from all systems
-            for _, sys_id in ipairs(system_ids) do 
-                System.remove(obj, sys_id)
-            end
-        else
-            local sys_ref = systems[sys_id]
-            -- remove object from one system
-            if system_entity[sys_id] and system_entity[sys_id][obj.uuid] then
-                print('rem',obj.type) 
-                sys_callback(sys_ref, 'remove', obj)                        
-                entity_sys_count[obj.uuid] = entity_sys_count[obj.uuid] - 1
-                system_entity[sys_id][obj.uuid] = nil
-                if entity_sys_count[obj.uuid] == 0 then 
-                    -- entity is no longer part of any system
-                    table.insert(stray_entities, obj.uuid)
-                end
-            end
-            
-            for cb_name, _ in pairs(sys_ref.callback) do  
-                if callback_entity_count[name] then
-                        callback_entity_count[cb_name] = callback_entity_count[cb_name] - 1 
-                end
-            end
-        end
-    end,
-    -- is the object in at least one system
-    contains = function(obj)
-        for _, sys_id in ipairs(system_ids) do
-            if systems_entity[sys_id] and systems_entity[sys_id][obj.uuid] then 
-                return true
-            end
-        end 
-    end,
-    callback_count = function(name)
-        return system_callback_count[name] or 0
-    end,
-    callback_entity_count = function(name)
-        return callback_entity_count[name] or 0
-    end,
-    stats = function(_type)
-        local stats = {} 
-        if _type == 'callback' then 
-            for name, count in pairs(callback_entity_count) do 
-                table.insert(stats, name..'='..count)
-            end
-        else 
-            for _, sys_id in ipairs(system_ids) do 
-                local sys_ref = systems[sys_id]
-                table.insert(stats, (system_type[sys_id] or table.join(sys_ref.component, '-')) .. '=' .. #sys_ref.entity)
-            end
-            table.insert(stats, ('none=' .. #stray_entities))
-        end
-        return table.join(stats, ', ') 
-    end
-}
-
--- register defaults for a component
-component_defaults = {} -- { name={ prop=value } }
-component_type = {} -- { name=type(prop) }
---COMPONENT @global
-Component = callable{
-    __call = function(_, name, props)
-        if type(name) == "table" then 
-            -- add multiple components at once
-            for name2, props2 in pairs(name) do
-                Component(name2, props2)
-            end
-            return
-        else 
-            local comp_type = type(props)
-            component_defaults[name] = copy(props)
-            component_type[name] = comp_type
-            -- add just the keys
-            if comp_type == "table" and props[1] == nil then 
-                for k, _ in pairs(props) do 
-                    table.insert(component_defaults[name], k)
-                end
-            end
-        end
-    end,
-    exists = function(name)
-        return component_defaults[name] ~= nil
-    end,
-    use = function(entity, name)
-        if component_defaults[name] ~= nil then 
-            if component_type[name] == "table" then 
-                if not entity[name] then entity[name] = {} end
-                table.update(entity[name], component_defaults[name])
-            else 
-                entity[name] = component_defaults[name]
-            end
-        else 
-            entity[name] = {}
-        end
-    end
-}
-
---[[ -- remove this 'class'?
-entity_defaults = {} -- { name={ prop=value } }
-entity_functions = {} -- { entity_name={ fn_name=fn() } }
--- @global
-Entity = callable{
-    __call = function(_, name, props)
-        -- store props as components
-        entity_defaults[name] = {}
-        for k,v in pairs(props) do 
-            Component.use(entity_defaults[name], k)
-        end
-        return function(name, overrides)
-            Entity.spawn(name, overrides)
-        end
-    end,
-    spawn = function(name, overrides)
-        local new_entity = {}
-        if entity_defaults[name] then 
-            table.update(new_entity, entity_defaults[name])
-        end
-        World.add(new_entity)
-    end
-}
-]]
-
-sys_callback = function(sys_ref, name, obj, ...)
-    if sys_ref.callback[name] then 
-        return sys_ref.callback[name](obj, ...)
-    end
+add_template = function(name, template)
+  if not entity_templates[name] then 
+    entity_templates[name] = copy(template)
+  else
+    table.update(entity_templates[name], template)
+  end
 end
 
-state_callback = function(name, ...)
-    if states[world_state] and states[world_state][name] then 
-        return states[world_state][name](...)
+--ENTITY (combo template/system setup that returns a spawner)
+Entity = function(name, template)
+  local has_methods = false
+  local methods = {}
+  local require_added = {} -- { comp_name=t/f }
+  local requires = {} -- { comp_name }
+
+  local entity_requires = ENTITY_REQUIRES
+  for _, req in ipairs(entity_requires) do 
+    require_added[req] = true
+    table.insert(requires, req)
+  end
+
+  for k, v in pairs(template) do
+    -- get those methods outta here!
+    if type(v) == 'function' then 
+      has_methods = true
+      methods[k] = v
+      template[k] = nil
+    end 
+    -- guess if there are illegitamate(?) components
+    if type(v) == 'table' and World.guess_components then 
+      template[k] = use(k, v)
+      if template[k].is_component and not require_added[k] then 
+        require_added[k] = true
+        table.insert(requires, k)
+      end
     end
-end
-
-check_obj_state = function(obj)
-    return entity_state[obj.uuid] ~= nil and (
-        obj.persistent == true or 
-        entity_state[obj.uuid] == world_state or 
-        entity_state[obj.uuid] == NO_STATE
-    )
-end
-
-process_system = function(sys_id, cb_name, args, wrapper_fn)
-    local sys_ref = systems[sys_id]
-    if sys_ref.callback[cb_name] then
-        -- iterate entities
-        local resort = iterate_entities(sys_ref.entity, function(obj)
-            local rem 
-            if check_obj_state(obj) then
-                if wrapper_fn then 
-                    wrapper_fn(obj, function() 
-                        if sys_callback(sys_ref, cb_name, obj, unpack(args)) then 
-                            rem = true
-                        end
-                    end)
-                else
-                    if sys_callback(sys_ref, cb_name, obj, unpack(args)) then 
-                        rem = true
-                    end
-                end
-                if rem then 
-                    print('rem',obj.type, sys_ref.type)
-                    -- remove the obj from the system
-                    System.remove(obj, sys_id)
-                end
-            else 
-                rem = true 
-            end
-            return rem
-        end)
-        if resort then
-            table.sort(sys_ref.entity, function(a, b)
-                return all_entities[a].z < all_entities[b].z
-            end)
-        end
-    end
-end
-
---SPAWNER @global
-Spawner = callable{
-    __call = function(_, sys_type, template)
-        template = template or {}
-        template.type = sys_type
-
-        return callable{
-            is_spawner=true,
-            type=sys_type,
-            template=copy(template),
-            __call = function(self, args)
-                local new_entity = copy(self.template)
-                if args and type(args) == 'table' then 
-                    table.update(new_entity, args)
-                end
-                return World.add(new_entity)
-            end,
-            bind = function(self, new_template)
-                return Spawner(self.type, new_template)
-            end
-        }
-    end
-}
-
-stray_entities = {} -- {}
-entity_sys_count = {} -- { uuid:# } (how many systems an entity belongs to)
-entity_state = {} -- { uuid:state_name/nil } (what state the entity started in)
-last_world_state = NO_STATE
-world_state = NO_STATE
-type_list = {} -- { type:{ entities... } }
-
-type_add = function(obj)
-    if obj.type ~= nil then 
-        if not type_list[obj.type] then type_list[obj.type] = {} end 
-        table.insert(type_list[obj.type], obj.uuid)
-    end
-end
-
-type_remove = function(obj)
-    if obj.type ~= nil and type_list[obj.type] ~= nil then 
-        iterate(type_list[obj.type], function(_uuid)
-            if _uuid == obj.uuid then return true end
-        end)
-    end
-end
-
---WORLD @global
-World = {
-    add = function(obj)
-        if obj.is_spawner then 
-            return obj()
-        end
-
-        if not obj.z then obj.z = 0 end
-        if not obj.uuid then obj.uuid = uuid() end 
-        -- obj already in the world?
-        if entity_state[obj.uuid] == nil then 
-            entity_state[obj.uuid] = world_state
-            entity_sys_count[obj.uuid] = 0  
-    
-            all_entities[obj.uuid] = obj
-            table.insert(stray_entities, obj.uuid)
-    
-            type_add(obj)
-        end         
-
-        -- spawn any children?
-        local children
-        for k,v in pairs(obj) do 
-            if type(v) == "table" and v.type then 
-                local new_child = World.add(v)
-                obj[k] = new_child
-                
-                if not children then children = {} end
-                table.insert(children, {
-                    uuid=new_child.uuid,
-                    key=k
-                })
-            end
-        end
-        obj._children = children
-        
-        return obj
-    end,
-    remove = function(obj)
-        System.remove(obj)
-        entity_state[obj.uuid] = nil
-        all_entities[obj.uuid] = nil
-    end,
-    get_type = function(_type)
-        return type_list[_type] or {}
-    end,
-    update = function(dt)
-        -- see if any system can use a stray entity
-        iterate_entities(stray_entities, function(obj)
-            if check_obj_state(obj) then
-                return System.add(obj)
-            end
-        end)
-        stray_entities = {}
-        
-        -- changing state
-        if world_state ~= last_world_state then
-            state_callback('enter')
-            last_world_state = world_state
-        else
-            state_callback('update',dt)
-        end
-        World.process('update',{dt}) -- calls every system with an update
-    end,
-    set_state = function(name)
-        state_callback('exit') 
-        world_state = name or NO_STATE
-    end,
-    -- iterate all systems and their entities
-    process = function(cb_name, args, wrapper_fn)
-        for _, sys_id in ipairs(system_ids) do
-            process_system(sys_id, cb_name, args or {}, wrapper_fn)
-        end
-    end,
-    -- iterate one system's entities
-    processOne = function(sys_id, cb_name, args, wrapper_fn)
-        process_system(sys_id, cb_name, args or {}, wrapper_fn)
-    end,
-    draw = function()   
-        local draw_world = function()
-            World.process('draw', nil, World.draw_modifier)            
-            state_callback('draw',dt)
-        end
-    
-        local draw_camera = function()
-            Draw{
-                {'push'},
-                {'color',Game.options.background_color},
-                {'rect','fill',0,0,Game.width,Game.height},
-                {'pop'}
-            }
-            -- if Camera.count() > 0 then
-            --     Camera.useAll(draw_world)
-            -- else 
-                draw_world()
-            -- end
-        end
-    
-        local draw_game = function()
-            Game.options.draw(function()
-                -- if Game.effect then
-                --     Game.effect:draw(draw_camera)
-                -- else 
-                    draw_camera()
-                -- end
-            end)
-        end
+  end
+  add_template(name, template)
+  -- create system for this entity if it has functions attached to it
+  if has_methods then 
+    methods.type = name
+    methods.requires = requires
+    System(methods)
+  end
      
-        Draw.origin()
-        local game_canvas = Game.canvas
-        game_canvas:drawTo(draw_game)
-        if Game.options.scale == true then
-            game_canvas.pos.x, game_canvas.pos.y = Blanke.padx, Blanke.pady
-            game_canvas.scale = Blanke.scale
-        end
+  return Spawner(name, template)
+end
 
-        -- World.draw_modifier(Game.canvas, function() game_canvas:draw() end)
-        Effect.apply(Game, function()
-            game_canvas:draw()
+--SPAWNER
+Spawner = function(_type, new_template)
+  if new_template then 
+    entity_templates[_type] = new_template
+  end
+  local template_keys = table.keys(new_template or {})
+
+  return function(spawn_props)
+    spawn_props = spawn_props or {}
+    spawn_props.type = _type
+
+    local template = entity_templates[_type]
+    local new_entity = {} -- copy(template or {}) --{}
+    local key
+    for i=1,#template_keys do 
+      key = template_keys[i]
+      new_entity[key] = copy_shallow(template[key]) --template[key]
+    end
+    table.update(new_entity, spawn_props)
+
+    World.add(new_entity)
+    return new_entity
+  end
+end
+
+system_add_fresh_obj = function(obj, sys_id)
+  local sys_ref = systems[sys_id]
+  if (obj.is_entity and sys_ref.type == obj.type) or (obj.is_component and sys_ref.component == obj.is_component) then
+    if sys_ref.add then
+      sys_ref.add(obj)
+    end
+  end
+end
+
+-- check if object has all of their systems requirements
+check_obj_requirements = function(obj, sys_id)
+  local sys_ref = systems[sys_id]
+  if sys_ref.requires and #sys_ref.requires > 0 then 
+    for _, req in ipairs(sys_ref.requires) do
+      require_component(obj, req)
+    end
+  end
+end
+
+require_component = function(obj, comp_name)
+  local obj_comp = obj[comp_name]
+  -- could this be a component?  
+  if component_defaults[comp_name] ~= nil and (obj_comp == nil or (type(obj_comp) == 'table' and obj_comp.is_component and not obj_comp.uuid)) then 
+    obj_comp = use(comp_name, obj_comp) 
+    -- add entity uuid reference to components
+    obj_comp.entity_uuid = obj.uuid
+    obj_comp.state_name = obj.state_name
+    obj_comp.uuid = uuid() 
+    components[obj_comp.uuid] = obj_comp
+    table.insert(comp_name2uuid[comp_name], obj_comp.uuid)
+
+    obj[comp_name] = obj_comp
+  end
+  if type(obj_comp) == "table" and obj_comp.is_component then
+    if component_requirements[obj_comp.is_component] then
+      -- find what other components are necessary
+      for _, req in ipairs(component_requirements[obj_comp.is_component]) do 
+        require_component(obj, req)
+      end
+    end
+    if component2system[obj_comp.is_component] then
+      for _, sys_id in ipairs(component2system[obj_comp.is_component]) do 
+        -- check_obj_requirements(obj, sys_id, true)
+        system_add_fresh_obj(obj_comp, sys_id)
+      end
+    end
+  end
+end
+
+remove_from_world = function(obj)
+  if not need_cleaning then need_cleaning = {} end 
+
+  if obj.is_entity then 
+    table.insert(destroyed_entities, obj.uuid)
+    World.remove(obj)
+    need_cleaning.entity = true
+    type_count_decr(obj.type)
+
+  elseif obj.is_component then 
+    table.insert(destroyed_components, obj.uuid)
+    need_cleaning.component = true
+
+  end
+
+  return true
+end
+
+type_count_incr = function(_type)
+  if not type_count[_type] then type_count[_type] = 0 end
+  type_count[_type] = type_count[_type] + 1
+end
+type_count_decr = function(_type)
+  if not type_count[_type] then type_count[_type] = 0 end
+  type_count[_type] = type_count[_type] - 1
+end
+
+--WORLD
+World = {
+  guess_components = true,
+  -- for adding entities with components
+  add = function(obj)
+    if obj.is_component then return obj end
+    obj.is_entity = true
+    if not obj.uuid then 
+      obj.uuid = uuid()
+      entities[obj.uuid] = obj
+      obj.state_name = State.current
+    end
+    for k,v in pairs(obj) do
+      require_component(obj, k)
+    end
+    if obj.type then 
+      -- obj has entity type
+      if not type2entity[obj.type] then 
+        type2entity[obj.type] = {}
+      end
+      table.insert(type2entity[obj.type], obj.uuid)
+      local sys_ref
+      for _, sys_id in ipairs(type2system[obj.type]) do
+        -- get system requirements
+        check_obj_requirements(obj, sys_id)
+        sys_ref = systems[sys_id]
+        system_add_fresh_obj(obj, sys_id)
+      end
+      type_count_incr(obj.type)
+    end
+    return obj
+  end,
+  remove = function(obj) 
+    -- remove this obj 
+    obj.destroyed = true
+    -- remove components
+    for k,v in pairs(obj) do 
+      if type(v) == 'table' and v.is_component then 
+        v.destroyed = true
+      end
+    end
+  end,
+  remove_all = function(obj, fn)
+    
+  end,
+  process = function(callback, ...)
+    local args = {...}
+    --  iterate callback2system
+    --    if system.type ~= nil
+    --      iterate type2entity
+    --        if entity.destroyed: remove
+    --        else: call syscallback(entities[component.entity])
+    --    iterate component2system
+    --      if component.destroyed: remove
+    --      else: call syscallback(entities[component.entity])
+    if callback2system[callback] then 
+      local sys_ref, obj_ref, comp_ref
+      local sys_ref_component
+      -- iter systems with this callback
+      iterate(callback2system[callback], function(sys_id)
+        sys_ref = systems[sys_id]
+        if sys_ref.type ~= nil then 
+          -- iter objects of this system's type
+          iterate(type2entity[sys_ref.type], function(obj_id)
+            obj_ref = entities[obj_id]
+            if State.check_obj(obj_ref) then 
+              return remove_from_world(obj_ref) 
+            end
+            if obj_ref.destroyed then
+              return remove_from_world(obj_ref)
+            end
+            if sys_ref[callback](obj_ref, unpack(args)) then
+              return remove_from_world(obj_ref)
+            end
+          end)
+        end
+        -- iter components in system
+        sys_ref_component = sys_ref.component
+        if sys_ref_component and comp_name2uuid[sys_ref_component] then 
+          iterate(comp_name2uuid[sys_ref_component], function(comp_id)
+            comp_ref = components[comp_id]
+            if State.check_obj(comp_ref) then 
+              return remove_from_world(comp_ref) 
+            end
+
+            obj_ref = entities[comp_ref.entity_uuid]
+            if obj_ref.destroyed or comp_ref.destroyed then
+              return remove_from_world(comp_ref)
+            end
+            if sys_ref[callback](comp_ref, unpack(args)) then
+              return remove_from_world(comp_ref)
+            end
+          end)
+        end
+      end)
+    end
+  end,
+  clean = function()
+    if need_cleaning then 
+      -- clean entities
+      if need_cleaning.entity then 
+        iterate(destroyed_entities, function(obj)
+          
         end)
-
-        if do_profiling then
-            Draw.push()
-            Draw.color('black')
-            love.graphics.print(love.report or "Please wait...")
-            Draw.pop()
-        end
-    end,
-    draw_modifier = function(obj, fn) fn() end
+        destroyed_entities = {}
+      end
+      -- clean components
+      if need_cleaning.component then
+        iterate(destroyed_entities, function(obj)
+          
+        end)
+        destroyed_components = {}
+      end
+      need_cleaning = nil
+    end
+  end,
+  stats = function(v)
+    if v == 'type' then 
+      local list = {}
+      for _type, count in pairs(type_count) do 
+        table.insert(list, _type..'='..count)
+      end
+      return table.join(list, ', ')
+    end
+  end,
+  update = function(dt)
+    if dt == 0 then
+      --print_r(entity_templates)
+      --print("SYSTEMS")
+      --print_r(systems)
+      --print("ENTITIES")
+      --print_r(entities) 
+      --print("COMPONENTS")
+      --print_r(components)
+    end
+    World.process('update', dt)
+    World.clean()
+    State.callback('update', dt)
+    State.check()
+  end,
+  draw = function()
+    World.process('draw')
+    State.callback('draw')
+  end
 }
 
---STATE
-states = {} -- { state_name={ name=fn } }
+-- get a component from an entity or return some defaults
+-- defaults do not override component_defaults unless override=True
 -- @global
+extract = function(obj, comp_name, defaults, override)
+  assert(component_defaults[comp_name] or defaults ~= nil, "No such component '"..comp_name.."'")
+  
+  -- make sure object has component
+  if obj[comp_name] == nil then 
+      require_component(obj, comp_name)
+  end 
+  
+  if override then 
+    obj[comp_name] = defaults or copy_shallow(component_defaults[comp_name])
+  end
+  return obj[comp_name]
+end
+
+get_entity = function(component)
+  if component.entity_uuid then 
+    return entities[component.entity_uuid] or {}
+  end 
+  return {}
+end
+
+--STATE@global
 State = callable{
     __call = function(_, name, fns) 
+      if type(name) == "string" then
         if not states[name] then states[name] = {} end
         table.update(states[name], fns)
+      end
     end,
-    start       = function(name) World.set_state(name) end,
-    switch      = function(name) World.set_state(name) end,
-    restart     = function() World.set_state(world_state) end,
-    stop        = function() World.set_state(NO_STATE) end
+    current     = STATES.NONE,
+    next        = STATES.NONE,
+    start       = function(name)
+      State.switch(name)
+    end,
+    switch      = function(name) 
+      if name == State.current then 
+        State.restart()
+      else
+        State.next = name
+      end
+    end,
+    restart     = function() 
+      State.next = STATES.RESTART
+    end,
+    stop        = function() 
+      State.next = STATES.STOP 
+    end,
+    callback    = function(callback, ...)
+      local state = states[State.current]
+      if state and state[callback] then 
+        state[callback](...)
+      end
+    end,
+    check     = function(callback, ...)
+      -- restart
+      if State.next == STATES.RESTART then
+        State.callback('leave')
+        State.next = State.current
+        State.current = STATES.NONE
+
+      -- stop
+      elseif State.next == STATES.STOP then 
+        State.current = STATES.NONE
+        State.next = STATES.NONE
+        State.callback('leave')
+
+      -- switch
+      elseif State.next ~= STATES.NONE then 
+        if State.current ~= STATES.NONE then 
+          State.callback('leave')
+        end
+        State.current = State.next
+        State.next = STATES.NONE
+        State.callback('enter')
+      end
+    end,
+    check_obj = function(obj)
+      if not obj.persistent and obj.state_name ~= State.current then 
+        return true
+      end
+    end
 }

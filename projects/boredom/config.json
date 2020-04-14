@@ -7,6 +7,8 @@
             "label": "write conf.lua"
         }
     ],
+    "write_conf": true,
+    "engine_type": "oop",
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "first_scene": null,
@@ -16,24 +18,24 @@
     ],
     "quick_access": [
         [
+            "movingblock.lua=script+?",
+            "movingblock.lua"
+        ],
+        [
+            "Dialogue.lua=script+?",
+            "Dialogue.lua"
+        ],
+        [
+            "main.lua=script+state+?",
+            "main.lua"
+        ],
+        [
             "player.lua=script+?",
             "player.lua"
         ],
         [
             "level1.map=map+?",
             "level1.map"
-        ],
-        [
-            "movingblock.lua=script+?",
-            "movingblock.lua"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
-        ],
-        [
-            "main.lua=script+state+?",
-            "main.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -248,6 +250,5 @@
             ],
             "spacing": 0
         }
-    },
-    "write_conf": true
+    }
 }

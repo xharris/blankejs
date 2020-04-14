@@ -1,6 +1,6 @@
 {
     "write_conf": true,
-    "engine_type": "ecs",
+    "engine_type": "oop",
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "first_scene": null,
@@ -8,24 +8,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "ecs.lua=script+state+?",
-            "ecs.lua"
+            "platformer.lua=script+?",
+            "platformer.lua"
         ],
         [
             "main.lua=script+?",
             "main.lua"
         ],
         [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
             "bunnymark.lua=script+?",
             "bunnymark.lua"
         ],
         [
-            "ecs2.lua=script+?",
-            "ecs2.lua"
-        ],
-        [
-            "Clear history=?",
-            "Clear history"
+            "ecs.lua=script+state+?",
+            "ecs.lua"
         ]
     ],
     "autoplay_preview": true,

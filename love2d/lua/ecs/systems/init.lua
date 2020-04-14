@@ -1,13 +1,10 @@
 local _NAME = ...
 
--- basic components
 Component{
+    -- basic components
     pos             = { x = 0, y = 0 },
-    vel             = { x = 0, y = 0 }
-}
 
--- drawing components
-Component{
+    -- drawing components
     quad            = { },
     size            = { width = 1, height = 1 },
     angle           = { 0 },
@@ -20,11 +17,11 @@ Component{
 
 EcsUtil = {
     require_draw_components = function()
-        return {'quad','pos','angle','size','scale','offset','shear','blendmode'}
+        return {'pos','quad','angle','size','scale','offset','shear','blendmode'}
     end,
     extract_draw_components = function(obj, override)
         override = override or {}
-        local comps = {'quad','pos','angle','size','scale','offset','shear','blendmode'}
+        local comps = {'pos','quad','angle','size','scale','offset','shear','blendmode'}
         for _, comp_name in ipairs(comps) do 
             extract(obj, comp_name, override[comp_name], true)
         end
@@ -35,10 +32,13 @@ EcsUtil = {
             object = object.value
         end
         if object then 
-            local main_obj = obj 
-            local blendmode = extract(main_obj, 'blendmode')
-            if prop_obj then main_obj = prop_obj end
-            Draw.setBlendMode(unpack(blendmode))
+            local main_obj = prop_obj or obj 
+            -- local blendmode = extract(main_obj, 'blendmode')
+            if not main_obj.has_draw_components then 
+                main_obj.has_draw_components = true
+                EcsUtil.extract_draw_components(main_obj)
+            end
+            Draw.setBlendMode(unpack(main_obj.blendmode))
             love.graphics.draw(object, EcsUtil.get_draw_components(main_obj))
         end
     end,
@@ -63,8 +63,8 @@ EcsUtil = {
 --CANVAS
 require(_NAME..".canvas")
 require(_NAME..".image")
+require(_NAME..".movement")
 --require(_NAME..".effect")
---require(_NAME..".movement")
 --require(_NAME..".animation")
 require(_NAME..".timer")
 -- camera

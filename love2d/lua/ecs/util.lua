@@ -1,5 +1,4 @@
 math.randomseed(os.time())
-local do_profiling = false -- false/#
 
 local bitop = require 'lua.bitop'
 local bit = bitop.bit
@@ -312,6 +311,21 @@ sort = function(t, key, default)
         return a[key] < b[key]
     end)
 end
+
+copy_shallow = function(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
 copy = function(orig, copies)
     copies = copies or {}
     local orig_type = type(orig)
@@ -417,7 +431,11 @@ end
 
 -- call at the end of update
 reset_tracks = function()
-    table.update(entity_track, tracks_changed)
+    local ref
+    for i=1,#tracks_changed do 
+        ref = tracks_changed[i]
+        entity_track[ref] = tracks_changed[ref]
+    end
     tracks_changed = {}
 end
 
@@ -887,7 +905,7 @@ do
         vsync = function(v)
             if not ge_version(11,3) then return end
             if not v then return love.window.getVSync()
-            else love.window.setVSync(v) end
+            else print('vsync',v) love.window.setVSync(v) end
         end;
         setSize = function(r, flags)
             local w, h = Window.calculateSize(r)

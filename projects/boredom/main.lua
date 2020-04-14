@@ -15,7 +15,6 @@ Input({
 })
 
 Game { 
-    res = 'assets',
     filter = 'nearest',
 	plugins = { 'xhh-effect', 'xhh-tween' },
 	background_color = "white",
@@ -30,3 +29,4 @@ State("play", {
 	end
 })
 
+Hitbox.debug = true

@@ -1,7 +1,9 @@
 local _NAME = ...
 require(_NAME..'.util')
-require(_NAME..'.ecs2')
+require(_NAME..'.ecs')
 require(_NAME..'.systems')
+
+local do_profiling = nil -- false/#
 
 local dt = 0
 local fixed_dt = 1/60
@@ -12,7 +14,6 @@ Blanke = {
         love.frame = 0
         if do_profiling then
             love.profiler = require 'profile'
-            love.profiler.start()
         end 
         Game.options.load()
         Game.love_version = {love.getVersion()}
@@ -48,6 +49,10 @@ Blanke = {
 
         local update = function(_dt)
             if do_profiling then
+                love.profiler.start()
+            end
+            World.update(_dt)
+            if do_profiling then
                 love.frame = love.frame + 1
                 if love.frame > 60 and not love.report then 
                     love.profiler.stop()
@@ -55,7 +60,6 @@ Blanke = {
                     print(love.report)
                 end
             end
-            World.update(_dt)
             Timer.update(_dt)
 
             Game.time = Game.time + _dt

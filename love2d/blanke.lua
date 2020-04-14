@@ -1,7 +1,8 @@
 -- TODO Images have their own hitbox instead of entity. Entity just uses the current animations hitbox
+-- TODO rework Image to autobatch
 -- TODO Blanke.config
 math.randomseed(os.time())
-local do_profiling = false -- false/#
+local do_profiling = nil -- false/#
 local profiling_color = {1,0,0,1}
 
 local bitop = require 'lua.bitop'
@@ -288,22 +289,16 @@ switch = function(val, choices)
     elseif choices.default then choices.default() end
 end
 -- for sorting a table of objects
-sort = function(t, key) 
+sort = function(t, key, default) 
     table.sort(t, function(a, b) 
-        if a == nil and b == nil then
-            return false
-        end
-        if a == nil then
-            return true
-        end
-        if b == nil then
-            return false
-        end
+        if a[key] == nil then a[key] = default end 
+        if b[key] == nil then b[key] = default end
         a['_last_'..key] = a[key]
-        b['_last_'..key] = b[key]
+        b['_last_'..key] = b[key] 
         return a[key] < b[key]
     end)
 end
+
 copy = function(orig, copies)
     copies = copies or {}
     local orig_type = type(orig)
@@ -635,8 +630,6 @@ do
         config = {};
         updatables = {};
         drawables = {};
-        win_width = 0;
-        win_height = 0;
         width = 0;
         height = 0;
         time = 0;
@@ -656,13 +649,13 @@ do
         end;
 
         updateWinSize = function(w,h)
-            Game.win_width, Game.win_height, flags = love.window.getMode()
-            if w and h then Game.win_width, Game.win_height = w, h end
+            Window.width, Window.height, flags = love.window.getMode()
+            if w and h then Window.width, Window.height = w, h end
             if Window.os == 'web' then
-                Game.width, Game.height = Game.win_width, Game.win_height
+                Game.width, Game.height = Window.width, Window.height
             end
             if not Game.options.scale then
-                Game.width, Game.height = Game.win_width, Game.win_height
+                Game.width, Game.height = Window.width, Window.height
                 if Blanke.game_canvas then Blanke.game_canvas:resize(Game.width, Game.height) end
             end
         end;
@@ -796,7 +789,7 @@ do
         end;
 
         sortDrawables = function()
-            sort(Game.drawables, 'z')
+            sort(Game.drawables, 'z', 0)
         end;
         
         updateObject = function(dt, obj)
@@ -845,13 +838,13 @@ do
         update = function(dt)
             mouse_x, mouse_y = love.mouse.getPosition()
             if Game.options.scale == true then
-                local scalex, scaley = Game.win_width / Game.width, Game.win_height / Game.height
+                local scalex, scaley = Window.width / Game.width, Window.height / Game.height
                 Blanke.scale = math.min(scalex, scaley)
                 Blanke.padx, Blanke.pady = 0, 0
                 if scalex > scaley then
-                    Blanke.padx = floor((Game.win_width - (Game.width * Blanke.scale)) / 2)
+                    Blanke.padx = floor((Window.width - (Game.width * Blanke.scale)) / 2)
                 else 
-                    Blanke.pady = floor((Game.win_height - (Game.height * Blanke.scale)) / 2)
+                    Blanke.pady = floor((Window.height - (Game.height * Blanke.scale)) / 2)
                 end
                 -- offset mouse coordinates
                 mouse_x = floor((mouse_x - Blanke.padx) / Blanke.scale)
@@ -1080,13 +1073,7 @@ do
             end
         end;
         -- options: cols, rows, offx, offy, frames ('1-3',4,5), duration, durations
-        animation = function(opt)
-            local file = opt.file 
-            local animations = {}
-            for _, anim in ipairs(opt) do 
-                
-            end
-
+        animation = function(file, anims, all_opt)
             all_opt = all_opt or {}
             local img = getImage(file)
             if not anims then 
@@ -1142,7 +1129,7 @@ do
                 -- animation (speed, frame_index)
                 args = {file=anim_info.file}
                 self.animated = anim_info
-                self.speed = anim_info.speed
+                self.speed = anim_info.speed or 1
                 self.t, self.frame_index, self.frame_len = 0, 1, anim_info.durations[1] or anim_info.duration
                 self.quads = anim_info.quads
                 self.frame_count = #self.quads
@@ -1288,7 +1275,7 @@ do
                         if not args.animation then 
                             args.animation = anim_name 
                         end
-                        self.animList[anim_name] = Image{file=args.animation, animation=args.animation, skip_update=true}
+                        self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
                     end
                 else  
                     if not args.animation then 
@@ -1360,6 +1347,7 @@ do
             if self.body then self.body:setPosition(self.x, self.y) end
         end;
         _updateSize = function(self,obj,skip_anim_check)
+            --[[
             if self.animation then
                 local anim = self.animList[self.animation]
                 assert(skip_anim_check or anim, self.classname.." missing animation '"..self.animation.."'")
@@ -1373,6 +1361,20 @@ do
                     Net.sync(self, {'anim_frame'})
                 end
             end 
+            ]]
+            if self.animation then	
+                assert(skip_anim_check or self.animList[self.animation], self.classname.." missing animation '"..self.animation.."'")	
+                if self.anim_speed ~= nil then
+                    self.animList[self.animation].speed = self.anim_speed 
+                end
+                if self.anim_speed == 0 then 	
+                    self.animList[self.animation].frame_index = self.anim_frame	
+                    Net.sync(self, {'anim_speed','anim_frame'})	
+                else 	
+                    self.anim_frame = self.animList[self.animation].frame_index	
+                end	
+                Net.sync(self, {'anim_speed'})
+            end
             if not self._preset_size then
                 self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
             end
@@ -2660,9 +2662,9 @@ do
             left = obj.alignx + (obj.width/2)
             top =  obj.aligny + (obj.height/2)
         end
-        
+ 
         local hb_var_type = type(obj.hitbox)
-        local hb_type, radius
+        local hb_type = 'rect', radius
         -- figure out what type of hitbox this is
         if hb_var_type == 'string' then 
             hb_type = obj.hitbox
@@ -2700,6 +2702,7 @@ do
         end
         return obj.hitbox
     end
+    
     local checkCollision = function(obj1, obj2) 
         --[[
             0 - rect rect
@@ -2758,6 +2761,7 @@ do
 
             if obj and not obj.destroyed and obj.hasHitbox then
                 local filter = function(item, other)
+                    --[[ TODO FIX
                     local ret = obj.default_reaction or Hitbox.default_reaction
                     if obj.reaction then
                         if type(obj.reaction) == "string" then ret = obj.reaction else 
@@ -2774,6 +2778,10 @@ do
                         if new_ret then ret = new_ret end
                     end
                     return ret
+                    ]]
+                    if obj.reaction and obj.reaction[other.tag] then return obj.reaction[other.tag] end	
+                    if obj.filter then return obj:filter(item, other) end	
+                    return obj.default_reaction or Hitbox.default_reaction
                 end
                 local ha = checkHitArea(obj)
                 local new_x, new_y, cols, len = world:move(obj, 
@@ -2791,9 +2799,13 @@ do
                 if obj.collision and len > 0 then
                     for i=1,len do
                         if not obj or obj.destroyed then return end
-                        obj:collision(cols[i])
                         local info = cols[i]
                         local other = info.other
+
+                        -- if info.type ~= 'cross' then -- TODO FIX
+                            obj:collision(info)
+                        -- end
+                        
                         swap(info, 'item', 'other')
                         swap(info, 'itemRect', 'otherRect')
                         if other and not other.destroyed and other.collision then other:collision(info) end
@@ -3239,6 +3251,8 @@ do
         end
     end
     Window = {
+        width = 1;
+        height = 1;
         os = nil;
         aspect_ratio = nil;
         aspect_ratios = { {4,3}, {5,4}, {16,10}, {16,9} };
@@ -3391,19 +3405,26 @@ do
     local iterate = function(t, test_val, fn) 
         local len = #t
         local offset = 0
-        for o, obj in ipairs(t) do
+        local reorder = false
+        for o=1,len do
             local obj = t[o]
             if obj then 
                 if obj.destroyed or not obj[test_val] then 
                     offset = offset + 1
                 else
+                    if obj._last_z == nil then obj._last_z = obj.z end 
+                    if obj._last_z ~= obj.z then reorder = true end
                     fn(obj, o)
                     t[o] = nil
                     t[o - offset] = obj
                 end
             end
         end
+        return reorder
     end
+
+    local update_obj = Game.updateObject
+    local stack = Draw.stack
 
     Blanke = {
         config = {};
@@ -3429,29 +3450,26 @@ do
         iterUpdate = function(t, dt)
             iterate(t, 'updatable', function(obj)
                 if obj.skip_update ~= true and obj.pause ~= true and obj._update then
-                    Game.updateObject(dt, obj)
+                    update_obj(dt, obj)
                 end
             end)
         end;
         iterDraw = function(t, override_drawable)
-            local reorder_drawables = false
-            iterate(t, 'drawable', function(obj)
+            local reorder_drawables = iterate(t, 'drawable', function(obj)
                 if obj.visible == true and obj.skip_draw ~= true and (override_drawable or obj.drawable == true) and obj.draw ~= false then
-                    if not obj._last_z or obj._last_z ~= obj.z then
+                    if obj._last_z or obj._last_z ~= obj.z then
                         reorder_drawables = true
                     end
-                    Blanke.drawObject(obj)
+                    local obj_draw = obj._draw
+                    stack(function()
+                        if obj_draw then obj_draw(obj) end
+                    end)
                 end
             end)
     
             if reorder_drawables then 
                 Game.sortDrawables()
             end
-        end;
-        drawObject = function(obj)
-            Draw.stack(function()
-                if obj._draw then obj:_draw() end
-            end)
         end;
         --blanke.update
         update = function(dt)
@@ -3493,18 +3511,20 @@ do
             end
 
             Blanke.game_canvas:drawTo(_draw)
+            
+            Draw{
+                {'push'},
+                {'color','black'},
+                {'rect','fill',0,0,Window.width,Window.height},
+                {'pop'}
+            }
+
             if Game.options.scale == true then
                 Blanke.game_canvas.x, Blanke.game_canvas.y = Blanke.padx, Blanke.pady
                 Blanke.game_canvas.scale = Blanke.scale
                 Blanke.game_canvas:draw()
             
             else 
-                Draw{
-                    {'push'},
-                    {'color','black'},
-                    {'rect','fill',0,0,Game.win_width,Game.win_height},
-                    {'pop'}
-                }
                 Blanke.game_canvas:draw()
             end
         end;
@@ -3530,7 +3550,6 @@ Signal.emit('__main')
 love.load = function() 
     if do_profiling then
         love.profiler = require 'profile'
-        love.profiler.start()
     end
 
     Blanke.load() 
@@ -3538,6 +3557,12 @@ end
 love.frame = 0
 
 local update = function(dt)
+    if do_profiling then 
+        love.profiler.start()
+    end
+
+    Blanke.update(dt)
+
     if do_profiling then
         love.frame = love.frame + 1
         if love.frame > 60 then 
@@ -3547,7 +3572,6 @@ local update = function(dt)
         end
     end
 
-    Blanke.update(dt)
 end
 
 do
@@ -3571,6 +3595,8 @@ love.draw = function()
     Blanke.draw() 
     Draw.push()
     if do_profiling then
+        love.graphics.setColor(1,1,1,0.8)
+        love.graphics.rectangle('fill',0,0,Window.width,Window.height)
         love.graphics.setColor(unpack(profiling_color))
         love.graphics.print(love.report or "Please wait...")
     end
