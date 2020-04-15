@@ -19,7 +19,7 @@ C 	sceneeditor: image search keys still remain after closing scene editor
 C	sceneeditor: re-opening opens 3 instances
 */
 const elec = require("electron");
-const { remote } = elec;
+const { remote, shell, ipcRenderer } = elec;
 
 var fs = require("fs").promises;
 var nwFS = require("fs-extra");
@@ -72,6 +72,10 @@ var app = {
 
   get window() {
     return remote.getCurrentWindow();
+  },
+
+  get renderer() {
+    return ipcRenderer;
   },
 
   get size() {
@@ -1370,7 +1374,7 @@ var app = {
                 {
                   yes: function () {
                     if (manual)
-                      elec.shell.openExternal("https://xhh.itch.io/blanke");
+                      shell.openExternal("https://xhh.itch.io/blanke");
                     else app.update(latest_version);
                   },
                   no: function () {},
@@ -1501,7 +1505,7 @@ document.addEventListener("click", function (event) {
   if (event.target.tagName === "A") {
     event.preventDefault();
     if (event.target.href.startsWith("http")) {
-      elec.shell.openExternal(event.target.href);
+      shell.openExternal(event.target.href);
     }
   }
 });
@@ -1763,7 +1767,7 @@ app.window.webContents.once("dom-ready", () => {
     active: function () {},
   });
 
-  elec.ipcRenderer.on("close", (e, arg) => {
+  app.renderer.on("close", (e, arg) => {
     if (app.isProjectOpen()) {
       blanke.showModal("<label>Are you sure you want to exit?</label>", {
         yes: function () {
@@ -1899,7 +1903,7 @@ app.window.webContents.once("dom-ready", () => {
 
     // app.openProject('projects/test zone');
     setTimeout(() => {
-      app.window.show();
+      app.renderer.send("showWindow");
     }, 500);
   });
 });

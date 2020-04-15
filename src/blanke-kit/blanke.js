@@ -997,8 +997,10 @@ var blanke = {
 
   chooseFile: function (options, cb) {
     //type, onChange, filename='', multiple=false) {
-    if (!blanke.elec_ref) return;
-    blanke.elec_ref.remote.dialog.showOpenDialog(options, files => {
+    //const elec_ref = require('electron');
+    //if (!blanke.elec_ref) return;
+    // blanke.elec_ref.
+    remote.dialog.showOpenDialog(options, files => {
       if (!files) return "";
       if (files.length == 1) cb(files[0]);
       else cb(files);

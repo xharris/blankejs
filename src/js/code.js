@@ -412,7 +412,7 @@ class Code extends Editor {
           // this line is closing someting
           if (curr_line_offset < 0) indentation--;
 
-          // console.log({prev_line, prev_line_offset, indentation})
+          // console.log({ prev_line, prev_line_offset, indentation });
         }
 
         /*

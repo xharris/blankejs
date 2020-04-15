@@ -8,12 +8,12 @@
     "window_size": 3,
     "quick_access": [
         [
-            "platformer.lua=script+?",
-            "platformer.lua"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "platformer.lua=script+?",
+            "platformer.lua"
         ],
         [
             "conf.lua=script+?",
