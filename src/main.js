@@ -27,7 +27,7 @@ var nwWALK = require("walk");
 var nwPATH = require("path");
 var nwOS = require("os");
 const { cwd } = require("process");
-var nwNOOB = require("./js/server.js");
+var nwNOOB = require(`${__dirname}/src/js/server.js`);
 var nwZIP2 = require("adm-zip"); // used for unzipping
 var nwWATCH = require("node-watch");
 var nwREQ = require("request");
@@ -1325,6 +1325,8 @@ var app = {
 
   curr_version: "",
   checkForUpdates(silent) {
+    return;
+
     let curr_version_list = JSON.parse(
       nwFS.readFileSync(nwPATH.join("src", "version.json"))
     );

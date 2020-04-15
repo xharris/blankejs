@@ -43,7 +43,7 @@ class Exporter extends Editor {
 
       let el_platform_icon = app.createElement("object");
       el_platform_icon.type = "image/svg+xml";
-      el_platform_icon.data = "icons/" + platform + ".svg";
+      el_platform_icon.data = "src/icons/" + platform + ".svg";
 
       el_platform_container.value = platform;
       el_platform_container.addEventListener("click", function (e) {

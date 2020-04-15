@@ -869,7 +869,7 @@ class Toast {
   }
   set icon(v) {
     this.el_icon.style.display = "inline-block";
-    this.el_icon.data = `icons/${v}.svg`;
+    this.el_icon.data = `src/icons/${v}.svg`;
   }
   set style(v) {
     let styles = {
@@ -905,13 +905,13 @@ var blanke = {
   createIconButton: function (icon, title) {
     let el_btn = app.createElement("button", "icon-button");
     let el_icon = app.createElement("object", "blanke-icon");
-    el_icon.data = "icons/" + icon + ".svg";
+    el_icon.data = "src/icons/" + icon + ".svg";
     el_icon.type = "image/svg+xml";
     el_icon.innerHTML = icon[0].toUpperCase();
     el_btn.appendChild(el_icon);
     el_btn.title = title;
     el_btn.change = (icon2, title2) => {
-      el_icon.data = "icons/" + icon2 + ".svg";
+      el_icon.data = "src/icons/" + icon2 + ".svg";
       el_icon.innerHTML = icon2[0].toUpperCase();
       el_btn.title = title2;
     };

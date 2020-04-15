@@ -1,7 +1,7 @@
-require("update-electron-app")();
+const unhandled = require("electron-unhandled");
+unhandled();
 
 const { app: eApp, BrowserWindow, ipcMain } = require("electron");
-const path = require("path");
 
 const WIN_WIDTH = 1000;
 const WIN_HEIGHT = 700;
@@ -36,7 +36,7 @@ eApp.on("ready", function () {
     main_window.setWindowButtonVisibility(false);
 
   // main_window.webContents.openDevTools();
-  main_window.loadFile(path.join(__dirname, "src", "index.html"));
+  main_window.loadFile("index.html");
   main_window.on("close", e => {
     main_window.webContents.send("close", e);
     e.preventDefault();

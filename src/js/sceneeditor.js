@@ -33,7 +33,7 @@ function sendToBack(sprite, parent) {
   }
 }
 
-PIXI.Loader.shared.add("ProggyScene", "includes/proggy_scene.fnt");
+PIXI.Loader.shared.add("ProggyScene", "src/includes/proggy_scene.fnt");
 PIXI.Loader.shared.load();
 
 let map_folder = () => nwPATH.join(app.project_path, "assets", "maps");

@@ -47,7 +47,7 @@ var infiniteLoopDetector = (function() {
 }())
 `;
 
-const SHADER_ERR = '[Shader]';
+const SHADER_ERR = "[Shader]";
 
 let re_scene_name = /\bScene\s*\(\s*[\'\"](.+)[\'\"]/;
 let re_new_line = /(\r\n|\r|\n)/g;
@@ -55,169 +55,164 @@ let re_error_line = /<anonymous>:(\d+):(\d+)\)/;
 let re_shader_error = /ERROR: \d+:(\d+): (.*)/;
 
 class GamePreview {
-	constructor (parent, opt) {
-		let this_ref = this;
+  constructor(parent, opt) {
+    let this_ref = this;
 
-		this.game = null;
-		this.container = app.createElement("div","game-preview-container");
-		this.iframe = app.createElement("iframe");
-		this.id = "game-"+guid();
-		this.iframe.id = this.id;
-		this.parent = parent || document.createDocumentFragment();
-		this.line_ranges = {};
-		this.size = 0;
-		this.breakpoints = [];
+    this.game = null;
+    this.container = app.createElement("div", "game-preview-container");
+    this.iframe = app.createElement("iframe");
+    this.id = "game-" + guid();
+    this.iframe.id = this.id;
+    this.parent = parent || document.createDocumentFragment();
+    this.line_ranges = {};
+    this.size = 0;
+    this.breakpoints = [];
 
-		this.options = ifndef_obj(opt, {
-			ide_mode: true,
-			scene: null,
-			size: null,
-			onLoad: null
-		});
+    this.options = ifndef_obj(opt, {
+      ide_mode: true,
+      scene: null,
+      size: null,
+      onLoad: null,
+    });
 
-		// engine loaded
-		this.refresh_file = null;
-		this.clearErrors();
-		this.last_code = null;
-		this.iframe.addEventListener('load', () => {
-			let iframe = this.iframe;
-			let doc = iframe.contentDocument;
-			let canvas = doc.querySelectorAll("#game canvas");
-			canvas.forEach(el => el.remove());
-			if (this.error_status == 'error') {
-				this.reportError(...this.errored)
-				return;
-			}
-			if (this.refresh_file && this.error_status == 'none') 
-				this.refreshSource(this.refresh_file);
-			if (this.options.onLoad)
-				this.options.onLoad(this);
+    // engine loaded
+    this.refresh_file = null;
+    this.clearErrors();
+    this.last_code = null;
+    this.iframe.addEventListener("load", () => {
+      let iframe = this.iframe;
+      let doc = iframe.contentDocument;
+      let canvas = doc.querySelectorAll("#game canvas");
+      canvas.forEach(el => el.remove());
+      if (this.error_status == "error") {
+        this.reportError(...this.errored);
+        return;
+      }
+      if (this.refresh_file && this.error_status == "none")
+        this.refreshSource(this.refresh_file);
+      if (this.options.onLoad) this.options.onLoad(this);
 
-			if (this.onLog) {
-				let old_console = iframe.contentWindow.console;
-				iframe.contentWindow.console = {
-					error: (...args) => {
-						this.reportError(args[0], SHADER_ERR)
-						old_console.error(...args)
-					},
-					warn: (...args) => {
-						old_console.warn(...args)
-					},
-					log:  (...args) => {
-						this.onLog(...args)
-						//old_log(...args);
-					},
-					superlog: (...args) => {
-						console.log(...args);
-					}
-				}
-			}
-			
-			if (this.last_code) {
-				let old_script = doc.querySelectorAll('script.source');
-				if (old_script)
-					old_script.forEach((el) => el.remove());
-				let parent= doc.getElementsByTagName('body')[0];
-				let script= doc.createElement('script');
-				script.classList.add("source");
-				iframe.onerror = this.reportError.bind(this);
-				iframe.contentWindow.onerror = this.reportError.bind(this);
-				script.innerHTML= this.last_code;
-				parent.appendChild(script);
-				this.last_code = null;
-			}
-			this.game = this.iframe.contentWindow.game_instance;
-			if (this.game) {
-				this.game.Game.onPause = ()=>{
-					this.game_checkpaused();
-				}
-				if (this.error_status == 'resolving') {
-					this.error_status = 'none';
-					if (this.onErrorResolved) {
-						this.onErrorResolved();
-					}
-				}
-			}
-			this.game_checkpaused();
-			if (this.onRefresh) this.onRefresh();
-			this.iframe.style.display = 'initial';
-		})
-		this.refreshSource();
-		this.parent.appendChild(this.iframe);
+      if (this.onLog) {
+        let old_console = iframe.contentWindow.console;
+        iframe.contentWindow.console = {
+          error: (...args) => {
+            this.reportError(args[0], SHADER_ERR);
+            old_console.error(...args);
+          },
+          warn: (...args) => {
+            old_console.warn(...args);
+          },
+          log: (...args) => {
+            this.onLog(...args);
+            //old_log(...args);
+          },
+          superlog: (...args) => {
+            console.log(...args);
+          },
+        };
+      }
 
-		this.paused = false;
-		document.addEventListener('engineChange',(e)=>{
-			if (!this.paused || this.errored)
-				this.refreshSource(this.last_script);
-		});
+      if (this.last_code) {
+        let old_script = doc.querySelectorAll("script.source");
+        if (old_script) old_script.forEach(el => el.remove());
+        let parent = doc.getElementsByTagName("body")[0];
+        let script = doc.createElement("script");
+        script.classList.add("source");
+        iframe.onerror = this.reportError.bind(this);
+        iframe.contentWindow.onerror = this.reportError.bind(this);
+        script.innerHTML = this.last_code;
+        parent.appendChild(script);
+        this.last_code = null;
+      }
+      this.game = this.iframe.contentWindow.game_instance;
+      if (this.game) {
+        this.game.Game.onPause = () => {
+          this.game_checkpaused();
+        };
+        if (this.error_status == "resolving") {
+          this.error_status = "none";
+          if (this.onErrorResolved) {
+            this.onErrorResolved();
+          }
+        }
+      }
+      this.game_checkpaused();
+      if (this.onRefresh) this.onRefresh();
+      this.iframe.style.display = "initial";
+    });
+    this.refreshSource();
+    this.parent.appendChild(this.iframe);
 
-		// game controls
-		this.el_control_bar = app.createElement("div","control-bar");
-		
-		this.el_refresh = app.createIconButton("refresh","refresh");
-		this.el_refresh.addEventListener('click',()=>{
-			if (this.onRefreshButton) this.onRefreshButton();
-			this.clearErrors();
-			this.refreshSource(this.last_script);
-		});
-		this.el_control_bar.appendChild(this.el_refresh);
-		this.el_pauseplay = app.createIconButton("pause","pause");
-		this.el_pauseplay.addEventListener('click',()=>{
-			this.game_paused() ? this.game_resume() : this.game_pause();
-			this.game_checkpaused();
-		});
-		this.el_control_bar.appendChild(this.el_pauseplay);
-		this.el_step = app.createIconButton("step","next frame");
-		this.el_step.addEventListener('click',()=>{
-			this.game_step();
-		});
-		this.el_control_bar.appendChild(this.el_step);
+    this.paused = false;
+    document.addEventListener("engineChange", e => {
+      if (!this.paused || this.errored) this.refreshSource(this.last_script);
+    });
 
-		this.container.appendChild(this.iframe);
-		this.container.appendChild(this.el_control_bar);
-	}
+    // game controls
+    this.el_control_bar = app.createElement("div", "control-bar");
 
-	get width () {
-		if (this.game) return this.game.Game.width;
-	}
+    this.el_refresh = app.createIconButton("refresh", "refresh");
+    this.el_refresh.addEventListener("click", () => {
+      if (this.onRefreshButton) this.onRefreshButton();
+      this.clearErrors();
+      this.refreshSource(this.last_script);
+    });
+    this.el_control_bar.appendChild(this.el_refresh);
+    this.el_pauseplay = app.createIconButton("pause", "pause");
+    this.el_pauseplay.addEventListener("click", () => {
+      this.game_paused() ? this.game_resume() : this.game_pause();
+      this.game_checkpaused();
+    });
+    this.el_control_bar.appendChild(this.el_pauseplay);
+    this.el_step = app.createIconButton("step", "next frame");
+    this.el_step.addEventListener("click", () => {
+      this.game_step();
+    });
+    this.el_control_bar.appendChild(this.el_step);
 
-	get height () {
-		if (this.game) return this.game.Game.height;
-	}
-	game_checkpaused () {
-		if (this.game_paused())
-			this.el_pauseplay.change('run','resume preview');
-		else 
-			this.el_pauseplay.change('pause','pause preview');
-	}
-	game_paused () { return this.game ? this.game.Game.paused : null; }
-	game_pause () {
-		if (this.game) this.game.Game.pause();
-	}
-	game_resume () {
-		if (this.game) this.game.Game.resume();
-	}
-	game_step () {
-		if (this.game) this.game.Game.step();
-	}
-	pause () {
-		this.paused = true;
-		if (this.game)
-			this.game.Game.freeze();
-	}
-	resume () {
-		this.paused = false;
-		if (this.game && !this.errored)
-			this.game.Game.unfreeze();
-	}
+    this.container.appendChild(this.iframe);
+    this.container.appendChild(this.el_control_bar);
+  }
 
-	getAssets () {
-		let str_assets = [];
+  get width() {
+    if (this.game) return this.game.Game.width;
+  }
 
-	}
+  get height() {
+    if (this.game) return this.game.Game.height;
+  }
+  game_checkpaused() {
+    if (this.game_paused()) this.el_pauseplay.change("run", "resume preview");
+    else this.el_pauseplay.change("pause", "pause preview");
+  }
+  game_paused() {
+    return this.game ? this.game.Game.paused : null;
+  }
+  game_pause() {
+    if (this.game) this.game.Game.pause();
+  }
+  game_resume() {
+    if (this.game) this.game.Game.resume();
+  }
+  game_step() {
+    if (this.game) this.game.Game.step();
+  }
+  pause() {
+    this.paused = true;
+    if (this.game) this.game.Game.freeze();
+  }
+  resume() {
+    this.paused = false;
+    if (this.game && !this.errored) this.game.Game.unfreeze();
+  }
 
-	getSource () {
-		return GamePreview.getHTML(`
+  getAssets() {
+    let str_assets = [];
+  }
+
+  getSource() {
+    return GamePreview.getHTML(
+      `
 		<body>
 			<div id="game"></div>
 		</body>
@@ -240,54 +235,60 @@ class GamePreview {
 				scale: ${this.options.ide_mode || app.projSetting("export").scale},
 				width: ${this.options.size[0]},
 				height: ${this.options.size[1]},
-				${this.options.resizable ? 'resizable: true,' : '' }
+				${this.options.resizable ? "resizable: true," : ""}
 				assets: [${this.getAssetStr()}],
 				onLoad: function(){
 					${this.refreshSource()}
 				}
 			});
-		</script>`, this.options.ide_mode);
-	}
+		</script>`,
+      this.options.ide_mode
+    );
+  }
 
-	getAssetStr () {
-		let ret = `
+  getAssetStr() {
+    let ret = `
 					["config.json"],
-					${app.asset_list.reduce((arr, val) => {
-						if (val.includes('assets'))
-							arr.push(`["assets/${app.shortenAsset(val)}"]`)
-						return arr;
-					},[]).join(',\n\t\t\t\t\t')}
+					${app.asset_list
+            .reduce((arr, val) => {
+              if (val.includes("assets"))
+                arr.push(`["assets/${app.shortenAsset(val)}"]`);
+              return arr;
+            }, [])
+            .join(",\n\t\t\t\t\t")}
 				`;
-		return ret;
-	}
+    return ret;
+  }
 
-	static getScriptOrder (curr_script) {
-		let scripts = [];
-		let curr_script_cat = 'other';
-		let found = false;
-		for (let cat of ['other','entity','scene']) {
-			if (Array.isArray(Code.scripts[cat])) {
-				// put current_script at end
-				scripts = scripts.concat(Code.scripts[cat].filter(val => {
-					if (val == curr_script) {
-						found = true;
-						curr_script_cat = cat;
-					}
-					return (!curr_script || val != curr_script) && !scripts.includes(val);
-				}));
-			}
-		}
-		if (found)
-			scripts.push(curr_script);
-		if (curr_script)
-			return [ scripts, curr_script_cat ];
-		return scripts;
-	}
+  static getScriptOrder(curr_script) {
+    let scripts = [];
+    let curr_script_cat = "other";
+    let found = false;
+    for (let cat of ["other", "entity", "scene"]) {
+      if (Array.isArray(Code.scripts[cat])) {
+        // put current_script at end
+        scripts = scripts.concat(
+          Code.scripts[cat].filter(val => {
+            if (val == curr_script) {
+              found = true;
+              curr_script_cat = cat;
+            }
+            return (
+              (!curr_script || val != curr_script) && !scripts.includes(val)
+            );
+          })
+        );
+      }
+    }
+    if (found) scripts.push(curr_script);
+    if (curr_script) return [scripts, curr_script_cat];
+    return scripts;
+  }
 
-	getExtraEngineCode () {
-		// TODO: take another look at this. game viewport is cutoff
-		if (this.options.ide_mode) {
-			return `
+  getExtraEngineCode() {
+    // TODO: take another look at this. game viewport is cutoff
+    if (this.options.ide_mode) {
+      return `
 			let TestScene = (funcs) => {
 				Scene("_test", funcs);
 			}
@@ -315,167 +316,171 @@ class GamePreview {
 				}
 			});
 			`;
-		}
-		return `
+    }
+    return `
 		let TestScene = () => {};
 		let TestView = () => {};
 		`;
-	}
+  }
 
-	reportError (msg, url, lineNo, columnNo, error) {
-		if (!msg || this.errored) return;
-		let shader_err = (url === SHADER_ERR) ? url : null;
-		this.pause();
-		this.errored = [msg, url, lineNo, columnNo, error];
-		this.error_status = 'error';
-		// get line and col
-		if (!shader_err) {
-			let match = re_error_line.exec(error.stack);
-			if (match) {
-				lineNo = parseInt(match[1]);
-				columnNo = parseInt(match[2]);
-			}
-		}
-		msg = msg.replace("Uncaught Error: ","");
-		if (this.onError) {
-			let file, range;
-			if (shader_err) {
-				let match = re_shader_error.exec(msg)
-				if (match) {
-					this.onError(match[2], shader_err, match[1], '-');
-				}
-			} else {
-				for (let f in this.line_ranges) {
-					range = this.line_ranges[f];
-					if (lineNo > range.start && lineNo < range.end) {
-						file = f;
-						break;
-					}
-				}
-				if (file)
-					this.onError(msg, file, lineNo - range.start, columnNo);
-			} 
-		}
-		console.log("(Engine Error) "+msg, url, lineNo, columnNo, error)
-		return true;
-	}
+  reportError(msg, url, lineNo, columnNo, error) {
+    if (!msg || this.errored) return;
+    let shader_err = url === SHADER_ERR ? url : null;
+    this.pause();
+    this.errored = [msg, url, lineNo, columnNo, error];
+    this.error_status = "error";
+    // get line and col
+    if (!shader_err) {
+      let match = re_error_line.exec(error.stack);
+      if (match) {
+        lineNo = parseInt(match[1]);
+        columnNo = parseInt(match[2]);
+      }
+    }
+    msg = msg.replace("Uncaught Error: ", "");
+    if (this.onError) {
+      let file, range;
+      if (shader_err) {
+        let match = re_shader_error.exec(msg);
+        if (match) {
+          this.onError(match[2], shader_err, match[1], "-");
+        }
+      } else {
+        for (let f in this.line_ranges) {
+          range = this.line_ranges[f];
+          if (lineNo > range.start && lineNo < range.end) {
+            file = f;
+            break;
+          }
+        }
+        if (file) this.onError(msg, file, lineNo - range.start, columnNo);
+      }
+    }
+    console.log("(Engine Error) " + msg, url, lineNo, columnNo, error);
+    return true;
+  }
 
-	clearErrors () {
-		this.error_status = 'resolving';
-		this.errored = false;
-	}
-	
-	refreshSource (current_script) {
-		this.iframe.style.display = 'none';
-		this.last_script = current_script;
-		if (!this.game) 
-			this.refresh_file = app.cleanPath(current_script);
-		if (this.refresh_file && !current_script) {
-			current_script = this.refresh_file
-			this.refresh_file = null;
-		}
-		if (this.error_status == 'error')
-			return;
-		//if (this.game)
-			//this.game.Game.end();
+  clearErrors() {
+    this.error_status = "resolving";
+    this.errored = false;
+  }
 
-		let post_load = '';
-		// get all the scripts
-		let scripts = [];
-		let curr_script_cat = 'other';
-		let contains_test_scene = false;
+  refreshSource(current_script) {
+    this.iframe.style.display = "none";
+    this.last_script = current_script;
+    if (!this.game) this.refresh_file = app.cleanPath(current_script);
+    if (this.refresh_file && !current_script) {
+      current_script = this.refresh_file;
+      this.refresh_file = null;
+    }
+    if (this.error_status == "error") return;
+    //if (this.game)
+    //this.game.Game.end();
 
-		if (current_script && nwFS.pathExistsSync(current_script)) {
-			[ scripts, curr_script_cat ] = GamePreview.getScriptOrder(current_script);
-			let file_data = nwFS.readFileSync(current_script,'utf-8');
-			contains_test_scene = file_data.includes('TestScene({')
-		} else 
-			scripts = GamePreview.getScriptOrder()
-		switch (curr_script_cat) {
-			case 'entity':
-				if (this.options.ide_mode && contains_test_scene)
-					post_load += '\nScene.start("_test");\n';
-				break;
-			case 'scene':
-				let match = re_scene_name.exec(nwFS.readFileSync(current_script,'utf-8'));
-				if (match && match.length > 1) {
-					if (contains_test_scene)
-						post_load += '\nScene.start("_test");\n';
-					else {
-						post_load += `\nScene.start("${match[1]}");\n`;
-					}
-				}
-				break;
-			case 'other':
-				if (contains_test_scene)
-					post_load += '\nScene.start("_test");\n';
-				else if (this.options.scene) {
-					post_load += '\nScene.start("'+this.options.scene+'");\n';
-				}
-				break;
-		}
+    let post_load = "";
+    // get all the scripts
+    let scripts = [];
+    let curr_script_cat = "other";
+    let contains_test_scene = false;
 
-		// wrapped in a function so local variables are destroyed on reload
-		let onload_code = `
+    if (current_script && nwFS.pathExistsSync(current_script)) {
+      [scripts, curr_script_cat] = GamePreview.getScriptOrder(current_script);
+      let file_data = nwFS.readFileSync(current_script, "utf-8");
+      contains_test_scene = file_data.includes("TestScene({");
+    } else scripts = GamePreview.getScriptOrder();
+    switch (curr_script_cat) {
+      case "entity":
+        if (this.options.ide_mode && contains_test_scene)
+          post_load += '\nScene.start("_test");\n';
+        break;
+      case "scene":
+        let match = re_scene_name.exec(
+          nwFS.readFileSync(current_script, "utf-8")
+        );
+        if (match && match.length > 1) {
+          if (contains_test_scene) post_load += '\nScene.start("_test");\n';
+          else {
+            post_load += `\nScene.start("${match[1]}");\n`;
+          }
+        }
+        break;
+      case "other":
+        if (contains_test_scene) post_load += '\nScene.start("_test");\n';
+        else if (this.options.scene) {
+          post_load += '\nScene.start("' + this.options.scene + '");\n';
+        }
+        break;
+    }
+
+    // wrapped in a function so local variables are destroyed on reload
+    let onload_code = `
 		let { ${GamePreview.engine_classes} } = game_instance;
 		${this.getExtraEngineCode()}\n`;
 
-		let code = `
+    let code = `
 var game_instance;	
 game_instance = Blanke("#game",{
 	config: ${JSON.stringify(app.projSetting())},
 	ide_mode: true,
-	${this.options.size == null ?
-	`scale: true,`
-	:
-	`width: ${this.options.size[0]},
+	${
+    this.options.size == null
+      ? `scale: true,`
+      : `width: ${this.options.size[0]},
 	height: ${this.options.size[1]},`
-	}
-	root: '${app.cleanPath(nwPATH.relative("src",nwPATH.join(app.project_path)))}',
+  }
+	root: '${app.cleanPath(nwPATH.relative("src", nwPATH.join(app.project_path)))}',
 	assets: [${this.getAssetStr()}],
 	onLoad: function(classes){
 		let { ${GamePreview.engine_classes} } = classes;
 		${this.getExtraEngineCode()}\n`;
-		this.line_ranges = {};
-		let line_offset = 22; // compensates for line 308 where extra code is added;
-		let last_line_end = (code.match(re_new_line) || []).length + line_offset;
-		for (let path of scripts) {
-			if (nwFS.pathExistsSync(path)) {
-				let file_data = nwFS.readFileSync(path,'utf-8') + '\n';
-				// breakpoints
-				if (path == current_script) {
-					let lines = file_data.split('\n')
-					this.breakpoints.forEach((l)=>{
-						lines[l] = '(()=>{Game.pause();})();'+lines[l];
-						// lines.splice(l,0,'Game.pause()');
-					})
-					code += lines.join('\n');
-				} else 
-					code += file_data;
-				onload_code += nwFS.readFileSync(path,'utf-8') + '\n';
-				// get the lines at which this piece of code starts and ends
-				this.line_ranges[path] = {
-					start: last_line_end,
-					end: (code.match(re_new_line) || []).length + line_offset
-				};
-				
-				last_line_end = this.line_ranges[path].end;
-			}
-		}
-		onload_code += (post_load || '');
-		code += (post_load || '') + `
+    this.line_ranges = {};
+    let line_offset = 22; // compensates for line 308 where extra code is added;
+    let last_line_end = (code.match(re_new_line) || []).length + line_offset;
+    for (let path of scripts) {
+      if (nwFS.pathExistsSync(path)) {
+        let file_data = nwFS.readFileSync(path, "utf-8") + "\n";
+        // breakpoints
+        if (path == current_script) {
+          let lines = file_data.split("\n");
+          this.breakpoints.forEach(l => {
+            lines[l] = "(()=>{Game.pause();})();" + lines[l];
+            // lines.splice(l,0,'Game.pause()');
+          });
+          code += lines.join("\n");
+        } else code += file_data;
+        onload_code += nwFS.readFileSync(path, "utf-8") + "\n";
+        // get the lines at which this piece of code starts and ends
+        this.line_ranges[path] = {
+          start: last_line_end,
+          end: (code.match(re_new_line) || []).length + line_offset,
+        };
+
+        last_line_end = this.line_ranges[path].end;
+      }
+    }
+    onload_code += post_load || "";
+    code +=
+      (post_load || "") +
+      `
 		
-		${app.projSetting("autoplay_preview") && this.options.ide_mode ? '' : 'Game.pause();Game.step();'}
+		${
+      app.projSetting("autoplay_preview") && this.options.ide_mode
+        ? ""
+        : "Game.pause();Game.step();"
+    }
 	}
 });`;
-		this.iframe.srcdoc = GamePreview.getHTML(`
+    this.iframe.srcdoc = GamePreview.getHTML(
+      `
 	<body>
 		<div id="game"></div>
 	</body>
 	<script class="source">
-	</script>`, this.options.ide_mode);
+	</script>`,
+      this.options.ide_mode
+    );
 
-		this.last_code = `
+    this.last_code = `
 		let app = window.parent.app;
 		window.addEventListener('dragover', function(e) {
 			e.preventDefault();
@@ -500,18 +505,17 @@ game_instance = Blanke("#game",{
 		${code}
 		`;
 
-		return onload_code;
-	}
-	
-	setSourceFile (file) {
-		this.last_script = file;
-		if (!this.paused)
-			this.refreshSource(this.last_script);
-	}
+    return onload_code;
+  }
+
+  setSourceFile(file) {
+    this.last_script = file;
+    if (!this.paused) this.refreshSource(this.last_script);
+  }
 }
-GamePreview.engine_classes = '';
+GamePreview.engine_classes = "";
 GamePreview.getHTML = (body, ide_mode, engine_path) => {
-	return `
+  return `
 	<!DOCTYPE html>
 	<html>
 		<style>
@@ -539,71 +543,91 @@ GamePreview.getHTML = (body, ide_mode, engine_path) => {
 			}
 		</style>
 		<head>
-			<link rel="stylesheet" type="text/css" media="all" href="${ide_mode ? app.cleanPath(nwPATH.relative(__dirname,app.project_path))+'/' : ''}game.css"/>
-			${engine_path ?
-				`<script type="text/javascript" src="${engine_path}"></script>` : 
-				`<script type="text/javascript">${app.engine_code}</script>`
-			}
+			<link rel="stylesheet" type="text/css" media="all" href="${
+        ide_mode
+          ? app.cleanPath(nwPATH.relative(__dirname, app.project_path)) + "/"
+          : ""
+      }game.css"/>
+			${
+        engine_path
+          ? `<script type="text/javascript" src="${engine_path}"></script>`
+          : `<script type="text/javascript">${app.engine_code}</script>`
+      }
 		</head>
 		<div class="font_preload" style="opacity:0;width:0px;height:0px;overflow:none">
 			${font_families.map(v => `<span style="font-family:'${v}'"></span>\n`)}</div>
 		${body}
 	</html>
-	`};
+	`;
+};
 
 let font_families = [];
 let writeGameCSS = () => {
-	// create css file with font-face
-	let css_str = '';
-	let css_ide_str = '';
-	app.getAssets('font', (files)=>{
-		for (let f of files) {
-			let name = nwPATH.parse(f).name
-			font_families.push(name);
-css_str+=`@font-face {
+  // create css file with font-face
+  let css_str = "";
+  let css_ide_str = "";
+  app.getAssets("font", files => {
+    for (let f of files) {
+      let name = nwPATH.parse(f).name;
+      font_families.push(name);
+      (css_str += `@font-face {
 	font-family: '${name}';
-	src: url('${(name == '04B_03' ? '' : 'font/') + app.shortenAsset(f)}');
-}\n`,'utf-8'
-css_ide_str+=`@font-face {
+	src: url('${(name == "04B_03" ? "" : "font/") + app.shortenAsset(f)}');
+}\n`),
+        "utf-8";
+      (css_ide_str += `@font-face {
 	font-family: '${name}';
-	src: url('${app.cleanPath(nwPATH.relative('',app.project_path))}/${(name == '04B_03' ? '' : 'font/') + app.shortenAsset(f)}');
-}\n`,'utf-8'
-		}
-		// replace ide game.css
-		nwFS.writeFileSync(nwPATH.join(app.project_path, 'game.css'), css_str, 'utf-8');
-		nwFS.writeFileSync(nwPATH.join(__dirname,'/ide_game.css'), css_ide_str, 'utf-8');
-		let link = document.getElementById("game-css");
-		if (link) {
-			link.href = 'ide_game.css';
-		}
-		// add game.css if not already added
-		else {
-			link = document.createElement('link');
-			link.id = "game-css";
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = 'ide_game.css';
-			link.media = 'all';
-			document.head.appendChild(link);
-		}
-		// add font preload element
-		let el_preload = document.getElementById("font-preload");
-		if (!el_preload) {
-			el_preload = document.createElement('div');
-			document.head.appendChild(el_preload);
-		}
-		el_preload.id = "font-preload";
-		el_preload.style.opacity = 0;
-		el_preload.innerHTML = font_families.map(v => `<span style="font-family:'${v}'"></span>\n`).join('\n');
-	});
-}
+	src: url('${app.cleanPath(nwPATH.relative("", app.project_path))}/${
+        (name == "04B_03" ? "" : "font/") + app.shortenAsset(f)
+      }');
+}\n`),
+        "utf-8";
+    }
+    // replace ide game.css
+    nwFS.writeFileSync(
+      nwPATH.join(app.project_path, "game.css"),
+      css_str,
+      "utf-8"
+    );
+    nwFS.writeFileSync(
+      nwPATH.join(__dirname, "/ide_game.css"),
+      css_ide_str,
+      "utf-8"
+    );
+    let link = document.getElementById("game-css");
+    if (link) {
+      link.href = "ide_game.css";
+    }
+    // add game.css if not already added
+    else {
+      link = document.createElement("link");
+      link.id = "game-css";
+      link.rel = "stylesheet";
+      link.type = "text/css";
+      link.href = "ide_game.css";
+      link.media = "all";
+      document.head.appendChild(link);
+    }
+    // add font preload element
+    let el_preload = document.getElementById("font-preload");
+    if (!el_preload) {
+      el_preload = document.createElement("div");
+      document.head.appendChild(el_preload);
+    }
+    el_preload.id = "font-preload";
+    el_preload.style.opacity = 0;
+    el_preload.innerHTML = font_families
+      .map(v => `<span style="font-family:'${v}'"></span>\n`)
+      .join("\n");
+  });
+};
 
-document.addEventListener("openProject",(e)=>{
-	writeGameCSS();
+document.addEventListener("openProject", e => {
+  // writeGameCSS();
 });
 
-document.addEventListener('asset_added', (e)=>{
-	let info = e.detail; // {type: res_type, path: asset_path}
-	if (info.res_type == 'font')
-		writeGameCSS();
+document.addEventListener("asset_added", e => {
+  let info = e.detail; // {type: res_type, path: asset_path}
+  if (info.res_type == "font");
+  // writeGameCSS();
 });

@@ -161,7 +161,7 @@ class AssetManager extends Editor {
       };
       el_image.src = "file://" + path;
     } else {
-    /*
+      /*
 		else if (file_type == 'audio') {
 
 		}*/
@@ -264,7 +264,7 @@ class AssetManager extends Editor {
 
     // delete button
     let el_delete = app.createElement("button", "ui-button-sphere");
-    el_delete.innerHTML = `<object class="blanke-icon mdi-svg" data="icons/trash.svg" type="image/svg+xml"></object>`;
+    el_delete.innerHTML = `<object class="blanke-icon mdi-svg" data="src/icons/trash.svg" type="image/svg+xml"></object>`;
     el_delete.addEventListener("click", function () {
       blanke.showModal("delete '" + nwPATH.basename(old_path) + "'?", {
         yes: function () {

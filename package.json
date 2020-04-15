@@ -12,21 +12,48 @@
   "scripts": {
     "electron": "electron .",
     "build": "electron-builder",
-    "dist": "node package.js"
+    "dist": "node package.js",
+    "release": "build"
   },
   "build": {
     "appId": "com.electron.blanke",
     "win": {
-      "target": "portable",
-      "icon": "logo.ico"
+      "icon": "logo.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "publish": [
+        "github"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "src/logo.ico",
+      "installerHeaderIcon": "src/logo.ico"
     },
     "directories": {
       "buildResources": "src"
-    }
+    },
+    "files": [
+      "index.html",
+      "entry.js",
+      "entry.less",
+      "package.json",
+      "src/",
+      "node_modules/"
+    ],
+    "extraFiles": [
+      "plugins",
+      "engines",
+      "themes"
+    ]
   },
   "dependencies": {
     "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
+    "electron-unhandled": "^3.0.2",
     "fs-extra": "^5.0.0",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.15",
