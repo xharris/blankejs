@@ -1406,7 +1406,7 @@ class Code extends Editor {
     }
   }
 
-  static refreshCodeList(path) {
+  static refreshCodeList() {
     app.removeSearchGroup("Scripts");
     Code.scripts = { other: [] };
     Code.sprites = {}; // { EntitClassname: { image, crop: {x,y,w,h} } }
@@ -1414,7 +1414,7 @@ class Code extends Editor {
     for (let assoc of CODE_ASSOCIATIONS) {
       Code.scripts[assoc[1]] = [];
     }
-    addScripts(path || app.getAssetPath("scripts"));
+    addScripts(app.getAssetPath("scripts"));
   }
 
   static openScript(file_path, line) {
@@ -1499,56 +1499,50 @@ function addScripts(folder_path) {
     scene: [],
     entity: [],
   };
-
   nwFS.readdir(folder_path, function (err, files) {
     if (err) return;
     script_list = files
       .map(f => app.cleanPath(nwPATH.join(folder_path, f)))
       .filter(f => Code.isScript(f));
     const file_data = {};
-    for (let file of files) {
-      var full_path = app.cleanPath(nwPATH.join(folder_path, file));
-
-      // is a script?
-      if (Code.isScript(file)) {
-        // get what kind of script it is
-        let data = nwFS.readFileSync(full_path, "utf-8");
-        file_data[full_path] = data;
-        getKeywords(full_path, data);
-        // get what kind of script it is
-        let tags = ["script"];
-        let cat, match;
-        for (let assoc of CODE_ASSOCIATIONS) {
-          match = assoc[0].exec(data);
-          if (match) {
-            cat = assoc[1];
-            tags.push(assoc[1]);
-            if (!Code.scripts[assoc[1]].includes(full_path)) {
-              Code.scripts[assoc[1]].push(full_path);
-            }
-            // store the class name
-            if (Object.keys(Code.classes).includes(cat)) {
-              Code.classes[cat].push(match[1]);
-            }
+    for (let full_path of script_list) {
+      // get what kind of script it is
+      let data = nwFS.readFileSync(full_path, "utf-8");
+      file_data[full_path] = data;
+      getKeywords(full_path, data);
+      // get what kind of script it is
+      let tags = ["script"];
+      let cat, match;
+      for (let assoc of CODE_ASSOCIATIONS) {
+        match = assoc[0].exec(data);
+        if (match) {
+          cat = assoc[1];
+          tags.push(assoc[1]);
+          if (!Code.scripts[assoc[1]].includes(full_path)) {
+            Code.scripts[assoc[1]].push(full_path);
+          }
+          // store the class name
+          if (Object.keys(Code.classes).includes(cat)) {
+            Code.classes[cat].push(match[1]);
           }
         }
-        if (!cat) Code.scripts.other.push(full_path);
-
-        // add file to search pool
-        app.addSearchKey({
-          key: file,
-          onSelect: function (file_path) {
-            Code.openScript(file_path);
-          },
-          tags: tags,
-          category: cat,
-          args: [full_path],
-          group: "Scripts",
-        });
-
-        // if script has Entity class find if it has sprite
-        Code.updateSpriteList(full_path, data);
       }
+      if (!cat) Code.scripts.other.push(full_path);
+
+      // add file to search pool
+      app.addSearchKey({
+        key: nwPATH.basename(full_path),
+        onSelect: function (file_path) {
+          Code.openScript(file_path);
+        },
+        tags: tags,
+        category: cat || "script",
+        args: [full_path],
+        group: "Scripts",
+      });
+
+      // if script has Entity class find if it has sprite
+      Code.updateSpriteList(full_path, data);
     }
 
     for (let file in file_data)
@@ -1566,10 +1560,6 @@ function addScripts(folder_path) {
 
 document.addEventListener("closeProject", function (e) {
   app.removeSearchGroup("Code");
-});
-
-document.addEventListener("autocompleteChanged", e => {
-  reloadCompletions();
 });
 
 document.addEventListener("openProject", function (e) {
@@ -1651,4 +1641,6 @@ document.addEventListener("engine_config_load", () => {
   file_ext = app.engine.file_ext || ["lua"];
   main_file = app.engine.main_file || "main." + file_ext[0];
   CODE_ASSOCIATIONS = app.engine.code_associations || [];
+  reloadCompletions();
+  Code.refreshCodeList();
 });

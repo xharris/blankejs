@@ -1,7 +1,7 @@
 const nwMD = require("markdown-it")();
 
 let plugin_md_list = [];
-let getDocPath = () => nwPATH.join(app.ideSetting("engine_path"), "docs");
+let getDocPath = () => nwPATH.join(app.engine_path, "docs");
 
 class Docview extends Editor {
   constructor(...args) {

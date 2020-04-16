@@ -12,20 +12,20 @@
             "platformer.map"
         ],
         [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
+            "Open error file=?",
+            "Open error file"
+        ],
+        [
+            "View APPDATA folder=?",
+            "View APPDATA folder"
+        ],
+        [
             "platformer.lua=script+?",
             "platformer.lua"
-        ],
-        [
-            "Open image editor=?",
-            "Open image editor"
-        ],
-        [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -242,5 +242,6 @@
             "spacing": 0,
             "onion_alpha": 0.3
         }
-    }
+    },
+    "engine": "love2d"
 }

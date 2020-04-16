@@ -1,5 +1,7 @@
-let paths = ["plugin", "engine", "themes"];
-let files = ["autocomplete", "js_engine", "background_image"];
+let paths = ["plugin", "themes", "engines"];
+let files = ["background_image"];
+let engine_list = [];
+let was_open = false;
 let can_be_empty_path = {
   background_image: true,
 };
@@ -20,34 +22,6 @@ class Settings extends Editor {
     app.refreshThemeList();
     let proj_set = app.projSetting();
     let app_set = app.ideSetting();
-
-    let autoplay_settings = app.engine.game_preview_enabled
-      ? [
-          [
-            "game_preview_enabled",
-            "checkbox",
-            {
-              default: app_set.game_preview_enabled,
-              label: "show preview of game while coding",
-            },
-          ],
-          [
-            "autoplay_preview",
-            "checkbox",
-            { default: proj_set.autoplay_preview },
-          ],
-          [
-            "autoreload_external_run",
-            "checkbox",
-            {
-              default: app_set.autoreload_external_run,
-              label: "auto-reload external run",
-              desc:
-                "when a game is run using the Play button, it can be automatically refreshed when the code changes",
-            },
-          ],
-        ]
-      : [];
 
     let engine_settings = [];
     let engine_set_keys = [];
@@ -84,68 +58,41 @@ class Settings extends Editor {
         return ret;
       });
     }
+
     // set up the form options
+    // prettier-ignore
     let form_options = [
       ["GAME"],
       //['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
-      [
-        "window_size",
-        "number",
-        { step: 1, min: 1, max: 7, default: proj_set.window_size },
-      ],
-      [
-        "game_size",
-        "number",
-        { step: 1, min: 1, max: 7, default: proj_set.game_size },
-      ],
+      ["window_size","number",{ step: 1, min: 1, max: 7, default: proj_set.window_size }],
+      ["game_size","number",{ step: 1, min: 1, max: 7, default: proj_set.game_size }],
+      ["engine","select",{choices:engine_list, default:proj_set.engine}],
       ...engine_settings,
       ["EXPORT > GENERAL"],
       ["export.name", "text", { default: app.projSetting("export").name }],
       ...engine_export_settings,
       ["IDE"],
-      ...autoplay_settings,
       ["theme", "select", { choices: app.themes, default: app_set.theme }],
-      [
-        "quick_access_size",
-        "number",
-        { min: 1, default: app_set.quick_access_size },
-      ],
-      [
-        "run_save_code",
-        "checkbox",
-        { default: app_set.run_save_code, label: "save code before runs" },
-      ],
+      ["quick_access_size","number",{ min: 1, default: app_set.quick_access_size }],
+      ["run_save_code","checkbox",{ default: app_set.run_save_code, label: "save code before runs" }],
       ["Paths", true],
-      ...paths.map(path => [
-        path,
-        "directory",
-        { default: app_set[path + "_path"] },
-      ]),
-      ...files.map(path => [
-        path,
-        "file",
-        { default: app_set[path + "_path"] },
-      ]),
+      ...paths.map(path => [path,"directory",{ default: app_set[path + "_path"] }]),
+      ...files.map(path => [path,"file",{ default: app_set[path + "_path"] }])
     ];
     this.el_settings = new BlankeForm(form_options, true);
-    [
-      "game_size",
-      "window_size",
-      "autoplay_preview",
-      ...engine_set_keys,
-    ].forEach(s => {
+    // prettier-ignore
+    ["engine","game_size","window_size",...engine_set_keys].forEach(s => {
       this.el_settings.onChange(s, v => {
         app.projSetting(s, v);
         app.saveSettings();
+        if (s === "engine") {
+          was_open = true;
+          this.close();
+        }
       });
     });
-    [
-      "quick_access_size",
-      "game_preview_enabled",
-      "autoreload_external_run",
-      "theme",
-      "run_save_code",
-    ].forEach(s => {
+    // prettier-ignore
+    ["quick_access_size","theme","run_save_code"].forEach(s => {
       this.el_settings.onChange(s, v => {
         app.ideSetting(s, v);
         app.saveAppData();
@@ -168,7 +115,7 @@ class Settings extends Editor {
           return app.ideSetting(path + "_path");
         }
         app.ideSetting(path + "_path", app.cleanPath(value));
-        if (path == "engine") Settings.watchEngine();
+        if (path == "engines") app.watchEngines();
 
         app.refreshThemeList();
       });
@@ -187,7 +134,6 @@ class Settings extends Editor {
             : app.cleanPath(value)
         );
 
-        if (path == "autocomplete") app.watchAutocomplete();
         if (path == "background_image")
           app.setBackgroundImage(app.cleanPath(value));
         app.saveAppData();
@@ -204,15 +150,38 @@ document.addEventListener("openProject", () => {
     key: "IDE/Project Settings",
     group: "Settings",
     onSelect: function () {
-      new Settings(app);
+      new Settings();
     },
   });
 });
 
-let engine_watch, autocomplete_watch;
+const loadEngineList = () => {
+  nwFS.readdir(
+    app.relativePath(app.ideSetting("engines_path")),
+    "utf8",
+    (err, files) => {
+      engine_list = files;
+      const curr_engine = app.projSetting("engine");
+      if (files.includes(curr_engine)) app.requireEngine(curr_engine);
+      else app.requireEngine();
+    }
+  );
+};
+
+document.addEventListener("engines_changed", () => {
+  loadEngineList();
+});
+
+document.addEventListener("engine_config_load", () => {
+  if (was_open) {
+    was_open = false;
+    new Settings();
+  }
+});
+
 document.addEventListener("ideReady", e => {
-  app.watchJsEngine();
-  app.watchAutocomplete();
+  app.watchEngines();
+  loadEngineList();
 
   paths.forEach(p => {
     app.ideSetting(p + "_path", app.cleanPath(app.ideSetting(p + "_path")));

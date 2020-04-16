@@ -38,12 +38,10 @@ const DEFAULT_IDE_SETTINGS = {
   recent_files: [],
 
   plugin_path: "plugins",
-  engine_path: "love2d",
   themes_path: "themes",
+  engines_path: "engines",
   background_image_path: "",
   background_image_data: "",
-  js_engine_path: "engines/engine_love.js",
-  autocomplete_path: "autocomplete.js",
   theme: "green",
   window_splitting: false,
   quick_access_size: 5,
@@ -59,6 +57,7 @@ const DEFAULT_PROJECT_SETTINGS = {
   window_size: 3,
   quick_access: [],
   autoplay_preview: true,
+  engine: "love2d",
 };
 
 var app = {
@@ -142,8 +141,7 @@ var app = {
       path,
       {
         recursive: true,
-        filter: f =>
-          !/dist/.test(f) && !f.includes(".asar") && !/love2d/.test(f), // !nwFS.statSync(f).isSymbolicLink() &&
+        filter: f => !/dist/.test(f) && !f.includes(".asar"), // !nwFS.statSync(f).isSymbolicLink() &&
       },
       cb
     );
@@ -200,10 +198,13 @@ var app = {
   },
   themes: {},
   theme_data: {},
+  get themes_path() {
+    return app.relativePath(app.ideSetting("themes_path"));
+  },
   setTheme: function (name) {
     // get theme variables from file
     nwFS.readFile(
-      nwPATH.join(app.ideSetting("themes_path"), name + ".json"),
+      nwPATH.join(app.themes_path, name + ".json"),
       "utf-8",
       (err, data) => {
         if (err) return;
@@ -221,9 +222,9 @@ var app = {
   getThemeColor: name => parseInt(app.theme_data[name].replace("#", "0x"), 16),
   refreshThemeList: function () {
     // get list of themes available
-    nwFS.ensureDirSync(app.ideSetting("themes_path"));
+    nwFS.ensureDirSync(app.themes_path);
     app.themes = nwFS
-      .readdirSync(app.ideSetting("themes_path"))
+      .readdirSync(app.themes_path)
       .map(v => v.replace(".json", ""));
   },
   closeProject: function () {
@@ -356,51 +357,6 @@ var app = {
       }
     });
   },
-
-  autocomplete: {},
-  autocomplete_loaded: false,
-  refreshAutocomplete: function () {
-    let err = false;
-    app.autocomplete_loaded = false;
-    app.ignore_errors = true;
-    try {
-      let data = app.require(app.ideSetting("autocomplete_path"));
-      if (!data) throw "autocomplete not loaded";
-      else app.autocomplete = data;
-    } catch (e) {
-      err = true;
-      blanke.toast("error in autocomplete file!");
-      console.log(e);
-    } finally {
-      app.ignore_errors = false;
-      if (!err) {
-        app.autocomplete_loaded = false;
-        console.log("autocomplete loaded");
-      }
-    }
-  },
-  autocomplete_toast: null,
-  watchAutocomplete: function () {
-    app.refreshAutocomplete();
-    if (autocomplete_watch) {
-      autocomplete_watch.close();
-      dispatchEvent("autocompleteChanged");
-    }
-    app.ignore_errors = true;
-    autocomplete_watch = app.watch(
-      app.ideSetting("autocomplete_path"),
-      (e, file) => {
-        app.refreshAutocomplete();
-        dispatchEvent("autocompleteChanged");
-        if (!app.autocomplete_toast)
-          app.autocomplete_toast = blanke.toast("", null, () => {
-            app.autocomplete_toast = null;
-          });
-      }
-    );
-    app.ignore_errors = false;
-  },
-
   setBusyStatus: v => {
     if (v)
       app.getElement("#status-icons > .engine-status").classList.add("active");
@@ -412,6 +368,7 @@ var app = {
       });
   },
 
+  /*
   engine_code: "",
   minifyEngine: function (cb, opt) {
     if (!app.engine.minifyEngine) return;
@@ -438,7 +395,7 @@ var app = {
       },
       true
     );
-  },
+  },*/
 
   extra_windows: [],
   play: function (options) {
@@ -673,21 +630,65 @@ var app = {
     });
   },
 
+  relativePath: path => {
+    if (nwPATH.isAbsolute(path)) return path;
+    var local_path = process.env.PORTABLE_EXECUTABLE_DIR || __dirname;
+    return nwPATH.resolve(nwPATH.join(local_path, path));
+  },
+
   require: path => {
+    var local_path = process.env.PORTABLE_EXECUTABLE_DIR || __dirname;
     if (!module.paths.includes(remote.app.getAppPath()))
       module.paths.push(remote.app.getAppPath());
-    if (!nwFS.existsSync(path)) return;
-    delete require.cache[require.resolve(path)];
+    if (local_path && !module.paths.includes(local_path)) {
+      module.paths.push(local_path);
+    }
+
+    const resolved_path = require.resolve(path);
+    if (!nwFS.existsSync(resolved_path)) return;
+    delete require.cache[resolved_path];
     return require(path);
   },
 
-  engine: {},
+  engine_module: {},
+  get engine() {
+    return app.engine_module.settings || {};
+  },
+
+  get autocomplete() {
+    return app.engine_module.autocomplete || {};
+  },
+
+  get engine_path() {
+    return app.cleanPath(
+      pathJoin(
+        app.relativePath(app.ideSetting("engines_path")),
+        app.projSetting("engine")
+      )
+    );
+  },
+
+  clearEngine: () => {
+    app.engine_module = {};
+    app.allowed_extensions.script = [];
+  },
+
   requireEngine: () => {
-    delete require.cache[app.ideSetting("js_engine_path")];
-    app.engine = app.require(app.ideSetting("js_engine_path")).engine;
-    app.setBusyStatus(true);
-    app.setBusyStatus(false);
+    if (!app.isProjectOpen()) {
+      app.clearEngine();
+      return;
+    }
+    try {
+      app.engine_module = app.require(pathJoin(app.engine_path, "index.js"));
+      app.setBusyStatus(true);
+      setTimeout(() => {
+        app.setBusyStatus(false);
+      }, 500);
+    } catch {
+      app.clearEngine();
+    }
     // change allowed extentensions
+    // TODO add mechanism for resetting allowed_extensions
     if (app.engine.file_ext)
       app.allowed_extensions.script = [...app.engine.file_ext];
     if (app.engine.allowed_extensions) {
@@ -695,16 +696,32 @@ var app = {
         app.allowed_extensions[type] = [...app.engine.allowed_extensions[type]];
       }
     }
+    ifndef_obj(app.project_settings, DEFAULT_PROJECT_SETTINGS);
+    // project settings
+    let eng_settings = {};
+    (app.engine.project_settings || []).forEach(s => {
+      for (let prop of s) {
+        if (typeof prop == "object" && prop.default != null)
+          eng_settings[s[0]] = prop.default;
+      }
+    });
+    app.project_settings = Object.assign(
+      {},
+      eng_settings,
+      app.project_settings
+    );
     dispatchEvent("engine_config_load");
   },
 
-  js_engine_watch: null,
-  watchJsEngine: () => {
-    if (app.js_engine_watch) app.js_engine_watch.close();
-    app.requireEngine();
-    app.js_engine_watch = app.watch(app.ideSetting("js_engine_path"), () => {
-      app.requireEngine();
-    });
+  engine_watch: null,
+  watchEngines: () => {
+    if (app.engine_watch) app.engine_watch.close();
+    app.engine_watch = app.watch(
+      app.relativePath(app.ideSetting("engines_path")),
+      (evt_type, file) => {
+        dispatchEvent("engines_changed");
+      }
+    );
   },
 
   plugin_watch: null,
@@ -746,31 +763,18 @@ var app = {
       nwFS.readFile(
         nwPATH.join(app.project_path, "config.json"),
         "utf-8",
-        function (err, data) {
+        (err, data) => {
           if (!err || (data && data.length > 1))
             app.project_settings = JSON.parse(data);
           else app.project_settings = {};
 
-          ifndef_obj(app.project_settings, DEFAULT_PROJECT_SETTINGS);
-          // project settings
-          let eng_settings = {};
-          (app.engine.project_settings || []).forEach(s => {
-            for (let prop of s) {
-              if (typeof prop == "object" && prop.default != null)
-                eng_settings[s[0]] = prop.default;
-            }
-          });
-          app.project_settings = Object.assign(
-            {},
-            eng_settings,
-            app.project_settings
-          );
           app.saveSettings();
           if (callback) callback();
         }
       );
     }
   },
+  last_engine: "",
   saveSettings: function () {
     blanke.cooldownFn("saveSettings", 500, function () {
       if (app.isProjectOpen()) {
@@ -780,6 +784,11 @@ var app = {
             nwPATH.join(app.project_path, "config.json"),
             str_conf
           );
+
+        if (app.last_engine != app.projSetting("engine")) {
+          app.requireEngine();
+          app.last_engine = app.projSetting("engine");
+        }
       }
     });
   },
@@ -936,7 +945,7 @@ var app = {
   },
   getAssetPath: function (_type, name, cb) {
     if (!name) {
-      if (_type == "scripts")
+      if (_type == "scripts" && app.engine.script_path)
         return app.cleanPath(nwPATH.resolve(app.engine.script_path));
       else if (_type)
         return app.cleanPath(
@@ -1881,10 +1890,6 @@ app.window.webContents.once("dom-ready", () => {
       },
     });
     app.refreshQuickAccess();
-  });
-
-  document.addEventListener("pluginChanged", function () {
-    app.minifyEngine();
   });
 
   app.loadAppData(function () {
