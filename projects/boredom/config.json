@@ -18,24 +18,24 @@
     ],
     "quick_access": [
         [
-            "player.lua=script+?",
-            "player.lua"
+            "level1.map=map+?",
+            "level1.map"
         ],
         [
             "Dialogue.lua=script+?",
             "Dialogue.lua"
         ],
         [
-            "movingblock.lua=script+?",
+            "View assets=?",
+            "View assets"
+        ],
+        [
+            "conf.lua=script+?",
+            "conf.lua"
+        ],
+        [
+            "movingblock.lua=script+entity+?",
             "movingblock.lua"
-        ],
-        [
-            "main.lua=script+state+?",
-            "main.lua"
-        ],
-        [
-            "level1.map=map+?",
-            "level1.map"
         ]
     ],
     "autoplay_preview": true,

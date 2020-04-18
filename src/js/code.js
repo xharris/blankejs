@@ -1471,10 +1471,10 @@ class Code extends Editor {
 
         if (ext_class_list[path]) {
           for (let e_class of ext_class_list[path].entity) {
-            if (info)
+            if (Code.sprites[e_class])
               dispatchEvent("code.updateEntity", {
                 entity_name: e_class,
-                info,
+                info: Code.sprites[e_class],
               });
           }
         }

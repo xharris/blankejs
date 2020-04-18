@@ -749,6 +749,10 @@ class SceneEditor extends Editor {
     });
 
     document.addEventListener("code.updateEntity", e => {
+      console.log(
+        e.detail.entity_name,
+        e.detail.info ? e.detail.info.path : "--"
+      );
       this.refreshObjImages(e.detail.entity_name, e.detail.info);
     });
 

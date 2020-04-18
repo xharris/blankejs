@@ -8,6 +8,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "platformer.map=map+?",
+            "platformer.map"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
@@ -18,10 +22,6 @@
         [
             "View APPDATA folder=?",
             "View APPDATA folder"
-        ],
-        [
-            "platformer.map=map+?",
-            "platformer.map"
         ],
         [
             "Open error file=?",
