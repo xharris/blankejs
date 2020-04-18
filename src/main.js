@@ -1311,6 +1311,13 @@ var app = {
     });
   },
 
+  sanitizeHTML(html_str) {
+    // TODO doesn't render properly
+    var temp = document.createElement("div");
+    temp.textContent = html_str;
+    return temp.innerHTML;
+  },
+
   enableDevMode(force_search_keys) {
     if (!DEV_MODE || force_search_keys) {
       DEV_MODE = true;

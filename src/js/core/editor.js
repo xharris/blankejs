@@ -308,6 +308,13 @@ class Editor {
     return this;
   }
 
+  setDefaultSize(w, h) {
+    box_sizes[this.getTitle()] = [w, h];
+    if (this.container_type === "dragbox") {
+      this.container.setSize(w, h);
+    }
+  }
+
   setSubtitle(val) {
     if (["dragbox", "fibwindow", "sidewindow"].includes(this.container_type))
       this.container.setSubtitle(val);

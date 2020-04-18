@@ -14,8 +14,7 @@ class Docview extends Editor {
     this.removeHistory();
     this.hideMenuButton();
 
-    this.container.width = 528;
-    this.container.height = 272;
+    this.setDefaultSize(528, 272);
 
     var this_ref = this;
 
@@ -54,7 +53,7 @@ class Docview extends Editor {
 
             let el_subsection = app.createElement("div", "subsection");
             let el_subheader = app.createElement("p", "subheader");
-            let el_subbody = this.doc_body_container;
+            let el_doc_body = this.doc_body_container;
             let el_doc = this.doc_container;
 
             let md_path = nwPATH.join(doc_path, info.file);
@@ -69,11 +68,13 @@ class Docview extends Editor {
                     " - " + (num_sections > 1 ? info.title : category)
                   );
 
-                  // el_subbody.innerHTML = markdown.toHTML(data);
-                  el_subbody.innerHTML = nwMD.render(data);
+                  // el_doc_body.innerHTML = markdown.toHTML(data);
 
-                  if (el_subbody.innerHTML.trim() == "")
-                    el_subbody.innerHTML = "No information on this topic found";
+                  el_doc_body.innerHTML = nwMD.render(data);
+
+                  if (el_doc_body.innerHTML.trim() == "")
+                    el_doc_body.innerHTML =
+                      "No information on this topic found";
 
                   for (let c = 0; c < el_doc.children.length; c++) {
                     el_doc.children[c].classList.remove("selected");
