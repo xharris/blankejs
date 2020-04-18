@@ -248,7 +248,6 @@ class DragBox {
       this.drag_handle.innerHTML = value + this.subtitle;
       this.title = value;
       if (box_sizes[value] && this.fresh_box) {
-        console.log("resize");
         this.setSize(box_sizes[value][0], box_sizes[value][1]);
         this.fresh_box = false;
       } else {
