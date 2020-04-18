@@ -8,24 +8,24 @@
     "window_size": 3,
     "quick_access": [
         [
-            "platformer.map=map+?",
-            "platformer.map"
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "conf.lua=script+?",
             "conf.lua"
         ],
         [
-            "Open error file=?",
-            "Open error file"
-        ],
-        [
             "View APPDATA folder=?",
             "View APPDATA folder"
         ],
         [
-            "platformer.lua=script+?",
-            "platformer.lua"
+            "platformer.map=map+?",
+            "platformer.map"
+        ],
+        [
+            "Open error file=?",
+            "Open error file"
         ]
     ],
     "autoplay_preview": true,

@@ -1,25 +1,29 @@
 -- TODO Images have their own hitbox instead of entity. Entity just uses the current animations hitbox
 -- TODO rework Image to autobatch
 -- TODO Blanke.config
+local _NAME = ...
 math.randomseed(os.time())
 local do_profiling = nil -- false/#
 local profiling_color = {1,0,0,1}
 
-local bitop = require 'lua.bitop'
+local bitop = require(_NAME..'.bitop')
 local bit = bitop.bit
-local bump = require "lua.bump"
-uuid = require "lua.uuid"
-json = require "lua.json"
-class = require "lua.clasp"
+local bump = require(_NAME..".bump")
+uuid = require(_NAME..".uuid")
+json = require(_NAME..".json")
+class = require(_NAME..".clasp")
+require(_NAME..".noobhub")
+require(_NAME..".print_r")
+
+local socket = require("socket")
 callable = function(t) 
     if t.__ then 
         for _, mm in ipairs(t) do t['__'..mm] = t.__[mm] end 
     end
     return setmetatable(t, { __call = t.__call })
 end
-require "lua.print_r"
 -- yes, plugins folder is listed twice
-love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua;./plugins/?/init.lua;./plugins/?.lua')
+--love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua;./plugins/?/init.lua;./plugins/?.lua')
 
 -- is given version greater than or equal to current LoVE version?
 local ge_version = function(major, minor, rev)
@@ -707,7 +711,7 @@ do
             -- load plugins
             if Game.options.plugins then 
                 for _,f in ipairs(Game.options.plugins) do 
-                    table.insert(scripts,'plugins.'..f)
+                    table.insert(scripts,_NAME..'.plugins.'..f)
                 end
             end
             -- load scripts
@@ -2940,9 +2944,6 @@ end
 --NET
 Net = nil
 do
-    local socket = require "socket"
-    local uuid = require "lua.uuid"
-    require "lua.noobhub"
     local client
     local leader = false
     local net_objects = {}
@@ -3520,7 +3521,7 @@ Signal.emit('__main')
 
 love.load = function() 
     if do_profiling then
-        love.profiler = require 'profile'
+        love.profiler = require(_NAME..'.profile')
     end
 
     Blanke.load() 

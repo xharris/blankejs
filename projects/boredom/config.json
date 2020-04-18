@@ -250,5 +250,6 @@
             ],
             "spacing": 0
         }
-    }
+    },
+    "engine": "love2d"
 }

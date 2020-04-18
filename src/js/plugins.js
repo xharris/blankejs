@@ -318,14 +318,15 @@ class Plugins extends Editor {
     const plugin_path = app.relativePath(app.ideSetting("plugin_path"));
     const engine_path = app.engine_path;
 
-    nwFS.ensureDir(pathJoin(engine_path, "plugins"));
+    nwFS.ensureDir(engine_path);
 
     if (plugin_info[key]) {
       for (let path of plugin_info[key].files) {
         let rel_path = nwPATH
           .relative(plugin_path, path)
           .replace(/^(.+?)[\\\/]/, "");
-        nwFS.copySync(path, pathJoin(engine_path, "plugins", key, rel_path));
+
+        nwFS.copySync(path, pathJoin(app.engine.plugin_path, key, rel_path));
       }
       app.projSetting("enabled_plugins")[key] = true;
       dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
@@ -344,7 +345,9 @@ class Plugins extends Editor {
         pathJoin(engine_path, "plugins", key, nwPATH.basename(path))
 			);
     }*/
-    nwFS.removeSync(pathJoin(engine_path, "plugins", key));
+    nwFS.removeSync(
+      pathJoin(app.engine.plugin_path || engine_path, "plugins", key)
+    );
     app.projSetting("enabled_plugins")[key] = false;
     dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
     app.saveSettings();

@@ -1,5 +1,5 @@
 Game {
-	-- plugins = { 'xhh-array', 'xhh-badword', 'xhh-vector', 'xhh-effect' },
+	plugins = { 'xhh-array', 'xhh-badword', 'xhh-vector', 'xhh-effect' },
 	--plugins = {'xhh-effect'},
 	auto_require = false,
 	scripts = { 'platformer' },

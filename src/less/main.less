@@ -149,14 +149,17 @@ body > #header {
 
       &:focus,
       &:hover {
-        max-width: @search-input-focus-width;
-        min-width: @search-input-focus-width;
         color: white;
         background: rgba(0, 0, 0, 0.5);
 
         &::placeholder {
           color: white;
         }
+      }
+
+      &:focus {
+        max-width: @search-input-focus-width;
+        min-width: @search-input-focus-width;
       }
     }
   }

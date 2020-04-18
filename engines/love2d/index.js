@@ -3,11 +3,14 @@ const nwZIP = require("archiver"); // used for zipping
 
 const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g;
 
-const requireConf = () => {
+const requireConf = (is_exporting) => {
   const type = app.projSetting("engine_type");
   switch (type) {
     case "oop":
-      return `require "blanke"`;
+      return `
+      package.path = "./lua/?/init.lua;./lua/?;" .. package.path
+      require("${is_exporting ? "lua.blanke" : "blanke"}")
+      `;
 
     case "ecs":
       return `require "lua.ecs"
@@ -26,16 +29,6 @@ const runConf = () => {
     nwFS.writeFileSync(
       nwPATH.join(app.getAssetPath("scripts"), "conf.lua"),
       `io.stdout:setvbuf('no')
-package.path = package.path .. ";${[
-        "/?.lua",
-        "/?/init.lua",
-        "/lua/?/init.lua",
-        "/lua/?.lua",
-        "/plugins/?/init.lua",
-        "/plugins/?.lua",
-      ]
-        .map(p => app.engine_path + p)
-        .join(";")}"
 ${requireConf()}
 function love.conf(t)
     t.console = true
@@ -50,7 +43,7 @@ const exportConf = os => {
   let resolution = getGameSize(os);
   return app.projSetting("write_conf")
     ? `
-${requireConf()}
+${requireConf(true)}
 ${os == "web" ? 'Window.os = "web"' : ""}
 function love.conf(t)
     ${
@@ -125,8 +118,10 @@ module.exports.settings = {
     ["web_game_size", "number", { inputs: 2, default: [800, 600] }],
   ],
   get script_path() {
-    console.log('ok its',app.project_path)
     return app.project_path;
+  },
+  get plugin_path() {
+    return nwPATH.join(app.engine_path, 'lua', 'blanke', 'plugins')
   },
   plugin_info_key: k => `--\s*${k}\s*:\s*(.+)`,
   code_associations: [
@@ -224,7 +219,6 @@ module.exports.settings = {
   },
   export_assets: false,
   bundle: (dir, target_os, cb_done) => {
-    // checkOS(target_os);
     let love_path = nwPATH.join(dir, app.projSetting("export").name + ".love");
     let engine_path = app.engine_path;
 
@@ -245,12 +239,18 @@ module.exports.settings = {
     const engine_ignore = [];
     const eng_type = app.projSetting("engine_type");
     if (eng_type === "oop") engine_ignore.push("lua/ecs", "lua/ecs/**/*");
-    if (eng_type === "ecs") engine_ignore.push("blanke.lua");
+    if (eng_type === "ecs") engine_ignore.push("lua/blanke.lua");
 
-    archive.glob("**/*.lua", {
+    archive.glob("*.lua", {
       cwd: nwPATH.join(engine_path),
-      ignore: engine_ignore,
-    });
+    })
+    // archive.glob("lua/**/*.lua", {
+    //   cwd: nwPATH.join(engine_path),
+    //   ignore: engine_ignore,
+    //   root: 'wow'
+    // });
+    archive.directory(nwPATH.join(engine_path, "lua"), "/lua")
+
     archive.finalize();
   },
   extra_bundle_assets: {
