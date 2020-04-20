@@ -259,7 +259,10 @@ var app = {
           if (evt_type == "remove")
             app.removeQuickAccess(nwPATH.basename(file));
           if (file) {
-            dispatchEvent("fileChange", { type: evt_type, file: file });
+            dispatchEvent("fileChange", {
+              type: evt_type,
+              file: app.cleanPath(file),
+            });
           }
         });
 
@@ -445,10 +448,12 @@ var app = {
         const bg_img_data = app.ideSetting("background_image_data");
         if (bg_img_data.length > 0) {
           app.getElement(
-            "body > .bg-image"
+            "body > .bg-image-container > .bg-image"
           ).style.backgroundImage = `url(${bg_img_data})`;
         } else {
-          app.getElement("body > .bg-image").style.backgroundImage = "";
+          app.getElement(
+            "body > .bg-image-container > .bg-image"
+          ).style.backgroundImage = "";
         }
       });
   },
@@ -1067,9 +1072,9 @@ var app = {
         app.last_quick_access = JSON.stringify(set.quick_access);
         app.clearElement(el_container);
 
-        let el_title = app.getElement("#recent-history > .title-container");
-        if (set.quick_access.length == 0) el_title.classList.add("hidden");
-        else el_title.classList.remove("hidden");
+        let el_history = app.getElement("#recent-history");
+        if (set.quick_access.length == 0) el_history.classList.add("hidden");
+        else el_history.classList.remove("hidden");
 
         for (let h of set.quick_access) {
           if (h[0] && h[1]) {
@@ -1093,6 +1098,8 @@ var app = {
       if (app.getElement("#workspace").childElementCount == 0)
         app.getElement("#recent-history").classList.remove("hidden");
       else app.getElement("#recent-history").classList.add("hidden");
+    } else {
+      app.getElement("#recent-history").classList.add("hidden");
     }
     app.refreshQuickAccess(null, true);
   },

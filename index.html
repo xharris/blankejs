@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
 		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
 		
-
 		<script type="text/javascript">
 			var DEV_MODE = false;
 		</script>
@@ -74,6 +73,7 @@
 		<script src="src/js/settings.js"></script>
 		<script src="src/js/plugins.js"></script>
 		<script src="src/js/imageeditor.js"></script>
+		<script src="src/js/fileexplorer.js"></script>
 		<script src="src/js/testview.js"></script>
 
 
@@ -99,7 +99,10 @@
 		
 	</head>
 	<body>
-		<div class="bg-image"></div>
+		<div class="bg-image-container">
+			<!-- placed in a container so it doesn't show huge bg image data string in inspect tools-->
+			<div class="bg-image"></div>
+		</div>
 		<!-- makes it easier to resize using top border of window -->
 		<div id="window-padding"></div>
 
@@ -154,27 +157,32 @@
 		</div>
 
 		<div id="menu"></div>
-		<div id="sidebar"></div>
-		
-		<div id="bg-workspace"></div>
-		<div id="workspace"></div>
 
-		<div id="recent-history">
-			<div class="title-container">
-				<div class='title'>Last opened</div>
+		<div id="file-explorer"></div>
+
+		<div id="work-container">
+			<div id="sidebar"></div>
+		
+			<div id="bg-workspace"></div>
+			<div id="workspace"></div>
+
+			<div id="recent-history">
+				<div class="title-container">
+					<div class='title'>Last opened</div>
+				</div>
+				<div id="recents-container"></div>
 			</div>
-			<div id="recents-container"></div>
-		</div>
-		
-		<div id="sidewindow-container">
-			<div id="vscroll"></div>
-		</div>
-		<div id="game-container"></div>
-		
-		<div id="drop-zone">
-			<p>Drop files into your project!</p>
-		</div>
 
+			<div id="sidewindow-container">
+				<div id="vscroll"></div>
+			</div>
+			<div id="game-container"></div>
+
+			<div id="drop-zone">
+				<p>Drop files into your project!</p>
+			</div>
+		</div>
+		
 		<div id="status-bar">
 			<div id="history"></div>
 

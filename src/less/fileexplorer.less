@@ -1,0 +1,32 @@
+
+
+.file-explorer {
+  padding-left: 10px;
+}
+
+.ui-fancytree {
+  &, & * {
+    list-style: none;
+  }
+
+  padding-left: 10px;
+  outline: none;
+
+  .fancytree-title {
+    color: rgba(255,255,255,0.9);
+    text-decoration-color: rgba(255,255,255,0.9);
+  }
+
+  .fancytree-folder > .fancytree-title {
+    text-decoration: underline;
+    color: @theme-string;
+  }
+
+  .fancytree-expanded > .fancytree-title {
+    font-style: italic;
+  }
+
+  ul {
+    padding-left: 20px;
+  }
+}

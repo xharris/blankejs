@@ -1,6 +1,7 @@
 @import "../blanke-kit/blanke-ui";
 @import "variables";
 @import "elements";
+@import "fileexplorer";
 @import "markdown";
 @import "font";
 
@@ -38,17 +39,24 @@ body {
     pointer-events: initial;
   }
 
-  > .bg-image {
+  > .bg-image-container {
     position: absolute;
     top: 0px;
     left: 0px;
     width: 100%;
     height: 100%;
-    background-size: cover;
-    background-position: center;
     z-index: -1000;
 
     transition: all ease-in-out 0.5s;
+
+    > .bg-image {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+
+      transition: all ease-in-out 0.5s;
+    }
   }
 }
 
@@ -102,7 +110,7 @@ body > #header {
   .win-drag();
   display: flex;
   justify-content: space-between;
-  background: rgba(57, 65, 78, 0.4);
+  background: @header-bg;
   margin: @title-bar-margin;
   height: @title-bar-height;
   border-radius: @title-bar-border-radius;
@@ -285,6 +293,31 @@ body > #header {
       black 0px 0px 3px, black 0px 0px 3px;
     font-size: 16px;
   }
+}
+
+#work-container {
+  position: absolute;
+  top: 0px;
+  left: 200px;
+  right: 0px;
+  bottom: 0px;
+  pointer-events: none;
+
+  > * {
+    pointer-events: initial;
+  }
+
+  transition: all ease-in-out 0.2s;
+}
+
+#file-explorer {
+  position: absolute;
+  left: 0px;
+  top: calc(@title-bar-height + @title-bar-margin);
+  bottom: @status-bar-height;
+  background: @header-bg;
+
+  transition: all ease-in-out 0.5s;
 }
 
 #sidebar {
@@ -1066,21 +1099,25 @@ iframe {
 #search-results {
   position: absolute;
   top: 30px;
-  min-width: @search-input-focus-width;
   max-height: calc(100% - 34px);
   z-index: 200;
   overflow-y: auto;
-  padding-left: 10px;
+  padding-left: 0px;
   padding-right: 10px;
   padding-bottom: 5px;
   box-sizing: border-box;
-  left: -10px;
+  left: 0px;
   margin-top: @title-bar-margin;
   margin-left: @title-bar-margin;
 
   &::-webkit-scrollbar {
     width: 0px;
     height: 0px;
+  }
+
+  > * {
+    min-width: @search-input-focus-width;
+    box-sizing: border-box;
   }
 
   .result {
@@ -1448,16 +1485,12 @@ iframe {
 
 #status-bar {
   position: absolute;
-  bottom: 1px;
+  bottom: 0px;
   height: 22px;
   left: 1px;
   right: 0px;
   z-index: 100;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.1) 30%,
-    transparent 100%
-  ); /* rgba(0,0,0,0.1); */
+  background: @header-bg; /* rgba(0,0,0,0.1); */
 }
 
 #status-icons {
