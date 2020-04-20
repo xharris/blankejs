@@ -298,24 +298,19 @@ body > #header {
 #work-container {
   position: absolute;
   top: 0px;
-  left: 200px;
+  left: 0px;
   right: 0px;
   bottom: 0px;
   pointer-events: none;
+  z-index: -1;
+
+  &.with-file-explorer {
+    left: 200px;
+  }
 
   > * {
     pointer-events: initial;
   }
-
-  transition: all ease-in-out 0.2s;
-}
-
-#file-explorer {
-  position: absolute;
-  left: 0px;
-  top: calc(@title-bar-height + @title-bar-margin);
-  bottom: @status-bar-height;
-  background: @header-bg;
 
   transition: all ease-in-out 0.5s;
 }
@@ -761,8 +756,7 @@ body > #header {
     .fib-title-container {
       padding-left: 30px;
       background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
-      text-shadow: black 1px 1px 1px, black -1px -1px 1px, black -1px 1px 1px,
-        black 1px -1px 1px, black 0px 0px 1px;
+      text-shadow: @light-text-shadow;
     }
   }
 

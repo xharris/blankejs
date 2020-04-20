@@ -173,18 +173,18 @@ var app = {
       function (file_path) {
         blanke.showModal(
           "<label style='line-height:35px'>new project name:</label></br>" +
-            "<label>" +
-            file_path +
-            nwPATH.sep +
-            "</label>" +
-            "<input class='ui-input' id='new-proj-name' style='width:100px;' value='my_project'/>",
+          "<label>" +
+          file_path +
+          nwPATH.sep +
+          "</label>" +
+          "<input class='ui-input' id='new-proj-name' style='width:100px;' value='my_project'/>",
           {
             yes: function () {
               app.newProject(
                 nwPATH.join(file_path, app.getElement("#new-proj-name").value)
               );
             },
-            no: function () {},
+            no: function () { },
           }
         );
       }
@@ -462,7 +462,7 @@ var app = {
     DragBox.showHideAll();
     app.getElement("#btn-winvis").title = `${
       split_enabled == true ? "hide" : "show"
-    } floating windows`;
+      } floating windows`;
   },
 
   toggleSplit: () => {
@@ -887,12 +887,12 @@ var app = {
   // returns: image, audio, other
   // prettier-ignore
   allowed_extensions: {
-    image: ["bmp","cut","dcx","dcm","dds","exr","fits","fit","ftx","hdr","icns","ico","cur","iff",
-            "iwi","gif","jpg","jpe","jpeg","jp2","lbm","lif","mdl","pal","pcd","pcx","pic","png",
-            "pbm","pgm","pnm","pix","psd","psp","pxr","rot","sgi","bw","rgb","rgba","texture","tga",
-            "tif","tpl","utx","wal","vtf","wdp","hdp","xpm"],
+    image: ["bmp", "cut", "dcx", "dcm", "dds", "exr", "fits", "fit", "ftx", "hdr", "icns", "ico", "cur", "iff",
+      "iwi", "gif", "jpg", "jpe", "jpeg", "jp2", "lbm", "lif", "mdl", "pal", "pcd", "pcx", "pic", "png",
+      "pbm", "pgm", "pnm", "pix", "psd", "psp", "pxr", "rot", "sgi", "bw", "rgb", "rgba", "texture", "tga",
+      "tif", "tpl", "utx", "wal", "vtf", "wdp", "hdp", "xpm"],
     audio: ["mp3", "ogg", "wav", "oga", "ogv"],
-    font: ["ttf","ttc","cff","woff","otf","otc","pfa","pfb","fnt","bdf","pfr"],
+    font: ["ttf", "ttc", "cff", "woff", "otf", "otc", "pfa", "pfb", "fnt", "bdf", "pfr"],
     script: ["lua"],
     map: ["map"],
     love: ["love"],
@@ -1392,9 +1392,9 @@ var app = {
             app.getElement("#btn-update").addEventListener("click", e => {
               blanke.showModal(
                 `<div class="update-title">${
-                  manual
-                    ? "Manual install required. Go to download page"
-                    : "Download, Install, and Restart"
+                manual
+                  ? "Manual install required. Go to download page"
+                  : "Download, Install, and Restart"
                 }?</div><div class='info'>${update_string}</div>`,
                 {
                   yes: function () {
@@ -1402,7 +1402,7 @@ var app = {
                       shell.openExternal("https://xhh.itch.io/blanke");
                     else app.update(latest_version);
                   },
-                  no: function () {},
+                  no: function () { },
                 }
               );
             });
@@ -1490,10 +1490,10 @@ var app = {
     nwFS.appendFile(
       nwPATH.join(app.getAppDataFolder(), "error.txt"),
       "[[ " +
-        Date.now() +
-        " ]]\r\n" +
-        Array.prototype.slice.call(arguments).join("\r\n") +
-        "\r\n\r\n",
+      Date.now() +
+      " ]]\r\n" +
+      Array.prototype.slice.call(arguments).join("\r\n") +
+      "\r\n\r\n",
       err => {
         if (!app.error_occured) {
           app.error_occured = e;
@@ -1609,6 +1609,10 @@ app.window.webContents.once("dom-ready", () => {
   });
   app.getElement("#btn-minimize").addEventListener("click", () => {
     app.window.minimize();
+  });
+
+  app.getElement("#btn-toggle-fe").addEventListener("click", () => {
+    FileExplorer.toggle();
   });
   app.getElement("#btn-play").addEventListener("click", () => {
     app.play();
@@ -1789,7 +1793,7 @@ app.window.webContents.once("dom-ready", () => {
   // shortcut: PREVENT refreshing
   app.newShortcut({
     key: "CommandOrControl+R",
-    active: function () {},
+    active: function () { },
   });
 
   app.renderer.on("close", (e, arg) => {
@@ -1798,7 +1802,7 @@ app.window.webContents.once("dom-ready", () => {
         yes: function () {
           app.window.destroy();
         },
-        no: function () {},
+        no: function () { },
       });
     } else {
       app.window.destroy();
@@ -1826,7 +1830,8 @@ app.window.webContents.once("dom-ready", () => {
   // file drop zone
   window.addEventListener("dragover", function (e) {
     e.preventDefault();
-    app.showDropZone();
+    if (e.dataTransfer.files.length > 0)
+      app.showDropZone();
     return false;
   });
   window.addEventListener("drop", function (e) {

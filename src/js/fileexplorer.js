@@ -1,6 +1,7 @@
 const $ = require("jquery");
 require("jquery.fancytree");
 require("jquery.fancytree/dist/modules/jquery.fancytree.persist");
+require("jquery.fancytree/dist/modules/jquery.fancytree.dnd5");
 
 const ROOT_KEY = "root_/"
 
@@ -108,9 +109,10 @@ class FileExplorer {
     // walker.on("file");
     $(function () {
       $("#file-explorer").fancytree({
-        extensions: ["persist"],
+        extensions: ["persist", "dnd5"],
         treeId: "/",
         selectMode: 1,
+        clickFolderMode: 3,
         activeVisible: true,
         source: async (e, data) => await getFolderData(nwPATH.join(app.project_path)),
         lazyLoad: (e, data) => {
@@ -120,11 +122,32 @@ class FileExplorer {
             dfd.resolve(data)
           })
         },
+        click: (e, data) => {
+          if (!data.node.folder) {
+            const full_path = getPath(data.node.key);
+            const asset_type = app.findAssetType(full_path);
+            if (asset_type === "script") {
+              Code.openScript(full_path);
+            }
+            if (asset_type === "image") {
+              ImageEditor.openImage(full_path);
+            }
+            if (asset_type === "map") {
+              SceneEditor.openScene(full_path)
+            }
+          }
+        },
+        //wide: {},
         persist: {
           cookiePrefix: `fancytree-${app.project_path}-`,
           expandLazy: true,
           overrideSource: true,
           store: "auto"
+        },
+        dnd5: {
+          dragStart: function (node, data) { return true; },
+          dragEnter: function (node, data) { return true; },
+          dragDrop: function (node, data) { /* data.otherNode.copyTo(node, data.hitMode); */ }
         }
       });
 
@@ -133,12 +156,18 @@ class FileExplorer {
       // })
     });
 
-
-    app.getElement("#file-explorer").style.width = "200px";
+    app.getElement("#file-explorer").classList.remove('hidden')
+    app.getElement("#work-container").classList.add('with-file-explorer')
   }
 
   static hide() {
-    app.getElement("#file-explorer").style.width = "0px";
+    app.getElement("#file-explorer").classList.add('hidden')
+    app.getElement("#work-container").classList.remove('with-file-explorer')
+  }
+
+  static toggle() {
+    app.getElement("#file-explorer").classList.toggle("hidden");
+    app.getElement("#work-container").classList.toggle('with-file-explorer')
   }
 }
 

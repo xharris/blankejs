@@ -317,13 +317,13 @@ class SceneEditor extends Editor {
         if (obj) {
           blanke.showModal(
             "<label>Remove '" +
-              obj.name +
-              "'?<br/>Objects are global and it will be removed from all maps.</label>",
+            obj.name +
+            "'?<br/>Objects are global and it will be removed from all maps.</label>",
             {
               yes: () => {
                 this.deleteObject(obj.uuid);
               },
-              no: () => {},
+              no: () => { },
             }
           );
         }
@@ -421,7 +421,7 @@ class SceneEditor extends Editor {
           yes: function () {
             this_ref.removeLayer(text);
           },
-          no: function () {},
+          no: function () { },
         });
       }
     };
@@ -673,7 +673,7 @@ class SceneEditor extends Editor {
             Object.keys(tile_info).forEach(path => {
               this.selected_tile_info += ` - ${app.shortenAsset(path)} (${
                 tile_info[path]
-              })\n`;
+                })\n`;
             });
           }
         }
@@ -786,12 +786,17 @@ class SceneEditor extends Editor {
       this.skip_change_event = false;
     });
 
+    var resizeTimeout;
     this.addCallback("onResize", () => {
-      this.pixi.resize();
+      if (!resizeTimeout)
+        resizeTimeout = setTimeout(() => {
+          this.pixi.resize();
 
-      this.game_width = this.pixi.width;
-      this.game_height = this.pixi.height;
-      this.drawGrid();
+          this.game_width = this.pixi.width;
+          this.game_height = this.pixi.height;
+          this.drawGrid();
+          resizeTimeout = null;
+        }, 10)
     });
 
     if (file_path) this.load(file_path);
@@ -843,7 +848,7 @@ class SceneEditor extends Editor {
             });
             // this.export();
           },
-          no: () => {},
+          no: () => { },
         }
       );
     }
@@ -965,7 +970,7 @@ class SceneEditor extends Editor {
         if (a)
           text += `\nselected x ${a[0] + g.x} y ${a[1] + g.y} w ${a[2]} h ${
             a[3]
-          }`;
+            }`;
         if (this.selected_tiles.length > 0)
           text += `\n${this.selected_tile_info}`;
       }
@@ -1072,14 +1077,14 @@ class SceneEditor extends Editor {
   refreshImageList() {
     let sel_str = `<option class="placeholder" value="" disabled ${
       this.curr_image ? "" : "selected"
-    }>Select an image</option>`;
+      }>Select an image</option>`;
     this.el_image_sel.innerHTML = sel_str;
     app.getAssets("image", files => {
       files.forEach(f => {
         var img_path = app.shortenAsset(f);
         sel_str += `<option value="${f}" ${
           this.curr_image && this.curr_image.path == img_path ? "selected" : ""
-        }>${img_path}</option>`;
+          }>${img_path}</option>`;
       });
       this.el_image_sel.innerHTML = sel_str;
     });
@@ -1562,7 +1567,7 @@ class SceneEditor extends Editor {
       }
     }
     for (let gx = x; gx <= w; gx += layer.snap[0]) {
-      for (let gy = y; gy <= h; gy += layer.snap[1]) {}
+      for (let gy = y; gy <= h; gy += layer.snap[1]) { }
     }
     return tile_sprites;
   }
@@ -2216,7 +2221,7 @@ class SceneEditor extends Editor {
     }
     this.setTitle(nwPATH.basename(file_path));
     this.setOnClick(() => {
-      openScene(this.file);
+      SceneEditor.openScene(this.file);
     });
     this.setupMenu({
       close: true,
@@ -2364,7 +2369,7 @@ class SceneEditor extends Editor {
       console.log(this.file + " not saved cause of error", app.error_occured);
       blanke.toast(
         nwPATH.basename(this.file) +
-          " not saved because an error occurred earlier!</br>Please re-open the IDE :("
+        " not saved because an error occurred earlier!</br>Please re-open the IDE :("
       );
     }
   }
@@ -2372,6 +2377,10 @@ class SceneEditor extends Editor {
   static refreshSceneList(path) {
     app.removeSearchGroup("Map");
     addScenes(ifndef(path, app.project_path));
+  }
+
+  static openScene(file_path) {
+    if (!FibWindow.focus(nwPATH.basename(file_path))) new SceneEditor(file_path);
   }
 }
 
@@ -2381,17 +2390,13 @@ document.addEventListener("fileChange", function (e) {
   }
 });
 
-function openScene(file_path) {
-  if (!FibWindow.focus(nwPATH.basename(file_path))) new SceneEditor(file_path);
-}
-
 function addScenes(folder_path) {
   app.getAssets("map", files => {
     files.forEach(f => {
       app.addSearchKey({
         key: f.replace(app.getAssetPath("map") + "/", ""),
         onSelect: function (f) {
-          openScene(f);
+          SceneEditor.openScene(f);
         },
         tags: ["map"],
         args: [f],

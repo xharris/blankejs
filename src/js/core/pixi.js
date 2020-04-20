@@ -2,8 +2,8 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
 let clientX = 0, clientY = 0;
 class BlankePixi {
-    constructor (opt) {
-		opt = opt || { 
+	constructor(opt) {
+		opt = opt || {
 			w: window.innerWidth,
 			h: window.innerHeight,
 			zoom_clamp: [0.1, 15]
@@ -12,19 +12,19 @@ class BlankePixi {
 		this.evt_list = {};
 
 		this.can_drag = false;
-        this.dragging = false;
+		this.dragging = false;
 		this.snap_on = false;
-		this.mouse = [0,0];
-        this.place_mouse = [0,0];
-		this.half_mouse = [0,0];
-		this.half_place_mouse = [0,0];
+		this.mouse = [0, 0];
+		this.place_mouse = [0, 0];
+		this.half_mouse = [0, 0];
+		this.half_place_mouse = [0, 0];
 		this.lock_mouse = false;
-        this.pointer_down = -1; 
+		this.pointer_down = -1;
 		this.mx = 0;
 		this.my = 0;
-		this.snap = [32,32];
-		this.snap_mouse = [0,0];
-		this.camera = [0,0];
+		this.snap = [32, 32];
+		this.snap_mouse = [0, 0];
+		this.camera = [0, 0];
 		this.camera_bounds = null;
 		//this.camera_start = [0,0];
 		// Zoom control
@@ -32,28 +32,28 @@ class BlankePixi {
 		this.zoom_target = 1;
 		this.zoom_incr = 0.5;
 
-        this.pixi = new PIXI.Application({
-			width: opt.w, 
+		this.pixi = new PIXI.Application({
+			width: opt.w,
 			height: opt.h,
-            backgroundColor: opt.bg_color || 0x354048,
-            antialias: false
-        });
+			backgroundColor: opt.bg_color || 0x354048,
+			antialias: false
+		});
 		this.pixi.stage.interactive = true;
 		this.pixi.stage.hitArea = this.pixi.screen;
 		this.pixi.view.addEventListener('contextmenu', (e) => {
 			e.preventDefault();
 		});
 
-		this.renderer.state.blendModes[21] = [WebGLRenderingContext.ONE, WebGLRenderingContext.ONE, 
-			WebGLRenderingContext.ONE, WebGLRenderingContext.ONE, 
-			WebGLRenderingContext.FUNC_REVERSE_SUBTRACT, WebGLRenderingContext.FUNC_ADD];
+		this.renderer.state.blendModes[21] = [WebGLRenderingContext.ONE, WebGLRenderingContext.ONE,
+		WebGLRenderingContext.ONE, WebGLRenderingContext.ONE,
+		WebGLRenderingContext.FUNC_REVERSE_SUBTRACT, WebGLRenderingContext.FUNC_ADD];
 		// used to erase using graphics
 		this.renderer.state.blendModes[22] = [0, WebGLRenderingContext.ONE_MINUS_SRC_ALPHA];
 
 		this.has_mouse = true;
 
 		// zoom
-		window.addEventListener('wheel',(e)=>{
+		window.addEventListener('wheel', (e) => {
 			if (this.has_mouse) {
 				// e.preventDefault();
 				//console.log( - (Math.sign(e.deltaY) * (this.zoom_incr * (this.zoom))));
@@ -61,17 +61,17 @@ class BlankePixi {
 			}
 		});
 
-        // snap
-        window.addEventListener('keydown', e => {
+		// snap
+		window.addEventListener('keydown', e => {
 			var keyCode = e.keyCode || e.which;
 			// CTRL
 			if (keyCode == 17) {
-                this.snap_on = true;
-				this.dispatchEvent('snapChange',e);
+				this.snap_on = true;
+				this.dispatchEvent('snapChange', e);
 			}
 			// moving camera with arrow keys
 			if (this.has_mouse) {
-				this.dispatchEvent('keyDown',e);
+				this.dispatchEvent('keyDown', e);
 				var keyCode = e.keyCode || e.which;
 				let vx = 0;
 				let vy = 0;
@@ -101,26 +101,29 @@ class BlankePixi {
         			// ... like placing tiles in a line
 				}*/
 			}
-        });
-        
-        window.addEventListener('keyup', e => {
+		});
+
+		window.addEventListener('keyup', e => {
 			var keyCode = e.keyCode || e.which;
+			if (e.key == "Alt") {
+				// release mouse
+				this.camera_drag = false;
+				this.dragStop();
+				document.exitPointerLock();
+			}
+
 			if (this.has_mouse) {
-				this.dispatchEvent('keyUp',e);
+				this.dispatchEvent('keyUp', e);
 				// CTRL
 				if (keyCode == 17) {
 					this.snap_on = false;
-					this.dispatchEvent('snapChange',e);
+					this.dispatchEvent('snapChange', e);
 				}
 				this.pixi.stage.cursor = this._hide_mouse ? "none" : "auto";
 				if (e.key == "Escape") {
-					this.dispatchEvent('keyCancel',e);
+					this.dispatchEvent('keyCancel', e);
 				}
 				if (e.key == "Alt") {
-					// release mouse
-					this.camera_drag = false;
-					this.dragStop();
-					document.exitPointerLock();
 				}
 				if (e.key == "-") {
 					// zoom out
@@ -139,33 +142,33 @@ class BlankePixi {
 						this.setZoom(1);
 				}
 				if (e.key == "Delete" || e.key == "Backspace") {
-					this.dispatchEvent('keyDelete',e);
+					this.dispatchEvent('keyDelete', e);
 				}
 				// ENTER
 				if (keyCode == 13) {
-					this.dispatchEvent('keyFinish',e);
+					this.dispatchEvent('keyFinish', e);
 				}
 			}
 		});
 
-        // mouse enter/exit
+		// mouse enter/exit
 		this.pixi.view.addEventListener('mouseenter', e => {
 			this.has_mouse = true;
-			this.dispatchEvent('mouseEnter',e);
+			this.dispatchEvent('mouseEnter', e);
 			this.can_drag = true;
 		});
 		this.pixi.view.addEventListener('mouseout', e => {
 			this.has_mouse = false;
-			this.dispatchEvent('mouseOut',e);
+			this.dispatchEvent('mouseOut', e);
 			if (!this.dragging) {
 				this.can_drag = false;
 			}
-        });
-       
-        // general mouse events
-        this.pixi.stage.on('pointerdown', e => {
+		});
+
+		// general mouse events
+		this.pixi.stage.on('pointerdown', e => {
 			let btn = e.data.originalEvent.button;
-            let alt = e.data.originalEvent.altKey;
+			let alt = e.data.originalEvent.altKey;
 			this.pointer_down = btn;
 
 			// dragging canvas
@@ -173,32 +176,32 @@ class BlankePixi {
 				if (btn == 1) {
 					this.pixi.stage.cursor = "all-scroll";
 					this.camera_drag = true;
-				}  
+				}
 				this.can_drag = true;
 			}
 			this.dragStart();
 
 			if (!alt && !this.camera_drag) {
-                if (btn == 0)
-					this.dispatchEvent('mousePlace',e);
-                if (btn == 2) 
-					this.dispatchEvent('mouseRemove',e);
+				if (btn == 0)
+					this.dispatchEvent('mousePlace', e);
+				if (btn == 2)
+					this.dispatchEvent('mouseRemove', e);
 			}
-			this.dispatchEvent('mouseDown',e);
-        });
-        
+			this.dispatchEvent('mouseDown', e);
+		});
+
 		this.pixi.stage.on('pointerup', e => {
 			let btn = e.data.originalEvent.button;
 			let was_cam_dragging = this.camera_drag;
 			if (this.dragging) {
 				if (btn == 1) {
 					this.camera_drag = false;
-				} else 
-				this.can_drag = true;
+				} else
+					this.can_drag = true;
 			}
 			this.dragStop(was_cam_dragging);
-			this.dispatchEvent('mouseUp',e);
-        	this.pointer_down = -1;
+			this.dispatchEvent('mouseUp', e);
+			this.pointer_down = -1;
 			this.pixi.stage.cursor = this._hide_mouse ? "none" : "auto";
 		});
 
@@ -211,7 +214,7 @@ class BlankePixi {
 			if (this.dragging) {
 				if (this.camera_drag) {
 					this.moveCamera(e.data.originalEvent.movementX, e.data.originalEvent.movementY);
-				} else 
+				} else
 					this.dispatchEvent('dragMove');
 			}
 
@@ -219,22 +222,22 @@ class BlankePixi {
 
 			x /= this.zoom;
 			y /= this.zoom;
-				
+
 			// mouse world coordinates
-			let mx = x-(this.camera[0] / this.zoom),
-				my = y-(this.camera[1] / this.zoom);
+			let mx = x - (this.camera[0] / this.zoom),
+				my = y - (this.camera[1] / this.zoom);
 			this.mx = mx;
 			this.my = my;
 
-			this.place_mouse = [Math.floor(x * this.zoom),Math.floor(y * this.zoom)];
-			this.mouse = [Math.floor(mx),Math.floor(my)];
+			this.place_mouse = [Math.floor(x * this.zoom), Math.floor(y * this.zoom)];
+			this.mouse = [Math.floor(mx), Math.floor(my)];
 			this.half_mouse = [Math.floor(mx), Math.floor(my)];
-			this.half_place_mouse = [Math.floor(x),Math.floor(y)];
+			this.half_place_mouse = [Math.floor(x), Math.floor(y)];
 
 			// use: selecting images
 			this.snap_mouse = [
-				mx < 0 ? (mx - snapx - ((mx - snapx) % snapx)) : mx - (mx%snapx),
-				my < 0 ? (my - snapy - ((my - snapy) % snapy)) : my - (my%snapy)
+				mx < 0 ? (mx - snapx - ((mx - snapx) % snapx)) : mx - (mx % snapx),
+				my < 0 ? (my - snapy - ((my - snapy) % snapy)) : my - (my % snapy)
 			]
 
 			if (!e.data.originalEvent.ctrlKey && !this.camera_drag) { // !e.data.originalEvent.ctrlKey || ["object","image"].includes(this.obj_type)
@@ -243,59 +246,59 @@ class BlankePixi {
 
 				// use: placing images, displaying mouse coordinates
 				this.mouse = [
-					mx - (mx%snapx),
-					my - (my%snapy)
+					mx - (mx % snapx),
+					my - (my % snapy)
 				];
 				// use: drawing crosshair
 				this.place_mouse = [
-					(x * this.zoom) - (mx % snapx  * this.zoom),
+					(x * this.zoom) - (mx % snapx * this.zoom),
 					(y * this.zoom) - (my % snapy * this.zoom)
 				]
 
-				if (mx < 0) { mx += snapx/2; x += snapx/2; }
-				if (my < 0) { my += snapy/2; y += snapy/2; }
+				if (mx < 0) { mx += snapx / 2; x += snapx / 2; }
+				if (my < 0) { my += snapy / 2; y += snapy / 2; }
 				// use: placing object points, displaying mouse coordinates
 				this.half_mouse = [
-					mx - (mx%(snapx/2)),
-					my - (my%(snapy/2))
+					mx - (mx % (snapx / 2)),
+					my - (my % (snapy / 2))
 				];
 				// use: drawing crosshair
 				this.half_place_mouse = [
-					(x * this.zoom) - (mx % (snapx/2.0)  * this.zoom),
-					(y * this.zoom) - (my % (snapy/2.0) * this.zoom)
+					(x * this.zoom) - (mx % (snapx / 2.0) * this.zoom),
+					(y * this.zoom) - (my % (snapy / 2.0) * this.zoom)
 				]
 			}
-			this.dispatchEvent('mouseMove',e);
+			this.dispatchEvent('mouseMove', e);
 		});
 	}
-	set hide_mouse (v) {
+	set hide_mouse(v) {
 		this._hide_mouse = v;
 		this.pixi.stage.cursor = this._hide_mouse ? "none" : "auto";
 	}
-	bringToFront (sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {         if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.push(sprite);}}
-	sendToBack (sprite, parent) {var sprite = (typeof(sprite) != "undefined") ? sprite.target || sprite : this;var parent = parent || sprite.parent || {"children": false};if (parent.children) {    for (var keyIndex in sprite.parent.children) {          if (sprite.parent.children[keyIndex] === sprite) {            sprite.parent.children.splice(keyIndex, 1);            break;        }    }    parent.children.splice(0,0,sprite);}}
-	orderComponents (list) {
+	bringToFront(sprite, parent) { var sprite = (typeof (sprite) != "undefined") ? sprite.target || sprite : this; var parent = parent || sprite.parent || { "children": false }; if (parent.children) { for (var keyIndex in sprite.parent.children) { if (sprite.parent.children[keyIndex] === sprite) { sprite.parent.children.splice(keyIndex, 1); break; } } parent.children.push(sprite); } }
+	sendToBack(sprite, parent) { var sprite = (typeof (sprite) != "undefined") ? sprite.target || sprite : this; var parent = parent || sprite.parent || { "children": false }; if (parent.children) { for (var keyIndex in sprite.parent.children) { if (sprite.parent.children[keyIndex] === sprite) { sprite.parent.children.splice(keyIndex, 1); break; } } parent.children.splice(0, 0, sprite); } }
+	orderComponents(list) {
 		for (let el of list) {
 			this.bringToFront(el);
 		}
 	}
-	updateZoom () {
+	updateZoom() {
 		let diff = this.zoom_target - this.zoom;
 		if (Math.abs(diff) < 0.01) {
 			this.zoom = this.zoom_target;
-			this.dispatchEvent('zoomChange', { zoom:this.zoom });
+			this.dispatchEvent('zoomChange', { zoom: this.zoom });
 			return;
 		} else {
-			this.dispatchEvent('zoomChanging', { zoom:this.zoom });
+			this.dispatchEvent('zoomChanging', { zoom: this.zoom });
 		}
-		 
+
 		// look at https://github.com/anvaka/ngraph/tree/master/examples/pixi.js/03%20-%20Zoom%20And%20Pan instead
 
 		var getCoords = (() => {
 			var ctx = {
-				global: { x: 0, y: 0} // store it inside closure to avoid GC pressure
+				global: { x: 0, y: 0 } // store it inside closure to avoid GC pressure
 			};
-		
+
 			return (container, x, y) => {
 				ctx.global.x = x; ctx.global.y = y;
 				return PIXI.interaction.InteractionData.prototype.getLocalPosition.call(ctx, container);
@@ -304,7 +307,7 @@ class BlankePixi {
 
 		requestAnimationFrame(this.updateZoom.bind(this));
 		let new_s = this.zoom + (diff / 10);
-	
+
 		this.zoom = new_s;
 
 		if (this.stage.children.length >= 1) {
@@ -312,9 +315,9 @@ class BlankePixi {
 			child.scale.x = this.zoom;
 			child.scale.y = this.zoom;
 			let rect = this.view.getBoundingClientRect();
-			let beforeTrans = getCoords(child,  clientX - rect.left,  clientY - rect.top);
+			let beforeTrans = getCoords(child, clientX - rect.left, clientY - rect.top);
 			child.updateTransform();
-			let afterTrans = getCoords(child,  clientX - rect.left,  clientY - rect.top);
+			let afterTrans = getCoords(child, clientX - rect.left, clientY - rect.top);
 			this.moveCamera(
 				(afterTrans.x - beforeTrans.x) * child.scale.x,
 				(afterTrans.y - beforeTrans.y) * child.scale.y
@@ -322,23 +325,23 @@ class BlankePixi {
 			child.updateTransform();
 		}
 	}
-	setZoom (scale) {
+	setZoom(scale) {
 		this.zoom_target = Math.min(Math.max(scale > 0 ? scale : this.options.zoom_clamp[0]), this.options.zoom_clamp[1]);
 		this.old_cam = [this.camera[0] * this.zoom, this.camera[1] * this.zoom];
 		requestAnimationFrame(this.updateZoom.bind(this));
 	}
-	moveCamera (dx, dy) {
+	moveCamera(dx, dy) {
 		this.setCameraPosition(this.camera[0] + (dx), this.camera[1] + (dy));
 	}
-	getCameraPosition () { // needs work
+	getCameraPosition() { // needs work
 		return [
 			this.camera[0] / this.zoom,
 			this.camera[1] / this.zoom
 		]
 	}
-	setCameraPosition (x, y) {
-		let xclamp = [x,x];
-		let yclamp = [y,y];
+	setCameraPosition(x, y) {
+		let xclamp = [x, x];
+		let yclamp = [y, y];
 		if (this.camera_bounds) {
 			let l = this.camera_bounds[0], t = this.camera_bounds[1];
 			let w = this.camera_bounds[2], h = this.camera_bounds[3];
@@ -350,27 +353,27 @@ class BlankePixi {
 		this.camera[1] = Math.min(Math.max(y, yclamp[0]), yclamp[1]);
 		this.dispatchEvent('cameraChange', { x, y });
 	}
-	setCameraBounds (x1,y1,x2,y2) {
+	setCameraBounds(x1, y1, x2, y2) {
 		if (x1 != null)
-			this.camera_bounds = [x1,y1,x2,y2];
-		else 
+			this.camera_bounds = [x1, y1, x2, y2];
+		else
 			this.camera_bounds = null;
 		this.setCameraPosition(...this.camera);
 	}
 	// Pointer Locking for camera dragging
-	dragStart () {
+	dragStart() {
 		if (!this.dragging && this.can_drag) {
-			this.dragging = true; 
-			this.dispatchEvent('dragStart', { camera:this.camera_drag })
+			this.dragging = true;
+			this.dispatchEvent('dragStart', { camera: this.camera_drag })
 		}
 	}
-	dragStop (cam_drag_override) {
+	dragStop(cam_drag_override) {
 		if (this.dragging) {
 			this.dragging = false;
-			this.dispatchEvent('dragStop', { camera:cam_drag_override != null ? cam_drag_override : this.camera_drag });
+			this.dispatchEvent('dragStop', { camera: cam_drag_override != null ? cam_drag_override : this.camera_drag });
 		}
 	}
-	resize () {
+	resize() {
 		let parent = this.pixi.view.parentElement;
 		if (!parent) return;
 		let w = parent.clientWidth;
@@ -378,16 +381,16 @@ class BlankePixi {
 		this.pixi.renderer.view.style.width = w + "px";
 		this.pixi.renderer.view.style.height = h + "px";
 		//this part adjusts the ratio:
-		this.pixi.renderer.resize(w,h);
+		this.pixi.renderer.resize(w, h);
 	}
-	get width () { return parseInt(this.pixi.renderer.view.clientWidth); }
-	get height () { return parseInt(this.pixi.renderer.view.clientHeight); }
-    get view () { return this.pixi.view; }
-	get stage () { return this.pixi.stage; }
-	get renderer () { return this.pixi.renderer; }
-	get ticker () { return this.pixi.ticker; }
-	get loader () { return PIXI.Loader.shared; }
-	loadRes (path, cb, name) {
+	get width() { return parseInt(this.pixi.renderer.view.clientWidth); }
+	get height() { return parseInt(this.pixi.renderer.view.clientHeight); }
+	get view() { return this.pixi.view; }
+	get stage() { return this.pixi.stage; }
+	get renderer() { return this.pixi.renderer; }
+	get ticker() { return this.pixi.ticker; }
+	get loader() { return PIXI.Loader.shared; }
+	loadRes(path, cb, name) {
 		if (!name) name = path;
 		let loader = new PIXI.Loader();
 		//if (!this.loader.resources[name]) {
@@ -395,20 +398,21 @@ class BlankePixi {
 		loader.load(cb);
 		//}
 	}
-	on (name, fn) {
+	on(name, fn) {
 		if (!(name in this.evt_list)) this.evt_list[name] = [];
 		if (!this.evt_list[name].includes(fn)) this.evt_list[name].push(fn);
 	}
-	dispatchEvent (name, e) {
+	dispatchEvent(name, e) {
 		let x = e && e.data ? e.data.global.x : 0;
 		let y = e && e.data ? e.data.global.y : 0;
 		let btn = this.pointer_down;
 		let alt = e && e.data ? e.data.originalEvent.altKey : false;
 		let ctrl = e && e.data ? e.data.originalEvent.ctrlKey : false;
-		const info = { x, y, btn, alt, ctrl, 
-			mx:this.mx, my:this.my, mouse:this.mouse, 
-			snap_mouse:this.snap_mouse, half_mouse:this.half_mouse
-		}; 
+		const info = {
+			x, y, btn, alt, ctrl,
+			mx: this.mx, my: this.my, mouse: this.mouse,
+			snap_mouse: this.snap_mouse, half_mouse: this.half_mouse
+		};
 		if (this.evt_list[name]) {
 			for (let fn of this.evt_list[name])
 				fn(e, info);

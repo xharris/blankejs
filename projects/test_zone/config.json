@@ -12,6 +12,10 @@
             "main.lua"
         ],
         [
+            "map0.map=map+?",
+            "map0.map"
+        ],
+        [
             "platformer.map=map+?",
             "platformer.map"
         ],
@@ -22,10 +26,6 @@
         [
             "conf.lua=script+?",
             "conf.lua"
-        ],
-        [
-            "View APPDATA folder=?",
-            "View APPDATA folder"
         ]
     ],
     "autoplay_preview": true,
@@ -113,7 +113,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "image/image1.png",
+            "image": "image/7tHKTIY.png",
             "tool.shape": "rect",
             "tool.size": [
                 1,
@@ -241,6 +241,22 @@
             ],
             "spacing": 0,
             "onion_alpha": 0.3
+        },
+        "image/7tHKTIY.png": {
+            "frame_size": [
+                481,
+                481
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3,
+            "showPreview": false,
+            "showBackgroundGrid": true,
+            "image": "image/blue_robot.png"
         }
     },
     "engine": "love2d"

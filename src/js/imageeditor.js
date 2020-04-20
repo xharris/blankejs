@@ -266,8 +266,11 @@ class ImageEditor extends Editor {
       if (e.key == "s") this.save_key_up = true;
       if (e.key == "z") this.undo_key_up = true;
     });
+
+    this.img_ready = false;
     this.pixi.ticker.add(() => {
-      this.renderImageTexture();
+      if (this.img_ready)
+        this.renderImageTexture();
     });
     this.pixi.hide_mouse = true;
     // [gl.FUNC_REVERSE_SUBTRACT, gl.FUNC_ADD]  -- OR -- [gl.ZERO, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE_MINUS_SRC_ALPHA]
@@ -324,7 +327,7 @@ class ImageEditor extends Editor {
 
     this.setTitle(EDITOR_TITLE);
     this.setOnClick(() => {
-      openImage(this.file);
+      ImageEditor.openImage(this.file);
     });
 
     this.setupMenu({
@@ -360,6 +363,7 @@ class ImageEditor extends Editor {
       image_edit_settings.image = app.shortenAsset(image_edit_settings.image);
       app.saveSettings();
       image_edit_settings.image = app.lengthenAsset(image_edit_settings.image);
+      this.img_ready = true;
       let [cx, cy] = this.getCenter();
       this.pixi.setCameraPosition(
         cx - this.img_width / 2,
@@ -388,6 +392,7 @@ class ImageEditor extends Editor {
     ifndef_obj(image_edit_settings[fname], DEFAULT_IMAGE_SETTINGS);
     this.img_settings = image_edit_settings[fname];
 
+    this.img_ready = false;
     if (new_file && nwFS.pathExistsSync(path)) {
       let img = new Image();
       img.onload = () => {
@@ -436,7 +441,7 @@ class ImageEditor extends Editor {
     if (
       this.anim &&
       this.hover_frame > 0 &&
-      this.hover_frame < this.anim.textures.length - 1 &&
+      this.hover_frame < this.anim.textures.length &&
       this.anim.textures[this.hover_frame - 1]
     )
       this.img_onion.texture = this.anim.textures[this.hover_frame - 1];
@@ -446,7 +451,7 @@ class ImageEditor extends Editor {
   refreshImageList() {
     let sel_str = `<option class="placeholder" value="" disabled ${
       this.file ? "" : "selected"
-    }>Select an image</option>`;
+      }>Select an image</option>`;
     this.el_image_form.getInput("image").innerHTML = sel_str;
     app.getAssets("image", files => {
       if (!files.some(f => f == this.file)) files.push(this.file);
@@ -455,7 +460,7 @@ class ImageEditor extends Editor {
           var img_path = nwPATH.basename(f);
           sel_str += `<option value="${f}" ${
             this.file == f ? "selected" : ""
-          }>${img_path}</option>`;
+            }>${img_path}</option>`;
         }
       });
       this.el_image_form.getInput("image").innerHTML = sel_str;
@@ -724,18 +729,17 @@ class ImageEditor extends Editor {
       };
     }
   }
+  static openImage(f) {
+    if (!FibWindow.focus(nwPATH.basename(f || EDITOR_TITLE))) new ImageEditor(f);
+  }
 }
-
-const openImage = f => {
-  if (!FibWindow.focus(nwPATH.basename(f || EDITOR_TITLE))) new ImageEditor(f);
-};
 
 document.addEventListener("openProject", e => {
   app.addSearchKey({
     key: "Open image editor",
     onSelect: () => {
       app.getNewAssetPath("image", (path, name) => {
-        openImage(path);
+        ImageEditor.openImage(path);
       });
     },
   });

@@ -1,7 +1,22 @@
+#file-explorer {
+  position: absolute;
+  left: 0px;
+  top: calc(@title-bar-height + @title-bar-margin);
+  bottom: @status-bar-height;
+  width: 200px;
+  background: @header-bg;
+  overflow: auto;
 
+  transition: all ease-in-out 0.5s;
 
-.file-explorer {
-  padding-left: 10px;
+  &.hidden {
+    width: 0px;
+    overflow: hidden;
+  }
+
+  &:hover .fancytree-node {
+    text-shadow: @light-text-shadow;
+  }
 }
 
 .ui-fancytree {
@@ -9,12 +24,28 @@
     list-style: none;
   }
 
-  padding-left: 10px;
+  padding-left: 0px;
   outline: none;
+
+  .fancytree-node {
+    width: 100%;
+    display: inline-block;
+    padding: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+
+    transition: all ease-in-out 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
+  }
 
   .fancytree-title {
     color: rgba(255,255,255,0.9);
     text-decoration-color: rgba(255,255,255,0.9);
+
+    transition: all ease-in-out 0.2s;
   }
 
   .fancytree-folder > .fancytree-title {
