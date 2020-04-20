@@ -145,9 +145,35 @@ class FileExplorer {
           store: "auto"
         },
         dnd5: {
-          dragStart: function (node, data) { return true; },
-          dragEnter: function (node, data) { return true; },
-          dragDrop: function (node, data) { /* data.otherNode.copyTo(node, data.hitMode); */ }
+          dragStart: function (src_node, data) {
+            // add fake root
+            fancytree().getRootNode().addNode({
+              title: nwPATH.basename(app.project_path),
+              key: "fake_root*",
+              folder: true
+            })
+            return true;
+          },
+          dragEnter: function (target_node, data) {
+            if (target_node.folder) return ["over", "before", "after"];
+            return ["before", "after"];
+          },
+          dragDrop: function (target_node, data) {
+            const src_node = data.otherNode;
+            if (target_node.folder) {
+              if (target_node.key === "fake_root*") target_node = fancytree().getRootNode();
+              // move to folder
+              const new_key = nwPATH.join(target_node.key, nwPATH.basename(src_node.key));
+              nwFS.move(getPath(src_node.key), nwPATH.join(getPath(target_node.key), nwPATH.basename(src_node.key)), (err) => {
+                if (!err) {
+                  target_node.setExpanded(true); // expand new location
+                  if (new_key !== src_node.key)
+                    src_node.remove(); // remove old node
+                }
+              })
+            }
+            fancytree().getNodeByKey("fake_root*").remove();
+          }
         }
       });
 
