@@ -2,6 +2,7 @@ const $ = require("jquery");
 require("jquery.fancytree");
 require("jquery.fancytree/dist/modules/jquery.fancytree.persist");
 require("jquery.fancytree/dist/modules/jquery.fancytree.dnd5");
+require("jquery.fancytree/dist/modules/jquery.fancytree.edit");
 
 const ROOT_KEY = "root_/"
 
@@ -61,6 +62,7 @@ const getFileData = async (file_path) => new Promise((res, rej) => {
 
 class FileExplorer {
   static fileChanged(path) {
+    if (!app.project_path) return;
 
     // file changes
     // iterate parent children
@@ -104,16 +106,54 @@ class FileExplorer {
     }
   }
 
+  static openFile(node) {
+    const full_path = getPath(node.key);
+    const asset_type = app.findAssetType(full_path);
+    if (asset_type === "script") {
+      Code.openScript(full_path);
+    }
+    if (asset_type === "image") {
+      ImageEditor.openImage(full_path);
+    }
+    if (asset_type === "map") {
+      SceneEditor.openScene(full_path)
+    }
+  }
+
+  static destroy() {
+    const afterTran = () => {
+      fancytree().destroy();
+      app.getElement("#file-explorer").removeEventListener('transitionend', afterTran)
+    }
+    const el_fileexplorer = app.getElement("#file-explorer")
+
+    if (el_fileexplorer.classList.contains('hidden'))
+      afterTran();
+    else
+      el_fileexplorer.addEventListener('transitionend', afterTran)
+    FileExplorer.hide();
+  }
+
   static show() {
+    const showElement = () => {
+      app.getElement("#file-explorer").classList.remove('hidden')
+      app.getElement("#work-container").classList.add('with-file-explorer')
+    }
     // const walker = nwWALK.walk(app.project_path);
     // walker.on("file");
+    if (fancytree()) {
+      showElement();
+      return;
+    }
+
     $(function () {
       $("#file-explorer").fancytree({
-        extensions: ["persist", "dnd5"],
+        extensions: ["persist", "dnd5", "edit"],
         treeId: "/",
         selectMode: 1,
         clickFolderMode: 3,
         activeVisible: true,
+        debugLevel: 0,
         source: async (e, data) => await getFolderData(nwPATH.join(app.project_path)),
         lazyLoad: (e, data) => {
           const dfd = $.Deferred();
@@ -124,17 +164,7 @@ class FileExplorer {
         },
         click: (e, data) => {
           if (!data.node.folder) {
-            const full_path = getPath(data.node.key);
-            const asset_type = app.findAssetType(full_path);
-            if (asset_type === "script") {
-              Code.openScript(full_path);
-            }
-            if (asset_type === "image") {
-              ImageEditor.openImage(full_path);
-            }
-            if (asset_type === "map") {
-              SceneEditor.openScene(full_path)
-            }
+            FileExplorer.openFile(data.node);
           }
         },
         //wide: {},
@@ -161,10 +191,12 @@ class FileExplorer {
           dragDrop: function (target_node, data) {
             const src_node = data.otherNode;
             if (target_node.folder) {
+              // dropping onto root?
               if (target_node.key === "fake_root*") target_node = fancytree().getRootNode();
               // move to folder
-              const new_key = nwPATH.join(target_node.key, nwPATH.basename(src_node.key));
-              nwFS.move(getPath(src_node.key), nwPATH.join(getPath(target_node.key), nwPATH.basename(src_node.key)), (err) => {
+              const new_key = app.cleanPath(nwPATH.join(target_node.key, nwPATH.basename(src_node.key)));
+
+              app.moveSafely(getPath(src_node.key), nwPATH.join(getPath(target_node.key), nwPATH.basename(src_node.key)), (err) => {
                 if (!err) {
                   target_node.setExpanded(true); // expand new location
                   if (new_key !== src_node.key)
@@ -174,6 +206,19 @@ class FileExplorer {
             }
             fancytree().getNodeByKey("fake_root*").remove();
           }
+        },
+        edit: {
+          beforeClose: (e, data) => {
+            const old_path = getPath(data.node.key);
+            const new_path = nwPATH.join(nwPATH.dirname(old_path), data.input.val());
+            app.renameSafely(old_path, new_path, (good) => {
+              if (!good) {
+                data.save = false;
+              } else {
+                data.node.remove();
+              }
+            })
+          }
         }
       });
 
@@ -182,8 +227,57 @@ class FileExplorer {
       // })
     });
 
-    app.getElement("#file-explorer").classList.remove('hidden')
-    app.getElement("#work-container").classList.add('with-file-explorer')
+    $("#file-explorer")[0].addEventListener('contextmenu', e => {
+      const node = $.ui.fancytree.getNode(e.target)
+      if (node) {
+        app.contextMenu(e.x, e.y, [
+          {
+            label: `new folder in /${nwPATH.basename(node.folder ? node.key : nwPATH.dirname(node.key))}`,
+            click: () => {
+              var i = 1;
+              var new_folder_name = 'folder' + i;
+              var new_folder_path = getPath(node.folder ? node.key : nwPATH.dirname(node.key));
+              // prevent using name of already existing dir
+              while (nwFS.pathExistsSync(nwPATH.join(new_folder_path, new_folder_name))) {
+                i++;
+                new_folder_name = 'folder' + i;
+              }
+              new_folder_path = nwPATH.join(new_folder_path, new_folder_name);
+              nwFS.ensureDir(new_folder_path);
+            }
+          },
+          {
+            label: 'open',
+            click: () => { FileExplorer.openFile(node) }
+          },
+          {
+            label: 'rename',
+            click: () => {
+              if (!FibWindow.isOpen(nwPATH.basename(node.key)))
+                node.editStart();
+              else {
+                let toast = blanke.toast(`Can't rename file from File Explorer while the file is open!`);
+                toast.icon = "close";
+                toast.style = "bad";
+              }
+            }
+          },
+          {
+            label: 'delete',
+            click: () => {
+              // modal
+              app.deleteModal(getPath(node.key), {
+                success: () => {
+                  node.remove();
+                }
+              })
+            }
+          }
+        ])
+      }
+    })
+
+    showElement();
   }
 
   static hide() {
@@ -213,5 +307,5 @@ document.addEventListener("openProject", e => {
 });
 
 document.addEventListener("closeProject", e => {
-  FileExplorer.hide();
+  FileExplorer.destroy();
 });

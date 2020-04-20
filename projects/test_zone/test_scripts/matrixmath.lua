@@ -19,7 +19,7 @@ State("math",{
 			Vector(0.5, 	-0.5,	0.5),
 			Vector(0.5, 	0.5,	0.5),
 			Vector(-0.5, 	0.5,	0.5)
-		)
+		) 
 		projection = {
 			{1, 0, 0},
 			{0, 1, 0},

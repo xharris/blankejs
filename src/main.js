@@ -122,6 +122,57 @@ var app = {
     menu.popup({ x: x, y: y });
   },
 
+  renameModal: (full_path, cb) => {
+    let filename = nwPATH.basename(full_path);
+    let ext = nwPATH.extname(filename);
+    blanke.showModal(
+      "<label>new name: </label>" +
+      "<input class='ui-input' id='new-file-name' style='width:100px;' value='" +
+      nwPATH.basename(filename, ext) +
+      "'/>",
+      {
+        yes: () => {
+          let new_path = nwPATH.join(
+            nwPATH.dirname(full_path),
+            app.getElement("#new-file-name").value + ext
+          );
+          app.renameSafely(full_path, new_path, (success, err) => {
+            if (success) {
+              if (cb && cb.success) cb.success(app.cleanPath(new_path))
+
+            } else
+              blanke.toast(
+                "could not rename '" +
+                nwPATH.basename(full_path) +
+                "' (" +
+                err +
+                ")"
+              );
+            if (cb && cb.fail) cb.fail()
+          });
+        },
+        no: () => {
+          if (cb && cb.cancel) cb.cancel()
+        },
+      }
+    )
+  },
+
+  deleteModal: (full_path, cb) => {
+    blanke.showModal(
+      "delete '" + nwPATH.basename(full_path) + "'?",
+      {
+        yes: () => {
+          app.deleteSafely(full_path);
+          if (cb && cb.success) cb.success();
+        },
+        no: () => {
+          if (cb && cb.fail) cb.fail();
+        },
+      }
+    );
+  },
+
   close: function () {
     app.window.close();
   },
@@ -1301,11 +1352,35 @@ var app = {
               }
             }
             app.saveSettings();
-            fn_done(true);
+            dispatchEvent('file_rename', { old_path: app.cleanPath(old_path), new_path: app.cleanPath(new_path) })
+            fn_done(new_path);
           }
         });
       }
     });
+  },
+
+  moveSafely: (old_path, new_path, cb) => {
+    nwFS.move(old_path, new_path, err => {
+      if (cb) {
+        cb(err);
+      }
+      if (!err)
+        dispatchEvent('file_move', { old_path: app.cleanPath(old_path), new_path: app.cleanPath(new_path) })
+    })
+  },
+
+  deleteSafely: (full_path) => {
+    const file_name = nwPATH.basename(full_path)
+    // close any editors with this open
+    editors.forEach(edit => {
+      if (edit.getTitle() === file_name) {
+        edit.removeHistory();
+        edit.close();
+      }
+    })
+    app.removeQuickAccess(file_name);
+    nwFS.remove(full_path);
   },
 
   // makes all urls open in external window

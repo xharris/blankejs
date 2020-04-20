@@ -267,8 +267,8 @@ class Code extends Editor {
     )
       this.game = new GamePreview(null, { ide_mode: true });
 
-    this.console = new Console();
     if (app.engine.game_preview_enabled) {
+      this.console = new Console();
       this.console.appendTo(this.getContent());
       this.getContainer().bg_first_only = true;
       if (this.game) this.appendBackground(this.game.container);
@@ -332,7 +332,7 @@ class Code extends Editor {
               return baseCur + `blanke-class blanke-${name.toLowerCase()}`;
           }
 
-          while (stream.next() && false) {}
+          while (stream.next() && false) { }
           return null;
         },
       };
@@ -528,18 +528,18 @@ class Code extends Editor {
       }
     });
 
-    this.addCallback("onResize", function (w, h) {
-      if (this_ref.game) this_ref.game.size = this_ref.container.getSizeType();
+    this.addCallback("onResize", (w, h) => {
+      if (this.game) this.game.size = this.container.getSizeType();
 
-      if (!this_ref.container.in_background) this_ref.console.clear();
+      if (!this.container.in_background && this.console) this.console.clear();
 
       // move split view around if there is one
-      let content_area = this_ref.getContent();
+      let content_area = this.getContent();
       content_area.classList.remove("horizontal", "vertical");
       if (w > h) content_area.classList.add("horizontal");
       if (h > w) content_area.classList.add("vertical");
 
-      this_ref.codemirror.refresh();
+      this.codemirror.refresh();
     });
 
     if (this.game) {
@@ -550,12 +550,13 @@ class Code extends Editor {
         )}</a>`;
         if (!nwFS.existsSync(file))
           file_link = `<a>${nwPATH.basename(file)}</a>`;
-        this.console.err(
-          `${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`
-        );
+        if (this.console)
+          this.console.err(
+            `${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`
+          );
       };
       this.game.onLog = (...msgs) => {
-        if (this.container.in_background) this.console.log(...msgs);
+        if (this.container.in_background && this.console) this.console.log(...msgs);
       };
       this.game.onRefresh = () => {
         this.enableFnHelper();
@@ -565,10 +566,10 @@ class Code extends Editor {
         }
       };
       this.game.onErrorResolved = () => {
-        this.console.clear();
+        if (this.console) this.console.clear();
       };
       this.game.onRefreshButton = () => {
-        this.console.clear();
+        if (this.console) this.console.clear();
       };
 
       this.addCallback("onEnterView", () => {
@@ -582,7 +583,7 @@ class Code extends Editor {
     this.codemirror.refresh();
 
     let game_window_menu = [];
-    if (app.ideSetting("game_preview_enabled")) {
+    if (app.ideSetting("game_preview_enabled") && this.console) {
       game_window_menu = [
         {
           label: "show console",
@@ -1174,8 +1175,8 @@ class Code extends Editor {
     if (this.not_saved) {
       blanke.showModal(
         "<label>'" +
-          nwPATH.basename(this.file) +
-          "' has unsaved changes! Save before closing?</label>",
+        nwPATH.basename(this.file) +
+        "' has unsaved changes! Save before closing?</label>",
         {
           yes: () => {
             this.save();
@@ -1383,7 +1384,8 @@ class Code extends Editor {
     if (this.game && !this.deleted) {
       this.game.breakpoints = Object.keys(this.breakpoints).map(parseInt);
       this.game.refreshSource(this.file);
-      this.console.clear();
+      if (this.console)
+        this.console.clear();
     }
   }
 
@@ -1546,7 +1548,7 @@ function addScripts(folder_path) {
     }
 
     for (let file in file_data)
-      Code.parseSprites(file_data[file], file, () => {}, true);
+      Code.parseSprites(file_data[file], file, () => { }, true);
 
     // first scene setting
     let first_scene = app.projSetting("first_scene");
@@ -1599,16 +1601,16 @@ document.addEventListener("openProject", function (e) {
   function key_newScriptModal(s_type, content) {
     blanke.showModal(
       "<label style='line-height:35px'>Name your new " +
-        s_type +
-        ":</label></br>" +
-        "<input class='ui-input' id='new-script-name' style='width:100px;'/>",
+      s_type +
+      ":</label></br>" +
+      "<input class='ui-input' id='new-script-name' style='width:100px;'/>",
       {
         yes: function () {
           let name = app.getElement("#new-script-name").value.trim();
           if (name != "") key_addScript(content, name);
           else blanke.toast("bad name for new " + s_type);
         },
-        no: function () {},
+        no: function () { },
       }
     );
   }

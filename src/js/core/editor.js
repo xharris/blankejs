@@ -1,9 +1,16 @@
 const { Menu, MenuItem } = require("electron");
 
+var editors = [];
+
+const removeID = id => {
+  editors = editors.filter(edit => edit && edit.id !== id)
+}
+
 class Editor {
   constructor() {
     this.app = app;
     this.closed = false;
+    this.id = guid();
 
     // asset list
     this.asset_list = document.createElement("div");
@@ -12,6 +19,8 @@ class Editor {
     // real content area
     this.content_area = document.createElement("div");
     this.content_area.classList.add("editor-content");
+
+    editors.push(this);
   }
 
   setupPopup(content) {
@@ -31,6 +40,7 @@ class Editor {
     this.container.appendChild(this.content_area);
     // menu button click
     this.container.btn_menu.onclick = e => {
+      removeID(this.id);
       this.onMenuClick(e);
     };
     this.container.onClose = (...args) => this.onClose(...args);
@@ -50,6 +60,7 @@ class Editor {
       this_ref.onMenuClick(e);
     });
     this.container.onClose = (...args) => {
+      removeID(this.id);
       this.onClose(...args);
       app.refreshQuickAccess();
     };
@@ -74,6 +85,7 @@ class Editor {
       this_ref.onMenuClick(e);
     });
     this.container.onClose = (...args) => {
+      removeID(this.id);
       this.onClose(...args);
       app.refreshQuickAccess();
     };
@@ -95,6 +107,7 @@ class Editor {
       this_ref.onMenuClick(e);
     });
     this.container.onClose = (...args) => {
+      removeID(this.id);
       this.onClose(...args);
       app.refreshQuickAccess();
     };
@@ -106,6 +119,12 @@ class Editor {
   setupMenu(opt) {
     let items = [];
     if (!opt.file_key) opt.file_key = "file";
+
+    document.addEventListener('file_move', (e) => {
+      if (e.detail.old_path === app.cleanPath(this[opt.file_key])) {
+        this[opt.file_key] = e.detail.new_path;
+      }
+    })
 
     if (opt.close) {
       items.push({
@@ -122,38 +141,13 @@ class Editor {
       items.push({
         label: "rename",
         click: () => {
-          let full_path = this[opt.file_key];
-          let filename = nwPATH.basename(full_path);
-          let ext = nwPATH.extname(filename);
-          blanke.showModal(
-            "<label>new name: </label>" +
-              "<input class='ui-input' id='new-file-name' style='width:100px;' value='" +
-              nwPATH.basename(filename, ext) +
-              "'/>",
-            {
-              yes: () => {
-                let new_path = nwPATH.join(
-                  nwPATH.dirname(full_path),
-                  app.getElement("#new-file-name").value + ext
-                );
-                app.renameSafely(full_path, new_path, (success, err) => {
-                  if (success) {
-                    this[opt.file_key] = app.cleanPath(new_path);
-                    if (typeof opt.rename == "function")
-                      opt.rename(new_path, full_path);
-                  } else
-                    blanke.toast(
-                      "could not rename '" +
-                        nwPATH.basename(full_path) +
-                        "' (" +
-                        err +
-                        ")"
-                    );
-                });
-              },
-              no: () => {},
+          app.renameModal(this[opt.file_key], {
+            success: (new_path) => {
+              this[opt.file_key] = new_path;
+              if (typeof opt.rename == "function")
+                opt.rename(new_path, full_path);
             }
-          );
+          })
         },
       });
     }
@@ -164,17 +158,12 @@ class Editor {
       items.push({
         label: "delete",
         click: () => {
-          blanke.showModal(
-            "delete '" + nwPATH.basename(this[opt.file_key]) + "'?",
-            {
-              yes: () => {
-                this.deleted = true;
-                nwFS.remove(this[opt.file_key]);
-                if (typeof opt.delete == "function") opt.delete();
-              },
-              no: () => {},
+          app.deleteModal(this[opt.file_key], {
+            success: () => {
+              this.deleted = true;
+              if (typeof opt.delete == "function") opt.delete();
             }
-          );
+          })
         },
       });
     }
@@ -213,7 +202,7 @@ class Editor {
   onBeforeClose(res) {
     res();
   }
-  onClose() {}
+  onClose() { }
 
   close(...args) {
     let real_close = () => {
@@ -226,7 +215,7 @@ class Editor {
       // return TRUE to prevent closing
       new Promise((res, rej) => this.onBeforeClose(res, rej)).then(
         real_close,
-        () => {}
+        () => { }
       );
     } else real_close();
   }

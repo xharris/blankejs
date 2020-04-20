@@ -134,6 +134,14 @@ class FibWindow {
 		return false;
 	}
 
+	static isOpen(title) {
+		for (var b = 0; b < boxes.length; b++) {
+			if (boxes[b].title == title) {
+				return true;
+			}
+		}
+	}
+
 	// only show the first window and not the split screens
 	static toggleSplit() {
 		split_enabled = !split_enabled;

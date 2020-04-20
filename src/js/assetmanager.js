@@ -245,13 +245,13 @@ class AssetManager extends Editor {
               }
               blanke.toast(
                 "File moved to '" +
-                  nwPATH.join(
-                    app.project_path,
-                    "assets",
-                    value,
-                    nwPATH.basename(path)
-                  ) +
-                  "'"
+                nwPATH.join(
+                  app.project_path,
+                  "assets",
+                  value,
+                  nwPATH.basename(path)
+                ) +
+                "'"
               );
             });
           } catch (e) {
@@ -265,15 +265,13 @@ class AssetManager extends Editor {
     // delete button
     let el_delete = app.createElement("button", "ui-button-sphere");
     el_delete.innerHTML = `<object class="blanke-icon mdi-svg" data="src/icons/trash.svg" type="image/svg+xml"></object>`;
-    el_delete.addEventListener("click", function () {
-      blanke.showModal("delete '" + nwPATH.basename(old_path) + "'?", {
-        yes: function () {
-          nwFS.remove(old_path);
-          app.clearElement(this_ref.el_file_preview);
-          this_ref.refreshFileList();
-        },
-        no: function () {},
-      });
+    el_delete.addEventListener("click", () => {
+      app.deleteModal(old_path, {
+        success: () => {
+          app.clearElement(this.el_file_preview);
+          this.refreshFileList();
+        }
+      })
     });
 
     this.el_file_preview.appendChild(el_preview_container);

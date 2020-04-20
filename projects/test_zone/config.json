@@ -12,20 +12,16 @@
             "main.lua"
         ],
         [
+            "Add a script=new+?",
+            "Add a script"
+        ],
+        [
             "map0.map=map+?",
             "map0.map"
         ],
         [
             "platformer.map=map+?",
             "platformer.map"
-        ],
-        [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -257,6 +253,19 @@
             "showPreview": false,
             "showBackgroundGrid": true,
             "image": "image/blue_robot.png"
+        },
+        "image/megman.png": {
+            "frame_size": [
+                209,
+                238
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
         }
     },
     "engine": "love2d"
