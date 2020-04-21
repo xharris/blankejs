@@ -1227,6 +1227,10 @@ class SceneEditor extends Editor {
         obj.size[0],
         obj.size[1]
       );
+      poly.drawRect(
+        points[0], points[1],
+        1, 1
+      )
     } else {
       for (let p = 0; p < points.length; p += 2) {
         if (p == 0) poly.moveTo(points[p], points[p + 1]);
@@ -1306,8 +1310,8 @@ class SceneEditor extends Editor {
 
   // when user presses enter to finish object
   // also used when loading a file's objects
-  placeObject(points, obj_tag) {
-    let this_ref = this;
+  placeObject(points, obj_tag, layer_uuid) {
+    const add_to_layer = layer_uuid ? this.getLayer(layer_uuid, true) : this.curr_layer;
 
     if (points.length > 2) {
       // make sure points don't form a straight line
@@ -1334,67 +1338,67 @@ class SceneEditor extends Editor {
 
     pixi_poly.interactive = true;
     pixi_poly.interactiveChildren = false;
-    pixi_poly.on("pointerup", function (e) {
+    pixi_poly.on("pointerup", (e) => {
       // add tag
-      let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);
-      if (e.data.originalEvent.button == 0 && this_ref.obj_type == "tag") {
-        let tag = this_ref.el_tag_form.getValue("value");
+      let obj_ref = this.getObjByUUID(e.currentTarget.obj_uuid);
+      if (e.data.originalEvent.button == 0 && this.obj_type == "tag") {
+        let tag = this.el_tag_form.getValue("value");
         if (tag) {
           e.target.tag = tag;
-          this_ref.obj_info[obj_ref.name] =
+          this.obj_info[obj_ref.name] =
             obj_ref.name + (tag == "" ? "" : " (" + e.target.tag + ")");
-          this_ref.drawCrosshair();
-          this_ref.export();
+          this.drawCrosshair();
+          this.export();
         }
       }
     });
-    pixi_poly.on("rightup", function (e) {
+    pixi_poly.on("rightup", (e) => {
       // remove tag
-      let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);
-      if (this_ref.obj_type == "tag") {
+      let obj_ref = this.getObjByUUID(e.currentTarget.obj_uuid);
+      if (this.obj_type == "tag") {
         e.target.tag = "";
-        this_ref.obj_info[obj_ref.name] = obj_ref.name;
-        this_ref.drawCrosshair();
-        this_ref.export();
+        this.obj_info[obj_ref.name] = obj_ref.name;
+        this.drawCrosshair();
+        this.export();
       }
 
       // remove from array
       if (
-        !this_ref.placing_object &&
-        this_ref.curr_layer &&
-        this_ref.obj_type == "object" &&
-        this_ref.curr_object.name === curr_object.name &&
-        this_ref.curr_layer.uuid === e.target.layer_uuid
+        !this.placing_object &&
+        this.curr_layer &&
+        this.obj_type == "object" &&
+        this.curr_object.name === curr_object.name &&
+        this.curr_layer.uuid === e.target.layer_uuid
       ) {
         let del_uuid = e.target.uuid;
-        this_ref.iterObjectInLayer(
-          this_ref.curr_layer.uuid,
+        this.iterObjectInLayer(
+          this.curr_layer.uuid,
           curr_object.name,
-          function (obj) {
+          (obj) => {
             if (del_uuid == obj.poly.uuid) {
               obj.image.destroy();
-              if (this_ref.obj_info[curr_object.name])
-                delete this_ref.obj_info[curr_object.name];
+              if (this.obj_info[curr_object.name])
+                delete this.obj_info[curr_object.name];
               e.target.destroy();
               return true;
             }
           }
         );
-        this_ref.export();
+        this.export();
       }
     });
     // add mouse enter/out events
-    const polyHover = function (e) {
-      let obj_ref = this_ref.getObjByUUID(e.currentTarget.obj_uuid);
-      if (obj_ref && e.currentTarget.layer_uuid == this_ref.curr_layer.uuid) {
+    const polyHover = (e) => {
+      let obj_ref = this.getObjByUUID(e.currentTarget.obj_uuid);
+      if (obj_ref && e.currentTarget.layer_uuid == this.curr_layer.uuid) {
         if (e.type == "mouseover") {
           if (e.target.tag)
-            this_ref.obj_info[obj_ref.name] =
+            this.obj_info[obj_ref.name] =
               obj_ref.name + " (" + e.target.tag + ")";
-          else this_ref.obj_info[obj_ref.name] = obj_ref.name;
+          else this.obj_info[obj_ref.name] = obj_ref.name;
         } else if (e.type == "mouseout") {
-          if (this_ref.obj_info[obj_ref.name])
-            delete this_ref.obj_info[obj_ref.name];
+          if (this.obj_info[obj_ref.name])
+            delete this.obj_info[obj_ref.name];
         }
       }
     };
@@ -1407,19 +1411,19 @@ class SceneEditor extends Editor {
     if (obj_tag) pixi_poly.tag = obj_tag;
 
     this.drawObjImage(curr_object, null, points).then(pixi_image => {
-      this.curr_layer.container.addChild(pixi_image);
-      this.obj_polys[curr_object.uuid][this.curr_layer.uuid].push({
+      add_to_layer.container.addChild(pixi_image);
+      this.obj_polys[curr_object.uuid][add_to_layer.uuid].push({
         poly: pixi_poly,
         image: pixi_image,
         points: points,
       });
     })
-    this.curr_layer.container.addChild(pixi_poly);
+    add_to_layer.container.addChild(pixi_poly);
 
     if (!this.obj_polys[curr_object.uuid])
       this.obj_polys[curr_object.uuid] = {};
-    if (!this.obj_polys[curr_object.uuid][this.curr_layer.uuid])
-      this.obj_polys[curr_object.uuid][this.curr_layer.uuid] = [];
+    if (!this.obj_polys[curr_object.uuid][add_to_layer.uuid])
+      this.obj_polys[curr_object.uuid][add_to_layer.uuid] = [];
   }
 
   clearPlacingObject() {

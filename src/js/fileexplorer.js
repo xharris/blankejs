@@ -287,6 +287,8 @@ class FileExplorer {
           }
         ])
       }
+      e.preventDefault();
+      return false;
     })
 
     showElement();
