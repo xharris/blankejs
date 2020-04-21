@@ -1678,8 +1678,9 @@ app.window.webContents.once("dom-ready", () => {
   app.getElement("#btn-close").addEventListener("click", () => {
     app.window.close();
   });
+
   app.getElement("#btn-maximize").addEventListener("click", () => {
-    app.window.isMaximized() ? app.window.restore() : app.window.maximize();
+    app.window.isMaximized() ? app.window.unmaximize() : app.window.maximize();
   });
   app.getElement("#btn-minimize").addEventListener("click", () => {
     app.window.minimize();
@@ -1897,7 +1898,7 @@ app.window.webContents.once("dom-ready", () => {
   app.window.on("resize", e => {
     blanke.cooldownFn("window_resize", 500, () => {
       let size = e.sender.getSize();
-      app.window.setSize(Math.floor(size[0] + 0.5), Math.floor(size[1] + 0.5));
+      //app.window.setSize(Math.floor(size[0] + 0.5), Math.floor(size[1] + 0.5));
     });
   });
 
