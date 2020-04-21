@@ -1,9 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 16 16" shape-rendering="crispEdges">
 <metadata>Made with Pixels to Svg https://codepen.io/shshaw/pen/XbxvNj</metadata>
-<path stroke="#ffffff" d="M3 0h1M9 0h1M12 0h1M2 1h1M4 1h2M8 1h1M10 1h2M13 1h1M1 2h1M3 2h2M6 2h2M11 2h2M14 2h1M2 3h2M5 3h2M12 3h2M15 3h1M2 4h1M4 4h2M13 4h2M3 5h2M14 5h1M3 6h1M15 6h1M2 7h1M14 7h1M1 8h1M13 8h1M0 9h1M12 9h1M1 10h1M11 10h1M2 11h1M10 11h1M3 12h1M9 12h6M4 13h1M15 13h1M5 14h10" />
+<path stroke="#ffffff" d="M3 0h1M9 0h1M12 0h1M2 1h1M4 1h2M8 1h1M10 1h2M13 1h1M1 2h1M3 2h2M6 2h2M11 2h2M14 2h1M2 3h2M5 3h2M12 3h2M15 3h1M2 4h1M4 4h2M13 4h2M3 5h2M14 5h1M3 6h1M15 6h1" />
 <path stroke="#263238" d="M3 1h1M9 1h1M12 1h1M2 2h1M5 2h1M8 2h1M10 2h1M13 2h1M4 3h1M7 3h1M11 3h1M14 3h1M3 4h1M6 4h1M12 4h1M5 5h1M13 5h1M4 6h1M14 6h1M3 7h1M5 7h1M13 7h1M2 8h1M6 8h1M12 8h1M1 9h1M7 9h1M11 9h1M2 10h1M8 10h1M10 10h1M3 11h1M9 11h1M4 12h1M8 12h1M5 13h10" />
 <path stroke="#92d6dd" d="M9 2h1M8 3h3M7 4h5M6 5h6M5 6h6M6 7h4M7 8h2" />
 <path stroke="#4dd0e1" d="M12 5h1M11 6h3M10 7h3M9 8h3M8 9h3M9 10h1" />
+<path stroke="#f7f8f7" d="M2 7h1" />
 <path stroke="#e0e0e0" d="M4 7h1M3 8h3M2 9h5M3 10h4M4 11h2" />
+<path stroke="#f8f9f8" d="M14 7h1" />
+<path stroke="#edeeee" d="M1 8h1" />
+<path stroke="#efeff0" d="M13 8h1" />
+<path stroke="#e5e5e4" d="M0 9h1" />
+<path stroke="#e6e6e7" d="M12 9h1" />
+<path stroke="#dcdddc" d="M1 10h1" />
 <path stroke="#969696" d="M7 10h1M6 11h3M5 12h3" />
+<path stroke="#dedddd" d="M11 10h1" />
+<path stroke="#d3d4d4" d="M2 11h1" />
+<path stroke="#d5d5d4" d="M10 11h1" />
+<path stroke="#cbcbcb" d="M3 12h1" />
+<path stroke="#cbcccb" d="M9 12h1" />
+<path stroke="#cbcccc" d="M10 12h1" />
+<path stroke="#cccbcc" d="M11 12h1" />
+<path stroke="#cdcccc" d="M12 12h1" />
+<path stroke="#cccccc" d="M13 12h2" />
+<path stroke="#c1c2c2" d="M4 13h1" />
+<path stroke="#c4c2c4" d="M15 13h1" />
+<path stroke="#b9bab9" d="M5 14h1M7 14h1" />
+<path stroke="#b9b9b9" d="M6 14h1" />
+<path stroke="#b9baba" d="M8 14h2" />
+<path stroke="#babab9" d="M10 14h1" />
+<path stroke="#bababb" d="M11 14h1M13 14h1" />
+<path stroke="#bababa" d="M12 14h1" />
+<path stroke="#babbba" d="M14 14h1" />
 </svg>

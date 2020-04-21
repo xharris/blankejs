@@ -942,7 +942,115 @@ class Code extends Editor {
     return new_editor;
   }
 
-  static parseSprites(text, file, cb, only_entities) {
+  static parseSprites(text, file) {
+    text = text.replace(/(\r\n|\n|\r)/gm, " ");
+
+    const infoDefault = path => ({
+      path: path,
+      cropped: false,
+      frame_size: [0, 0],
+      offset: [0, 0],
+      frames: 1,
+    });
+
+    const img_asset_path = app.getAssetPath("image") + "/";
+    const imagePathToKey = path => {
+      path = app.cleanPath(path);
+      if (path) path = path.replace(img_asset_path, "").split(".");
+      else return;
+      if (path.length > 1) return path.slice(0, -1).join(".");
+      else return path[0];
+    };
+
+    const storeImageInfo = info => {
+      let name = imagePathToKey(info.path || info.name);
+      // if (!Code.images[name])
+      //   console.log('store', info)
+      if (name) {
+        Code.images[name] = Object.assign(Code.images[name] || {}, info);
+      }
+    };
+
+    return new Promise((res, rej) => {
+
+      const findEntitySprites = () => {
+        let new_texts = [];
+        if (this_lines_num[file]) {
+          new_texts = this_lines_num[file].map(l => [
+            l.end === -1 ? text.slice(l.start) : text.slice(l.start, l.end),
+            l.class_name,
+          ]);
+        }
+
+        if (new_texts.length > 0) {
+          Promise.all(new_texts.map((res2, rej2) => {
+
+          }))
+            .then(result => {
+              // console.log(result);
+            })
+            .catch(() => {
+              console.log('nope', file)
+            })
+
+          let stop_matching = false;
+          while (!stop_matching) {
+            let match = null;
+            for (let re of re_image) {
+              if (!match) match = re.exec(text)
+            }
+            if (match) {
+
+
+            } else {
+              stop_matching = true;
+              // rej(`no entity images found in ${file}`)
+            }
+          }
+        }
+      }
+
+      // populate an entry in Code.images?
+      let stop_matching = false;
+      let regexes = [].concat(re_image, re_entity_using_image)
+
+      while (!stop_matching) {
+        let match = null;
+        for (let re of regexes) {
+          if (!match) match = re.exec(text)
+        }
+        if (match) {
+          console.log(file, match)
+
+          let match_copy = [...match];
+          if (match[2]) match_copy[1] = match_copy[2]
+          app.getAssetPath("image", match_copy[1])
+            .then(path => {
+              // sprite info, cb.info = { offset, frame_size[], cropped }
+              let info = infoDefault(path);
+              if (!nwFS.exists(path)) return cb(`image doesn't exist: ${path}`);
+
+              if (app.engine.sprite_parse)
+                app.engine.sprite_parse(match_copy, info, info => {
+                  storeImageInfo(info);
+                  // return res(info);
+                });
+            })
+            .catch(() => {
+              // rej(`asset not found ${match_copy[1]}`)
+            })
+            .finally(() => {
+              findEntitySprites();
+            })
+        } else {
+          stop_matching = true;
+          findEntitySprites();
+        }
+      }
+    })
+  }
+
+  static not_parseSprites(text, file, cb, only_entities) {
     text = text.replace(/(\r\n|\n|\r)/gm, " ");
 
     const infoDefault = path => ({
@@ -963,13 +1071,19 @@ class Code extends Editor {
 
     const storeImageInfo = info => {
       let name = imagePathToKey(info.path || info.name);
+      // if (!Code.images[name])
+      //   console.log('store', info)
       if (name)
         Code.images[name] = Object.assign(Code.images[name] || {}, info);
     };
 
     const storeSpriteInfo = (entity_name, img_name, cb) => {
-      Code.sprites[entity_name] = Object.assign(Code.images[img_name], {});
-      cb(null, Code.sprites[entity_name]);
+      if (Code.images[img_name]) {
+        Code.sprites[entity_name] = Object.assign(Code.images[img_name], {});
+        cb(null, Code.sprites[entity_name]);
+      } else {
+        return cb(`image doesn't exist: ${img_name}`)
+      }
     };
 
     const getImageInfo = new Promise((res, rej) => {
@@ -992,16 +1106,15 @@ class Code extends Editor {
             let info = infoDefault(path);
             if (!nwFS.exists(path)) return cb(`image doesn't exist: ${path}`);
 
-            if (app.engine.sprite_parse) {
-              app.engine.sprite_parse(match_copy, info, result => {
-                storeImageInfo(result);
-                return res(result);
+            if (app.engine.sprite_parse)
+              app.engine.sprite_parse(match_copy, info, info => {
+                storeImageInfo(info);
+                return res(info);
               });
-            }
           })
-          .catch(err => {
-            rej(err);
-          });
+          .catch(() => {
+            rej(`asset not found ${match_copy[1]}`)
+          })
       }
     });
 
@@ -1021,43 +1134,43 @@ class Code extends Editor {
             new Promise((res, rej) => {
               let stop_matching = false;
               let match;
-              while (!stop_matching) {
-                match = null;
-                for (let re of re_entity_using_image) {
-                  if (!match) {
-                    match = re.exec(new_text);
-                  }
-                }
+              //while (!stop_matching) {
+              match = null;
+              for (let re of re_entity_using_image) {
                 if (!match) {
-                  stop_matching = true;
-                  delete Code.sprites[class_name];
-                  return rej("no entity sprite matches");
-                }
-
-                let entity_name = match[1];
-                let img_name = imagePathToKey(match[2]);
-
-                if (
-                  !Code.images[img_name] &&
-                  match[2].includes(".") &&
-                  app.engine.sprite_parse
-                ) {
-                  let info = infoDefault(
-                    app.lengthenAsset("image/" + match[2])
-                  );
-                  if (!nwFS.exists(info.path))
-                    return cb(`image doesn't exist: ${info.path}`);
-                  app.engine.sprite_parse(match, info, info => {
-                    storeImageInfo(info);
-                    storeSpriteInfo(entity_name, img_name, cb);
-
-                    cb(null, info);
-                  });
-                } else {
-                  img_name = match[2];
-                  storeSpriteInfo(entity_name, img_name, cb);
+                  match = new_text.match(re);
                 }
               }
+              if (!match) {
+                stop_matching = true;
+                delete Code.sprites[class_name];
+                return rej(`no entity sprite matches for ${file}`);
+              } else {
+                console.log('matched', file)
+              }
+
+              let entity_name = match[1];
+              let img_name = imagePathToKey(match[2]);
+
+              if (!Code.images[img_name] && match[2].includes(".") && app.engine.sprite_parse) {
+                let info = infoDefault(app.lengthenAsset("image/" + match[2]));
+                if (!nwFS.exists(info.path)) {
+                  console.log(info, app.lengthenAsset("image/" + match[2]))
+                  return cb(`image doesn't exist after matching: ${info.path}`);
+                }
+                app.engine.sprite_parse(match, info, info => {
+                  storeImageInfo(info);
+                  storeSpriteInfo(entity_name, img_name, cb);
+
+                  cb(null, info);
+                });
+              } else {
+                img_name = match[2];
+                if (Code.images[img_name])
+                  storeSpriteInfo(entity_name, img_name, cb);
+                stop_matching = true;
+              }
+              //}
               return;
             })
           );
@@ -1436,39 +1549,41 @@ class Code extends Editor {
       if (!Code.images) Code.images = {};
 
       let pivots = {};
-      Code.parseSprites(data, path, (err, info) => {
-        let calcPivot = e_class => {
-          let info = Code.sprites[e_class];
-          let pivot = pivots[e_class];
-          let align = pivot.align;
-          let x = 0,
-            y = 0;
-          if (info && pivot) {
-            if (align.includes("center")) {
-              x = info.frame_size[0] / 2;
-              y = info.frame_size[1] / 2;
+      Code.parseSprites(data, path).then(err => {
+        if (!err) {
+          let calcPivot = e_class => {
+            let info = Code.sprites[e_class];
+            let pivot = pivots[e_class];
+            let align = pivot.align;
+            let x = 0,
+              y = 0;
+            if (info && pivot) {
+              if (align.includes("center")) {
+                x = info.frame_size[0] / 2;
+                y = info.frame_size[1] / 2;
+              }
+              if (align.includes("left")) x = 0;
+              if (align.includes("right")) x = info.frame_size[0];
+              if (align.includes("top")) y = 0;
+              if (align.includes("bottom")) y = info.frame_size[1];
+              delete pivots[e_class];
             }
-            if (align.includes("left")) x = 0;
-            if (align.includes("right")) x = info.frame_size[0];
-            if (align.includes("top")) y = 0;
-            if (align.includes("bottom")) y = info.frame_size[1];
-            delete pivots[e_class];
-
-            info.pivot = [x, y];
+            if (info) info.pivot = [x, y];
+          };
+          // optional: sprite alignment
+          let match;
+          data = data.replace(/(\r\n|\n|\r)/gm, " ");
+          for (let re of re_sprite_align) {
+            while ((match = re.exec(data))) {
+              pivots[match[1]] = {
+                align: match[2],
+                match: match,
+              };
+              calcPivot(match[1]);
+            }
           }
-        };
-        // optional: sprite alignment
-        let match;
-        data = data.replace(/(\r\n|\n|\r)/gm, " ");
-
-        for (let re of re_sprite_align) {
-          while ((match = re.exec(data))) {
-            pivots[match[1]] = {
-              align: match[2],
-              match: match,
-            };
-            calcPivot(match[1]);
-          }
+        } else {
+          console.error(err)
         }
 
         if (ext_class_list[path]) {

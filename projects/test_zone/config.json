@@ -8,6 +8,14 @@
     "window_size": 3,
     "quick_access": [
         [
+            "platformer.map=map+?",
+            "platformer.map"
+        ],
+        [
+            "Open image editor=?",
+            "Open image editor"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
         ],
@@ -18,10 +26,6 @@
         [
             "map0.map=map+?",
             "map0.map"
-        ],
-        [
-            "platformer.map=map+?",
-            "platformer.map"
         ]
     ],
     "autoplay_preview": true,
@@ -258,6 +262,19 @@
             "frame_size": [
                 209,
                 238
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
+        },
+        "image/image6.bmp": {
+            "frame_size": [
+                256,
+                256
             ],
             "frames": 1,
             "position": [

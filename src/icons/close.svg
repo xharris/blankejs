@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"  width="24" height="24" viewBox="0 0 24 24">
-   <path fill="#485358" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 24 24" shape-rendering="crispEdges">
+<metadata>Made with Pixels to Svg https://codepen.io/shshaw/pen/XbxvNj</metadata>
+<path stroke="#263238" d="M6 5h1M17 5h1M5 6h3M16 6h3M6 7h3M15 7h3M7 8h3M14 8h3M8 9h3M13 9h3M9 10h6M10 11h4M10 12h4M9 13h6M8 14h3M13 14h3M7 15h3M14 15h3M6 16h3M15 16h3M5 17h3M16 17h3M6 18h1M17 18h1" />
 </svg>

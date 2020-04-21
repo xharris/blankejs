@@ -1557,7 +1557,7 @@ do
         size = size or 12
         local key = path..'+'..size
         if fonts[key] then return fonts[key] end 
-        local font = love.graphics.newFont(path, size)
+        local font = love.graphics.newFont(Game.res('font',path), size)
         fonts[key] = font 
         return font
     end  
@@ -1575,7 +1575,6 @@ do
         setFont = function(path, size)
             path = path or last_font or DEF_FONT
             last_font = path
-            if path ~= DEF_FONT then path = Game.res('font', path) end
             local font = getFont(path, size)
             assert(font, 'Font not found: \''..path..'\'')
             love.graphics.setFont(font)

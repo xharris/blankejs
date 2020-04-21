@@ -1,6 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 16 16" shape-rendering="crispEdges">
 <metadata>Made with Pixels to Svg https://codepen.io/shshaw/pen/XbxvNj</metadata>
-<path stroke="#ffffff" d="M3 1h10M2 2h2M12 2h2M1 3h2M13 3h2M1 4h1M14 4h1M1 5h1M3 5h3M14 5h1M1 6h1M3 6h1M5 6h1M9 6h3M14 6h1M1 7h1M3 7h3M9 7h1M11 7h1M14 7h1M1 8h1M9 8h3M14 8h1M0 9h2M14 9h1M0 10h1M14 10h1M0 11h1M14 11h1M0 12h1M14 12h1M0 13h2M9 13h6M1 14h9" />
+<path stroke="#ffffff" d="M4 1h8M3 2h1M12 2h1M2 3h1M13 3h1M1 4h1M14 4h1M1 5h1M3 5h3M14 5h1M1 6h1M3 6h1M5 6h1M9 6h3M14 6h1M3 7h3M9 7h1M11 7h1M9 8h3" />
 <path stroke="#263238" d="M4 2h8M3 3h10M2 4h12M2 5h1M6 5h8M2 6h1M4 6h1M6 6h3M12 6h2M2 7h1M6 7h3M10 7h1M12 7h2M2 8h7M12 8h2M2 9h12M1 10h1M9 10h5M1 11h7M9 11h5M1 12h1M9 12h5M2 13h7" />
+<path stroke="#f7f8f7" d="M1 7h1" />
+<path stroke="#f7f6f6" d="M14 7h1" />
+<path stroke="#efeeef" d="M1 8h1" />
+<path stroke="#ededed" d="M14 8h1" />
+<path stroke="#e6e6e6" d="M1 9h1" />
+<path stroke="#e4e5e4" d="M14 9h1" />
+<path stroke="#dcddde" d="M0 10h1" />
 <path stroke="#ffd54f" d="M2 10h7M8 11h1M2 12h7" />
+<path stroke="#dbdbdb" d="M14 10h1" />
+<path stroke="#d4d3d4" d="M0 11h1" />
+<path stroke="#d2d3d2" d="M14 11h1" />
+<path stroke="#cbcbcc" d="M0 12h1" />
+<path stroke="#cac9ca" d="M14 12h1" />
+<path stroke="#c2c2c2" d="M1 13h1" />
+<path stroke="#c2c1c1" d="M9 13h1" />
+<path stroke="#c1c2c1" d="M10 13h1" />
+<path stroke="#c1c1c1" d="M11 13h1" />
+<path stroke="#c1c1c0" d="M12 13h1" />
+<path stroke="#c0c1c1" d="M13 13h1" />
+<path stroke="#b9b9b9" d="M2 14h1M4 14h1" />
+<path stroke="#b9b9b8" d="M3 14h1M6 14h1" />
+<path stroke="#b8b9b9" d="M5 14h1" />
+<path stroke="#b8b8b8" d="M7 14h2" />
 </svg>

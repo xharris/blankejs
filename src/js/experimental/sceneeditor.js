@@ -1272,8 +1272,10 @@ class SceneEditor extends Editor {
         info.offset[0] + info.frame_size[0] > spr.texture.width ||
         info.offset[1] + info.frame_size[1] > spr.texture.height
       ) {
+        console.log('fail', obj.name, info)
         spr.visible = false;
       } else {
+        console.log('good', obj.name, info)
         //console.log(obj.name, info);
         spr.texture.frame = new PIXI.Rectangle(
           info.offset[0],
@@ -2252,7 +2254,7 @@ class SceneEditor extends Editor {
   }
 
   export() {
-    if (this.deleted || !this.loaded) return;
+    if (true || this.deleted || !this.loaded) return;
 
     let export_data = {
       objects: {},

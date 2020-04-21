@@ -1012,21 +1012,20 @@ var app = {
           nwPATH.resolve(nwPATH.join(app.project_path, "assets"))
         );
     }
-    app.getAssets(_type, files => {
-      let found = false;
-      let re_name = /[\\\/](([\w\s.-]+)\.\w+)/;
-      files.forEach(f => {
-        let match = re_name.exec(f);
-        if (match && (match[1] == name || match[2] == name)) {
-          found = true;
-          cb(
-            false,
-            app.lengthenAsset(app.cleanPath(nwPATH.join(_type, match[1])))
-          );
-        }
+    return new Promise((res, rej) => {
+      app.getAssets(_type, files => {
+        let found = false;
+        let re_name = /[\\\/](([\w\s.-]+)\.\w+)/;
+        files.forEach(f => {
+          let match = re_name.exec(f);
+          if (match && (match[1] == name || match[2] == name)) {
+            found = true;
+            res(app.lengthenAsset(app.cleanPath(nwPATH.join(_type, match[1]))));
+          }
+        });
+        if (!found) rej(`asset not found: ${_type} > ${name}`);
       });
-      if (!found) cb(true);
-    });
+    })
   },
   cleanPath: function (path) {
     if (path) return path.replaceAll(/\\/g, "/");
