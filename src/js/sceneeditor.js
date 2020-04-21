@@ -117,6 +117,7 @@ class SceneEditor extends Editor {
 
     // IMAGE elements
     this.el_image_form = new BlankeForm([
+      ["image settings", true],
       ["snap", "number", { inputs: 2, separator: "x" }],
       ["offset", "number", { inputs: 2, separator: "x" }],
       ["spacing", "number", { inputs: 2, separator: "x" }],
@@ -148,7 +149,7 @@ class SceneEditor extends Editor {
     ]);
     this.el_object_form.container.style.display = "none";
 
-    this.el_layer_container = app.createElement("div", "layer-container");
+    this.el_layer_container = blanke.createCollapsible("layer-container", "Layers");
     this.el_snap_container = app.createElement("div", "snap-container");
     this.el_snap_label = app.createElement("p", "snap-label");
     this.el_snap_x = app.createElement("input", "snap-x");
@@ -408,7 +409,6 @@ class SceneEditor extends Editor {
     });
 
     this.el_layer_list = new BlankeListView({
-      title: "layers",
       options: ["add"],
       object_type: "layer",
       actions: {
@@ -475,7 +475,7 @@ class SceneEditor extends Editor {
     this.el_image_tiles_container.appendChild(this.el_image_grid);
     this.el_image_container.appendChild(this.el_image_tiles_container);
 
-    this.el_sidebar.appendChild(this.el_layer_container);
+    this.el_sidebar.appendChild(this.el_layer_container.element);
     this.el_sidebar.appendChild(this.el_sel_placetype);
     this.el_sidebar.appendChild(this.el_object_container);
     this.el_sidebar.appendChild(this.el_image_sel);

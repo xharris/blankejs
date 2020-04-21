@@ -69,10 +69,10 @@ String.prototype.toRgb = function () {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
     : null;
 };
 
@@ -140,9 +140,9 @@ class BlankeListView {
       add: [
         "plus",
         "add a" +
-          ("aeiouy".includes(this.options.object_type.charAt(0)) ? "n" : "") +
-          " " +
-          this.options.object_type,
+        ("aeiouy".includes(this.options.object_type.charAt(0)) ? "n" : "") +
+        " " +
+        this.options.object_type,
         function (e) {
           let new_item = this_ref._getNewItemName();
           let ret = this_ref.onItemAdd(new_item);
@@ -373,18 +373,18 @@ class BlankeListView {
     }
   }
 
-  onItemAdd(text) {}
+  onItemAdd(text) { }
 
-  onItemAction(item_icon, item_text) {}
+  onItemAction(item_icon, item_text) { }
 
-  onItemSelect(item_text) {}
+  onItemSelect(item_text) { }
 
-  onItemMoveUp(item_text) {}
+  onItemMoveUp(item_text) { }
 
-  onItemMoveDown(item_text) {}
+  onItemMoveDown(item_text) { }
 
   // for move-up and move-down
-  onItemSwap(item1_text, item2_text) {}
+  onItemSwap(item1_text, item2_text) { }
 }
 
 class BlankeForm {
@@ -918,6 +918,36 @@ var blanke = {
     return el_btn;
   },
 
+  createCollapsible: (el_class, title) => {
+    const el_container = blanke.createElement("div", ['blanke-collapsible'].concat(el_class));
+    const el_header = blanke.createElement("div", "header");
+    const el_children = blanke.createElement("div", "children");
+
+    el_container.appendChild(el_header);
+    el_container.appendChild(el_children);
+
+    const checkClass = () => {
+      if (el_container.classList.contains("open")) {
+        el_header.innerHTML = title;
+      } else {
+        el_header.innerHTML = title + "...";
+      }
+    }
+
+    el_header.addEventListener("click", e => {
+      el_container.classList.toggle("open");
+      checkClass();
+    });
+    checkClass();
+
+    return {
+      element: el_container,
+      appendChild: (...args) => {
+        el_children.appendChild(...args)
+      }
+    }
+  },
+
   clearElement: function (element) {
     while (element.firstChild) {
       element.removeChild(element.firstChild);
@@ -1065,10 +1095,10 @@ var blanke = {
 
       blanke.getElement(
         "body > .ui-modal[data-uuid='" +
-          uuid +
-          "'] > .modal-actions > button[data-action='" +
-          c +
-          "']"
+        uuid +
+        "'] > .modal-actions > button[data-action='" +
+        c +
+        "']"
       ).onclick = function () {
         choice_fn();
         blanke.modal_shown = false;
@@ -1120,22 +1150,22 @@ var blanke = {
 
     $("body").append(
       "<div class='blanke-window " +
-        extra_class +
-        "' data-guid='" +
-        uuid +
-        "'>" +
-        "<div class='title-bar'>" +
-        "<div class='title'>" +
-        title +
-        "</div>" +
-        "<button class='btn-close'>" +
-        "<i class='mdi mdi-close'></i>" +
-        "</button>" +
-        "</div>" +
-        "<div class='content'>" +
-        html +
-        "</div>" +
-        "</div>"
+      extra_class +
+      "' data-guid='" +
+      uuid +
+      "'>" +
+      "<div class='title-bar'>" +
+      "<div class='title'>" +
+      title +
+      "</div>" +
+      "<button class='btn-close'>" +
+      "<i class='mdi mdi-close'></i>" +
+      "</button>" +
+      "</div>" +
+      "<div class='content'>" +
+      html +
+      "</div>" +
+      "</div>"
     );
     $(el).fadeIn("fast");
 

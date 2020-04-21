@@ -22,6 +22,10 @@
             "level1.map"
         ],
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "View project in explorer=?",
             "View project in explorer"
         ],
@@ -32,10 +36,6 @@
         [
             "View assets=?",
             "View assets"
-        ],
-        [
-            "conf.lua=script+?",
-            "conf.lua"
         ]
     ],
     "autoplay_preview": true,

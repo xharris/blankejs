@@ -410,3 +410,12 @@ body.greyed-out > *:not(.ui-modal) {
         display: none;
     }
 }
+
+.blanke-collapsible {
+    > .children {
+        display: none;
+    }
+    &.open > .children {
+        display: initial;
+    }
+}
