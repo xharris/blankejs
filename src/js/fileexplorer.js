@@ -118,6 +118,14 @@ class FileExplorer {
     if (asset_type === "map") {
       SceneEditor.openScene(full_path)
     }
+    if (asset_type === "other") {
+      remote.shell.openItem(full_path)
+    }
+  }
+
+  static viewInExplorer(node) {
+    const full_path = getPath(node.key);
+    remote.shell.showItemInFolder(full_path);
   }
 
   static destroy() {
@@ -249,6 +257,10 @@ class FileExplorer {
           {
             label: 'open',
             click: () => { FileExplorer.openFile(node) }
+          },
+          {
+            label: 'view in file explorer',
+            click: () => { FileExplorer.viewInExplorer(node) }
           },
           {
             label: 'rename',

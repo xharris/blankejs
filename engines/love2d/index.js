@@ -121,7 +121,8 @@ module.exports.settings = {
     return app.project_path;
   },
   get plugin_path() {
-    return nwPATH.join(app.engine_path, 'lua', 'blanke', 'plugins')
+    const engine_type = app.projSetting("engine_type")
+    return nwPATH.join(app.engine_path, 'lua', engine_type === "oop" ? 'blanke' : 'ecs', 'plugins')
   },
   plugin_info_key: k => `--\s*${k}\s*:\s*(.+)`,
   code_associations: [
@@ -239,7 +240,7 @@ module.exports.settings = {
     const engine_ignore = [];
     const eng_type = app.projSetting("engine_type");
     if (eng_type === "oop") engine_ignore.push("lua/ecs", "lua/ecs/**/*");
-    if (eng_type === "ecs") engine_ignore.push("lua/blanke.lua");
+    if (eng_type === "ecs") engine_ignore.push("lua/blanke", "lua/blanke/**/*");
 
     archive.glob("*.lua", {
       cwd: nwPATH.join(engine_path),

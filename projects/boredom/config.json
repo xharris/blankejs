@@ -18,6 +18,10 @@
     ],
     "quick_access": [
         [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
         ],
@@ -32,10 +36,6 @@
         [
             "conf.lua=script+?",
             "conf.lua"
-        ],
-        [
-            "movingblock.lua=script+entity+?",
-            "movingblock.lua"
         ]
     ],
     "autoplay_preview": true,
