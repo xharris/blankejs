@@ -786,17 +786,12 @@ class SceneEditor extends Editor {
       this.skip_change_event = false;
     });
 
-    var resizeTimeout;
     this.addCallback("onResize", () => {
-      if (!resizeTimeout)
-        resizeTimeout = setTimeout(() => {
-          this.pixi.resize();
-
-          this.game_width = this.pixi.width;
-          this.game_height = this.pixi.height;
-          this.drawGrid();
-          resizeTimeout = null;
-        }, 10)
+      this.pixi.resize(() => {
+        this.game_width = this.pixi.width;
+        this.game_height = this.pixi.height;
+        this.drawGrid();
+      });
     });
 
     if (file_path) this.load(file_path);

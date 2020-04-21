@@ -18,12 +18,12 @@
     ],
     "quick_access": [
         [
-            "level1.map=map+?",
-            "level1.map"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "level1.map=map+?",
+            "level1.map"
         ],
         [
             "View project in explorer=?",

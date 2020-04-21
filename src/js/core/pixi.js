@@ -373,15 +373,23 @@ class BlankePixi {
 			this.dispatchEvent('dragStop', { camera: cam_drag_override != null ? cam_drag_override : this.camera_drag });
 		}
 	}
-	resize() {
-		let parent = this.pixi.view.parentElement;
-		if (!parent) return;
-		let w = parent.clientWidth;
-		let h = parent.clientHeight;
-		this.pixi.renderer.view.style.width = w + "px";
-		this.pixi.renderer.view.style.height = h + "px";
-		//this part adjusts the ratio:
-		this.pixi.renderer.resize(w, h);
+	resize(cb) {
+
+		if (!this.resizeTimeout)
+			this.resizeTimeout = setTimeout(() => {
+				let parent = this.pixi.view.parentElement;
+				if (!parent) return;
+				let w = parent.clientWidth;
+				let h = parent.clientHeight;
+				this.pixi.renderer.view.style.width = w + "px";
+				this.pixi.renderer.view.style.height = h + "px";
+				//this part adjusts the ratio:
+				this.pixi.renderer.resize(w, h);
+
+				if (cb) cb()
+
+				this.resizeTimeout = null;
+			}, 10)
 	}
 	get width() { return parseInt(this.pixi.renderer.view.clientWidth); }
 	get height() { return parseInt(this.pixi.renderer.view.clientHeight); }
