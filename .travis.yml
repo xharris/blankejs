@@ -10,19 +10,20 @@ addons:
 
 # electron-builder
 
-env:
-  global:
-    - ELECTRON_CACHE=$HOME/.cache/electron
-    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
-cache:
-  directories:
-    - node_modules
-    - $HOME/.cache/electron
-    - $HOME/.cache/electron-builder
-before_cache:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
+# env:
+#   global:
+#     - ELECTRON_CACHE=$HOME/.cache/electron
+#     - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+    
+# cache:
+#   directories:
+#     - node_modules
+#     - $HOME/.cache/electron
+#     - $HOME/.cache/electron-builder
+# before_cache:
+#   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
 
-# scripts to be executed
-install:
-  - npm install
-  - npm run build
+# # scripts to be executed
+# install:
+#   - npm install
+#   - npm run build

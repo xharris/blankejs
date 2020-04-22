@@ -13,15 +13,15 @@
     "electron": "electron .",
     "build": "electron-builder",
     "dist": "node package.js",
-    "release": "build"
+    "release": "build",
+    "test": "mocha"
   },
   "build": {
     "appId": "com.electron.blanke",
     "win": {
       "icon": "logo.ico",
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ],
       "publish": [
         "github"
@@ -73,6 +73,8 @@
     "asar": "^3.0.3",
     "electron": "^5.0.3",
     "electron-builder": "^22.4.1",
-    "electron-packager": "^14.0.1"
+    "electron-packager": "^14.0.1",
+    "mocha": "^7.1.1",
+    "spectron": "^7.0.0"
   }
 }
