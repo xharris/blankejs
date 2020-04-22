@@ -9,7 +9,7 @@ let can_be_empty_path = {
 class Settings extends Editor {
   constructor(...args) {
     super(...args);
-    if (DragBox.focus("Settings")) return;
+    if (DragBox.focus("Settings", true)) return;
 
     this.setupDragbox();
     this.setTitle("Settings");
@@ -64,24 +64,24 @@ class Settings extends Editor {
     let form_options = [
       ["GAME"],
       //['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
-      ["window_size","number",{ step: 1, min: 1, max: 7, default: proj_set.window_size }],
-      ["game_size","number",{ step: 1, min: 1, max: 7, default: proj_set.game_size }],
-      ["engine","select",{choices:engine_list, default:proj_set.engine}],
+      ["window_size", "number", { step: 1, min: 1, max: 7, default: proj_set.window_size }],
+      ["game_size", "number", { step: 1, min: 1, max: 7, default: proj_set.game_size }],
+      ["engine", "select", { choices: engine_list, default: proj_set.engine }],
       ...engine_settings,
       ["EXPORT > GENERAL"],
       ["export.name", "text", { default: app.projSetting("export").name }],
       ...engine_export_settings,
       ["IDE"],
       ["theme", "select", { choices: app.themes, default: app_set.theme }],
-      ["quick_access_size","number",{ min: 1, default: app_set.quick_access_size }],
-      ["run_save_code","checkbox",{ default: app_set.run_save_code, label: "save code before runs" }],
+      ["quick_access_size", "number", { min: 1, default: app_set.quick_access_size }],
+      ["run_save_code", "checkbox", { default: app_set.run_save_code, label: "save code before runs" }],
       ["Paths", true],
-      ...paths.map(path => [path,"directory",{ default: app_set[path + "_path"] }]),
-      ...files.map(path => [path,"file",{ default: app_set[path + "_path"] }])
+      ...paths.map(path => [path, "directory", { default: app_set[path + "_path"] }]),
+      ...files.map(path => [path, "file", { default: app_set[path + "_path"] }])
     ];
     this.el_settings = new BlankeForm(form_options, true);
     // prettier-ignore
-    ["engine","game_size","window_size",...engine_set_keys].forEach(s => {
+    ["engine", "game_size", "window_size", ...engine_set_keys].forEach(s => {
       this.el_settings.onChange(s, v => {
         app.projSetting(s, v);
         app.saveSettings();
@@ -92,7 +92,7 @@ class Settings extends Editor {
       });
     });
     // prettier-ignore
-    ["quick_access_size","theme","run_save_code"].forEach(s => {
+    ["quick_access_size", "theme", "run_save_code"].forEach(s => {
       this.el_settings.onChange(s, v => {
         app.ideSetting(s, v);
         app.saveAppData();

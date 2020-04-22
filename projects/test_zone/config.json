@@ -8,6 +8,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+?",
+            "main.lua"
+        ],
+        [
             "platformer.map=map+?",
             "platformer.map"
         ],
@@ -18,10 +22,6 @@
         [
             "Open image editor=?",
             "Open image editor"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ],
         [
             "Add a script=new+?",

@@ -1693,7 +1693,7 @@ app.window.webContents.once("dom-ready", () => {
     app.play();
   });
   app.getElement("#btn-export").addEventListener("click", () => {
-    new Exporter(app.getElement("#btn-export"));
+    new Exporter();
   });
   app.getElement("#btn-winvis").addEventListener("click", () => {
     app.toggleWindowVis();

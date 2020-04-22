@@ -284,7 +284,7 @@ document.addEventListener("openProject", function (e) {
   app.addSearchKey({
     key: "View assets",
     onSelect: function () {
-      if (!DragBox.focus("Assets")) new AssetManager(app);
+      if (!DragBox.focus("Assets", true)) new AssetManager(app);
     },
     group: "Assetmanager",
     category: "tools",

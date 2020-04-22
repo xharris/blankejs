@@ -156,7 +156,7 @@ let plugin_window;
 class Plugins extends Editor {
   constructor(...args) {
     super(...args);
-    if (DragBox.focus("Plugins")) return;
+    if (DragBox.focus("Plugins", true)) return;
 
     this.setupDragbox();
     this.setTitle("Plugins");
@@ -217,7 +217,7 @@ class Plugins extends Editor {
         if (getInfo("enabled"))
           Docview.addPlugin(
             getInfo("name") +
-              (getInfo("author") ? " (" + getInfo("author") + ")" : ""),
+            (getInfo("author") ? " (" + getInfo("author") + ")" : ""),
             file
           );
         else Docview.removePlugin(file);
@@ -277,8 +277,8 @@ class Plugins extends Editor {
       el_ref.el_toggle.innerHTML = `
 				<div class='form-inputs'>
 					<input type='checkbox' class='form-checkbox' ${
-            app.projSetting("enabled_plugins")[info.id] == true ? "checked" : ""
-          }/>
+        app.projSetting("enabled_plugins")[info.id] == true ? "checked" : ""
+        }/>
 					<span class='checkmark'></span>
 				</div>
 				<div class='form-label'>
