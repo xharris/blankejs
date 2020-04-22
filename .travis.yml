@@ -3,11 +3,7 @@ node_js:
   - "node"
 
 os:
-  - linux
-  - osx
   - windows
-
-sudo: required
 
 addons:
   chrome: stable
@@ -29,6 +25,4 @@ before_cache:
 # scripts to be executed
 install:
   - npm install
-  
-  - echo "Deploy release build to GitHub"
-  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then yarn run build; fi
+  - npm run build
