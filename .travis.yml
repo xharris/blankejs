@@ -1,3 +1,34 @@
 language: node_js
 node_js:
   - "node"
+
+os:
+  - linux
+  - osx
+  - windows
+
+sudo: required
+
+addons:
+  chrome: stable
+
+# electron-builder
+
+env:
+  global:
+    - ELECTRON_CACHE=$HOME/.cache/electron
+    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+cache:
+  directories:
+    - node_modules
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+before_cache:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
+
+# scripts to be executed
+install:
+  - npm install
+  
+  - echo "Deploy release build to GitHub"
+  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then yarn run build; fi
