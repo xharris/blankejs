@@ -20,6 +20,7 @@ const ignores = [/\/config\.json/, /\/dist(\/.*)?/];
 
 const getFolderData = async (folder_path) => new Promise((res, rej) => {
   const path_key = getKey(folder_path);
+  if (!nwFS.existsSync(folder_path)) return rej('no such dir', folder_path);
   const files = nwFS.readdirSync(folder_path, { withFileTypes: true })
   if (!files) return rej('cant read dir', folder_path);
   else {
@@ -112,13 +113,13 @@ class FileExplorer {
     if (asset_type === "script") {
       Code.openScript(full_path);
     }
-    if (asset_type === "image") {
+    else if (asset_type === "image") {
       ImageEditor.openImage(full_path);
     }
-    if (asset_type === "map") {
+    else if (asset_type === "map") {
       SceneEditor.openScene(full_path)
     }
-    if (asset_type === "other") {
+    else {
       remote.shell.openItem(full_path)
     }
   }
@@ -235,62 +236,6 @@ class FileExplorer {
       // })
     });
 
-    $("#file-explorer")[0].addEventListener('contextmenu', e => {
-      const node = $.ui.fancytree.getNode(e.target)
-      if (node) {
-        app.contextMenu(e.x, e.y, [
-          {
-            label: `new folder in /${nwPATH.basename(node.folder ? node.key : nwPATH.dirname(node.key))}`,
-            click: () => {
-              var i = 1;
-              var new_folder_name = 'folder' + i;
-              var new_folder_path = getPath(node.folder ? node.key : nwPATH.dirname(node.key));
-              // prevent using name of already existing dir
-              while (nwFS.pathExistsSync(nwPATH.join(new_folder_path, new_folder_name))) {
-                i++;
-                new_folder_name = 'folder' + i;
-              }
-              new_folder_path = nwPATH.join(new_folder_path, new_folder_name);
-              nwFS.ensureDir(new_folder_path);
-            }
-          },
-          {
-            label: 'open',
-            click: () => { FileExplorer.openFile(node) }
-          },
-          {
-            label: 'view in file explorer',
-            click: () => { FileExplorer.viewInExplorer(node) }
-          },
-          {
-            label: 'rename',
-            click: () => {
-              if (!FibWindow.isOpen(nwPATH.basename(node.key)))
-                node.editStart();
-              else {
-                let toast = blanke.toast(`Can't rename file from File Explorer while the file is open!`);
-                toast.icon = "close";
-                toast.style = "bad";
-              }
-            }
-          },
-          {
-            label: 'delete',
-            click: () => {
-              // modal
-              app.deleteModal(getPath(node.key), {
-                success: () => {
-                  node.remove();
-                }
-              })
-            }
-          }
-        ])
-      }
-      e.preventDefault();
-      return false;
-    })
-
     showElement();
   }
 
@@ -323,3 +268,61 @@ document.addEventListener("openProject", e => {
 document.addEventListener("closeProject", e => {
   FileExplorer.destroy();
 });
+
+document.addEventListener("ideReady", () => {
+  app.getElement("#file-explorer").addEventListener('contextmenu', e => {
+    const node = $.ui.fancytree.getNode(e.target)
+    if (node) {
+      app.contextMenu(e.x, e.y, [
+        {
+          label: `new folder in /${nwPATH.basename(node.folder ? node.key : nwPATH.dirname(node.key))}`,
+          click: () => {
+            var i = 1;
+            var new_folder_name = 'folder' + i;
+            var new_folder_path = getPath(node.folder ? node.key : nwPATH.dirname(node.key));
+            // prevent using name of already existing dir
+            while (nwFS.pathExistsSync(nwPATH.join(new_folder_path, new_folder_name))) {
+              i++;
+              new_folder_name = 'folder' + i;
+            }
+            new_folder_path = nwPATH.join(new_folder_path, new_folder_name);
+            nwFS.ensureDir(new_folder_path);
+          }
+        },
+        {
+          label: 'open',
+          click: () => { FileExplorer.openFile(node) }
+        },
+        {
+          label: 'view in file explorer',
+          click: () => { FileExplorer.viewInExplorer(node) }
+        },
+        {
+          label: 'rename',
+          click: () => {
+            if (!FibWindow.isOpen(nwPATH.basename(node.key)))
+              node.editStart();
+            else {
+              let toast = blanke.toast(`Can't rename file from File Explorer while the file is open!`);
+              toast.icon = "close";
+              toast.style = "bad";
+            }
+          }
+        },
+        {
+          label: 'delete',
+          click: () => {
+            // modal
+            app.deleteModal(getPath(node.key), {
+              success: () => {
+                node.remove();
+              }
+            })
+          }
+        }
+      ])
+    }
+    e.preventDefault();
+    return false;
+  })
+})

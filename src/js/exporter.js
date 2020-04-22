@@ -12,10 +12,10 @@ const DEFAULT_EXPORT_SETTINGS = () => ({
 
 class Exporter extends Editor {
   constructor(...args) {
+    if (DragBox.focus("Exporter")) return;
+
     super(...args);
     let this_ref = this;
-
-    if (DragBox.focus("Exporter")) return;
 
     this.setupDragbox();
     this.setTitle("Exporter");

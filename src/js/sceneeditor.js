@@ -121,11 +121,8 @@ class SceneEditor extends Editor {
       ["snap", "number", { inputs: 2, separator: "x" }],
       ["offset", "number", { inputs: 2, separator: "x" }],
       ["spacing", "number", { inputs: 2, separator: "x" }],
-      [
-        "align",
-        "select",
-        { choices: ["top-left", "top-right", "bottom-left", "bottom-right"] },
-      ],
+      ["align", "select", { choices: ["top-left", "top-right", "bottom-left", "bottom-right"] }],
+      ["zoom", "number", { min: 50, max: 150, step: 5, default: 100 }]
     ]);
     this.el_image_sel = app.createElement("select", "image-select");
     this.el_image_info = app.createElement("p", "image-info");
@@ -246,6 +243,11 @@ class SceneEditor extends Editor {
         this_ref.curr_image.align = value;
       }
     });
+
+    this.el_image_form.onChange("zoom", amt => {
+      this.el_image_preview.style.transform = `scale(${amt / 100})`;
+      this.el_image_grid.style.transform = `scale(${amt / 100})`;
+    })
 
     this.el_image_grid.ondragstart = function () {
       return false;

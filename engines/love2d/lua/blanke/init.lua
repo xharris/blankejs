@@ -1093,7 +1093,10 @@ do
                 local offx, offy = o('offx') or 0, o('offy') or 0
                 -- calculate frame list
                 local frame_list = {}
-                for _,f in ipairs(o('frames') or {'1-'..(o('cols')*o('rows'))}) do
+                local in_frames = o('frames') or {'1-'..(o('cols')*o('rows'))}
+                
+                assert(not in_frames or type(in_frames) == "table", "Image.animation frames must be in array")
+                for _,f in ipairs(in_frames) do
                     local f_type = type(f)
                     if f_type == 'number' then
                         table.insert(frame_list, f)
@@ -1104,6 +1107,7 @@ do
                         end
                     end
                 end
+                
                 -- make quads
                 for _,f in ipairs(frame_list) do
                     local x,y = Math.indexTo2d(f, o('cols'))

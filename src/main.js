@@ -841,7 +841,7 @@ var app = {
             str_conf
           );
 
-        if (app.last_engine != app.projSetting("engine")) {
+        if (app.isProjectOpen() && app.last_engine != app.projSetting("engine")) {
           app.requireEngine();
           app.last_engine = app.projSetting("engine");
         }

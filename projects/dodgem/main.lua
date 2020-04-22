@@ -2,7 +2,7 @@ Image.animation("balls.png",{
 	{ name="ball", rows=1, cols=5, speed=0 }
 })
 Image.animation("bluerobot.png",{
-	{ name="bluerobot", rows=1, cols=8 }
+	{ name="bluerobot", rows=1, cols=8, frames={'2-7'}, speed=15 }
 })
 
 Input({

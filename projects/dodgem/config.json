@@ -7,12 +7,20 @@
     "window_size": 3,
     "quick_access": [
         [
-            "main.lua=script+?",
+            "main.lua=script+entity+?",
             "main.lua"
+        ],
+        [
+            "Clear history=?",
+            "Clear history"
         ],
         [
             "View assets=?",
             "View assets"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -62,6 +70,19 @@
             "frame_size": [
                 304,
                 33
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
+        },
+        "image/gameover.jpg": {
+            "frame_size": [
+                550,
+                51
             ],
             "frames": 1,
             "position": [

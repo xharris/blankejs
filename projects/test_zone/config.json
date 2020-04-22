@@ -12,6 +12,10 @@
             "platformer.map"
         ],
         [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
             "Open image editor=?",
             "Open image editor"
         ],
@@ -22,10 +26,6 @@
         [
             "Add a script=new+?",
             "Add a script"
-        ],
-        [
-            "map0.map=map+?",
-            "map0.map"
         ]
     ],
     "autoplay_preview": true,

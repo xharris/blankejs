@@ -5,6 +5,14 @@ function ifndef(val, def) {
   return val;
 }
 
+function lerp(v0, v1, t) {
+  return v0 * (1 - t) + v1 * t
+}
+
+function percentBtwn(input, min, max) {
+  return ((input - min) * 100) / (max - min)
+}
+
 function ifndef_obj(obj, defaults) {
   if (obj === undefined) obj = {};
   for (let d in defaults) {
