@@ -65,3 +65,4 @@ butler/
 *.kate-swp
 love2d/plugins 
 love2d/plugins/**/*
+electron-builder.yml

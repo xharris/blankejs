@@ -54,6 +54,7 @@
     "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
     "electron-unhandled": "^3.0.2",
+    "electron-updater": "^4.2.5",
     "fs-extra": "^5.0.0",
     "jquery": "^3.5.0",
     "jquery.fancytree": "^2.35.0",
