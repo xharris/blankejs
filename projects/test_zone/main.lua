@@ -2,7 +2,7 @@ Game {
 	plugins = { 'xhh-array', 'xhh-badword', 'xhh-vector', 'xhh-effect' },
 	--plugins = {'xhh-effect'},
 	auto_require = false,
-	scripts = { 'platformer' },
+	scripts = { 'scripts.platformer' },
 	initial_state = 'platformer',
 	load = function() 
 		--[[

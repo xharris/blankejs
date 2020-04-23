@@ -1465,13 +1465,22 @@ do
     }
     local pressed = {}
     local released = {}
+    local store = {}
     local key_assoc = {
         lalt='alt', ralt='alt',
         ['return']='enter', kpenter='enter',
         lgui='gui', rgui='gui'
     }
-    Input = class {
-        init = function(self, inputs, _options)
+    Input = callable {
+        __call = function(self, name)
+            return store[name] or pressed[name] or released[name]
+        end;
+
+        store = function(name, value)
+            store[name] = value
+        end;
+
+        set = function(inputs, _options)
             for name, inputs in pairs(inputs) do
                 Input.addInput(name, inputs)
             end
@@ -1539,6 +1548,23 @@ do
         end;
 
         -- mousePos = function() return love.mouse.getPosition() end;
+    }
+end
+
+Joystick = nil
+local refreshJoystickList
+do 
+    local joysticks = {}
+    refreshJoystickList = function()
+        joysticks = love.joystick.getJoysticks()
+    end
+
+    Joystick = {
+        get = function(i)
+            if i > 0 and i < #joysticks then 
+                return joysticks[i]
+            end
+        end
     }
 end
 
@@ -3517,6 +3543,23 @@ do
             Input.press('mouse', {x=x, y=y, button=button, istouch=istouch, presses=presses})
             Input.release('mouse'..tostring(button), {x=x, y=y, button=button, istouch=istouch, presses=presses})
         end;
+        gamepadpressed = function(joystick, button)
+            Input.press('gp.'..button, {joystick=joystick})
+        end;
+        gamepadreleased = function(joystick, button)
+            Input.release('gp.'..button, {joystick=joystick})
+        end;
+        joystickadded = function(joystick)
+            Signal.emit("joystickadded", joystick)
+            refreshJoystickList()
+        end;
+        joystickremoved = function(joystick)
+            Signal.emit("joystickremoved", joystick)
+            refreshJoystickList()
+        end;
+        gamepadaxis = function(joystick, axis, value)
+            Input.store('gp.'..axis, {joystick=joystick, value=value})
+        end;
     }
 end
 
@@ -3582,6 +3625,11 @@ love.keypressed = function(key, scancode, isrepeat) Blanke.keypressed(key, scanc
 love.keyreleased = function(key, scancode) Blanke.keyreleased(key, scancode) end
 love.mousepressed = function(x, y, button, istouch, presses) Blanke.mousepressed(x, y, button, istouch, presses) end
 love.mousereleased = function(x, y, button, istouch, presses) Blanke.mousereleased(x, y, button, istouch, presses) end
+love.gamepadpressed = function(joystick, button) Blanke.gamepadpressed(joystick, button) end 
+love.gamepadreleased = function(joystick, button) Blanke.gamepadreleased(joystick, button) end 
+love.joystickadded = function(joystick) Blanke.joystickadded(joystick) end 
+love.joystickremoved = function(joystick) Blanke.joystickremoved(joystick) end
+love.gamepadaxis = function(joystick, axis, value) Blanke.gamepadaxis(joystick, axis, value) end
 --[[BEGIN:LOVE.RUN
 love.run = function()
   if love.math then love.math.setRandomSeed(os.time()) end

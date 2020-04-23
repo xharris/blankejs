@@ -3,10 +3,10 @@
 local map
 State('platformer',{
 	enter = function()
-		Input({
-			right = { 'right', 'd' },
-			left = { 'left', 'a' },
-			up = { 'up', 'w' },
+		Input.set({
+			right = { 'right', 'd', 'gp.dpright' },
+			left = { 'left', 'a', 'gp.dpleft' },
+			up = { 'up', 'w', 'gp.a' },
 			down = { 'down', 's' },
 			action = { 'space' }
 		})
@@ -60,6 +60,8 @@ Entity("player",{
 		local hspd = 80
 		local dx, dy = 0, 0
 		
+		local leftx = Input("gp.leftx")
+		
 		-- horizontal
 		if Input.pressed('right') then 
 			dx = dx + hspd 
@@ -69,6 +71,12 @@ Entity("player",{
 			dx = dx - hspd 
 			self.scalex = -1
 		end
+		if leftx then 
+			local val = Math.abs(leftx.value) < 0.1 and 0 or leftx.value
+			dx = dx + (hspd * val) 
+			leftx.joystick:setVibration(Math.abs(val), Math.abs(val))
+		end
+		
 		self.hspeed = dx
 		
 		if Input.released('up') then 
