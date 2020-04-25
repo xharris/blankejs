@@ -501,6 +501,9 @@ FS = {
     end,
     ls = function (path)
         return love.filesystem.getDirectoryItems(path)
+    end,
+    info = function (path)
+        return love.filesystem.getInfo(path)
     end
 }
 
@@ -716,21 +719,31 @@ do
             end
             -- load scripts
             if Game.options.auto_require then
-                files = FS.ls ''
-                for _,f in ipairs(files) do
-                    if FS.extname(f) == 'lua' and not table.hasValue(scripts, f) then
-                        new_f = FS.removeExt(f)
-                        table.insert(scripts, new_f)
+                local load_folder
+                load_folder = function(path)
+                    files = FS.ls(path)
+                    for _,f in ipairs(files) do
+                        local file_path = path..'/'..f
+                        if FS.extname(f) == 'lua' and not table.hasValue(scripts, file_path) then
+                            new_f = 
+                            table.insert(scripts, table.join(string.split(FS.removeExt(file_path), '/'),'.'))
+                        end
+                        local info = FS.info(file_path)
+                        if info.type == 'directory' and file_path ~= '/dist' then 
+                            load_folder(file_path)
+                        end
                     end
                 end
+                load_folder('')
             end
+            
             for _,script in ipairs(scripts) do
                 if script ~= 'main' then 
                     Game.require(script)
                 end
             end
             -- fullscreen toggle
-            Input({ _fs_toggle = { 'alt', 'enter' } }, { 
+            Input.set({ _fs_toggle = { 'alt', 'enter' } }, { 
                 combo = { '_fs_toggle' },
                 no_repeat = { '_fs_toggle' },
             })
@@ -1203,12 +1216,13 @@ do
             self.vspeed = self.vspeed + gravy
         end
         -- moving x and y in separate steps solves 'sticking' issue (ty https://jonathanwhiting.com/tutorial/collision/)
-        self.y = self.y + self.vspeed * dt
-        if self.y ~= last_y then
-            Hitbox.move(self)
-        end
+        
         self.x = self.x + self.hspeed * dt
         if self.x ~= last_x then 
+            Hitbox.move(self)
+        end
+        self.y = self.y + self.vspeed * dt
+        if self.y ~= last_y then
             Hitbox.move(self)
         end
         if self.update then self:update(dt) end
@@ -1319,7 +1333,7 @@ do
             end
             -- hitbox
             if args.hitbox then
-                self.hitbox = args.hitbox
+                self.hitbox = copy(args.hitbox)
                 Hitbox.add(self)
             end
             -- net
@@ -1439,7 +1453,7 @@ do
         init_props = {};
         __call = function(self, name, args)
             if args.draw then
-                self._custom_draw = args.draw
+                args._custom_draw = args.draw
                 args.draw = nil
             end
             Game.addObject(name, "Entity", args, _Entity)
@@ -1634,7 +1648,7 @@ do
         end;
         parseColor = function(...)
             args = {...}
-            if #args == 0 then return 0, 0, 0, 1 end
+            if #args == 0 then return 1, 1, 1, 1 end
             local c = Color[args[1]]
             if c then 
                 args = {c[1],c[2],c[3],args[2] or 1}
@@ -2393,11 +2407,11 @@ do
                 table.insert(self.hb_list, tile_info)
             end
         end;
-        addHitbox = function(self,tag,pts,color) 
+        addHitbox = function(self,tag,dims,color) 
             local new_hb = {
-                hitbox = pts,
+                hitbox = dims,
                 tag = tag,
-                hitboxColor = color
+                hitboxColor = color,
             }
             table.insert(self.hb_list, new_hb)
             Hitbox.add(new_hb)
@@ -2667,136 +2681,125 @@ end
 --HITBOX
 Hitbox = nil
 do
+    local bump = require(_NAME..'.bump')
     local world = bump.newWorld(40)
-    local checkHitArea = function(obj)
+    local new_boxes = true
+
+    local calcBounds = function(obj)
         local repos = false
         if obj.is_entity then 
             repos = obj:_checkForAnimHitbox()
+            return obj.alignx + (obj.width/2), obj.aligny + (obj.height/2), repos
         end
-        local left =  obj.alignx
-        local top =   obj.aligny
-
-        if obj.is_entity then 
-            left = obj.alignx + (obj.width/2)
-            top =  obj.aligny + (obj.height/2)
-        end
+        return obj.alignx, obj.aligny, repos
+    end
+    local checkHitArea = function(obj)
+        local left, top, repos = calcBounds(obj)
  
-        local hb_var_type = type(obj.hitbox)
-        local hb_type = 'rect', radius
-        -- figure out what type of hitbox this is
-        if hb_var_type == 'string' then 
-            hb_type = obj.hitbox
-        elseif hb_var_type == 'table' then 
-            hb_type = obj.hitbox.type or 'rect'
-            radius = obj.hitbox.radius
-        end
-        -- circle: get the radius
-        if hb_type == 'circle' and not radius then 
-            radius = Math.sqrt(Math.pow(obj.width,2)+Math.pow(obj.height,2))/2
-            left = obj.alignx - radius
-            top = obj.aligny - radius
-        end
+        local hb = obj.hitbox
 
-        if not hb_var_type ~= 'table' then
-            obj.hitbox = {
-                type = hb_type,
-                left = left,
-                top = top,
+        if type(hb) ~= 'table' then
+            hb = {
+                left = 0,
+                top = 0,
                 right = 0,
-                bottom = 0,
-                radius = radius
+                bottom = 0
             }
         end
-        table.defaults(obj.hitbox, {
-            type = hb_type,
-            left = left,
-            top = top,
-            right = 0,
-            bottom = 0,
-            radius = radius
-        })
+
+        hb.left = left
+        hb.top = top
+
+        if not obj.hasHitbox then 
+            obj.hasHitbox = true
+            new_boxes = true
+            
+            world:add(
+                obj,
+                obj.x - left,
+                obj.y - top, 
+                abs(obj.width) + hb.right, abs(obj.height) + hb.bottom
+            )
+        end
+
+        obj.hitbox = hb
+        
         if repos then 
             Hitbox.teleport(obj)
         end
         return obj.hitbox
     end
-    
-    local checkCollision = function(obj1, obj2) 
-        --[[
-            0 - rect rect
-            1 - circle rect / rect circle
-            2 - circle circle
-        ]]
-        local coll_type = 0
-        -- if obj1.hitbox.type == 'rect' and obj1.hitbox.type == 'circle'
-    end
 
-    local new_boxes = true
-    local hb_items, hb_len
     Hitbox = {
         debug = false;
-        default_reaction = 'slide';
+        default_reaction = 'static';
 
         add = function(obj)
             if not obj.tag then obj.tag = obj.classname or '' end
             if obj.x and obj.y and obj.width and obj.height then
                 Game.checkAlign(obj)
-                local ha = checkHitArea(obj)
-                if not obj.hasHitbox then
-                    world:add(obj, 
-                        obj.x - ha.left, 
-                        obj.y - ha.top, 
-                        abs(obj.width) + ha.right, abs(obj.height) + ha.bottom) 
-                    obj.hasHitbox = true
-                    new_boxes = true
-                else
+                if obj.hasHitbox then
                     Hitbox.teleport(obj)
+                else 
+                    checkHitArea(obj)
                 end
             end
         end;  
         adjust = function(obj, left, top, right, bottom) 
             if obj and obj.hasHitbox then 
-                local ha = checkHitArea(obj)
-                if left then ha.left = ha.left + left end 
-                if top then ha.top = ha.top + top end 
-                if right then ha.right = ha.right + right end 
-                if bottom then ha.bottom = ha.bottom + bottom end 
+                local hb = checkHitArea(obj)
+                if left then hb.left = hb.left + left end 
+                if top then hb.top = hb.top + top end 
+                if right then hb.right = hb.right + right end 
+                if bottom then hb.bottom = hb.bottom + bottom end
                 Hitbox.teleport(obj)
             end
         end;
         -- ignore collisions
         teleport = function(obj, x, y)
             if obj and not obj.destroyed and obj.hasHitbox then
-                local ha = checkHitArea(obj)
+                local hb = checkHitArea(obj)
                 world:update(obj, 
-                    x or (obj.x - ha.left),
-                    y or (obj.y - ha.top),
-                    abs(obj.width) + ha.right, abs(obj.height) + ha.bottom)
+                    x or (obj.x - hb.left),
+                    y or (obj.y - hb.top),
+                    abs(obj.width) + hb.right, abs(obj.height) + hb.bottom
+                )
             end
         end;
+        at = function(x, y, tag)
+            local ret = {}
+            --[[
+            local shapes = HC.shapesAt(x,y)
+            for s in pairs(shapes) do 
+                if not tag or s.parent.tag == tag then 
+                    table.insert(s)
+                end
+            end]]
+            return ret
+        end;
         move = function(obj)
-            local allow_collision = true
-
             if obj and not obj.destroyed and obj.hasHitbox then
-                local filter = function(item, other)
-                    local ret = obj.default_reaction or Hitbox.default_reaction
-                    if obj.reaction and obj.reaction[other.tag] then ret = obj.reaction[other.tag] else
-                        if obj.default_reaction then ret = obj.default_reaction end 
+                local filter = function(_obj, other)
+                    local ret = _obj.reaction or Hitbox.default_reaction
+                    if _obj.reactions and _obj.reactions[other.tag] then ret = _obj.reactions[other.tag] else
+                        if _obj.reaction then ret = _obj.reaction end 
                     end
-                    if other.reaction and other.reaction[obj.tag] then ret = other.reaction[obj.tag] else 
-                        if other.default_reaction then ret = other.default_reaction end
+                    if other.reactions and other.reactions[_obj.tag] then ret = other.reactions[_obj.tag] else 
+                        if other.reaction then ret = other.reaction end
                     end
-                    if obj.filter then ret = obj:filter(item, other) end	
+                    if _obj.filter then ret = _obj:filter(other) end	
+
                     return ret
                 end
-                local ha = checkHitArea(obj)
+                -- move the hitbox
+                local hb = checkHitArea(obj)
                 local new_x, new_y, cols, len = world:move(obj, 
-                    obj.x - ha.left, 
-                    obj.y - ha.top, 
+                    obj.x - hb.left, 
+                    obj.y - hb.top, 
                     filter)
                 if obj.destroyed then return end
-                obj.x = new_x + ha.left
-                obj.y = new_y + ha.top
+                obj.x = new_x + hb.left
+                obj.y = new_y + hb.top
                 local swap = function(t, key1, key2)
                     local temp = t[key1]
                     t[key1] = t[key2]
@@ -2805,11 +2808,9 @@ do
                 if obj.collision and len > 0 then
                     for i=1,len do
                         if not obj or obj.destroyed then return end
+                        obj:collision(cols[i])
                         local info = cols[i]
                         local other = info.other
-
-                        obj:collision(info)
-                        
                         swap(info, 'item', 'other')
                         swap(info, 'itemRect', 'otherRect')
                         if other and not other.destroyed and other.collision then other:collision(info) end
@@ -2832,31 +2833,15 @@ do
                 end
                 for _,i in ipairs(hb_items) do
                     if i.hasHitbox and not i.destroyed then
-                        local x, y, w, h = world:getRect(i)
-                        local r = i.hitbox.radius
-                        local hb_type = i.hitbox.type
-
                         Draw.color(i.hitboxColor or {1,0,0,0.9})
-
-                        if hb_type == 'rect' then 
-                            Draw.rect('line',world:getRect(i))
-                        elseif hb_type == 'circle' then
-                            local x, y, w, h = world:getRect(i)
-                            Draw.circle('line',x+(w/2),y+(h/2),r)
-                        end
-
+                        Draw.rect('line',world:getRect(i))
                         Draw.color(i.hitboxColor or {1,0,0,0.25})
-
-                        if hb_type == 'rect' then 
-                            Draw.rect('fill',world:getRect(i))
-                        elseif hb_type == 'circle' then 
-                            Draw.circle('fill',x+(w/2),y+(h/2),r)
-                        end
+                        Draw.rect('fill',world:getRect(i))
                     end
                 end
                 Draw.color()
             end
-        end;
+        end
     }
 end
 

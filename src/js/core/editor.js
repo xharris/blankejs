@@ -126,6 +126,16 @@ class Editor {
       }
     })
 
+    document.addEventListener('file_rename', (e) => {
+      if (e.detail.old_path === app.cleanPath(this[opt.file_key])) {
+        this[opt.file_key] = e.detail.new_path;
+      }
+      const old_basename = nwPATH.basename(e.detail.old_path)
+      if (this.getTitle() === old_basename) {
+        this.setTitle(nwPATH.basename(this[opt.file_key]))
+      }
+    })
+
     if (opt.close) {
       items.push({
         label: "close",
@@ -145,7 +155,7 @@ class Editor {
             success: (new_path) => {
               this[opt.file_key] = new_path;
               if (typeof opt.rename == "function")
-                opt.rename(new_path, full_path);
+                opt.rename(new_path);
             }
           })
         },

@@ -64,45 +64,58 @@ const getFileData = async (file_path) => new Promise((res, rej) => {
 class FileExplorer {
   static fileChanged(path) {
     if (!app.project_path) return;
+    const true_path = trueCasePathSync(path);
 
     // file changes
     // iterate parent children
     // if old child file doesn't exist
     // if new child file path exists, rename the child title
     // else, remove the child
-    const path_key = getKey(path);
-    const parent_path = nwPATH.dirname(path);
+    const path_key = getKey(true_path);
+    const parent_path = nwPATH.dirname(true_path);
     const parent_key = getKey(parent_path);
 
     const parent_node = fancytree().getNodeByKey(parent_key);
+
     if (parent_node && parent_node.children) {
       // iterate parent children
-      parent_node.children.forEach(child_node => {
-        nwFS.pathExists(getPath(child_node.key), (err, exists) => {
-          if (err || !exists) {
+      nwFS.readdir(parent_path, (err, files) => {
+        let found = false;
+
+        parent_node.children.forEach(child_node => {
+          const child_path = getPath(child_node.key);
+          if (err || files.indexOf(child_path) === -1) {
+
             // if old child file doesn't exist
-            nwFS.pathExists(path, (err2, exists2) => {
-              if (!err2 && exists2) {
+            nwFS.pathExists(path, (err2, exists) => {
+              if (!err2 && exists && (getKey(path) === child_node.key || path_key === child_node.key)) {
                 // if new child file path exists, rename the child title
-                child_node.setTitle(nwPATH.basename(path))
-              } else {
+                child_node.key = path_key;
+                child_node.setTitle(nwPATH.basename(true_path))
+                found = true;
+
+              } else if (err2 || !exists) {
                 // else, remove the child
                 child_node.remove()
               }
             })
           }
         })
-      })
-      // add new child?
-      nwFS.pathExists(path, (err, exists) => {
-        if (err || !exists) return;
 
-        const child_node = fancytree().getNodeByKey(path_key)
-        if (!child_node) {
-          getFileData(path).then(child_data => {
-            parent_node.addChildren([child_data])
+        if (!found) {
+          // add new child?
+          nwFS.pathExists(true_path, (err, exists) => {
+            if (err || !exists) return;
+
+            const child_node = fancytree().getNodeByKey(path_key)
+            if (!child_node) {
+              getFileData(true_path).then(child_data => {
+                parent_node.addChildren([child_data])
+              })
+            }
           })
         }
+
       })
     }
   }
@@ -221,7 +234,7 @@ class FileExplorer {
             const old_path = getPath(data.node.key);
             const new_path = nwPATH.join(nwPATH.dirname(old_path), data.input.val());
             app.renameSafely(old_path, new_path, (good) => {
-              if (!good) {
+              if (!good || old_path === new_path) {
                 data.save = false;
               } else {
                 data.node.remove();
@@ -300,7 +313,7 @@ document.addEventListener("ideReady", () => {
         {
           label: 'rename',
           click: () => {
-            if (!FibWindow.isOpen(nwPATH.basename(node.key)))
+            if (true || !FibWindow.isOpen(nwPATH.basename(node.key)))
               node.editStart();
             else {
               let toast = blanke.toast(`Can't rename file from File Explorer while the file is open!`);

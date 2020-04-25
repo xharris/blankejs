@@ -2,8 +2,8 @@ Game {
 	plugins = { 'xhh-array', 'xhh-badword', 'xhh-vector', 'xhh-effect' },
 	--plugins = {'xhh-effect'},
 	auto_require = false,
-	scripts = { 'scripts.platformer' },
-	initial_state = 'platformer',
+	scripts = { 'scripts.hitbox' },
+	initial_state = 'hitbox',
 	load = function() 
 		--[[
 		Animation{

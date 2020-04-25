@@ -31,6 +31,7 @@ var nwNOOB = require(`${__dirname}/src/js/server.js`);
 var nwZIP2 = require("adm-zip"); // used for unzipping
 var nwWATCH = require("node-watch");
 var nwREQ = require("request");
+const { trueCasePath, trueCasePathSync } = require('true-case-path');
 
 let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
@@ -307,13 +308,17 @@ var app = {
 
         // watch for file changes
         app.proj_watch = app.watch(app.project_path, (evt_type, file) => {
-          if (evt_type == "remove")
-            app.removeQuickAccess(nwPATH.basename(file));
           if (file) {
-            dispatchEvent("fileChange", {
-              type: evt_type,
-              file: app.cleanPath(file),
-            });
+            trueCasePath(file).then(real_file => {
+              real_file = trueCasePathSync(app.cleanPath(real_file))
+              if (evt_type == "remove")
+                app.removeQuickAccess(nwPATH.basename(real_file));
+
+              dispatchEvent("fileChange", {
+                type: evt_type,
+                file: app.cleanPath(file),
+              });
+            })
           }
         });
 
@@ -1334,29 +1339,29 @@ var app = {
 
   // rename a file only if the new path doesn't exist
   renameSafely: function (old_path, new_path, fn_done) {
-    nwFS.pathExists(new_path, (err, exists) => {
-      // file exists
-      if (exists && fn_done) fn_done(false, "file exists");
+    //nwFS.pathExists(new_path, (err, exists) => {
+    // file exists
+    //if (exists && fn_done) fn_done(false, "file exists");
+    //else {
+    // does not exist, continue with renaming
+    nwFS.rename(old_path, new_path, err => {
+      if (err) fn_done(false, err);
       else {
-        // does not exist, continue with renaming
-        nwFS.rename(old_path, new_path, err => {
-          if (err) fn_done(false, err);
-          else {
-            // rename in quick access if it's there
-            let old_name = nwPATH.basename(old_path);
-            let new_name = nwPATH.basename(new_path);
-            for (let pair of app.projSetting("quick_access")) {
-              for (let p in pair) {
-                pair[p] = pair[p].replace(old_name, new_name);
-              }
-            }
-            app.saveSettings();
-            dispatchEvent('file_rename', { old_path: app.cleanPath(old_path), new_path: app.cleanPath(new_path) })
-            fn_done(new_path);
+        // rename in quick access if it's there
+        let old_name = nwPATH.basename(old_path);
+        let new_name = nwPATH.basename(new_path);
+        for (let pair of app.projSetting("quick_access")) {
+          for (let p in pair) {
+            pair[p] = pair[p].replace(old_name, new_name);
           }
-        });
+        }
+        app.saveSettings();
+        dispatchEvent('file_rename', { old_path: app.cleanPath(old_path), new_path: app.cleanPath(new_path) })
+        fn_done(new_path);
       }
     });
+    //}
+    //});
   },
 
   moveSafely: (old_path, new_path, cb) => {

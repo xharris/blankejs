@@ -3,7 +3,7 @@ Camera "player"
 Image.animation('player_stand.png')
 Image.animation('player_dead.png')
 Image.animation('player_walk.png', { { rows=1, cols=2, duration=0.1 } })
-		
+
 Entity("Player", {
 	camera = 'player',
 	animations = {'player_stand','player_walk','player_dead'},
@@ -11,15 +11,15 @@ Entity("Player", {
 	gravity = 10,
 	can_jump = true,
 	hitbox = true,
-	collision = function(self, v)
-		if v.other.tag == 'death' then
+	collision = function(self, i, hb_self, hb_other)
+		if i.other.tag == 'death' then
 			self:die()
 		end
-		if v.type ~= 'cross' then
-			if v.normal.y < 0 then
+		if i.type ~= 'cross' then
+			if i.normal.y < 0 then
 				self.can_jump = true
 			end
-			if v.normal.y ~= 0 then 
+			if i.normal.y ~= 0 then 
 				self.vspeed = 0
 			end
 		end

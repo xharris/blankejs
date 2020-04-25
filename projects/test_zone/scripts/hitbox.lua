@@ -1,20 +1,19 @@
 local Obj
-local type
 
 State("hitbox",{
 	enter = function()
 		Timer.every(0.5,function()
-			Obj({x=Math.random(0,Game.width),y=Math.random(0,Game.height)})
+			local ok = Obj({hitbox=table.random{'rect','circle'},x=Math.random(0,Game.width),y=Math.random(0,Game.height)})
 		end)
 	end
 })
 
 Obj = Entity("HitboxObj",{
-	reaction="bounce",
 	hitbox=true,
+	reaction='slide',
 	spawn=function(self)
-		self.width = Math.random(10,30)
-		self.height = Math.random(10,30)
+		self.width = Math.random(10,50)
+		self.height = Math.random(10,50)
 		self.hspeed = Math.random(20,30) * table.random({-1,1})
 		self.vspeed = Math.random(20,30) * table.random({-1,1})
 	end,

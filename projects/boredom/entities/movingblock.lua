@@ -2,7 +2,7 @@ Entity("MovingBlock", {
 	images = { "block_corner.png" },
 	align = "center",
 	hitbox = true,
-	reaction = {
+	reactions = {
 		ground='cross'
 	},
 	collision = function(self, v)
@@ -24,5 +24,5 @@ Entity("MovingBlock", {
 
 Entity("BlockDestroyer", {
 	hitbox=true,
-	default_reaction = 'cross'
+	reaction = 'cross'
 })

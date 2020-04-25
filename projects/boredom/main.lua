@@ -7,7 +7,7 @@ Map.config {
 
 local map
 
-Input({
+Input.set({
     left = { "left", "a" },
     right = { "right", "d" },
     jump = { "up", "w" },

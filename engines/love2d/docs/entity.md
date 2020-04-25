@@ -31,18 +31,22 @@ Player({custom_prop: 5})
 
 ## collisions
 
-`hitbox` true -> Hitbox.add(entity)
+`hitbox` values can be: 
+- true
+- 'rect'/'circle'
+- { type=string, left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
 
-`hitArea` { left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
+`reaction`  slide, 
 
-`reaction {}` optional list of { other_tag:'response' }. default reaction is `Hitbox.default_reaction (slide)`
+`reactions {}` optional list of { other_tag:'response' }. default reaction is `Hitbox.default_reaction ('slide')`
 
 - reaction can be:
 
+  - static : won't move from other hitbox collisions
   - cross : move throught other object
   - touch : stick to other object
   - slide : stop and slide across
-  - bounce : bounces...
+  - bounce : bounces... (modifies vspeed and hspeed)
 
 - reaction checking order:
   1. self.reaction
