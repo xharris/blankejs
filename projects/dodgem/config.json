@@ -47,25 +47,6 @@
     },
     "engine": "love2d",
     "imageeditor": {
-        "image/balls.png": {
-            "frame_size": [
-                640,
-                128
-            ],
-            "frames": 1,
-            "position": [
-                0,
-                0
-            ],
-            "spacing": 0,
-            "onion_alpha": 0.3,
-            "showPreview": false,
-            "tool.size": [
-                1,
-                1
-            ],
-            "showBackgroundGrid": false
-        },
         "image/bluerobot.png": {
             "frame_size": [
                 304,
@@ -83,6 +64,19 @@
             "frame_size": [
                 550,
                 51
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
+        },
+        "image/balls.png": {
+            "frame_size": [
+                640,
+                128
             ],
             "frames": 1,
             "position": [

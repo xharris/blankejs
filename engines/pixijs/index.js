@@ -1,6 +1,6 @@
 const nwUGLY = require("uglify-es");
 
-const engine = {
+module.exports.settings = {
   game_preview_enabled: true,
   main_file: "main.js",
   file_ext: ["js"],
@@ -8,6 +8,9 @@ const engine = {
   plugin_info_key: k => `\\*\\s*${k}\\s*:\\s*(.+)`,
   get script_path() {
     return nwPATH.join(app.project_path, "scripts");
+  },
+  get plugin_path() {
+    return nwPATH.join(app.engine_path, 'plugins')
   },
   code_associations: [
     [/\bScene\s*\(\s*[\'\"](.+)[\'\"]/, "scene"],
@@ -111,7 +114,7 @@ const engine = {
             writeTempHTML(() => {
               try {
                 win.reload();
-              } catch (e) {}
+              } catch (e) { }
             });
           };
           if (app.ideSetting("autoreload_external_run")) {
@@ -288,6 +291,7 @@ Blanke.addGame('${app.projSetting("export").name}',{
     app.projSetting("os", target_os); // why ?
   },
   setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
+    /*
     let packager = require("electron-packager");
     packager({
       dir: temp_dir,
@@ -303,5 +307,6 @@ Blanke.addGame('${app.projSetting("export").name}',{
       .catch(err => {
         cb_err(err);
       });
+      */
   },
 };

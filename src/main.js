@@ -203,16 +203,21 @@ var app = {
   },
 
   get template_path() {
-    return nwPATH.join(cwd(), "src", "template");
+    return app.relativePath(nwPATH.join("src", "template"));
   },
 
   newProject: function (path) {
     nwFS.mkdir(path, function (err) {
       if (!err) {
         // copy template files
-        nwFS.copySync(app.template_path, path);
-        app.hideWelcomeScreen();
-        app.openProject(path);
+        nwFS.copy(app.template_path, path)
+          .then(() => {
+            app.hideWelcomeScreen();
+            app.openProject(path);
+          })
+          .catch(err => {
+            console.error(err)
+          })
       }
     });
   },
@@ -739,15 +744,11 @@ var app = {
       app.clearEngine();
       return;
     }
-    try {
-      app.engine_module = app.require(pathJoin(app.engine_path, "index.js"));
-      app.setBusyStatus(true);
-      setTimeout(() => {
-        app.setBusyStatus(false);
-      }, 500);
-    } catch {
-      app.clearEngine();
-    }
+    app.engine_module = app.require(pathJoin(app.engine_path, "index.js"));
+    app.setBusyStatus(true);
+    setTimeout(() => {
+      app.setBusyStatus(false);
+    }, 500);
     // change allowed extentensions
     // TODO add mechanism for resetting allowed_extensions
     if (app.engine.file_ext)

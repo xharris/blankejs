@@ -332,7 +332,7 @@ module.exports.settings = {
         let gamejs = `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`;
 
         nwFS.readFile(
-          nwPATH.join(cwd(), "src", "includes", "love.js"),
+          nwPATH.join(app.engine_path, "love.js"),
           "utf-8",
           (err, love_data) => {
             if (err) console.error(err);

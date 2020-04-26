@@ -3,5 +3,6 @@ exports.info = {
     author: "XHH",
     description: "simply check if a string contains a bad word",
     id: 'xhh-badword',
-    enabled: true
+    enabled: true,
+    engine: 'love2d'
 }

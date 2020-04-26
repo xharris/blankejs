@@ -3,7 +3,8 @@ exports.info = {
     author: "XHH",
     description: "Simple tweening plugin using tween.lua",
     id: 'xhh-tween',
-    enabled: true
+    enabled: true,
+    engine: 'love2d'
 }
 
 exports.autocomplete = {

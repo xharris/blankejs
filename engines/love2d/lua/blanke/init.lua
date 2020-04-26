@@ -485,27 +485,43 @@ do
 end
 
 --FS
-FS = {
-    basename = function (str)
-        return string.gsub(str, "(.*/)(.*)", "%2")
-    end,
-    dirname = function (str)
-        if string.match(str,".-/.-") then return string.gsub(str, "(.*/)(.*)", "%1") else return '' end
-    end,
-    extname = function (str)
-        str = string.match(str,"^.+(%..+)$")
-        if str then return string.sub(str,2) end
-    end,
-    removeExt = function (str)
-        return string.gsub(str, '.'..FS.extname(str), '')
-    end,
-    ls = function (path)
-        return love.filesystem.getDirectoryItems(path)
-    end,
-    info = function (path)
-        return love.filesystem.getInfo(path)
-    end
-}
+FS = nil 
+do
+    local lfs = love.filesystem
+    FS = {
+        basename = function (str)
+            return string.gsub(str, "(.*/)(.*)", "%2")
+        end,
+        dirname = function (str)
+            if string.match(str,".-/.-") then return string.gsub(str, "(.*/)(.*)", "%1") else return '' end
+        end,
+        extname = function (str)
+            str = string.match(str,"^.+(%..+)$")
+            if str then return string.sub(str,2) end
+        end,
+        removeExt = function (str)
+            return string.gsub(str, '.'..FS.extname(str), '')
+        end,
+        ls = function (path)
+            return lfs.getDirectoryItems(path)
+        end,
+        info = function (path)
+            if Window.os == 'web' then 
+                local info = {
+                    type = 'other',
+                    size = lfs.getSize(path),
+                    modtime = lfs.getLastModified(path)
+                }
+                if lfs.isFile(path) then info.type = "file"  
+                elseif lfs.isDirectory(path) then info.type = "directory" 
+                elseif lfs.isSymlink(path) then info.type = "symlink" end
+                return info
+            else
+                return lfs.getInfo(path)
+            end
+        end
+    }
+end
 
 --SIGNAL
 Signal = nil
@@ -729,7 +745,7 @@ do
                             table.insert(scripts, table.join(string.split(FS.removeExt(file_path), '/'),'.'))
                         end
                         local info = FS.info(file_path)
-                        if info.type == 'directory' and file_path ~= '/dist' then 
+                        if info.type == 'directory' and file_path ~= '/dist' and file_path ~= '/lua' then 
                             load_folder(file_path)
                         end
                     end

@@ -20,7 +20,7 @@ function inspectPlugins(silent) {
     let info_key = app
       .cleanPath(nwPATH.relative(plugin_path, nwPATH.dirname(file)))
       .replace(/\/.*/g, "");
-    let info_keys = ["Name", "Author", "Description", "ID", "Enabled"];
+    let info_keys = ["Name", "Author", "Description", "ID", "Enabled", "Engine"];
 
     if (!temp_plugin_info[info_key]) {
       temp_plugin_info[info_key] = {
@@ -30,6 +30,7 @@ function inspectPlugins(silent) {
         module: null,
         id: "",
         classes: [],
+        engine: ""
       };
     }
 
@@ -180,7 +181,7 @@ class Plugins extends Editor {
     for (let key in temp_plugin_info) {
       let info = temp_plugin_info[key];
       if (info.id) {
-        if (info.enabled !== false) {
+        if (info.enabled !== false && info.engine === app.projSetting("engine")) {
           plugin_info[info.id] = info;
         } else {
           // disabled and remove docs
@@ -236,8 +237,8 @@ class Plugins extends Editor {
     }
 
     if (!plugin_window) return;
-
-    for (let key in plugin_info) {
+    const plugin_keys = Object.keys(plugin_info).sort((a, b) => plugin_info[a].name < plugin_info[b].name);
+    for (let key of plugin_keys) {
       // create the list item elements
       if (!plugin_window.el_reference[key]) {
         let el_ref = {};
@@ -318,7 +319,7 @@ class Plugins extends Editor {
     const plugin_path = app.relativePath(app.ideSetting("plugin_path"));
     const engine_path = app.engine_path;
 
-    nwFS.ensureDir(engine_path);
+    nwFS.ensureDir(app.engine.plugin_path);
 
     if (plugin_info[key]) {
       for (let path of plugin_info[key].files) {
@@ -335,8 +336,6 @@ class Plugins extends Editor {
   }
 
   static disable(key) {
-    const engine_path = app.engine_path;
-
     if (!plugin_info[key]) return;
     // remove file
     /*for (let path of plugin_info[key].files) {
@@ -346,7 +345,7 @@ class Plugins extends Editor {
 			);
     }*/
     nwFS.removeSync(
-      pathJoin(app.engine.plugin_path || engine_path, "plugins", key)
+      pathJoin(app.engine.plugin_path || app.engine_path, "plugins", key)
     );
     app.projSetting("enabled_plugins")[key] = false;
     dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
@@ -400,3 +399,8 @@ document.addEventListener("appdataSave", e => {
     });
   });
 });
+
+document.addEventListener("engine_config_load", () => {
+  console.log('refreshing', app.engine)
+  refreshPluginList();
+})

@@ -565,12 +565,14 @@ class ImageEditor extends Editor {
       this.render_anim = false;
       let tex_frames = [];
       let set = this.img_settings;
+      console.log(set)
       for (
         let x = this.img_left;
         x < this.img_width;
         x += set.frame_size[0] + set.spacing
       ) {
         let new_tex = this.img_rtx.clone();
+        console.log([x, 0, ...set.frame_size])
         new_tex.frame = new PIXI.Rectangle(
           x,
           0,

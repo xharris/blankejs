@@ -3,5 +3,6 @@ exports.info = {
     author: "XHH",
     description: "A collection of shader effects",
     id: 'xhh-effect',
-    enabled: true
+    enabled: true,
+    engine: 'love2d'
 }

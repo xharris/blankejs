@@ -3,11 +3,12 @@ exports.info = {
     author: "XHH",
     description: "Javascript-like Array structure",
     id: 'xhh-array',
-    enabled: true
+    enabled: true,
+    engine: 'love2d'
 }
 
 exports.autocomplete = {
-    class_list: ['Array','Set'],
+    class_list: ['Array', 'Set'],
     instance: {
         'array': [
             /\b(\w+)\s*=\s*Array\(.*\)/g,
@@ -15,12 +16,12 @@ exports.autocomplete = {
         ]
     },
     hints: {
-        'blanke-array':[
-            {fn:'from',vars:{table:''}}
+        'blanke-array': [
+            { fn: 'from', vars: { table: '' } }
         ],
-        'blanke-array-instance':[
-            {fn:'push',vars:{val:'',etc:'opt'}},
-            {prop:'length'}
+        'blanke-array-instance': [
+            { fn: 'push', vars: { val: '', etc: 'opt' } },
+            { prop: 'length' }
         ]
     }
 }
