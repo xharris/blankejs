@@ -12,7 +12,9 @@ var re_new_sprite = /new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/;
 var file_ext = ["lua"];
 var main_file = "main." + file_ext[0];
 
-var code_instances = {};
+var code_instances = {}; // { file: Code }
+var is_script = {}; // { file: t/f }
+var cm_options = {}; // { file: {option:value} }
 
 var CODE_ASSOCIATIONS = [];
 
@@ -139,6 +141,7 @@ const resetClassInstanceList = file => {
 // ** called when a file is modified
 var script_list = [];
 var getKeywords = (file, content) => {
+  if (!Code.isScript(file)) return;
   blanke.cooldownFn("getKeywords." + file, 500, () => {
     dispatchEvent("script_modified", { path: file, content: content });
     // if (file.includes(main_file)) return; // main file makes while loop freeze for some reason
@@ -226,11 +229,10 @@ var getKeywords = (file, content) => {
 };
 
 class Code extends Editor {
-  constructor() {
+  constructor(file_path) {
     super();
     this.setupFibWindow();
-    var this_ref = this;
-    this.file = "";
+    this.file = file_path;
     this.script_folder = "/scripts";
     this.file_loaded = false;
 
@@ -249,8 +251,8 @@ class Code extends Editor {
 
     // box to show last viewed function (until ')' is pressed?)
     this.el_fn_helper = app.createElement("div", ["fn-helper", "hidden"]);
-    this.el_fn_helper.addEventListener("mouseenter", function () {
-      this_ref.refreshFnHelperTimer();
+    this.el_fn_helper.addEventListener("mouseenter", () => {
+      this.refreshFnHelperTimer();
     });
     this.appendChild(this.el_fn_helper);
     this.fn_helper_timer = null;
@@ -262,6 +264,7 @@ class Code extends Editor {
     // add game preview
     this.game = null;
     if (
+      (file_path && Code.isScript(file_path)) &&
       app.ideSetting("game_preview_enabled") &&
       app.engine.game_preview_enabled
     )
@@ -274,7 +277,6 @@ class Code extends Editor {
       if (this.game) this.appendBackground(this.game.container);
     }
 
-    var this_ref = this;
     CodeMirror.defineMode("blanke", (config, parserConfig) => {
       var blankeOverlay = {
         token: (stream, state) => {
@@ -475,7 +477,7 @@ class Code extends Editor {
       ".addSpr": {
         name: "sprite",
         tooltip: "make a spritesheet animation",
-        fn: function (line_text, cm, cur) {
+        fn: (line_text, cm, cur) => {
           // get currently used image name
           let image_name = "";
           if ((image_name = line_text.match(re_add_sprite)))
@@ -485,7 +487,7 @@ class Code extends Editor {
               /(\s*)(\w+).addSpr.*/g,
               "$1$2.addSprite(" + arg_str + ")"
             );
-            this_ref.codemirror.replaceRange(
+            this.codemirror.replaceRange(
               line_text,
               { line: cur.line, ch: 0 },
               { line: cur.line, ch: 10000000 }
@@ -496,7 +498,7 @@ class Code extends Editor {
       "new\\s+Sprite": {
         name: "sprite",
         tooltip: "make a spritesheet animation",
-        fn: function (line_text, cm, cur) {
+        fn: (line_text, cm, cur) => {
           // get currently used image name
           let image_name = "";
           if ((image_name = line_text.match(re_new_sprite)))
@@ -506,7 +508,7 @@ class Code extends Editor {
               /Sprite.*/g,
               "Sprite(" + arg_str + ")"
             );
-            this_ref.codemirror.replaceRange(
+            this.codemirror.replaceRange(
               line_text,
               { line: cur.line, ch: 0 },
               { line: cur.line, ch: 10000000 }
@@ -615,10 +617,20 @@ class Code extends Editor {
       },
       extra: () => [
         {
-          label: this.edit_box2 ? "unsplit" : "split",
+          label: "split",
+          type: "checkbox",
+          checked: this.edit_box2 != null,
           click: () => {
             this.edit_box2 ? this.unsplitView() : this.splitView();
           },
+        },
+        {
+          label: "word wrap",
+          type: "checkbox",
+          checked: this.codemirror.getOption("lineWrapping"),
+          click: () => {
+            this.setCmOption('lineWrapping', !this.codemirror.getOption("lineWrapping"))
+          }
         },
         ...game_window_menu,
       ],
@@ -628,7 +640,7 @@ class Code extends Editor {
   setupEditor(el_container) {
     let this_ref = this;
     let new_editor = CodeMirror(el_container, {
-      mode: "blanke",
+      mode: Code.isScript(this.file) ? "blanke" : null,
       theme: "material",
       smartIndent: true,
       lineNumbers: true,
@@ -649,26 +661,26 @@ class Code extends Editor {
       completeSingle: false,
       cursorScrollMargin: 40,
       extraKeys: {
-        "Cmd-S": function (cm) {
+        "Cmd-S": (cm) => {
           blanke.cooldownFn("codeSave." + this.file, 200, () => {
-            this_ref.save();
+            this.save();
             cm.focus();
           });
         },
-        "Ctrl-S": function (cm) {
-          this_ref.save();
+        "Ctrl-S": (cm) => {
+          this.save();
         },
-        "Ctrl-=": function (cm) {
-          this_ref.fontSizeUp();
+        "Ctrl-=": (cm) => {
+          this.fontSizeUp();
         },
-        "Ctrl--": function (cm) {
-          this_ref.fontSizeDown();
+        "Ctrl--": (cm) => {
+          this.fontSizeDown();
         },
-        "Cmd-=": function (cm) {
-          this_ref.fontSizeUp();
+        "Cmd-=": (cm) => {
+          this.fontSizeUp();
         },
-        "Cmd--": function (cm) {
-          this_ref.fontSizeDown();
+        "Cmd--": (cm) => {
+          this.fontSizeDown();
         },
         "Shift-Tab": "indentLess",
         "Ctrl-F": "findPersistent",
@@ -701,6 +713,7 @@ class Code extends Editor {
     // set up events
     //this.codemirror.setSize("100%", "100%");
     function checkGutterEvents(cm, obj) {
+      if (!Code.isScript(this_ref.file)) return;
       blanke.cooldownFn("checkGutterEvents", 1000, () => {
         let cur = cm.getCursor();
         let line_text = cm.getLine(cur.line);
@@ -806,6 +819,8 @@ class Code extends Editor {
     });
 
     new_editor.on("cursorActivity", (cm, e) => {
+      if (!Code.isScript(this.file)) return;
+
       let editor = cm;
       let cursor = editor.getCursor();
 
@@ -935,11 +950,28 @@ class Code extends Editor {
       // TODO: this_ref.game.pause(); // NOTE: has a couple edge cases!
     });
 
+    // load previous cm options
+    const short_path = app.shortenAsset(this.file);
+    if (cm_options[short_path]) {
+      for (var opt in cm_options[short_path]) {
+        new_editor.setOption(opt, cm_options[short_path][opt])
+      }
+    }
+
     if (this.codemirror == undefined) this.codemirror = new_editor;
+
     this.editors.push(new_editor);
     Code.setFontSize(app.ideSetting("code").font_size);
 
     return new_editor;
+  }
+
+  setCmOption(option, value) {
+    this.codemirror.setOption(option, value);
+    const file_path = app.shortenAsset(this.file)
+    if (!cm_options[file_path]) cm_options[file_path] = {};
+    cm_options[file_path][option] = value;
+    app.projSetting("code", cm_options);
   }
 
   static parseSprites(text, file, cb, only_entities) {
@@ -1130,10 +1162,11 @@ class Code extends Editor {
 
   // TODO: not updated since hinting rework
   parseFunctions() {
-    let this_ref = this;
-    blanke.cooldownFn("parseFunctions", 1000, function () {
-      let text = this_ref.codemirror.getValue();
-      blanke.clearElement(this_ref.el_class_methods);
+    if (!Code.isScript(this.file)) return;
+
+    blanke.cooldownFn("parseFunctions", 1000, () => {
+      let text = this.codemirror.getValue();
+      blanke.clearElement(this.el_class_methods);
 
       // get function list
       let class_list = {};
@@ -1149,7 +1182,7 @@ class Code extends Editor {
             name: match[2],
             args: (match[3] || "").split(",").map(s => s.trim()),
           };
-          this_ref.function_list.push(fn_info);
+          this.function_list.push(fn_info);
 
           // add it to functions to class string
           if (!class_list[fn_info.class])
@@ -1167,7 +1200,7 @@ class Code extends Editor {
       }
       // combine all class strings
       for (let c in class_list) {
-        this_ref.el_class_methods.innerHTML += class_list[c];
+        this.el_class_methods.innerHTML += class_list[c];
       }
     });
   }
@@ -1357,8 +1390,6 @@ class Code extends Editor {
 
   edit(file_path) {
     this.file_loaded = false;
-    var this_ref = this;
-
     this.file = file_path;
     code_instances[this.file] = this;
 
@@ -1369,11 +1400,12 @@ class Code extends Editor {
 
     this.setTitle(nwPATH.basename(file_path));
     this.removeAsterisk();
+
     getKeywords(this.file, text);
     this.parseFunctions();
 
-    this.setOnClick(function () {
-      Code.openScript(this_ref.file);
+    this.setOnClick(() => {
+      Code.openScript(this.file);
     });
 
     this.codemirror.refresh();
@@ -1423,7 +1455,7 @@ class Code extends Editor {
   static openScript(file_path, line) {
     let editor = code_instances[file_path];
     if (!FibWindow.focus(nwPATH.basename(file_path))) {
-      editor = new Code(app);
+      editor = new Code(file_path);
       editor.edit(file_path);
     }
     if (line != null) editor.goToLine(line);
@@ -1484,7 +1516,9 @@ class Code extends Editor {
     });
   }
   static isScript(file) {
-    return file_ext.map(ext => file.endsWith("." + ext)).some(v => v);
+    if (is_script[file] == null)
+      is_script[file] = file_ext.map(ext => file.endsWith("." + ext)).some(v => v)
+    return is_script[file];
   }
 }
 
@@ -1545,6 +1579,17 @@ function addScripts(folder_path) {
       // if script has Entity class find if it has sprite
       Code.updateSpriteList(full_path, data);
     }
+    if (stats.isFile() && app.findAssetType(full_path) === "other") {
+      app.addSearchKey({
+        key: nwPATH.basename(full_path),
+        onSelect: function (file_path) {
+          Code.openScript(file_path);
+        },
+        category: "file",
+        args: [full_path],
+        group: "File",
+      });
+    }
     next();
   })
 
@@ -1563,10 +1608,12 @@ function addScripts(folder_path) {
 }
 
 document.addEventListener("closeProject", function (e) {
+  cm_options = {};
   app.removeSearchGroup("Code");
 });
 
 document.addEventListener("openProject", function (e) {
+  cm_options = app.projSetting("code") || {};
   reloadCompletions();
   Code.refreshCodeList();
 
@@ -1639,6 +1686,47 @@ document.addEventListener("openProject", function (e) {
       group: "Code",
     });
   }
+
+  app.addSearchKey({
+    key: "Add a text file",
+    onSelect: function () {
+      blanke.showModal(
+        "<label style='line-height:35px'>Name your new file:</label></br>" +
+        "<input class='ui-input' id='new-script-name' style='width:100px;'/>",
+        {
+          yes: function () {
+            let name = app.cleanPath(app.getElement("#new-script-name").value.trim());
+            const file_type = app.findAssetType(name);
+            if (name != "") {
+              if (file_type == "script")
+                return key_addScript("", name);
+              else {
+                const script_path = nwPATH.join(app.project_path, name)
+                console.log(script_path)
+                nwFS.pathExists(script_path, exists => {
+                  if (!exists)
+                    nwFS.writeFile(script_path, '', err => {
+                      if (!err) {
+                        // edit the new script
+                        app.addPendingQuickAccess(name);
+                        Code.openScript(script_path);
+                      }
+                    });
+                  else
+                    Code.openScript(script_path);
+                })
+              }
+            } else {
+              blanke.toast("bad name for new " + s_type);
+            }
+          },
+          no: function () { },
+        }
+      );
+    },
+    tags: ["new"],
+    group: "Code",
+  });
 });
 
 document.addEventListener("engine_config_load", () => {

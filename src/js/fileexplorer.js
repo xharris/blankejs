@@ -127,13 +127,16 @@ class FileExplorer {
       Code.openScript(full_path);
     }
     else if (asset_type === "image") {
-      ImageEditor.openImage(full_path);
+      ImageEditor.openImage(full_path)
     }
     else if (asset_type === "map") {
       SceneEditor.openScene(full_path)
     }
-    else {
+    else if (asset_type !== "other") {
       remote.shell.openItem(full_path)
+    }
+    else {
+      Code.openScript(full_path)
     }
   }
 

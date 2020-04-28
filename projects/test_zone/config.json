@@ -8,24 +8,24 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Add a text file=new+?",
+            "Add a text file"
+        ],
+        [
+            "config.json=?",
+            "config.json"
+        ],
+        [
+            "words.txt=?",
+            "words.txt"
+        ],
+        [
             "Check for updates=?",
             "Check for updates"
         ],
         [
             "Bunnymark.lua=script+?",
             "Bunnymark.lua"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
-            "platformer.map=map+?",
-            "platformer.map"
-        ],
-        [
-            "View project in explorer=?",
-            "View project in explorer"
         ]
     ],
     "autoplay_preview": true,
@@ -72,6 +72,7 @@
     "export": {
         "name": "test_zone",
         "filter": "nearest",
+        "scale": true,
         "vsync": "off",
         "web_memory": 0,
         "web_stack": 2,
@@ -83,7 +84,6 @@
         "scale_mode": "linear",
         "frameless": false,
         "minify": true,
-        "scale": true,
         "resizable": true,
         "write_conf": true,
         "os": "windows",
@@ -285,5 +285,13 @@
             "onion_alpha": 0.3
         }
     },
-    "engine": "love2d"
+    "engine": "love2d",
+    "code": {
+        "words.txt": {
+            "lineWrapping": true
+        },
+        "asdf.fdsa": {
+            "lineWrapping": false
+        }
+    }
 }
