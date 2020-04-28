@@ -1426,141 +1426,6 @@ var app = {
     }
   },
 
-  curr_version: "",
-  checkForUpdates(silent) {
-    return;
-
-    let curr_version_list = JSON.parse(
-      nwFS.readFileSync(nwPATH.join("src", "version.json"))
-    );
-    app.curr_version = Object.keys(curr_version_list)[0];
-    let is_newer = ver_str => {
-      curr_ver = app.curr_version.split("-")[0].split(".");
-      new_ver = ver_str.split("-")[0].split(".");
-      for (let p in new_ver) {
-        if (parseInt(curr_ver[p]) < parseInt(new_ver[p])) return true;
-      }
-      return false;
-    };
-    // check latest version
-    nwREQ.get(
-      "https://raw.githubusercontent.com/xharris/blankejs/master/src/version.json",
-      (err, res, body) => {
-        if (!err && res.statusCode == 200) {
-          let updates = JSON.parse(body);
-          let update_string = "";
-          let keys = Object.keys(updates);
-          let latest_version = "";
-          let manual = false;
-          for (let k = keys.length - 1; k >= 0; k--) {
-            latest_version = keys[k].split("-")[0];
-            if (!keys[k].includes("skip") && is_newer(keys[k])) {
-              update_string += `<div class='version-container'><div class='number'>${latest_version}</div><div class='notes'>${updates[
-                keys[k]
-              ].join("\n")}</div></div>`;
-            }
-            if (keys[k].includes("wait") && is_newer(keys[k])) {
-              manual = true;
-              k = -1;
-            }
-          }
-          if (update_string != "") {
-            blanke.toast("An update is available! (" + latest_version + ")");
-            app.getElement("#btn-update").classList.remove("hidden");
-
-            // ask if it can be installed now
-            app.getElement("#btn-update").addEventListener("click", e => {
-              blanke.showModal(
-                `<div class="update-title">${
-                manual
-                  ? "Manual install required. Go to download page"
-                  : "Download, Install, and Restart"
-                }?</div><div class='info'>${update_string}</div>`,
-                {
-                  yes: function () {
-                    if (manual)
-                      shell.openExternal("https://xhh.itch.io/blanke");
-                    else app.update(latest_version);
-                  },
-                  no: function () { },
-                }
-              );
-            });
-          } else {
-            if (!silent)
-              blanke.toast("Already up to date! (" + app.curr_version + ")");
-          }
-        }
-      }
-    );
-  },
-
-  update2() {
-    nwREQ(
-      `https://raw.githubusercontent.com/xharris/blankejs/master/electron.asar`
-    )
-      .pipe(nwFS.createWriteStream("update.asar"))
-      .on();
-  },
-
-  update(ver) {
-    // download new version
-    let toast = blanke.toast("Downloading update", -1);
-    toast.icon = "dots-horizontal";
-    toast.style = "wait";
-    nwREQ(`https://github.com/xharris/blankejs/archive/${ver}.zip`)
-      .pipe(nwFS.createWriteStream("update.zip"))
-      .on("close", function () {
-        blanke.toast("Installing update");
-        let update_zip = nwZIP2("update.zip"); //.extractEntryTo('blankejs-'+ver,cwd(),false,true)
-        let file_paths = update_zip.getEntries();
-        let limit = 3;
-        let entryName;
-        let actual_src = [
-          /blankejs[\/\\]/,
-          /src[\/\\]/,
-          /themes[\/\\]/,
-          "package.json",
-          "entry.js",
-        ];
-        // unpack new files
-        for (let f = 0; f < file_paths.length; f++) {
-          entryName = file_paths[f].entryName;
-          for (let src of actual_src) {
-            if (
-              entryName.match(src) &&
-              !entryName.endsWith("/") &&
-              !nwPATH.basename(entryName).startsWith(".")
-            ) {
-              update_zip.extractEntryTo(
-                entryName,
-                nwPATH.dirname(
-                  nwPATH.join(cwd(), entryName.replace(/^[^\/\\]*[\/\\]/, ""))
-                ),
-                false,
-                true
-              );
-            }
-          }
-          if (entryName.match(/dist_files[\/\\]/)) {
-            update_zip.extractEntryTo(
-              entryName,
-              nwPATH.dirname(nwPATH.join(cwd(), nwPATH.basename(entryName))),
-              false,
-              true
-            );
-          }
-        }
-        nwFS.removeSync("update.zip");
-        toast.text = "Done updating. Restarting";
-        // restart app
-        app.restart();
-      })
-      .on("error", err => {
-        app.error("Could not download update", err);
-      });
-  },
-
   restart() {
     remote.app.relaunch();
     remote.app.exit();
@@ -1877,6 +1742,41 @@ app.window.webContents.once("dom-ready", () => {
     active: function () { },
   });
 
+  app.renderer.on("update-available", (e, arg) => {
+    console.log(`Update available (${arg.releaseName})`, arg)
+
+  })
+
+  app.renderer.on('update-downloaded', (e, arg) => {
+    console.log("Update downloaded", arg)
+    const update_title = `An update is available! (${arg.releaseName})`
+    blanke.toast(update_title)
+    const el_update = app.getElement("#btn-update")
+    el_update.classList.remove("hidden");
+    el_update.title = update_title;
+    el_update.addEventListener("click", e => {
+      blanke.showModal(
+        `<div class="update-title">Restart and install update?</div><div class='info'>${arg.releaseNotes}</div>`,
+        {
+          yes: function () {
+            app.renderer.send("installUpdate");
+          },
+          no: function () { },
+        }
+      );
+    })
+  })
+
+  app.renderer.on('download-progress', (e, arg) => {
+    console.log(`Downloading update ${arg.percent}%`)
+  })
+
+  app.renderer.on('update-not-available', (e, arg) => {
+    const toast = blanke.toast(`No updates (${remote.app.getVersion()})`)
+    toast.style = "good"
+    toast.icon = "check-bold"
+  })
+
   app.renderer.on("close", (e, arg) => {
     if (app.isProjectOpen()) {
       blanke.showModal("<label>Are you sure you want to exit?</label>", {
@@ -1968,7 +1868,7 @@ app.window.webContents.once("dom-ready", () => {
     category: "tools",
     onSelect: app.stopServer,
   });
-  app.addSearchKey({ key: "Check for updates", onSelect: app.checkForUpdates });
+  app.addSearchKey({ key: "Check for updates", onSelect: () => app.renderer.send("checkForUpdates") });
 
   document.addEventListener("openProject", function () {
     app.addSearchKey({
@@ -1992,6 +1892,10 @@ app.window.webContents.once("dom-ready", () => {
     app.refreshQuickAccess();
   });
 
+  /*
+
+  */
+
   app.loadAppData(function () {
     // load current theme
     app.setTheme(app.ideSetting("theme"));
@@ -2005,12 +1909,11 @@ app.window.webContents.once("dom-ready", () => {
     });
 
     app.showWelcomeScreen();
-    app.checkForUpdates(true);
     dispatchEvent("ideReady");
 
-    // app.openProject('projects/test zone');
     setTimeout(() => {
       app.renderer.send("showWindow");
+      app.renderer.send("checkForUpdates")
     }, 500);
   });
 });

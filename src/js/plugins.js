@@ -401,6 +401,5 @@ document.addEventListener("appdataSave", e => {
 });
 
 document.addEventListener("engine_config_load", () => {
-  console.log('refreshing', app.engine)
   refreshPluginList();
 })

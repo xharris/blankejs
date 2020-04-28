@@ -7,6 +7,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Check for updates=?",
+            "Check for updates"
+        ],
+        [
             "main.lua=script+entity+?",
             "main.lua"
         ],

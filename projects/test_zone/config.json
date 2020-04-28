@@ -8,6 +8,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Check for updates=?",
+            "Check for updates"
+        ],
+        [
             "Bunnymark.lua=script+?",
             "Bunnymark.lua"
         ],
@@ -22,10 +26,6 @@
         [
             "View project in explorer=?",
             "View project in explorer"
-        ],
-        [
-            "Open image editor=?",
-            "Open image editor"
         ]
     ],
     "autoplay_preview": true,

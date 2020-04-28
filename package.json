@@ -12,8 +12,7 @@
   "scripts": {
     "electron": "electron .",
     "build": "electron-builder",
-    "dist": "node package.js",
-    "release": "build",
+    "release": "env-cmd electron-builder",
     "test": "mocha"
   },
   "build": {
@@ -53,8 +52,10 @@
   "dependencies": {
     "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
+    "electron-is-dev": "^1.2.0",
     "electron-unhandled": "^3.0.2",
     "electron-updater": "^4.2.5",
+    "env-cmd": "^10.1.0",
     "fs-extra": "^5.0.0",
     "jquery": "^3.5.0",
     "jquery.fancytree": "^2.35.0",

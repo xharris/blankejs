@@ -1,0 +1,4 @@
+owner: xharris
+repo: blankejs
+provider: github
+updaterCacheDirName: blanke-updater

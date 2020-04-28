@@ -1403,6 +1403,7 @@ do
             end
         end;
         _checkForAnimHitbox = function(self)
+            if self.hitbox == true then self.hitbox = self.image or self.animation end
             if self.animList[self.hitbox] or self.imageList[self.hitbox] then
                 local other_obj = self.animList[self.hitbox] or self.imageList[self.hitbox]
                 self.width, self.height = abs(other_obj.width * self.scalex*self.scale), abs(other_obj.height * self.scaley*self.scale)
@@ -1501,6 +1502,13 @@ do
         ['return']='enter', kpenter='enter',
         lgui='gui', rgui='gui'
     }
+
+    local joycheck = function(info)
+        if not info or not info.joystick then return info end 
+        if Joystick.using == 0 then return info end 
+        if Joystick.get(Joystick.using):getID() == info.joystick:getID() then return info end
+    end
+
     Input = callable {
         __call = function(self, name)
             return store[name] or pressed[name] or released[name]
@@ -1530,9 +1538,17 @@ do
             end
         end;
 
-        pressed = function(name) if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) then return pressed[name] end end;
+        pressed = function(name) 
+            if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) and joycheck(pressed[name]) then 
+                return pressed[name] 
+            end 
+        end;
 
-        released = function(name) return released[name] end;
+        released = function(name)
+            if joycheck(released[name]) then
+                return released[name] 
+            end
+        end;
 
         press = function(key, extra)
             if key_assoc[key] then Input.press(key_assoc[key], extra) end
@@ -1581,6 +1597,7 @@ do
     }
 end
 
+--JOYSTICK
 Joystick = nil
 local refreshJoystickList
 do 
@@ -1590,10 +1607,15 @@ do
     end
 
     Joystick = {
+        using = 0,
         get = function(i)
             if i > 0 and i < #joysticks then 
                 return joysticks[i]
             end
+        end,
+        -- affects all future Input() gamepad checks
+        use = function(i)
+            Joystick.using = i or 0
         end
     }
 end
@@ -2736,6 +2758,7 @@ do
                 obj.y - top, 
                 abs(obj.width) + hb.right, abs(obj.height) + hb.bottom
             )
+            print(obj.classname, obj.width, obj.height)
         end
 
         obj.hitbox = hb
@@ -3561,6 +3584,12 @@ do
         gamepadaxis = function(joystick, axis, value)
             Input.store('gp.'..axis, {joystick=joystick, value=value})
         end;
+        touchpressed = function(id, x, y, dx, dy, pressure)
+            Input.press('touch', {id=id, x=x, y=y, dx=dx, dy=dy, pressure=pressure})
+        end;
+        touchreleased = function(id, x, y, dx, dy, pressure)
+            Input.release('touch', {id=id, x=x, y=y, dx=dx, dy=dy, pressure=pressure})
+        end;
     }
 end
 
@@ -3631,6 +3660,8 @@ love.gamepadreleased = function(joystick, button) Blanke.gamepadreleased(joystic
 love.joystickadded = function(joystick) Blanke.joystickadded(joystick) end 
 love.joystickremoved = function(joystick) Blanke.joystickremoved(joystick) end
 love.gamepadaxis = function(joystick, axis, value) Blanke.gamepadaxis(joystick, axis, value) end
+love.touchpressed = function(id, x, y, dx, dy, pressure) Blanke.touchpressed(id, x, y, dx, dy, pressure) end
+love.touchreleased = function(id, x, y, dx, dy, pressure) Blanke.touchreleased(id, x, y, dx, dy, pressure) end
 --[[BEGIN:LOVE.RUN
 love.run = function()
   if love.math then love.math.setRandomSeed(os.time()) end

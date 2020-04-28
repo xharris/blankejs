@@ -1,6 +1,8 @@
 const unhandled = require("electron-unhandled");
 unhandled();
 
+const isDev = require('electron-is-dev');
+const { autoUpdater } = require("electron-updater");
 const { app: eApp, BrowserWindow, ipcMain } = require("electron");
 
 const WIN_WIDTH = 1000;
@@ -35,7 +37,7 @@ eApp.on("ready", function () {
   if (main_window.setWindowButtonVisibility)
     main_window.setWindowButtonVisibility(false);
 
-  // main_window.webContents.openDevTools();
+  main_window.webContents.openDevTools();
   main_window.loadFile("index.html");
   main_window.on("close", e => {
     main_window.webContents.send("close", e);
@@ -49,6 +51,22 @@ eApp.on("ready", function () {
 
   ipcMain.on("openDevTools", e => main_window.webContents.openDevTools());
   ipcMain.on("showWindow", e => main_window.show());
+  ipcMain.on('checkForUpdates', e => {
+    autoUpdater.checkForUpdates()
+  })
+  ipcMain.on('installUpdate', () => {
+    autoUpdater.quitAndInstall();
+  })
+
+  autoUpdater.autoInstallOnAppQuit = false;
+  autoUpdater.on('update-available', e => main_window.webContents.send("update-available", e))
+  autoUpdater.on('update-downloaded', e => main_window.webContents.send("update-downloaded", e))
+  autoUpdater.on('update-not-available', e => main_window.webContents.send("update-not-available", e))
+  autoUpdater.on('download-progress', e => main_window.webContents.send("download-progress", e))
+
+  autoUpdater.on('error', err => {
+    console.error(err)
+  })
 });
 
 eApp.commandLine.appendSwitch("ignore-gpu-blacklist");
