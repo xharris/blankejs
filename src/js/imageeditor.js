@@ -481,6 +481,10 @@ class ImageEditor extends Editor {
       (set.frame_size[0] + set.spacing) * set.frames - set.spacing;
     this.img_height = set.frame_size[1];
 
+    // resize render textures to image size
+    this.img_rtx = PIXI.RenderTexture.create(Math.max(this.width, this.img_width), Math.max(this.height, this.img_height));
+    this.img_rtx_temp = PIXI.RenderTexture.create(Math.max(this.width, this.img_width), Math.max(this.height, this.img_height));
+
     this.pixi.setCameraBounds(
       0,
       0,
@@ -565,14 +569,12 @@ class ImageEditor extends Editor {
       this.render_anim = false;
       let tex_frames = [];
       let set = this.img_settings;
-      console.log(set)
       for (
         let x = this.img_left;
         x < this.img_width;
         x += set.frame_size[0] + set.spacing
       ) {
         let new_tex = this.img_rtx.clone();
-        console.log([x, 0, ...set.frame_size])
         new_tex.frame = new PIXI.Rectangle(
           x,
           0,

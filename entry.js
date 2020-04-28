@@ -37,7 +37,7 @@ eApp.on("ready", function () {
   if (main_window.setWindowButtonVisibility)
     main_window.setWindowButtonVisibility(false);
 
-  main_window.webContents.openDevTools();
+  // main_window.webContents.openDevTools();
   main_window.loadFile("index.html");
   main_window.on("close", e => {
     main_window.webContents.send("close", e);

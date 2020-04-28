@@ -739,12 +739,28 @@ var app = {
     app.allowed_extensions.script = [];
   },
 
-  requireEngine: () => {
+  engine_js_watch: null,
+  requireEngine: (override) => {
     if (!app.isProjectOpen()) {
+      if (app.engine_js_watch) app.engine_js_watch.close();
+      app.engine_js_watch = null;
       app.clearEngine();
       return;
     }
-    app.engine_module = app.require(pathJoin(app.engine_path, "index.js"));
+    if (app.last_engine == app.projSetting("engine") && !override) {
+      return;
+    }
+    app.last_engine = app.projSetting("engine");
+
+    const engine_js_path = pathJoin(app.engine_path, "index.js");
+    if (!app.engine_js_watch)
+      app.engine_js_watch = app.watch(engine_js_path,
+        (evt_type, file) => {
+          app.requireEngine(true);
+        }
+      );
+
+    app.engine_module = app.require(engine_js_path);
     app.setBusyStatus(true);
     setTimeout(() => {
       app.setBusyStatus(false);
@@ -847,9 +863,8 @@ var app = {
             str_conf
           );
 
-        if (app.isProjectOpen() && app.last_engine != app.projSetting("engine")) {
+        if (app.isProjectOpen()) {
           app.requireEngine();
-          app.last_engine = app.projSetting("engine");
         }
       }
     });

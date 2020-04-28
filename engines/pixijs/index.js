@@ -1,7 +1,7 @@
-const nwUGLY = require("uglify-es");
+// const nwUGLY = require("uglify-es");
 
 module.exports.settings = {
-  game_preview_enabled: true,
+  game_preview_enabled: false,
   main_file: "main.js",
   file_ext: ["js"],
   language: "javascript",
@@ -17,26 +17,26 @@ module.exports.settings = {
     [/(\w+)\s+extends\s+Entity\s*/, "entity"],
   ],
   add_script_templates: {
-    scene: `Scene("<NAME>",{
-			onStart: function(scene) {
+    state: `State("<NAME>",{
+			start: function() {
 		
 			},
-			onUpdate: function(scene, dt) {
+			update: function(dt) {
 				
 			},
-			onEnd: function(scene) {
+			end: function() {
 		
 			}
 		});
 		`,
-    entity: `class <NAME> extends Entity {
+    entity: `Entity({
 			init () {
 		
 			}
 			update (dt) {
 		
 			}
-		}
+		})
 		`,
   },
   entity_sprite_parse: (text, info, cb) => {

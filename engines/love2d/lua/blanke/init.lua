@@ -648,7 +648,8 @@ do
             auto_draw =     true,
             vsync =         1,
             window_flags = {},
-            fps =           60
+            fps =           60,
+            scale =         true
         };
         config = {};
         updatables = {};
@@ -1835,6 +1836,8 @@ do
             local o = opt(name)
             if options then o = table.update(o, options) end
 
+            if Window.os == 'web' then o.type = 'static' end
+
             local src = Cache.get('Audio.source',name,function(key)
                 return love.audio.newSource(Game.res('audio',o.file), o.type)
             end)
@@ -1844,13 +1847,14 @@ do
             end
             if not new_sources[name] then new_sources[name] = {} end
 
-            local src = sources[name]:clone()
-            if options then
+            if o then
                 table.insert(new_sources[name], src)
                 local props = {'looping','volume','airAbsorption','pitch','relative','rolloff'}
                 local t_props = {'position','attenuationDistances','cone','direction','velocity','filter','effect','volumeLimits'}
                 for _,n in ipairs(props) do
-                    if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,o[n]) end
+                    if o[n] then 
+                        src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,o[n]) 
+                    end
                 end
                 for _,n in ipairs(t_props) do
                     if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,unpack(o[n])) end
@@ -2758,7 +2762,6 @@ do
                 obj.y - top, 
                 abs(obj.width) + hb.right, abs(obj.height) + hb.bottom
             )
-            print(obj.classname, obj.width, obj.height)
         end
 
         obj.hitbox = hb
@@ -3662,46 +3665,3 @@ love.joystickremoved = function(joystick) Blanke.joystickremoved(joystick) end
 love.gamepadaxis = function(joystick, axis, value) Blanke.gamepadaxis(joystick, axis, value) end
 love.touchpressed = function(id, x, y, dx, dy, pressure) Blanke.touchpressed(id, x, y, dx, dy, pressure) end
 love.touchreleased = function(id, x, y, dx, dy, pressure) Blanke.touchreleased(id, x, y, dx, dy, pressure) end
---[[BEGIN:LOVE.RUN
-love.run = function()
-  if love.math then love.math.setRandomSeed(os.time()) end
-  if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
-  if love.timer then love.timer.step() end
-
-  local dt = 0
-  local fixed_dt = 1/60
-  local accumulator = 0
-
-  return function()
-    if love.event then
-      love.event.pump()
-      for name, a, b, c, d, e, f in love.event.poll() do
-        if name == "quit" then
-          if not love.quit or not love.quit() then
-            return a or 0
-          end
-        end
-        love.handlers[name](a, b, c, d, e, f)
-      end
-    end
-    if love.timer then
-      love.timer.step()
-      dt = love.timer.getDelta()
-    end
-
-    accumulator = accumulator + dt
-    while accumulator >= fixed_dt do
-      if love.update then love.update(fixed_dt) end
-      accumulator = accumulator - fixed_dt
-    end
-    if love.graphics and love.graphics.isActive() then
-      love.graphics.origin()  
-      love.graphics.clear(love.graphics.getBackgroundColor())
-      if love.draw then love.draw() end
-      love.graphics.present()
-    end
-
-    if love.timer then love.timer.sleep(0.001) end
-  end
-end
---END:LOVE.RUN]]

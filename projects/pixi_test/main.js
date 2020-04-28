@@ -1,5 +1,0 @@
-Game{
-	load = function()
-		
-	end
-}

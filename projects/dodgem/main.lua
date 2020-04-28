@@ -12,6 +12,8 @@ Input.set({
 	down = { "down", "s", "dpdown" }
 })
 
+Audio('bomber_barbara.ogg', {name='main', looping=true, volume=0.2, type='stream'})
+
 Ball = Entity("Ball",{
 	hitbox=true,
 	animations={ "ball" },
@@ -41,6 +43,7 @@ Game{
 	load = function()
 		local ball1 = Ball{x=Game.width/2, y=Game.height/2, anim_frame=3}
 		Player({x=ball1.x + 20, y=Game.height/2})
+		Audio.play('main')
 	end
 }
 

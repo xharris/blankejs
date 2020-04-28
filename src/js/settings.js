@@ -161,9 +161,7 @@ const loadEngineList = () => {
     "utf8",
     (err, files) => {
       engine_list = files;
-      const curr_engine = app.projSetting("engine");
-      if (files && files.includes(curr_engine)) app.requireEngine(curr_engine);
-      else app.requireEngine();
+      app.requireEngine();
     }
   );
 };

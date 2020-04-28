@@ -7,12 +7,12 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Check for updates=?",
-            "Check for updates"
-        ],
-        [
             "main.lua=script+entity+?",
             "main.lua"
+        ],
+        [
+            "Check for updates=?",
+            "Check for updates"
         ],
         [
             "Clear history=?",
@@ -31,14 +31,16 @@
     "scene": {},
     "export": {
         "name": "dodgem",
-        "filter": "linear",
-        "vsync": "on",
-        "web_memory": 24,
+        "filter": "nearest",
+        "vsync": "off",
+        "web_memory": 0,
         "web_stack": 2,
         "web_game_size": [
             800,
             600
-        ]
+        ],
+        "resizable": false,
+        "scale": true
     },
     "enabled_plugins": {
         "xhh-array": false,

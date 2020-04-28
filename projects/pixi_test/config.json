@@ -4,6 +4,7 @@
     "export": {
         "name": "pixi_test",
         "filter": "linear",
+        "scale": true,
         "vsync": "on",
         "web_memory": 24,
         "web_stack": 2,

@@ -102,7 +102,7 @@ module.exports.settings = {
     ...["frameless", "scale", "resizable"].map(o => [
       o,
       "checkbox",
-      { default: false },
+      { default: o === "scale" },
     ]),
     ["vsync", "select", { choices: ["on", "off", "adaptive"], default: "on" }],
     ["web"],
