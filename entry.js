@@ -8,6 +8,8 @@ const { app: eApp, BrowserWindow, ipcMain } = require("electron");
 const WIN_WIDTH = 1000;
 const WIN_HEIGHT = 700;
 
+let update_on_close = false;
+
 let main_window;
 eApp.on("open-file", (e, path) => {
   if (main_window); //main_window.webContents.send('open-file', path);
@@ -40,8 +42,12 @@ eApp.on("ready", function () {
   // main_window.webContents.openDevTools();
   main_window.loadFile("index.html");
   main_window.on("close", e => {
-    main_window.webContents.send("close", e);
-    e.preventDefault();
+    if (!update_on_close) {
+      main_window.webContents.send("close", e);
+      e.preventDefault();
+    } else {
+      autoUpdater.quitAndInstall();
+    }
   });
 
   main_window.webContents.on("new-window", function (e, url) {
@@ -55,7 +61,8 @@ eApp.on("ready", function () {
     autoUpdater.checkForUpdates()
   })
   ipcMain.on('installUpdate', () => {
-    autoUpdater.quitAndInstall();
+    update_on_close = true;
+    main_window.close();
   })
 
   autoUpdater.autoInstallOnAppQuit = false;

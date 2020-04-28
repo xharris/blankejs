@@ -297,7 +297,6 @@ var app = {
     app.showWelcomeScreen();
     app.setWinTitle("BlankE");
   },
-
   isProjectOpen: function () {
     return app.project_path && app.project_path != "";
   },
