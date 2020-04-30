@@ -898,6 +898,7 @@ do
                 Window.toggleFullscreen()
             end            
             Input.keyCheck()
+            Audio.update(dt)
         end
     }
 end
@@ -1814,6 +1815,8 @@ do
     local defaults = {}
     local sources = {}
     local new_sources = {}
+    local play_queue = {}
+    local first_update = true
 
     local opt = function(name, overrides)
         if not defaults[name] then Audio(name, {}) end
@@ -1829,6 +1832,15 @@ do
                 new_tbl = copy(default_opt)
                 table.update(new_tbl, options)
                 table.update(defaults[store_name], new_tbl)
+            end
+        end;
+
+        update = function(dt)
+            if #play_queue > 0 then 
+                for _, src in ipairs(play_queue) do 
+                    love.audio.play(src)
+                end
+                play_queue = {}
             end
         end;
         
@@ -1853,20 +1865,22 @@ do
                 local t_props = {'position','attenuationDistances','cone','direction','velocity','filter','effect','volumeLimits'}
                 for _,n in ipairs(props) do
                     if o[n] then 
-                        src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,o[n]) 
+                        src['set'..n:capitalize()](src,o[n]) 
                     end
                 end
                 for _,n in ipairs(t_props) do
-                    if o[n] then src['set'..string.upper(string.sub(n,1,1))..string.sub(n,2)](src,unpack(o[n])) end
+                    if o[n] then src['set'..n:capitalize()](src,unpack(o[n])) end
                 end
             end
             return src
         end;
-
         play = function(...)
             local src_list = {}
-            for _,name in ipairs({...}) do table.insert(src_list, Audio.source(name)) end
-            love.audio.play(unpack(src_list))
+            for _,name in ipairs({...}) do 
+                table.insert(src_list, Audio.source(name)) 
+                -- adds to play_queue so audio doesn't play in Game.load (before the game actually starts)
+                table.insert(play_queue, Audio.source(name))
+            end
             if #src_list == 1 then return src_list[1] 
             else return src_list end
         end;
@@ -1891,6 +1905,16 @@ do
             return false
         end;
     }
+
+    local audio_fns = {'volume','velocity','position','orientation','effect','dopp'}
+    for _, fn in ipairs(audio_fns) do 
+        local fn_capital = fn:capitalize()
+        Audio[fn] = function(...)
+            local args = {...}
+            if #args > 0 then love.audio['set'..fn_capital](...)
+            else return love.audio['get'..fn_capital]() end
+        end
+    end
 end
 
 --EFFECT
@@ -3463,7 +3487,7 @@ do
         pady = 0;
         load = function()
             if not Blanke.loaded then
-                --Game.load()
+                love.joystick.loadGamepadMappings('gamecontrollerdb.txt')
                 Blanke.loaded = true
             end
         end;

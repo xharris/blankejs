@@ -7,6 +7,14 @@
     "window_size": 3,
     "quick_access": [
         [
+            "credits.txt=?",
+            "credits.txt"
+        ],
+        [
+            "Add a text file=new+?",
+            "Add a text file"
+        ],
+        [
             "main.lua=script+entity+?",
             "main.lua"
         ],
@@ -17,14 +25,6 @@
         [
             "Clear history=?",
             "Clear history"
-        ],
-        [
-            "View assets=?",
-            "View assets"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -33,14 +33,15 @@
         "name": "dodgem",
         "filter": "nearest",
         "vsync": "off",
-        "web_memory": 0,
+        "web_memory": 128,
         "web_stack": 2,
         "web_game_size": [
             800,
             600
         ],
         "resizable": false,
-        "scale": true
+        "scale": true,
+        "web_preload_image": "https://miro.medium.com/max/1200/1*mk1-6aYaf_Bes1E3Imhc0A.jpeg"
     },
     "enabled_plugins": {
         "xhh-array": false,

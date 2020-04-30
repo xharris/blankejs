@@ -102,9 +102,11 @@ Player({custom_prop: 5})
 
 `update(dt)`
 
-`draw()`
+`draw(default_draw_fn)`
 
-> **NOTE**: if draw() is used, width and height variables need to be set manually.
+> **NOTE**: 
+> * if draw() is overriden, width and height variables need to be set manually, unless `default_draw_fn()` is called.
+> * Draw operations are positioned relative to the entity. 
 
 `predraw()`
 
