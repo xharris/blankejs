@@ -7,16 +7,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "main.lua=script+entity+?",
+            "main.lua"
+        ],
+        [
             "credits.txt=?",
             "credits.txt"
         ],
         [
             "Add a text file=new+?",
             "Add a text file"
-        ],
-        [
-            "main.lua=script+entity+?",
-            "main.lua"
         ],
         [
             "Check for updates=?",
@@ -32,6 +32,7 @@
     "export": {
         "name": "dodgem",
         "filter": "nearest",
+        "scale": true,
         "vsync": "off",
         "web_memory": 128,
         "web_stack": 2,
@@ -40,7 +41,6 @@
             600
         ],
         "resizable": false,
-        "scale": true,
         "web_preload_image": "https://miro.medium.com/max/1200/1*mk1-6aYaf_Bes1E3Imhc0A.jpeg"
     },
     "enabled_plugins": {

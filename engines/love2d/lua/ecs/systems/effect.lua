@@ -105,52 +105,56 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
 end
 
 get_shader = function(obj, names) 
-  obj.effect.shader_info = generateShader(names)
-  table.update(obj.effect.vars, obj.effect.shader_info.vars)
+  obj.shader_info = generateShader(names)
+  table.update(obj.vars, obj.shader_info.vars)
 
   disable_image_batching(obj)
   -- track enabling/disabling
-  for _, name in ipairs(obj.effect.names) do 
-    if obj.effect.enabled[name] == nil then 
-      obj.effect.enabled[name] = true
+  for _, name in ipairs(obj.names) do 
+    if obj.enabled[name] == nil then 
+      obj.enabled[name] = true
     end
   end
-  for i, name in ipairs(obj.effect.names) do 
-    track(obj.effect.enabled, name)
+  for i, name in ipairs(obj.names) do 
+    track(obj.enabled, name)
   end
 end
 
 disable_image_batching = function(obj)
-    -- shaders dont work well with spritebatch
-    if obj.effect.canvas.is_setup and obj.image and obj.image.batch then 
-      obj.image.batch = false
-    end
+  obj = get_entity(obj)
+  -- shaders dont work well with spritebatch
+  if obj.effect.canvas.is_setup and obj.image and obj.image.batch then 
+    obj.image.batch = false
+  end
 end
 
-EffectSpawner = System{
-  'effect',
-  type='blanke.effect',
+Component('effect', { enabled={}, vars={}, time=0 })
+
+System{
+  component='effect',
+  requires=EcsUtil.require_draw_components(),
   add = function(obj) 
-    EcsUtil.extract_draw_components(obj)
+    local obj_entity = get_entity(obj)
     -- parse initial shader names
     local names = {}
-    if type(obj.effect) == 'table' then 
-      for _, name in ipairs(obj.effect) do 
+    if type(obj) == 'table' then 
+      for _, name in ipairs(obj) do 
         table.insert(names, name)
       end
     end
-    extract(obj, 'effect', { names=names, enabled={}, vars={}, time=0 })
-    obj.effect.canvas = Canvas{auto_clear={1,1,1,0}, auto_draw=false}
-    get_shader(obj, obj.effect.names)
-    print_r(obj)
+    obj.names = obj.names or names
+    obj.canvas = Canvas{auto_clear={1,1,1,0}, auto_draw=false}
+    get_shader(obj, obj.names)
+    
+    obj_entity.renderer = EffectRenderer()
   end,
 
   update = function(obj, dt)
     -- did the enabled shaders change?
     local remake_shader = {}
-    for i, name in ipairs(obj.effect.names) do 
-      if changed(obj.effect.enabled, name) or obj.effect.enabled[name] == nil then 
-        if obj.effect.enabled[name] ~= false then
+    for i, name in ipairs(obj.names) do 
+      if changed(obj.enabled, name) or obj.enabled[name] == nil then 
+        if obj.enabled[name] ~= false then
           tryEffect(name)
           table.insert(remake_shader, name)
         end
@@ -161,25 +165,26 @@ EffectSpawner = System{
       if #remake_shader > 0 then 
         get_shader(obj, remake_shader)
       else
-        obj.effect.canvas:release()
+        -- no shaders active
+        obj.canvas:release()
       end
     end
     
     disable_image_batching(obj)
     
-    local shader_info = obj.effect.shader_info
+    local shader_info = obj.shader_info
     local shader_object = shader_info.shader
     local vars
-    for _, name in ipairs(obj.effect.names) do 
-      if obj.effect.enabled[name] then 
-        vars = obj.effect.vars[name]
+    for _, name in ipairs(obj.names) do 
+      if obj.enabled[name] then 
+        vars = obj.vars[name]
         -- update built in shader vars
         vars.time = vars.time + dt
         vars.tex_size = {Game.width, Game.height}
 
         for k, v in pairs(vars) do
           -- update user shader vars
-          if not obj.effect.shader_info.unused_vars[name][k] then 
+          if not obj.shader_info.unused_vars[name][k] then 
             local safe_name = (safe_names[name] or '').."_"..k
             shader_object:send(safe_name, v)
           end
@@ -189,10 +194,13 @@ EffectSpawner = System{
   end
 }
 
-Effect = callable {
-    __call = function(...) 
-      return EffectSpawner(...)
-    end,
+EffectRenderer = RenderSystem{
+  render = function(obj, fn_draw)
+    Effect.apply(obj, fn_draw)
+  end
+}
+
+Effect = {
     new = function(name, in_opt)
         local safe_name = name:replace(' ','_')
         local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
@@ -286,7 +294,8 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
     apply = function(obj, fn)
         local used = false
         local effect_obj = obj.effect
-        if effect_obj == nil or not effect_obj.is_entity or not Feature('effect') then
+        
+        if effect_obj == nil or not Feature('effect') then
             fn()
             return true
         end 

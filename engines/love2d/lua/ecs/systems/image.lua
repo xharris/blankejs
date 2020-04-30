@@ -1,4 +1,4 @@
-local draw_object = EcsUtil.draw_object
+local draw_object = World.render
 local extract_draw_components = EcsUtil.extract_draw_components
 local get_draw_components = EcsUtil.get_draw_components
 
@@ -10,6 +10,19 @@ local AUTO_BATCH_LIMIT = 20 -- TODO implement later (automatically starts batchi
 local get_batch_key = function(obj, sb_index)
     obj_entity = get_entity(obj)
     return 'imagebatch' .. '.' .. (obj_entity.z or 0) .. '.' .. sb_index .. '.' .. Game.res('image',obj.path)
+end
+
+local use_size = function(obj, object)
+    local obj_entity = get_entity(obj)
+    if obj.use_size then 
+        if object then 
+            obj_entity.size.width = object:getWidth()
+            obj_entity.size.height = object:getHeight()
+        else
+            obj_entity.size.width = 1
+            obj_entity.size.height = 1
+        end
+    end
 end
 
 local batches = {} -- { 'blanke.imagebatch.<z>.<sb_index>.res_path' = batch_obj }
@@ -58,7 +71,7 @@ update_batch_image = function(obj)
     if not obj_entity.batch_id then 
         obj_entity.batch_id = batch.object:add(0, 0, 0, 0, 0)
     end
-    if obj.use_size then obj_entity.size = { width=img_object:getWidth(), height=img_object:getHeight() } end
+    use_size(obj, img_object)
 end
 remove_batch_image = function(obj)
     local obj_entity = get_entity(obj)
@@ -80,23 +93,23 @@ update_image = function(obj)
         obj.object = Cache.get('Image', Game.res('image',obj.path), function(key)
             return love.graphics.newImage(key)
         end)
-        if obj.use_size then get_entity(obj).size = { width=obj.object:getWidth(), height=obj.object:getHeight() } end
+        use_size(obj, obj.object)
     else 
         remove_image(obj)
     end
 end
 remove_image = function(obj)
     obj.object = nil
-    if obj.use_size then get_entity(obj).size = { width=1, height=1 } end
+    use_size(obj)
 end
 
 Component('image', { batch=true, use_size=true } )
-Image = System{
+
+System{
     component='image',
     requires=EcsUtil.require_draw_components(),
     add = function(obj)
         local obj_entity = get_entity(obj)
-        extract_draw_components(obj)
         track(obj, 'path')
         track(obj, 'batch')
         track(obj_entity, 'z')
@@ -107,7 +120,7 @@ Image = System{
             else 
                 update_image(obj)
             end
-        end
+        end        
     end,
     update = function(obj, dt)
         local obj_entity = get_entity(obj)
@@ -145,5 +158,12 @@ System{
     end,
     draw = function(obj)
         draw_object(obj)
+    end
+}
+
+-- config functions
+Image = {
+    animation = function() 
+
     end
 }

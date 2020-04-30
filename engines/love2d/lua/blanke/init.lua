@@ -1,19 +1,18 @@
 -- TODO Images have their own hitbox instead of entity. Entity just uses the current animations hitbox
 -- TODO rework Image to autobatch
 -- TODO Blanke.config
-local _NAME = ...
 math.randomseed(os.time())
 local do_profiling = nil -- false/#
 local profiling_color = {1,0,0,1}
 
-local bitop = require(_NAME..'.bitop')
+local bitop = require('bitop')
 local bit = bitop.bit
-local bump = require(_NAME..".bump")
-uuid = require(_NAME..".uuid")
-json = require(_NAME..".json")
-class = require(_NAME..".clasp")
-require(_NAME..".noobhub")
-require(_NAME..".print_r")
+local bump = require("bump")
+uuid = require("uuid")
+json = require("json")
+class = require("clasp")
+require("noobhub")
+require("print_r")
 
 local socket = require("socket")
 callable = function(t) 
@@ -571,7 +570,7 @@ do
 
         tform:reset()
         tform:translate(x,y)
-        tform:translate(-ax / scalex, -ay / scaley) 
+        -- tform:translate(-ax / scalex, -ay / scaley) 
         if is_fn then 
             tform:scale(scalex, scaley)
             tform:rotate(math.rad(props.angle))
@@ -587,9 +586,9 @@ do
                 lobj(props)
             else
                 if props.quad then
-                    love.graphics.draw(lobj, props.quad, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+                    love.graphics.draw(lobj, props.quad, 0,0,0, scalex, scaley, ax, ay, props.shearx, props.sheary)
                 else
-                    love.graphics.draw(lobj, 0,0,0, scalex, scaley, 0, 0, props.shearx, props.sheary)
+                    love.graphics.draw(lobj, 0,0,0, scalex, scaley, ax, ay, props.shearx, props.sheary)
                 end
             end
         end
@@ -638,18 +637,20 @@ do
             res =           'assets',
             scripts =       {},
             filter =        'linear',
-            load =          function() end,
-            update =        function(dt) end,
-            draw =          function(d) d() end,
-            postdraw =      nil,
-            effect =        nil,
+            vsync =         1,
             auto_require =  true,
             background_color = 'black',
-            auto_draw =     true,
-            vsync =         1,
             window_flags = {},
             fps =           60,
-            scale =         true
+
+            auto_draw =     true,
+            scale =         true,
+            effect =        nil,
+
+            load =          function() end,
+            draw =          function(d) d() end,
+            postdraw =      nil,
+            update =        function(dt) end,            
         };
         config = {};
         updatables = {};
@@ -731,7 +732,7 @@ do
             -- load plugins
             if Game.options.plugins then 
                 for _,f in ipairs(Game.options.plugins) do 
-                    table.insert(scripts,_NAME..'.plugins.'..f)
+                    table.insert(scripts,'plugins.'..f)
                 end
             end
             -- load scripts
@@ -1380,8 +1381,6 @@ do
                 else self:spawn() end 
             end
             if self.hasHitbox then
-                self.x = self.x + self.alignx
-                self.y = self.y + self.aligny
                 Hitbox.teleport(self)
             end
             if self.body then self.body:setPosition(self.x, self.y) end
@@ -1450,7 +1449,7 @@ do
                 else
                     draw_fn()
                 end
-                -- postdraw
+                -- postdraw 
                 if self.postdraw then 
                     self:postdraw()
                 end
@@ -2747,17 +2746,20 @@ end
 --HITBOX
 Hitbox = nil
 do
-    local bump = require(_NAME..'.bump')
+    local bump = require('bump')
     local world = bump.newWorld(40)
     local new_boxes = true
 
     local calcBounds = function(obj)
         local repos = false
-        if obj.is_entity then 
+        if obj.is_entity then
             repos = obj:_checkForAnimHitbox()
-            return obj.alignx + (obj.width/2), obj.aligny + (obj.height/2), repos
+        else 
+            obj.align = 'center'
         end
-        return obj.alignx, obj.aligny, repos
+        return  obj.alignx,
+                obj.aligny,
+                repos
     end
     local checkHitArea = function(obj)
         local left, top, repos = calcBounds(obj)
@@ -2776,21 +2778,21 @@ do
         hb.left = left
         hb.top = top
 
+        print(obj.classname, left, top)
+
         if not obj.hasHitbox then 
             obj.hasHitbox = true
             new_boxes = true
             
             world:add(
-                obj,
-                obj.x - left,
-                obj.y - top, 
+                obj, obj.x - hb.left, obj.y - hb.top,
                 abs(obj.width) + hb.right, abs(obj.height) + hb.bottom
             )
         end
 
         obj.hitbox = hb
         
-        if repos then 
+        if repos then
             Hitbox.teleport(obj)
         end
         return obj.hitbox
@@ -2824,10 +2826,9 @@ do
         -- ignore collisions
         teleport = function(obj, x, y)
             if obj and not obj.destroyed and obj.hasHitbox then
-                local hb = checkHitArea(obj)
+                local hb = checkHitArea(obj)                
                 world:update(obj, 
-                    x or (obj.x - hb.left),
-                    y or (obj.y - hb.top),
+                    obj.x - hb.left, obj.y - hb.top,
                     abs(obj.width) + hb.right, abs(obj.height) + hb.bottom
                 )
             end
@@ -2859,13 +2860,17 @@ do
                 end
                 -- move the hitbox
                 local hb = checkHitArea(obj)
+
+                local offx = hb.left
+                local offy = hb.top 
+
                 local new_x, new_y, cols, len = world:move(obj, 
-                    obj.x - hb.left, 
-                    obj.y - hb.top, 
+                    obj.x - offx,
+                    obj.y - offy, 
                     filter)
                 if obj.destroyed then return end
-                obj.x = new_x + hb.left
-                obj.y = new_y + hb.top
+                obj.x = new_x + offx
+                obj.y = new_y + offy
                 local swap = function(t, key1, key2)
                     local temp = t[key1]
                     t[key1] = t[key2]
@@ -3624,7 +3629,7 @@ Signal.emit('__main')
 
 love.load = function() 
     if do_profiling then
-        love.profiler = require(_NAME..'.profile')
+        love.profiler = require('profile')
     end
 
     Blanke.load() 

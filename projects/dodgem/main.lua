@@ -23,6 +23,7 @@ Ball = Entity("Ball",{
 
 Player = Entity("Player",{
 	hitbox=true,
+	reaction="cross",
 	animations={ "bluerobot" },
 	align="center",
 	collision=function(self, other)
@@ -38,31 +39,28 @@ Player = Entity("Player",{
 		if Input.pressed('right') then self.hspeed = self.hspeed + d end
 		if Input.pressed('up') then self.vspeed = self.vspeed - d end
 		if Input.pressed('down') then self.vspeed = self.vspeed + d end
+		
+		-- mirror player image
+		if Input.pressed('left') then 
+			self.scalex = -1
+		end
+		if Input.pressed('right') then 
+			self.scalex = 1
+		end
+		
 		Joystick.use()
 	end
 })
 
-Dot = Entity("Dot",{
-	z=100,
-	draw = function(self)
-		Draw{
-			{'color','green'},
-			{'circle','fill',0,0,3},
-			{'color'}
-		}
-	end
-})
+local player, ball1
 
 Game{
 	background_color = "white",
 	load = function()
-		local ball1 = Ball{x=Game.width/2, y=Game.height/2, anim_frame=3}
-		Player{x=ball1.x, y=Game.height/2}
-		
-		Dot{x=Game.width/2, y=Game.height/2}
-		Dot{x=ball1.x, y=Game.height/2}
+		ball1 = Ball{x=Game.width/2, y=Game.height/2, anim_frame=3}		
+		player = Player{x=Game.width/2, y=Game.height/2}
+				
 		Audio.play('main')
-		
 		Audio.volume(0.05)
 	end
 }

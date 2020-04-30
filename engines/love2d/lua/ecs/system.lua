@@ -1,6 +1,7 @@
 local entities = {} -- { uuid={ } }
 local components = {} -- { uuid{ entity=uuid } }
 local systems = {} -- { uuid={ } }
+local rend_systems = {} -- { uuid={ } }
 --system
 local callback2system = {} -- { callback={ sys_id } }
 local component2system = {} -- { comp_name={ sys_id } }
@@ -14,6 +15,8 @@ local component_defaults = {} -- { comp_name=props }
 local entity_templates = {} -- { name={} }
 local add_template
 ENTITY_REQUIRES = {'pos','quad','angle','size','scale','offset','shear','blendmode'}
+--rendersystem
+
 --world
 local require_component
 local check_obj_requirements
@@ -95,13 +98,14 @@ System = function(opt)
   systems[sys_id] = opt
 end
 
---COMPOENT
+--COMPONENT
 Component = function(name, props)
-  if type(name) == 'table' then 
+  if type(name) == 'table' then
+    local use_fns = {} 
     for name2, props2 in pairs(name) do 
-      Component(name2, props2)
+      use_fns[name2] = Component(name2, props2)
     end
-    return 
+    return use_fns
   end
   -- add component name list
   if not comp_name2uuid[name] then 
@@ -270,6 +274,15 @@ remove_from_world = function(obj)
   return true
 end
 
+RenderSystem = function(opt)
+  local sys = {
+    uuid = uuid(),
+    render = opt.render or function(obj, draw) draw() end
+  }
+  rend_systems[sys.uuid] = sys
+  return function() return sys.uuid end
+end
+
 type_count_incr = function(_type)
   if not type_count[_type] then type_count[_type] = 0 end
   type_count[_type] = type_count[_type] + 1
@@ -404,9 +417,12 @@ World = {
       return table.join(list, ', ')
     end
   end,
+  get_type_count = function(t)
+    return type_count[t]
+  end,
   update = function(dt)
     if dt == 0 then
-      --print_r(entity_templates)
+      --print_r(component_defaults)
       --print("SYSTEMS")
       --print_r(systems)
       --print("ENTITIES")
@@ -422,6 +438,30 @@ World = {
   draw = function()
     World.process('draw')
     State.callback('draw')
+  end,
+  render = function(obj, prop_obj)
+    local object = obj.object 
+    if object and object.is_stack then 
+        object = object.value
+    end
+    if object then 
+        local main_obj = prop_obj or obj 
+        -- local blendmode = extract(main_obj, 'blendmode')
+        if not main_obj.has_draw_components then 
+            main_obj.has_draw_components = true
+            EcsUtil.extract_draw_components(main_obj)
+        end
+        Draw.setBlendMode(unpack(main_obj.blendmode))
+        
+        local renderer = rend_systems[main_obj.renderer]
+        if renderer then 
+          renderer.render(main_obj, function()
+            love.graphics.draw(object, EcsUtil.get_draw_components(main_obj))
+          end)
+        else
+          love.graphics.draw(object, EcsUtil.get_draw_components(main_obj))
+        end
+    end
   end
 }
 

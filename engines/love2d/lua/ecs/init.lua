@@ -1,6 +1,6 @@
 local _NAME = ...
 require(_NAME..'.util')
-require(_NAME..'.ecs')
+require(_NAME..'.system')
 require(_NAME..'.systems')
 
 local do_profiling = nil -- false/#
@@ -89,6 +89,7 @@ Blanke = {
             Window.toggleFullscreen()
         end            
         Input.keyCheck()
+        Audio.update(dt)
         reset_tracks()
     end,
     draw = function()
@@ -149,7 +150,30 @@ Blanke = {
     mousereleased = function(x, y, button, istouch, presses) 
         Input.press('mouse', {x=x, y=y, button=button, istouch=istouch, presses=presses})
         Input.release('mouse'..tostring(button), {x=x, y=y, button=button, istouch=istouch, presses=presses})
-    end
+    end;
+    gamepadpressed = function(joystick, button)
+        Input.press('gp.'..button, {joystick=joystick})
+    end;
+    gamepadreleased = function(joystick, button)
+        Input.release('gp.'..button, {joystick=joystick})
+    end;
+    joystickadded = function(joystick)
+        Signal.emit("joystickadded", joystick)
+        refreshJoystickList()
+    end;
+    joystickremoved = function(joystick)
+        Signal.emit("joystickremoved", joystick)
+        refreshJoystickList()
+    end;
+    gamepadaxis = function(joystick, axis, value)
+        Input.store('gp.'..axis, {joystick=joystick, value=value})
+    end;
+    touchpressed = function(id, x, y, dx, dy, pressure)
+        Input.press('touch', {id=id, x=x, y=y, dx=dx, dy=dy, pressure=pressure})
+    end;
+    touchreleased = function(id, x, y, dx, dy, pressure)
+        Input.release('touch', {id=id, x=x, y=y, dx=dx, dy=dy, pressure=pressure})
+    end;
 }
 
 Signal.emit('__main')
@@ -161,3 +185,10 @@ love.keypressed = function(key, scancode, isrepeat) Blanke.keypressed(key, scanc
 love.keyreleased = function(key, scancode) Blanke.keyreleased(key, scancode) end
 love.mousepressed = function(x, y, button, istouch, presses) Blanke.mousepressed(x, y, button, istouch, presses) end
 love.mousereleased = function(x, y, button, istouch, presses) Blanke.mousereleased(x, y, button, istouch, presses) end
+love.gamepadpressed = function(joystick, button) Blanke.gamepadpressed(joystick, button) end 
+love.gamepadreleased = function(joystick, button) Blanke.gamepadreleased(joystick, button) end 
+love.joystickadded = function(joystick) Blanke.joystickadded(joystick) end 
+love.joystickremoved = function(joystick) Blanke.joystickremoved(joystick) end
+love.gamepadaxis = function(joystick, axis, value) Blanke.gamepadaxis(joystick, axis, value) end
+love.touchpressed = function(id, x, y, dx, dy, pressure) Blanke.touchpressed(id, x, y, dx, dy, pressure) end
+love.touchreleased = function(id, x, y, dx, dy, pressure) Blanke.touchreleased(id, x, y, dx, dy, pressure) end

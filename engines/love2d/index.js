@@ -10,15 +10,15 @@ const requireConf = (is_exporting) => {
   switch (type) {
     case "oop":
       return `
-      package.path = "./lua/?/init.lua;./lua/?;" .. package.path
-      require("${is_exporting ? "lua.blanke" : "blanke"}")
+package.path = "./lua/?/init.lua;./lua/?;" .. package.path
+require("${is_exporting ? "lua.blanke" : "blanke"}")
       `;
 
     case "ecs":
       return `
-      package.path = "./lua/?/init.lua;./lua/?;" .. package.path
-      require("${is_exporting ? "lua.ecs" : "ecs"}")
-      Game.options.auto_require = false
+package.path = "./lua/?/init.lua;./lua/?;" .. package.path
+require("${is_exporting ? "lua.ecs" : "ecs"}")
+Game.options.auto_require = false
       `;
   }
 };
@@ -96,7 +96,7 @@ module.exports.settings = {
       "checkbox",
       { default: true, label: "auto-generate conf.lua" },
     ],
-    // ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
+    ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
   ],
   export_settings: [
     ["window/rendering"],
@@ -111,14 +111,7 @@ module.exports.settings = {
     ["web_autoplay", "checkbox", { label: "autoplay", defalt: false }],
     ["web_memory", "number", { label: "memory size", default: 24 }],
     ["web_stack", "number", { label: "stack size", default: 2 }],
-    [
-      "override_game_size",
-      "checkbox",
-      {
-        default: false,
-        title: "if enabled, web container will be the size given below",
-      },
-    ],
+    ["override_game_size", "checkbox", { default: false, title: "if enabled, web container will be the size given below" }],
     ["web_game_size", "number", { label: "canvas size", inputs: 2, default: [800, 600] }],
     ["web_preload_image", "text", { label: "preload image background (url)" }]
   ],

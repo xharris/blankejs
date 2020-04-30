@@ -5,6 +5,8 @@ Component('animation', animation_props)
 System{
   'anim', 'animation',
   add = function(obj)
+    local anim = obj.anim or obj.animation
+    
     -- obj.image = Image{use_size=false}
   end,
   update = function(obj, dt)

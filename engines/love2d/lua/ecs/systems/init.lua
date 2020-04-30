@@ -11,7 +11,6 @@ Component{
     scale           = { x = 1, y = 1 },
     offset          = { x = 0, y = 0 },
     shear           = { x = 0, y = 0 },
-    align           = { 'top left' },
     blendmode       = { 'alpha' }
 }
 
@@ -23,23 +22,7 @@ EcsUtil = {
         override = override or {}
         local comps = {'pos','quad','angle','size','scale','offset','shear','blendmode'}
         for _, comp_name in ipairs(comps) do 
-            extract(obj, comp_name, override[comp_name], true)
-        end
-    end,
-    draw_object = function(obj, prop_obj)
-        local object = obj.object 
-        if object and object.is_stack then 
-            object = object.value
-        end
-        if object then 
-            local main_obj = prop_obj or obj 
-            -- local blendmode = extract(main_obj, 'blendmode')
-            if not main_obj.has_draw_components then 
-                main_obj.has_draw_components = true
-                EcsUtil.extract_draw_components(main_obj)
-            end
-            Draw.setBlendMode(unpack(main_obj.blendmode))
-            love.graphics.draw(object, EcsUtil.get_draw_components(main_obj))
+            extract(obj, comp_name, override[comp_name])
         end
     end,
     get_draw_components = function(obj)
@@ -64,8 +47,9 @@ EcsUtil = {
 require(_NAME..".canvas")
 require(_NAME..".image")
 require(_NAME..".movement")
---require(_NAME..".effect")
---require(_NAME..".animation")
+require(_NAME..".effect")
+
+require(_NAME..".animation")
 require(_NAME..".timer")
 -- camera
 -- audio?
@@ -76,43 +60,51 @@ require(_NAME..".timer")
 
 
 local calc_align = function(obj)
-    local align = obj.align[1] 
+    local align = obj[1] 
     local ax, ay = 0, 0
     if align then
-        extract(obj, 'size')
-        extract(obj, 'offset')
+        obj_entity = get_entity(obj)
+        local size = obj_entity.size
 
         if string.contains(align, 'center') then
-            ax = obj.size.width/2 
-            ay = obj.size.height/2
+            ax = size.width/2 
+            ay = size.height/2
         end
         if string.contains(align,'left') then
             ax = 0
         end
         if string.contains(align, 'right') then
-            ax = obj.size.width
+            ax = size.width
         end
         if string.contains(align, 'top') then
             ay = 0
         end
         if string.contains(align, 'bottom') then
-            ay = obj.size.height
+            ay = size.height
         end
-        obj.offset = { x=floor(ax), y=floor(ay) }
+        obj_entity.offset.x = floor(ax)
+        obj_entity.offset.y = floor(ay)
     end
 end
 
+Component('align', { 'top left' })
+
 System{
     component='align',
-    requires={'size'},
+    requires={'size','offset'},
     add = function(obj)
         calc_align(obj)
-        track(obj.align, 0)
-        track(obj.size, 'width')
-        track(obj.size, 'height')
+        local obj_entity = get_entity(obj)
+        track(obj_entity.align, 1)
+        track(obj_entity.size, 'width')
+        track(obj_entity.size, 'height')
     end,
     update = function(obj, dt)
-        if changed(obj.align, 0) or changed(obj.size, 'width') or changed(obj.size, 'height') then 
+        local obj_entity = get_entity(obj)
+        if changed(obj_entity.align, 1) or 
+            changed(obj_entity.size, 'width') or 
+            changed(obj_entity.size, 'height') then 
+                --print("changed",obj_entity.type,obj_entity.align[1],obj_entity.size.width,obj_entity.size.height)
             calc_align(obj)
         end
     end

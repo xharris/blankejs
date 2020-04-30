@@ -1,6 +1,6 @@
 {
     "write_conf": true,
-    "engine_type": "oop",
+    "engine_type": "ecs",
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "first_scene": null,

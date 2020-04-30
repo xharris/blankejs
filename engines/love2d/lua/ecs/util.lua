@@ -1,18 +1,18 @@
 math.randomseed(os.time())
 
-local bitop = require 'lua.bitop'
+local bitop = require 'bitop'
 local bit = bitop.bit
-local bump = require "lua.bump"
-uuid = require "lua.uuid"
-json = require "lua.json"
-class = require "lua.clasp"
+local bump = require "bump"
+uuid = require "uuid"
+json = require "json"
+class = require "clasp"
 callable = function(t) 
     if t.__ then 
         for _, mm in ipairs(t) do t['__'..mm] = t.__[mm] end 
     end
     return setmetatable(t, { __call = t.__call })
 end
-require "lua.print_r"
+require "print_r"
 -- yes, plugins folder is listed twice
 love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua;./plugins/?/init.lua;./plugins/?.lua')
 
@@ -398,8 +398,8 @@ do
     end
 end
 
-entity_track = {} -- { table_ref={ var=last_val } }
-tracks_changed = {} -- { table_ref={ var=new_value } }
+local entity_track = {} -- { table_ref={ var=last_val } }
+local tracks_changed = {} -- { table_ref={ var=new_value } }
 
 -- call track(obj, 'myvar') after it's been set
 --@global
@@ -423,6 +423,8 @@ changed = function(obj, comp_name)
                 tracks_changed[obj] = {}
             end 
             tracks_changed[obj][comp_name] = obj[comp_name]
+            last_vars[comp_name] = obj[comp_name]
+            print(obj, comp_name, last_vars[comp_name], obj[comp_name])
             return true
         end
     end
@@ -604,13 +606,29 @@ do
     }
     local pressed = {}
     local released = {}
+    local store = {}
     local key_assoc = {
         lalt='alt', ralt='alt',
         ['return']='enter', kpenter='enter',
         lgui='gui', rgui='gui'
     }
-    Input = class {
-        init = function(self, inputs, _options)
+
+    local joycheck = function(info)
+        if not info or not info.joystick then return info end 
+        if Joystick.using == 0 then return info end 
+        if Joystick.get(Joystick.using):getID() == info.joystick:getID() then return info end
+    end
+
+    Input = callable {
+        __call = function(self, name)
+            return store[name] or pressed[name] or released[name]
+        end;
+
+        store = function(name, value)
+            store[name] = value
+        end;
+
+        set = function(inputs, _options)
             for name, inputs in pairs(inputs) do
                 Input.addInput(name, inputs)
             end
@@ -630,9 +648,17 @@ do
             end
         end;
 
-        pressed = function(name) if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) then return pressed[name] end end;
+        pressed = function(name) 
+            if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) and joycheck(pressed[name]) then 
+                return pressed[name] 
+            end 
+        end;
 
-        released = function(name) return released[name] end;
+        released = function(name)
+            if joycheck(released[name]) then
+                return released[name] 
+            end
+        end;
 
         press = function(key, extra)
             if key_assoc[key] then Input.press(key_assoc[key], extra) end
@@ -681,6 +707,29 @@ do
     }
 end
 
+--JOYSTICK
+Joystick = nil
+local refreshJoystickList
+do 
+    local joysticks = {}
+    refreshJoystickList = function()
+        joysticks = love.joystick.getJoysticks()
+    end
+
+    Joystick = {
+        using = 0,
+        get = function(i)
+            if i > 0 and i < #joysticks then 
+                return joysticks[i]
+            end
+        end,
+        -- affects all future Input() gamepad checks
+        use = function(i)
+            Joystick.using = i or 0
+        end
+    }
+end
+
 --DRAW
 Draw = nil 
 do
@@ -700,26 +749,24 @@ do
         size = size or 12
         local key = path..'+'..size
         if fonts[key] then return fonts[key] end 
-        local font = love.graphics.newFont(path, size)
+        local font = love.graphics.newFont(Game.res('font',path), size)
         fonts[key] = font 
         return font
     end  
     local DEF_FONT = "04B_03.ttf"
     local last_font
-    Draw = callable {
+    Draw = class {
         crop_used = false;
-        __call = function(_, instructions)
+        init = function(self, instructions)
             for _,instr in ipairs(instructions) do
                 name, args = instr[1], table.slice(instr,2)
                 assert(Draw[name], "bad draw instruction '"..name.."'")
                 Draw[name](unpack(args))
             end
-            return Draw
         end;
         setFont = function(path, size)
             path = path or last_font or DEF_FONT
             last_font = path
-            if path ~= DEF_FONT then path = Game.res('font', path) end
             local font = getFont(path, size)
             assert(font, 'Font not found: \''..path..'\'')
             love.graphics.setFont(font)
@@ -749,7 +796,7 @@ do
         end;
         parseColor = function(...)
             args = {...}
-            if #args == 0 then return 0, 0, 0, 1 end
+            if #args == 0 then return 1, 1, 1, 1 end
             local c = Color[args[1]]
             if c then 
                 args = {c[1],c[2],c[3],args[2] or 1}
@@ -877,6 +924,117 @@ Color.random = function(any, a)
     return {Color[rand][1], Color[rand][2], Color[rand][3], a or Math.random(0,100)/100}
 end
 
+--AUDIO
+Audio = nil
+do
+    local default_opt = {
+        type = 'static'
+    }
+    local defaults = {}
+    local sources = {}
+    local new_sources = {}
+    local play_queue = {}
+    local first_update = true
+
+    local opt = function(name, overrides)
+        if not defaults[name] then Audio(name, {}) end
+        return defaults[name]
+    end
+    Audio = class {
+        init = function(self, file, ...)
+            option_list = {...}
+            for _,options in ipairs(option_list) do
+                store_name = options.name or file
+                options.file = file
+                if not defaults[store_name] then defaults[store_name] = {} end
+                new_tbl = copy(default_opt)
+                table.update(new_tbl, options)
+                table.update(defaults[store_name], new_tbl)
+            end
+        end;
+
+        update = function(dt)
+            if #play_queue > 0 then 
+                for _, src in ipairs(play_queue) do 
+                    love.audio.play(src)
+                end
+                play_queue = {}
+            end
+        end;
+        
+        source = function(name, options)
+            local o = opt(name)
+            if options then o = table.update(o, options) end
+
+            if Window.os == 'web' then o.type = 'static' end
+
+            local src = Cache.get('Audio.source',name,function(key)
+                return love.audio.newSource(Game.res('audio',o.file), o.type)
+            end)
+            
+            if not sources[name] then
+                sources[name] = love.audio.newSource(Game.res('audio',o.file), o.type)
+            end
+            if not new_sources[name] then new_sources[name] = {} end
+
+            if o then
+                table.insert(new_sources[name], src)
+                local props = {'looping','volume','airAbsorption','pitch','relative','rolloff'}
+                local t_props = {'position','attenuationDistances','cone','direction','velocity','filter','effect','volumeLimits'}
+                for _,n in ipairs(props) do
+                    if o[n] then 
+                        src['set'..n:capitalize()](src,o[n]) 
+                    end
+                end
+                for _,n in ipairs(t_props) do
+                    if o[n] then src['set'..n:capitalize()](src,unpack(o[n])) end
+                end
+            end
+            return src
+        end;
+        play = function(...)
+            local src_list = {}
+            for _,name in ipairs({...}) do 
+                table.insert(src_list, Audio.source(name)) 
+                -- adds to play_queue so audio doesn't play in Game.load (before the game actually starts)
+                table.insert(play_queue, Audio.source(name))
+            end
+            if #src_list == 1 then return src_list[1] 
+            else return src_list end
+        end;
+        stop = function(...) 
+            names = {...}
+            if #names == 0 then love.audio.stop() 
+            else
+                for _,n in ipairs(names) do
+                    if new_sources[n] then 
+                        for _,src in ipairs(new_sources[n]) do love.audio.stop(src) end 
+                    end
+                end
+            end
+        end;
+        isPlaying = function(name)
+            if new_sources[name] then 
+                local t = {}
+                for _,src in ipairs(new_sources[name]) do 
+                    if src:isPlaying() then return true end
+                end
+            end
+            return false
+        end;
+    }
+
+    local audio_fns = {'volume','velocity','position','orientation','effect','dopp'}
+    for _, fn in ipairs(audio_fns) do 
+        local fn_capital = fn:capitalize()
+        Audio[fn] = function(...)
+            local args = {...}
+            if #args > 0 then love.audio['set'..fn_capital](...)
+            else return love.audio['get'..fn_capital]() end
+        end
+    end
+end
+
 --WINDOW
 Window = {}
 do 
@@ -958,11 +1116,14 @@ Game = callable{
         auto_require =  true,
         background_color = 'black',
         window_flags = {},
+        fps =           60,
+        scale =         true,
+        effect =        nil,
+        
         load =          function() end,
         draw =          function(fn) fn() end,
         postdraw =      nil,
         update = function(dt) end,
-        fps =           60,
     },
     __call = function(_, options)
         table.update(Game.options, options or {})
@@ -1012,26 +1173,36 @@ Game = callable{
         -- load plugins
         if Game.options.plugins then 
             for _,f in ipairs(Game.options.plugins) do 
-                table.insert(scripts,'plugins.'..f)
+                table.insert(scripts, 'ecs.plugins.'..f)
             end
         end
         -- load scripts
         if Game.options.auto_require then
-            files = FS.ls ''
-            for _,f in ipairs(files) do
-                if FS.extname(f) == 'lua' and not table.hasValue(scripts, f) then
-                    new_f = FS.removeExt(f)
-                    table.insert(scripts, new_f)
+            local load_folder
+            load_folder = function(path)
+                files = FS.ls(path)
+                for _,f in ipairs(files) do
+                    local file_path = path..'/'..f
+                    if FS.extname(f) == 'lua' and not table.hasValue(scripts, file_path) then
+                        new_f = 
+                        table.insert(scripts, table.join(string.split(FS.removeExt(file_path), '/'),'.'))
+                    end
+                    local info = FS.info(file_path)
+                    if info.type == 'directory' and file_path ~= '/dist' and file_path ~= '/lua' then 
+                        load_folder(file_path)
+                    end
                 end
             end
+            load_folder('')
         end
+        
         for _,script in ipairs(scripts) do
             if script ~= 'main' then 
                 Game.require(script)
             end
         end
         -- fullscreen toggle
-        Input({ _fs_toggle = { 'alt', 'enter' } }, { 
+        Input.set({ _fs_toggle = { 'alt', 'enter' } }, { 
             combo = { '_fs_toggle' },
             no_repeat = { '_fs_toggle' },
         })

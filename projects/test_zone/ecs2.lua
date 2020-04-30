@@ -1,4 +1,4 @@
-State("ecs").on("enter", function
+State("ecs").on("enter", function()
 
 end)
 

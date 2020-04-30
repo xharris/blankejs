@@ -1,4 +1,4 @@
-local draw_object = EcsUtil.draw_object
+local draw_object = World.render
 local extract_draw_components = EcsUtil.extract_draw_components
 
 local canvas_stack = Stack(function(obj)

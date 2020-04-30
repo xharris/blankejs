@@ -119,7 +119,7 @@ function inspectPlugins(silent) {
       for (let f of files) {
         let full_path = pathJoin(plugin_path, f);
         // .js
-        if (app.engine.file_ext.some(_f => f.endsWith(_f))) {
+        if (app.engine.file_ext && app.engine.file_ext.some(_f => f.endsWith(_f))) {
           inspectFile(full_path);
           //nwFS.copyFileSync(pathJoin(plugin_path,f), pathJoin(eng_plugin_dir,f));
         }
