@@ -83,8 +83,6 @@ const checkOS = target_os => {
   }
 };
 
-const re_loverun = /\-\-BEGIN\:LOVE\.RUN.*\-\-END\:LOVE\.RUN/g;
-
 module.exports.settings = {
   game_preview_enabled: false,
   main_file: "main.lua",
@@ -96,7 +94,7 @@ module.exports.settings = {
       "checkbox",
       { default: true, label: "auto-generate conf.lua" },
     ],
-    ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
+    // ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
   ],
   export_settings: [
     ["window/rendering"],

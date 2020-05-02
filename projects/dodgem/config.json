@@ -7,6 +7,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Open error file=?",
+            "Open error file"
+        ],
+        [
             "main.lua=script+entity+?",
             "main.lua"
         ],
@@ -21,10 +25,6 @@
         [
             "Check for updates=?",
             "Check for updates"
-        ],
-        [
-            "Clear history=?",
-            "Clear history"
         ]
     ],
     "autoplay_preview": true,

@@ -16,7 +16,7 @@ const getKey = path => {
 
 const getPath = key => nwPATH.join(app.project_path, key.replace(ROOT_KEY, "/"))
 
-const ignores = [/\/config\.json/, /\/dist(\/.*)?/];
+const ignores = [/\/config\.json/, /\/dist(\/.*)?/, /\/__MACOSX(\/.*)?/];
 
 const getFolderData = async (folder_path) => new Promise((res, rej) => {
   const path_key = getKey(folder_path);
@@ -145,18 +145,21 @@ class FileExplorer {
     remote.shell.showItemInFolder(full_path);
   }
 
-  static destroy() {
+  static destroy(no_hide) {
     const afterTran = () => {
-      fancytree().destroy();
+      const tree = fancytree();
+      if (tree)
+        tree.destroy();
       app.getElement("#file-explorer").removeEventListener('transitionend', afterTran)
     }
     const el_fileexplorer = app.getElement("#file-explorer")
 
-    if (el_fileexplorer.classList.contains('hidden'))
+    if (no_hide || el_fileexplorer.classList.contains('hidden'))
       afterTran();
     else
       el_fileexplorer.addEventListener('transitionend', afterTran)
-    FileExplorer.hide();
+    if (!no_hide)
+      FileExplorer.hide();
   }
 
   static show() {
@@ -282,7 +285,7 @@ document.addEventListener("openProject", e => {
 });
 
 document.addEventListener("closeProject", e => {
-  FileExplorer.destroy();
+  FileExplorer.destroy(e.detail.next_project_path);
 });
 
 document.addEventListener("ideReady", () => {

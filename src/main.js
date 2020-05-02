@@ -284,13 +284,13 @@ var app = {
       .readdirSync(app.themes_path)
       .map(v => v.replace(".json", ""));
   },
-  closeProject: function () {
+  closeProject: function (next_project_path) {
     // app.saveSettings();
     app.getElement("#header").classList.add("no-project");
     if (app.isServerRunning()) app.stopServer();
 
     app.clearElement(app.getElement("#recents-container"));
-    dispatchEvent("closeProject", { path: app.project_path });
+    dispatchEvent("closeProject", { path: app.project_path, next_project_path });
     app.project_path = "";
     Editor.closeAll();
     app.clearHistory();
@@ -300,13 +300,13 @@ var app = {
   isProjectOpen: function () {
     return app.project_path && app.project_path != "";
   },
-  openProject: function (path) {
+  openProject: (path) => {
     // validate: only open if there's a main.lua
     path = app.cleanPath(path);
     nwFS.readdir(path, "utf8", function (err, files) {
       if (!err) {
         // && files.includes('main.lua')) { // TODO add project validation
-        if (app.isProjectOpen()) app.closeProject();
+        if (app.isProjectOpen()) app.closeProject(path);
 
         app.project_path = path;
 
@@ -358,6 +358,8 @@ var app = {
         // start first scene
         app.loadSettings(() => {
           app.hideWelcomeScreen();
+          app.saveSettings();
+          app.checkProjectSettings();
           dispatchEvent("openProject", { path: path });
         });
       } else {
@@ -773,20 +775,7 @@ var app = {
         app.allowed_extensions[type] = [...app.engine.allowed_extensions[type]];
       }
     }
-    ifndef_obj(app.project_settings, DEFAULT_PROJECT_SETTINGS);
-    // project settings
-    let eng_settings = {};
-    (app.engine.project_settings || []).forEach(s => {
-      for (let prop of s) {
-        if (typeof prop == "object" && prop.default != null)
-          eng_settings[s[0]] = prop.default;
-      }
-    });
-    app.project_settings = Object.assign(
-      {},
-      eng_settings,
-      app.project_settings
-    );
+    app.checkProjectSettings();
     dispatchEvent("engine_config_load");
   },
 
@@ -834,6 +823,25 @@ var app = {
     return DEFAULT_PROJECT_SETTINGS[k];
   },
 
+  checkProjectSettings: () => {
+    app.project_settings = ifndef_obj(app.project_settings, DEFAULT_PROJECT_SETTINGS);
+    // project settings
+    let eng_settings = {};
+    (app.engine.project_settings || []).forEach(s => {
+      for (let prop of s) {
+        if (typeof prop == "object" && prop.default != null)
+          eng_settings[s[0]] = prop.default;
+      }
+    });
+
+    app.project_settings = Object.assign(
+      {},
+      eng_settings,
+      app.project_settings
+    );
+    app.saveSettings();
+  },
+
   project_settings: {},
   loadSettings: function (callback) {
     if (app.isProjectOpen()) {
@@ -862,9 +870,7 @@ var app = {
             str_conf
           );
 
-        if (app.isProjectOpen()) {
-          app.requireEngine();
-        }
+        app.requireEngine();
       }
     });
   },
@@ -914,23 +920,33 @@ var app = {
   },
 
   openLoveProject: path => {
-    blanke.toast("opening '" + nwPATH.basename(path) + "' as new project");
     let zip = nwZIP2(path);
-    let entries = zip.getEntries();
     let folder = nwPATH.parse(path).name;
     let dist_path = nwPATH.join(nwPATH.parse(path).dir, folder);
     //nwPATH.ensureDirSync(dist_path)
     zip.extractAllTo(dist_path, true);
     let walker = nwWALK.walk(app.template_path);
     walker.on("file", (path, stats, next) => {
-      let out_file = app.cleanPath(nwPATH.join(dist_path, stats.name));
+      const rel_path = nwPATH.relative(app.template_path, path)
+      const out_file = app.cleanPath(nwPATH.join(dist_path, rel_path, stats.name));
+
+      nwFS.ensureDirSync(rel_path);
+
       if (!nwFS.existsSync(out_file))
-        nwFS.copySync(nwPATH.join(app.template_path, stats.name), out_file);
+        nwFS.copySync(nwPATH.join(path, stats.name), out_file);
       next();
     });
     walker.on("end", () => {
-      app.closeProject();
-      app.openProject(dist_path);
+      blanke.showModal(
+        `<div class="update-title">Open '${nwPATH.basename(path)}'?</div>`,
+        {
+          yes: function () {
+            blanke.toast("opening '" + nwPATH.basename(path) + "' as new project");
+            app.openProject(dist_path);
+          },
+          no: function () { },
+        }
+      );
     });
   },
 

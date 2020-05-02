@@ -1,33 +1,12 @@
 {
     "write_conf": true,
-    "engine_type": "ecs",
-    "ico": "src/logo.ico",
-    "icns": "src/logo.icns",
+    "engine_type": "oop",
+    "ico": "src\\logo.ico",
+    "icns": "src\\logo.icns",
     "first_scene": null,
-    "game_size": 2,
+    "game_size": 3,
     "window_size": 3,
-    "quick_access": [
-        [
-            "Add a text file=new+?",
-            "Add a text file"
-        ],
-        [
-            "config.json=?",
-            "config.json"
-        ],
-        [
-            "words.txt=?",
-            "words.txt"
-        ],
-        [
-            "Check for updates=?",
-            "Check for updates"
-        ],
-        [
-            "Bunnymark.lua=script+?",
-            "Bunnymark.lua"
-        ]
-    ],
+    "quick_access": [],
     "autoplay_preview": true,
     "scene": {
         "objects": {

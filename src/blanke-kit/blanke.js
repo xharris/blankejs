@@ -15,9 +15,7 @@ function percentBtwn(input, min, max) {
 
 function ifndef_obj(obj, defaults) {
   if (obj === undefined) obj = {};
-  for (let d in defaults) {
-    if (obj[d] === undefined) obj[d] = defaults[d];
-  }
+  Object.assign(obj, defaults);
   return obj;
 }
 

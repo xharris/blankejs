@@ -35,6 +35,7 @@ Player = Entity("Player",{
 		self.vspeed = 0
 		-- basic movement
 		Joystick.use(1)
+		
 		if Input.pressed('left') then self.hspeed = self.hspeed - d end
 		if Input.pressed('right') then self.hspeed = self.hspeed + d end
 		if Input.pressed('up') then self.vspeed = self.vspeed - d end

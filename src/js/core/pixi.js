@@ -349,8 +349,8 @@ class BlankePixi {
 			xclamp = [l + offx, w - offx];
 			yclamp = [t + offy, h - offy];
 		}
-		this.camera[0] = Math.min(Math.max(x, xclamp[0]), xclamp[1]);
-		this.camera[1] = Math.min(Math.max(y, yclamp[0]), yclamp[1]);
+		this.camera[0] = Math.floor(Math.min(Math.max(x, xclamp[0]), xclamp[1]) + 0.5);
+		this.camera[1] = Math.floor(Math.min(Math.max(y, yclamp[0]), yclamp[1]) + 0.5);
 		this.dispatchEvent('cameraChange', { x, y });
 	}
 	setCameraBounds(x1, y1, x2, y2) {
