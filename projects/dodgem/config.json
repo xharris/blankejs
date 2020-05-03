@@ -7,12 +7,12 @@
     "window_size": 3,
     "quick_access": [
         [
-            "Open error file=?",
-            "Open error file"
-        ],
-        [
             "main.lua=script+entity+?",
             "main.lua"
+        ],
+        [
+            "Open error file=?",
+            "Open error file"
         ],
         [
             "credits.txt=?",
@@ -31,7 +31,7 @@
     "scene": {},
     "export": {
         "name": "dodgem",
-        "filter": "nearest",
+        "filter": "linear",
         "scale": true,
         "vsync": "off",
         "web_memory": 128,
@@ -46,8 +46,8 @@
     "enabled_plugins": {
         "xhh-array": false,
         "xhh-badword": false,
-        "xhh-effect": false,
-        "xhh-tween": false,
+        "xhh-effect": true,
+        "xhh-tween": true,
         "xhh-vector": false,
         "cmpl": false,
         "yonaba-delaunay": false

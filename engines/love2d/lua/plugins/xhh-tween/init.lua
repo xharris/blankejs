@@ -8,11 +8,13 @@ Tween = GameObject:extend {
         GameObject.init(self, {classname='Tween'})
         easing = easing or 'linear'
         self.tween = tween.new(duration, subject, target, Tween.easing[easing])
+        self.duration = duration
         self.mod = 1
         self.onFinish = onFinish
         self:addUpdatable()
     end,
     complete = function(self)
+        self.tween:set(self.duration)
         if self.onFinish then 
             self.onFinish()
             self:pause()

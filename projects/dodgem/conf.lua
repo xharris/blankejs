@@ -1,6 +1,6 @@
 io.stdout:setvbuf('no')
 
-package.path = "./lua/?/init.lua;./lua/?;" .. package.path
+package.path = "lua/?.lua;lua/?/init.lua;" .. package.path
 require("blanke")
       
 function love.conf(t)

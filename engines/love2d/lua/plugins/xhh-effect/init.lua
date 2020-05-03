@@ -25,14 +25,11 @@ Effect.new("chroma shift", {
     effect = [[
       vec2 tc = texture_coords;
 
-      vec4 r = Texel(texture, vec2(tc.x + direction.x, tc.y - direction.y));
-      vec4 g = Texel(texture, vec2(tc.x, tc.y + direction.y));
-      vec4 b = Texel(texture, vec2(tc.x - direction.x, tc.y - direction.y));
-      number a = (r.a + g.a + b.a)/3.0;
-  
-      pixel = vec4(r.r, g.g, b.b, a) * color;
+      pixel.r = Texel(texture, vec2(tc.x + direction.x, tc.y - direction.y)).r;
+      pixel.g = Texel(texture, vec2(tc.x, tc.y + direction.y)).g;
+      pixel.b = Texel(texture, vec2(tc.x - direction.x, tc.y - direction.y)).b;
     ]],
-    draw = function(vars)
+    update = function(vars)
       dx = (math.cos(math.rad(vars.angle)) * vars.radius) / Game.width
       dy = (math.sin(math.rad(vars.angle)) * vars.radius) / Game.height
       vars.direction = {dx,dy}
@@ -71,10 +68,10 @@ Effect.new("zoom blur", {
         total += weight;
     }
     
-    gl_FragColor = new_color / total;
+    pixel = new_color / total;
     
     /* switch back from pre-multiplied alpha */
-    gl_FragColor.rgb /= gl_FragColor.a + 0.00001;
+    pixel.rgb /= pixel.a + 0.00001;
   ]]
 })
 
@@ -117,7 +114,19 @@ Effect.new('static', {
   vars = { strength={5,0} },
   effect = [[
   vec2 new_tc = texture_coords;
-  number off = random(vec2(0, 1.0), new_tc, time);
+  number off = random(vec2(0, 1.0), texture_coords, time);
+  pixel = Texel(texture, vec2(
+			texture_coords.x + getX(off - 1.0) * strength.x,
+			texture_coords.y + getY(off - 1.0) * strength.y
+    ));
+  ]]
+})
+
+Effect.new('cosmic static', {
+  vars = { strength={5,0} },
+  effect = [[
+  vec2 new_tc = texture_coords;
+  number off = random(vec2(-1.0, 1.0), new_tc, time);
   pixel = Texel(texture, vec2(
 			texture_coords.x + getX(off - 1.0) * strength.x,
 			texture_coords.y + getY(off - 1.0) * strength.y

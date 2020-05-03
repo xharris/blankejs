@@ -345,7 +345,7 @@ class Plugins extends Editor {
 			);
     }*/
     nwFS.removeSync(
-      pathJoin(app.engine.plugin_path || app.engine_path, "plugins", key)
+      pathJoin(app.engine.plugin_path, key)
     );
     app.projSetting("enabled_plugins")[key] = false;
     dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });

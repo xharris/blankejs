@@ -26,6 +26,7 @@ var keywords = [];
 var this_lines = {}; // { file: {line_text : token_type (blanke-entity-instance) } }
 var this_lines_num = []; // { file: [ { start, end, class_name} ] }
 var this_keyword = "this";
+var indent_size = 4;
 
 var autocomplete, hints;
 var re_class_extends,
@@ -436,7 +437,7 @@ class Code extends Editor {
 
         // console.log({curr_line_off, indentation});
 
-        return indentation * 4;
+        return indentation * indent_size;
       };
       return CodeMirror.overlayMode(baseMode, blankeOverlay);
     });
@@ -652,7 +653,7 @@ class Code extends Editor {
           .filter((v, k, a) => a.indexOf(v) === k),
       ],
       lineWrapping: false,
-      indentUnit: 4,
+      indentUnit: indent_size,
       indentWithTabs: true,
       highlightSelectionMatches: {
         /*showToken: /\w{3,}/, */ annotateScrollbar: false,

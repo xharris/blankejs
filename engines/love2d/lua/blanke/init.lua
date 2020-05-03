@@ -1,20 +1,25 @@
 -- TODO Images have their own hitbox instead of entity. Entity just uses the current animations hitbox
 -- TODO rework Image to autobatch
 -- TODO Blanke.config
+local _NAME = ...
+local blanke_require = function(r)
+    return require(r)
+end
+
 math.randomseed(os.time())
 local do_profiling = nil -- false/#
 local profiling_color = {1,0,0,1}
 
-local bitop = require('bitop')
+local bitop = blanke_require('bitop')
 local bit = bitop.bit
-local bump = require("bump")
-uuid = require("uuid")
-json = require("json")
-class = require("clasp")
-require("noobhub")
-require("print_r")
+local bump = blanke_require("bump")
+uuid = blanke_require("uuid")
+json = blanke_require("json")
+class = blanke_require("clasp")
+blanke_require("noobhub")
+blanke_require("print_r")
 
-local socket = require("socket")
+local socket = blanke_require("socket")
 callable = function(t) 
     if t.__ then 
         for _, mm in ipairs(t) do t['__'..mm] = t.__[mm] end 
@@ -141,12 +146,13 @@ function string:replace(find, replace, wholeword)
     return (self:gsub(find,replace))
 end
 --math
-local sin, cos, rad, deg, abs = math.sin, math.cos, math.rad, math.deg, math.abs
+local sin, cos, rad, deg, abs, min, max = math.sin, math.cos, math.rad, math.deg, math.abs, math.min, math.max
 local floor = function(x) return math.floor(x+0.5) end
 Math = {}
 do
     for name, fn in pairs(math) do Math[name] = function(...) return fn(...) end end
 
+    Math.clamp = function(x, _min, _max) return min(_max, max(_min, x)) end
     Math.sign = function(x) return (x < 0) and -1 or 1 end
     Math.seed = function(l,h) if l then love.math.setRandomSeed(l,h) else return love.math.getRandomSeed() end end
     Math.random = function(...) return love.math.random(...) end
@@ -757,7 +763,7 @@ do
             
             for _,script in ipairs(scripts) do
                 if script ~= 'main' then 
-                    Game.require(script)
+                    require(script)
                 end
             end
             -- fullscreen toggle
@@ -859,10 +865,6 @@ do
 
         res = function(_type, file)
             return Game.options.res.."/".._type.."/"..file
-        end;
-
-        require = function(path)
-            return require(path) 
         end;
 
         setBackgroundColor = function(...)
@@ -1055,7 +1057,7 @@ Canvas = GameObject:extend {
     end;
     prepare = function(self)
         if self.auto_clear then Draw.clear(self.auto_clear) end
-        Draw.setBlendMode('alpha')
+        Draw.setBlendMode(unpack(self.blendmode))
         -- camera transform
         --love.graphics.origin()
         if Camera.transform and not self.__ide_obj then
@@ -1237,13 +1239,13 @@ do
         -- moving x and y in separate steps solves 'sticking' issue (ty https://jonathanwhiting.com/tutorial/collision/)
         
         self.x = self.x + self.hspeed * dt
-        if self.x ~= last_x then 
+        --if self.x ~= last_x then 
             Hitbox.move(self)
-        end
+        --end
         self.y = self.y + self.vspeed * dt
-        if self.y ~= last_y then
+        --if self.y ~= last_y then
             Hitbox.move(self)
-        end
+        --end
         if self.update then self:update(dt) end
         if self.body then
             local new_x, new_y = self.body:getPosition()
@@ -1624,6 +1626,7 @@ end
 --DRAW
 Draw = nil 
 do
+    local clamp = Math.clamp
     local _hex_cache = {}
     local _hex2rgb = function(hex)
         assert(type(hex) == "string", "hex2rgb: expected string, got "..type(hex).." ("..hex..")")
@@ -1680,6 +1683,8 @@ do
             love.graphics.setFont(font)
         end;
         print = function(txt,x,y,char_limit,align,...)
+            x = x or 0
+            y = y or 0
             if not char_limit then 
                 char_limit = Draw.getFont():getWidth(txt)
             end
@@ -1690,14 +1695,14 @@ do
             if #args == 0 then return 1, 1, 1, 1 end
             local c = Color[args[1]]
             if c then 
-                args = {c[1],c[2],c[3],args[2] or 1}
+                args = {c[1],c[2],c[3], args[2] or 1}
                 for a,arg in ipairs(args) do 
                     if arg > 1 then args[a] = arg / 255 end
                 end
             end
             if #args == 0 then args = {1,1,1,1} end
             if not args[4] then args[4] = 1 end
-            return args[1], args[2], args[3], args[4]
+            return args[1], args[2], args[3], clamp(args[4], 0, 1)
         end;
         color = function(...)
             return love.graphics.setColor(Draw.parseColor(...))
@@ -1942,84 +1947,38 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
     local library = {}
     local shaders = {} -- { 'eff1+eff2' = { shader: Love2dShader } }
 
-    local safe_names = {}
     local tryEffect = function(name)
         assert(library[name], "Effect :'"..name.."' not found")
     end
-    local generateShader = function(names, override)
-        local full_name = table.join(names, '+')
-        if shaders[full_name] and not override then 
-            return shaders[full_name]
+
+    local _generateShader, generateShader
+
+    generateShader = function(names, override)
+        if type(names) ~= 'table' then
+            names = {names}
         end
-        shaders[full_name] = { vars = {}, unused_vars = {} }
-
-        local shader_code = ''
-        local var_code = ''
-        local eff_call_code = ''
-        local pos_call_code = ''
-
-        for _,name in ipairs(names) do 
-            local safe_name = name:replace(' ','_')
-            safe_names[name] = safe_name
-            local info = library[name]
-            tryEffect(name)
-            assert(info.code.solo == nil or (info.code.solo and #names == 1), "Effect '"..name.."' is a solo effect. It cannot be combine with other shaders.")
-            shaders[full_name].vars[name] = copy(info.opt.vars)
-            shaders[full_name].unused_vars[name] = copy(info.opt.unused_vars)
-            local solo_shader
-
-            if info.code.solo then
-                solo_shader = true 
-                shader_code = info.code.solo
-
-            else
-                -- add pixel shader code
-                if info.code.position then
-                    shader_code = shader_code .. info.code.position .. '\n\n'
-                    pos_call_code = pos_call_code .. "vertex_position = "..safe_name:replace(' ','_').."_shader_position(transform_projection, vertex_position);\n";
-                end 
-                -- add vertex shader code
-                if info.code.effect then
-                    shader_code = shader_code .. info.code.effect .. '\n\n'
-                    eff_call_code = eff_call_code .. "color = "..safe_name:replace(' ','_').."_shader_effect(color, texture, texture_coords, screen_coords);\n";
-                end 
-                -- add vars
-                if info.code.vars then 
-                    var_code = var_code..'\n'.. info.code.vars .. '\n'
-                end 
-            end
+        local ret_shaders = {}
+        for _, name in ipairs(names) do 
+            ret_shaders[name] = _generateShader(name, override)
         end
-        -- put it all together in one shader
-        if not solo_shader then 
-            shader_code = "// BEGIN "..full_name.."\n"..var_code..'\n'..helper_fns..'\n'..shader_code..[[   
+        return ret_shaders
+    end
 
-#ifdef VERTEX
-vec4 position(mat4 transform_projection, vec4 vertex_position) {
-    ]]..pos_call_code..[[
-    return transform_projection * vertex_position;
-}
-#endif
-
-
-#ifdef PIXEL
-vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-    ]]..eff_call_code..[[
-    return color;
-}
-#endif
-// END ]]..full_name
+    local shader_obj = {} -- { name : LoveShader }
+    _generateShader = function(name, override)
+        tryEffect(name)
+        local info = library[name]
+        local shader = shader_obj[name] or love.graphics.newShader(info.code)
+        if override then 
+            shader = love.graphics.newShader(info.code)
         end
+        shader_obj[name] = shader
 
-        for old, new in pairs(love_replacements) do
-            shader_code = shader_code:replace(old, new, true)
-        end
-
-        shaders[full_name].name = full_name
-        shaders[full_name].solo = solo_shader
-        shaders[full_name].code = shader_code
-        shaders[full_name].shader = love.graphics.newShader(shader_code)
-
-        return shaders[full_name]
+        return {
+            vars = copy(info.opt.vars),
+            unused_vars = copy(info.opt.unused_vars),
+            shader = shader
+        }
     end
 
     Effect = GameObject:extend {
@@ -2035,18 +1994,13 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             if not opt.vars['time'] then
                 opt.vars['time'] = 0
             end
-            code_solo = nil
-            code_effect = nil
-            code_position = nil
+            
             -- create var string
             var_str = ""
             for key, val in pairs(opt.vars) do
                 -- unused vars?
                 if not string.contains(opt.code or (opt.effect..' '..opt.vertex), key) then
                     opt.unused_vars[key] = true
-                end
-                if not opt.code then  -- not a solo shader, prepend shader name
-                    key = safe_name.."_"..key
                 end
                 -- get var type
                 switch(type(val),{
@@ -2068,47 +2022,37 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
                 })
             end
 
+            local code = var_str.."\n"..helper_fns.."\n"
             if opt.code then
-                code_solo = var_str.."\n"..helper_fns.."\n"..opt.code
-            
-            else
-                if opt.vertex:len() > 1 then 
-                    code_position = [[
-vec4 ]]..safe_name..[[_shader_position(mat4 transform_projection, vec4 vertex_position) {
-]]..opt.vertex..[[
+                code = code .. opt.code
+            else 
+                code = code .. [[   
+
+#ifdef VERTEX
+vec4 position(mat4 transform_projection, vec4 vertex_position) {
+    ]]..(opt.position or '')..[[
     return transform_projection * vertex_position;
 }
-]]
-                end
-                
-                if opt.effect:len() > 1 then 
-                    code_effect = [[
-vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
+#endif
+
+
+#ifdef PIXEL
+vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
     vec4 pixel = Texel(texture, texture_coords);
-]]..opt.effect..[[
+    ]]..(opt.effect or '')..[[
     return pixel * color;
 }
-]]
-                end
+#endif
+                    ]]
             end
 
-            for key, val in pairs(opt.vars) do
-                if code_effect then 
-                    code_effect = code_effect:replace(key,safe_name.."_"..key,true)
-                end
-                if code_position then 
-                    code_position = code_position:replace(key,safe_name.."_"..key,true)
-                end
+            for old, new in pairs(love_replacements) do
+                code = code:replace(old, new, true)
             end
 
             library[name] = {
                 opt = copy(opt),
-                code = {
-                    vars = var_str,
-                    effect = code_effect,
-                    position = code_position,
-                    solo = code_solo
-                }
+                code = code
             }
 
         end;
@@ -2123,15 +2067,24 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                 self.names = self.names[1]
             end
             
-            self.shader_info = generateShader(self.names)
+            self.used = true
+            self.vars = {}
             self.disabled = {}
+            self:updateShader(self.names)
 
             self:addUpdatable()
         end;
         __ = {
-            eq = function(self, other) return self.shader_info.name == other.shader_info.name end,
-            tostring = function(self) return self.shader_info.code end
+            -- eq = function(self, other) return self.shader_info.name == other.shader_info.name end,
+            -- tostring = function(self) return self.shader_info.code end
         };
+        updateShader = function(self, names)
+            self.shader_info = generateShader(names)
+            for _, name in ipairs(names) do
+                if not self.vars[name] then self.vars[name] = {} end 
+                table.update(self.vars[name], self.shader_info[name].vars)
+            end
+        end;
         disable = function(self, ...)
             local disable_names = {...}
             for _,name in ipairs(disable_names) do self.disabled[name] = true end 
@@ -2142,7 +2095,7 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                     table.insert(new_names, name)
                 end
             end
-            self.shader_info = generateShader(new_names)
+            self:updateShader(new_names)
         end;
         enable = function(self, ...)
             local enable_names = {...}
@@ -2154,44 +2107,49 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
                     table.insert(new_names, name)
                 end
             end
-            self.shader_info = generateShader(new_names)
+            self:updateShader(new_names)
         end;
         set = function(self,name,k,v)
-            tryEffect(name)
+            -- tryEffect(name)
             if not self.disabled[name] then
-                self.shader_info.vars[name][k] = v
+                if not self.vars[name] then 
+                    self.vars[name] = {}
+                end
+                self.vars[name][k] = v
             end
         end;
         send = function(self,name,k,v)
-            local info = self.shader_info
-            local safe_name = (safe_names[name] or '').."_"..k
-            if not info.unused_vars[name][k] then
+            local info = self.shader_info[name]
+            if not info.unused_vars[k] then
                 tryEffect(name)
-                if info.solo and info.shader:hasUniform(k) then
+                if info.shader:hasUniform(k) then
                     info.shader:send(k,v)
-                elseif info.shader:hasUniform(safe_name) then
-                    info.shader:send(safe_name,v)
-                end
-            end
-        end;
-        sendVars = function(self,name,vars)
-            if not self.disabled[name] then
-                vars = vars or self.shader_info.vars[name]
-                for k,v in pairs(vars) do
-                    self:send(name, k, v)
                 end
             end
         end;
         _update = function(self,dt)
+            local vars
+            local used = #self.names
+
             for _,name in ipairs(self.names) do
+                vars = self.vars[name]
+                --if name == "chroma shift" then print_r(self.vars[name]) end
                 if not self.disabled[name] then
-                    self:sendVars(name)
-                    vars = self.shader_info.vars[name]
                     vars.time = vars.time + dt
-                    self:send(name, 'time', vars.time)
-                    self:send(name, 'tex_size', {Game.width,Game.height})
+                    vars.tex_size = {Game.width,Game.height}
+                    -- send all the vars
+                    for k,v in pairs(vars) do
+                        self:send(name, k, v)
+                    end
+                else
+                    used = used - 1
+                end
+                if not self.disabled[name] and library[name] and library[name].opt.update then
+                    library[name].opt.update(self.vars[name])
                 end
             end
+
+            self.used = (used >= 0)
         end;
         update = function(self,dt) 
             self:_update(dt) 
@@ -2202,43 +2160,51 @@ vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coo
             return Effect.active > 0
         end;
         draw = function(self, fn)
-            local used = false
-            if not Feature('effect') then
+            if not self.used or not Feature('effect') then
                 fn()
                 return
-            end 
-            for _, name in ipairs(self.names) do 
-                if not self.disabled[name] then 
-                    used = true
-                end
-                if not self.disabled[name] and library[name] and library[name].opt.draw then 
-                    library[name].opt.draw(self.shader_info.vars[name])
-                end
-            end            
-            if used then 
-                Effect.active = Effect.active + 1
-                local last_shader = love.graphics.getShader()
-                local last_blend = love.graphics.getBlendMode()
-                
-                local canvas = CanvasStack:new()
-                canvas.value.blendmode = self.blendmode
-                canvas.value.auto_clear = {1,1,1,0}
+            end      
 
-                canvas.value:drawTo(function()
+            Effect.active = Effect.active + 1
+
+            local last_shader = love.graphics.getShader()
+            local last_blend = love.graphics.getBlendMode()
+
+            local canv_internal, canv_final = CanvasStack:new(), CanvasStack:new()
+            
+            canv_internal.value.auto_clear = {Draw.parseColor(Game.options.background_color, 0)}
+            canv_final.value.auto_clear = {Draw.parseColor(Game.options.background_color, 0)}
+            
+            for i, name in ipairs(self.names) do 
+                -- draw without shader first
+                canv_internal.value:drawTo(function()
                     love.graphics.setShader()
-                    fn()
+                    if i == 1 then
+                        -- draw unshaded stuff (first run)
+                        fn()
+                    else 
+                        -- draw previous shader results
+                        canv_final.value:draw()
+                    end
                 end)
-                
-                love.graphics.setShader(self.shader_info.shader)
-                canvas.value:draw()
-                love.graphics.setShader(last_shader)
-                
-                love.graphics.setBlendMode(last_blend)
-                CanvasStack:release(canvas)
-                Effect.active = Effect.active - 1
-            else 
-                fn()
+
+                -- draw to final canvas with shader
+                canv_final.value:drawTo(function()
+                    love.graphics.setShader(self.shader_info[name].shader)
+                    canv_internal.value:draw()
+                end)
             end
+
+            -- draw final resulting canvas
+            canv_final.value:draw()
+            
+            love.graphics.setShader(last_shader)
+            love.graphics.setBlendMode(last_blend)
+
+            CanvasStack:release(canv_internal)
+            CanvasStack:release(canv_final)
+
+            Effect.active = Effect.active - 1
         end;
     }
 end
@@ -2746,7 +2712,7 @@ end
 --HITBOX
 Hitbox = nil
 do
-    local bump = require('bump')
+    local bump = blanke_require('bump')
     local world = bump.newWorld(40)
     local new_boxes = true
 
@@ -2757,13 +2723,12 @@ do
         else 
             obj.align = 'center'
         end
-        return  obj.alignx,
-                obj.aligny,
+        return  obj.alignx * abs(obj.scale * obj.scalex),
+                obj.aligny * abs(obj.scale * obj.scaley),
                 repos
     end
     local checkHitArea = function(obj)
         local left, top, repos = calcBounds(obj)
- 
         local hb = obj.hitbox
 
         if type(hb) ~= 'table' then
@@ -2778,15 +2743,13 @@ do
         hb.left = left
         hb.top = top
 
-        print(obj.classname, left, top)
-
         if not obj.hasHitbox then 
             obj.hasHitbox = true
             new_boxes = true
             
             world:add(
                 obj, obj.x - hb.left, obj.y - hb.top,
-                abs(obj.width) + hb.right, abs(obj.height) + hb.bottom
+                abs(obj.width * obj.scale * obj.scalex) + hb.right, abs(obj.height * obj.scale * obj.scaley) + hb.bottom
             )
         end
 
@@ -2829,7 +2792,7 @@ do
                 local hb = checkHitArea(obj)                
                 world:update(obj, 
                     obj.x - hb.left, obj.y - hb.top,
-                    abs(obj.width) + hb.right, abs(obj.height) + hb.bottom
+                    abs(obj.width * obj.scale * obj.scalex) + hb.right, abs(obj.height * obj.scale * obj.scaley) + hb.bottom
                 )
             end
         end;
@@ -3469,8 +3432,10 @@ do
                 if obj.destroyed or not obj[test_val] then 
                     offset = offset + 1
                 else
-                    if obj._last_z == nil then obj._last_z = obj.z end 
-                    if obj._last_z ~= obj.z then reorder = true end
+                    if (obj._last_z == nil and obj.z) or obj._last_z ~= obj.z then 
+                        obj._last_z = obj.z
+                        reorder = true 
+                    end
                     fn(obj, o)
                     t[o] = nil
                     t[o - offset] = obj
@@ -3514,9 +3479,6 @@ do
         iterDraw = function(t, override_drawable)
             local reorder_drawables = iterate(t, 'drawable', function(obj)
                 if obj.visible == true and obj.skip_draw ~= true and (override_drawable or obj.drawable == true) and obj.draw ~= false then
-                    if obj._last_z or obj._last_z ~= obj.z then
-                        reorder_drawables = true
-                    end
                     local obj_draw = obj._draw
                     stack(function()
                         if obj_draw then obj_draw(obj) end
@@ -3629,7 +3591,7 @@ Signal.emit('__main')
 
 love.load = function() 
     if do_profiling then
-        love.profiler = require('profile')
+        love.profiler = blanke_require('profile')
     end
 
     Blanke.load() 

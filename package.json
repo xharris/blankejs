@@ -45,7 +45,7 @@
     ],
     "extraFiles": [
       "plugins",
-      "engines",
+      "engines/love2d",
       "themes"
     ]
   },

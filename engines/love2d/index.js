@@ -10,13 +10,13 @@ const requireConf = (is_exporting) => {
   switch (type) {
     case "oop":
       return `
-package.path = "./lua/?/init.lua;./lua/?;" .. package.path
+package.path = "lua/?.lua;lua/?/init.lua;" .. package.path
 require("${is_exporting ? "lua.blanke" : "blanke"}")
       `;
 
     case "ecs":
       return `
-package.path = "./lua/?/init.lua;./lua/?;" .. package.path
+package.path = "lua/?.lua;lua/?/init.lua;" .. package.path
 require("${is_exporting ? "lua.ecs" : "ecs"}")
 Game.options.auto_require = false
       `;
@@ -118,7 +118,7 @@ module.exports.settings = {
   },
   get plugin_path() {
     const engine_type = app.projSetting("engine_type") || "oop"
-    return nwPATH.join(app.engine_path, 'lua', engine_type === "oop" ? 'blanke' : 'ecs', 'plugins')
+    return nwPATH.join(app.engine_path, 'lua', engine_type === "oop" ? '' : 'ecs', 'plugins')
   },
   plugin_info_key: k => `--\s*${k}\s*:\s*(.+)`,
   code_associations: [

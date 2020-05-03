@@ -25,7 +25,9 @@ my_tween.mod = 2.0 -- makes tween go twice as fast.
 
 `mod = 1` changes speed of tween (larger = faster)
 
-`stop()`
+`completed = set(v)` sets time of Tween. returns whether it is finished
+
+`pause()`
 
 `resume()`
 

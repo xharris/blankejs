@@ -51,7 +51,7 @@ Player({custom_prop: 5})
 - reaction checking order:
   1. self.reaction
   2. other.reaction
-  3. self.filter
+  3. self:filter()
   4. Hitbox.default_reaction
 
 `collision (self, info)` info = { <see below> }
@@ -66,7 +66,7 @@ Player({custom_prop: 5})
 
 - touch { x, y }
 
-`filter (self, item, other)` return nil to ignore collision or a response string:
+`filter (self, other_entity)` return nil to ignore collision or a response string:
 
 - `"touch"`
 
@@ -93,6 +93,10 @@ Player({custom_prop: 5})
 `imageList, animList`
 
 `animation` currently drawn animation
+
+`anim_speed`
+
+`anim_frame`
 
 `map_tag` set if the Entity is given a tag in the Scene editor
 
