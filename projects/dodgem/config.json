@@ -5,28 +5,7 @@
     "icns": "src\\logo.icns",
     "game_size": 3,
     "window_size": 3,
-    "quick_access": [
-        [
-            "main.lua=script+entity+?",
-            "main.lua"
-        ],
-        [
-            "Open error file=?",
-            "Open error file"
-        ],
-        [
-            "credits.txt=?",
-            "credits.txt"
-        ],
-        [
-            "Add a text file=new+?",
-            "Add a text file"
-        ],
-        [
-            "Check for updates=?",
-            "Check for updates"
-        ]
-    ],
+    "quick_access": [],
     "autoplay_preview": true,
     "scene": {},
     "export": {
