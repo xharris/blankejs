@@ -1,6 +1,11 @@
 // A simple test to verify a visible window is opened with a title
 var Application = require('spectron').Application
-var assert = require('assert')
+
+const chai = require('chai')
+const chaiAsPromised = require('chai-as-promised')
+
+chai.should()
+chai.use(chaiAsPromised)
 
 const electronPath = require('electron')
 const path = require('path')
@@ -16,17 +21,21 @@ describe('Application launch', function () {
     return this.app.start()
   })
 
+  beforeEach(function () {
+    chaiAsPromised.transferPromiseness = this.app.transferPromiseness
+  })
+
   afterEach(function () {
     if (this.app && this.app.isRunning()) {
       return this.app.stop()
     }
   })
 
-  it('shows an initial window', function () {
-    return this.app.client.getWindowCount().then(function (count) {
-      assert.equal(count, 1)
-      // Please note that getWindowCount() will return 2 if `dev tools` are opened.
-      // assert.equal(count, 2)
-    })
+  it('opens the IDE', function () {
+    return this.app.client.waitUntilWindowLoaded()
+      .getWindowCount().should.eventually.have.at.least(1)
+      .browserWindow.isVisible().should.eventually.be.true
+      .browserWindow.getBounds().should.eventually.have.property('width').and.be.above(0)
+      .browserWindow.getBounds().should.eventually.have.property('height').and.be.above(0)
   })
 })
