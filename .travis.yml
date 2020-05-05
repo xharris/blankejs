@@ -1,31 +1,50 @@
 language: node_js
 node_js:
   - stable
-matrix:
-  fast_finish: true
-  include:
-    - node_js: stable
-      os: osx
-    - node_js: 12
-      env: ELECTRON_VERSION=7
-    - node_js: 12
-      env: ELECTRON_VERSION=6
-    - node_js: 12
-      env: ELECTRON_VERSION=5
-    - node_js: 10
-      env: ELECTRON_VERSION=4
-    #- node_js: stable
-    # env: ELECTRON_VERSION=beta
-before_install:
-  - if [[ -n $ELECTRON_VERSION ]]; then
-      npm install electron@$ELECTRON_VERSION;
-    fi
 
-# scripts to be executed
+## OS
+
+osx_image: xcode8.4 # define OS X image which will be mounted
+dist: trusty # use Ubuntu Trusty for Linux operation system
+
+# Note: if you switch to sudo: false, you'll need to launch chrome with --no-sandbox.
+# See https://github.com/travis-ci/travis-ci/issues/8836
+sudo: required
+
+addons:
+  chrome: stable # Install chrome stable on operating systems
+
+# A list of operating systems which are used for tests
+os:
+  - linux
+  - osx
+
+## ELETRON BUILDER CONFIGS
+
+env:
+  global:
+    - ELECTRON_CACHE=$HOME/.cache/electron
+    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+
+cache:
+  yarn: true
+  directories:
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+    - $HOME/.npm/_prebuilds
+
+before_cache:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
+
 install:
-  - npm install --no-progress
-  - $(npm bin)/electron --version
+  # On OS X we first need to install Yarn via Homebrew
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install yarn; fi
+  # Install all dependencies listed in your package.json file
+  - yarn
+
 script:
+  - echo "Unit Tests"
   - npm test
+
 notifications:
   email: false
