@@ -13,6 +13,9 @@ sudo: required
 
 addons:
   chrome: stable # Install chrome stable on operating systems
+  apt:
+    packages:
+      - xvfb
 
 # A list of operating systems which are used for tests
 os:
@@ -37,10 +40,9 @@ before_cache:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
 
 install:
-  # On OS X we first need to install Yarn via Homebrew
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install yarn; fi
-  # Install all dependencies listed in your package.json file
-  - yarn
+  - export DISPLAY=':99.0'
+  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+  - npm i
 
 script:
   - echo "Unit Tests"
