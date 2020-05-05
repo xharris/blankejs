@@ -1,15 +1,6 @@
-Licensing information
-=====================
+The MIT License
 
-This software contains code from the following projects (full license text below):
-
- - PixiJS v5 (MIT)
-		https://www.pixijs.com/
-		Copyright (c) 2013-2017 Mathew Groves, Chad Engler
-
-Full license info:
-
- - MIT
+Copyright (c) 2010-2020 Google, Inc. http://angularjs.org
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
