@@ -1,3 +1,5 @@
+![TravisCI](https://travis-ci.org/xharris/blankejs.svg?branch=master)
+
 # Installation notes
 
 npm install
