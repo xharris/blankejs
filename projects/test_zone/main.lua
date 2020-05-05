@@ -3,6 +3,8 @@ Game {
 	--plugins = {'xhh-effect'},
 	scripts = { 'ecstest' },
 	initial_state = 'ecs',
+	effect = { 'chroma shift' }, // TODO get this to work
+	background_color = 'white',
 	load = function() 
 		
 		Animation{
@@ -16,6 +18,7 @@ Game {
 			{ { rows=1, cols=8, frames={ '2-5' } } }
 		)
 		]]
+		
 		-- Game.effect = { 'static' }
 	end,
 	--background_color="white",

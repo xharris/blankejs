@@ -10,6 +10,8 @@ math.randomseed(os.time())
 local do_profiling = nil -- false/#
 local profiling_color = {1,0,0,1}
 
+local gobject_count = {}
+
 local bitop = blanke_require('bitop')
 local bit = bitop.bit
 local bump = blanke_require("bump")
@@ -165,7 +167,7 @@ do
         elseif v <= a then return 0 
         else return (v - a) / (b - a) end
     end
-    Math.sinusoidal = function(min, max, spd, percent) return Math.lerp(min, max, Math.prel(-1, 1, math.cos(Math.lerp(0,math.pi/2,percent or 0) + (Game.time * spd))) ) end 
+    Math.sinusoidal = function(min, max, spd, percent) return Math.lerp(min, max, Math.prel(-1, 1, math.cos(Math.lerp(0,math.pi/2,percent or 0) + (Game.time * (spd or 1)) )) ) end 
     --  return min + -math.cos(Math.lerp(0,math.pi/2,off or 0) + (Game.time * spd)) * ((max - min)/2) + ((max - min)/2) end
     Math.angle = function(x1, y1, x2, y2) return math.deg(math.atan2((y2-y1), (x2-x1))) end
     Math.pointInShape = function(shape, x, y)  
@@ -788,9 +790,7 @@ do
         end;
 
         setEffect = function(...)
-            if Feature('effect') then
-                Game.effect = Effect({...})
-            end
+            Game.effect = Effect({...})
         end,
 
         addObject = function(name, _type, args, spawn_class)
@@ -863,6 +863,10 @@ do
             end
         end;
 
+        count = function(classname)
+            return gobject_count[classname] or 0
+        end;
+
         res = function(_type, file)
             return Game.options.res.."/".._type.."/"..file
         end;
@@ -907,117 +911,126 @@ do
 end
 
 --GAMEOBJECT
-GameObject = class {
-    init = function(self, args, spawn_args)
-        args = args or {}
-        spawn_args = spawn_args or {}
-        self.uuid = uuid()
-        self.x, self.y, self.z, self.angle, self.scalex, self.scaley, self.scale = 0, 0, 0, 0, 1, 1, 1
-        self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = spawn_args.width or args.width or 1, spawn_args.height or args.height or 1, 0, 0, 0, 0
-        self.align = nil
-        self.blendmode = {'alpha'}
-        self.visible = true
-        self.child_keys = {}
-        self.parent = nil
+GameObject = nil 
+do 
+    GameObject = class {
+        init = function(self, args, spawn_args)
+            args = args or {}
+            spawn_args = spawn_args or {}
+            self.uuid = uuid()
+            self.x, self.y, self.z, self.angle, self.scalex, self.scaley, self.scale = 0, 0, 0, 0, 1, 1, 1
+            self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = spawn_args.width or args.width or 1, spawn_args.height or args.height or 1, 0, 0, 0, 0
+            self.align = nil
+            self.blendmode = {'alpha'}
+            self.visible = true
+            self.child_keys = {}
+            self.parent = nil
 
-        self.net_vars = {'x','y','z','angle','scalex','scaley','scale','offx','offy','shearx','sheary','align','animation'}
-        self.net_spawn_vars = copy(self.net_vars)
+            self.net_vars = {'x','y','z','angle','scalex','scaley','scale','offx','offy','shearx','sheary','align','animation'}
+            self.net_spawn_vars = copy(self.net_vars)
 
-        -- custom properties were provided
-        -- so far only allowed from Entity
-        self.classname = spawn_args.classname or args.classname or 'GameObject'
-        spawn_args.classname = nil; args.classname = nil
-        if args then
-            args = copy(args)
-            if args.net_vars then self.net_vars = args.net_vars end
-            -- camera
-            if args.camera and not spawn_args.net_obj then
-                local cam_type = type(args.camera)
-                if cam_type == 'table' then
-                    for _,name in ipairs(args.camera) do
-                        Camera.get(name).follow = self
+            -- custom properties were provided
+            -- so far only allowed from Entity
+            self.classname = spawn_args.classname or args.classname or 'GameObject'
+            spawn_args.classname = nil; args.classname = nil
+
+            if not gobject_count[self.classname] then gobject_count[self.classname] = 0 end 
+            gobject_count[self.classname] = gobject_count[self.classname] + 1
+
+            if args then
+                args = copy(args)
+                if args.net_vars then self.net_vars = args.net_vars end
+                -- camera
+                if args.camera and not spawn_args.net_obj then
+                    local cam_type = type(args.camera)
+                    if cam_type == 'table' then
+                        for _,name in ipairs(args.camera) do
+                            Camera.get(name).follow = self
+                        end
+                    else
+                        Camera.get(args.camera).follow = self
                     end
-                else
-                    Camera.get(args.camera).follow = self
+                    args.camera = nil
                 end
-                args.camera = nil
-            end
-            -- effect
-            if args.effect then 
-                self:setEffect(args.effect)
-                args.effect = nil
-            end
-            -- child entity
-            for k, v in pairs(args) do
-                local arg_type = type(v)
-                local new_obj = nil
-                -- instantiation w/o args
-                if arg_type == "string" and Game.isSpawnable(v) then
-                    new_obj = Game.spawn(v)
-                elseif is_object(v) then
-                    table.insert(self.child_keys, k)
-                    new_obj = v()
-                elseif arg_type == "table" then
-                    -- instantiation with args
-                    if type(v[1]) == "string" then
-                        new_obj = Game.spawn(v[1], table.slice(v, 2))
-                    elseif is_object(v[1]) then
+                -- effect
+                if args.effect then 
+                    self:setEffect(args.effect)
+                    args.effect = nil
+                end
+                -- child entity
+                for k, v in pairs(args) do
+                    local arg_type = type(v)
+                    local new_obj = nil
+                    -- instantiation w/o args
+                    if arg_type == "string" and Game.isSpawnable(v) then
+                        new_obj = Game.spawn(v)
+                    elseif is_object(v) then
                         table.insert(self.child_keys, k)
-                        new_obj = v[1](unpack(table.slice(v, 2)))
+                        new_obj = v()
+                    elseif arg_type == "table" then
+                        -- instantiation with args
+                        if type(v[1]) == "string" then
+                            new_obj = Game.spawn(v[1], table.slice(v, 2))
+                        elseif is_object(v[1]) then
+                            table.insert(self.child_keys, k)
+                            new_obj = v[1](unpack(table.slice(v, 2)))
+                        end
+                    end
+                    if new_obj then
+                        self[k] = new_obj
+                        args[k] = nil
                     end
                 end
-                if new_obj then
-                    self[k] = new_obj
-                    args[k] = nil
-                end
+                table.update(self, args)
             end
-            table.update(self, args)
-        end
-        if spawn_args then table.update(self,spawn_args) end
-                    
-        State.addObject(self)
-        if not self.is_entity and self.spawn then self:spawn(unpack(spawn_args or {})) end
-    end;
-    addUpdatable = function(self)
-        Blanke.addUpdatable(self)
-    end;
-    addDrawable = function(self)
-        if self.__ide_obj or Game.options.auto_draw then 
-            Blanke.addDrawable(self)
-        end
-    end;
-    remUpdatable = function(self)
-        self.updatable = false
-    end;
-    remDrawable = function(self)
-        self.drawable = false
-    end;
-    setEffect = function(self, ...)
-        if Feature('effect') then
+            if spawn_args then table.update(self,spawn_args) end
+                        
+            State.addObject(self)
+            if not self.is_entity and self.spawn then self:spawn(unpack(spawn_args or {})) end
+        end;
+        addUpdatable = function(self)
+            Blanke.addUpdatable(self)
+        end;
+        addDrawable = function(self)
+            if self.__ide_obj or Game.options.auto_draw then 
+                Blanke.addDrawable(self)
+            end
+        end;
+        remUpdatable = function(self)
+            self.updatable = false
+        end;
+        remDrawable = function(self)
+            self.drawable = false
+        end;
+        setEffect = function(self, ...)
             self.effect = Effect(...)
-        end
-    end;
-    setMesh = function(self, verts)
-        self.mesh = love.graphics.newMesh(verts,'fan')
-    end;
-    destroy = function(self)
-        if not self.destroyed then
-            Hitbox.remove(self)
-            if self.ondestroy then self:ondestroy() end
-            if self._destroy then self:_destroy() end
-            if self.child_keys then
-                for _,k in ipairs(self.child_keys) do
-                    self[k]:destroy() 
+        end;
+        setMesh = function(self, verts)
+            self.mesh = love.graphics.newMesh(verts,'fan')
+        end;
+        destroy = function(self)
+            if not self.destroyed then
+                Hitbox.remove(self)
+                if self.ondestroy then self:ondestroy() end
+                if self._destroy then self:_destroy() end
+                if self.child_keys then
+                    for _,k in ipairs(self.child_keys) do
+                        self[k]:destroy() 
+                    end
                 end
+                Net.destroy(self)
+                self.destroyed = true
+            
+                if gobject_count[self.classname] then 
+                    gobject_count[self.classname] = gobject_count[self.classname] - 1
+                end 
             end
-            Net.destroy(self)
-            self.destroyed = true
-        end
-    end;
-    __ = {
-        tostring = function(self) return self.classname..'-'..self.uuid end
+        end;
+        __ = {
+            tostring = function(self) return self.classname..'-'..self.uuid end
+        }
     }
-}
+end
 
 --CANVAS
 local canv_len = 0 -- just a debug thing to see how many canvases exist
@@ -1155,7 +1168,6 @@ do
                     w=fw, h=fh, frame_size={fw,fh}, 
                     speed=o('speed') or 1
                 }
-                --print_r(animations)
             end
         end;
         init = function(self,args)
@@ -1477,9 +1489,14 @@ do
                 args.draw = nil
             end
             Game.addObject(name, "Entity", args, _Entity)
-            return function(args)
-                return Game.spawn(name, args)
-            end
+            return callable{
+                __call = function(self, args)
+                    return Game.spawn(name, args)
+                end,
+                count = function()
+                    return Game.count(name)
+                end
+            }
         end;
         addInitFn = function(fn)
             table.insert(Entity.init_props, fn)
@@ -1983,7 +2000,6 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
 
     Effect = GameObject:extend {
         new = function(name, in_opt)
-            local safe_name = name:replace(' ','_')
             local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
             table.update(opt, in_opt)
             
@@ -2067,18 +2083,21 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
                 self.names = self.names[1]
             end
             
-            self.used = true
-            self.vars = {}
-            self.disabled = {}
-            self:updateShader(self.names)
+            if Feature('effect') then
+                self.used = true
+                self.vars = {}
+                self.disabled = {}
+                self:updateShader(self.names)
 
-            self:addUpdatable()
+                self:addUpdatable()
+            end
         end;
         __ = {
             -- eq = function(self, other) return self.shader_info.name == other.shader_info.name end,
             -- tostring = function(self) return self.shader_info.code end
         };
         updateShader = function(self, names)
+            if not Feature('effect') then return end
             self.shader_info = generateShader(names)
             for _, name in ipairs(names) do
                 if not self.vars[name] then self.vars[name] = {} end 
@@ -2086,6 +2105,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             end
         end;
         disable = function(self, ...)
+            if not Feature('effect') then return end
             local disable_names = {...}
             for _,name in ipairs(disable_names) do self.disabled[name] = true end 
             local new_names = {}
@@ -2098,6 +2118,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             self:updateShader(new_names)
         end;
         enable = function(self, ...)
+            if not Feature('effect') then return end
             local enable_names = {...}
             for _,name in ipairs(enable_names) do self.disabled[name] = false end 
             local new_names = {}
@@ -2110,6 +2131,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             self:updateShader(new_names)
         end;
         set = function(self,name,k,v)
+            if not Feature('effect') then return end
             -- tryEffect(name)
             if not self.disabled[name] then
                 if not self.vars[name] then 
@@ -2119,6 +2141,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             end
         end;
         send = function(self,name,k,v)
+            if not Feature('effect') then return end
             local info = self.shader_info[name]
             if not info.unused_vars[k] then
                 tryEffect(name)
@@ -2128,12 +2151,12 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             end
         end;
         _update = function(self,dt)
+            if not Feature('effect') then return end
             local vars
             local used = #self.names
 
             for _,name in ipairs(self.names) do
                 vars = self.vars[name]
-                --if name == "chroma shift" then print_r(self.vars[name]) end
                 if not self.disabled[name] then
                     vars.time = vars.time + dt
                     vars.tex_size = {Game.width,Game.height}
@@ -3398,22 +3421,23 @@ end
 --FEATURE
 Feature = {}
 do
-    local disabled = {}
+    local enabled = {}
     Feature = callable {
         -- returns true if feature is enabled
-        __call = function(name)
-            return not disabled[name]
+        __call = function(self, name)
+            return enabled[name] ~= false
         end,
         disable = function(...)
             local flist = {...}
             for _, f in ipairs(flist) do 
-                disabled[f] = true 
+                print('disabling',f)
+                enabled[f] = false 
             end
         end,
         enable = function(...)
             local flist = {...}
             for _, f in ipairs(flist) do 
-                disabled[f] = false 
+                enabled[f] = true 
             end
         end
     }

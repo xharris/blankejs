@@ -119,7 +119,7 @@ Component = function(name, props)
   end
 end
 
---@global: to be used before World.add, retrieves a loose component (one wihtout uuid)
+--@global: to be used before World.add, retrieves a loose component (one without uuid)
 use = function(name, props, obj)
   if comp_name2uuid[name] and (not props or not props.is_component) then
     props = props or {}

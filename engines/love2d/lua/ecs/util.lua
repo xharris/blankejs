@@ -424,7 +424,6 @@ changed = function(obj, comp_name)
             end 
             tracks_changed[obj][comp_name] = obj[comp_name]
             last_vars[comp_name] = obj[comp_name]
-            print(obj, comp_name, last_vars[comp_name], obj[comp_name])
             return true
         end
     end
@@ -1130,7 +1129,8 @@ Game = callable{
         Game.canvas = Canvas{
             auto_draw=false,
             persistent=true 
-        }        
+        }     
+        Game.effect = Game.options.effect   
         -- load config.json
         config_data = love.filesystem.read('config.json')
         if config_data then Game.config = json.decode(config_data) end
@@ -1173,7 +1173,7 @@ Game = callable{
         -- load plugins
         if Game.options.plugins then 
             for _,f in ipairs(Game.options.plugins) do 
-                table.insert(scripts, 'ecs.plugins.'..f)
+                table.insert(scripts, 'plugins.'..f)
             end
         end
         -- load scripts
@@ -1198,7 +1198,7 @@ Game = callable{
         
         for _,script in ipairs(scripts) do
             if script ~= 'main' then 
-                Game.require(script)
+                require(script)
             end
         end
         -- fullscreen toggle
@@ -1212,9 +1212,5 @@ Game = callable{
     
     res = function(_type, file)
         return Game.options.res.."/".._type.."/"..file
-    end, 
-
-    require = function(path)
-        return require(path) 
     end
 }

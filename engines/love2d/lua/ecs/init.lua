@@ -15,11 +15,10 @@ Blanke = {
         if do_profiling then
             love.profiler = require 'profile'
         end 
+        print_r(World.add(Game.options))
         Game.options.load()
         Game.love_version = {love.getVersion()}
-        World.draw_modifier = function(obj, fn)
-            Effect.apply(obj, fn)
-        end
+        
         World.add(Game)
         if Game.options.initial_state then 
             State.start(Game.options.initial_state)

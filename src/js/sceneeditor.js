@@ -1780,8 +1780,7 @@ class SceneEditor extends Editor {
   addObject(info) {
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%<>?&+=";
 
-    info = info || {};
-    ifndef_obj(info, {
+    info = ifndef_obj(info || {}, {
       name: null,
       char: possible.charAt(Math.floor(Math.random() * possible.length)),
       color: "#000000",

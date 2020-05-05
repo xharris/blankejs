@@ -20,7 +20,7 @@ local mark = 0 -- 3429, 2930
 
 State("bunnymark",{
 	enter = function()
-		Input({
+		Input.set({
 			action = { 'space' }
 		})
 		Timer.every(.5, function()
@@ -64,10 +64,8 @@ State('ecs',{
 			down = { 'down', 's' },
 			action = { 'space' }
 		})
-		
-		--print_r(Game.canvas)
-		
-		for i = 1, 1 do -- 00 do 
+				
+		for i = 1, 10 do -- 00 do 
 			Heart()
 		end
 	end,
@@ -81,10 +79,11 @@ State('ecs',{
 	end,
 	draw = function()
 		Draw{
-			{'color','white'},
+			{'color','gray'},
 			{'line',Game.width/2,Game.height/2,mouse_x, mouse_y},
 			{'fontSize',40},
-			{'print',World.get_type_count('Heart'), 30, 30}
+			{'print',World.get_type_count('Heart'), 30, 30},
+			{'color'}
 		}
 	end
 })
@@ -102,9 +101,8 @@ Heart = Entity("Heart",{
 			x = Math.random(0, Game.width),
 			y = Math.random(0, Game.height)
 		}
-		obj.vel.x = Math.random(20,40)*table.random{-1,1}
+		obj.vel.x = Math.random(40,80)*table.random{-1,1}
 		local scale = Math.random(0.5, 4.0)
-		-- obj.effect.vars.static.strength = { 20, 0 }
 	end,
 	update = function(obj, dt)
 		--obj.angle = Math.sinusoidal(-45,45,5)
@@ -117,8 +115,10 @@ Heart = Entity("Heart",{
 		end
 		if obj.pos.x > Game.width or obj.pos.x < 0 then 
 			obj.vel.x = -obj.vel.x
-		end 
-		-- obj.effect.enabled.static = obj.pos.x < Game.width /2
+		end
+		if obj.effect.static then 
+			obj.effect.static.strength = { Math.lerp(0,20,obj.pos.x/Game.width), 0 }
+		end
 	end
 })
 

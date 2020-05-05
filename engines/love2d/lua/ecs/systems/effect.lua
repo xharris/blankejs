@@ -1,5 +1,7 @@
 local disable_image_batching
 local get_shader
+local is_used = {} -- { uuid:t/f }
+local used
 
 local love_replacements = {
   float = "number",
@@ -22,94 +24,53 @@ float getY(float amt) { return amt / love_ScreenSize.y; }
 float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
 ]]
 local library = {}
-local shaders = {} -- { 'eff1+eff2' = { shader: Love2dShader } }
+local shaders = {} -- { name = { vars{}, unused_vars{}, love2dShader } }
 
-local safe_names = {}
 local tryEffect = function(name)
-  assert(library[name], "Effect :'"..name.."' not found")
+    assert(library[name], "Effect :'"..name.."' not found")
 end
 
-local generateShader = function(names, override)
-  local full_name = table.join(names, '+')
-  if shaders[full_name] and not override then 
-      return shaders[full_name]
+used = function(obj, v)
+  if v ~= nil then 
+    is_used[obj.uuid] = v
   end
-  shaders[full_name] = { vars = {}, unused_vars = {} }
+  return is_used[obj.uuid]
+end
 
-  local shader_code = ''
-  local var_code = ''
-  local eff_call_code = ''
-  local pos_call_code = ''
+local _generateShader, generateShader
 
-  for _,name in ipairs(names) do 
-      local safe_name = name:replace(' ','_')
-      safe_names[name] = safe_name
-      local info = library[name]
+generateShader = function(names, override)
+    if type(names) ~= 'table' then
+        names = {names}
+    end
+    local ret_shaders = {}
+    for _, name in ipairs(names) do 
       tryEffect(name)
-      assert(info.code.solo == nil or (info.code.solo and #names == 1), "Effect '"..name.."' is a solo effect. It cannot be combine with other shaders.")
-      shaders[full_name].vars[name] = copy(info.opt.vars)
-      shaders[full_name].unused_vars[name] = copy(info.opt.unused_vars)
-      local solo_shader
-
-      if info.code.solo then
-          solo_shader = true 
-          shader_code = info.code.solo
-      else
-          -- add pixel shader code
-          if info.code.position then
-              shader_code = shader_code .. info.code.position .. '\n\n'
-              pos_call_code = pos_call_code .. "vertex_position = "..safe_name:replace(' ','_').."_shader_position(transform_projection, vertex_position);\n";
-          end 
-          -- add vertex shader code
-          if info.code.effect then
-              shader_code = shader_code .. info.code.effect .. '\n\n'
-              eff_call_code = eff_call_code .. "color = "..safe_name:replace(' ','_').."_shader_effect(color, texture, texture_coords, screen_coords);\n";
-          end 
-          -- add vars
-          if info.code.vars then 
-              var_code = var_code..'\n'.. info.code.vars .. '\n'
-          end 
+      local info = library[name]
+      if override or not shaders[name] then 
+        shader = love.graphics.newShader(info.code)
+        shaders[name] = {
+            vars = copy(info.opt.vars),
+            unused_vars = copy(info.opt.unused_vars),
+            shader = shader
+        }
       end
-  end
-  -- put it all together in one shader
-  if not solo_shader then 
-      shader_code = "// BEGIN "..full_name.."\n"..var_code..'\n'..helper_fns..'\n'..shader_code..[[   
-
-#ifdef VERTEX
-vec4 position(mat4 transform_projection, vec4 vertex_position) {
-  ]]..pos_call_code..[[
-  return transform_projection * vertex_position;
-}
-#endif
-
-
-#ifdef PIXEL
-vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-  ]]..eff_call_code..[[
-  return color;
-}
-#endif
-// END ]]..full_name
-  end
-
-  for old, new in pairs(love_replacements) do
-      shader_code = shader_code:replace(old, new, true)
-  end
-
-  shaders[full_name].name = full_name
-  shaders[full_name].solo = solo_shader
-  -- shaders[full_name].code = shader_code
-  shaders[full_name].shader = love.graphics.newShader(shader_code)
-
-  return shaders[full_name]
+      ret_shaders[name] = shaders[name]
+    end
+    return ret_shaders
 end
 
-get_shader = function(obj, names) 
-  obj.shader_info = generateShader(names)
-  table.update(obj.vars, obj.shader_info.vars)
+get_shader = function(obj) 
+  local shader_info = generateShader(obj.names)
+  
+  for name, info in pairs(shader_info) do
+    if not obj[name] then obj[name] = {} end
+    table.update(obj[name], info.vars)
+  end 
 
   disable_image_batching(obj)
   -- track enabling/disabling
+  obj.enabled = {}
   for _, name in ipairs(obj.names) do 
     if obj.enabled[name] == nil then 
       obj.enabled[name] = true
@@ -123,12 +84,12 @@ end
 disable_image_batching = function(obj)
   obj = get_entity(obj)
   -- shaders dont work well with spritebatch
-  if obj.effect.canvas.is_setup and obj.image and obj.image.batch then 
+  if obj.effect.canv_final.is_setup and obj.image and obj.image.batch then 
     obj.image.batch = false
   end
 end
 
-Component('effect', { enabled={}, vars={}, time=0 })
+Component('effect', { enabled={}, time=0 })
 
 System{
   component='effect',
@@ -143,53 +104,58 @@ System{
       end
     end
     obj.names = obj.names or names
-    obj.canvas = Canvas{auto_clear={1,1,1,0}, auto_draw=false}
-    get_shader(obj, obj.names)
+    obj.canv_internal = Canvas{auto_draw=false}
+    obj.canv_final = Canvas{auto_draw=false}
+    get_shader(obj)
     
     obj_entity.renderer = EffectRenderer()
   end,
 
   update = function(obj, dt)
     -- did the enabled shaders change?
-    local remake_shader = {}
-    for i, name in ipairs(obj.names) do 
+    local remake_shader = false
+    local i = 1
+    local name
+    while i <= #obj.names and not remake_shader do
+      name = obj.names[i]
       if changed(obj.enabled, name) or obj.enabled[name] == nil then 
         if obj.enabled[name] ~= false then
           tryEffect(name)
-          table.insert(remake_shader, name)
+          remake_shader = true
         end
       end
+      i = i + 1
     end
+    
     -- remake it!
     if remake_shader then 
-      if #remake_shader > 0 then 
-        get_shader(obj, remake_shader)
-      else
-        -- no shaders active
-        obj.canvas:release()
-      end
+      get_shader(obj)
     end
     
     disable_image_batching(obj)
     
-    local shader_info = obj.shader_info
-    local shader_object = shader_info.shader
+
+    used(obj, false)
     local vars
     for _, name in ipairs(obj.names) do 
-      if obj.enabled[name] then 
-        vars = obj.vars[name]
+      local shader_info = shaders[name]
+
+      if obj.enabled[name] then
+        used(obj, true) 
+        vars = obj[name]
         -- update built in shader vars
         vars.time = vars.time + dt
         vars.tex_size = {Game.width, Game.height}
-
-        for k, v in pairs(vars) do
-          -- update user shader vars
-          if not obj.shader_info.unused_vars[name][k] then 
-            local safe_name = (safe_names[name] or '').."_"..k
-            shader_object:send(safe_name, v)
-          end
-        end
       end
+    end
+
+    if not used(obj) then 
+      -- no shaders active
+      obj.canv_internal:release()
+      obj.canv_final:release()
+    else
+      obj.canv_internal:setup()
+      obj.canv_final:setup()
     end
   end
 }
@@ -201,132 +167,140 @@ EffectRenderer = RenderSystem{
 }
 
 Effect = {
-    new = function(name, in_opt)
-        local safe_name = name:replace(' ','_')
-        local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
-        table.update(opt, in_opt)
-        
-        -- mandatory vars
-        if not opt.vars['tex_size'] then
-            opt.vars['tex_size'] = {Game.width, Game.height}
+  new = function(name, in_opt)
+    local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
+    table.update(opt, in_opt)
+    
+    -- mandatory vars
+    if not opt.vars['tex_size'] then
+        opt.vars['tex_size'] = {Game.width, Game.height}
+    end
+    if not opt.vars['time'] then
+        opt.vars['time'] = 0
+    end
+    
+    -- create var string
+    var_str = ""
+    for key, val in pairs(opt.vars) do
+        -- unused vars?
+        if not string.contains(opt.code or (opt.effect..' '..opt.vertex), key) then
+            opt.unused_vars[key] = true
         end
-        if not opt.vars['time'] then
-            opt.vars['time'] = 0
-        end
-        code_solo = nil
-        code_effect = nil
-        code_position = nil
-        -- create var string
-        var_str = ""
-        for key, val in pairs(opt.vars) do
-            -- unused vars?
-            if not string.contains(opt.code or (opt.effect..' '..opt.vertex), key) then
-                opt.unused_vars[key] = true
-            end
-            if not opt.code then  -- not a solo shader, prepend shader name
-                key = safe_name.."_"..key
-            end
-            -- get var type
-            switch(type(val),{
-                table = function() 
-                    var_str = var_str.."uniform vec"..tostring(#val).." "..key..";\n" 
-                end,
-                number = function()
-                    if table.hasValue(opt.integers, key) then
-                        var_str = var_str.."uniform int "..key..";\n"
-                    else
-                        var_str = var_str.."uniform float "..key..";\n"
-                    end
-                end,
-                string = function()
-                    if val == "Image" then
-                        var_str = var_str.."uniform Image "..key..";\n"
-                    end
+        -- get var type
+        switch(type(val),{
+            table = function() 
+                var_str = var_str.."uniform vec"..tostring(#val).." "..key..";\n" 
+            end,
+            number = function()
+                if table.hasValue(opt.integers, key) then
+                    var_str = var_str.."uniform int "..key..";\n"
+                else
+                    var_str = var_str.."uniform float "..key..";\n"
                 end
-            })
-        end
+            end,
+            string = function()
+                if val == "Image" then
+                    var_str = var_str.."uniform Image "..key..";\n"
+                end
+            end
+        })
+    end
 
-        if opt.code then
-            code_solo = var_str.."\n"..helper_fns.."\n"..opt.code
-        
-        else
-            if opt.vertex:len() > 1 then 
-                code_position = [[
-vec4 ]]..safe_name..[[_shader_position(mat4 transform_projection, vec4 vertex_position) {
-]]..opt.vertex..[[
-    return transform_projection * vertex_position;
+    local code = var_str.."\n"..helper_fns.."\n"
+    if opt.code then
+        code = code .. opt.code
+    else 
+        code = code .. [[   
+
+#ifdef VERTEX
+vec4 position(mat4 transform_projection, vec4 vertex_position) {
+]]..(opt.position or '')..[[
+return transform_projection * vertex_position;
 }
-]]
-            end
-                
-            if opt.effect:len() > 1 then 
-                code_effect = [[
-vec4 ]]..safe_name..[[_shader_effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords){
-    vec4 pixel = Texel(texture, texture_coords);
-]]..opt.effect..[[
-    return pixel * color;
+#endif
+
+
+#ifdef PIXEL
+vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+vec4 pixel = Texel(texture, texture_coords);
+]]..(opt.effect or '')..[[
+return pixel * color;
 }
-]]
-            end
+#endif
+              ]]
+    end
+
+    for old, new in pairs(love_replacements) do
+        code = code:replace(old, new, true)
+    end
+
+    library[name] = {
+        opt = copy(opt),
+        code = code
+    }
+
+  end;
+  info = function(name) return library[name] end;
+  apply = function(obj, fn)
+    local effect_obj = obj.effect
+    
+    if effect_obj == nil or not used(effect_obj) or not Feature('effect') then
+        fn()
+        return true
+    end 
+    
+    local vars
+    for _, name in ipairs(effect_obj.names) do 
+      local shader_info = shaders[name]
+
+      if effect_obj.enabled[name] then
+        vars = effect_obj[name]
+
+        if library[name] and library[name].opt.update then
+          library[name].opt.update(effect_obj[name])
         end
 
-        for key, val in pairs(opt.vars) do
-            if code_effect then 
-                code_effect = code_effect:replace(key,safe_name.."_"..key,true)
-            end
-            if code_position then 
-                code_position = code_position:replace(key,safe_name.."_"..key,true)
-            end
+        for k, v in pairs(vars) do
+          -- update user shader vars
+          if not shader_info.unused_vars[k] then 
+            shader_info.shader:send(k, v)
+          end
         end
+      end
+    end
+        
+    local last_shader = love.graphics.getShader()
 
-        library[name] = {
-            opt = copy(opt),
-            code = {
-                vars = var_str,
-                effect = code_effect,
-                position = code_position,
-                solo = code_solo
-            }
-        }
-
-    end;
-    info = function(name) return library[name] end;
-    apply = function(obj, fn)
-        local used = false
-        local effect_obj = obj.effect
-        
-        if effect_obj == nil or not Feature('effect') then
-            fn()
-            return true
-        end 
-        
-        for _, name in ipairs(effect_obj.names) do 
-            if effect_obj.enabled[name] then 
-              used = true
-              
-              if library[name] and library[name].opt.draw then 
-                  library[name].opt.draw(effect_obj.shader_info.vars[name])
-              end
-            end
-        end
-        
-        local canvas = obj.canvas or effect_obj.canvas
-        if used then 
-            local last_shader = love.graphics.getShader()
+    local canv_internal, canv_final = effect_obj.canv_internal, effect_obj.canv_final
             
-            -- canvas.blendmode = self.blendmode
-            canvas:setup()
-            canvas.auto_clear = {1,1,1,0}
-            canvas:drawTo(function()
-                love.graphics.setShader()
+    canv_internal.auto_clear = {Draw.parseColor(Game.options.background_color, 0)}
+    canv_final.auto_clear = {Draw.parseColor(Game.options.background_color, 0)}
+    
+    for i, name in ipairs(effect_obj.names) do 
+      if shaders[name] then
+        -- draw without shader first
+        canv_internal:drawTo(function()
+            love.graphics.setShader()
+            if i == 1 then
+                -- draw unshaded stuff (first run)
                 fn()
-            end)
-            
-            love.graphics.setShader(effect_obj.shader_info.shader)
-            canvas:draw()
-            love.graphics.setShader(last_shader)
-        else 
-          fn()
-        end
-    end;
+            else 
+                -- draw previous shader results
+                canv_final:draw()
+            end
+        end)
+
+        -- draw to final canvas with shader
+        canv_final:drawTo(function()
+            love.graphics.setShader(shaders[name].shader)
+            canv_internal:draw()
+        end)
+      end
+    end
+
+    love.graphics.setShader(last_shader)  
+
+    -- draw final resulting canvas
+    canv_final:draw()
+  end;
 }

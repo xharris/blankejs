@@ -6,7 +6,12 @@
     "first_scene": null,
     "game_size": 3,
     "window_size": 3,
-    "quick_access": [],
+    "quick_access": [
+        [
+            "platformer.map=map+?",
+            "platformer.map"
+        ]
+    ],
     "autoplay_preview": true,
     "scene": {
         "objects": {

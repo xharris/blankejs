@@ -1,5 +1,6 @@
 {
     "write_conf": true,
+    "engine_type": "oop",
     "scene": {},
     "export": {
         "name": "pixi_test",
@@ -28,5 +29,5 @@
     "window_size": 3,
     "quick_access": [],
     "autoplay_preview": true,
-    "engine": "pixijs"
+    "engine": "love2d"
 }

@@ -1,29 +1,31 @@
 language: node_js
 node_js:
-  - "node"
-
-os:
-  - windows
-
-addons:
-  chrome: stable
-
-# electron/electron-builder
-
-env:
-  global:
-    - ELECTRON_CACHE=$HOME/.cache/electron
-    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
-    
-cache:
-  directories:
-    - node_modules
-    - $HOME/.cache/electron
-    - $HOME/.cache/electron-builder
-before_cache:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
+  - stable
+matrix:
+  fast_finish: true
+  include:
+    - node_js: stable
+      os: osx
+    - node_js: 12
+      env: ELECTRON_VERSION=7
+    - node_js: 12
+      env: ELECTRON_VERSION=6
+    - node_js: 12
+      env: ELECTRON_VERSION=5
+    - node_js: 10
+      env: ELECTRON_VERSION=4
+    #- node_js: stable
+    # env: ELECTRON_VERSION=beta
+before_install:
+  - if [[ -n $ELECTRON_VERSION ]]; then
+      npm install electron@$ELECTRON_VERSION;
+    fi
 
 # scripts to be executed
 install:
-  - npm install
+  - npm install --no-progress
+  - $(npm bin)/electron --version
+script:
   - npm test
+notifications:
+  email: false

@@ -10,8 +10,8 @@ const requireConf = (is_exporting) => {
   switch (type) {
     case "oop":
       return `
-package.path = "lua/?.lua;lua/?/init.lua;" .. package.path
-require("${is_exporting ? "lua.blanke" : "blanke"}")
+love.filesystem.setRequirePath( "?.lua;?/init.lua;lua/?.lua;lua/?/init.lua" )
+require("blanke")
       `;
 
     case "ecs":
@@ -22,7 +22,17 @@ Game.options.auto_require = false
       `;
   }
 };
+/*
+package.path = "lua/?.lua;lua/?/init.lua;" .. package.path
 
+BASEDIR = love.filesystem.getRealDirectory("lua"):match("(.-)[^%.]+$")
+BASEDIR = string.sub(BASEDIR, 1, string.len(BASEDIR)-1)
+local myPath = BASEDIR..'/lua/?.lua;'..BASEDIR..'/data/?.lua'
+local myPath2 = 'lua/?.lua;/data/?.lua'
+
+package.path = myPath
+love.filesystem.setRequirePath( myPath2 )
+*/
 const generalConf = () => `
     t.window.title = "${app.exportSetting("name")}"
     -- t.gammacorrect = nil
@@ -94,7 +104,7 @@ module.exports.settings = {
       "checkbox",
       { default: true, label: "auto-generate conf.lua" },
     ],
-    // ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
+    ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
   ],
   export_settings: [
     ["window/rendering"],
