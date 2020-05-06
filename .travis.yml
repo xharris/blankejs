@@ -2,7 +2,6 @@ language: node_js
 node_js: '12'
 
 cache: npm
-  yarn: true
   directories:
     - node_modules
     - $HOME/.cache/electron
@@ -48,6 +47,7 @@ install:
 script:
   - echo "Tests"
   - if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then xvfb-run npm test ; fi
+  - if [[ "$TRAVIS_OS_NAME" = "osx" || "$TRAVIS_OS_NAME" = "windows" ]]; then npm test ; fi
 
 notifications:
   email: false
