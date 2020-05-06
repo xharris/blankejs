@@ -37,7 +37,6 @@ before_cache:
 
 before_script:
   - export DISPLAY=':99.0'
-  - "sh -e /etc/init.d/xvfb start"
   - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
   - sleep 3 # give xvfb some time to start
 
@@ -45,7 +44,7 @@ install:
   - npm i
 
 script:
-  - echo "Unit Tests"
+  - echo "Tests"
   - npm test
 
 notifications:

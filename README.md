@@ -1,4 +1,4 @@
-![TravisCI](https://travis-ci.org/xharris/blankejs.svg?branch=master)
+[![TravisCI](https://travis-ci.org/xharris/blankejs.svg?branch=master)](https://travis-ci.org/github/xharris/blankejs)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxharris%2Fblankejs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fxharris%2Fblankejs?ref=badge_shield)
 
 # Installation notes
