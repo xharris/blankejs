@@ -9,24 +9,23 @@ cache: npm
     - $HOME/.npm/_prebuilds
 
 ## OS
-
-# osx_image: xcode8.4 # define OS X image which will be mounted
-dist: trusty # use Ubuntu Trusty for Linux operation system
-
 addons:
   chrome: stable # Install chrome stable on operating systems
   apt:
     packages:
       - xvfb
 
-# A list of operating systems which are used for tests
+services:
+  - xvfb
+
 os:
   - linux
   # - osx
   # - windows
+dist: trusty # use Ubuntu Trusty for Linux operation system
+# osx_image: xcode8.4 # define OS X image which will be mounted
 
 ## ELETRON BUILDER CONFIGS
-
 env:
   global:
     - ELECTRON_CACHE=$HOME/.cache/electron
@@ -35,8 +34,6 @@ env:
 before_cache:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
 
-services:
-  - xvfb
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" = "osx" || "$TRAVIS_OS_NAME" = "linux" ]]; then ./.travis/install.sh ; fi
