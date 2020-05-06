@@ -53,6 +53,7 @@ const test_helper = {
         if (this.app && this.app.isRunning()) {
           return this.app.stop()
         }
+        return undefined;
       })
     }
 

@@ -47,7 +47,7 @@ install:
 
 script:
   - echo "Tests"
-  - npm test
+  - if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then xvfb-run npm test ; fi
 
 notifications:
   email: false
