@@ -36,7 +36,7 @@ before_cache:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
 
 
-before_script:
+before_install:
   - if [[ "$TRAVIS_OS_NAME" = "osx" || "$TRAVIS_OS_NAME" = "linux" ]]; then ./.travis/install.sh ; fi
 
 install:
@@ -44,7 +44,7 @@ install:
 
 script:
   - echo "Tests"
-  - if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then xvfb-run npm test ; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then xvfb-run -a npm test ; fi
   - if [[ "$TRAVIS_OS_NAME" = "osx" || "$TRAVIS_OS_NAME" = "windows" ]]; then npm test ; fi
 
 notifications:
