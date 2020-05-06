@@ -1,6 +1,13 @@
 language: node_js
 node_js: '12'
+
 cache: npm
+  yarn: true
+  directories:
+    - node_modules
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+    - $HOME/.npm/_prebuilds
 
 ## OS
 
@@ -16,8 +23,8 @@ addons:
 # A list of operating systems which are used for tests
 os:
   - linux
-  - osx
-  - windows
+  # - osx
+  # - windows
 
 ## ELETRON BUILDER CONFIGS
 
@@ -25,13 +32,6 @@ env:
   global:
     - ELECTRON_CACHE=$HOME/.cache/electron
     - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
-
-cache:
-  yarn: true
-  directories:
-    - $HOME/.cache/electron
-    - $HOME/.cache/electron-builder
-    - $HOME/.npm/_prebuilds
 
 before_cache:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
