@@ -1,10 +1,10 @@
 language: node_js
-node_js:
-  - stable
+node_js: '12'
+cache: npm
 
 ## OS
 
-osx_image: xcode8.4 # define OS X image which will be mounted
+# osx_image: xcode8.4 # define OS X image which will be mounted
 dist: trusty # use Ubuntu Trusty for Linux operation system
 
 addons:
@@ -16,7 +16,7 @@ addons:
 # A list of operating systems which are used for tests
 os:
   - linux
-  - osx
+  # - osx
 
 ## ELETRON BUILDER CONFIGS
 
@@ -35,10 +35,12 @@ cache:
 before_cache:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
 
+
+services:
+  - xvfb
+
 before_script:
-  - export DISPLAY=':99.0'
-  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-  - sleep 3 # give xvfb some time to start
+  - if [[ "$TRAVIS_OS_NAME" = "osx" ] || [ "$TRAVIS_OS_NAME" = "linux" ]]; then ./.travis/install.sh ; fi
 
 install:
   - npm i
