@@ -16,7 +16,8 @@ addons:
 # A list of operating systems which are used for tests
 os:
   - linux
-  # - osx
+  - osx
+  - windows
 
 ## ELETRON BUILDER CONFIGS
 
@@ -35,12 +36,11 @@ cache:
 before_cache:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
 
-
 services:
   - xvfb
 
 before_script:
-  - if [[ "$TRAVIS_OS_NAME" = "osx" ] || [ "$TRAVIS_OS_NAME" = "linux" ]]; then ./.travis/install.sh ; fi
+  - if [[ "$TRAVIS_OS_NAME" = "osx" || "$TRAVIS_OS_NAME" = "linux" ]]; then ./.travis/install.sh ; fi
 
 install:
   - npm i
