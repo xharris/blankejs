@@ -1,32 +1,32 @@
+osx_image: xcode8.4 # define OS X image which will be mounted
+
+dist: trusty # use Ubuntu Trusty for Linux operation system
+
+# Define Node.js as the programming language as we have a web application
 language: node_js
 node_js: '12'
+
+addons:
+  chrome: stable # Install chrome stable on operating systems
+
+# A list of operating systems which are used for tests
+os:
+  - linux
+  - osx
+
+env:
+global:
+  - ELECTRON_CACHE=$HOME/.cache/electron
+  - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
 
 cache:
   npm: true
   directories:
     - node_modules
-    - $HOME/.cache/electron
-    - $HOME/.cache/electron-builder
     - $HOME/.npm/_prebuilds
 
-os:
-  - linux
-  - osx
-dist: trusty
-
-addons:
-  apt:
-    packages:
-      - xvfb
-
 install:
-  - export DISPLAY=':99.0'
-  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-  - npm i
-  
+  - npm
+
 script:
-  - echo "Tests"
-  - xvfb-run -a npm test
-  
-notifications:
-  email: false
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run npm test; else npm test; fi
