@@ -23,7 +23,7 @@ module.exports = function (helper) {
   describe(name('Application', 'Window buttons'), setup(function () {
     it('minimizes', function () {
       return this.app.client.waitUntilWindowLoaded()
-        .windowByIndex(1)
+        .windowByIndex(0)
         .element("#btn-minimize").click()
         .browserWindow.isVisible().should.eventually.be.false
     })
