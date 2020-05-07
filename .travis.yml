@@ -35,4 +35,4 @@ before_script:
   - sleep 3 # give xvfb some time to start
 
 script:
-  - xvfb-maybe  electron-mocha --exit ./test
+  - xvfb-maybe npm test
