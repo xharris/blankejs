@@ -24,5 +24,9 @@ services:
 install:
   - npm i
 
+before_script:
+  - echo $PWD
+  - ls
+
 script:
   - xvfb-maybe npm test

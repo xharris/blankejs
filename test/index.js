@@ -11,6 +11,7 @@ chai.use(chaiAsPromised)
 
 const electronPath = require('electron')
 
+console.log("path", path.join(__dirname, '..'))
 const test_helper = {
   name: (location, component) => component ? `${location}: ${component}` : location,
   setup: (fn, opt) => function () {
@@ -18,7 +19,6 @@ const test_helper = {
 
     if (opt && opt.open_before === 'each') {
       beforeEach(function () {
-        console.log("opening", path.join(__dirname, '..'))
         this.app = new Application({
           path: electronPath,
           args: [path.join(__dirname, '..')]
