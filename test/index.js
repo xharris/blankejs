@@ -10,8 +10,8 @@ chai.should()
 chai.use(chaiAsPromised)
 
 const electronPath = require('electron')
+const appPath = path.join(__dirname, '..')
 
-console.log("path", path.join(__dirname, '..'))
 const test_helper = {
   name: (location, component) => component ? `${location}: ${component}` : location,
   setup: (fn, opt) => function () {
@@ -21,7 +21,7 @@ const test_helper = {
       beforeEach(function () {
         this.app = new Application({
           path: electronPath,
-          args: [path.join(__dirname, '..')]
+          args: [appPath]
         })
         return this.app.start()
       })
@@ -30,7 +30,7 @@ const test_helper = {
       before(function () {
         this.app = new Application({
           path: electronPath,
-          args: [path.join(__dirname, '..')]
+          args: [appPath]
         })
         return this.app.start()
       })
@@ -41,7 +41,7 @@ const test_helper = {
     })
 
     const delay = time => new Promise(resolve => setTimeout(resolve, time));
-    const appPath = path.resolve(__dirname, '../../entry.js');
+
     if (opt && opt.close_after === 'each') {
       afterEach(function () {
         if (this.app && this.app.isRunning()) {
