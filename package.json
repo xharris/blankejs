@@ -80,7 +80,6 @@
     "electron-builder": "^22.4.1",
     "expect.js": "^0.3.1",
     "mocha": "^7.1.1",
-    "spectron": "^7.0.0",
-    "xvfb-maybe": "^0.2.1"
+    "spectron": "^7.0.0"
   }
 }
