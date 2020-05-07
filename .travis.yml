@@ -1,6 +1,12 @@
 language: node_js
 node_js: '12'
 
+addons:
+  chrome: stable # Install chrome stable on operating systems
+  apt:
+    packages:
+      - xvfb    
+
 cache:
   npm: true
   directories:
@@ -15,12 +21,6 @@ os:
   # - osx
 # osx_image: xcode8.4 # define OS X image which will be mounted
 dist: trusty
-
-addons:
-chrome: stable # Install chrome stable on operating systems
-apt:
-  packages:
-    - xvfb    
 
 env:
   global:
