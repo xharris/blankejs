@@ -109,6 +109,7 @@ module.exports.settings = {
   export_settings: [
     ["window/rendering"],
     ["filter", "select", { choices: ["linear", "nearest"], default: "linear" }],
+    ["round_pixels", "checkbox", { defalt: false }],
     ...["frameless", "scale", "resizable"].map(o => [
       o,
       "checkbox",

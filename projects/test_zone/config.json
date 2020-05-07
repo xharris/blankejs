@@ -97,7 +97,7 @@
                 0
             ],
             "spacing": 0,
-            "image": "image/7tHKTIY.png",
+            "image": "image/balls.png",
             "tool.shape": "rect",
             "tool.size": [
                 1,
@@ -267,6 +267,37 @@
             ],
             "spacing": 0,
             "onion_alpha": 0.3
+        },
+        "image/bunny.bmp": {
+            "frame_size": [
+                26,
+                37
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
+        },
+        "image/balls.png": {
+            "frame_size": [
+                640,
+                128
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3,
+            "image": "image/blue_robot.png",
+            "tool.size": [
+                5,
+                5
+            ]
         }
     },
     "engine": "love2d",

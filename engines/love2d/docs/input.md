@@ -37,8 +37,8 @@ update: (dt) =>
   * sticks: `leftx, lefty, rightx, righty`
   * triggers: `triggerleft, triggerright`
 
-Eg `Input('leftx')` will table with the keys:
-* Joystick [object](https://love2d.org/wiki/Joystick)
+Eg `Input('leftx')` will return a table with the keys:
+* joystick: [JoystickObject](https://love2d.org/wiki/Joystick)
 * value: number in range [-1, 1]
 
 # Class Methods

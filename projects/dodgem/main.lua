@@ -4,7 +4,9 @@ Image.animation("balls.png",{
 	{ name="ball", rows=1, cols=5, speed=0 }
 })
 Image.animation("bluerobot.png",{
-	{ name="bluerobot", rows=1, cols=8, frames={'2-7'}, speed=15 }
+	{ name="robot_walk", rows=1, cols=8, frames={'2-7'}, speed=15 },
+	{ name="robot_stand", rows=1, cols=8, frames={1} },
+	{ name="robot_hit", rows=1, cols=8, frames={8} }
 })
 
 Input.set({
@@ -20,7 +22,7 @@ Audio('snd_hit.wav', {name='hit', type='static'})
 Game{
 	background_color = "white",
 	plugins = { 'xhh-effect', 'xhh-tween' },
-	--effect = {  'chroma shift', 'static' },
+	effect = {  'chroma shift', 'static' },
 	load = function()	
 		player = Player{x=Game.width/2, y=Game.height/2}
 		

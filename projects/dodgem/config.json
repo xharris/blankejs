@@ -10,7 +10,7 @@
     "scene": {},
     "export": {
         "name": "dodgem",
-        "filter": "linear",
+        "filter": "nearest",
         "scale": true,
         "vsync": "off",
         "web_memory": 128,
@@ -20,7 +20,8 @@
             600
         ],
         "resizable": false,
-        "web_preload_image": "https://miro.medium.com/max/1200/1*mk1-6aYaf_Bes1E3Imhc0A.jpeg"
+        "web_preload_image": "https://miro.medium.com/max/1200/1*mk1-6aYaf_Bes1E3Imhc0A.jpeg",
+        "round_pixels": false
     },
     "enabled_plugins": {
         "xhh-array": false,

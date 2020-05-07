@@ -1213,13 +1213,9 @@ class Code extends Editor {
         nwPATH.basename(this.file) +
         "' has unsaved changes! Save before closing?</label>",
         {
-          yes: () => {
-            this.save();
-            res();
-          },
-          no: () => {
-            res();
-          },
+          yes: () => { this.save(); res(); },
+          no: () => { res(); },
+          cancel: () => { }
         }
       );
     } else {

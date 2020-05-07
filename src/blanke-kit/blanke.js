@@ -1057,25 +1057,25 @@ var blanke = {
     for (var c = 0; c < choice_keys.length; c++) {
       var choice_key = choice_keys[c];
 
-      btn_type = "sphere";
-      html_inside = choice_key;
+      var btn_type = "sphere";
+      var html_inside = choice_key;
+      var title = '';
+
       if (choice_key.toLowerCase() == "yes") {
         html_inside = "<i class='mdi mdi-check'></i>";
+        title = "yes";
       } else if (choice_key.toLowerCase() == "no") {
         html_inside = "<i class='mdi mdi-close'></i>";
+        title = "no";
+      } else if (choice_key.toLowerCase() == "cancel") {
+        html_inside = "<i class='mdi mdi-cancel'></i>";
+        title = "cancel and go back";
       } else {
         html_inside = choice_key;
         btn_type = "rect";
       }
 
-      html_actions +=
-        "<button class='ui-button-" +
-        btn_type +
-        "' data-action='" +
-        choice_key +
-        "'>" +
-        html_inside +
-        "</button>";
+      html_actions += `<button class='ui-button-${btn_type}' title='${title}' data-action='${choice_key}'>${html_inside}</button>`
     }
 
     // add dialog to page
