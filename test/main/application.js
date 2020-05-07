@@ -11,8 +11,8 @@ module.exports = function (helper) {
     })
 
     it('checks for updates', function () {
-      return this.app.client.waitUntilWindowLoaded()
-        .getText(".blankejs-toasts .toast-container .content")
+      return this.app.client
+        .waitForVisible(".blankejs-toasts .toast-container .content")
         .should.eventually.match(/No updates|Update available/)
     })
   }, {
@@ -23,7 +23,6 @@ module.exports = function (helper) {
   describe(name('Application', 'Window buttons'), setup(function () {
     it('minimizes', function () {
       return this.app.client.waitUntilWindowLoaded()
-        .windowByIndex(0)
         .element("#btn-minimize").click()
         .browserWindow.isVisible().should.eventually.be.false
     })
