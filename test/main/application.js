@@ -29,6 +29,10 @@ module.exports = function (helper) {
   describe(name('Application', 'Window buttons'), setup(function () {
     it('minimizes', function () {
       return this.app.client.waitUntilWindowLoaded()
+        .getWindowCount().should.eventually.have.at.least(1)
+        .browserWindow.isVisible().should.eventually.be.true
+        .browserWindow.getBounds().should.eventually.have.property('width').and.be.above(0)
+        .browserWindow.getBounds().should.eventually.have.property('height').and.be.above(0)
         .element("#btn-minimize").click()
         .browserWindow.isVisible().should.eventually.be.false
     })
