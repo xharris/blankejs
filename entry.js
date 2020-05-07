@@ -14,7 +14,11 @@ let main_window;
 eApp.on("open-file", (e, path) => {
   if (main_window); //main_window.webContents.send('open-file', path);
 });
-eApp.commandLine.appendSwitch("enable-gpu-rasterization", "true");
+eApp.commandLine.appendSwitch("enable-gpu-rasterization");
+eApp.commandLine.appendSwitch('ignore-gpu-blacklist');
+eApp.commandLine.appendSwitch('allow-file-access-from-files');
+eApp.commandLine.appendSwitch('enable-webgl');
+
 eApp.on("ready", function () {
   const { screen } = require("electron");
   let display = screen.getPrimaryDisplay();
