@@ -10,7 +10,7 @@ module.exports = function (helper) {
         .browserWindow.getBounds().should.eventually.have.property('height').and.be.above(0)
     })
 
-    it('checks for updates', function () {
+    it.skip('checks for updates', function () {
       return this.app.client.waitUntilWindowLoaded()
         .getText(".blankejs-toasts .toast-container .content")
         .should.eventually.match(/No updates|Update available/)
