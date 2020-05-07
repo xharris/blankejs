@@ -12,6 +12,8 @@ module.exports = function (helper) {
 
     it('checks for updates', function () {
       return this.app.client.waitUntilWindowLoaded()
+        .getWindowCount().should.eventually.have.at.least(1)
+        .browserWindow.isVisible().should.eventually.be.true
         .getText(".blankejs-toasts .toast-container .content")
         .should.eventually.match(/No updates|Update available/)
     })
