@@ -12,8 +12,8 @@ dist: xenial
 services:
   - xvfb
       
-addons:
-  chrome: stable
+# addons:
+#   chrome: stable
 
 # start your web application and listen on `localhost`
 before_install:
