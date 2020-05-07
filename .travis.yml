@@ -9,43 +9,24 @@ cache:
     - $HOME/.cache/electron-builder
     - $HOME/.npm/_prebuilds
 
-## OS
+os:
+  - linux
+  - osx
+dist: trusty
+
 addons:
-  chrome: stable # Install chrome stable on operating systems
   apt:
     packages:
       - xvfb
 
-services:
-  - xvfb
-
-os:
-  - linux
-  # - osx
-  # - windows
-dist: trusty # use Ubuntu Trusty for Linux operation system
-# osx_image: xcode8.4 # define OS X image which will be mounted
-
-## ELETRON BUILDER CONFIGS
-env:
-  global:
-    - ELECTRON_CACHE=$HOME/.cache/electron
-    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
-
-before_cache:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then rm -rf $HOME/.cache/electron-builder/wine; fi
-
-
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" = "osx" || "$TRAVIS_OS_NAME" = "linux" ]]; then ./.travis/install.sh ; fi
-
 install:
+  - export DISPLAY=':99.0'
+  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
   - npm i
-
+  
 script:
   - echo "Tests"
-  - if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then xvfb-run -a npm test ; fi
-  - if [[ "$TRAVIS_OS_NAME" = "osx" || "$TRAVIS_OS_NAME" = "windows" ]]; then npm test ; fi
-
+  - xvfb-run -a npm test
+  
 notifications:
   email: false
