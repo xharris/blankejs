@@ -1,6 +1,19 @@
 language: node_js
 node_js: '12'
-cache: npm
+
+addons:
+  chrome: stable # Install chrome stable on operating systems
+  apt:
+    packages:
+      - xvfb    
+
+cache:
+  npm: true
+  directories:
+    - node_modules
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+    - $HOME/.npm/_prebuilds
 
 # A list of operating systems which are used for tests
 os:
@@ -11,18 +24,24 @@ dist: xenial
 
 services:
   - xvfb
-      
-addons:
-  chrome: stable
 
+env:
+  global:
+    - ELECTRON_CACHE=$HOME/.cache/electron
+    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+
+# addons:
+#   chrome: stable
+
+# start your web application and listen on `localhost`
 before_install:
-  - # start your web application and listen on `localhost`
-  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
-  ⋮
+  - export DISPLAY=:99.0
 
 install:
   - npm i
-  - export DISPLAY=':99.0'
   
 script:
-  - xvfb-run -a --server-args="-screen 0 1024x768x24" mocha --exit ./test
+  - xvfb-run -a npm test
+  
+notifications:
+  email: false

@@ -567,8 +567,8 @@ do
         Game.checkAlign(props)
         local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
         local ax, ay = (props.alignx + props.offx) * scalex, (props.aligny + props.offy) * scaley
-        local x = floor(props.x)
         local y = floor(props.y)
+        local x = floor(props.x)
 
         local tform = props._draw_transform
         if not tform then 
@@ -650,6 +650,7 @@ do
             background_color = 'black',
             window_flags = {},
             fps =           60,
+            round_pixels =  false,
 
             auto_draw =     true,
             scale =         true,
@@ -780,6 +781,10 @@ do
             if Game.options.load then
                 Game.options.load()
             end
+            -- round pixels
+            if not Game.options.round_pixels then 
+                floor = function(x) return x end
+            end
             
             love.graphics.setBackgroundColor(1,1,1,0)
 
@@ -901,7 +906,7 @@ do
             State._check()
             Signal.emit('update',dt)
             local key = Input.pressed('_fs_toggle') 
-            if key and key.count == 1 then
+            if key and key[1].count == 1 then
                 Window.toggleFullscreen()
             end            
             Input.keyCheck()
@@ -1149,6 +1154,7 @@ do
                         table.insert(frame_list, f)
                     elseif f_type == 'string' then
                         local a,b = string.match(f,'%s*(%d+)%s*-%s*(%d+)%s*')
+                        assert(a and b, "Invalid frames for '"..anim.name.."' { "..(a or 'nil')..", "..(b or 'nil').." }")
                         for i = a,b do
                             table.insert(frame_list, i)
                         end
@@ -1529,6 +1535,18 @@ do
         if Joystick.get(Joystick.using):getID() == info.joystick:getID() then return info end
     end
 
+    local isPressed = function(name)
+        if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) and joycheck(pressed[name]) then 
+            return pressed[name] 
+        end 
+    end
+
+    local isReleased = function(name)
+        if joycheck(released[name]) then
+            return released[name] 
+        end
+    end
+
     Input = callable {
         __call = function(self, name)
             return store[name] or pressed[name] or released[name]
@@ -1558,16 +1576,26 @@ do
             end
         end;
 
-        pressed = function(name) 
-            if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) and joycheck(pressed[name]) then 
-                return pressed[name] 
-            end 
+        pressed = function(...) 
+            local ret = {}
+            local args = {...}
+            local val
+            for _, name in ipairs(args) do 
+                val = isPressed(name)
+                if val then table.insert(ret, val) end
+            end
+            if #ret > 0 then return ret end
         end;
 
-        released = function(name)
-            if joycheck(released[name]) then
-                return released[name] 
+        released = function(...)
+            local ret = {}
+            local args = {...}
+            local val
+            for _, name in ipairs(args) do 
+                val = isReleased(name)
+                if val then table.insert(ret, val) end
             end
+            if #ret > 0 then return ret end
         end;
 
         press = function(key, extra)

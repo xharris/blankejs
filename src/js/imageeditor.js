@@ -67,6 +67,7 @@ class ImageEditor extends Editor {
     this.hover_frame = 0;
     this.hover_frame_pos = [0, 0];
     this.changed = false;
+    this.not_saved = false;
     this.history_tex = [];
     this.history_cd = HISTORY_TIMER;
     // create elements
@@ -218,13 +219,12 @@ class ImageEditor extends Editor {
     let toolActive = btn => {
       let tool = this.curr_tool;
 
-      if (tool == "pencil" && btn == 0) this.drawPoint(this.curr_color);
+      if (tool == "pencil" && btn == 0)
+        this.drawPoint(this.curr_color);
       if ((tool == "eraser" && btn == 0) || (tool == "pencil" && btn == 2))
         this.erase();
       if (tool == "eyedrop" && btn == 0)
-        this.curr_color = rgbToHex(
-          this.getPoint(this.cursor[0], this.cursor[1])
-        );
+        this.curr_color = rgbToHex(this.getPoint(this.cursor[0], this.cursor[1]));
       this.drawCrosshair();
     };
     this.pixi.on("mouseMove", (e, info) => {
@@ -350,6 +350,22 @@ class ImageEditor extends Editor {
     img_editors.forEach(e => {
       e.refreshImageList();
     });
+  }
+  onBeforeClose(res, rej) {
+    if (this.not_saved) {
+      blanke.showModal(
+        "<label>'" +
+        nwPATH.basename(this.file) +
+        "' has unsaved changes! Save before closing?</label>",
+        {
+          yes: () => { this.save(); res(); },
+          no: () => { res(); },
+          cancel: () => { }
+        }
+      );
+    } else {
+      res();
+    }
   }
   openFile(path) {
     this.file = path;
@@ -482,8 +498,12 @@ class ImageEditor extends Editor {
     this.img_height = set.frame_size[1];
 
     // resize render textures to image size
-    this.img_rtx = PIXI.RenderTexture.create(Math.max(this.width, this.img_width), Math.max(this.height, this.img_height));
-    this.img_rtx_temp = PIXI.RenderTexture.create(Math.max(this.width, this.img_width), Math.max(this.height, this.img_height));
+    const best_width = Math.max(this.width, this.img_width)
+    const best_height = Math.max(this.height, this.img_height)
+    if (this.img_rtx.width != best_width || this.img_rtx.height != best_height) {
+      this.img_rtx = PIXI.RenderTexture.create(best_width, best_height);
+      this.img_rtx_temp = PIXI.RenderTexture.create(best_width, best_height);
+    }
 
     this.pixi.setCameraBounds(
       0,
@@ -712,6 +732,7 @@ class ImageEditor extends Editor {
   }
   storeUndo(now) {
     if (now) this.history_cd = 0;
+    else this.addAsterisk()
     this.changed = true;
   }
   undo() {
@@ -729,10 +750,20 @@ class ImageEditor extends Editor {
           "base64"
         );
         nwFS.writeFile(this.file, buf);
-        blanke.toast(`'${nwPATH.basename(this.file)}' saved!`);
+        this.removeAsterisk()
       };
     }
   }
+  addAsterisk() {
+    this.not_saved = true;
+    this.setSubtitle("*");
+  }
+
+  removeAsterisk() {
+    this.not_saved = false;
+    this.setSubtitle();
+  }
+
   static openImage(f) {
     if (!FibWindow.focus(nwPATH.basename(f || EDITOR_TITLE))) new ImageEditor(f);
   }
