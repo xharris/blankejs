@@ -18,4 +18,4 @@ install:
   - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
   
 script:
-  - xvfb-run mocha --exit ./test
+  - xvfb-run --server-args="-screen 0 1024x768x24" mocha --exit ./test
