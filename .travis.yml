@@ -13,8 +13,8 @@ os:
 osx_image: xcode8.4 # define OS X image which will be mounted
 dist: xenial # use Ubuntu Trusty for Linux operation system
 
-services:
-  - xvfb
+# services:
+#   - xvfb
 
 cache:
   npm: true
@@ -25,12 +25,12 @@ cache:
 install:
   - npm i
 
-before_script:
-  - "export DISPLAY=:99.0"
-  - sleep 3 # give xvfb some time to start
+# before_script:
+#   - "export DISPLAY=:99.0"
+#   - sleep 3 # give xvfb some time to start
 
-before_install:
-  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
+# before_install:
+#   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
 
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" || "$TRAVIS_OS_NAME" == "osx" ]]; then xvfb-run -a npm test; else npm test; fi
+  - npm test
