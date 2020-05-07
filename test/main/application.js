@@ -10,7 +10,7 @@ module.exports = function (helper) {
         .browserWindow.getBounds().should.eventually.have.property('height').and.be.above(0)
     })
 
-    it('checks for updates', function () {
+    it.skip('checks for updates', function () {
       return this.app.client.waitUntilWindowLoaded()
         .getText(".blankejs-toasts .toast-container .content")
         .should.eventually.match(/No updates|Update available/)
@@ -20,7 +20,7 @@ module.exports = function (helper) {
     close_after: true
   }))
 
-  describe(name('Application', 'Window buttons'), setup(function () {
+  describe.skip(name('Application', 'Window buttons'), setup(function () {
     it('minimizes', function () {
       return this.app.client.waitUntilWindowLoaded()
         .element("#btn-minimize").click()
