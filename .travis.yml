@@ -26,7 +26,7 @@ cache:
     - $HOME/.npm/_prebuilds
 
 install:
-  - npm
+  - npm i
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run npm test; else npm test; fi
