@@ -411,9 +411,10 @@ class BlankePixi {
 		this.help_text.y = this.height - this.help_text.height - margin - status_bar_height;
 
 		this.info_text.x = margin
-		this.info_text.y = this.height - this.help_text.height - this.info_text.height - margin
+		this.info_text.y = this.help_text.y - this.info_text.height
 		if (this.help_text.height > 0)
-			this.info_text.y -= margin
+			this.info_text.y -= (margin / 2)
+
 		this.bringToFront(this.help_text)
 	}
 	bringToFront(sprite) {
