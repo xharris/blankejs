@@ -63,6 +63,5 @@ src/binaries.zip
 node_modules/
 butler/
 *.kate-swp
-love2d/plugins 
-love2d/plugins/**/*
+engines/love2d/plugins/
 electron-builder.yml
