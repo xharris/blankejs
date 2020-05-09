@@ -10,6 +10,14 @@
         [
             "platformer.map=map+?",
             "platformer.map"
+        ],
+        [
+            "Open error file=?",
+            "Open error file"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ]
     ],
     "autoplay_preview": true,
@@ -49,8 +57,7 @@
         },
         "object_order": [
             "25c737ad",
-            "526dedde",
-            "6457c01e"
+            "526dedde"
         ]
     },
     "export": {
@@ -88,7 +95,7 @@
     "imageeditor": {
         "image/blue_robot.png": {
             "frame_size": [
-                38,
+                39,
                 33
             ],
             "frames": 8,
@@ -105,7 +112,7 @@
             ],
             "tool.fill": true,
             "animSpeed": 0.1,
-            "showPreview": false,
+            "showPreview": true,
             "onion_alpha": 0.5,
             "tool.alpha": 255
         },
@@ -228,7 +235,7 @@
         },
         "image/7tHKTIY.png": {
             "frame_size": [
-                481,
+                403,
                 481
             ],
             "frames": 1,

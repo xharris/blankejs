@@ -61,8 +61,9 @@ eApp.on("ready", function () {
 
   ipcMain.on("openDevTools", e => main_window.webContents.openDevTools());
   ipcMain.on("showWindow", e => main_window.show());
+
   ipcMain.on('checkForUpdates', e => {
-    autoUpdater.checkForUpdates()
+    autoUpdater.checkForUpdates().catch(e => console.log(`Update Error: ${e}`))
   })
   ipcMain.on('installUpdate', () => {
     update_on_close = true;

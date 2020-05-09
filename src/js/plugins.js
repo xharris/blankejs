@@ -323,11 +323,13 @@ class Plugins extends Editor {
 
     if (plugin_info[key]) {
       for (let path of plugin_info[key].files) {
-        let rel_path = nwPATH
-          .relative(plugin_path, path)
-          .replace(/^(.+?)[\\\/]/, "");
+        if (path) {
+          let rel_path = nwPATH
+            .relative(plugin_path, path)
+            .replace(/^(.+?)[\\\/]/, "");
 
-        nwFS.copySync(path, pathJoin(app.engine.plugin_path, key, rel_path));
+          nwFS.copySync(path, pathJoin(app.engine.plugin_path, key, rel_path));
+        }
       }
       app.projSetting("enabled_plugins")[key] = true;
       dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });

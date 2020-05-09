@@ -738,6 +738,7 @@ do
             end
             Draw.setFont('04B_03.ttf', 16)
             scripts = Game.options.scripts or {}
+            local no_user_scripts = (#scripts == 0)
             -- load plugins
             if Game.options.plugins then 
                 for _,f in ipairs(Game.options.plugins) do 
@@ -745,7 +746,7 @@ do
                 end
             end
             -- load scripts
-            if Game.options.auto_require then
+            if Game.options.auto_require and no_user_scripts then
                 local load_folder
                 load_folder = function(path)
                     files = FS.ls(path)
@@ -866,6 +867,10 @@ do
                 local instance = obj_info.spawn_class(obj_info.args, args or {})
                 return instance
             end
+        end;
+
+        get = function(classname)
+            return gobject_count[classname] or {}
         end;
 
         count = function(classname)
@@ -1154,7 +1159,7 @@ do
                         table.insert(frame_list, f)
                     elseif f_type == 'string' then
                         local a,b = string.match(f,'%s*(%d+)%s*-%s*(%d+)%s*')
-                        assert(a and b, "Invalid frames for '"..anim.name.."' { "..(a or 'nil')..", "..(b or 'nil').." }")
+                        assert(a and b, "Invalid frames for '"..(anim.name or file).."' { "..(a or 'nil')..", "..(b or 'nil').." }")
                         for i = a,b do
                             table.insert(frame_list, i)
                         end
@@ -1498,6 +1503,9 @@ do
             return callable{
                 __call = function(self, args)
                     return Game.spawn(name, args)
+                end,
+                get = function()
+                    return Game.get(name)
                 end,
                 count = function()
                     return Game.count(name)
@@ -2263,7 +2271,7 @@ end
 --CAMERA
 Camera = nil
 do
-    local default_opt = { x=0, y=0, dx=0, dy=0, angle=0, zoom=nil, scalex=1, scaley=nil, top=0, left=0, width=nil, height=nil, follow=nil, enabled=true }
+    local default_opt = { x=0, y=0, z=0, dx=0, dy=0, angle=0, zoom=nil, scalex=1, scaley=nil, top=0, left=0, width=nil, height=nil, follow=nil, enabled=true }
     local attach_count = 0
     local options = {}
 
@@ -2274,6 +2282,7 @@ do
             options[name] = copy(default_opt)
             options[name].transform = love.math.newTransform()
             table.update(options[name], opt)
+            sort(options, 'z', 0)
             return options[name]
         end;
         get = function(name) return assert(options[name], "Camera :'"..name.."' not found") end;
@@ -2773,6 +2782,9 @@ do
             repos = obj:_checkForAnimHitbox()
         else 
             obj.align = 'center'
+            obj.scale = obj.scale or 1
+            obj.scalex = obj.scalex or 1
+            obj.scaley = obj.scaley or 1
         end
         return  obj.alignx * abs(obj.scale * obj.scalex),
                 obj.aligny * abs(obj.scale * obj.scaley),
@@ -3558,8 +3570,12 @@ do
             end
 
             local _drawGame = function()
+                if Effect.active > 0 then 
+                    
+                end
                 Draw{
                     {'push'},
+                    {'reset'},
                     {'color',Game.options.background_color},
                     {'rect','fill',0,0,Game.width,Game.height},
                     {'pop'}

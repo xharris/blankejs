@@ -1,7 +1,7 @@
 {
   "name": "BlankE",
   "description": "BlankE game dev environment",
-  "version": "0.11.10",
+  "version": "0.11.11",
   "main": "entry.js",
   "single-instance": false,
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
@@ -21,7 +21,7 @@
     "win": {
       "icon": "logo.ico",
       "target": [
-        "nsis"
+        "portable"
       ],
       "publish": [
         "github"

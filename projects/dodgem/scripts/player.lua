@@ -28,7 +28,7 @@ Player = Entity("Player",{
 		end
 	end,
 	update = function(self, dt)
-		local d = 100
+		local d = 150
 		self.hspeed = 0
 		self.vspeed = 0
 		-- basic movement

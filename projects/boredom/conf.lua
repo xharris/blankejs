@@ -1,7 +1,7 @@
 io.stdout:setvbuf('no')
 
-      package.path = "./lua/?/init.lua;./lua/?;" .. package.path
-      require("blanke")
+love.filesystem.setRequirePath( "?.lua;?/init.lua;lua/?.lua;lua/?/init.lua" )
+require("blanke")
       
 function love.conf(t)
     t.console = true

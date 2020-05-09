@@ -14,6 +14,11 @@ const MARGIN_TOP = 40;
 const HISTORY_TIMER = 2000;
 const HISTORY_MAX = 30;
 const TOOLS = ["pencil", "eraser", "eyedrop"];
+const TOOL_INSTR = {
+  pencil: "LeftClick = draw, RightClick = erase",
+  eraser: "LeftClick = erase",
+  eyedrop: "LeftClick = add color to pallette"
+}
 let colors = [
   "f44336",
   "E91E63",
@@ -78,7 +83,7 @@ class ImageEditor extends Editor {
     let form_options = [
       ["image", "select", { label: false }],
       ["image settings", true],
-      ["position", "number", { inputs: 2, separator: "x" }],
+      ["position", "number", { min: 0, inputs: 2, separator: "x" }],
       ["spacing", "number"],
       ["frame_size", "number", { inputs: 2, separator: "x", min: 1 }],
       ["frames", "number", { min: 1 }],
@@ -389,6 +394,14 @@ class ImageEditor extends Editor {
       this.checkFormVisibility();
       this.drawBackground();
 
+      // resize render textures to image size
+      const best_width = Math.max(this.width, this.img_width)
+      const best_height = Math.max(this.height, this.img_height)
+      if (this.img_rtx.width != best_width || this.img_rtx.height != best_height) {
+        this.img_rtx.resize(best_width, best_height);
+        this.img_rtx_temp.resize(best_width, best_height);
+      }
+
       if (nwFS.pathExistsSync(path)) {
         this.pixi.loadRes(path, (loader, res) => {
           var initial_spr = new PIXI.Sprite(res[path].texture);
@@ -436,6 +449,7 @@ class ImageEditor extends Editor {
     cross.moveTo(-w - camx, cury + 0.5);
     cross.lineTo(w - camx, cury + 0.5);
     this.drawEditPreview();
+    this.refreshHelpText();
   }
   drawEditPreview() {
     // update draw preview
@@ -483,6 +497,10 @@ class ImageEditor extends Editor {
       this.el_image_form.useValues(this.img_settings);
     });
   }
+  refreshHelpText() {
+    this.pixi.setInfoText(`x ${this.cursor[0]} y ${this.cursor[1]} (${this.img_width}px x ${this.img_height}px)`);
+    this.pixi.setHelpText(TOOL_INSTR[this.curr_tool] || '')
+  }
   drawBackground() {
     let bg = this.img_background;
     let set = this.img_settings;
@@ -497,20 +515,13 @@ class ImageEditor extends Editor {
       (set.frame_size[0] + set.spacing) * set.frames - set.spacing;
     this.img_height = set.frame_size[1];
 
-    // resize render textures to image size
-    const best_width = Math.max(this.width, this.img_width)
-    const best_height = Math.max(this.height, this.img_height)
-    if (this.img_rtx.width != best_width || this.img_rtx.height != best_height) {
-      this.img_rtx = PIXI.RenderTexture.create(best_width, best_height);
-      this.img_rtx_temp = PIXI.RenderTexture.create(best_width, best_height);
-    }
-
     this.pixi.setCameraBounds(
       0,
       0,
       this.pixi.width - this.img_width,
       this.pixi.height - this.img_height
     );
+
     // draw transparency tiles
     if (this.el_image_form.getValue("showBackgroundGrid")) {
       for (let x = 0; x < this.img_width; x += t_size) {
@@ -551,6 +562,7 @@ class ImageEditor extends Editor {
   setTool(name) {
     if (TOOLS.includes(name)) {
       this.curr_tool = name;
+      this.refreshHelpText();
       this.el_image_form.getInput(name).classList.add("selected");
       TOOLS.forEach(t => {
         if (t != name)
@@ -589,17 +601,21 @@ class ImageEditor extends Editor {
       this.render_anim = false;
       let tex_frames = [];
       let set = this.img_settings;
+
+      const y = this.img_top;
       for (
         let x = this.img_left;
         x < this.img_width;
         x += set.frame_size[0] + set.spacing
       ) {
         let new_tex = this.img_rtx.clone();
+        const [fw, fh] = set.frame_size;
+
         new_tex.frame = new PIXI.Rectangle(
           x,
-          0,
-          set.frame_size[0],
-          set.frame_size[1]
+          y,
+          x + fw > new_tex.width ? fw - ((x + fw) % new_tex.width) : fw,
+          y + fh > new_tex.height ? fh - ((y + fh) % new_tex.height) : fh,
         );
         tex_frames.push(new_tex);
       }

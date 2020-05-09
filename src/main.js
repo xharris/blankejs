@@ -37,7 +37,6 @@ let re_engine_classes = /classes\s+=\s+{\s*([\w\s,]+)\s*}/;
 
 const DEFAULT_IDE_SETTINGS = {
   recent_files: [],
-
   plugin_path: "plugins",
   themes_path: "themes",
   engines_path: "engines",
@@ -45,7 +44,9 @@ const DEFAULT_IDE_SETTINGS = {
   background_image_data: "",
   theme: "green",
   window_splitting: false,
+  max_windows: 4,
   quick_access_size: 5,
+  show_help_text: true,
   // game_preview_enabled:true,
   // autoreload_external_run:false,
   run_save_code: true,

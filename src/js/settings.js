@@ -72,8 +72,10 @@ class Settings extends Editor {
       ["export.name", "text", { default: app.projSetting("export").name }],
       ...engine_export_settings,
       ["IDE"],
+      ["max_windows", "number", { min: 1, max: 5, default: app_set.max_windows }],
       ["theme", "select", { choices: app.themes, default: app_set.theme }],
       ["quick_access_size", "number", { min: 1, default: app_set.quick_access_size }],
+      ["show_help_text", "checkbox", { default: app_set.quick_access_size }],
       ["run_save_code", "checkbox", { default: app_set.run_save_code, label: "save code before runs" }],
       ["Paths", true],
       ...paths.map(path => [path, "directory", { default: app_set[path + "_path"] }]),
@@ -92,7 +94,7 @@ class Settings extends Editor {
       });
     });
     // prettier-ignore
-    ["quick_access_size", "theme", "run_save_code"].forEach(s => {
+    ["quick_access_size", "theme", "run_save_code", "max_windows", "show_help_text"].forEach(s => {
       this.el_settings.onChange(s, v => {
         app.ideSetting(s, v);
         app.saveAppData();

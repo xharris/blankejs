@@ -1,4 +1,34 @@
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+PIXI.Loader.shared.add("ProggyScene", "src/includes/proggy_scene.fnt");
+PIXI.Loader.shared.load();
+
+// http://www.html5gamedevs.com/topic/7507-how-to-move-the-sprite-to-the-top/?do=findComment&comment=45162
+function bringToFront(sprite, parent) {
+	var sprite = typeof sprite != "undefined" ? sprite.target || sprite : this;
+	var parent = parent || sprite.parent || { children: false };
+	if (parent.children) {
+		for (var keyIndex in sprite.parent.children) {
+			if (sprite.parent.children[keyIndex] === sprite) {
+				sprite.parent.children.splice(keyIndex, 1);
+				break;
+			}
+		}
+		parent.children.push(sprite);
+	}
+}
+function sendToBack(sprite, parent) {
+	var sprite = typeof sprite != "undefined" ? sprite.target || sprite : this;
+	var parent = parent || sprite.parent || { children: false };
+	if (parent.children) {
+		for (var keyIndex in sprite.parent.children) {
+			if (sprite.parent.children[keyIndex] === sprite) {
+				sprite.parent.children.splice(keyIndex, 1);
+				break;
+			}
+		}
+		parent.children.splice(0, 0, sprite);
+	}
+}
 
 let clientX = 0, clientY = 0;
 class BlankePixi {
@@ -287,9 +317,11 @@ class BlankePixi {
 		if (Math.abs(diff) < 0.01) {
 			this.zoom = this.zoom_target;
 			this.dispatchEvent('zoomChange', { zoom: this.zoom });
+			this.refreshCornerText()
 			return;
 		} else {
 			this.dispatchEvent('zoomChanging', { zoom: this.zoom });
+			this.refreshCornerText()
 		}
 
 		// look at https://github.com/anvaka/ngraph/tree/master/examples/pixi.js/03%20-%20Zoom%20And%20Pan instead
@@ -332,6 +364,7 @@ class BlankePixi {
 	}
 	moveCamera(dx, dy) {
 		this.setCameraPosition(this.camera[0] + (dx), this.camera[1] + (dy));
+		this.refreshCornerText()
 	}
 	getCameraPosition() { // needs work
 		return [
@@ -339,13 +372,72 @@ class BlankePixi {
 			this.camera[1] / this.zoom
 		]
 	}
+	setHelpText(text) {
+		this.extra_help_text = text
+		this.refreshCornerText()
+	}
+	setInfoText(text) {
+		this.extra_info_text = text
+		this.refreshCornerText()
+	}
+	refreshCornerText() {
+		if (!this.help_text) {
+			this.help_text = new PIXI.extras.BitmapText(
+				'',
+				{ font: { size: 16, name: "proggy_scene", align: "left" } }
+			)
+			this.pixi.stage.addChild(this.help_text)
+		}
+		if (!this.info_text) {
+			this.info_text = new PIXI.extras.BitmapText(
+				'',
+				{ font: { size: 16, name: "proggy_scene", align: "left" } }
+			)
+			this.pixi.stage.addChild(this.info_text)
+		}
+
+		const default_text = `${this.zoom != 1 ? `zoom: ${blanke.places(this.zoom, 2)}\n` : ''}MiddleClick/Alt = move camera, Ctrl-0 = reset camera, ${this.zoom != 1 ? "0 = reset zoom" : "Scroll = zoom"}`
+
+		this.info_text.text = this.extra_info_text
+		if (app.ideSetting("show_help_text") == true)
+			this.help_text.text = (this.extra_help_text || "") + "\n" + default_text
+		else
+			this.help_text.text = this.zoom != 1 ? `zoom: ${blanke.places(this.zoom, 2)}` : ''
+		this.help_text.alpha = 0.6;
+
+		const margin = 20;
+		const status_bar_height = 22;
+		this.help_text.x = margin
+		this.help_text.y = this.height - this.help_text.height - margin - status_bar_height;
+
+		this.info_text.x = margin
+		this.info_text.y = this.height - this.help_text.height - this.info_text.height - margin
+		if (this.help_text.height > 0)
+			this.info_text.y -= margin
+		this.bringToFront(this.help_text)
+	}
+	bringToFront(sprite) {
+		bringToFront(sprite)
+		if (this.help_text)
+			bringToFront(this.help_text)
+		if (this.info_text)
+			bringToFront(this.info_text)
+	}
+	sendToBack(sprite) {
+		sendToBack(sprite)
+		if (this.help_text)
+			bringToFront(this.help_text)
+		if (this.info_text)
+			bringToFront(this.info_text)
+	}
 	setCameraPosition(x, y) {
 		let xclamp = [x, x];
 		let yclamp = [y, y];
 		if (this.camera_bounds) {
 			let l = this.camera_bounds[0], t = this.camera_bounds[1];
 			let w = this.camera_bounds[2], h = this.camera_bounds[3];
-			let offx = w - (w * this.zoom), offy = h - (h * this.zoom);
+			let offx = w - (w * this.zoom),
+				offy = h - (h * this.zoom);
 			xclamp = [l + offx, w - offx];
 			yclamp = [t + offy, h - offy];
 		}
@@ -354,11 +446,13 @@ class BlankePixi {
 		this.dispatchEvent('cameraChange', { x, y });
 	}
 	setCameraBounds(x1, y1, x2, y2) {
+		/*
 		if (x1 != null)
 			this.camera_bounds = [x1, y1, x2, y2];
 		else
 			this.camera_bounds = null;
 		this.setCameraPosition(...this.camera);
+		*/
 	}
 	// Pointer Locking for camera dragging
 	dragStart() {
@@ -374,7 +468,6 @@ class BlankePixi {
 		}
 	}
 	resize(cb) {
-
 		if (!this.resizeTimeout)
 			this.resizeTimeout = setTimeout(() => {
 				let parent = this.pixi.view.parentElement;
@@ -385,6 +478,7 @@ class BlankePixi {
 				this.pixi.renderer.view.style.height = h + "px";
 				//this part adjusts the ratio:
 				this.pixi.renderer.resize(w, h);
+				this.refreshCornerText()
 
 				if (cb) cb()
 

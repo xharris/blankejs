@@ -1,5 +1,4 @@
 var boxes = [];
-var MAX_WINDOWS = 4; //5;
 var split_enabled = true;
 var SHOW_SINGLE_BOX_TITLEBAR = true;
 
@@ -157,7 +156,7 @@ class FibWindow {
 		let x = 0, y = 0, width = 50, height = 100;
 
 		// more than max allowed fibwindows?
-		if (boxes.length > MAX_WINDOWS) {
+		if (boxes.length > app.ideSetting("max_windows")) {
 			// remove oldest one
 			let killed_box = boxes.pop();
 			killed_box.close();

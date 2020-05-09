@@ -18,12 +18,12 @@
     ],
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "View project in explorer=?",
@@ -92,6 +92,7 @@
     "export": {
         "name": "boredom",
         "filter": "linear",
+        "scale": true,
         "vsync": "on",
         "web_memory": 0,
         "web_stack": 2,
@@ -103,9 +104,9 @@
         "scale_mode": "linear",
         "frameless": false,
         "minify": true,
-        "scale": true,
         "resizable": true,
-        "override_game_size": true
+        "override_game_size": true,
+        "round_pixels": true
     },
     "enabled_plugins": {
         "xhh-platformer": false,

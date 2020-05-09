@@ -590,7 +590,7 @@ module.exports.autocomplete = {
   ],
 
   sprite_align: [
-    /Entity\s*\(\s*[\'\"](\w+)[\'\"],.*align[\s=]+['"]([\w\s\/.-]+)['"]/g
+    /Entity\s*\(\s*[\'\"](\w+)[\'\"],.*[^\.]align[\s=]+['"]([\w\s\/.-]+)['"]/g
   ],
 
   this_ref: {

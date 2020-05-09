@@ -5,36 +5,6 @@
 
 // var earcut = require('./includes/earcut.js');
 
-// http://www.html5gamedevs.com/topic/7507-how-to-move-the-sprite-to-the-top/?do=findComment&comment=45162
-function bringToFront(sprite, parent) {
-  var sprite = typeof sprite != "undefined" ? sprite.target || sprite : this;
-  var parent = parent || sprite.parent || { children: false };
-  if (parent.children) {
-    for (var keyIndex in sprite.parent.children) {
-      if (sprite.parent.children[keyIndex] === sprite) {
-        sprite.parent.children.splice(keyIndex, 1);
-        break;
-      }
-    }
-    parent.children.push(sprite);
-  }
-}
-function sendToBack(sprite, parent) {
-  var sprite = typeof sprite != "undefined" ? sprite.target || sprite : this;
-  var parent = parent || sprite.parent || { children: false };
-  if (parent.children) {
-    for (var keyIndex in sprite.parent.children) {
-      if (sprite.parent.children[keyIndex] === sprite) {
-        sprite.parent.children.splice(keyIndex, 1);
-        break;
-      }
-    }
-    parent.children.splice(0, 0, sprite);
-  }
-}
-
-PIXI.Loader.shared.add("ProggyScene", "src/includes/proggy_scene.fnt");
-PIXI.Loader.shared.load();
 
 let map_folder = () => nwPATH.join(app.project_path, "assets", "maps");
 
@@ -85,25 +55,7 @@ class SceneEditor extends Editor {
     this.origin_graphics = new PIXI.Graphics();
     this.crosshair_graphics = new PIXI.Graphics();
 
-    this.coord_text_styleL = {
-      font: { size: 16, name: "proggy_scene", align: "right" },
-    };
-    this.coord_text_styleR = {
-      font: { size: 16, name: "proggy_scene", align: "left" },
-    };
-
-    this.coord_textL = new PIXI.extras.BitmapText(
-      "x 0 y 0",
-      this.coord_text_styleL
-    );
-    this.coord_textR = new PIXI.extras.BitmapText(
-      "x 0 y 0",
-      this.coord_text_styleR
-    );
     this.obj_info = {};
-
-    this.overlay_container.addChild(this.coord_textL);
-    this.overlay_container.addChild(this.coord_textR);
 
     // this.grid_container.addChild(this.origin_graphics);
     this.grid_container.addChild(this.grid_graphics);
@@ -588,7 +540,7 @@ class SceneEditor extends Editor {
       if (this.obj_type == "object")
         this.placeObjectPoint(half_mouse[0], half_mouse[1]);
 
-      if (this.obj_type == "image") bringToFront(this.scene_graphic);
+      if (this.obj_type == "image") this.pixi.bringToFront(this.scene_graphic);
 
       //if (!this.selecting)
       //	this.placeImage(mouse[0], mouse[1], this.curr_image);
@@ -945,31 +897,29 @@ class SceneEditor extends Editor {
       let hmouse = this.pixi.half_mouse;
       let hpmouse = this.pixi.half_place_mouse;
 
-      let { zoom } = this.pixi;
-
       var stage_width = this.game_width;
       var stage_height = this.game_height;
 
-      let text = "x " + parseInt(mouse[0]) + " y " + parseInt(mouse[1]);
+      let info_text = ["x " + parseInt(mouse[0]) + " y " + parseInt(mouse[1])];
+      let help_text = [];
       // which mouse coordinates to display
       if (this.obj_type == "object") {
-        text = "x " + parseInt(hmouse[0]) + " y " + parseInt(hmouse[1]);
+        info_text = ["x " + parseInt(hmouse[0]) + " y " + parseInt(hmouse[1])];
       }
-      // zoom level
-      if (zoom != 1) text += ` zoom: ${blanke.places(zoom, 2)}`;
       // object being hovered
       let obj_names = Object.values(this.obj_info);
-      if (obj_names.length > 0) text += "\n" + obj_names.join(", ");
+      if (obj_names.length > 0) info_text.push(obj_names.join(", "));
+      if (this.obj_type == "image" && !this.selecting) {
+        help_text.push("CtrlClick = select group of tiles")
+      }
       // tile selection info
       if (this.selecting) {
         let g = this.scene_graphic;
         let a = g.selection_area;
         if (a)
-          text += `\nselected x ${a[0] + g.x} y ${a[1] + g.y} w ${a[2]} h ${
-            a[3]
-            }`;
-        if (this.selected_tiles.length > 0)
-          text += `\n${this.selected_tile_info}`;
+          info_text.push(`selected x ${a[0] + g.x} y ${a[1] + g.y} w ${a[2]} h ${a[3]}`);
+        info_text.push(`\n${this.selected_tile_info}`)
+        help_text.push("Drag selection with mouse, Esc = deselect")
       }
 
       let center = [pmouse[0], pmouse[1]];
@@ -977,40 +927,8 @@ class SceneEditor extends Editor {
         center = [hpmouse[0], hpmouse[1]];
       }
 
-      let text_center = center.slice();
-      this.coord_textL.text = text;
-      this.coord_textR.text = text;
-      if (pmouse[0] < stage_width / 2) {
-        // display on left
-        this.coord_textL.alpha = 0;
-        this.coord_textR.alpha = 1;
-      } else {
-        // display on right
-        this.coord_textL.alpha = 1;
-        this.coord_textR.alpha = 0;
-      }
-
-      // change center based on mouse position
-      if (pmouse[0] >= stage_width / 2)
-        text_center[0] -= this.coord_textR.width;
-      if (pmouse[1] >= stage_height / 2)
-        text_center[1] -= this.coord_textL.height;
-
-      // place text
-      if (pmouse[0] < stage_width / 2)
-        this.coord_textR.x = parseInt(
-          (this.game_width - text_center[0]) / 5 + text_center[0]
-        );
-      else
-        this.coord_textL.x = parseInt(-(text_center[0] / 5) + text_center[0]);
-
-      if (pmouse[1] < stage_height / 2) {
-        this.coord_textL.y = parseInt(text_center[1] + 8);
-        this.coord_textR.y = parseInt(text_center[1] + 8);
-      } else {
-        this.coord_textL.y = parseInt(text_center[1] - 8);
-        this.coord_textR.y = parseInt(text_center[1] - 8);
-      }
+      this.pixi.setHelpText(help_text.join('\n'));
+      this.pixi.setInfoText(info_text.join('\n'));
 
       // line style
       this.crosshair_graphics.clear();
@@ -1635,7 +1553,7 @@ class SceneEditor extends Editor {
         layer.container.addChild(place_image.pixi_tilemap[layer.uuid]);
       }
       layer.container.setChildIndex(place_image.pixi_tilemap[layer.uuid], 0);
-      bringToFront(place_image.pixi_tilemap[layer.uuid]);
+      this.pixi.bringToFront(place_image.pixi_tilemap[layer.uuid]);
 
       let new_sprite = new PIXI.Sprite(new_tile_texture);
       new_sprite.x = x;
@@ -1874,9 +1792,9 @@ class SceneEditor extends Editor {
 
         this.el_object_form.container.style.display = "block";
 
-        this.iterObjectInLayer(this.curr_layer.uuid, name, function (obj) {
-          bringToFront(obj.image);
-          bringToFront(obj.poly);
+        this.iterObjectInLayer(this.curr_layer.uuid, name, obj => {
+          this.pixi.bringToFront(obj.image);
+          this.pixi.bringToFront(obj.poly);
         });
       }
     }

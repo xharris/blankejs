@@ -27,9 +27,10 @@ Game{
 		player = Player{x=Game.width/2, y=Game.height/2}
 		
 		local margin = 50
-		for b = 0, 4 do 
-			Ball{anim_frame=b+1, x=Math.lerp(margin, Game.width-(margin*2), b/4), y=Game.height/2}
-		end
+		
+		Timer.every(1, function()
+			Ball()
+		end)
 				
 		--Audio.play('main')
 		Audio.volume(0.05)

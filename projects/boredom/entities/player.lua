@@ -3,7 +3,7 @@ Camera "player"
 Image.animation('player_stand.png')
 Image.animation('player_dead.png')
 Image.animation('player_walk.png', { { rows=1, cols=2, duration=0.1 } })
-
+Hitbox.debug = true
 Entity("Player", {
 	camera = 'player',
 	animations = {'player_stand','player_walk','player_dead'},
@@ -28,7 +28,8 @@ Entity("Player", {
 		if not self.dead then
 			self.dead = true
 			self.animation = "player_dead"
-			self.hit_area = "player_dead"
+			self.align = "bottom center"
+			self.hitbox = "player_dead"
 			Hitbox.adjust(self, -5, -20, -10, -22)
 			Tween(1, self, { hspeed=0 }, nil, function()
 				State.restart('play')

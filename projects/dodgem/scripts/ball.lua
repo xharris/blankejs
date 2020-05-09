@@ -1,5 +1,5 @@
 local SOCCER,BEACH,SPIKE,BOWLING,SMILE = 1,2,3,4,5
-local VIEW_BALL_RANGE = false
+local VIEW_BALL_RANGE = true
 
 Ball = Entity("Ball",{
 	hitbox=true,
@@ -7,7 +7,7 @@ Ball = Entity("Ball",{
 	animations={ "ball" },
 	align="center",
 	spawn=function(self)
-		-- self.anim_frame = Math.random(1,5)
+		self.anim_frame = Math.random(1,5)
 			
 		--				soccer, 	beach, 		spike, 		bowling, 	smile
 		local scaling = {0.75,		1,			0.5,		1.5,		0.3 }
@@ -86,6 +86,7 @@ Ball = Entity("Ball",{
 		d()
 		
 		if VIEW_BALL_RANGE then
+			local player = Player.get()[1]
 			Draw{
 				{ 'color', 'green'},
 				{ 'scale', 1/self.scale },
