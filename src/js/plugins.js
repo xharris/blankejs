@@ -317,9 +317,7 @@ class Plugins extends Editor {
 
   static enable(key) {
     const plugin_path = app.relativePath(app.ideSetting("plugin_path"));
-    const engine_path = app.engine_path;
-
-    nwFS.ensureDir(app.engine.plugin_path);
+    nwFS.ensureDirSync(app.engine.plugin_path);
 
     if (plugin_info[key]) {
       for (let path of plugin_info[key].files) {
@@ -364,8 +362,7 @@ class Plugins extends Editor {
   }
 
   static clearPlugins() {
-    const engine_path = app.engine_path;
-    nwFS.emptyDirSync(pathJoin(engine_path, "plugins"));
+    nwFS.emptyDirSync(app.engine.plugin_path);
   }
 }
 
