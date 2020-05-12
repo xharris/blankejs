@@ -1361,6 +1361,8 @@ class SceneEditor extends Editor {
         image: pixi_image,
         points: points,
       });
+
+      this.export()
     })
     add_to_layer.container.addChild(pixi_poly);
 
