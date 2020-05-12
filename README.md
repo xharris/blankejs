@@ -16,12 +16,20 @@ install Love2D on linux:
 - use sudo apt-get install love
 - do not use Snap to install. permissions will not be set up properly
 
-Error: "System limit for number of file watchers reached"
+# Errors
+
+## Error: "System limit for number of file watchers reached"
 
 ```
 $ sudo sysctl fs.inotify.max_user_watches=524288
 $ sudo sysctl -p
 ```
+
+## Error: EPERM: operation not permitted, open "<script_path>"
+
+1. open file explorer and look at file properties
+
+2. uncheck 'read-only'
 
 src: https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers#the-technical-details
 

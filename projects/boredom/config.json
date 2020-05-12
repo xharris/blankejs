@@ -18,8 +18,16 @@
     ],
     "quick_access": [
         [
+            "player.lua=script+?",
+            "player.lua"
+        ],
+        [
             "level1.map=map+?",
             "level1.map"
+        ],
+        [
+            "Clear history=?",
+            "Clear history"
         ],
         [
             "main.lua=script+?",
@@ -28,10 +36,6 @@
         [
             "View project in explorer=?",
             "View project in explorer"
-        ],
-        [
-            "View assets=?",
-            "View assets"
         ]
     ],
     "autoplay_preview": true,

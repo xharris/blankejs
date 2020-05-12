@@ -1,4 +1,4 @@
-local player
+player = nil 
 
 Image.animation("balls.png",{
 	{ name="ball", rows=1, cols=5, speed=0 }
@@ -32,7 +32,7 @@ Game{
 			Ball()
 		end)
 				
-		--Audio.play('main')
+		Audio.play('main')
 		Audio.volume(0.05)
 	end
 }

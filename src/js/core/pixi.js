@@ -44,6 +44,7 @@ class BlankePixi {
 		this.can_drag = false;
 		this.dragging = false;
 		this.snap_on = false;
+		this.real_mouse = [0, 0]
 		this.mouse = [0, 0];
 		this.place_mouse = [0, 0];
 		this.half_mouse = [0, 0];
@@ -155,11 +156,11 @@ class BlankePixi {
 				}
 				if (e.key == "Alt") {
 				}
-				if (e.key == "-") {
+				if (e.ctrlKey && e.key == "-") {
 					// zoom out
 					this.setZoom(this.zoom - (this.zoom_incr * (this.zoom)));
 				}
-				if (e.key == "=") {
+				if (e.ctrlKey && e.key == "=") {
 					// zoom in
 					this.setZoom(this.zoom + (this.zoom_incr * (this.zoom)));
 				}
@@ -259,7 +260,9 @@ class BlankePixi {
 			this.mx = mx;
 			this.my = my;
 
-			this.place_mouse = [Math.floor(x * this.zoom), Math.floor(y * this.zoom)];
+			this.place_mouse = [Math.floor(x * this.zoom), Math.floor(y * this.zoom)]
+
+			this.real_mouse = [Math.floor(x * this.zoom), Math.floor(y * this.zoom)]
 			this.mouse = [Math.floor(mx), Math.floor(my)];
 			this.half_mouse = [Math.floor(mx), Math.floor(my)];
 			this.half_place_mouse = [Math.floor(x), Math.floor(y)];
@@ -269,6 +272,7 @@ class BlankePixi {
 				mx < 0 ? (mx - snapx - ((mx - snapx) % snapx)) : mx - (mx % snapx),
 				my < 0 ? (my - snapy - ((my - snapy) % snapy)) : my - (my % snapy)
 			]
+
 
 			if (!e.data.originalEvent.ctrlKey && !this.camera_drag) { // !e.data.originalEvent.ctrlKey || ["object","image"].includes(this.obj_type)
 				if (mx < 0) { mx -= snapx; x -= snapx; }
@@ -380,19 +384,19 @@ class BlankePixi {
 		this.extra_info_text = text
 		this.refreshCornerText()
 	}
+	getBitmapText(opts) {
+		return new PIXI.extras.BitmapText(
+			'',
+			Object.assign({ font: { size: 16, name: "proggy_scene", align: "left" } }, opts || {})
+		)
+	}
 	refreshCornerText() {
 		if (!this.help_text) {
-			this.help_text = new PIXI.extras.BitmapText(
-				'',
-				{ font: { size: 16, name: "proggy_scene", align: "left" } }
-			)
+			this.help_text = this.getBitmapText()
 			this.pixi.stage.addChild(this.help_text)
 		}
 		if (!this.info_text) {
-			this.info_text = new PIXI.extras.BitmapText(
-				'',
-				{ font: { size: 16, name: "proggy_scene", align: "left" } }
-			)
+			this.info_text = this.getBitmapText()
 			this.pixi.stage.addChild(this.info_text)
 		}
 

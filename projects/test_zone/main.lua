@@ -11,7 +11,7 @@ Game {
 			file="blue_robot.png", 
 			{ name='walk', rows=1, cols=8, frames={ '2-5' } }
 		}]]
-			
+			 
 		--
 		Image.animation(
 			'blue_robot.png',

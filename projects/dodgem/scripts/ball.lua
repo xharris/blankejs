@@ -1,5 +1,5 @@
 local SOCCER,BEACH,SPIKE,BOWLING,SMILE = 1,2,3,4,5
-local VIEW_BALL_RANGE = true
+local VIEW_BALL_RANGE = false
 
 Ball = Entity("Ball",{
 	hitbox=true,
@@ -85,8 +85,7 @@ Ball = Entity("Ball",{
 	draw = function(self, d) 
 		d()
 		
-		if VIEW_BALL_RANGE then
-			local player = Player.get()[1]
+		if VIEW_BALL_RANGE and player then
 			Draw{
 				{ 'color', 'green'},
 				{ 'scale', 1/self.scale },

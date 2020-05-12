@@ -1421,21 +1421,31 @@ class Code extends Editor {
 
   save() {
     let data = this.codemirror.getValue();
-    nwFS.writeFileSync(this.file, data);
-    getKeywords(this.file, data);
-    this.parseFunctions();
-    Code.updateSpriteList(this.file, data);
-    this.removeAsterisk();
-    this.focus_after_save = true;
-    if (this.game) this.game.clearErrors();
-    this.refreshGame();
-    dispatchEvent("codeSaved");
+    return new Promise((res, rej) => {
+      nwFS.writeFile(this.file, data, err => {
+        if (err) return rej(err)
+        return res()
+      });
+    })
+      .then(() => {
+        this.removeAsterisk();
+        dispatchEvent("codeSaved");
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      .finally(() => {
+        getKeywords(this.file, data);
+        this.parseFunctions();
+        Code.updateSpriteList(this.file, data);
+        this.focus_after_save = true;
+        if (this.game) this.game.clearErrors();
+        this.refreshGame();
+      })
   }
 
   static saveAll() {
-    for (let i in code_instances) {
-      code_instances[i].save();
-    }
+    return Promise.all(Object.values(code_instances).map(i => i.save()))
   }
 
   static refreshCodeList() {

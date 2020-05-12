@@ -21,7 +21,7 @@
     "win": {
       "icon": "logo.ico",
       "target": [
-        "portable"
+        "nsis"
       ],
       "publish": [
         "github"

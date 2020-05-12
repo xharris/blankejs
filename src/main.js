@@ -19,7 +19,7 @@ C 	sceneeditor: image search keys still remain after closing scene editor
 C	sceneeditor: re-opening opens 3 instances
 */
 const elec = require("electron");
-const { remote, shell, ipcRenderer } = elec;
+const { remote, shell, ipcRenderer, webFrame } = elec;
 
 var fs = require("fs").promises;
 var nwFS = require("fs-extra");
@@ -466,8 +466,13 @@ var app = {
   extra_windows: [],
   play: function (options) {
     if (app.isProjectOpen() && app.engine.play) {
-      if (app.ideSetting("run_save_code")) Code.saveAll();
-      app.engine.play(options);
+      if (app.ideSetting("run_save_code"))
+        Code.saveAll().then(() => {
+          console.log('now playing')
+          app.engine.play(options);
+        })
+      else
+        app.engine.play(options);
     }
   },
 
@@ -1923,9 +1928,8 @@ app.window.webContents.once("dom-ready", () => {
     app.refreshQuickAccess();
   });
 
-  /*
-
-  */
+  webFrame.setVisualZoomLevelLimits(1, 1);
+  webFrame.setLayoutZoomLevelLimits(0, 0);
 
   app.loadAppData(function () {
     // load current theme

@@ -1,7 +1,7 @@
 local hit_effect = {
 	red = 0,
 	shift_radius = 0,
-	static_str = 0
+	static_str = 0 
 }
 
 Player = Entity("Player",{

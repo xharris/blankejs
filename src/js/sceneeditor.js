@@ -27,6 +27,7 @@ class SceneEditor extends Editor {
     this.layers = [];
     this.objects = []; // all objects placed on the canvas
     this.obj_polys = {};
+    this.obj_paths = {}; // { 'x,y:x,y':PIXI.Graphics }
     this.images = []; // placeable images in project folders {path, snap[x,y], pixi_images{}}
 
     this.placing_object = false;
@@ -48,14 +49,15 @@ class SceneEditor extends Editor {
     // create map container
     this.overlay_container = new PIXI.Container(); // displayed above everything
     this.map_container = new PIXI.Container();
-    this.pixi.stage.addChild(this.map_container);
+    this.path_containers = {} // { layer_id:PIXI.Container }
 
     this.grid_container = new PIXI.Container();
     this.grid_graphics = new PIXI.Graphics(); // position wraps based on layer snap
     this.origin_graphics = new PIXI.Graphics();
     this.crosshair_graphics = new PIXI.Graphics();
 
-    this.obj_info = {};
+    this.obj_info = {}
+    this.path_info = {}
 
     // this.grid_container.addChild(this.origin_graphics);
     this.grid_container.addChild(this.grid_graphics);
@@ -95,6 +97,7 @@ class SceneEditor extends Editor {
       ["name", "text"], //, {'label':false}],
       ["color", "color", { label: false }],
       ["size", "number", { inputs: 2, separator: "x" }],
+      ["path_mode", "checkbox", { default: false }]
     ]);
     this.el_object_form.container.style.display = "none";
 
@@ -257,6 +260,14 @@ class SceneEditor extends Editor {
     this.el_object_form.onChange("size", value =>
       this.setObjectSize(this.curr_object.uuid, value)
     );
+
+    // object path
+    this.el_object_form.onChange("path_mode", value => {
+      if (value)
+        this.refreshObjectPaths()
+      else
+        this.clearObjectPaths()
+    });
 
     // add object button
     this.el_obj_list = new BlankeListView({
@@ -537,8 +548,10 @@ class SceneEditor extends Editor {
     this.pixi.on("mousePlace", (e, info) => {
       const { mouse, half_mouse } = info;
       this.tile_start = [mouse[0], mouse[1]];
-      if (this.obj_type == "object")
-        this.placeObjectPoint(half_mouse[0], half_mouse[1]);
+      if (this.obj_type == "object") {
+        if (!this.el_object_form.getValue("path_mode"))
+          this.placeObjectPoint(half_mouse[0], half_mouse[1]);
+      }
 
       if (this.obj_type == "image") this.pixi.bringToFront(this.scene_graphic);
 
@@ -547,7 +560,7 @@ class SceneEditor extends Editor {
     });
 
     this.pixi.on("mouseRemove", (e, info) => {
-      if (this.obj_type == "object") {
+      if (this.obj_type == "object" && !this.el_object_form.getValue("path_mode")) {
         this.removeObjectPoint();
       }
       if (this.obj_type == "image" && this.curr_image) {
@@ -656,7 +669,7 @@ class SceneEditor extends Editor {
     });
 
     this.pixi.on("keyFinish", (e, info) => {
-      if (this.obj_type == "object" && this.placing_object) {
+      if (this.obj_type == "object" && !this.el_object_form.getValue("path_mode") && this.placing_object) {
         this.placeObject(this.placing_object.points.slice());
         this.clearPlacingObject();
         this.export();
@@ -888,11 +901,13 @@ class SceneEditor extends Editor {
     });
     this.drawCrosshair();
     this.drawOrigin();
+    this.drawGrid();
   }
 
   drawCrosshair() {
     if (this.curr_layer) {
       let mouse = this.pixi.mouse;
+      let real_mouse = this.pixi.real_mouse;
       let pmouse = this.pixi.place_mouse;
       let hmouse = this.pixi.half_mouse;
       let hpmouse = this.pixi.half_place_mouse;
@@ -903,12 +918,15 @@ class SceneEditor extends Editor {
       let info_text = ["x " + parseInt(mouse[0]) + " y " + parseInt(mouse[1])];
       let help_text = [];
       // which mouse coordinates to display
-      if (this.obj_type == "object") {
+      if (this.obj_type == "object" && !this.el_object_form.getValue("path_mode")) {
         info_text = ["x " + parseInt(hmouse[0]) + " y " + parseInt(hmouse[1])];
       }
       // object being hovered
-      let obj_names = Object.values(this.obj_info);
-      if (obj_names.length > 0) info_text.push(obj_names.join(", "));
+      let obj_names = Object.values(this.obj_info)
+      if (obj_names.length > 0) info_text.push(obj_names.join(", "))
+      let path_names = Object.values(this.path_info)
+      if (path_names.length > 0) info_text.push(path_names.join(", "))
+
       if (this.obj_type == "image" && !this.selecting) {
         help_text.push("CtrlClick = select group of tiles")
       }
@@ -922,9 +940,12 @@ class SceneEditor extends Editor {
         help_text.push("Drag selection with mouse, Esc = deselect")
       }
 
-      let center = [pmouse[0], pmouse[1]];
+      let center = [pmouse[0], pmouse[1]]
       if (this.obj_type == "object") {
-        center = [hpmouse[0], hpmouse[1]];
+        if (this.el_object_form.getValue("path_mode"))
+          center = [real_mouse[0], real_mouse[1]]
+        else
+          center = [hpmouse[0], hpmouse[1]]
       }
 
       this.pixi.setHelpText(help_text.join('\n'));
@@ -963,6 +984,7 @@ class SceneEditor extends Editor {
     if (this.obj_type == "tag") {
       this.el_tag_form.container.classList.remove("hidden");
     }
+    this.refreshObjectPaths()
   }
 
   // refreshes combo box
@@ -1037,18 +1059,10 @@ class SceneEditor extends Editor {
         if (this.selected_ymin == -1 || y < this.selected_ymin)
           this.selected_ymin = y;
 
-        if (
-          x - this.selected_xmin + this.curr_image.snap[0] >
-          this.selected_width
-        )
-          this.selected_width =
-            x - this.selected_xmin + this.curr_image.snap[0];
-        if (
-          y - this.selected_ymin + this.curr_image.snap[1] >
-          this.selected_height
-        )
-          this.selected_height =
-            y - this.selected_ymin + this.curr_image.snap[1];
+        if (x - this.selected_xmin + this.curr_image.snap[0] > this.selected_width)
+          this.selected_width = x - this.selected_xmin + this.curr_image.snap[0];
+        if (y - this.selected_ymin + this.curr_image.snap[1] > this.selected_height)
+          this.selected_height = y - this.selected_ymin + this.curr_image.snap[1];
       }
     }
   }
@@ -1132,6 +1146,8 @@ class SceneEditor extends Editor {
       color = parseInt("0xC8C8C8", 16);
     else color = old_color;
 
+    var x = 0, y = 0
+
     poly.blendMode = PIXI.BLEND_MODES.OVERLAY;
     poly.lineStyle(2, color, 0.5, 0);
     poly.beginFill(old_color, 0.1);
@@ -1146,13 +1162,21 @@ class SceneEditor extends Editor {
         points[0], points[1],
         1, 1
       )
+      x = points[0]
+      y = points[1]
     } else {
       for (let p = 0; p < points.length; p += 2) {
         if (p == 0) poly.moveTo(points[p], points[p + 1]);
         else poly.lineTo(points[p], points[p + 1]);
+
+        x += points[p]
+        y += points[p + 1]
       }
+      x /= points.length / 2
+      y /= points.length / 2
       poly.lineTo(points[0], points[1]);
     }
+    poly.center = [x, y]
     poly.endFill();
     return poly;
   }
@@ -1160,67 +1184,79 @@ class SceneEditor extends Editor {
   refreshObjImages(name, info) {
     this.iterObject(name, obj => {
       obj.name = name;
-      this.drawObjImage(obj, obj.image, obj.points, info);
+      this.drawObjImage(obj, {
+        sprite: obj.image,
+        points: obj.points,
+        info: info,
+        poly: obj.poly
+      })
     });
   }
 
   // get an image to show behind polygon
-  async drawObjImage(obj, spr, points, _info) {
-    if (!spr) spr = new PIXI.Sprite();
-    let info = _info || Code.sprites[obj.name];
+  async drawObjImage(obj, options) {
+    var { sprite, points, info, poly } = options
+
+    if (!sprite) sprite = new PIXI.Sprite()
+    if (!info) info = Code.sprites[obj.name]
 
     return new Promise((res, rej) => {
       if (info) {
-        spr.visible = true;
+        sprite.visible = true;
         let img = new Image();
         img.onload = () => {
           let base = new PIXI.BaseTexture(img);
           let tex = new PIXI.Texture(base); // return you the texture
-          spr.texture = tex;
+          sprite.texture = tex;
 
-          res(spr);
+          res(sprite);
         }
         img.src = "file://" + info.path;
       } else {
-        res(spr);
+        res(sprite);
       }
-    }).then(spr => {
-      // does frame fit inside base Texture dimensions?
-      if (
-        !spr.texture || !info ||
-        info.offset[0] + info.frame_size[0] > spr.texture.width ||
-        info.offset[1] + info.frame_size[1] > spr.texture.height
-      ) {
-        spr.visible = false;
-      } else {
-        //console.log(obj.name, info);
-        spr.texture.frame = new PIXI.Rectangle(
-          info.offset[0],
-          info.offset[1],
-          info.frame_size[0],
-          info.frame_size[1]
-        );
-      }
+    })
+      .then(() => {
+        // does frame fit inside base Texture dimensions?
+        if (
+          !sprite.texture || !info ||
+          info.offset[0] + info.frame_size[0] > sprite.texture.width ||
+          info.offset[1] + info.frame_size[1] > sprite.texture.height
+        ) {
+          sprite.visible = false;
+        } else {
+          sprite.texture.frame = new PIXI.Rectangle(
+            info.offset[0],
+            info.offset[1],
+            info.frame_size[0],
+            info.frame_size[1]
+          );
+        }
 
-      // reposition sprite
-      if (points.length > 1) {
-        let min_x, min_y;
-        for (let p = 0; p < points.length; p += 2) {
-          if (min_x == null || min_x > points[p]) min_x = points[p];
-          if (min_y == null || min_y > points[p + 1]) min_y = points[p + 1];
+        // reposition spriteite
+        if (points.length > 1) {
+          let min_x, min_y;
+          for (let p = 0; p < points.length; p += 2) {
+            if (min_x == null || min_x > points[p]) min_x = points[p];
+            if (min_y == null || min_y > points[p + 1]) min_y = points[p + 1];
+          }
+          if (info && info.pivot) {
+            sprite.x = min_x - info.pivot[0];
+            sprite.y = min_y - info.pivot[1];
+          }
+        } else {
+          if (info && info.pivot) {
+            sprite.x = points[0] - info.pivot[0];
+            sprite.y = points[1] - info.pivot[1];
+          }
         }
-        if (info && info.pivot) {
-          spr.x = min_x - info.pivot[0];
-          spr.y = min_y - info.pivot[1];
-        }
-      } else {
-        if (info && info.pivot) {
-          spr.x = points[0] - info.pivot[0];
-          spr.y = points[1] - info.pivot[1];
-        }
-      }
-      return spr;
-    });
+
+        if (poly && poly.text)
+          this.pixi.bringToFront(poly.text)
+
+        return sprite;
+      })
+      .catch(e => console.error(e))
   }
 
   // when user presses enter to finish object
@@ -1255,33 +1291,22 @@ class SceneEditor extends Editor {
     pixi_poly.interactiveChildren = false;
     pixi_poly.on("pointerup", (e) => {
       // add tag
-      let obj_ref = this.getObjByUUID(e.currentTarget.obj_uuid);
       if (e.data.originalEvent.button == 0 && this.obj_type == "tag") {
         let tag = this.el_tag_form.getValue("value");
-        if (tag) {
-          e.target.tag = tag;
-          this.obj_info[obj_ref.name] =
-            obj_ref.name + (tag == "" ? "" : " (" + e.target.tag + ")");
-          this.drawCrosshair();
-          this.export();
-        }
+        this.setObjTag(e.target, tag)
       }
     });
     pixi_poly.on("rightup", (e) => {
       // remove tag
-      let obj_ref = this.getObjByUUID(e.currentTarget.obj_uuid);
-      if (this.obj_type == "tag") {
-        e.target.tag = "";
-        this.obj_info[obj_ref.name] = obj_ref.name;
-        this.drawCrosshair();
-        this.export();
-      }
+      if (this.obj_type == "tag")
+        this.setObjTag(e.target)
 
       // remove from array
       if (
         !this.placing_object &&
         this.curr_layer &&
         this.obj_type == "object" &&
+        !this.el_object_form.getValue("path_mode") &&
         this.curr_object.name === curr_object.name &&
         this.curr_layer.uuid === e.target.layer_uuid
       ) {
@@ -1295,6 +1320,7 @@ class SceneEditor extends Editor {
               if (this.obj_info[curr_object.name])
                 delete this.obj_info[curr_object.name];
               e.target.destroy();
+              this.refreshObjectPaths()
               return true;
             }
           }
@@ -1323,10 +1349,13 @@ class SceneEditor extends Editor {
     pixi_poly.uuid = guid();
     pixi_poly.obj_uuid = this.curr_object.uuid;
     pixi_poly.layer_uuid = this.curr_layer.uuid;
-    if (obj_tag) pixi_poly.tag = obj_tag;
+    if (obj_tag)
+      this.setObjTag(pixi_poly, obj_tag)
 
-    this.drawObjImage(curr_object, null, points).then(pixi_image => {
-      add_to_layer.container.addChild(pixi_image);
+    this.drawObjImage(curr_object, { points, poly: pixi_poly }).then(pixi_image => {
+      pixi_poly.addChild(pixi_image)
+      if (pixi_poly.text)
+        this.pixi.bringToFront(pixi_poly.text)
       this.obj_polys[curr_object.uuid][add_to_layer.uuid].push({
         poly: pixi_poly,
         image: pixi_image,
@@ -1339,6 +1368,26 @@ class SceneEditor extends Editor {
       this.obj_polys[curr_object.uuid] = {};
     if (!this.obj_polys[curr_object.uuid][add_to_layer.uuid])
       this.obj_polys[curr_object.uuid][add_to_layer.uuid] = [];
+  }
+
+  setObjTag(pixi_poly, tag) {
+    if (!tag) tag = ""
+    const obj_ref = this.getObjByUUID(pixi_poly.obj_uuid);
+    if (!pixi_poly.text) {
+      pixi_poly.text = this.pixi.getBitmapText()
+      pixi_poly.addChild(pixi_poly.text)
+    }
+    pixi_poly.tag = tag;
+
+    pixi_poly.text.text = tag
+    pixi_poly.text.anchor.set(0.5, 0);
+    pixi_poly.text.x = pixi_poly.center[0]
+    pixi_poly.text.y = pixi_poly.center[1]
+    this.pixi.bringToFront(pixi_poly.text)
+
+    this.obj_info[obj_ref.name] = (tag == "") ? obj_ref.name : obj_ref.name + " (" + pixi_poly.tag + ")"
+
+    this.export()
   }
 
   clearPlacingObject() {
@@ -1367,11 +1416,15 @@ class SceneEditor extends Editor {
     }
   }
 
+  parseObjectColor(obj) {
+    return parseInt(obj.color.replace("#", "0x"), 16)
+  }
+
   redrawPlacingObject() {
     // redraw polygon
     this.placing_object.graphic.clear();
     this.placing_object.graphic.beginFill(
-      parseInt(this.curr_object.color.replace("#", "0x"), 16),
+      this.parseObjectColor(this.curr_object),
       0.5
     );
     this.placing_object.graphic_dots.map(obj => obj.destroy());
@@ -1411,7 +1464,6 @@ class SceneEditor extends Editor {
   }
 
   placeObjectPoint(x, y) {
-    var this_ref = this;
     var curr_object = this.curr_object;
 
     if (curr_object && this.curr_layer) {
@@ -1434,31 +1486,6 @@ class SceneEditor extends Editor {
         y -= y % snapy;
       }
 
-      /* place it in between closest two points (probably wont)
-			let pts = this.placing_object.points;
-			let closest_i = 0;
-			let closest_dist = -1;
-
-			let dist = 0;
-			for (let p = 0; p < pts.length; p+=2) {
-				if (p == 0)
-					dist = Math.hypot(pts[pts.length-2] - x, pts[pts.length-1] - y) + 
-						   Math.hypot(pts[p] - x, pts[p+1] - y);
-				else
-					dist = Math.hypot(pts[p-2] - x, pts[p-1] - y) + 
-						   Math.hypot(pts[p] - x, pts[p+1] - y);
-
-				if (dist < closest_dist || closest_dist == -1) {
-					closest_dist = dist;
-					closest_i = p;
-				}
-			}
-
-			// add to main shape
-			this.placing_object.points.splice(closest_i, 0, y);
-			this.placing_object.points.splice(closest_i, 0, x);
-			this.placing_object.point_order.push(closest_i);
-			*/
       this.placing_object.points.push(x, y);
 
       this.redrawPlacingObject();
@@ -1684,6 +1711,196 @@ class SceneEditor extends Editor {
     }
   }
 
+  setBoldPath(g, obj1, obj2, obj_info) {
+    const [x1, y1] = obj1
+    const [x2, y2] = obj2
+
+    g.clear()
+    g.lineStyle(5, this.parseObjectColor(obj_info), 0.25)
+    g.moveTo(x1, y1)
+    g.lineTo(x2, y2)
+    g.lineStyle(1, this.parseObjectColor(obj_info), 0.5)
+    g.moveTo(x1, y1)
+    g.lineTo(x2, y2)
+
+  }
+
+  setWeakPath(g, obj1, obj2, obj_info) {
+    const [x1, y1] = obj1
+    const [x2, y2] = obj2
+
+    g.clear()
+    g.lineStyle(5, this.parseObjectColor(obj_info), 0.05)
+    g.moveTo(x1, y1)
+    g.lineTo(x2, y2)
+    g.lineStyle(1, this.parseObjectColor(obj_info), 0.5)
+    g.moveTo(x1, y1)
+    g.lineTo(x2, y2)
+
+  }
+
+  addPathGInfo(g) {
+    if (g.name) {
+      this.path_info[g.name] = g.name
+      if (g.tag)
+        this.path_info[g.name] =
+          g.name + (tag == "" ? "" : " (" + g.tag + ")");
+    }
+  }
+
+  removePathGInfo(g) {
+    if (g.name)
+      delete this.path_info[g.name]
+  }
+
+  clearObjectPaths() {
+    Object.values(this.path_containers).forEach(container => {
+      const destroy_arr = []
+      container.children.forEach(child => {
+        if (!this.obj_paths[child.path_key])
+          destroy_arr.push(child)
+      })
+      destroy_arr.forEach(child => child.destroy())
+    })
+  }
+
+  addObjectPath(x1, y1, x2, y2, obj_uuid, layer_uuid, load_info) {
+    const layer = this.getLayer(layer_uuid, true)
+
+    // create path container for layer
+    if (!this.path_containers[layer_uuid]) {
+      this.path_containers[layer_uuid] = new PIXI.Container()
+      layer.container.addChild(this.path_containers[layer_uuid])
+    }
+
+    const path_container = this.path_containers[layer_uuid]
+
+    const uuid1 = [x1, y1].join(',')
+    const uuid2 = [x2, y2].join(',')
+    const obj1_pts = [x1, y1]
+    const obj2_pts = [x2, y2]
+
+    const path_key = [uuid1, uuid2].join(':')
+
+    const setTag = (g, tag) => {
+      g.tag = tag
+      if (typeof tag == "string") {
+        if (!g.text)
+          g.text = this.pixi.getBitmapText()
+        g.text.text = tag
+        g.text.anchor.set(0.5, 1);
+        g.text.x = (x1 + x2) / 2
+        g.text.y = (y1 + y2) / 2
+        g.addChild(g.text)
+      }
+      this.addPathGInfo(g)
+    }
+    const activatePath = (g) => {
+      if (!this.obj_paths[[uuid1, uuid2].join(':')] && !this.obj_paths[[uuid2, uuid1].join(':')]) {
+        this.obj_paths[g.path_key] = g
+        this.setBoldPath(g, obj1_pts, obj2_pts, g.object)
+        return true
+      }
+    }
+
+    if (!this.obj_paths[path_key]) {
+      // create line from obj1 to obj2
+      const g = new PIXI.Graphics()
+      g.interactive = true
+      g.interactiveChildren = false
+
+      g.path_key = path_key
+      g.object = this.getObjByUUID(obj_uuid)
+      g.layer_uuid = layer_uuid
+
+      if (load_info) {
+        setTag(g, load_info.tag)
+        activatePath(g)
+      } else {
+        this.setWeakPath(g, obj1_pts, obj2_pts, g.object)
+      }
+
+      const m = -5
+      g.hitArea = new PIXI.Polygon([
+        x1 + (m * Math.sign(x1 - x2)), y1,
+        x1, y1 + (m * Math.sign(y1 - y2)),
+        x2 - (m * Math.sign(x1 - x2)), y2,
+        x2, y2 - (m * Math.sign(y1 - y2))
+      ])
+
+      g.on('mouseover', e => {
+        if (!this.obj_paths[g.path_key])
+          this.setBoldPath(g, obj1_pts, obj2_pts, g.object)
+        this.addPathGInfo(g)
+      })
+
+      g.on('mouseout', e => {
+        if (!this.obj_paths[g.path_key])
+          this.setWeakPath(g, obj1_pts, obj2_pts, g.object)
+        this.removePathGInfo(g)
+      })
+
+      g.on('pointerdown', e => {
+        if (!(this.el_object_form.getValue("path_mode") || this.obj_type == "tag")) return;
+
+        if (this.obj_type == "tag") {
+          setTag(g, this.el_tag_form.getValue("value"))
+
+        } else {
+          if (!activatePath(g)) {
+            delete this.obj_paths[[uuid1, uuid2].join(':')]
+            delete this.obj_paths[[uuid2, uuid1].join(':')]
+            this.setWeakPath(g, obj1_pts, obj2_pts, g.object)
+          }
+        }
+        this.export();
+      })
+
+      g.on('rightup', e => {
+        if (this.obj_type == "tag")
+          g.tag = ""
+        this.export();
+      })
+
+      path_container.addChild(g)
+    }
+  }
+
+  refreshObjectPaths() {
+    const layer = this.curr_layer
+    const object = this.curr_object
+
+    this.clearObjectPaths()
+
+    if (!this.el_object_form.getValue("path_mode") || this.obj_type != "object" || !this.curr_object) return;
+    var object_list = []
+    if (this.obj_polys[object.uuid] && this.obj_polys[object.uuid][this.curr_layer.uuid])
+      object_list = this.obj_polys[object.uuid][layer.uuid]
+
+    const paths_drawn = {}
+
+    // create a path between all objects
+    object_list.forEach(obj1 => {
+      object_list.forEach(obj2 => {
+
+        const [x1, y1] = obj1.points
+        const [x2, y2] = obj2.points
+
+        const uuid1 = [x1, y1].join(',')
+        const uuid2 = [x2, y2].join(',')
+
+        if (uuid1 !== uuid2 && !paths_drawn[`${uuid1},${uuid2}`] && !paths_drawn[`${uuid2},${uuid1}`]) {
+          paths_drawn[`${uuid1},${uuid2}`] = true
+
+          this.addObjectPath(
+            x1, y1, x2, y2,
+            object.uuid, layer.uuid
+          )
+        }
+      })
+    })
+  }
+
   getObjByUUID(uuid) {
     return this.objects[uuid];
   }
@@ -1723,7 +1940,7 @@ class SceneEditor extends Editor {
       this.overlay_container.addChild(this.dot_preview);
     }
 
-    if (this.obj_type == "object" && this.curr_object) {
+    if (this.obj_type == "object" && !this.el_object_form.getValue("path_mode") && this.curr_object) {
       this.dot_preview.clear();
       this.dot_preview.beginFill(
         parseInt(this.curr_object.color.replace("#", "0x"), 16),
@@ -1758,7 +1975,11 @@ class SceneEditor extends Editor {
         this.addObject(obj);
         this.iterObject(obj.name, i_obj => {
           this.drawPoly(obj, i_obj.points, i_obj.poly);
-          this.drawObjImage(obj, i_obj.image, i_obj.points);
+          this.drawObjImage(obj, {
+            sprite: i_obj.image,
+            points: i_obj.points,
+            poly: i_obj.poly
+          })
         });
         this.refreshObjImages(obj.name);
       }
@@ -1789,13 +2010,14 @@ class SceneEditor extends Editor {
         this.el_object_form.setValue("name", this.curr_object.name);
         this.el_object_form.setValue("color", this.curr_object.color);
         this.checkObjectSize(uuid);
-
         this.el_object_form.container.style.display = "block";
 
         this.iterObjectInLayer(this.curr_layer.uuid, name, obj => {
           this.pixi.bringToFront(obj.image);
           this.pixi.bringToFront(obj.poly);
+          this.pixi.bringToFront(obj.poly.text)
         });
+        this.refreshObjectPaths();
       }
     }
 
@@ -1836,7 +2058,6 @@ class SceneEditor extends Editor {
 
     // remove instances
     this.iterObject(obj.name, obj => {
-      obj.image.destroy();
       obj.poly.destroy();
     });
 
@@ -2053,6 +2274,7 @@ class SceneEditor extends Editor {
       //this.map_container.setChildIndex(this.curr_layer.container, this.map_container.children.length-1);
       this.curr_layer.container.alpha = 1;
     }
+    this.refreshObjectPaths();
   }
 
   checkLoaded() {
@@ -2133,6 +2355,25 @@ class SceneEditor extends Editor {
         }
       }
 
+      // paths
+      for (var obj_uuid in data.paths) {
+        for (var layer_uuid in data.paths[obj_uuid]) {
+          const layer_info = data.paths[obj_uuid][layer_uuid]
+
+          for (var path_key1 in layer_info.graph) {
+            for (var path_key2 in layer_info.graph[path_key1]) {
+              const [x1, y1] = layer_info.node[path_key1]
+              const [x2, y2] = layer_info.node[path_key2]
+              const tag = layer_info.graph[path_key1][path_key2]
+              this.addObjectPath(x1, y1, x2, y2, obj_uuid, layer_uuid, { tag })
+            }
+          }
+
+        }
+      }
+      this.refreshObjectPaths()
+      this.clearObjectPaths()
+
       // settings
       if (data.settings) {
         this.setLayer(data.settings.last_active_layer, true);
@@ -2160,9 +2401,9 @@ class SceneEditor extends Editor {
         this.close(true);
       },
     });
-    this.refreshLayerList();
-    this.loadObjectsFromSettings();
-    this.pixi.resize();
+    this.refreshLayerList()
+    this.loadObjectsFromSettings()
+    this.pixi.resize()
 
     if (!data.images || data.images.length == 0) this.loaded = true;
 
@@ -2177,7 +2418,7 @@ class SceneEditor extends Editor {
       layers: [],
       images: [],
       settings: {
-        camera: this.pixi.getCameraPosition(),
+        camera: this.pixi.getCameraPosition().map(n => n / this.pixi.zoom),
         last_active_layer: this.curr_layer.uuid,
         last_object_type: this.obj_type,
         last_object_name: ifndef(this.curr_object, { name: null }).name,
@@ -2232,6 +2473,42 @@ class SceneEditor extends Editor {
         }
       }
     }
+
+    //paths
+    const path_data = {}
+    /*
+    { 
+      obj_uuid: { 
+        layer_uuid: { 
+          node:{ 'x,y':[x,y] }, 
+          graph:{ 
+            'x1,y1':{ 'x2,y2':true } 
+          } 
+        } 
+      }
+    }
+    */
+    for (var path_key in this.obj_paths) {
+      const g = this.obj_paths[path_key]
+      // obj_uuid
+      if (!path_data[g.object.uuid])
+        path_data[g.object.uuid] = {}
+      const obj_data = path_data[g.object.uuid]
+      // layer_uuid
+      if (!obj_data[g.layer_uuid])
+        obj_data[g.layer_uuid] = { node: {}, graph: {} }
+      const layer_data = obj_data[g.layer_uuid]
+      // layer_data.node
+      const [id1, id2] = path_key.split(':')
+      layer_data.node[id1] = id1.split(',').map(p => parseInt(p))
+      layer_data.node[id2] = id2.split(',').map(p => parseInt(p))
+      // layer_data.graph
+      if (!layer_data.graph[id1]) layer_data.graph[id1] = {}
+      if (!layer_data.graph[id2]) layer_data.graph[id2] = {}
+      layer_data.graph[id1][id2] = g.tag || true
+      layer_data.graph[id2][id1] = g.tag || true
+    }
+    export_data.paths = path_data
 
     //images
     let re_img_path = /.*(assets\/.*)/g;

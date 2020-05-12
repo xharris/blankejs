@@ -317,7 +317,7 @@ module.exports.settings = {
 	<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${project_name}</title>
 </head>
-<body>
+<body style="margin:0px">
 	<div id="my_game"></div>
 	<script src="blanke.js"></script>
 	<script type="text/javascript">
@@ -331,128 +331,128 @@ module.exports.settings = {
       let web_memory = app.exportSetting("web_memory");
       let extrajs = mem =>
         `if (!game_loaded) var game_loaded = {};
-        if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, height, preload_image) {
-            if (game_loaded[data_file.split('.').slice(0, -1).join('.')]) return;
-            let use_canvas_size = !(width || height);
-            width = width || 800;
-            height = height || 600;
-            let el_parent, el_overlay, el_message, canvas, ctx;
-            el_parent = document.getElementById(div_id);
-            el_parent.setAttribute("style", "width:" + width + "px;height:" + height + "px;background:#485358;position:relative;overflow:hidden;background-position:center;"+(preload_image && preload_image != "" ? "background-image:url("+preload_image+");" : ""));
-            el_overlay = document.createElement("div");
-            el_overlay.setAttribute("style", "z-index:2;position:absolute;top:0;left:0;right:0;bottom:0;cursor:pointer;box-shadow: inset 0 0 5em 1em #000;");
-            let overlay_inner = function(t) {
-                return '<div style="text-align: center;position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%);font-size: 28px;font-family: Trebuchet MS;color: white;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding: 3px;user-select:none;">' + t + '</div>'
+if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, height, preload_image) {
+    if (game_loaded[data_file.split('.').slice(0, -1).join('.')]) return;
+    let use_canvas_size = !(width || height);
+    width = width || 800;
+    height = height || 600;
+    let el_parent, el_overlay, el_message, canvas, ctx;
+    el_parent = document.getElementById(div_id);
+    el_parent.setAttribute("style", "width:" + width + "px;height:" + height + "px;background:#485358;position:relative;overflow:hidden;background-position:center;"+(preload_image && preload_image != "" ? "background-image:url("+preload_image+");" : ""));
+    el_overlay = document.createElement("div");
+    el_overlay.setAttribute("style", "z-index:2;position:absolute;top:0;left:0;right:0;bottom:0;cursor:pointer;box-shadow: inset 0 0 5em 1em #000;");
+    let overlay_inner = function(t) {
+        return '<div style="text-align: center;position: absolute;top: 50%;left: 50%;transform: translate(-50%,-50%);font-size: 28px;font-family: Trebuchet MS;color: white;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding: 3px;user-select:none;">' + t + '</div>'
+    };
+    el_overlay.innerHTML = overlay_inner("Loading...");
+    el_message = document.createElement("div");
+    el_message.setAttribute("style", "z-index:3;position:absolute;top:0;left:0;outline:none;color:white;font-size:12px;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding:3px;");
+    canvas = document.createElement('canvas');
+    canvas.setAttribute("style", "z-index:1;position:absolute;left:0;right:0");
+    canvas.tabIndex = 1;
+    canvas.addEventListener('keydown', e => {
+        e.preventDefault();
+        return false;
+    });
+    canvas.width = width || 800;
+    canvas.height = height || 600;
+    canvas.oncontextmenu = function(e) {
+        e.preventDefault()
+    };
+    ctx = canvas.getContext('2d');
+    el_parent.appendChild(canvas);
+    el_parent.appendChild(el_message);
+    el_parent.appendChild(el_overlay);
+    let TXT = {
+        LOAD: 'Loading Game',
+        EXECUTE: 'Done loading',
+        DLERROR: 'Error while loading game data.\\nCheck your internet connection.',
+        NOWEBGL: 'Your browser or graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a>.<br>Find out how to get it <a href="http://get.webgl.org/">here</a>.',
+    };
+    let Msg = function(m) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#888';
+        for (var i = 0, a = m.split('\\n'), n = a.length; i != n; i++) ctx.fillText(a[i], 20, 20);
+    };
+    let Fail = function(m) {
+        el_parent.removeChild(el_overlay);
+        el_message.innerHTML = TXT.NOWEBGL + (m ? m : '')
+    };
+    let DoExecute = function() {
+        Msg(TXT.EXECUTE);
+        Module.canvas = canvas.cloneNode(!1);
+        Module.canvas.oncontextmenu = function(e) {
+            e.preventDefault()
+        };
+        Module.setWindowTitle = function(title) {};
+        Module.pauseMainLoop();
+        Module.postRun = function() {
+            if (!Module.noExitRuntime) {
+                Fail();
+                return
             };
-            el_overlay.innerHTML = overlay_inner("Loading...");
-            el_message = document.createElement("div");
-            el_message.setAttribute("style", "z-index:3;position:absolute;top:0;left:0;outline:none;color:white;font-size:12px;text-shadow: 0px 0px 1px black, 0px 0px 1px black, 0px 0px 1px black, 0px 0px 3px black;padding:3px;");
-            canvas = document.createElement('canvas');
-            canvas.setAttribute("style", "z-index:1;position:absolute;left:0;right:0");
-            canvas.tabIndex = 1;
-            canvas.addEventListener('keydown', e => {
-                e.preventDefault();
-                return false;
-            });
-            canvas.width = width || 800;
-            canvas.height = height || 600;
-            canvas.oncontextmenu = function(e) {
-                e.preventDefault()
-            };
-            ctx = canvas.getContext('2d');
-            el_parent.appendChild(canvas);
-            el_parent.appendChild(el_message);
-            el_parent.appendChild(el_overlay);
-            let TXT = {
-                LOAD: 'Loading Game',
-                EXECUTE: 'Done loading',
-                DLERROR: 'Error while loading game data.\\nCheck your internet connection.',
-                NOWEBGL: 'Your browser or graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a>.<br>Find out how to get it <a href="http://get.webgl.org/">here</a>.',
-            };
-            let Msg = function(m) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#888';
-                for (var i = 0, a = m.split('\\n'), n = a.length; i != n; i++) ctx.fillText(a[i], 20, 20);
-            };
-            let Fail = function(m) {
-                el_parent.removeChild(el_overlay);
-                el_message.innerHTML = TXT.NOWEBGL + (m ? m : '')
-            };
-            let DoExecute = function() {
-                Msg(TXT.EXECUTE);
-                Module.canvas = canvas.cloneNode(!1);
-                Module.canvas.oncontextmenu = function(e) {
-                    e.preventDefault()
+            canvas.parentNode.replaceChild(Module.canvas, canvas);
+            Txt = Msg = ctx = canvas = null;
+            if (play_on_focus) {
+                Browser.mainLoop.pause();
+            }
+            setTimeout(function() {
+                if (use_canvas_size) {
+                    el_parent.style.width = Module.canvas.widthNative + "px";
+                    el_parent.style.height = Module.canvas.heightNative + "px"
                 };
-                Module.setWindowTitle = function(title) {};
-                Module.pauseMainLoop();
-                Module.postRun = function() {
-                    if (!Module.noExitRuntime) {
-                        Fail();
-                        return
-                    };
-                    canvas.parentNode.replaceChild(Module.canvas, canvas);
-                    Txt = Msg = ctx = canvas = null;
-                    if (play_on_focus) {
-                        Browser.mainLoop.pause();
+                if (play_on_focus) {
+                    Browser.mainLoop.pause();
+                    el_overlay.innerHTML = overlay_inner("Click to play");
+                    el_overlay.onclick = function() {
+                        el_overlay.innerHTML = overlay_inner("Loading...")
+                        setTimeout(() => {
+                          el_parent.removeChild(el_overlay);
+                          Module.canvas.focus();
+                          Browser.mainLoop.resume()
+                        })
                     }
-                    setTimeout(function() {
-                        if (use_canvas_size) {
-                            el_parent.style.width = Module.canvas.widthNative + "px";
-                            el_parent.style.height = Module.canvas.heightNative + "px"
-                        };
-                        if (play_on_focus) {
-                            Browser.mainLoop.pause();
-                            el_overlay.innerHTML = overlay_inner("Click to play");
-                            el_overlay.onclick = function() {
-                                el_overlay.innerHTML = overlay_inner("Loading...")
-                                setTimeout(() => {
-                                  el_parent.removeChild(el_overlay);
-                                  Module.canvas.focus();
-                                  Browser.mainLoop.resume()
-                                })
-                            }
-                        } else {
-                            el_parent.removeChild(el_overlay);
-                            Module.canvas.focus()
-                        }
-                    })
-                };
-                Browser.requestAnimationFrame = function(f) {
-                  window.requestAnimationFrame(f)
-                };
-                setTimeout(function() {
-                    Module.run(['/p'])
-                }, 50)
-            };
-            let DoLoad = function() {
-                Msg(TXT.LOAD);
-                window.onerror = function(e, u, l) {
-                    Fail(e + '<br>(' + u + ':' + l + ')')
-                };
-                Module = {
-                    ALLOW_MEMORY_GROWTH: 1,
-                    TOTAL_MEMORY: 1024 * 1024 * ${mem},
-                    TOTAL_STACK: 1024 * 1024 * ${web_stack},
-                    currentScriptUrl: '-',
-                    preInit: DoExecute
-                };
-                var s = document.createElement('script'),
-                    d = document.documentElement;
-                s.src = data_file;
-                s.async = !0;
-                game_loaded[data_file] = !0;
-                s.onerror = function(e) {
+                } else {
                     el_parent.removeChild(el_overlay);
-                    d.removeChild(s);
-                    Msg(TXT.DLERROR);
-                    canvas.disabled = !1;
-                    game_loaded[data_file] = !1
-                };
-                d.appendChild(s)
-            };
-            DoLoad()
-        }`;
+                    Module.canvas.focus()
+                }
+            })
+        };
+        Browser.requestAnimationFrame = function(f) {
+          window.requestAnimationFrame(f)
+        };
+        setTimeout(function() {
+            Module.run(['/p'])
+        }, 50)
+    };
+    let DoLoad = function() {
+        Msg(TXT.LOAD);
+        window.onerror = function(e, u, l) {
+            Fail(e + '<br>(' + u + ':' + l + ')')
+        };
+        Module = {
+            ALLOW_MEMORY_GROWTH: 1,
+            TOTAL_MEMORY: 1024 * 1024 * ${mem},
+            TOTAL_STACK: 1024 * 1024 * ${web_stack},
+            currentScriptUrl: '-',
+            preInit: DoExecute
+        };
+        var s = document.createElement('script'),
+            d = document.documentElement;
+        s.src = data_file;
+        s.async = !0;
+        game_loaded[data_file] = !0;
+        s.onerror = function(e) {
+            el_parent.removeChild(el_overlay);
+            d.removeChild(s);
+            Msg(TXT.DLERROR);
+            canvas.disabled = !1;
+            game_loaded[data_file] = !1
+        };
+        d.appendChild(s)
+    };
+    DoLoad()
+}`;
 
       nwFS.readFile(love_path, "base64", (err, game_data) => {
         if (err) console.error(err);
@@ -710,10 +710,14 @@ module.exports.autocomplete = {
       { fn: 'setGravity', vars: { body: '', angle: 'degrees', dist: '' } }
     ],
     "blanke-hitbox": [
-      { fn: 'add', vars: { obj: '' } },
+      { fn: 'add', vars: { obj: 'must have x/y' } },
       { fn: 'move', vars: { obj: '' }, info: 'call after changing x/y/hit_area' },
-      { fn: 'adjust', vars: { obj: '', left: '', top: '', width: '', height: '' }, info: 'resize a hitbox' },
-      { fn: 'remove', vars: { obj: '' } }
+      { fn: 'adjust', vars: { obj: '', left: '', top: '', width: '', height: '' }, info: 'set offsets for a hitbox' },
+      { fn: 'remove', vars: { obj: '' } },
+      { fn: 'at', vars: { x: '', y: '' } },
+      { fn: 'within', vars: { x: '', y: '', w: '', h: '' } },
+      { fn: 'sight', vars: { x1: '', y1: '', x2: '', y2: '' } },
+      { prop: 'debug', info: 'draw hitboxes' }
     ],
     "blanke-net": [
 

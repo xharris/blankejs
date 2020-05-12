@@ -168,7 +168,7 @@ class DragBox {
 
         this.setSize(width, height);
 
-        app.flashCrosshair(this_ref.x + width, this_ref.y + height);
+        // app.flashCrosshair(this_ref.x + width, this_ref.y + height);
 
         this_ref.fresh_box = false;
         this_ref.onResize(
@@ -306,7 +306,7 @@ class DragBox {
     DragBox.refreshBadgeNum();
   }
 
-  onResize(w, h) {}
+  onResize(w, h) { }
 
   set width(w) {
     this.setSize(w, null);

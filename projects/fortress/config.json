@@ -1,0 +1,38 @@
+{
+    "write_conf": true,
+    "engine_type": "oop",
+    "ico": "src\\logo.ico",
+    "icns": "src\\logo.icns",
+    "game_size": 3,
+    "window_size": 3,
+    "quick_access": [
+        [
+            "Open error file=?",
+            "Open error file"
+        ]
+    ],
+    "autoplay_preview": true,
+    "engine": "love2d",
+    "scene": {},
+    "export": {
+        "name": "fortress",
+        "filter": "linear",
+        "scale": true,
+        "vsync": "on",
+        "web_memory": 24,
+        "web_stack": 2,
+        "web_game_size": [
+            800,
+            600
+        ]
+    },
+    "enabled_plugins": {
+        "xhh-array": false,
+        "xhh-badword": false,
+        "xhh-effect": false,
+        "xhh-tween": false,
+        "xhh-vector": false,
+        "cmpl": false,
+        "yonaba-delaunay": false
+    }
+}

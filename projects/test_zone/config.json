@@ -12,12 +12,12 @@
             "platformer.map"
         ],
         [
-            "Open error file=?",
-            "Open error file"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "Open error file=?",
+            "Open error file"
         ]
     ],
     "autoplay_preview": true,
@@ -53,11 +53,23 @@
                     16
                 ],
                 "uuid": "6457c01e"
+            },
+            "a5445ee4": {
+                "name": "path_node",
+                "char": "T",
+                "color": "#0000ff",
+                "size": [
+                    10,
+                    10
+                ],
+                "uuid": "a5445ee4",
+                "size_changed": true
             }
         },
         "object_order": [
             "25c737ad",
-            "526dedde"
+            "526dedde",
+            "a5445ee4"
         ]
     },
     "export": {

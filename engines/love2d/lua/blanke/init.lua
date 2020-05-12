@@ -1318,8 +1318,11 @@ do
             self.imageList = {}
             self.animList = {}
             -- width/height already set?
-            if self.width ~= 0 or self.height ~= 0 then 
+            if (args.width ~= 0 or args.height ~= 0) then 
                 self._preset_size = true
+            else 
+                args.width = spawn_args.map_width or args.width
+                args.height = spawn_args.map_height or args.height
             end
             -- image
             if args.images then
@@ -2429,7 +2432,7 @@ do
                             if Game.isSpawnable(obj_info.name) then
                                 local obj = new_map:_spawnEntity(obj_info.name,{
                                     map_tag=c[1], x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
-                                    width=obj_info.size[1], height=obj_info.size[2], hitboxColor=hb_color
+                                    map_width=obj_info.size[1], map_height=obj_info.size[2], hitboxColor=hb_color
                                 })
                             -- spawn hitbox
                             else 
@@ -2776,6 +2779,9 @@ do
     local world = bump.newWorld(40)
     local new_boxes = true
 
+    local queryFilter = function(item)
+        return not tag or item.tag == tag
+    end
     local calcBounds = function(obj)
         local repos = false
         if obj.is_entity then
@@ -2852,7 +2858,7 @@ do
         -- ignore collisions
         teleport = function(obj, x, y)
             if obj and not obj.destroyed and obj.hasHitbox then
-                local hb = checkHitArea(obj)                
+                local hb = checkHitArea(obj)  
                 world:update(obj, 
                     obj.x - hb.left, obj.y - hb.top,
                     abs(obj.width * obj.scale * obj.scalex) + hb.right, abs(obj.height * obj.scale * obj.scaley) + hb.bottom
@@ -2860,15 +2866,13 @@ do
             end
         end;
         at = function(x, y, tag)
-            local ret = {}
-            --[[
-            local shapes = HC.shapesAt(x,y)
-            for s in pairs(shapes) do 
-                if not tag or s.parent.tag == tag then 
-                    table.insert(s)
-                end
-            end]]
-            return ret
+            return world:queryPoint(x, y, queryFilter)
+        end;
+        within = function(x, y, w, h, tag)
+            return world:queryRect(x, y, queryFilter)
+        end;
+        sight = function(x1, y1, x2, y2, tag)
+            return world:querySegment(x1, y1, x2, y2, queryFilter)
         end;
         move = function(obj)
             if obj and not obj.destroyed and obj.hasHitbox then
@@ -3457,6 +3461,9 @@ do
         end
     }
 end
+
+--PATH
+
 
 --FEATURE
 Feature = {}

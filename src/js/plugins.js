@@ -362,7 +362,8 @@ class Plugins extends Editor {
   }
 
   static clearPlugins() {
-    nwFS.emptyDirSync(app.engine.plugin_path);
+    if (app.engine.plugin_path)
+      nwFS.emptyDirSync(app.engine.plugin_path);
   }
 }
 
