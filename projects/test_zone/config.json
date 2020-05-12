@@ -12,8 +12,16 @@
             "platformer.map"
         ],
         [
+            "path.lua=script+?",
+            "path.lua"
+        ],
+        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "Add a script=new+?",
+            "Add a script"
         ],
         [
             "Open error file=?",

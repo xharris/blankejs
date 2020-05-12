@@ -132,6 +132,10 @@ end
 function string:contains(q) 
     return string.match(tostring(self), tostring(q)) ~= nil
 end
+function string:count(str)
+    local _, count = string.gsub(self, str, "")
+    return count
+end
 function string:capitalize() 
     return string.upper(string.sub(self,1,1))..string.sub(self,2)
 end
@@ -1018,6 +1022,13 @@ do
         setMesh = function(self, verts)
             self.mesh = love.graphics.newMesh(verts,'fan')
         end;
+        use = function(self, other_obj, props)
+            for _, prop in ipairs(props) do 
+                if other_obj[prop] then 
+                    self[prop] = other_obj[prop]
+                end
+            end
+        end;
         destroy = function(self)
             if not self.destroyed then
                 Hitbox.remove(self)
@@ -1725,6 +1736,12 @@ do
         setFontSize = function(size)
             Draw.setFont(last_font, size)
         end;
+        textWidth = function(text)
+            return Draw:getFont():getWidth(text)
+        end;
+        textHeight = function(text)
+            return Draw:getFont():getHeight() * (text:count("\n") + 1)
+        end;
         addImageFont = function(path, glyphs, ...)
             path = Game.res('image', path)
             if fonts[path] then return fonts[path] end 
@@ -2278,9 +2295,9 @@ do
     local attach_count = 0
     local options = {}
 
-    Camera = class {
+    Camera = callable {
         transform = nil;
-        init = function(self, name, opt)
+        __call = function(self, name, opt)
             opt = opt or {}
             options[name] = copy(default_opt)
             options[name].transform = love.math.newTransform()
@@ -2420,6 +2437,44 @@ do
                     end
                 end
             end
+            -- make paths
+            for obj_uuid, info in pairs(data.paths) do 
+                local obj_info = getObjInfo(obj_uuid)
+                local obj_name = obj_info.name
+                for layer_uuid, info in pairs(info) do 
+                    local layer_name = layer_name[layer_uuid]
+                    
+                    local new_path = Path()
+                    -- add nodes
+                    local tag
+                    for node_key, info in pairs(info.node) do 
+                        if type(info[3]) == "string" then tag = info[3] else tag = nil end
+                        new_path:addNode{x=info[1], y=info[2], tag=tag}
+                    end
+                    -- add edges
+                    for node1, edge_info in pairs(info.graph) do 
+                        for node2, tag in pairs(edge_info) do 
+                            local _, node1_hash = new_path:getNode{x=info.node[node1][1], y=info.node[node1][2], tag=info.node[node1][3]}
+                            local _, node2_hash = new_path:getNode{x=info.node[node2][1], y=info.node[node2][2], tag=info.node[node2][3]}
+                            if type(tag) ~= "string" then tag = nil end
+                            new_path:addEdge{a=node1_hash, b=node2_hash, tag=tag}
+                        end
+                    end
+
+                    if not new_map.paths[obj_name] then 
+                        new_map.paths[obj_name] = {}
+                    end
+                    if not new_map.paths[obj_name][layer_name] then 
+                        new_map.paths[obj_name][layer_name] = {}
+                    end
+                    -- get color
+                    if obj_info then 
+                        new_path.color = Draw.hexToRgb(obj_info.color)
+                    end
+                    table.insert(new_map.paths[obj_name][layer_name], new_path)
+                end
+            end
+
             -- spawn entities/hitboxes
             for obj_uuid, info in pairs(data.objects) do
                 local obj_info = getObjInfo(obj_uuid)
@@ -2458,6 +2513,7 @@ do
             self.hb_list = {}
             self.entity_info = {} -- { obj_name: { info_list... } }
             self.entities = {} -- { layer: { entities... } }
+            self.paths = {} -- { obj_name: { layer_name:{ Paths... } } }
         end;
         addTile = function(self,file,x,y,tx,ty,tw,th,layer)
             layer = layer or '_'
@@ -2510,6 +2566,21 @@ do
             table.insert(self.hb_list, new_hb)
             Hitbox.add(new_hb)
         end,
+        getPaths = function(self, obj_name, layer_name)
+            local ret = {}
+            if self.paths[obj_name] then 
+                if layer_name and self.paths[obj_name][layer_name] then 
+                    return self.paths[obj_name][layer_name]
+                else
+                    for layer_name, paths in pairs(self.paths[obj_name]) do
+                        for _, path in ipairs(paths) do 
+                            table.insert(ret, path)
+                        end
+                    end
+                end
+            end
+            return ret
+        end;
         _spawnEntity = function(self, ent_name, opt)
             local obj = Game.spawn(ent_name, opt)
             if obj then
@@ -3463,7 +3534,175 @@ do
 end
 
 --PATH
+Path = {}
+do 
+    local hash_node = function(x,y,tag)
+        local parts = {} 
+        if tag then parts = {tag} end 
+        if not tag then parts = {x,y} end
+        return table.join(parts,',')
+    end
 
+    local hash_edge = function(node1,node2,tag)
+        local parts = {} 
+        if tag then 
+            parts = {node1,node2,tag}
+        else
+            parts = {node1,node2}
+        end
+        return table.join(parts,',')
+    end
+
+    Path = GameObject:extend {
+        debug = false;
+        init = function(self)
+            GameObject.init(self, {classname="Path"})
+
+            self.color = 'blue'
+            self.node = {} -- { hash:{x,y,tag} }
+            self.edge = {} -- { hash:{node1:hash, node2:hash, direction:-1,0,1, tag} }
+            self.matrix = {} -- adjacency matrix containg node/edge info
+
+            self.pathing_objs = {} -- { obj... }
+
+            self:addDrawable()
+        end;
+        addNode = function(self, opt)
+            if not opt then return end
+            local hash = hash_node(opt.x, opt.y, opt.tag)
+
+            self.node[hash] = copy(opt)
+            -- setup edges in matrix
+            self.matrix[hash] = {}
+            for xnode, edges in pairs(self.matrix) do 
+                if xnode ~= hash and not edges[hash] then edges[hash] = nil end 
+            end
+
+            return hash
+        end;
+        getNode = function(self, opt)
+            opt = opt or {}
+            local hash = hash_node(opt.x, opt.y, opt.tag)
+            assert(self.node[hash], "Node '"..hash.."' not in path")
+            return self.node[hash], hash
+        end;
+        addEdge = function(self, opt)
+            opt = opt or {}
+            local hash = hash_edge(opt.a, opt.b, opt.tag)
+            
+            assert(self.node[opt.a], "Node '"..(opt.a or 'nil').."' not in path")
+            assert(self.node[opt.b], "Node '"..(opt.b or 'nil').."' not in path")
+ 
+            local node1, node2 = self.node[opt.a], self.node[opt.b]
+            opt.length = Math.distance(node1.x, node1.y, node2.x, node2.y)
+
+            self.edge[hash] = copy(opt)
+            -- add edge to matrix
+            for xnode, edges in pairs(self.matrix) do 
+                if not edges[hash] then edges[hash] = nil end 
+            end
+            self.matrix[opt.a][opt.b] = hash
+
+            return hash
+        end;
+        getEdge = function(self, opt)
+            opt = opt or {}
+            local hash = hash_edge(opt.a, opt.b, opt.tag)
+            assert(self.edge[hash], "Edge '"..hash.."' not in path")
+            return self.edge[hash], hash
+        end;
+        go = function(self, obj, opt)
+            opt = opt or {}
+            local speed = opt.speed or -1
+            local target = opt.target 
+            local start = opt.start
+
+            assert(target, "Path.go requires target node")
+
+            if not obj.is_pathing then
+                obj.is_pathing = { uuid=uuid(), index=1, path={} }
+                table.insert(self.pathing_objs, obj)
+                
+                if not start_node then 
+                    -- find nearest node
+                    local closest_node
+                    local d = -1
+                    local new_d
+                    for hash, info in pairs(self.node) do 
+                        new_d = Math.distance(info.x,info.y,obj.x,obj.y)
+                        if new_d < d or d < 0 then 
+                            d = new_d
+                            closest_node = info
+                        end
+                    end
+                    if closest_node then 
+                        start_node = closest_node
+                    end
+                end 
+
+                table.insert(obj.is_pathing.path, start_node)
+
+                print_r(obj.is_pathing)
+            end
+        end;
+        stop = function(self, obj)
+            if obj.is_pathing then 
+                local next_node = self.node[obj.is_pathing.path[obj.is_pathing.index]]
+                table.filter(self.pathing_objs, function(_obj) 
+                    return obj.is_pathing.uuid ~= _obj.is_pathing.uuid
+                end)
+                obj.is_pathing = nil
+                return next_node
+            end
+        end;
+        _draw = function(self)
+            if not (Path.debug or self.debug) then return end
+            -- draw nodes
+            for hash, node in pairs(self.node) do 
+                Draw{
+                    {'color',self.color},
+                    {'circle','fill',node.x,node.y,4},
+                    {'color'}
+                }
+                local tag = node.tag
+                if tag then 
+                    local tag_w = Draw.textWidth(tag)
+                    local tag_h = Draw.textHeight(tag)
+                    Draw{
+                        {'color','black',0.8},  
+                        {'rect','fill',node.x,node.y,tag_w+2,tag_h+2,2},
+                        {'color','white'},
+                        {'print',tag,node.x+1,node.y+1},
+                        {'color'}
+                    }
+                end
+            end
+            -- draw edges
+            local node1, node2
+            for hash, edge in pairs(self.edge) do 
+                node1 = self.node[edge.a]
+                node2 = self.node[edge.b]
+                Draw{
+                    {'color',self.color},
+                    {'line',node1.x,node1.y,node2.x,node2.y},
+                    {'color'}
+                }
+                local tag = edge.tag
+                if tag then 
+                    local tag_w = Draw.textWidth(tag)
+                    local tag_h = Draw.textHeight(tag)
+                    Draw{
+                        {'color','black',0.8},  
+                        {'rect','fill',(node1.x+node2.x)/2,(node1.y+node2.y)/2,tag_w+2,tag_h+2,2},
+                        {'color','white'},
+                        {'print',tag,(node1.x+node2.x)/2+1,(node1.y+node2.y)/2+1},
+                        {'color'}
+                    }
+                end
+            end
+        end
+    }
+end
 
 --FEATURE
 Feature = {}
@@ -3477,7 +3716,6 @@ do
         disable = function(...)
             local flist = {...}
             for _, f in ipairs(flist) do 
-                print('disabling',f)
                 enabled[f] = false 
             end
         end,

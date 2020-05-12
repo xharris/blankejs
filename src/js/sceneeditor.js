@@ -97,6 +97,7 @@ class SceneEditor extends Editor {
       ["name", "text"], //, {'label':false}],
       ["color", "color", { label: false }],
       ["size", "number", { inputs: 2, separator: "x" }],
+      ["multi_point", "checkbox", { default: false, label: "multi-point" }],
       ["path_mode", "checkbox", { default: false }]
     ]);
     this.el_object_form.container.style.display = "none";
@@ -669,11 +670,7 @@ class SceneEditor extends Editor {
     });
 
     this.pixi.on("keyFinish", (e, info) => {
-      if (this.obj_type == "object" && !this.el_object_form.getValue("path_mode") && this.placing_object) {
-        this.placeObject(this.placing_object.points.slice());
-        this.clearPlacingObject();
-        this.export();
-      }
+      this.finishPlacingObject()
     });
 
     // moving camera with arrow keys
@@ -985,6 +982,7 @@ class SceneEditor extends Editor {
       this.el_tag_form.container.classList.remove("hidden");
     }
     this.refreshObjectPaths()
+    this.export()
   }
 
   // refreshes combo box
@@ -1465,6 +1463,14 @@ class SceneEditor extends Editor {
     this.curr_layer.container.addChild(this.placing_object.graphic);
   }
 
+  finishPlacingObject() {
+    if (this.obj_type == "object" && !this.el_object_form.getValue("path_mode") && this.placing_object) {
+      this.placeObject(this.placing_object.points.slice());
+      this.clearPlacingObject();
+      this.export();
+    }
+  }
+
   placeObjectPoint(x, y) {
     var curr_object = this.curr_object;
 
@@ -1491,6 +1497,9 @@ class SceneEditor extends Editor {
       this.placing_object.points.push(x, y);
 
       this.redrawPlacingObject();
+
+      if (this.el_object_form.getValue("multi_point") == false)
+        this.finishPlacingObject()
     }
   }
 
@@ -1823,11 +1832,15 @@ class SceneEditor extends Editor {
       }
 
       const m = -5
+
+      const xsign = Math.sign(x1 - x2) == 0 ? 1 : Math.sign(x1 - x2)
+      const ysign = Math.sign(y1 - y2) == 0 ? 1 : Math.sign(y1 - y2)
+
       g.hitArea = new PIXI.Polygon([
-        x1 + (m * Math.sign(x1 - x2)), y1,
-        x1, y1 + (m * Math.sign(y1 - y2)),
-        x2 - (m * Math.sign(x1 - x2)), y2,
-        x2, y2 - (m * Math.sign(y1 - y2))
+        x1 + (m * xsign), y1,
+        x1, y1 + (m * ysign),
+        x2 - (m * xsign), y2,
+        x2, y2 - (m * ysign)
       ])
 
       g.on('mouseover', e => {
@@ -2446,6 +2459,7 @@ class SceneEditor extends Editor {
     }
 
     // objects
+    var obj_path_tag = {} // { layer_uuid: { obj_uuid: {  } }
     if (!app.projSetting("scene").objects)
       app.projSetting("scene").objects = {};
 
@@ -2466,10 +2480,21 @@ class SceneEditor extends Editor {
             polygons[layer_uuid] = [];
 
             for (let p in polys) {
+              const obj = polys[p]
+
               polygons[layer_uuid].push(
-                [ifndef(polys[p].poly.tag, "")].concat(polys[p].points.slice())
+                [ifndef(obj.poly.tag, "")].concat(obj.points.slice())
               );
+
+              // save path data for future use in export()
+              if (obj.poly.tag) {
+                if (!obj_path_tag[layer_uuid]) obj_path_tag[layer_uuid] = {}
+                if (!obj_path_tag[layer_uuid][obj_uuid]) obj_path_tag[layer_uuid][obj_uuid] = {}
+                obj_path_tag[layer_uuid][obj_uuid][(obj.poly.center.join(','))] = obj.poly.tag
+              }
             }
+
+
             export_data.objects[obj.uuid] = polygons;
           }
         }
@@ -2482,7 +2507,7 @@ class SceneEditor extends Editor {
     { 
       obj_uuid: { 
         layer_uuid: { 
-          node:{ 'x,y':[x,y] }, 
+          node:{ 'x,y':[x,y,tag] }, 
           graph:{ 
             'x1,y1':{ 'x2,y2':true } 
           } 
@@ -2490,6 +2515,12 @@ class SceneEditor extends Editor {
       }
     }
     */
+
+    const getNodeTag = (id, obj_uuid, layer_uuid) => {
+      if (obj_path_tag[layer_uuid] && obj_path_tag[layer_uuid][obj_uuid] && obj_path_tag[layer_uuid][obj_uuid][id])
+        return obj_path_tag[layer_uuid][obj_uuid][id]
+    }
+
     for (var path_key in this.obj_paths) {
       const g = this.obj_paths[path_key]
       // obj_uuid
@@ -2504,6 +2535,14 @@ class SceneEditor extends Editor {
       const [id1, id2] = path_key.split(':')
       layer_data.node[id1] = id1.split(',').map(p => parseInt(p))
       layer_data.node[id2] = id2.split(',').map(p => parseInt(p))
+
+      const tag1 = getNodeTag(id1, g.object.uuid, g.layer_uuid)
+      if (tag1)
+        layer_data.node[id1].push(tag1)
+      const tag2 = getNodeTag(id2, g.object.uuid, g.layer_uuid)
+      if (tag2)
+        layer_data.node[id2].push(tag2)
+
       // layer_data.graph
       if (!layer_data.graph[id1]) layer_data.graph[id1] = {}
       if (!layer_data.graph[id2]) layer_data.graph[id2] = {}

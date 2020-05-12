@@ -1,9 +1,9 @@
 Game {
 	plugins = { 'xhh-array', 'xhh-badword', 'xhh-vector', 'xhh-effect' },
 	--plugins = {'xhh-effect'},
-	scripts = { 'scripts.platformer' },
-	initial_state = 'platformer',
-	effect = { 'chroma shift' }, -- TODO get this to work
+	scripts = { 'scripts.path' },
+	initial_state = 'path',
+	-- effect = { 'chroma shift' }, -- TODO get this to work
 	background_color = 'white',
 	load = function() 
 		--[[

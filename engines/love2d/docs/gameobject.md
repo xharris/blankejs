@@ -34,4 +34,8 @@ A parent class for some classes
 
 `setEffect(name,...)` adds shader effects with given names
 
+`use(obj, properties)` copies the given properties from obj onto the gameobject
+
+> `player:use(walk_path:getNode{tag='start'}, {'x','y'})`
+
 `destroy()`
