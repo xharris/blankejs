@@ -15,5 +15,6 @@
     "Map": [ {"title":"", "file":"map.md"} ],
     "State": [ {"title":"", "file":"state.md"} ],
     "Net": [ {"title":"", "file":"net.md"} ],
-    "Physics": [ {"title":"", "file":"physics.md"} ]
+    "Physics": [ {"title":"", "file":"physics.md"} ],
+    "Path": [ {"title":"", "file":"path.md"}]
 }

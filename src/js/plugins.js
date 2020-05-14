@@ -338,18 +338,12 @@ class Plugins extends Editor {
   static disable(key) {
     if (!plugin_info[key]) return;
     // remove file
-    /*for (let path of plugin_info[key].files) {
-			
-      nwFS.removeSync(
-        pathJoin(engine_path, "plugins", key, nwPATH.basename(path))
-			);
-    }*/
-    nwFS.removeSync(
-      pathJoin(app.engine.plugin_path, key)
-    );
-    app.projSetting("enabled_plugins")[key] = false;
-    dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
-    app.saveSettings();
+    if (nwFS.pathExistsSync(pathJoin(app.engine.plugin_path, key))) {
+      nwFS.removeSync(pathJoin(app.engine.plugin_path, key));
+      app.projSetting("enabled_plugins")[key] = false;
+      dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
+      app.saveSettings();
+    }
   }
 
   static getClassNames() {

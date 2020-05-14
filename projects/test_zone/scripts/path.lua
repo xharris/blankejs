@@ -9,10 +9,14 @@ State("path",{
 		local paths = map:getPaths("path_node")
 		paths[1].debug = true
 		
-		local heart = Game.spawn("heart")
+		local heart = Game.spawn("heart", {x = 0})
 		cam.follow = heart
-		
-	paths[1]:go(heart, {target={tag='end'}})
+		--[
+		Hitbox.debug = true
+		paths[1]:go(heart, {
+			speed=50, 
+			target={tag='end'}
+		})
 	end,
 })
 

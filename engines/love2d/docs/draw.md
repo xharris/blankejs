@@ -17,7 +17,7 @@ Draw{
 ## Colors
 
 ```
-red, pink, purple, deeppurple, 
+red, pink, purple, deeppurple,
 indigo, blue, lightblue, cyan,
 teal, green, lightgreen, lime,
 yellow, amber, orange, deeporange, brown,
@@ -40,7 +40,7 @@ grey, gray, bluegray, white, white2, black, black2
 
 `crop(x,y,w,h)`
 
-`reset([only])`
+`reset([only])` only = 'color'/'transform'/'crop'
 
 `push(), pop()` pop undoes all Draw settings after push was called (color, transforms)
 

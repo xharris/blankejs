@@ -22,9 +22,9 @@ blanke_require("noobhub")
 blanke_require("print_r")
 
 local socket = blanke_require("socket")
-callable = function(t) 
-    if t.__ then 
-        for _, mm in ipairs(t) do t['__'..mm] = t.__[mm] end 
+callable = function(t)
+    if t.__ then
+        for _, mm in ipairs(t) do t['__'..mm] = t.__[mm] end
     end
     return setmetatable(t, { __call = t.__call })
 end
@@ -34,47 +34,47 @@ end
 -- is given version greater than or equal to current LoVE version?
 local ge_version = function(major, minor, rev)
     if major and major > Game.love_version[1] then return false end
-    if minor and minor > Game.love_version[2] then return false end 
-    if rev and rev > Game.love_version[3] then return false end 
+    if minor and minor > Game.love_version[2] then return false end
+    if rev and rev > Game.love_version[3] then return false end
     return true
 end
 
 --UTIL.table
-table.update = function (old_t, new_t, keys) 
+table.update = function (old_t, new_t, keys)
     if keys == nil then
-        for k, v in pairs(new_t) do 
-            old_t[k] = v 
+        for k, v in pairs(new_t) do
+            old_t[k] = v
         end
     else
         for _,k in ipairs(keys) do if new_t[k] ~= nil then old_t[k] = new_t[k] end end
     end
     return old_t
 end
-table.keys = function (t) 
+table.keys = function (t)
     ret = {}
     for k, v in pairs(t) do table.insert(ret,k) end
     return ret
 end
-table.every = function (t) 
+table.every = function (t)
     for k,v in pairs(t) do if not v then return false end end
     return true
 end
-table.some = function (t) 
+table.some = function (t)
     for k,v in pairs(t) do if v then return true end end
     return false
 end
-table.len = function (t) 
+table.len = function (t)
     c = 0
     for k,v in pairs(t) do c = c + 1 end
     return c
 end
-table.hasValue = function (t, val) 
-    for k,v in pairs(t) do 
+table.hasValue = function (t, val)
+    for k,v in pairs(t) do
         if v == val then return true end
     end
     return false
 end
-table.slice = function (t, start, finish) 
+table.slice = function (t, start, finish)
     i, res, finish = 1, {}, finish or table.len(t)
     for j = start, finish do
         res[i] = t[j]
@@ -82,14 +82,14 @@ table.slice = function (t, start, finish)
     end
     return res
 end
-table.defaults = function (t,defaults) 
+table.defaults = function (t,defaults)
     for k,v in pairs(defaults) do
-        if t[k] == nil then t[k] = v 
+        if t[k] == nil then t[k] = v
         elseif type(v) == 'table' then table.defaults(t[k],defaults[k]) end
     end
     return t
 end
-table.append = function (t, new_t) 
+table.append = function (t, new_t)
     for k,v in pairs(new_t) do
         if type(k) == 'string' then t[k] = v
         else table.insert(t, v) end
@@ -98,14 +98,14 @@ end
 table.filter = function(t, fn)
     local len = table.len(t)
     local offset = 0
-    for o = 1, len do 
+    for o = 1, len do
         local element = t[o]
-        if element then 
+        if element then
             if fn(element, o) then -- keep element
-                t[o] = nil 
-                t[o - offset] = element 
+                t[o] = nil
+                t[o - offset] = element
             else -- remove element
-                t[o] = nil 
+                t[o] = nil
                 offset = offset + 1
             end
         end
@@ -122,21 +122,21 @@ table.join = function(t, sep)
     local str = ''
     for i = 1, #t do
         str = str .. tostring(t[i])
-        if i ~= #t then 
+        if i ~= #t then
             str = str .. tostring(sep)
         end
     end
     return str
 end
 --UTIL.string
-function string:contains(q) 
+function string:contains(q)
     return string.match(tostring(self), tostring(q)) ~= nil
 end
 function string:count(str)
     local _, count = string.gsub(self, str, "")
     return count
 end
-function string:capitalize() 
+function string:capitalize()
     return string.upper(string.sub(self,1,1))..string.sub(self,2)
 end
 function string:split(sep)
@@ -167,47 +167,47 @@ do
     Math.distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end
     Math.lerp = function(a,b,t) return a * (1-t) + b * t end
     Math.prel = function(a,b,v) -- returns what percent v is between a and b
-        if v >= b then return 1 
-        elseif v <= a then return 0 
+        if v >= b then return 1
+        elseif v <= a then return 0
         else return (v - a) / (b - a) end
     end
-    Math.sinusoidal = function(min, max, spd, percent) return Math.lerp(min, max, Math.prel(-1, 1, math.cos(Math.lerp(0,math.pi/2,percent or 0) + (Game.time * (spd or 1)) )) ) end 
+    Math.sinusoidal = function(min, max, spd, percent) return Math.lerp(min, max, Math.prel(-1, 1, math.cos(Math.lerp(0,math.pi/2,percent or 0) + (Game.time * (spd or 1)) )) ) end
     --  return min + -math.cos(Math.lerp(0,math.pi/2,off or 0) + (Game.time * spd)) * ((max - min)/2) + ((max - min)/2) end
     Math.angle = function(x1, y1, x2, y2) return math.deg(math.atan2((y2-y1), (x2-x1))) end
-    Math.pointInShape = function(shape, x, y)  
+    Math.pointInShape = function(shape, x, y)
         local pts = {}
-        for p = 1,#shape,2 do 
+        for p = 1,#shape,2 do
             table.insert(pts, {x=shape[p], y=shape[p+1]})
         end
         return PointWithinShape(pts,x,y)
     end
 
     function PointWithinShape(shape, tx, ty)
-        if #shape == 0 then 
+        if #shape == 0 then
             return false
-        elseif #shape == 1 then 
+        elseif #shape == 1 then
             return shape[1].x == tx and shape[1].y == ty
-        elseif #shape == 2 then 
+        elseif #shape == 2 then
             return PointWithinLine(shape, tx, ty)
-        else 
+        else
             return CrossingsMultiplyTest(shape, tx, ty)
         end
     end
-     
+
     function BoundingBox(box, tx, ty)
         return	(box[2].x >= tx and box[2].y >= ty)
             and (box[1].x <= tx and box[1].y <= ty)
             or  (box[1].x >= tx and box[2].y >= ty)
             and (box[2].x <= tx and box[1].y <= ty)
     end
-     
+
     function colinear(line, x, y, e)
         e = e or 0.1
         m = (line[2].y - line[1].y) / (line[2].x - line[1].x)
         local function f(x) return line[1].y + m*(x - line[1].x) end
         return math.abs(y - f(x)) <= e
     end
-     
+
     function PointWithinLine(line, tx, ty, e)
         e = e or 0.66
         if BoundingBox(line, tx, ty) then
@@ -216,24 +216,24 @@ do
             return false
         end
     end
-     
-    -- from http://erich.realtimerendering.com/ptinpoly/ 
+
+    -- from http://erich.realtimerendering.com/ptinpoly/
     function CrossingsMultiplyTest(pgon, tx, ty)
         local i, yflag0, yflag1, inside_flag
         local vtx0, vtx1
-     
+
         local numverts = #pgon
-     
+
         vtx0 = pgon[numverts]
         vtx1 = pgon[1]
-     
+
         -- get test bit for above/below X axis
         yflag0 = ( vtx0.y >= ty )
         inside_flag = false
-     
+
         for i=2,numverts+1 do
             yflag1 = ( vtx1.y >= ty )
-     
+
             --[[ Check if endpoints straddle (are on opposite sides) of X axis
              * (i.e. the Y's differ); if so, +X ray could intersect this edge.
              * The old test also checked whether the endpoints are both to the
@@ -257,41 +257,41 @@ do
                     inside_flag =  not inside_flag
                 end
             end
-     
+
             -- Move to the next pair of vertices, retaining info as possible.
             yflag0  = yflag1
             vtx0    = vtx1
             vtx1    = pgon[i]
         end
-     
+
         return  inside_flag
     end
-     
+
     function GetIntersect( points )
         local g1 = points[1].x
         local h1 = points[1].y
-     
+
         local g2 = points[2].x
         local h2 = points[2].y
-     
+
         local i1 = points[3].x
         local j1 = points[3].y
-     
+
         local i2 = points[4].x
         local j2 = points[4].y
-     
+
         local xk = 0
         local yk = 0
-     
+
         if checkIntersect({x=g1, y=h1}, {x=g2, y=h2}, {x=i1, y=j1}, {x=i2, y=j2}) then
             local a = h2-h1
             local b = (g2-g1)
             local v = ((h2-h1)*g1) - ((g2-g1)*h1)
-     
+
             local d = i2-i1
             local c = (j2-j1)
             local w = ((j2-j1)*i1) - ((i2-i1)*j1)
-     
+
             xk = (1/((a*d)-(b*c))) * ((d*v)-(b*w))
             yk = (-1/((a*d)-(b*c))) * ((a*w)-(c*v))
         end
@@ -304,12 +304,20 @@ switch = function(val, choices)
     elseif choices.default then choices.default() end
 end
 -- for sorting a table of objects
-sort = function(t, key, default) 
-    table.sort(t, function(a, b) 
-        if a[key] == nil then a[key] = default end 
+sort = function(t, key, default)
+    if #t == 0 then return end
+    table.sort(t, function(a, b)
+        if a == nil and b == nil then
+            return false
+        end
+        if a == nil then
+            return true
+        end
+        if b == nil then
+            return false
+        end
+        if a[key] == nil then a[key] = default end
         if b[key] == nil then b[key] = default end
-        a['_last_'..key] = a[key]
-        b['_last_'..key] = b[key] 
         return a[key] < b[key]
     end)
 end
@@ -338,12 +346,12 @@ is_object = function(o) return type(o) == 'table' and o.init and type(o.init) ==
 
 encrypt = function(str, code, seed)
     local oldseed = {Math.seed()}
-    if not seed then 
+    if not seed then
         seed = 0
-        for c = 1, string.len(code) do 
+        for c = 1, string.len(code) do
             seed = seed + string.byte(string.sub(code,c,c))
-        end 
-    end 
+        end
+    end
     Math.seed(seed)
     local ret_str = ''
     local code_len = string.len(code)
@@ -355,22 +363,22 @@ encrypt = function(str, code, seed)
 end
 decrypt = function(str, code, seed)
     local oldseed = {Math.seed()}
-    if not seed then 
+    if not seed then
         seed = 0
-        for c = 1, string.len(code) do 
+        for c = 1, string.len(code) do
             seed = seed + string.byte(string.sub(code,c,c))
-        end 
-    end 
-    Math.seed(seed)                                                                                                                                                                                                                                                         
+        end
+    end
+    Math.seed(seed)
     local ret_str = ''
     local code_len = string.len(code)
     for c = 1, string.len(str) do
         ret_str = ret_str .. string.char(bit.bxor(string.byte(string.sub(str,c,c)), (c + Math.random(c,code_len)) % code_len))
     end
-    Math.seed(unpack(oldseed))                     
+    Math.seed(unpack(oldseed))
     return ret_str
 end
-lua_print = print 
+lua_print = print
 do
     local str = ''
     local args
@@ -378,8 +386,8 @@ do
         str = ''
         args = {...}
         len = table.len(args)
-        for i = 1,len do 
-            str = str .. tostring(args[i] or 'nil') 
+        for i = 1,len do
+            str = str .. tostring(args[i] or 'nil')
             if i ~= len then str = str .. ' ' end
         end
         lua_print(str)
@@ -388,22 +396,22 @@ end
 
 --CACHE
 Cache = {}
-do 
+do
     local storage = {}
     Cache.group = function(name) return Cache[name] end
     Cache.key = function(group_name, key) return (Cache[group_name] and Cache[group_name][key]) end
     Cache.get = function(group_name, key, fn_not_found)
-        if not storage[group_name] then storage[group_name] = {} end 
-        if storage[group_name][key] then 
-            return storage[group_name][key] 
+        if not storage[group_name] then storage[group_name] = {} end
+        if storage[group_name][key] then
+            return storage[group_name][key]
         elseif fn_not_found then
             storage[group_name][key] = fn_not_found(key)
             return storage[group_name][key]
         end
     end
     Cache.stats = function()
-        local str = '' 
-        for name, list in pairs(storage) do 
+        local str = ''
+        for name, list in pairs(storage) do
             str = str .. name .. '=' .. table.len(list) .. ' '
         end
         print(str)
@@ -418,17 +426,17 @@ Stack = class{
     end,
     new = function(self, remake)
         local found = false
-        for _, s in ipairs(self.stack) do 
-            if not s.used then 
+        for _, s in ipairs(self.stack) do
+            if not s.used then
                 found = true
-                s.used = true 
-                if remake then 
+                s.used = true
+                if remake then
                     s.value = self.fn_new()
                 end
                 return s
             end
         end
-        if not found then 
+        if not found then
             local new_uuid = uuid()
             local new_stack_obj = {
                 uuid=new_uuid,
@@ -441,10 +449,10 @@ Stack = class{
         end
     end,
     release = function(self, object)
-        for _, s in ipairs(self.stack) do 
-            if s.uuid == object.uuid then 
+        for _, s in ipairs(self.stack) do
+            if s.uuid == object.uuid then
                 s.used = false
-                return 
+                return
             end
         end
     end
@@ -459,36 +467,35 @@ end)
 --TRACK
 track = nil
 changed = nil
-do 
+do
     local obj_track = {} -- { table_ref={ var=last_val } }
     local tracks_changed = {} -- { table_ref={ var=new_value } }
-    
+
     -- call track(obj, 'myvar') after it's been set
     --@global
     track = function(obj, comp_name)
-        assert(obj, "track(): Object is nil") 
-        if not obj_track[obj] then obj_track[obj] = {} end 
+        assert(obj, "track(): Object is nil")
+        if not obj_track[obj] then obj_track[obj] = {} end
         obj_track[obj][comp_name] = obj[comp_name]
         --i = i + 1
-        --print(i)
     end
-    
+
     -- changed(obj, 'myvar') will return true/false if myvar has changed since the last track()/changed()
     changed = function(obj, comp_name)
         local last_vars = obj_track[obj]
-        if last_vars then 
-            if last_vars[comp_name] ~= obj[comp_name] then 
-                if not tracks_changed[obj] then 
+        if last_vars then
+            if last_vars[comp_name] ~= obj[comp_name] then
+                if not tracks_changed[obj] then
                     table.insert(tracks_changed, obj)
                     tracks_changed[obj] = {}
-                end 
+                end
                 tracks_changed[obj][comp_name] = obj[comp_name]
                 return true
             end
         end
         return false
     end
-    
+
     reset_tracks = function()
         table.update(obj_track, tracks_changed)
         tracks_changed = {}
@@ -496,7 +503,7 @@ do
 end
 
 --FS
-FS = nil 
+FS = nil
 do
     local lfs = love.filesystem
     FS = {
@@ -517,14 +524,14 @@ do
             return lfs.getDirectoryItems(path)
         end,
         info = function (path)
-            if Window.os == 'web' then 
+            if Window.os == 'web' then
                 local info = {
                     type = 'other',
                     size = lfs.getSize(path),
                     modtime = lfs.getLastModified(path)
                 }
-                if lfs.isFile(path) then info.type = "file"  
-                elseif lfs.isDirectory(path) then info.type = "directory" 
+                if lfs.isFile(path) then info.type = "file"
+                elseif lfs.isDirectory(path) then info.type = "directory"
                 elseif lfs.isSymlink(path) then info.type = "symlink" end
                 return info
             else
@@ -540,13 +547,13 @@ do
     local fns = {}
     Signal = {
         emit = function(event, ...)
-            if fns[event] then 
-                for _,fn in ipairs(fns[event]) do 
+            if fns[event] then
+                for _,fn in ipairs(fns[event]) do
                     fn(...)
                 end
             end
         end,
-        on = function(event, fn) 
+        on = function(event, fn)
             if not fns[event] then fns[event] = {} end
             table.insert(fns[event], fn)
         end
@@ -567,7 +574,7 @@ do
             last_blend = Draw.getBlendMode()
             Draw.setBlendMode(unpack(props.blendmode))
         end
-        
+
         Game.checkAlign(props)
         local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
         local ax, ay = (props.alignx + props.offx) * scalex, (props.aligny + props.offy) * scaley
@@ -575,26 +582,26 @@ do
         local x = floor(props.x)
 
         local tform = props._draw_transform
-        if not tform then 
+        if not tform then
             props._draw_transform = Draw.newTransform()
             tform = props._draw_transform
         end
 
         tform:reset()
         tform:translate(x,y)
-        -- tform:translate(-ax / scalex, -ay / scaley) 
-        if is_fn then 
+        -- tform:translate(-ax / scalex, -ay / scaley)
+        if is_fn then
             tform:scale(scalex, scaley)
             tform:rotate(math.rad(props.angle))
             tform:shear(props.shearx, props.sheary)
-        end 
+        end
 
 
         local draw_obj = function()
-            if not skip_tf then 
+            if not skip_tf then
                 Draw.applyTransform(props._draw_transform)
             end
-            if is_fn then 
+            if is_fn then
                 lobj(props)
             else
                 if props.quad then
@@ -625,7 +632,7 @@ do
         if props.debug then
             local lax, lay = 0,0
             local rax, ray = Math.abs(ax), Math.abs(ay)
-            
+
             local r = 5
             Draw.push()
             Draw.color('purple',0.75)
@@ -638,7 +645,7 @@ do
         end
         Draw.applyTransform(props._draw_transform:inverse())
         Draw.pop()
-        
+
         if last_blend then
             Draw.setBlendMode(last_blend)
         end
@@ -663,7 +670,7 @@ do
             load =          function() end,
             draw =          function(d) d() end,
             postdraw =      nil,
-            update =        function(dt) end,            
+            update =        function(dt) end,
         };
         config = {};
         updatables = {};
@@ -679,7 +686,7 @@ do
                 Game.loaded = true
                 table.update(Game.options, args)
                 Game.load()
-                if Game.options.initial_state then 
+                if Game.options.initial_state then
                     State.start(Game.options.initial_state)
                 end
             end
@@ -697,7 +704,7 @@ do
                 if Blanke.game_canvas then Blanke.game_canvas:resize(Game.width, Game.height) end
             end
         end;
-        
+
         load = function()
             Game.time = 0
             Game.love_version = {love.getVersion()}
@@ -717,7 +724,7 @@ do
             -- disable effects for web (SharedArrayBuffer or whatever)
             if Window.os == 'web' then
                 Feature.disable('effect')
-            end            
+            end
             -- window size and flags
             Game.options.window_flags = table.update({
                 borderless = Game.options.frameless,
@@ -737,15 +744,15 @@ do
 
             if type(Game.options.filter) == 'table' then
                 love.graphics.setDefaultFilter(unpack(Game.options.filter))
-            else 
+            else
                 love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
             end
             Draw.setFont('04B_03.ttf', 16)
             scripts = Game.options.scripts or {}
             local no_user_scripts = (#scripts == 0)
             -- load plugins
-            if Game.options.plugins then 
-                for _,f in ipairs(Game.options.plugins) do 
+            if Game.options.plugins then
+                for _,f in ipairs(Game.options.plugins) do
                     table.insert(scripts,'plugins.'..f)
                 end
             end
@@ -757,25 +764,25 @@ do
                     for _,f in ipairs(files) do
                         local file_path = path..'/'..f
                         if FS.extname(f) == 'lua' and not table.hasValue(scripts, file_path) then
-                            new_f = 
+                            new_f =
                             table.insert(scripts, table.join(string.split(FS.removeExt(file_path), '/'),'.'))
                         end
                         local info = FS.info(file_path)
-                        if info.type == 'directory' and file_path ~= '/dist' and file_path ~= '/lua' then 
+                        if info.type == 'directory' and file_path ~= '/dist' and file_path ~= '/lua' then
                             load_folder(file_path)
                         end
                     end
                 end
                 load_folder('')
             end
-            
+
             for _,script in ipairs(scripts) do
-                if script ~= 'main' then 
+                if script ~= 'main' then
                     require(script)
                 end
             end
             -- fullscreen toggle
-            Input.set({ _fs_toggle = { 'alt', 'enter' } }, { 
+            Input.set({ _fs_toggle = { 'alt', 'enter' } }, {
                 combo = { '_fs_toggle' },
                 no_repeat = { '_fs_toggle' },
             })
@@ -787,16 +794,14 @@ do
                 Game.options.load()
             end
             -- round pixels
-            if not Game.options.round_pixels then 
+            if not Game.options.round_pixels then
                 floor = function(x) return x end
             end
-            
+
             love.graphics.setBackgroundColor(1,1,1,0)
 
-            Blanke.game_canvas = Canvas()
+            Blanke.game_canvas = Canvas{auto_draw=false}
             Blanke.game_canvas.__ide_obj = true
-            
-            Blanke.game_canvas:remDrawable()
         end;
 
         setEffect = function(...)
@@ -805,7 +810,7 @@ do
 
         addObject = function(name, _type, args, spawn_class)
             -- store in object 'library' and update initial props
-            if objects[name] == nil then 
+            if objects[name] == nil then
                 objects[name] = {
                     type = _type,
                     args = args,
@@ -815,12 +820,12 @@ do
         end;
 
         checkAlign = function(obj)
-            local align = obj.align 
+            local align = obj.align
             if obj.parent then align = obj.parent.align end
             local ax, ay = 0, 0
             if align then
                 if string.contains(align, 'center') then
-                    ax = obj.width/2 
+                    ax = obj.width/2
                     ay = obj.height/2
                 end
                 if string.contains(align,'left') then
@@ -842,18 +847,18 @@ do
         sortDrawables = function()
             sort(Game.drawables, 'z', 0)
         end;
-        
+
         updateObject = function(dt, obj)
             obj:_update(dt)
         end;
 
         drawObject = function(obj, lobj, is_fn)
             if obj.visible == false then return end
-            if obj.effect then 
+            if obj.effect then
                 obj.effect:draw(function()
                     draw(obj, lobj, is_fn)
                 end)
-            else 
+            else
                 draw(obj, lobj, is_fn)
             end
         end;
@@ -898,7 +903,7 @@ do
                 Blanke.padx, Blanke.pady = 0, 0
                 if scalex > scaley then
                     Blanke.padx = floor((Window.width - (Game.width * Blanke.scale)) / 2)
-                else 
+                else
                     Blanke.pady = floor((Window.height - (Game.height * Blanke.scale)) / 2)
                 end
                 -- offset mouse coordinates
@@ -914,10 +919,10 @@ do
             State.update(dt)
             State._check()
             Signal.emit('update',dt)
-            local key = Input.pressed('_fs_toggle') 
+            local key = Input.pressed('_fs_toggle')
             if key and key[1].count == 1 then
                 Window.toggleFullscreen()
-            end            
+            end
             Input.keyCheck()
             Audio.update(dt)
         end
@@ -925,8 +930,8 @@ do
 end
 
 --GAMEOBJECT
-GameObject = nil 
-do 
+GameObject = nil
+do
     GameObject = class {
         init = function(self, args, spawn_args)
             args = args or {}
@@ -948,7 +953,7 @@ do
             self.classname = spawn_args.classname or args.classname or 'GameObject'
             spawn_args.classname = nil; args.classname = nil
 
-            if not gobject_count[self.classname] then gobject_count[self.classname] = 0 end 
+            if not gobject_count[self.classname] then gobject_count[self.classname] = 0 end
             gobject_count[self.classname] = gobject_count[self.classname] + 1
 
             if args then
@@ -967,7 +972,7 @@ do
                     args.camera = nil
                 end
                 -- effect
-                if args.effect then 
+                if args.effect then
                     self:setEffect(args.effect)
                     args.effect = nil
                 end
@@ -998,7 +1003,7 @@ do
                 table.update(self, args)
             end
             if spawn_args then table.update(self,spawn_args) end
-                        
+
             State.addObject(self)
             if not self.is_entity and self.spawn then self:spawn(unpack(spawn_args or {})) end
         end;
@@ -1006,7 +1011,7 @@ do
             Blanke.addUpdatable(self)
         end;
         addDrawable = function(self)
-            if self.__ide_obj or Game.options.auto_draw then 
+            if self.__ide_obj or Game.options.auto_draw then
                 Blanke.addDrawable(self)
             end
         end;
@@ -1023,8 +1028,8 @@ do
             self.mesh = love.graphics.newMesh(verts,'fan')
         end;
         use = function(self, other_obj, props)
-            for _, prop in ipairs(props) do 
-                if other_obj[prop] then 
+            for _, prop in ipairs(props) do
+                if other_obj[prop] then
                     self[prop] = other_obj[prop]
                 end
             end
@@ -1036,15 +1041,15 @@ do
                 if self._destroy then self:_destroy() end
                 if self.child_keys then
                     for _,k in ipairs(self.child_keys) do
-                        self[k]:destroy() 
+                        self[k]:destroy()
                     end
                 end
                 Net.destroy(self)
                 self.destroyed = true
-            
-                if gobject_count[self.classname] then 
+
+                if gobject_count[self.classname] then
                     gobject_count[self.classname] = gobject_count[self.classname] - 1
-                end 
+                end
             end
         end;
         __ = {
@@ -1056,24 +1061,30 @@ end
 --CANVAS
 local canv_len = 0 -- just a debug thing to see how many canvases exist
 Canvas = GameObject:extend {
-    init = function(self, w, h, settings)
+    init = function(self, settings)
         GameObject.init(self, {classname="Canvas"})
-        w, h, settings = w or Game.width, h or Game.height, settings or {}
+        settings = settings or {}
+        local w, h = settings.w or Game.width, settings.h or Game.height
+        local auto_draw = settings.auto_draw
+        settings.auto_draw = nil
         self.auto_clear = true
         self.width = w
         self.height = h
         self.canvas = love.graphics.newCanvas(self.width, self.height, settings)
         self.quad = love.graphics.newQuad(0,0,Game.width,Game.height,Game.width,Game.height)
-      
+
         canv_len = canv_len + 1
         self.blendmode = {"alpha"}
-        self:addDrawable()
+        if auto_draw ~= false then
+            self:addDrawable()
+        end
     end;
     reset = function(self)
         self.blendmode = {"alpha"}
         self.auto_clear = true
     end;
-    _draw = function(self)  
+    _draw = function(self)
+        if self.active then error("Cannot render Canvas to itself") end
         if not self.__ide_obj then
             Draw.push()
             love.graphics.origin()
@@ -1084,7 +1095,7 @@ Canvas = GameObject:extend {
         end
     end;
     draw = function(self) self:_draw() end,
-    resize = function(self,w,h) 
+    resize = function(self,w,h)
         self.width = w
         self.height = h
         self.canvas = love.graphics.newCanvas(w,h)
@@ -1113,7 +1124,7 @@ Canvas = GameObject:extend {
 
 --IMAGE
 Image = nil
-do 
+do
     local animations = {}
     local info_cache = {}
     local getImage = function(name)
@@ -1123,11 +1134,11 @@ do
         assert(new_img, "Image not found:\'"..name.."\'")
         return new_img
     end
-    
+
     ImageBatch = GameObject:extend {
         init = function(self, file)
             GameObject.init(self, {classname="ImageBatch"})
-            
+
         end
     }
 
@@ -1148,7 +1159,7 @@ do
         animation = function(file, anims, all_opt)
             all_opt = all_opt or {}
             local img = getImage(file)
-            if not anims then 
+            if not anims then
                 anims = {
                     { name=FS.removeExt(FS.basename(file)), cols=1, rows=1, frames={1} }
                 }
@@ -1162,7 +1173,7 @@ do
                 -- calculate frame list
                 local frame_list = {}
                 local in_frames = o('frames') or {'1-'..(o('cols')*o('rows'))}
-                
+
                 assert(not in_frames or type(in_frames) == "table", "Image.animation frames must be in array")
                 for _,f in ipairs(in_frames) do
                     local f_type = type(f)
@@ -1176,18 +1187,18 @@ do
                         end
                     end
                 end
-                
+
                 -- make quads
                 for _,f in ipairs(frame_list) do
                     local x,y = Math.indexTo2d(f, o('cols'))
                     table.insert(quads, love.graphics.newQuad((x-1)*fw,(y-1)*fh,fw,fh,img:getWidth(),img:getHeight()))
                 end
                 animations[anim.name or FS.removeExt(FS.basename(file))] = {
-                    file=file, 
-                    duration=o('duration') or 1, 
-                    durations=o('durations') or {}, 
-                    quads=quads, 
-                    w=fw, h=fh, frame_size={fw,fh}, 
+                    file=file,
+                    duration=o('duration') or 1,
+                    durations=o('durations') or {},
+                    quads=quads,
+                    w=fw, h=fh, frame_size={fw,fh},
                     speed=o('speed') or 1
                 }
             end
@@ -1201,7 +1212,7 @@ do
             elseif args.animation then
                 anim_info = animations[args.animation]
             end
-            if anim_info then 
+            if anim_info then
                 -- animation (speed, frame_index)
                 args = {file=anim_info.file}
                 self.animated = anim_info
@@ -1218,7 +1229,7 @@ do
             self:updateSize()
             if self._spawn then self:_spawn() end
             if self.spawn then self:spawn() end
-            if not args.skip_update then 
+            if not args.skip_update then
                 self:addUpdatable()
             end
             if args.draw == true then
@@ -1226,7 +1237,7 @@ do
             end
         end;
         updateSize = function(self)
-            if self.animated then 
+            if self.animated then
                 self.width, self.height = abs(self.animated.frame_size[1] * self.scalex * self.scale), abs(self.animated.frame_size[2] * self.scaley * self.scale)
             else
                 self.width = abs(self.image:getWidth() * self.scalex * self.scale)
@@ -1249,8 +1260,8 @@ do
         _draw = function(self)
             if self.destroyed then return end
             self:updateSize()
-            if self.animated then 
-                self.quad = self.quads[self.frame_index] 
+            if self.animated then
+                self.quad = self.quads[self.frame_index]
             end
             Game.drawObject(self, self.image)
         end;
@@ -1261,7 +1272,7 @@ end
 --ENTITY
 Entity = nil
 do
-    local updateEntity = function(self, dt) 
+    local updateEntity = function(self, dt)
         local last_x, last_y = self.x, self.y
         local diff_pos = (self.x ~= last_x or self.y ~= last_y)
         if self.destroyed then return end
@@ -1271,15 +1282,11 @@ do
             self.vspeed = self.vspeed + gravy
         end
         -- moving x and y in separate steps solves 'sticking' issue (ty https://jonathanwhiting.com/tutorial/collision/)
-        
+
         self.x = self.x + self.hspeed * dt
-        --if self.x ~= last_x then 
-            Hitbox.move(self)
-        --end
+        Hitbox.move(self)
         self.y = self.y + self.vspeed * dt
-        --if self.y ~= last_y then
-            Hitbox.move(self)
-        --end
+        Hitbox.move(self)
         if self.update then self:update(dt) end
         if self.body then
             local new_x, new_y = self.body:getPosition()
@@ -1329,9 +1336,9 @@ do
             self.imageList = {}
             self.animList = {}
             -- width/height already set?
-            if (args.width ~= 0 or args.height ~= 0) then 
+            if (args.width ~= 0 or args.height ~= 0) then
                 self._preset_size = true
-            else 
+            else
                 args.width = spawn_args.map_width or args.width
                 args.height = spawn_args.map_height or args.height
             end
@@ -1340,9 +1347,12 @@ do
                 if type(args.images) == 'table' then
                     for _,img in ipairs(args.images) do
                         self.imageList[img] = Image{file=img, skip_update=true}
+                        if not self.image then
+                            self.image = img
+                        end
                     end
-                    self:_updateSize(self.imageList[args.images[1]], true)
-                else 
+                    self:_updateSize(self.imageList[args.image], true)
+                else
                     self.imageList[args.images] = Image{file=args.images, skip_update=true}
                     self:_updateSize(self.imageList[args.images], true)
                 end
@@ -1351,27 +1361,27 @@ do
             -- animation
             if args.animations then
                 if type(args.animations) == 'table' then
-                    for _, anim_name in ipairs(args.animations) do 
-                        if not args.animation then 
-                            args.animation = anim_name 
+                    for _, anim_name in ipairs(args.animations) do
+                        if not self.animation then
+                            self.animation = anim_name
                         end
                         self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
                     end
-                else  
-                    if not args.animation then 
-                        args.animation = args.animations 
+                else
+                    if not args.animation then
+                        args.animation = args.animations
                     end
                     self.animList[args.animations] = Image{file=args, animation=args.animations, skip_update=true}
-                end    
+                end
                 self.anim_speed = args.anim_speed or spawn_args.anim_speed or self.anim_speed
                 self.anim_frame = args.anim_frame or spawn_args.anim_frame or self.anim_frame
-                self.animation = args.animation or spawn_args.animation 
+                self.animation = args.animation or spawn_args.animation
                 self:_updateSize(self.animList[self.animation], true)
             end
 
             if not self.reaction then
                 self.reaction = 'cross'
-                if args.animations or args.images then 
+                if args.animations or args.images then
                     self.reaction = 'slide'
                 end
             end
@@ -1398,12 +1408,12 @@ do
             if args.net and not spawn_args.net_obj then
                 spawn_args.anim_frame = args.anim_frame
                 spawn_args.anim_speed = args.anim_speed
-                spawn_args.x = spawn_args.x or self.x 
-                spawn_args.y = spawn_args.y or self.y 
+                spawn_args.x = spawn_args.x or self.x
+                spawn_args.y = spawn_args.y or self.y
                 Net.spawn(self, spawn_args)
             end
             -- metamethods
-            if args.__ then 
+            if args.__ then
                 self.__fn = args.__
                 args.__ = nil
             end
@@ -1413,11 +1423,11 @@ do
                 fn(self, args, spawn_args)
             end
             self:addUpdatable()
-            self:addDrawable()
+            if args.auto_draw ~= false then self:addDrawable() end
             table.update(self, spawn_args or {})
-            if self.spawn then 
+            if self.spawn then
                 if spawn_args then self:spawn(unpack(spawn_args))
-                else self:spawn() end 
+                else self:spawn() end
             end
             if self.hasHitbox then
                 Hitbox.teleport(self)
@@ -1429,15 +1439,15 @@ do
                 local anim = self.animList[self.animation]
                 assert(skip_anim_check or anim, self.classname.." missing animation '"..self.animation.."'")
                 -- change animation values from here?
-                if self.anim_speed then 
+                if self.anim_speed then
                     anim.speed = self.anim_speed
                     Net.sync(self, {'anim_speed'})
                 end
-                if self.anim_frame then 
+                if self.anim_frame then
                     anim.frame_index = self.anim_frame
                     Net.sync(self, {'anim_frame'})
                 end
-            end 
+            end
             if not self._preset_size then
                 self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
             end
@@ -1454,14 +1464,15 @@ do
         _update = function(self,dt)
             updateEntity(self, dt)
         end;
-        netSync = function(self, props, spawning) 
+        netSync = function(self, props, spawning)
             if self.animation and (spawning or self.anim_speed ~= nil) then
                 props.anim_frame = self.anim_frame
                 props.anim_speed = self.animList[self.animation].speed
                 return 2
             end
         end,
-        _draw = function(self)       
+        _draw = function(self,...)
+            local extra_args = {...}
             Game.drawObject(self, function()
                 -- predraw
                 if self.predraw then
@@ -1484,17 +1495,17 @@ do
                     end
                 end
                 if self._custom_draw then
-                    self:_custom_draw(draw_fn)
+                    self:_custom_draw(draw_fn, unpack(extra_args))
                 else
                     draw_fn()
                 end
-                -- postdraw 
-                if self.postdraw then 
+                -- postdraw
+                if self.postdraw then
                     self:postdraw()
                 end
             end, 'function')
         end;
-        draw = function(self) self:_draw() end;
+        draw = function(self,...) self:_draw(...) end;
         _destroy = function(self)
             if self.destroyed then return end
             for name, img in pairs(self.imageList) do
@@ -1505,7 +1516,7 @@ do
             end
         end
     }
-    
+
     Entity = callable {
         init_props = {};
         __call = function(self, name, args)
@@ -1552,20 +1563,20 @@ do
     }
 
     local joycheck = function(info)
-        if not info or not info.joystick then return info end 
-        if Joystick.using == 0 then return info end 
+        if not info or not info.joystick then return info end
+        if Joystick.using == 0 then return info end
         if Joystick.get(Joystick.using):getID() == info.joystick:getID() then return info end
     end
 
     local isPressed = function(name)
-        if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) and joycheck(pressed[name]) then 
-            return pressed[name] 
-        end 
+        if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) and joycheck(pressed[name]) then
+            return pressed[name]
+        end
     end
 
     local isReleased = function(name)
         if joycheck(released[name]) then
-            return released[name] 
+            return released[name]
         end
     end
 
@@ -1598,11 +1609,11 @@ do
             end
         end;
 
-        pressed = function(...) 
+        pressed = function(...)
             local ret = {}
             local args = {...}
             local val
-            for _, name in ipairs(args) do 
+            for _, name in ipairs(args) do
                 val = isPressed(name)
                 if val then table.insert(ret, val) end
             end
@@ -1613,7 +1624,7 @@ do
             local ret = {}
             local args = {...}
             local val
-            for _, name in ipairs(args) do 
+            for _, name in ipairs(args) do
                 val = isReleased(name)
                 if val then table.insert(ret, val) end
             end
@@ -1655,12 +1666,13 @@ do
                 end
             end
         end;
-        
-        keyCheck = function() 
+
+        keyCheck = function()
             for name, info in pairs(pressed) do
                 info.count = info.count + 1
             end
             released = {}
+            store['wheel'] = nil
         end;
 
         -- mousePos = function() return love.mouse.getPosition() end;
@@ -1670,7 +1682,7 @@ end
 --JOYSTICK
 Joystick = nil
 local refreshJoystickList
-do 
+do
     local joysticks = {}
     refreshJoystickList = function()
         joysticks = love.joystick.getJoysticks()
@@ -1679,7 +1691,7 @@ do
     Joystick = {
         using = 0,
         get = function(i)
-            if i > 0 and i < #joysticks then 
+            if i > 0 and i < #joysticks then
                 return joysticks[i]
             end
         end,
@@ -1691,7 +1703,7 @@ do
 end
 
 --DRAW
-Draw = nil 
+Draw = nil
 do
     local clamp = Math.clamp
     local _hex_cache = {}
@@ -1709,11 +1721,11 @@ do
     local getFont = function(path, size)
         size = size or 12
         local key = path..'+'..size
-        if fonts[key] then return fonts[key] end 
+        if fonts[key] then return fonts[key] end
         local font = love.graphics.newFont(Game.res('font',path), size)
-        fonts[key] = font 
+        fonts[key] = font
         return font
-    end  
+    end
     local DEF_FONT = "04B_03.ttf"
     local last_font
     Draw = class {
@@ -1740,13 +1752,14 @@ do
             return Draw:getFont():getWidth(text)
         end;
         textHeight = function(text)
+            if not text then text = "l" end
             return Draw:getFont():getHeight() * (text:count("\n") + 1)
         end;
         addImageFont = function(path, glyphs, ...)
             path = Game.res('image', path)
-            if fonts[path] then return fonts[path] end 
+            if fonts[path] then return fonts[path] end
             local font = love.graphics.newImageFont(path, glphs, ...)
-            fonts[path] = font 
+            fonts[path] = font
             return font
         end;
         setImageFont = function(path)
@@ -1758,7 +1771,7 @@ do
         print = function(txt,x,y,char_limit,align,...)
             x = x or 0
             y = y or 0
-            if not char_limit then 
+            if not char_limit then
                 char_limit = Draw.getFont():getWidth(txt)
             end
             love.graphics.printf(txt,x,y,char_limit,align,...)
@@ -1767,9 +1780,9 @@ do
             args = {...}
             if #args == 0 then return 1, 1, 1, 1 end
             local c = Color[args[1]]
-            if c then 
+            if c then
                 args = {c[1],c[2],c[3], args[2] or 1}
-                for a,arg in ipairs(args) do 
+                for a,arg in ipairs(args) do
                     if arg > 1 then args[a] = arg / 255 end
                 end
             end
@@ -1780,10 +1793,10 @@ do
         color = function(...)
             return love.graphics.setColor(Draw.parseColor(...))
         end;
-        hexToRgb = function(hex) 
+        hexToRgb = function(hex)
             if _hex_cache[hex] then return _hex_cache[hex] end
             local ret = _hex2rgb(hex)
-            _hex_cache[hex] = ret 
+            _hex_cache[hex] = ret
             return ret
         end;
         getBlendMode = function() return love.graphics.getBlendMode() end;
@@ -1831,25 +1844,26 @@ do
             love.graphics.clear(Draw.parseColor(...))
         end
     }
-    
+
     local draw_functions = {
         'arc','circle','ellipse','line','points','polygon','rectangle',--'print','printf',
         'discard','origin',
         'scale','shear','transformPoint',
-        'setLineWidth','setPointSize',
+        'setLineWidth','setLineJoin','setPointSize',
         'applyTransform', 'replaceTransform'
     }
     local draw_aliases = {
         polygon = 'poly',
         rectangle = 'rect',
         setLineWidth = 'lineWidth',
+        setLineJoin = 'lineJoin',
         setPointSize = 'pointSize',
         points = 'point',
         setFont = 'font',
         setFontSize = 'fontSize'
     }
-    for _,fn in ipairs(draw_functions) do 
-        Draw[fn] = function(...) return love.graphics[fn](...) end 
+    for _,fn in ipairs(draw_functions) do
+        Draw[fn] = function(...) return love.graphics[fn](...) end
     end
     for old, new in pairs(draw_aliases) do
         Draw[new] = Draw[old]
@@ -1913,14 +1927,14 @@ do
         end;
 
         update = function(dt)
-            if #play_queue > 0 then 
-                for _, src in ipairs(play_queue) do 
+            if #play_queue > 0 then
+                for _, src in ipairs(play_queue) do
                     love.audio.play(src)
                 end
                 play_queue = {}
             end
         end;
-        
+
         source = function(name, options)
             local o = opt(name)
             if options then o = table.update(o, options) end
@@ -1930,7 +1944,7 @@ do
             local src = Cache.get('Audio.source',name,function(key)
                 return love.audio.newSource(Game.res('audio',o.file), o.type)
             end)
-            
+
             if not sources[name] then
                 sources[name] = love.audio.newSource(Game.res('audio',o.file), o.type)
             end
@@ -1941,8 +1955,8 @@ do
                 local props = {'looping','volume','airAbsorption','pitch','relative','rolloff'}
                 local t_props = {'position','attenuationDistances','cone','direction','velocity','filter','effect','volumeLimits'}
                 for _,n in ipairs(props) do
-                    if o[n] then 
-                        src['set'..n:capitalize()](src,o[n]) 
+                    if o[n] then
+                        src['set'..n:capitalize()](src,o[n])
                     end
                 end
                 for _,n in ipairs(t_props) do
@@ -1953,29 +1967,29 @@ do
         end;
         play = function(...)
             local src_list = {}
-            for _,name in ipairs({...}) do 
-                table.insert(src_list, Audio.source(name)) 
+            for _,name in ipairs({...}) do
+                table.insert(src_list, Audio.source(name))
                 -- adds to play_queue so audio doesn't play in Game.load (before the game actually starts)
                 table.insert(play_queue, Audio.source(name))
             end
-            if #src_list == 1 then return src_list[1] 
+            if #src_list == 1 then return src_list[1]
             else return src_list end
         end;
-        stop = function(...) 
+        stop = function(...)
             names = {...}
-            if #names == 0 then love.audio.stop() 
+            if #names == 0 then love.audio.stop()
             else
                 for _,n in ipairs(names) do
-                    if new_sources[n] then 
-                        for _,src in ipairs(new_sources[n]) do love.audio.stop(src) end 
+                    if new_sources[n] then
+                        for _,src in ipairs(new_sources[n]) do love.audio.stop(src) end
                     end
                 end
             end
         end;
         isPlaying = function(name)
-            if new_sources[name] then 
+            if new_sources[name] then
                 local t = {}
-                for _,src in ipairs(new_sources[name]) do 
+                for _,src in ipairs(new_sources[name]) do
                     if src:isPlaying() then return true end
                 end
             end
@@ -1984,7 +1998,7 @@ do
     }
 
     local audio_fns = {'volume','velocity','position','orientation','effect','dopp'}
-    for _, fn in ipairs(audio_fns) do 
+    for _, fn in ipairs(audio_fns) do
         local fn_capital = fn:capitalize()
         Audio[fn] = function(...)
             local args = {...}
@@ -2005,7 +2019,7 @@ do
         texture2D = "Texel",
         gl_FragColor = "pixel",
         gl_FragCoord = "screen_coords"
-    }          
+    }
     local helper_fns = [[
 /* From glfx.js : https://github.com/evanw/glfx.js */
 float random(vec2 scale, vec2 pixelcoord, float seed) {
@@ -2031,7 +2045,7 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
             names = {names}
         end
         local ret_shaders = {}
-        for _, name in ipairs(names) do 
+        for _, name in ipairs(names) do
             ret_shaders[name] = _generateShader(name, override)
         end
         return ret_shaders
@@ -2042,7 +2056,7 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
         tryEffect(name)
         local info = library[name]
         local shader = shader_obj[name] or love.graphics.newShader(info.code)
-        if override then 
+        if override then
             shader = love.graphics.newShader(info.code)
         end
         shader_obj[name] = shader
@@ -2050,15 +2064,17 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
         return {
             vars = copy(info.opt.vars),
             unused_vars = copy(info.opt.unused_vars),
-            shader = shader
+            shader = shader,
+            auto_vars = info.opt.auto_vars
         }
     end
 
     Effect = GameObject:extend {
+        library = function() return library end;
         new = function(name, in_opt)
-            local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='' }
+            local opt = { use_canvas=true, vars={}, unused_vars={}, integers={}, code=nil, effect='', vertex='', auto_vars=false }
             table.update(opt, in_opt)
-            
+
             -- mandatory vars
             if not opt.vars['tex_size'] then
                 opt.vars['tex_size'] = {Game.width, Game.height}
@@ -2066,7 +2082,7 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
             if not opt.vars['time'] then
                 opt.vars['time'] = 0
             end
-            
+
             -- create var string
             var_str = ""
             for key, val in pairs(opt.vars) do
@@ -2076,8 +2092,8 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
                 end
                 -- get var type
                 switch(type(val),{
-                    table = function() 
-                        var_str = var_str.."uniform vec"..tostring(#val).." "..key..";\n" 
+                    table = function()
+                        var_str = var_str.."uniform vec"..tostring(#val).." "..key..";\n"
                     end,
                     number = function()
                         if table.hasValue(opt.integers, key) then
@@ -2097,8 +2113,8 @@ float lerp(float a, float b, float t) { return a * (1.0 - t) + b * t; }
             local code = var_str.."\n"..helper_fns.."\n"
             if opt.code then
                 code = code .. opt.code
-            else 
-                code = code .. [[   
+            else
+                code = code .. [[
 
 #ifdef VERTEX
 vec4 position(mat4 transform_projection, vec4 vertex_position) {
@@ -2130,7 +2146,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
         end;
 
         info = function(name) return library[name] end;
-        
+
         init = function(self, ...)
             GameObject.init(self, {classname="Effect"})
 
@@ -2138,11 +2154,12 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             if type(self.names[1]) == 'table' then
                 self.names = self.names[1]
             end
-            
+
             if Feature('effect') then
                 self.used = true
                 self.vars = {}
                 self.disabled = {}
+                self.auto_vars = {}
                 self:updateShader(self.names)
 
                 self:addUpdatable()
@@ -2156,18 +2173,21 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             if not Feature('effect') then return end
             self.shader_info = generateShader(names)
             for _, name in ipairs(names) do
-                if not self.vars[name] then self.vars[name] = {} end 
+                if not self.vars[name] then self.vars[name] = {} end
+                self.auto_vars[name] = self.shader_info[name].auto_vars
+                --print(name, self.shader_info[name].auto_vars)
+                --print_r(self.shader_info[name])
                 table.update(self.vars[name], self.shader_info[name].vars)
             end
         end;
         disable = function(self, ...)
             if not Feature('effect') then return end
             local disable_names = {...}
-            for _,name in ipairs(disable_names) do self.disabled[name] = true end 
+            for _,name in ipairs(disable_names) do self.disabled[name] = true end
             local new_names = {}
-            for _,name in ipairs(self.names) do 
+            for _,name in ipairs(self.names) do
                 tryEffect(name)
-                if not self.disabled[name] then 
+                if not self.disabled[name] then
                     table.insert(new_names, name)
                 end
             end
@@ -2176,11 +2196,11 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
         enable = function(self, ...)
             if not Feature('effect') then return end
             local enable_names = {...}
-            for _,name in ipairs(enable_names) do self.disabled[name] = false end 
+            for _,name in ipairs(enable_names) do self.disabled[name] = false end
             local new_names = {}
-            for _,name in ipairs(self.names) do 
+            for _,name in ipairs(self.names) do
                 tryEffect(name)
-                if not self.disabled[name] then 
+                if not self.disabled[name] then
                     table.insert(new_names, name)
                 end
             end
@@ -2190,7 +2210,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             if not Feature('effect') then return end
             -- tryEffect(name)
             if not self.disabled[name] then
-                if not self.vars[name] then 
+                if not self.vars[name] then
                     self.vars[name] = {}
                 end
                 self.vars[name][k] = v
@@ -2216,6 +2236,12 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
                 if not self.disabled[name] then
                     vars.time = vars.time + dt
                     vars.tex_size = {Game.width,Game.height}
+
+                    if self.auto_vars[name] then
+                        vars.inputSize = {Game.width,Game.height}
+                        vars.outputSize = {Game.width,Game.height}
+                        vars.textureSize = {Game.width,Game.height}
+                    end
                     -- send all the vars
                     for k,v in pairs(vars) do
                         self:send(name, k, v)
@@ -2227,11 +2253,10 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
                     library[name].opt.update(self.vars[name])
                 end
             end
-
-            self.used = (used >= 0)
+            self.used = (used > 0)
         end;
-        update = function(self,dt) 
-            self:_update(dt) 
+        update = function(self,dt)
+            self:_update(dt)
         end;
         active = 0;
         --@static
@@ -2242,7 +2267,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             if not self.used or not Feature('effect') then
                 fn()
                 return
-            end      
+            end
 
             Effect.active = Effect.active + 1
 
@@ -2250,33 +2275,35 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             local last_blend = love.graphics.getBlendMode()
 
             local canv_internal, canv_final = CanvasStack:new(), CanvasStack:new()
-            
+
             canv_internal.value.auto_clear = {Draw.parseColor(Game.options.background_color, 0)}
             canv_final.value.auto_clear = {Draw.parseColor(Game.options.background_color, 0)}
-            
-            for i, name in ipairs(self.names) do 
-                -- draw without shader first
-                canv_internal.value:drawTo(function()
-                    love.graphics.setShader()
-                    if i == 1 then
-                        -- draw unshaded stuff (first run)
-                        fn()
-                    else 
-                        -- draw previous shader results
-                        canv_final.value:draw()
-                    end
-                end)
 
-                -- draw to final canvas with shader
-                canv_final.value:drawTo(function()
-                    love.graphics.setShader(self.shader_info[name].shader)
-                    canv_internal.value:draw()
-                end)
+            for i, name in ipairs(self.names) do
+                if not self.disabled[name] then
+                    -- draw without shader first
+                    canv_internal.value:drawTo(function()
+                        love.graphics.setShader()
+                        if i == 1 then
+                            -- draw unshaded stuff (first run)
+                            fn()
+                        else
+                            -- draw previous shader results
+                            canv_final.value:draw()
+                        end
+                    end)
+
+                    -- draw to final canvas with shader
+                    canv_final.value:drawTo(function()
+                        love.graphics.setShader(self.shader_info[name].shader)
+                        canv_internal.value:draw()
+                    end)
+                end
             end
 
             -- draw final resulting canvas
             canv_final.value:draw()
-            
+
             love.graphics.setShader(last_shader)
             love.graphics.setBlendMode(last_blend)
 
@@ -2291,7 +2318,7 @@ end
 --CAMERA
 Camera = nil
 do
-    local default_opt = { x=0, y=0, z=0, dx=0, dy=0, angle=0, zoom=nil, scalex=1, scaley=nil, top=0, left=0, width=nil, height=nil, follow=nil, enabled=true }
+    local default_opt = { x=0, y=0, view_x=0, view_y=0, z=0, dx=0, dy=0, angle=0, zoom=nil, scalex=1, scaley=nil, top=0, left=0, width=nil, height=nil, follow=nil, enabled=true, auto_use=true }
     local attach_count = 0
     local options = {}
 
@@ -2299,6 +2326,8 @@ do
         transform = nil;
         __call = function(self, name, opt)
             opt = opt or {}
+            default_opt.width = Game.width
+            default_opt.height = Game.height
             options[name] = copy(default_opt)
             options[name].transform = love.math.newTransform()
             table.update(options[name], opt)
@@ -2317,7 +2346,10 @@ do
                     o.y = o.follow.y or o.y
                 end
                 local half_w, half_h = w/2, h/2
-                -- Draw.crop(o.x - o.left, o.y - o.top, w, h)
+
+                --Draw.translate(o.view_x, o.view_y)
+
+                Draw.crop(0, 0, w, h)
                 o.transform:reset()
                 o.transform:translate(floor(half_w), floor(half_h))
                 o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
@@ -2330,6 +2362,7 @@ do
         end;
         detach = function()
             Draw.pop()
+            Camera.transform = nil
         end;
         use = function(name, fn)
             Camera.attach(name)
@@ -2339,7 +2372,11 @@ do
         count = function() return table.len(options) end;
         useAll = function(fn)
             for name, opt in pairs(options) do
-                Camera.use(name, fn)
+                if opt.auto_use then
+                    Camera.use(name, fn)
+                else
+                    fn()
+                end
             end
         end;
     }
@@ -2347,43 +2384,43 @@ end
 
 --SPRITEBATCH
 SpriteBatch = nil
-do 
+do
     local images = {} -- { name: Image }
     local quads = {} -- { hash: Quad }
     SpriteBatch = GameObject:extend {
         init = function(self)
             GameObject.init(self, {classname="Map"})
-    
+
             self.batches = {} -- { 'file_name' = SpriteBatch }
             self:addDrawable()
         end;
         add = function(self, img_path, x, y, tx, ty, tw, th)
             -- get image
             local img = images[img_path]
-            if not img then images[img_path] = love.graphics.newImage(img_path) end 
+            if not img then images[img_path] = love.graphics.newImage(img_path) end
             img = images[img_path]
-    
+
             -- get quad
             local quad_hash = tx..","..ty..","..tw..","..ty
             if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img:getWidth(),img:getHeight()) end
             local quad = quads[quad_hash]
-    
+
             -- get spritebatch
             local sb = self.batches[img_path]
-            if not sb then sb = love.graphics.newSpriteBatch(img) end 
+            if not sb then sb = love.graphics.newSpriteBatch(img) end
             self.batches[img_path] = sb
-    
+
             return sb:add(quad,floor(x),floor(y),0)
         end;
         remove = function(self, img_path, id)
             local sb = self.batches[img_path]
-            if sb then 
-                sb:set(id, 0, 0, 0, 0, 0) 
-                return true 
+            if sb then
+                sb:set(id, 0, 0, 0, 0, 0)
+                return true
             end
         end;
         _draw = function(self)
-            for _, sb in pairs(self.batches) do 
+            for _, sb in pairs(self.batches) do
                 Game.drawObject(self, sb)
             end
         end;
@@ -2396,7 +2433,7 @@ Map = nil
 do
     local options = {}
     local getObjInfo = function(uuid, is_name)
-        if Game.config.scene and Game.config.scene.objects then 
+        if Game.config.scene and Game.config.scene.objects then
             if is_name then
                 for uuid, info in pairs(Game.config.scene.objects) do
                     if info.name == uuid then
@@ -2409,10 +2446,10 @@ do
         end
     end
     Map = GameObject:extend {
-        load = function(name)
+        load = function(name, opt)
             local data = love.filesystem.read(Game.res('map',name))
             assert(data,"Error loading map '"..name.."'")
-            local new_map = Map()
+            local new_map = Map(opt)
             data = json.decode(data)
             new_map.data = data
             local layer_name = {}
@@ -2422,7 +2459,8 @@ do
                 options.layer_order = {}
                 store_layer_order = true
             end
-            for i,info in ipairs(data.layers) do
+            for i = #data.layers, 1, -1 do
+                local info = data.layers[i]
                 layer_name[info.uuid] = info.name
                 if store_layer_order then
                     table.insert(options.layer_order, info.name)
@@ -2438,22 +2476,22 @@ do
                 end
             end
             -- make paths
-            for obj_uuid, info in pairs(data.paths) do 
+            for obj_uuid, info in pairs(data.paths) do
                 local obj_info = getObjInfo(obj_uuid)
                 local obj_name = obj_info.name
-                for layer_uuid, info in pairs(info) do 
+                for layer_uuid, info in pairs(info) do
                     local layer_name = layer_name[layer_uuid]
-                    
+
                     local new_path = Path()
                     -- add nodes
                     local tag
-                    for node_key, info in pairs(info.node) do 
+                    for node_key, info in pairs(info.node) do
                         if type(info[3]) == "string" then tag = info[3] else tag = nil end
                         new_path:addNode{x=info[1], y=info[2], tag=tag}
                     end
                     -- add edges
-                    for node1, edge_info in pairs(info.graph) do 
-                        for node2, tag in pairs(edge_info) do 
+                    for node1, edge_info in pairs(info.graph) do
+                        for node2, tag in pairs(edge_info) do
                             local _, node1_hash = new_path:getNode{x=info.node[node1][1], y=info.node[node1][2], tag=info.node[node1][3]}
                             local _, node2_hash = new_path:getNode{x=info.node[node2][1], y=info.node[node2][2], tag=info.node[node2][3]}
                             if type(tag) ~= "string" then tag = nil end
@@ -2461,14 +2499,14 @@ do
                         end
                     end
 
-                    if not new_map.paths[obj_name] then 
+                    if not new_map.paths[obj_name] then
                         new_map.paths[obj_name] = {}
                     end
-                    if not new_map.paths[obj_name][layer_name] then 
+                    if not new_map.paths[obj_name][layer_name] then
                         new_map.paths[obj_name][layer_name] = {}
                     end
                     -- get color
-                    if obj_info then 
+                    if obj_info then
                         new_path.color = Draw.hexToRgb(obj_info.color)
                     end
                     table.insert(new_map.paths[obj_name][layer_name], new_path)
@@ -2490,11 +2528,11 @@ do
                                     map_width=obj_info.size[1], map_height=obj_info.size[2], hitboxColor=hb_color
                                 })
                             -- spawn hitbox
-                            else 
+                            else
                                 new_map:addHitbox(table.join({obj_info.name, c[1]},'.'), table.slice(c,2), hb_color)
                             end
                             -- add info to entity_info table
-                            if not new_map.entity_info[obj_info.name] then new_map.entity_info[obj_info.name] = {} end 
+                            if not new_map.entity_info[obj_info.name] then new_map.entity_info[obj_info.name] = {} end
                             table.insert(new_map.entity_info[obj_info.name], {
                                 map_tag=c[1], x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
                                 width=obj_info.size[1], height=obj_info.size[2], color=hb_color
@@ -2503,7 +2541,7 @@ do
                     end
                 end
             end
-            
+
             return new_map
         end;
         config = function(opt) options = opt end;
@@ -2515,16 +2553,53 @@ do
             self.entities = {} -- { layer: { entities... } }
             self.paths = {} -- { obj_name: { layer_name:{ Paths... } } }
         end;
+        addDrawable = function(self)
+            for layer, sb in pairs(self.batches) do
+                sb:addDrawable()
+            end
+            for layer, entities in pairs(self.entities) do
+                for _, entity in ipairs(entities) do
+                    entity:addDrawable()
+                end
+            end
+        end;
+        remDrawable = function(self)
+            for layer, sb in pairs(self.batches) do
+                sb:remDrawable()
+            end
+            for layer, entities in pairs(self.entities) do
+                for _, entity in ipairs(entities) do
+                    entity:remDrawable()
+                end
+            end
+        end;
+        _draw = function(self)
+            local layer
+            for i = 1, #options.layer_order do
+                layer = options.layer_order[i]
+                local sb = self.batches[layer]
+                if sb then
+                    sb:draw()
+                end
+                local entities = self.entities[layer]
+                if entities then
+                    for _, entity in ipairs(entities) do
+                        entity:draw()
+                    end
+                end
+            end
+        end;
+        draw = function(self) self:_draw() end,
         addTile = function(self,file,x,y,tx,ty,tw,th,layer)
             layer = layer or '_'
-    
-            -- get spritebatch 
+
+            -- get spritebatch
             local sb = self.batches[layer]
-            if not sb then sb = SpriteBatch(file) end 
+            if not sb then sb = SpriteBatch(file) end
             self.batches[layer] = sb
             local id = sb:add(file, x, y, tx, ty, tw, th)
             sb.z = self:getLayerZ(layer)
-            
+
             -- hitbox
             local hb_name = nil
             if options.tile_hitbox then hb_name = options.tile_hitbox[FS.removeExt(FS.basename(file))] end
@@ -2557,7 +2632,7 @@ do
                 table.insert(self.hb_list, tile_info)
             end
         end;
-        addHitbox = function(self,tag,dims,color) 
+        addHitbox = function(self,tag,dims,color)
             local new_hb = {
                 hitbox = dims,
                 tag = tag,
@@ -2568,12 +2643,12 @@ do
         end,
         getPaths = function(self, obj_name, layer_name)
             local ret = {}
-            if self.paths[obj_name] then 
-                if layer_name and self.paths[obj_name][layer_name] then 
+            if self.paths[obj_name] then
+                if layer_name and self.paths[obj_name][layer_name] then
                     return self.paths[obj_name][layer_name]
                 else
                     for layer_name, paths in pairs(self.paths[obj_name]) do
-                        for _, path in ipairs(paths) do 
+                        for _, path in ipairs(paths) do
                             table.insert(ret, path)
                         end
                     end
@@ -2614,9 +2689,9 @@ do
             end
             return 0
         end;
-        _destroy = function(self) 
+        _destroy = function(self)
             -- destroy hitboxes
-            for _,tile in ipairs(self.hb_list) do 
+            for _,tile in ipairs(self.hb_list) do
                 Hitbox.remove(tile)
             end
             -- destroy entities
@@ -2626,7 +2701,7 @@ do
                 end
             end
             -- destroy spritebatches
-            for _,batch in pairs(self.batches) do 
+            for _,batch in pairs(self.batches) do
                 batch:destroy()
             end
         end
@@ -2635,14 +2710,14 @@ end
 
 --PHYSICS
 Physics = nil
-do 
+do
     local world_config = {}
     local body_config = {}
     local joint_config = {}
     local worlds = {}
 
     local setProps = function(obj, src, props)
-        for _,p in ipairs(props) do 
+        for _,p in ipairs(props) do
             if src[p] ~= nil then obj['set'..string.capitalize(p)](obj,src[p]) end
         end
     end
@@ -2674,7 +2749,7 @@ do
             self.body:setPosition(x,y)
         end
     }
-    
+
     Physics = class {
         custom_grav_helpers = {};
         debug = false;
@@ -2690,9 +2765,9 @@ do
         getWorldConfig = function(name) return world_config[name] end;
         world = function(name, opt)
             if type(name) == 'table' then
-                opt = name 
+                opt = name
                 name = '_default'
-            end 
+            end
             name = name or '_default'
             if opt or not world_config[name] then
                 world_config[name] = opt or {}
@@ -2712,7 +2787,7 @@ do
             w:setGravity(Math.getXY(c.gravity_direction, c.gravity))
             w:setSleepingAllowed(c.sleep)
             return worlds[name]
-        end;            
+        end;
         getJointConfig = function(name) return joint_config[name] end;
         joint = function(name, opt) -- TODO: finish joints
             if not worlds['_default'] then Physics.world('_default', {}) end
@@ -2798,7 +2873,7 @@ do
                         shape = love.physics.newEdgeShape(unpack(s.points))
                     end
                 })
-                if shape then 
+                if shape then
                     fix = love.physics.newFixture(body,shape,s.density)
                     setProps(fix, s, {'friction','restitution','sensor','groupIndex'})
                     table.insert(shapes, shape)
@@ -2820,7 +2895,7 @@ do
                     local points = {body:getWorldPoints(shape:getPoints())}
                     for i,p in ipairs(points) do points[i] = floor(p) end
                     Draw.poly(_type or 'fill', points)
-                else 
+                else
                     local points = {body:getWorldPoints(shape:getPoints())}
                     for i,p in ipairs(points) do points[i] = floor(p) end
                     Draw.line(body:getWorldPoints(shape:getPoints()))
@@ -2857,7 +2932,7 @@ do
         local repos = false
         if obj.is_entity then
             repos = obj:_checkForAnimHitbox()
-        else 
+        else
             obj.align = 'center'
             obj.scale = obj.scale or 1
             obj.scalex = obj.scalex or 1
@@ -2883,10 +2958,10 @@ do
         hb.left = left
         hb.top = top
 
-        if not obj.hasHitbox then 
+        if not obj.hasHitbox then
             obj.hasHitbox = true
             new_boxes = true
-            
+
             world:add(
                 obj, obj.x - hb.left, obj.y - hb.top,
                 abs(obj.width * obj.scale * obj.scalex) + hb.right, abs(obj.height * obj.scale * obj.scaley) + hb.bottom
@@ -2894,7 +2969,7 @@ do
         end
 
         obj.hitbox = hb
-        
+
         if repos then
             Hitbox.teleport(obj)
         end
@@ -2911,17 +2986,17 @@ do
                 Game.checkAlign(obj)
                 if obj.hasHitbox then
                     Hitbox.teleport(obj)
-                else 
+                else
                     checkHitArea(obj)
                 end
             end
-        end;  
-        adjust = function(obj, left, top, right, bottom) 
-            if obj and obj.hasHitbox then 
+        end;
+        adjust = function(obj, left, top, right, bottom)
+            if obj and obj.hasHitbox then
                 local hb = checkHitArea(obj)
-                if left then hb.left = hb.left + left end 
-                if top then hb.top = hb.top + top end 
-                if right then hb.right = hb.right + right end 
+                if left then hb.left = hb.left + left end
+                if top then hb.top = hb.top + top end
+                if right then hb.right = hb.right + right end
                 if bottom then hb.bottom = hb.bottom + bottom end
                 Hitbox.teleport(obj)
             end
@@ -2929,8 +3004,8 @@ do
         -- ignore collisions
         teleport = function(obj, x, y)
             if obj and not obj.destroyed and obj.hasHitbox then
-                local hb = checkHitArea(obj)  
-                world:update(obj, 
+                local hb = checkHitArea(obj)
+                world:update(obj,
                     obj.x - hb.left, obj.y - hb.top,
                     abs(obj.width * obj.scale * obj.scalex) + hb.right, abs(obj.height * obj.scale * obj.scaley) + hb.bottom
                 )
@@ -2950,12 +3025,12 @@ do
                 local filter = function(_obj, other)
                     local ret = _obj.reaction or Hitbox.default_reaction
                     if _obj.reactions and _obj.reactions[other.tag] then ret = _obj.reactions[other.tag] else
-                        if _obj.reaction then ret = _obj.reaction end 
+                        if _obj.reaction then ret = _obj.reaction end
                     end
-                    if other.reactions and other.reactions[_obj.tag] then ret = other.reactions[_obj.tag] else 
+                    if other.reactions and other.reactions[_obj.tag] then ret = other.reactions[_obj.tag] else
                         if other.reaction then ret = other.reaction end
                     end
-                    if _obj.filter then ret = _obj:filter(other) end	
+                    if _obj.filter then ret = _obj:filter(other) end
 
                     return ret
                 end
@@ -2963,13 +3038,14 @@ do
                 local hb = checkHitArea(obj)
 
                 local offx = hb.left
-                local offy = hb.top 
+                local offy = hb.top
 
-                local new_x, new_y, cols, len = world:move(obj, 
+                local new_x, new_y, cols, len = world:move(obj,
                     obj.x - offx,
-                    obj.y - offy, 
+                    obj.y - offy,
                     filter)
                 if obj.destroyed then return end
+
                 obj.x = new_x + offx
                 obj.y = new_y + offy
                 local swap = function(t, key1, key2)
@@ -2991,15 +3067,15 @@ do
             end
         end;
         remove = function(obj)
-            if obj and not obj.destroyed and obj.hasHitbox then 
+            if obj and not obj.destroyed and obj.hasHitbox then
                 obj.hasHitbox = false
                 world:remove(obj)
-                new_boxes = true 
-            end 
+                new_boxes = true
+            end
         end;
         draw = function()
             if Hitbox.debug then
-                if new_boxes then 
+                if new_boxes then
                     new_boxes = false
                     hb_items, hb_len = world:getItems()
                 end
@@ -3019,13 +3095,13 @@ end
 
 --STATE
 State = nil
-do 
+do
     local states = {}
     local stop_states = {}
     local stateCB = function(name, fn_name, ...)
         local state = states[name]
         assert(state, "State '"..name.."' not found")
-        if state then 
+        if state then
             state.running = true
             State.curr_state = name
             if state.callbacks[fn_name] then state.callbacks[fn_name](...) end
@@ -3048,8 +3124,8 @@ do
             state = stateCB(name, 'leave')
             local objs = state.objects
             state.objects = {}
-            for _,obj in ipairs(objs) do 
-                if obj then obj:destroy() end 
+            for _,obj in ipairs(objs) do
+                if obj then obj:destroy() end
             end
             state.running = false
         end
@@ -3066,20 +3142,20 @@ do
         end,
         addObject = function(obj)
             local state = states[State.curr_state]
-            if state then 
+            if state then
                 table.insert(state.objects, obj)
-            end 
+            end
         end,
         update = function(name, dt)
-            for name, state in pairs(states) do 
-                if state.running then 
+            for name, state in pairs(states) do
+                if state.running then
                     stateCB(name, 'update', dt)
                 end
             end
         end,
         draw = function()
-            for name, state in pairs(states) do 
-                if state.running then 
+            for name, state in pairs(states) do
+                if state.running then
                     Draw.push()
                     stateCB(name, 'draw')
                     Draw.pop()
@@ -3087,12 +3163,12 @@ do
             end
         end,
         start = function(name)
-            if name then 
+            if name then
                 if not start_states then start_states = {} end
                 start_states[name] = true
             end
         end,
-        stop = function(name) 
+        stop = function(name)
             if stop_states == 'all' then return end
             if not name then stop_states = 'all' else
                 if not stop_states then stop_states = {} end
@@ -3100,23 +3176,23 @@ do
             end
         end,
         restart = function(name)
-            if name then 
+            if name then
                 stateStop(name)
                 stateStart(name)
             end
         end,
         _check = function()
-            if stop_states == 'all' then 
-                for name,_ in pairs(states) do 
+            if stop_states == 'all' then
+                for name,_ in pairs(states) do
                     stateStop(name)
                 end
-            elseif stop_states then 
-                for name,_ in pairs(stop_states) do 
+            elseif stop_states then
+                for name,_ in pairs(stop_states) do
                     stateStop(name)
                 end
             end
-            if start_states then 
-                for name,_ in pairs(start_states) do 
+            if start_states then
+                for name,_ in pairs(start_states) do
                     stateStart(name)
                 end
                 Game.sortDrawables()
@@ -3125,7 +3201,7 @@ do
             start_states = nil
         end
     }
-end 
+end
 
 --NET
 Net = nil
@@ -3135,16 +3211,16 @@ do
     local net_objects = {}
 
     local triggerSyncFn = function(obj, data, spawning)
-        if obj.netSync then 
+        if obj.netSync then
             return obj:netSync(data, spawning) or 0
         end
         return 0
     end
 
     local destroyObj = function(clientid, objid)
-        local obj = net_objects[clientid][objid] 
-        if obj then 
-            if not obj.net_persistent then 
+        local obj = net_objects[clientid][objid]
+        if obj then
+            if not obj.net_persistent then
                 obj:destroy()
                 net_objects[clientid][objid] = nil
             end
@@ -3152,11 +3228,11 @@ do
     end
 
     local destroyNetObjects = function(clientid, _objid)
-        if net_objects[clientid] then 
-            if _objid then 
+        if net_objects[clientid] then
+            if _objid then
                 destroyObj(clientid, _objid)
             else
-                for objid, obj in pairs(net_objects[clientid]) do 
+                for objid, obj in pairs(net_objects[clientid]) do
                     destroyObj(clientid, objid)
                 end
             end
@@ -3165,7 +3241,7 @@ do
     end
 
     local sendData = function(data)
-        if client then 
+        if client then
             client:publish({
                 message = {
                     type="data",
@@ -3176,10 +3252,10 @@ do
                 }
             })
         end
-    end 
+    end
 
     local sendNetEvent = function(event, data)
-        if client then 
+        if client then
             client:publish({
                 message = {
                     type="netevent",
@@ -3194,15 +3270,15 @@ do
 
     local storeNetObject = function(clientid, obj, objid)
         objid = objid or obj.net_id or uuid()
-        if not net_objects[clientid] then net_objects[clientid] = {} end 
+        if not net_objects[clientid] then net_objects[clientid] = {} end
         net_objects[clientid][objid] = obj
     end
 
     local onReceive = function(data)
         local netdata = data.data
-        if data.type == "netevent" then 
-            if data.event == "getID" then 
-                if Net.id then 
+        if data.type == "netevent" then
+            if data.event == "getID" then
+                if Net.id then
                     net_objects[Net.id] = nil
                 end
                 Net.id = data.info.id
@@ -3210,22 +3286,22 @@ do
                 net_objects[Net.id] = {}
                 Signal.emit('net.ready')
             end
-            if data.event == "set.leader" and data.info == Net.id then 
+            if data.event == "set.leader" and data.info == Net.id then
                 leader = true
             end
-            if data.event == "client.connect" and data.clientid ~= Net.id then 
+            if data.event == "client.connect" and data.clientid ~= Net.id then
                 Signal.emit('net.connect', data.clientid)
                 -- get new client up to speed with net objects
                 Net.syncAll(data.clientid)
             end
-            if data.event == "client.disconnect" then 
+            if data.event == "client.disconnect" then
                 Signal.emit('net.disconnect', data.clientid)
                 destroyNetObjects(data.clientid)
             end
-            if data.event == "obj.sync" and netdata.clientid ~= Net.id then 
+            if data.event == "obj.sync" and netdata.clientid ~= Net.id then
                 local obj = (net_objects[netdata.clientid] or {})[netdata.objid]
-                if obj then 
-                    for prop, val in pairs(netdata.props) do 
+                if obj then
+                    for prop, val in pairs(netdata.props) do
                         obj[prop] = val
                     end
                 end
@@ -3235,15 +3311,15 @@ do
                 local obj = Game.spawn(netdata.classname, netdata.args)
                 storeNetObject(netdata.clientid, obj, netdata.args.net_id)
             end
-            if data.event == "obj.syncAll" and netdata.targetid == Net.id then 
-                for clientid, objs in pairs(netdata.sync_objs) do 
-                    for objid, props in pairs(objs) do 
+            if data.event == "obj.syncAll" and netdata.targetid == Net.id then
+                for clientid, objs in pairs(netdata.sync_objs) do
+                    for objid, props in pairs(objs) do
                         local obj = Game.spawn(props.classname, props)
                         storeNetObject(clientid, obj, objid)
                     end
                 end
             end
-            if data.event == "obj.destroy" and netdata.clientid ~= Net.id then 
+            if data.event == "obj.destroy" and netdata.clientid ~= Net.id then
                 destroyObj(netdata.clientid, netdata.objid)
             end
         elseif data.type == "data" and netdata.clientid ~= Net.id then
@@ -3257,7 +3333,7 @@ do
 
     local prepNetObject = function(obj)
         obj.net = true
-        if not obj._net_last_val then 
+        if not obj._net_last_val then
             -- setup object for net syncing
             obj._net_last_val = {}
             if not net_objects[Net.id] then net_objects[Net.id] = {} end
@@ -3279,19 +3355,19 @@ do
             Net.address = address or Net.address
             Net.port = port or Net.port
             client = noobhub.new({ server=Net.address, port=Net.port })
-            if client then 
+            if client then
                 client:subscribe({
                     channel = "room"..tostring(Net.room),
                     callback = onReceive,
                     cb_reconnect = onFail
                 })
-            else 
+            else
                 print("failed connecting to "..Net.address..":"..Net.port)
                 onFail()
             end
         end,
         disconnect = function()
-            if client then 
+            if client then
                 client:unsubscribe()
                 client = nil
                 leader = false
@@ -3323,7 +3399,7 @@ do
             Net.sync(obj, nil, true)
         end,
         destroy = function(obj)
-            if obj.net and not obj.net_obj and not obj.net_persistent then 
+            if obj.net and not obj.net_obj and not obj.net_persistent then
                 sendNetEvent('obj.destroy', {
                     clientid = Net.id,
                     objid = obj.net_id
@@ -3331,25 +3407,25 @@ do
             end
         end,
         -- only to be used with class instances. will not sync functions?/table data (TODO: sync functions too?)
-        sync = function(obj, vars, spawning) 
+        sync = function(obj, vars, spawning)
             if not client or not obj or not (obj.net or obj.net_obj) then return end
-            if not obj then 
-                for objid, obj in pairs(net_objects[Net.id]) do 
+            if not obj then
+                for objid, obj in pairs(net_objects[Net.id]) do
                     Net.sync(obj)
                 end
                 return
             end
             prepNetObject(obj)
             local net_vars = vars or obj.net_vars or {}
-            if spawning then 
+            if spawning then
                 net_vars = vars or obj.net_spawn_vars or {}
             end
-            if not obj.net_obj and #net_vars > 0 then 
+            if not obj.net_obj and #net_vars > 0 then
                 -- get vars to sync
                 local sync_data = {}
                 local len = 0
-                for _, prop in ipairs(net_vars) do 
-                    if obj[prop] ~= obj._net_last_val[prop] then 
+                for _, prop in ipairs(net_vars) do
+                    if obj[prop] ~= obj._net_last_val[prop] then
                         obj._net_last_val[prop] = obj[prop]
                         sync_data[prop] = obj[prop]
                         len = len + 1
@@ -3368,14 +3444,14 @@ do
         end,
         syncAll = function(targetid)
             if not client then return end
-            if leader then 
+            if leader then
                 local sync_objs = {}
-                for clientid, objs in pairs(net_objects) do 
+                for clientid, objs in pairs(net_objects) do
                     sync_objs[clientid] = {}
                     for objid, obj in pairs(objs) do
-                        if obj and not obj.destroyed then  
+                        if obj and not obj.destroyed then
                             sync_objs[clientid][objid] = { classname=obj.classname, net_id=objid, net_obj=true }
-                            for _,prop in ipairs(obj.net_spawn_vars) do 
+                            for _,prop in ipairs(obj.net_spawn_vars) do
                                 sync_objs[clientid][objid][prop] = obj[prop]
                             end
                             triggerSyncFn(obj, sync_objs[clientid][objid], true)
@@ -3400,7 +3476,7 @@ end
 
 --WINDOW
 Window = {}
-do 
+do
     local pre_fs_size = {}
     local last_win_size = {0,0}
     local setMode = function(w,h,flags)
@@ -3445,12 +3521,12 @@ do
         end;
         fullscreen = function(v,fs_type)
             local res
-            if v == nil then 
+            if v == nil then
                 res = love.window.getFullscreen()
-            else 
+            else
                 res = love.window.setFullscreen(v,fs_type)
             end
-            Game.updateWinSize(unpack(pre_fs_size)) 
+            Game.updateWinSize(unpack(pre_fs_size))
             return res
         end;
         toggleFullscreen = function()
@@ -3459,7 +3535,7 @@ do
             end
             local res = Window.fullscreen(not Window.fullscreen())
             if res then
-                if not Window.fullscreen() then 
+                if not Window.fullscreen() then
                     Window.setExactSize(unpack(pre_fs_size))
                 end
             end
@@ -3469,8 +3545,8 @@ do
 end
 
 --TIMER
-Timer = nil 
-do 
+Timer = nil
+do
     local l_after = {}
     local l_every = {}
     local addTimer = function(t, fn, tbl)
@@ -3490,17 +3566,17 @@ do
     end
 
     Timer = {
-        update = function(dt) 
+        update = function(dt)
             -- after
-            for id,timer in pairs(l_after) do 
+            for id,timer in pairs(l_after) do
                 if not timer.paused then
-                    timer.t = timer.t - dt 
-                    if timer.t < 0 then 
-                        if timer.fn and timer.fn(timer) then 
+                    timer.t = timer.t - dt
+                    if timer.t < 0 then
+                        if timer.fn and timer.fn(timer) then
                             -- another one (restart timer)
                             timer.t = timer.duration
                             timer.iteration = timer.iteration + 1
-                        else 
+                        else
                             -- destroy it
                             timer.destroy()
                         end
@@ -3509,10 +3585,10 @@ do
             end
             -- every
             for id,timer in pairs(l_every) do
-                if not timer.paused then 
-                    timer.t = timer.t - dt 
-                    if timer.t < 0 then 
-                        if not timer.fn or timer.fn(timer) then 
+                if not timer.paused then
+                    timer.t = timer.t - dt
+                    if timer.t < 0 then
+                        if not timer.fn or timer.fn(timer) then
                             -- destroy it!
                             timer.destroy()
                         else
@@ -3524,10 +3600,10 @@ do
                 end
             end
         end,
-        after = function(t, fn) 
+        after = function(t, fn)
             addTimer(t, fn, l_after)
         end,
-        every = function(t, fn) 
+        every = function(t, fn)
             addTimer(t, fn, l_every)
         end
     }
@@ -3535,26 +3611,22 @@ end
 
 --PATH
 Path = {}
-do 
+do
+    local lerp, distance = Math.lerp, Math.distance
     local hash_node = function(x,y,tag)
-        local parts = {} 
-        if tag then parts = {tag} end 
+        local parts = {}
+        if tag then parts = {tag} end
         if not tag then parts = {x,y} end
         return table.join(parts,',')
     end
 
-    local hash_edge = function(node1,node2,tag)
-        local parts = {} 
-        if tag then 
-            parts = {node1,node2,tag}
-        else
-            parts = {node1,node2}
-        end
-        return table.join(parts,',')
+    local hash_edge = function(node1,node2)
+        return table.join({node1,node2},':'), table.join({node2,node1},':')
     end
 
     Path = GameObject:extend {
         debug = false;
+        -- TODO: Disjkstra cache (clear when node/edge changes)
         init = function(self)
             GameObject.init(self, {classname="Path"})
 
@@ -3565,6 +3637,7 @@ do
 
             self.pathing_objs = {} -- { obj... }
 
+            self:addUpdatable()
             self:addDrawable()
         end;
         addNode = function(self, opt)
@@ -3574,8 +3647,8 @@ do
             self.node[hash] = copy(opt)
             -- setup edges in matrix
             self.matrix[hash] = {}
-            for xnode, edges in pairs(self.matrix) do 
-                if xnode ~= hash and not edges[hash] then edges[hash] = nil end 
+            for xnode, edges in pairs(self.matrix) do
+                if xnode ~= hash and not edges[hash] then edges[hash] = nil end
             end
 
             return hash
@@ -3588,18 +3661,18 @@ do
         end;
         addEdge = function(self, opt)
             opt = opt or {}
-            local hash = hash_edge(opt.a, opt.b, opt.tag)
-            
+            local hash = hash_edge(opt.a, opt.b)
+
             assert(self.node[opt.a], "Node '"..(opt.a or 'nil').."' not in path")
             assert(self.node[opt.b], "Node '"..(opt.b or 'nil').."' not in path")
- 
+
             local node1, node2 = self.node[opt.a], self.node[opt.b]
             opt.length = Math.distance(node1.x, node1.y, node2.x, node2.y)
 
             self.edge[hash] = copy(opt)
             -- add edge to matrix
-            for xnode, edges in pairs(self.matrix) do 
-                if not edges[hash] then edges[hash] = nil end 
+            for xnode, edges in pairs(self.matrix) do
+                if not edges[hash] then edges[hash] = nil end
             end
             self.matrix[opt.a][opt.b] = hash
 
@@ -3607,69 +3680,152 @@ do
         end;
         getEdge = function(self, opt)
             opt = opt or {}
-            local hash = hash_edge(opt.a, opt.b, opt.tag)
-            assert(self.edge[hash], "Edge '"..hash.."' not in path")
-            return self.edge[hash], hash
+            local hash1, hash2 = hash_edge(opt.a, opt.b)
+            assert(self.edge[hash1] or self.edge[hash2], "Edge '"..hash1.."'/'"..hash2.."' not in path")
+            return self.edge[hash1] or self.edge[hash2], hash
         end;
         go = function(self, obj, opt)
             opt = opt or {}
-            local speed = opt.speed or -1
-            local target = opt.target 
+            local speed = opt.speed or 1
+            local target = opt.target
             local start = opt.start
 
             assert(target, "Path.go requires target node")
 
             if not obj.is_pathing then
-                obj.is_pathing = { uuid=uuid(), index=1, path={} }
+                obj.is_pathing = { uuid=uuid(), speed=speed, index=1, path={}, t=0, prev_pos={obj.x,obj.y} }
                 table.insert(self.pathing_objs, obj)
-                
-                if not start_node then 
+
+                if not start then
                     -- find nearest node
                     local closest_node
                     local d = -1
                     local new_d
-                    for hash, info in pairs(self.node) do 
+                    for hash, info in pairs(self.node) do
                         new_d = Math.distance(info.x,info.y,obj.x,obj.y)
-                        if new_d < d or d < 0 then 
+                        if new_d < d or d < 0 then
                             d = new_d
                             closest_node = info
                         end
                     end
-                    if closest_node then 
-                        start_node = closest_node
+                    if closest_node then
+                        start = closest_node
                     end
-                end 
+                end
 
-                table.insert(obj.is_pathing.path, start_node)
+                -- perform Dijskstra to find shortest path
+                local INF = math.huge
+                local dist = {}
+                local previous = {}
+                local Q = {}
+                local checked = {}
+                local start_hash = hash_node(start.x, start.y, start.tag)
+                local target_hash = hash_node(target.x, target.y, target.tag)
 
-                print_r(obj.is_pathing)
+                for v, info in pairs(self.node) do
+                    if v ~= target_hash then
+                        dist[v] = INF
+                    end
+                    table.insert(Q, v)
+                end
+                dist[target_hash] = 0
+                while #Q > 0 do
+                     -- sort backwards to avoid using the slow table.remove(Q, 1)
+                    table.sort(Q, function(a, b)
+                        return dist[a] > dist[b]
+                    end)
+                    -- lowest distance
+                    local u = Q[#Q]
+                    table.remove(Q)
+
+                    if dist[u] == INF then break end
+
+                    -- iterate neighbors
+                    for v, edge_hash in pairs(self.matrix[u]) do
+                        if not checked[u] then
+                            local alt = dist[u] + self.edge[edge_hash].length
+
+                            if alt < dist[v] then
+                                dist[v] = alt
+                                previous[v] = u
+                            end
+                        end
+                    end
+
+                    checked[u] = true
+                end
+
+                local next_node = start_hash
+                obj.is_pathing.total_distance = dist[start_hash]
+                repeat
+                    table.insert(obj.is_pathing.path, next_node)
+                    next_node = previous[next_node]
+                until not next_node
+                table.insert(self.pathing_objs, obj)
             end
         end;
+        -- static
         stop = function(self, obj)
-            if obj.is_pathing then 
+            if obj.is_pathing then
                 local next_node = self.node[obj.is_pathing.path[obj.is_pathing.index]]
-                table.filter(self.pathing_objs, function(_obj) 
+                table.filter(self.pathing_objs, function(_obj)
                     return obj.is_pathing.uuid ~= _obj.is_pathing.uuid
                 end)
                 obj.is_pathing = nil
                 return next_node
             end
         end;
+        -- static
+        pause = function(obj)
+            if obj.is_pathing then
+                obj.is_pathing.paused = true
+            end
+        end;
+        -- static
+        resume = function(obj)
+            if obj.is_pathing then
+                obj.is_pathing.paused = false
+            end
+        end;
+        _update = function(self, dt)
+            for _, obj in ipairs(self.pathing_objs) do
+                local info = obj.is_pathing
+                if not info.paused then
+                    local next_node = self.node[info.path[info.index]]
+                    local total_dist = info.total_distance
+                    if not info.next_dist then
+                        info.next_dist = distance(info.prev_pos[1],info.prev_pos[2],next_node.x,next_node.y)
+                    end
+                    info.t = info.t + 1 * dt * (info.speed * (1 - (info.next_dist / total_dist)))
+                    obj.x = lerp(info.prev_pos[1], next_node.x, info.t / 100)
+                    obj.y = lerp(info.prev_pos[2], next_node.y, info.t / 100)
+                    if info.t >= 100 then
+                        info.index = info.index + 1
+                        info.t = 0
+                        info.prev_pos = {obj.x, obj.y}
+                        info.next_dist = nil
+                    end
+                    if info.index > #info.path then
+                        self:stop(obj)
+                    end
+                end
+            end
+        end;
         _draw = function(self)
             if not (Path.debug or self.debug) then return end
             -- draw nodes
-            for hash, node in pairs(self.node) do 
+            for hash, node in pairs(self.node) do
                 Draw{
                     {'color',self.color},
                     {'circle','fill',node.x,node.y,4},
                     {'color'}
                 }
-                local tag = node.tag
-                if tag then 
+                local tag = node.tag or (node.x..','..node.y)
+                if tag then
                     local tag_w = Draw.textWidth(tag)
                     local tag_h = Draw.textHeight(tag)
                     Draw{
-                        {'color','black',0.8},  
+                        {'color','black',0.8},
                         {'rect','fill',node.x,node.y,tag_w+2,tag_h+2,2},
                         {'color','white'},
                         {'print',tag,node.x+1,node.y+1},
@@ -3679,7 +3835,7 @@ do
             end
             -- draw edges
             local node1, node2
-            for hash, edge in pairs(self.edge) do 
+            for hash, edge in pairs(self.edge) do
                 node1 = self.node[edge.a]
                 node2 = self.node[edge.b]
                 Draw{
@@ -3688,11 +3844,11 @@ do
                     {'color'}
                 }
                 local tag = edge.tag
-                if tag then 
+                if tag then
                     local tag_w = Draw.textWidth(tag)
                     local tag_h = Draw.textHeight(tag)
                     Draw{
-                        {'color','black',0.8},  
+                        {'color','gray',0.9},
                         {'rect','fill',(node1.x+node2.x)/2,(node1.y+node2.y)/2,tag_w+2,tag_h+2,2},
                         {'color','white'},
                         {'print',tag,(node1.x+node2.x)/2+1,(node1.y+node2.y)/2+1},
@@ -3715,14 +3871,14 @@ do
         end,
         disable = function(...)
             local flist = {...}
-            for _, f in ipairs(flist) do 
-                enabled[f] = false 
+            for _, f in ipairs(flist) do
+                enabled[f] = false
             end
         end,
         enable = function(...)
             local flist = {...}
-            for _, f in ipairs(flist) do 
-                enabled[f] = true 
+            for _, f in ipairs(flist) do
+                enabled[f] = true
             end
         end
     }
@@ -3730,20 +3886,20 @@ end
 
 --BLANKE
 Blanke = nil
-do 
-    local iterate = function(t, test_val, fn) 
+do
+    local iterate = function(t, test_val, fn)
         local len = #t
         local offset = 0
         local reorder = false
         for o=1,len do
             local obj = t[o]
-            if obj then 
-                if obj.destroyed or not obj[test_val] then 
+            if obj then
+                if obj.destroyed or not obj[test_val] then
                     offset = offset + 1
                 else
-                    if (obj._last_z == nil and obj.z) or obj._last_z ~= obj.z then 
+                    if (obj._last_z == nil and obj.z) or (obj._last_z ~= obj.z) then
                         obj._last_z = obj.z
-                        reorder = true 
+                        reorder = true
                     end
                     fn(obj, o)
                     t[o] = nil
@@ -3794,16 +3950,16 @@ do
                     end)
                 end
             end)
-    
-            if reorder_drawables then 
+
+            if reorder_drawables then
                 Game.sortDrawables()
             end
         end;
         --blanke.update
         update = function(dt)
             Game.update(dt)
-        end; 
-        --blanke.draw   
+        end;
+        --blanke.draw
         draw = function()
             Draw.origin()
             local actual_draw = function()
@@ -3815,8 +3971,8 @@ do
             end
 
             local _drawGame = function()
-                if Effect.active > 0 then 
-                    
+                if Effect.active > 0 then
+
                 end
                 Draw{
                     {'push'},
@@ -3827,23 +3983,23 @@ do
                 }
                 if Camera.count() > 0 then
                     Camera.useAll(actual_draw)
-                else 
+                else
                     actual_draw()
                 end
             end
-        
+
             local _draw = function()
                 Game.options.draw(function()
                     if Game.effect then
                         Game.effect:draw(_drawGame)
-                    else 
+                    else
                         _drawGame()
                     end
                 end)
             end
 
             Blanke.game_canvas:drawTo(_draw)
-            
+
             Draw{
                 {'push'},
                 {'color','black'},
@@ -3855,8 +4011,8 @@ do
                 Blanke.game_canvas.x, Blanke.game_canvas.y = Blanke.padx, Blanke.pady
                 Blanke.game_canvas.scale = Blanke.scale
                 Blanke.game_canvas:draw()
-            
-            else 
+
+            else
                 Blanke.game_canvas:draw()
             end
         end;
@@ -3866,13 +4022,16 @@ do
         keyreleased = function(key, scancode)
             Input.release(key, {scancode=scancode})
         end;
-        mousepressed = function(x, y, button, istouch, presses) 
+        mousepressed = function(x, y, button, istouch, presses)
             Input.press('mouse', {x=x, y=y, button=button, istouch=istouch, presses=presses})
             Input.press('mouse'..tostring(button), {x=x, y=y, button=button, istouch=istouch, presses=presses})
         end;
-        mousereleased = function(x, y, button, istouch, presses) 
+        mousereleased = function(x, y, button, istouch, presses)
             Input.press('mouse', {x=x, y=y, button=button, istouch=istouch, presses=presses})
             Input.release('mouse'..tostring(button), {x=x, y=y, button=button, istouch=istouch, presses=presses})
+        end;
+        wheelmoved = function(x, y)
+            Input.store('wheel', {x=x,y=y})
         end;
         gamepadpressed = function(joystick, button)
             Input.press('gp.'..button, {joystick=joystick})
@@ -3902,17 +4061,17 @@ end
 
 Signal.emit('__main')
 
-love.load = function() 
+love.load = function()
     if do_profiling then
         love.profiler = blanke_require('profile')
     end
 
-    Blanke.load() 
+    Blanke.load()
 end
 love.frame = 0
 
 local update = function(dt)
-    if do_profiling then 
+    if do_profiling then
         love.profiler.start()
     end
 
@@ -3920,7 +4079,7 @@ local update = function(dt)
 
     if do_profiling then
         love.frame = love.frame + 1
-        if love.frame > 60 then 
+        if love.frame > 60 then
             love.profiler.stop()
             love.report = love.profiler.report(do_profiling)
             print(love.report)
@@ -3933,11 +4092,11 @@ do
     local dt = 0
     local accumulator = 0
     local fixed_dt
-    love.update = function(dt) 
+    love.update = function(dt)
         fixed_dt = Game.options.fps and 1/Game.options.fps or nil
-        if fixed_dt == nil then 
+        if fixed_dt == nil then
             update(dt)
-        else 
+        else
             accumulator = accumulator + dt
             while accumulator >= fixed_dt do
                 update(fixed_dt)
@@ -3946,8 +4105,8 @@ do
         end
     end
 end
-love.draw = function() 
-    Blanke.draw() 
+love.draw = function()
+    Blanke.draw()
     Draw.push()
     if do_profiling then
         love.graphics.setColor(1,1,1,0.8)
@@ -3962,9 +4121,10 @@ love.keypressed = function(key, scancode, isrepeat) Blanke.keypressed(key, scanc
 love.keyreleased = function(key, scancode) Blanke.keyreleased(key, scancode) end
 love.mousepressed = function(x, y, button, istouch, presses) Blanke.mousepressed(x, y, button, istouch, presses) end
 love.mousereleased = function(x, y, button, istouch, presses) Blanke.mousereleased(x, y, button, istouch, presses) end
-love.gamepadpressed = function(joystick, button) Blanke.gamepadpressed(joystick, button) end 
-love.gamepadreleased = function(joystick, button) Blanke.gamepadreleased(joystick, button) end 
-love.joystickadded = function(joystick) Blanke.joystickadded(joystick) end 
+love.wheelmoved = function(x, y) Blanke.wheelmoved(x, y) end
+love.gamepadpressed = function(joystick, button) Blanke.gamepadpressed(joystick, button) end
+love.gamepadreleased = function(joystick, button) Blanke.gamepadreleased(joystick, button) end
+love.joystickadded = function(joystick) Blanke.joystickadded(joystick) end
 love.joystickremoved = function(joystick) Blanke.joystickremoved(joystick) end
 love.gamepadaxis = function(joystick, axis, value) Blanke.gamepadaxis(joystick, axis, value) end
 love.touchpressed = function(id, x, y, dx, dy, pressure) Blanke.touchpressed(id, x, y, dx, dy, pressure) end
