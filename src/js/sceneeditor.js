@@ -43,6 +43,7 @@ class SceneEditor extends Editor {
       h: this.game_height,
       zoom_clamp: [0.1, 12],
     });
+    this.pixi.zoom_incr = 0.125
     this.grid_color = 0xbdbdbd;
     this.appendBackground(this.pixi.view);
 
@@ -98,7 +99,8 @@ class SceneEditor extends Editor {
       ["color", "color", { label: false }],
       ["size", "number", { inputs: 2, separator: "x" }],
       ["multi_point", "checkbox", { default: false, label: "multi-point" }],
-      ["path_mode", "checkbox", { default: false }]
+      ["path_mode", "checkbox", { default: false }],
+      ["paths_in_view", "checkbox", { default: true }]
     ]);
     this.el_object_form.container.style.display = "none";
 
@@ -268,6 +270,10 @@ class SceneEditor extends Editor {
         this.refreshObjectPaths()
       else
         this.clearObjectPaths()
+    });
+
+    this.el_object_form.onChange("paths_in_view", value => {
+      this.refreshObjectPaths()
     });
 
     // add object button
@@ -571,10 +577,12 @@ class SceneEditor extends Editor {
     });
 
     this.pixi.on("cameraChange", (e, info) => {
-      this.refreshCamera();
+      this.refreshCamera()
+      this.refreshObjectPaths()
     });
     this.pixi.on("zoomChanging", (e, info) => {
-      this.drawGrid();
+      this.drawGrid()
+      this.refreshObjectPaths()
     });
     let old_sel_rect;
     this.pixi.on("mouseMove", (e, info) => {
@@ -1340,6 +1348,9 @@ class SceneEditor extends Editor {
             delete this.obj_info[obj_ref.name];
         }
       }
+      if (e.type == "mouseover" && this.obj_type == "object" && this.curr_object.name === curr_object.name) {
+          this.pixi.bringToFront(e.target)
+      }
     };
     pixi_poly.on("mouseover", polyHover);
     pixi_poly.on("mouseout", polyHover);
@@ -1727,7 +1738,7 @@ class SceneEditor extends Editor {
     const [x2, y2] = obj2
 
     g.clear()
-    g.lineStyle(5, this.parseObjectColor(obj_info), 0.25)
+    g.lineStyle(4, this.parseObjectColor(obj_info), 0.25)
     g.moveTo(x1, y1)
     g.lineTo(x2, y2)
     g.lineStyle(1, this.parseObjectColor(obj_info), 0.5)
@@ -1741,9 +1752,9 @@ class SceneEditor extends Editor {
     const [x2, y2] = obj2
 
     g.clear()
-    g.lineStyle(5, this.parseObjectColor(obj_info), 0.05)
-    g.moveTo(x1, y1)
-    g.lineTo(x2, y2)
+    //g.lineStyle(5, this.parseObjectColor(obj_info), 0.05)
+    //g.moveTo(x1, y1)
+    //g.lineTo(x2, y2)
     g.lineStyle(1, this.parseObjectColor(obj_info), 0.5)
     g.moveTo(x1, y1)
     g.lineTo(x2, y2)
@@ -1831,7 +1842,7 @@ class SceneEditor extends Editor {
         this.setWeakPath(g, obj1_pts, obj2_pts, g.object)
       }
 
-      const m = -5
+      const m = -4
 
       const xsign = Math.sign(x1 - x2) == 0 ? 1 : Math.sign(x1 - x2)
       const ysign = Math.sign(y1 - y2) == 0 ? 1 : Math.sign(y1 - y2)
@@ -1904,7 +1915,8 @@ class SceneEditor extends Editor {
         const uuid1 = [x1, y1].join(',')
         const uuid2 = [x2, y2].join(',')
 
-        if (uuid1 !== uuid2 && !paths_drawn[`${uuid1},${uuid2}`] && !paths_drawn[`${uuid2},${uuid1}`]) {
+        if ((!this.el_object_form.getValue("paths_in_view") || (this.pixi.inCamera(x1, y1) && this.pixi.inCamera(x2, y2))) &&
+             uuid1 !== uuid2 && !paths_drawn[`${uuid1},${uuid2}`] && !paths_drawn[`${uuid2},${uuid1}`]) {
           paths_drawn[`${uuid1},${uuid2}`] = true
 
           this.addObjectPath(
@@ -2504,14 +2516,14 @@ class SceneEditor extends Editor {
     //paths
     const path_data = {}
     /*
-    { 
-      obj_uuid: { 
-        layer_uuid: { 
-          node:{ 'x,y':[x,y,tag] }, 
-          graph:{ 
-            'x1,y1':{ 'x2,y2':true } 
-          } 
-        } 
+    {
+      obj_uuid: {
+        layer_uuid: {
+          node:{ 'x,y':[x,y,tag] },
+          graph:{
+            'x1,y1':{ 'x2,y2':true }
+          }
+        }
       }
     }
     */

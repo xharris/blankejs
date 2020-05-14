@@ -317,6 +317,7 @@ class Plugins extends Editor {
 
   static enable(key) {
     const plugin_path = app.relativePath(app.ideSetting("plugin_path"));
+    if (!app.engine.plugin_path) return;
     nwFS.ensureDirSync(app.engine.plugin_path);
 
     if (plugin_info[key]) {
@@ -337,6 +338,7 @@ class Plugins extends Editor {
 
   static disable(key) {
     if (!plugin_info[key]) return;
+    if (!app.engine.plugin_path) return;
     // remove file
     if (nwFS.pathExistsSync(pathJoin(app.engine.plugin_path, key))) {
       nwFS.removeSync(pathJoin(app.engine.plugin_path, key));

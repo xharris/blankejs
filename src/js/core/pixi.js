@@ -125,7 +125,7 @@ class BlankePixi {
 					this.dragStart();
 				}
 
-				/* TODO: cancel things 
+				/* TODO: cancel things
 				if (e.key == "Esc") {
         			this.pointer_down = -1;
 
@@ -369,6 +369,13 @@ class BlankePixi {
 	moveCamera(dx, dy) {
 		this.setCameraPosition(this.camera[0] + (dx), this.camera[1] + (dy));
 		this.refreshCornerText()
+	}
+	inCamera(x, y) {
+		let [camx, camy] = this.getCameraPosition()
+		camx = -camx
+		camy = -camy
+		let w = (this.width / this.zoom), h = (this.height / this.zoom)
+		return x > camx && x < camx + w && y > camy && y < camy + h
 	}
 	getCameraPosition() { // needs work
 		return [

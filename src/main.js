@@ -9,7 +9,7 @@ C	implement fibonnaci-sized windows
 C	sprite sheet preview: should display image dimensions
 C	find and replace
 C	GamePreview - auto insert Asset.add() method
-	Add confirm dialog when closing changed Code		
+	Add confirm dialog when closing changed Code
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
@@ -468,7 +468,6 @@ var app = {
     if (app.isProjectOpen() && app.engine.play) {
       if (app.ideSetting("run_save_code"))
         Code.saveAll().then(() => {
-          console.log('now playing')
           app.engine.play(options);
         })
       else
