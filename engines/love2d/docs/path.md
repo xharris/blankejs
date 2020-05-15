@@ -34,10 +34,10 @@ paths[1]:go(player, { speed=50, target={tag='end'} })
 
 `go(obj, opt)`
   * `obj` with x and y values
-  * `opt{}` { speed=1, target={ x, y, tag }, [start={ x, y, tag}] }
+  * `opt{}` { speed=1, target={ x, y, tag }, [start]={ x, y, tag}, [onFinish]=function }
 
 `pause(obj)`
 
 `resume(obj)`
 
-`stop(obj)` stops pathing completely
+`stop(obj) -> next_node, onFinish` stops pathing completely. will not trigger onFinish

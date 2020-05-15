@@ -1166,13 +1166,16 @@ do
             end
             if #anims == 0 then anims = {{}} end
             for _,anim in ipairs(anims) do
-                local o = function(k) return anim[k] or all_opt[k] end
+                local o = function(k, default)
+                    assert(anim[k] or all_opt[k] or default, "'"..k.."' not found for "..file.." -> "..(anim.name or '?'))
+                    return anim[k] or all_opt[k] or default
+                end
                 local quads, durations = {}, {}
                 local fw, fh = img:getWidth() / o('cols'), img:getHeight() / o('rows')
-                local offx, offy = o('offx') or 0, o('offy') or 0
+                local offx, offy = o('offx', 0), o('offy', 0)
                 -- calculate frame list
                 local frame_list = {}
-                local in_frames = o('frames') or {'1-'..(o('cols')*o('rows'))}
+                local in_frames = o('frames', {'1-'..(o('cols')*o('rows'))})
 
                 assert(not in_frames or type(in_frames) == "table", "Image.animation frames must be in array")
                 for _,f in ipairs(in_frames) do
@@ -1195,11 +1198,11 @@ do
                 end
                 animations[anim.name or FS.removeExt(FS.basename(file))] = {
                     file=file,
-                    duration=o('duration') or 1,
-                    durations=o('durations') or {},
+                    duration=o('duration', 1),
+                    durations=o('durations', {}),
                     quads=quads,
                     w=fw, h=fh, frame_size={fw,fh},
-                    speed=o('speed') or 1
+                    speed=o('speed', 1)
                 }
             end
         end;
@@ -1333,6 +1336,10 @@ do
 
             GameObject.init(self, args, spawn_args)
 
+            if self.setup then
+                self:setup(args, spawn_args)
+            end
+
             self.imageList = {}
             self.animList = {}
             -- width/height already set?
@@ -1362,8 +1369,8 @@ do
             if args.animations then
                 if type(args.animations) == 'table' then
                     for _, anim_name in ipairs(args.animations) do
-                        if not self.animation then
-                            self.animation = anim_name
+                        if not args.animation then
+                            args.animation = anim_name
                         end
                         self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
                     end
@@ -2660,9 +2667,7 @@ do
             local obj = Game.spawn(ent_name, opt)
             if obj then
                 opt.layer = opt.layer or "_"
-                if not self.entities[opt.layer] then self.entities[opt.layer] = {} end
-                table.insert(self.entities[opt.layer], obj)
-                return obj
+                return self:addEntity(obj, opt.layer)
             end
         end;
         spawnEntity = function(self, ent_name, x, y, layer)
@@ -2672,9 +2677,18 @@ do
                 obj_info.x = x
                 obj_info.y = y
                 obj_info.z = self:getLayerZ(layer)
-                obj_info.layer = layer
+                obj_info.layer = layer or "_"
                 return self:_spawnEntity(ent_name, obj_info)
             end
+        end;
+        addEntity = function(self, obj, layer_name)
+            layer = layer or "_"
+            if not self.entities[layer_name] then self.entities[layer_name] = {} end
+            table.insert(self.entities[layer_name], obj)
+            if not self.drawable then
+                obj:remDrawable()
+            end
+            return obj
         end;
         -- return { {x,y,z,layer(name),points,width,height,color} }
         getEntityInfo = function(self, name)
@@ -3612,7 +3626,7 @@ end
 --PATH
 Path = {}
 do
-    local lerp, distance = Math.lerp, Math.distance
+    local lerp, distance, sign = Math.lerp, Math.distance, Math.sign
     local hash_node = function(x,y,tag)
         local parts = {}
         if tag then parts = {tag} end
@@ -3667,7 +3681,7 @@ do
             assert(self.node[opt.b], "Node '"..(opt.b or 'nil').."' not in path")
 
             local node1, node2 = self.node[opt.a], self.node[opt.b]
-            opt.length = Math.distance(node1.x, node1.y, node2.x, node2.y)
+            opt.length = floor(Math.distance(node1.x, node1.y, node2.x, node2.y))
 
             self.edge[hash] = copy(opt)
             -- add edge to matrix
@@ -3690,10 +3704,11 @@ do
             local target = opt.target
             local start = opt.start
 
-            assert(target, "Path.go requires target node")
+            assert(target, "Path:go() requires target node")
 
             if not obj.is_pathing then
-                obj.is_pathing = { uuid=uuid(), speed=speed, index=1, path={}, t=0, prev_pos={obj.x,obj.y} }
+                local extra_dist = 0
+                obj.is_pathing = { uuid=uuid(), direction={x=1, y=1}, speed=speed, index=1, path={}, t=0, prev_pos={obj.x,obj.y}, onFinish=opt.onFinish }
                 table.insert(self.pathing_objs, obj)
 
                 if not start then
@@ -3709,6 +3724,7 @@ do
                         end
                     end
                     if closest_node then
+                        extra_dist = new_d
                         start = closest_node
                     end
                 end
@@ -3756,7 +3772,8 @@ do
                 end
 
                 local next_node = start_hash
-                obj.is_pathing.total_distance = dist[start_hash]
+                obj.is_pathing.total_distance = dist[start_hash] + extra_dist
+
                 repeat
                     table.insert(obj.is_pathing.path, next_node)
                     next_node = previous[next_node]
@@ -3768,11 +3785,12 @@ do
         stop = function(self, obj)
             if obj.is_pathing then
                 local next_node = self.node[obj.is_pathing.path[obj.is_pathing.index]]
+                local onFinish = obj.is_pathing.onFinish
                 table.filter(self.pathing_objs, function(_obj)
                     return obj.is_pathing.uuid ~= _obj.is_pathing.uuid
                 end)
                 obj.is_pathing = nil
-                return next_node
+                return next_node, onFinish
             end
         end;
         -- static
@@ -3796,9 +3814,19 @@ do
                     if not info.next_dist then
                         info.next_dist = distance(info.prev_pos[1],info.prev_pos[2],next_node.x,next_node.y)
                     end
-                    info.t = info.t + 1 * dt * (info.speed * (1 - (info.next_dist / total_dist)))
+                    info.t = info.t + 1 * dt * ( info.speed * (1 - (info.next_dist / total_dist)) )
+
                     obj.x = lerp(info.prev_pos[1], next_node.x, info.t / 100)
                     obj.y = lerp(info.prev_pos[2], next_node.y, info.t / 100)
+
+                    local xdiff = floor(next_node.x - info.prev_pos[1])
+                    local xsign = sign(xdiff)
+                    if xdiff ~= 0 then info.direction.x = xsign end
+
+                    local ydiff = floor(next_node.y - info.prev_pos[2])
+                    local ysign = sign(ydiff)
+                    if ydiff ~= 0 then info.direction.y = ysign end
+
                     if info.t >= 100 then
                         info.index = info.index + 1
                         info.t = 0
@@ -3806,7 +3834,8 @@ do
                         info.next_dist = nil
                     end
                     if info.index > #info.path then
-                        self:stop(obj)
+                        local _, onFinish = self:stop(obj)
+                        if onFinish then onFinish(obj) end
                     end
                 end
             end

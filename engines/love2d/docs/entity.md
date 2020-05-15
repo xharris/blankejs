@@ -31,12 +31,12 @@ Player({custom_prop: 5})
 
 ## collisions
 
-`hitbox` values can be: 
+`hitbox` values can be:
 - true
 - 'rect'/'circle'
 - { type=string, left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
 
-`reaction`  slide, 
+`reaction`  slide,
 
 `reactions {}` optional list of { other_tag:'response' }. default reaction is `Hitbox.default_reaction ('slide')`
 
@@ -102,15 +102,17 @@ Player({custom_prop: 5})
 
 # Methods
 
+`setup(args, spawn_args)` called before anything is set up in Entity constructor
+
 `spawn()`
 
 `update(dt)`
 
 `draw(default_draw_fn)`
 
-> **NOTE**: 
+> **NOTE**:
 > * if draw() is overriden, width and height variables need to be set manually, unless `default_draw_fn()` is called.
-> * Draw operations are positioned relative to the entity. 
+> * Draw operations are positioned relative to the entity.
 
 `predraw()`
 
