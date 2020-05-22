@@ -958,6 +958,7 @@ do
             end
 
             if Game.restarting then
+                Game.updateWinSize()
                 Signal.emit("Game.restart")
             end
         end;

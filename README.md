@@ -37,8 +37,10 @@ src: https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watch
 
 - [Software dependencies](https://github.com/xharris/blankejs/blob/master/package.json)
 
-- [Engine dependencies](https://github.com/xharris/blankejs/blob/master/love2d/license.md)
+- [Lua Engine license (MIT)](https://github.com/xharris/blankejs/blob/master/love2d/lua/blanke/LICENSE.md)
 
-- There is an [End-User License Agreement (EULA)](https://github.com/xharris/blankejs/blob/master/EULA.txt)
+- [Lua Engine dependencies](https://github.com/xharris/blankejs/blob/master/love2d/lua/blanke/CREDITS.md)
+
+- The IDE [End-User License Agreement (EULA)](https://github.com/xharris/blankejs/blob/master/EULA.txt)
 
 - There are plans for free/indie/educational licenses
