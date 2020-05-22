@@ -1,7 +1,7 @@
 [//]: # (Name: Blanke Array)
 
 ```
-local myarray = Array(1,2,3) -- or Array({1,2,3})
+local myarray = Array(1,2,3) -- or Array.from({1,2,3}) or Array.from{1,2,3}
 myarray[2] = 6
 print(myarray[2]) -- 6
 print(myarray) -- 1,2,6
@@ -54,4 +54,3 @@ print(myarray) -- 1,2,6
 `filter(fn)` fn(val, index) should return true if the value should be kept
 
 `reverse()`
-

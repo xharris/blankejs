@@ -114,6 +114,9 @@ end
 table.random = function(t)
     return t[Math.random(1,#t)]
 end
+table.randomWeighted = function(t)
+    local r = Math.random(0,100)
+end
 table.includes = function(t, v)
     for i = 1,#t do if t[i] == v then return true end end
     return false
@@ -129,6 +132,9 @@ table.join = function(t, sep)
     return str
 end
 --UTIL.string
+function string:starts(Start)
+   return string.sub(self,1,string.len(Start))==Start
+end
 function string:contains(q)
     return string.match(tostring(self), tostring(q)) ~= nil
 end
@@ -150,6 +156,49 @@ function string:replace(find, replace, wholeword)
         find = '%f[%a]'..find..'%f[%A]'
     end
     return (self:gsub(find,replace))
+end
+function string:expand(...)
+    -- version: 0.0.1
+    -- code: Ketmar // Avalon Group
+    -- public domain
+
+    -- expand $var and ${var} in string
+    -- ${var} can call Lua functions: ${string.rep(' ', 10)}
+    -- `$' can be screened with `\'
+    -- `...': args for $<number>
+    -- if `...' is just a one table -- take it as args
+    function ExpandVars (s, ...)
+      local args = {...};
+      args = #args == 1 and type(args[1]) == "table" and args[1] or args;
+      -- return true if there was an expansion
+      local function DoExpand (iscode)
+        local was = false;
+        local mask = iscode and "()%$(%b{})" or "()%$([%a%d_]*)";
+        local drepl = iscode and "\\$" or "\\\\$";
+        s = s:gsub(mask, function (pos, code)
+          if s:sub(pos-1, pos-1) == "\\" then return "$"..code;
+          else was = true; local v, err;
+            if iscode then code = code:sub(2, -2);
+            else local n = tonumber(code);
+              if n then v = args[n]; end;
+            end;
+            if not v then
+              v, err = loadstring("return "..code); if not v then error(err); end;
+              v = v();
+            end;
+            if v == nil then v = ""; end;
+            v = tostring(v):gsub("%$", drepl);
+            return v;
+          end;
+        end);
+        if not (iscode or was) then s = s:gsub("\\%$", "$"); end;
+        return was;
+      end;
+
+      repeat DoExpand(true); until not DoExpand(false);
+      return s;
+    end;
+    return ExpandVars(self, ...)
 end
 --math
 local sin, cos, rad, deg, abs, min, max = math.sin, math.cos, math.rad, math.deg, math.abs, math.min, math.max
@@ -320,6 +369,49 @@ sort = function(t, key, default)
         if b[key] == nil then b[key] = default end
         return a[key] < b[key]
     end)
+end
+
+local iterate = function(t, fn)
+    if not t then return end
+    local len = #t
+    local offset = 0
+    local reorder = false
+    for o=1,len do
+        local obj = t[o]
+        if obj then
+            if fn(obj, o) then
+                offset = offset + 1
+            else
+                t[o] = nil
+                t[o - offset] = obj
+            end
+        end
+    end
+    return reorder
+end
+
+local iterateEntities = function(t, test_val, fn)
+    if not t then return end
+    local len = #t
+    local offset = 0
+    local reorder = false
+    for o=1,len do
+        local obj = t[o]
+        if obj then
+            if obj.destroyed or not obj[test_val] then
+                offset = offset + 1
+            else
+                if (obj._last_z == nil and obj.z) or (obj._last_z ~= obj.z) then
+                    obj._last_z = obj.z
+                    reorder = true
+                end
+                fn(obj, o)
+                t[o] = nil
+                t[o - offset] = obj
+            end
+        end
+    end
+    return reorder
 end
 
 copy = function(orig, copies)
@@ -547,15 +639,25 @@ do
     local fns = {}
     Signal = {
         emit = function(event, ...)
+            local args = {...}
             if fns[event] then
-                for _,fn in ipairs(fns[event]) do
-                    fn(...)
-                end
+                iterate(fns[event], function(fn)
+                    local ret = fn(unpack(args))
+                    return ret
+                end)
             end
         end,
         on = function(event, fn)
             if not fns[event] then fns[event] = {} end
             table.insert(fns[event], fn)
+            return fn
+        end,
+        off = function(event, fn)
+            if fns[event] then
+                iterate(fns[event], function(_fn)
+                    return fn == _fn
+                end)
+            end
         end
     }
 end
@@ -651,7 +753,7 @@ do
         end
     end
 
-    Game = class {
+    Game = callable {
         options = {
             res =           'assets',
             scripts =       {},
@@ -673,24 +775,25 @@ do
             update =        function(dt) end,
         };
         config = {};
+        all_objects = {};
         updatables = {};
         drawables = {};
+        restarting = false;
         width = 0;
         height = 0;
         time = 0;
         love_version = {0,0,0};
-        loaded = false;
 
-        init = function(self,args)
-            if not Game.loaded then
-                Game.loaded = true
-                table.update(Game.options, args)
-                Game.load()
-                if Game.options.initial_state then
-                    State.start(Game.options.initial_state)
-                end
-            end
-            return nil
+        loaded = {
+            all = false,
+            settings = false,
+            scripts = false,
+            assets = false
+        };
+
+        __call = function(self,args)
+            table.update(Game.options, args)
+            return Game
         end;
 
         updateWinSize = function(w,h)
@@ -705,103 +808,185 @@ do
             end
         end;
 
-        load = function()
-            Game.time = 0
-            Game.love_version = {love.getVersion()}
-            -- load config.json
-            config_data = love.filesystem.read('config.json')
-            if config_data then Game.config = json.decode(config_data) end
-            table.update(Game.options, Game.config.export)
-            -- get current os
-            if not Window.os then
-                Window.os = ({ ["OS X"]="mac", ["Windows"]="win", ["Linux"]="linux", ["Android"]="android", ["iOS"]="ios" })[love.system.getOS()]-- Game.options.os or 'ide'
-                Window.full_os = love.system.getOS()
-            end
-            -- load settings
-            if Window.os ~= 'web' then
-                Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
-            end
-            -- disable effects for web (SharedArrayBuffer or whatever)
-            if Window.os == 'web' then
-                Feature.disable('effect')
-            end
-            -- window size and flags
-            Game.options.window_flags = table.update({
-                borderless = Game.options.frameless,
-                resizable = Game.options.resizable,
-            }, Game.options.window_flags or {})
+        load = function(which)
+            if not Game.loaded.settings and which == "settings" or not which then
+                Game.time = 0
+                Game.love_version = {love.getVersion()}
+                love.joystick.loadGamepadMappings('gamecontrollerdb.txt')
 
-            if Window.os ~= 'web' then
-                Window.setSize(Game.config.window_size)
-            end
-            Game.updateWinSize()
-            -- vsync
-            switch(Game.options.vsync, {
-                on = function() Window.vsync(1) end,
-                off = function() Window.vsync(0) end,
-                adaptive = function() Window.vsync(-1) end
-            })
+                -- load config.json
+                config_data = love.filesystem.read('config.json')
+                if config_data then Game.config = json.decode(config_data) end
+                table.update(Game.options, Game.config.export)
 
-            if type(Game.options.filter) == 'table' then
-                love.graphics.setDefaultFilter(unpack(Game.options.filter))
-            else
-                love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
-            end
-            Draw.setFont('04B_03.ttf', 16)
-            scripts = Game.options.scripts or {}
-            local no_user_scripts = (#scripts == 0)
-            -- load plugins
-            if Game.options.plugins then
-                for _,f in ipairs(Game.options.plugins) do
-                    table.insert(scripts,'plugins.'..f)
+                -- get current os
+                if not Window.os then
+                    Window.os = ({ ["OS X"]="mac", ["Windows"]="win", ["Linux"]="linux", ["Android"]="android", ["iOS"]="ios" })[love.system.getOS()]-- Game.options.os or 'ide'
+                    Window.full_os = love.system.getOS()
                 end
-            end
-            -- load scripts
-            if Game.options.auto_require and no_user_scripts then
-                local load_folder
-                load_folder = function(path)
-                    files = FS.ls(path)
-                    for _,f in ipairs(files) do
-                        local file_path = path..'/'..f
-                        if FS.extname(f) == 'lua' and not table.hasValue(scripts, file_path) then
-                            new_f =
-                            table.insert(scripts, table.join(string.split(FS.removeExt(file_path), '/'),'.'))
+                -- load settings
+                if Window.os ~= 'web' then
+                    Game.width, Game.height = Window.calculateSize(Game.config.game_size) -- game size
+                end
+                -- disable effects for web (SharedArrayBuffer or whatever)
+                if Window.os == 'web' then
+                    Feature.disable('effect')
+                end
+                if not Game.loaded.settings then
+                    if not Game.restarting then
+                        -- window size and flags
+                        Game.options.window_flags = table.update({
+                            borderless = Game.options.frameless,
+                            resizable = Game.options.resizable,
+                        }, Game.options.window_flags or {})
+
+                        if Window.os ~= 'web' then
+                            Window.setSize(Game.config.window_size)
                         end
-                        local info = FS.info(file_path)
-                        if info.type == 'directory' and file_path ~= '/dist' and file_path ~= '/lua' then
-                            load_folder(file_path)
-                        end
+                        Game.updateWinSize()
+                    end
+                    -- vsync
+                    switch(Game.options.vsync, {
+                        on = function() Window.vsync(1) end,
+                        off = function() Window.vsync(0) end,
+                        adaptive = function() Window.vsync(-1) end
+                    })
+
+                    if type(Game.options.filter) == 'table' then
+                        love.graphics.setDefaultFilter(unpack(Game.options.filter))
+                    else
+                        love.graphics.setDefaultFilter(Game.options.filter, Game.options.filter)
                     end
                 end
-                load_folder('')
             end
 
-            for _,script in ipairs(scripts) do
-                if script ~= 'main' then
-                    require(script)
+            if not Game.loaded.assets and which == "assets" or not which then
+                Draw.setFont('04B_03.ttf', 16)
+            end
+
+            if not Game.loaded.scripts and which == "scripts" or not which then
+                local scripts = Game.options.scripts or {}
+                local no_user_scripts = (#scripts == 0)
+                -- load plugins
+                if Game.options.plugins then
+                    for _,f in ipairs(Game.options.plugins) do
+                        require('plugins.'..f)
+                        -- table.insert(scripts,'lua/plugins/'..f..'/init.lua') -- table.insert(scripts,'plugins.'..f)
+                    end
+                end
+                -- load scripts
+                if Game.options.auto_require and no_user_scripts then
+                    local load_folder
+                    load_folder = function(path)
+                        if path:starts("/.") then return end
+                        files = FS.ls(path)
+
+                        local dirs = {}
+
+                        for _,f in ipairs(files) do
+                            local file_path = path..'/'..f
+                            if FS.extname(f) == 'lua' and not table.hasValue(scripts, file_path) then
+                                table.insert(scripts, file_path) -- table.join(string.split(FS.removeExt(file_path), '/'),'.'))
+                            end
+                            local info = FS.info(file_path)
+                            if info.type == 'directory' and file_path ~= '/dist' and file_path ~= '/lua' then
+                                table.insert(dirs, file_path)
+                            end
+                        end
+
+                        -- load directories
+                        for _, d in ipairs(dirs) do
+                            load_folder(d)
+                        end
+                    end
+                    load_folder('')
+                end
+
+                for _,script in ipairs(scripts) do
+                    if script ~= 'main' then
+                        local ok, chunk = pcall( love.filesystem.load, script )
+                        local ok2, result = pcall( chunk )
+                        -- require(script)
+                    end
                 end
             end
-            -- fullscreen toggle
-            Input.set({ _fs_toggle = { 'alt', 'enter' } }, {
-                combo = { '_fs_toggle' },
-                no_repeat = { '_fs_toggle' },
-            })
-            -- effect
-            if Game.options.effect then
-                Game.setEffect(unpack(Game.options.effect))
-            end
-            if Game.options.load then
-                Game.options.load()
-            end
-            -- round pixels
-            if not Game.options.round_pixels then
-                floor = function(x) return x end
+
+            if not Game.loaded.settings and which == "settings" or not which then
+                -- fullscreen toggle
+                Input.set({ _fs_toggle = { 'alt', 'enter' } }, {
+                    combo = { '_fs_toggle' },
+                    no_repeat = { '_fs_toggle' },
+                })
+                if Game.options.fullscreen == true then
+                    Window.fullscreen(true)
+                end
+                -- effect
+                if Game.options.effect then
+                    Game.setEffect(unpack(Game.options.effect))
+                end
+                if Game.options.load then
+                    Game.options.load()
+                end
+                -- round pixels
+                if not Game.options.round_pixels then
+                    floor = function(x) return x end
+                end
+
+                love.graphics.setBackgroundColor(1,1,1,0)
+
+                Blanke.game_canvas = Canvas{auto_draw=false}
+                Blanke.game_canvas.__ide_obj = true
             end
 
-            love.graphics.setBackgroundColor(1,1,1,0)
+            -- is everything loaded?
+            Game.loaded.all = true
+            for k, v in pairs(Game.loaded) do
+                if which == k or not which then
+                    Game.loaded[k] = true
+                end
+                if k ~= 'all' and Game.loaded[k] == false then
+                    Game.loaded.all = false
+                end
+            end
 
-            Blanke.game_canvas = Canvas{auto_draw=false}
-            Blanke.game_canvas.__ide_obj = true
+            if Game.loaded.all then
+                Signal.emit("Game.load")
+
+                if Game.options.initial_state then
+                    State.start(Game.options.initial_state)
+                end
+            end
+
+            if Game.restarting then
+                Signal.emit("Game.restart")
+            end
+        end;
+
+        restart = function()
+            State.stop()
+            Timer.stop()
+            Audio.stop()
+            for _, obj in ipairs(Game.all_objects) do
+                if obj then
+                    obj:destroy()
+                end
+            end
+            objects = {}
+            Game.all_objects = {}
+            Game.updatables = {}
+            Game.drawables = {}
+            Game.loaded = {
+                all = false,
+                settings = false,
+                scripts = false,
+                assets = false
+            }
+
+            Game.restarting = true
+        end;
+
+        quit = function(...)
+            love.event.quit(...)
         end;
 
         setEffect = function(...)
@@ -912,9 +1097,9 @@ do
             end
 
             Game.time = Game.time + dt
-            if Game.options.update(dt) == true then return end
             Physics.update(dt)
             Timer.update(dt)
+            if Game.options.update(dt) == true then return end
             Blanke.iterUpdate(Game.updatables, dt)
             State.update(dt)
             State._check()
@@ -925,6 +1110,11 @@ do
             end
             Input.keyCheck()
             Audio.update(dt)
+
+            if Game.restarting then
+                Game.load()
+                Game.restarting = false
+            end
         end
     }
 end
@@ -934,11 +1124,24 @@ GameObject = nil
 do
     GameObject = class {
         init = function(self, args, spawn_args)
-            args = args or {}
-            spawn_args = spawn_args or {}
+            args = copy(args) or {}
+            spawn_args = copy(spawn_args) or {}
             self.uuid = uuid()
             self.x, self.y, self.z, self.angle, self.scalex, self.scaley, self.scale = 0, 0, 0, 0, 1, 1, 1
-            self.width, self.height, self.offx, self.offy, self.shearx, self.sheary = spawn_args.width or args.width or 1, spawn_args.height or args.height or 1, 0, 0, 0, 0
+            self.offx, self.offy, self.shearx, self.sheary = 0, 0, 0, 0
+
+            self.width = spawn_args.width or args.width or 0
+            self.height = spawn_args.height or args.height or 0
+
+            if self.width == 0 and self.height == 0 then
+                self._preset_size = false
+            else
+                self._preset_size = true
+            end
+
+            if spawn_args.map_width and self.width == 0 then self.width = spawn_args.map_width end
+            if spawn_args.map_height and self.height == 0 then self.height = spawn_args.map_height end
+
             self.align = nil
             self.blendmode = {'alpha'}
             self.visible = true
@@ -1004,6 +1207,8 @@ do
             end
             if spawn_args then table.update(self,spawn_args) end
 
+            table.insert(Game.all_objects, self)
+
             State.addObject(self)
             if not self.is_entity and self.spawn then self:spawn(unpack(spawn_args or {})) end
         end;
@@ -1033,6 +1238,15 @@ do
                     self[prop] = other_obj[prop]
                 end
             end
+        end;
+        on = function(self, name, ...)
+            return Signal.on(self.uuid..":"..name, ...)
+        end;
+        off = function(self, name, ...)
+            return Signal.off(self.uuid..":"..name, ...)
+        end;
+        emit = function(self, name, ...)
+            return Signal.emit(self.uuid..":"..name, ...)
         end;
         destroy = function(self)
             if not self.destroyed then
@@ -1126,7 +1340,6 @@ Canvas = GameObject:extend {
 Image = nil
 do
     local animations = {}
-    local info_cache = {}
     local getImage = function(name)
         local new_img = Cache.get('Image', Game.res('image',name), function(key)
             return love.graphics.newImage(key)
@@ -1138,7 +1351,6 @@ do
     ImageBatch = GameObject:extend {
         init = function(self, file)
             GameObject.init(self, {classname="ImageBatch"})
-
         end
     }
 
@@ -1147,10 +1359,11 @@ do
             if animations[name] then return animations[name]
             else
                 return Cache.get('Image.info', Game.res('image',name), function(key)
+                    local img = getImage(name)
                     return {
-                        img = love.graphics.newImage(key),
-                        width = info.img:getWidth(),
-                        height = info.img:getHeight()
+                        img = img,
+                        width = img:getWidth(),
+                        height = img:getHeight()
                     }
                 end)
             end
@@ -1207,7 +1420,7 @@ do
             end
         end;
         init = function(self,args)
-            GameObject.init(self, {classname="Image"})
+            GameObject.init(self, {classname="Image"}, args)
             -- animation?
             local anim_info = nil
             if type(args) == 'string' then
@@ -1291,7 +1504,7 @@ do
         self.y = self.y + self.vspeed * dt
         Hitbox.move(self)
         if self.update then self:update(dt) end
-        if self.body then
+        if self.body and self.body.is_physics then
             local new_x, new_y = self.body:getPosition()
             if self.x == last_x then self.x = new_x end
             if self.y == last_y then self.y = new_y end
@@ -1334,6 +1547,9 @@ do
             self.gravity = 0
             self.gravity_direction = 90
 
+            args = copy(args or {})
+            spawn_args = copy(spawn_args or {})
+
             GameObject.init(self, args, spawn_args)
 
             if self.setup then
@@ -1342,13 +1558,7 @@ do
 
             self.imageList = {}
             self.animList = {}
-            -- width/height already set?
-            if (args.width ~= 0 or args.height ~= 0) then
-                self._preset_size = true
-            else
-                args.width = spawn_args.map_width or args.width
-                args.height = spawn_args.map_height or args.height
-            end
+
             -- image
             if args.images then
                 if type(args.images) == 'table' then
@@ -1358,10 +1568,10 @@ do
                             self.image = img
                         end
                     end
-                    self:_updateSize(self.imageList[args.image], true)
+                    self:_updateSize(self.imageList[self.image], true)
                 else
                     self.imageList[args.images] = Image{file=args.images, skip_update=true}
-                    self:_updateSize(self.imageList[args.images], true)
+                    self:_updateSize(self.imageList[self.images], true)
                 end
                 self.images = args.images
             end
@@ -1439,7 +1649,7 @@ do
             if self.hasHitbox then
                 Hitbox.teleport(self)
             end
-            if self.body then self.body:setPosition(self.x, self.y) end
+            if self.body and self.body.is_physics then self.body:setPosition(self.x, self.y) end
         end;
         _updateSize = function(self,obj,skip_anim_check)
             if self.animation then
@@ -1455,7 +1665,7 @@ do
                     Net.sync(self, {'anim_frame'})
                 end
             end
-            if not self._preset_size then
+            if not self._preset_size and obj then
                 self.width, self.height = abs(obj.width * self.scalex*self.scale), abs(obj.height * self.scaley*self.scale)
             end
         end;
@@ -1906,13 +2116,13 @@ Color = {
 
 --AUDIO
 Audio = nil
+Source = nil
 do
     local default_opt = {
         type = 'static'
     }
     local defaults = {}
     local sources = {}
-    local new_sources = {}
     local play_queue = {}
     local first_update = true
 
@@ -1920,8 +2130,80 @@ do
         if not defaults[name] then Audio(name, {}) end
         return defaults[name]
     end
-    Audio = class {
-        init = function(self, file, ...)
+    Source = class {
+        init = function(self, name, options)
+            local o = opt(name)
+            if options then o = table.update(o, options) end
+
+            if Window.os == 'web' then o.type = 'static' end
+
+            self.src = Cache.get('Audio.source',name,function(key)
+                return love.audio.newSource(Game.res('audio',o.file), o.type)
+            end):clone()
+
+            if not sources[name] then sources[name] = {} end
+
+            if o then
+                table.insert(sources[name], self)
+                local props = {'position','looping','volume','airAbsorption','pitch','relative','rolloff','effect'}
+                local t_props = {'attenuationDistances','cone','direction','velocity','filter','volumeLimits'}
+                for _,n in ipairs(props) do
+
+                    local name = n:capitalize()
+                    -- setter
+                    if not self['set'..name] then
+                        self['set'..name] = function(self, ...)
+                            return self.src['set'..name](self.src, ...)
+                        end
+                    end
+
+                    if o[n] then self['set'..name](self,o[n]) end
+
+                end
+                for _,n in ipairs(t_props) do
+
+                    local name = n:capitalize()
+                    -- setter
+                    if not self['set'..name] then
+                        self['set'..name] = function(self, ...)
+                            local args = {...}
+
+                            if fn == "position" then
+                                for i, v in ipairs(args) do
+                                    args[i] = v / Audio.hearing
+                                end
+                            end
+
+                            return self.src['set'..name](self.src, unpack(args))
+                        end
+                    end
+
+                    if o[n] then self['set'..name](self,unpack(o[n])) end
+                end
+            end
+        end;
+        setPosition = function(self, opt)
+            self.position = opt or self.position
+            if opt then
+                self.src:setPosition(
+                    (opt.x or 0) / Audio._hearing,
+                    (opt.y or 0) / Audio._hearing,
+                    (opt.z or 0) / Audio._hearing
+                )
+            end
+        end;
+        play = function(self)
+            love.audio.play(self.src)
+        end;
+        stop = function(self)
+            love.audio.stop(self.src)
+        end;
+        isPlaying = function(self)
+            return self.src:isPlaying()
+        end
+    }
+    Audio = callable {
+        __call = function(self, file, ...)
             option_list = {...}
             for _,options in ipairs(option_list) do
                 store_name = options.name or file
@@ -1930,73 +2212,55 @@ do
                 new_tbl = copy(default_opt)
                 table.update(new_tbl, options)
                 table.update(defaults[store_name], new_tbl)
+
+                Audio.source(store_name)
+            end
+        end;
+
+        _hearing = 6;
+
+        hearing = function(h)
+            Audio._hearing = h or Audio._hearing
+            for name, src_list in pairs(sources) do
+                for _, src in ipairs(src_list) do
+                    src:setPosition()
+                end
             end
         end;
 
         update = function(dt)
             if #play_queue > 0 then
                 for _, src in ipairs(play_queue) do
-                    love.audio.play(src)
+                    src:play()
                 end
                 play_queue = {}
             end
         end;
 
         source = function(name, options)
-            local o = opt(name)
-            if options then o = table.update(o, options) end
-
-            if Window.os == 'web' then o.type = 'static' end
-
-            local src = Cache.get('Audio.source',name,function(key)
-                return love.audio.newSource(Game.res('audio',o.file), o.type)
-            end)
-
-            if not sources[name] then
-                sources[name] = love.audio.newSource(Game.res('audio',o.file), o.type)
-            end
-            if not new_sources[name] then new_sources[name] = {} end
-
-            if o then
-                table.insert(new_sources[name], src)
-                local props = {'looping','volume','airAbsorption','pitch','relative','rolloff'}
-                local t_props = {'position','attenuationDistances','cone','direction','velocity','filter','effect','volumeLimits'}
-                for _,n in ipairs(props) do
-                    if o[n] then
-                        src['set'..n:capitalize()](src,o[n])
-                    end
-                end
-                for _,n in ipairs(t_props) do
-                    if o[n] then src['set'..n:capitalize()](src,unpack(o[n])) end
-                end
-            end
-            return src
+            return Source(name, options)
         end;
-        play = function(...)
-            local src_list = {}
-            for _,name in ipairs({...}) do
-                table.insert(src_list, Audio.source(name))
-                -- adds to play_queue so audio doesn't play in Game.load (before the game actually starts)
-                table.insert(play_queue, Audio.source(name))
-            end
-            if #src_list == 1 then return src_list[1]
-            else return src_list end
+
+        play = function(name, options)
+            local new_src = Audio.source(name, options)
+            table.insert(play_queue, new_src)
+            return new_src
         end;
         stop = function(...)
             names = {...}
             if #names == 0 then love.audio.stop()
             else
                 for _,n in ipairs(names) do
-                    if new_sources[n] then
-                        for _,src in ipairs(new_sources[n]) do love.audio.stop(src) end
+                    if sources[n] then
+                        for _,src in ipairs(sources[n]) do src:stop() end
                     end
                 end
             end
         end;
         isPlaying = function(name)
-            if new_sources[name] then
+            if sources[name] then
                 local t = {}
-                for _,src in ipairs(new_sources[name]) do
+                for _,src in ipairs(sources[name]) do
                     if src:isPlaying() then return true end
                 end
             end
@@ -2009,7 +2273,18 @@ do
         local fn_capital = fn:capitalize()
         Audio[fn] = function(...)
             local args = {...}
-            if #args > 0 then love.audio['set'..fn_capital](...)
+
+            if fn == "position" then
+                local pos = args[1]
+
+                args = {
+                    (pos.x or 0) / Audio._hearing,
+                    (pos.y or 0) / Audio._hearing,
+                    (pos.z or 0) / Audio._hearing
+                }
+            end
+
+            if #args > 0 then love.audio['set'..fn_capital](unpack(args))
             else return love.audio['get'..fn_capital]() end
         end
     end
@@ -2182,19 +2457,21 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
             for _, name in ipairs(names) do
                 if not self.vars[name] then self.vars[name] = {} end
                 self.auto_vars[name] = self.shader_info[name].auto_vars
-                --print(name, self.shader_info[name].auto_vars)
-                --print_r(self.shader_info[name])
                 table.update(self.vars[name], self.shader_info[name].vars)
             end
         end;
         disable = function(self, ...)
             if not Feature('effect') then return end
             local disable_names = {...}
-            for _,name in ipairs(disable_names) do self.disabled[name] = true end
+            for _,name in ipairs(disable_names) do
+                self.disabled[name] = true
+            end
             local new_names = {}
+            self.used = false
             for _,name in ipairs(self.names) do
                 tryEffect(name)
                 if not self.disabled[name] then
+                    self.used = true
                     table.insert(new_names, name)
                 end
             end
@@ -2203,11 +2480,15 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
         enable = function(self, ...)
             if not Feature('effect') then return end
             local enable_names = {...}
-            for _,name in ipairs(enable_names) do self.disabled[name] = false end
+            for _,name in ipairs(enable_names) do
+                self.disabled[name] = false
+            end
             local new_names = {}
+            self.used = false
             for _,name in ipairs(self.names) do
                 tryEffect(name)
                 if not self.disabled[name] then
+                    self.used = true
                     table.insert(new_names, name)
                 end
             end
@@ -2236,11 +2517,10 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
         _update = function(self,dt)
             if not Feature('effect') then return end
             local vars
-            local used = #self.names
 
             for _,name in ipairs(self.names) do
-                vars = self.vars[name]
                 if not self.disabled[name] then
+                    vars = self.vars[name]
                     vars.time = vars.time + dt
                     vars.tex_size = {Game.width,Game.height}
 
@@ -2253,14 +2533,12 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
                     for k,v in pairs(vars) do
                         self:send(name, k, v)
                     end
-                else
-                    used = used - 1
-                end
-                if not self.disabled[name] and library[name] and library[name].opt.update then
-                    library[name].opt.update(self.vars[name])
+
+                    if library[name] and library[name].opt.update then
+                        library[name].opt.update(self.vars[name])
+                    end
                 end
             end
-            self.used = (used > 0)
         end;
         update = function(self,dt)
             self:_update(dt)
@@ -2325,9 +2603,10 @@ end
 --CAMERA
 Camera = nil
 do
-    local default_opt = { x=0, y=0, view_x=0, view_y=0, z=0, dx=0, dy=0, angle=0, zoom=nil, scalex=1, scaley=nil, top=0, left=0, width=nil, height=nil, follow=nil, enabled=true, auto_use=true }
+    local default_opt = { x=0, y=0, offset_x=0, offset_y=0, view_x=0, view_y=0, z=0, dx=0, dy=0, angle=0, zoom=nil, scalex=1, scaley=nil, top=0, left=0, width=nil, height=nil, follow=nil, enabled=true, auto_use=true }
     local attach_count = 0
     local options = {}
+    local cam_stack = {}
 
     Camera = callable {
         transform = nil;
@@ -2337,13 +2616,14 @@ do
             default_opt.height = Game.height
             options[name] = copy(default_opt)
             options[name].transform = love.math.newTransform()
+            options[name].name = name
             table.update(options[name], opt)
             sort(options, 'z', 0)
             return options[name]
         end;
         get = function(name) return assert(options[name], "Camera :'"..name.."' not found") end;
         attach = function(name)
-            o = Camera.get(name)
+            local o = Camera.get(name)
             Draw.push()
             if o.enabled == false then return end
             if o then
@@ -2352,24 +2632,37 @@ do
                     o.x = o.follow.x or o.x
                     o.y = o.follow.y or o.y
                 end
-                local half_w, half_h = w/2, h/2
+                local half_w, half_h = floor(w/2), floor(h/2)
 
                 --Draw.translate(o.view_x, o.view_y)
 
                 Draw.crop(0, 0, w, h)
                 o.transform:reset()
-                o.transform:translate(floor(half_w), floor(half_h))
+                o.transform:translate(half_w, half_h)
                 o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
                 o.transform:rotate(math.rad(o.angle))
                 o.transform:translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
 
+                o.offset_x = -(floor(half_w) -floor(o.x - o.left + o.dx))
+                o.offset_y = -(floor(half_h) -floor(o.y - o.top + o.dy))
+
                 Camera.transform = o.transform
                 love.graphics.replaceTransform(o.transform)
+
+                table.insert(cam_stack, name)
             end
+        end;
+        coords = function(name, x, y)
+            local o = Camera.get(name)
+            if o then
+                return x + (o.offset_x or 0), y + (o.offset_y or 0)
+            end
+            return x, y
         end;
         detach = function()
             Draw.pop()
             Camera.transform = nil
+            table.remove(cam_stack)
         end;
         use = function(name, fn)
             Camera.attach(name)
@@ -2408,7 +2701,7 @@ do
             img = images[img_path]
 
             -- get quad
-            local quad_hash = tx..","..ty..","..tw..","..ty
+            local quad_hash = img_path..':'..tx..","..ty..","..tw..","..ty
             if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img:getWidth(),img:getHeight()) end
             local quad = quads[quad_hash]
 
@@ -2462,15 +2755,16 @@ do
             local layer_name = {}
             -- get layer names
             local store_layer_order = false
-            if not options.layer_order then
-                options.layer_order = {}
+
+            if #new_map.layer_order == 0 then
+                new_map.layer_order = {}
                 store_layer_order = true
             end
             for i = #data.layers, 1, -1 do
                 local info = data.layers[i]
                 layer_name[info.uuid] = info.name
                 if store_layer_order then
-                    table.insert(options.layer_order, info.name)
+                    table.insert(new_map.layer_order, info.name)
                 end
             end
             -- place tiles
@@ -2488,7 +2782,6 @@ do
                 local obj_name = obj_info.name
                 for layer_uuid, info in pairs(info) do
                     local layer_name = layer_name[layer_uuid]
-
                     local new_path = Path()
                     -- add nodes
                     local tag
@@ -2551,14 +2844,18 @@ do
 
             return new_map
         end;
-        config = function(opt) options = opt end;
-        init = function(self)
-            GameObject.init(self, {classname="Map"})
+        config = function(opt)
+            if opt then options = opt end
+            return options
+        end;
+        init = function(self, opt)
             self.batches = {} -- { layer: SpriteBatch }
             self.hb_list = {}
             self.entity_info = {} -- { obj_name: { info_list... } }
             self.entities = {} -- { layer: { entities... } }
             self.paths = {} -- { obj_name: { layer_name:{ Paths... } } }
+            self.layer_order = {}
+            GameObject.init(self, {classname="Map"}, spawn_args)
         end;
         addDrawable = function(self)
             for layer, sb in pairs(self.batches) do
@@ -2581,20 +2878,42 @@ do
             end
         end;
         _draw = function(self)
-            local layer
-            for i = 1, #options.layer_order do
-                layer = options.layer_order[i]
-                local sb = self.batches[layer]
-                if sb then
-                    sb:draw()
-                end
-                local entities = self.entities[layer]
-                if entities then
-                    for _, entity in ipairs(entities) do
+            Game.drawObject(self, function()
+                local layer
+                for i = 1, #self.layer_order do
+                    layer = self.layer_order[i]
+                    local sb = self.batches[layer]
+                    if sb then
+                        sb:draw()
+                    end
+                    local entities = self.entities[layer]
+                    local reorder = iterateEntities(entities, 'z', function(entity)
                         entity:draw()
+                    end)
+                    if reorder then
+                        sort(entities, 'z', 0)
                     end
                 end
+            end, true)
+        end;
+        _destroy = function(self)
+            -- destroy hitboxes
+            for _,tile in ipairs(self.hb_list) do
+                Hitbox.remove(tile)
             end
+            self.hb_list = {}
+            -- destroy entities
+            for layer, entities in pairs(self.entities) do
+                for _,ent in ipairs(entities) do
+                    ent:destroy()
+                end
+            end
+            self.entities = {}
+            -- destroy spritebatches
+            for _,batch in pairs(self.batches) do
+                batch:destroy()
+            end
+            self.batches = {}
         end;
         draw = function(self) self:_draw() end,
         addTile = function(self,file,x,y,tx,ty,tw,th,layer)
@@ -2682,13 +3001,18 @@ do
             end
         end;
         addEntity = function(self, obj, layer_name)
-            layer = layer or "_"
+            layer_name = layer_name or "_"
             if not self.entities[layer_name] then self.entities[layer_name] = {} end
             table.insert(self.entities[layer_name], obj)
-            if not self.drawable then
-                obj:remDrawable()
-            end
+            obj:remDrawable()
+            sort(self.entities[layer_name], 'z', 0)
             return obj
+        end;
+        add = function(self, ...)
+            local args = {...}
+            if args[1].is_entity then
+                return self:addEntity(unpack(args))
+            end
         end;
         -- return { {x,y,z,layer(name),points,width,height,color} }
         getEntityInfo = function(self, name)
@@ -2698,27 +3022,11 @@ do
             return self.entities
         end;
         getLayerZ = function(self, l_name)
-            for i, name in ipairs(options.layer_order) do
+            for i, name in ipairs(self.layer_order) do
                 if name == l_name then return i end
             end
             return 0
         end;
-        _destroy = function(self)
-            -- destroy hitboxes
-            for _,tile in ipairs(self.hb_list) do
-                Hitbox.remove(tile)
-            end
-            -- destroy entities
-            for _,entities in pairs(self.entities) do
-                for _,ent in ipairs(entities) do
-                    ent:destroy()
-                end
-            end
-            -- destroy spritebatches
-            for _,batch in pairs(self.batches) do
-                batch:destroy()
-            end
-        end
     }
 end
 
@@ -2767,6 +3075,9 @@ do
     Physics = class {
         custom_grav_helpers = {};
         debug = false;
+        init = function(self)
+            self.is_physics = true
+        end;
         update = function(dt)
             for name, world in pairs(worlds) do
                 local config = world_config[name]
@@ -2952,6 +3263,8 @@ do
             obj.scalex = obj.scalex or 1
             obj.scaley = obj.scaley or 1
         end
+        obj.width = min(obj.width, 1)
+        obj.height = min(obj.height, 1)
         return  obj.alignx * abs(obj.scale * obj.scalex),
                 obj.aligny * abs(obj.scale * obj.scaley),
                 repos
@@ -3141,6 +3454,7 @@ do
             for _,obj in ipairs(objs) do
                 if obj then obj:destroy() end
             end
+            Timer.stop(name)
             state.running = false
         end
     end
@@ -3524,7 +3838,7 @@ do
             setMode(w,h,flags)
         end;
         setExactSize = function(w, h, flags)
-            setMode(w,h,falgs)
+            setMode(w,h,flags)
         end;
         calculateSize = function(r)
             r = r or Game.config.window_size
@@ -3538,15 +3852,15 @@ do
             if v == nil then
                 res = love.window.getFullscreen()
             else
+                if not Window.fullscreen() then
+                    pre_fs_size = {Game.width, Game.height}
+                end
                 res = love.window.setFullscreen(v,fs_type)
             end
             Game.updateWinSize(unpack(pre_fs_size))
             return res
         end;
         toggleFullscreen = function()
-            if not Window.fullscreen() then
-                pre_fs_size = {Game.width, Game.height}
-            end
             local res = Window.fullscreen(not Window.fullscreen())
             if res then
                 if not Window.fullscreen() then
@@ -3561,6 +3875,8 @@ end
 --TIMER
 Timer = nil
 do
+    local clamp = Math.clamp
+
     local l_after = {}
     local l_every = {}
     local addTimer = function(t, fn, tbl)
@@ -3571,6 +3887,7 @@ do
             t = t,
             iteration = 1,
             paused = false,
+            state_created = State.curr_state,
             destroy = function()
                 tbl[id] = nil
             end
@@ -3581,10 +3898,12 @@ do
 
     Timer = {
         update = function(dt)
+
             -- after
             for id,timer in pairs(l_after) do
                 if not timer.paused then
                     timer.t = timer.t - dt
+                    timer.p = clamp((timer.duration - timer.t) / timer.duration, 0, 1)
                     if timer.t < 0 then
                         if timer.fn and timer.fn(timer) then
                             -- another one (restart timer)
@@ -3601,6 +3920,7 @@ do
             for id,timer in pairs(l_every) do
                 if not timer.paused then
                     timer.t = timer.t - dt
+                    timer.p = clamp((timer.duration - timer.t) / timer.duration, 0, 1)
                     if timer.t < 0 then
                         if not timer.fn or timer.fn(timer) then
                             -- destroy it!
@@ -3615,10 +3935,24 @@ do
             end
         end,
         after = function(t, fn)
-            addTimer(t, fn, l_after)
+            assert(t, "Timer duration is nil")
+            return addTimer(t, fn, l_after)
         end,
         every = function(t, fn)
-            addTimer(t, fn, l_every)
+            assert(t, "Timer duration is nil")
+            return addTimer(t, fn, l_every)
+        end,
+        stop = function(state_name)
+            for _, tmr in pairs(l_after) do
+                if not state_name or tmr.state_created == state_name then
+                    tmr.destroy()
+                end
+            end
+            for _, tmr in pairs(l_every) do
+                if not state_name or tmr.state_created == state_name then
+                    tmr.destroy()
+                end
+            end
         end
     }
 end
@@ -3814,7 +4148,7 @@ do
                     if not info.next_dist then
                         info.next_dist = distance(info.prev_pos[1],info.prev_pos[2],next_node.x,next_node.y)
                     end
-                    info.t = info.t + 1 * dt * ( info.speed * (1 - (info.next_dist / total_dist)) )
+                    info.t = info.t + 1 * dt * ( info.speed / (1 - (info.next_dist / total_dist)) )
 
                     obj.x = lerp(info.prev_pos[1], next_node.x, info.t / 100)
                     obj.y = lerp(info.prev_pos[2], next_node.y, info.t / 100)
@@ -3913,32 +4247,108 @@ do
     }
 end
 
+--Time
+Time = {}
+do
+    local flr = Math.floor
+    Time = {
+        format = function(str, ms)
+            local s = flr(ms / 1000) % 60
+            local m = flr(ms / (1000 * 60)) % 60
+            local h = flr(ms / (1000 * 60 * 60)) % 24
+            local d = flr(ms / (1000 * 60 * 60 * 24))
+
+            return str
+                :replace("%%d", (d))
+                :replace("%%h", (h))
+                :replace("%%m", (m))
+                :replace("%%s", (s))
+        end
+    }
+end
+
+--Timeline
+Timeline = GameObject:extend {
+    init = function(self, events, opt)
+        GameObject.init(self, {classname="Timeline"}, opt)
+
+		self.t = 0
+		self.events = events
+		self.index = 0
+		self.running = false
+
+		self:addUpdatable()
+        self:addDrawable()
+	end,
+    pause = function(self)
+        self.running = false
+    end,
+    play = function(self, name)
+        self:step(name)
+        self.running = true
+    end,
+	step = function(self, name)
+        self.t = 0
+        self.waiting = false
+		if type(name) == "string" then
+			for i, ev in ipairs(self.events) do
+				if ev.name == name then
+					self.index = i
+				end
+			end
+
+		elseif type(name) == "number" then
+            while name < 0 do name = #self.events - name end
+            self.index = name
+
+        else
+			self.index = self.index + 1
+			-- stop the timeline and destroy it??
+			if self.index > #self.events then
+				self.running = false
+				self:destroy()
+			end
+
+		end
+        self:call()
+	end,
+	call = function(self, name, ...)
+		local ev = self.events[self.index]
+		if not ev then return end
+
+        if not name then name = 'fn' end
+
+		if name and ev[name] then
+			-- call named fn
+			ev[name](self, ...)
+		end
+	end,
+    reset = function(self)
+        self:step(1)
+    end,
+    _update = function(self, dt)
+        if not self.running then return end
+
+		self:call('update', dt)
+
+		local ev = self.events[self.index]
+		-- move onto next step?
+		if not ev or #ev == 0 or (type(ev[1]) == "number" and self.t > ev[1]) then
+			self:step()
+        elseif ev and ev[1] == 'wait' and not self.waiting then
+            self.waiting = true
+        end
+
+		self.t = self.t + dt * 1000
+    end,
+	_draw = function(self)
+		self:call('draw')
+	end
+}
+
 --BLANKE
 Blanke = nil
 do
-    local iterate = function(t, test_val, fn)
-        local len = #t
-        local offset = 0
-        local reorder = false
-        for o=1,len do
-            local obj = t[o]
-            if obj then
-                if obj.destroyed or not obj[test_val] then
-                    offset = offset + 1
-                else
-                    if (obj._last_z == nil and obj.z) or (obj._last_z ~= obj.z) then
-                        obj._last_z = obj.z
-                        reorder = true
-                    end
-                    fn(obj, o)
-                    t[o] = nil
-                    t[o - offset] = obj
-                end
-            end
-        end
-        return reorder
-    end
-
     local update_obj = Game.updateObject
     local stack = Draw.stack
 
@@ -3951,8 +4361,10 @@ do
         pady = 0;
         load = function()
             if not Blanke.loaded then
-                love.joystick.loadGamepadMappings('gamecontrollerdb.txt')
                 Blanke.loaded = true
+                if not Game.loaded.all then
+                    Game.load()
+                end
             end
         end;
         addUpdatable = function(obj)
@@ -3964,14 +4376,14 @@ do
             table.insert(Game.drawables, obj)
         end;
         iterUpdate = function(t, dt)
-            iterate(t, 'updatable', function(obj)
+            iterateEntities(t, 'updatable', function(obj)
                 if obj.skip_update ~= true and obj.pause ~= true and obj._update then
                     update_obj(dt, obj)
                 end
             end)
         end;
         iterDraw = function(t, override_drawable)
-            local reorder_drawables = iterate(t, 'drawable', function(obj)
+            local reorder_drawables = iterateEntities(t, 'drawable', function(obj)
                 if obj.visible == true and obj.skip_draw ~= true and (override_drawable or obj.drawable == true) and obj.draw ~= false then
                     local obj_draw = obj._draw
                     stack(function()

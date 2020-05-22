@@ -62,7 +62,7 @@ ${os == "web" ? 'Window.os = "web"' : ""}
 function love.conf(t)
     ${
     os == "web"
-      ? `   
+      ? `
     t.window.width = ${resolution[0]}
     t.window.height = ${resolution[1]}`
       : `
@@ -110,7 +110,7 @@ module.exports.settings = {
     ["window/rendering"],
     ["filter", "select", { choices: ["linear", "nearest"], default: "linear" }],
     ["round_pixels", "checkbox", { defalt: false }],
-    ...["frameless", "scale", "resizable"].map(o => [
+    ...["frameless", "scale", "resizable", "fullscreen"].map(o => [
       o,
       "checkbox",
       { default: o === "scale" },
@@ -196,13 +196,15 @@ module.exports.settings = {
     let eng_path = "love"; // linux, mac?
     if (app.os == "win")
       eng_path = nwPATH.join(app.engine_path, "lovec");
-    if (app.os == "linux") {
-      nwFS.removeSync(nwPATH.join(app.project_path, "love2d"));
-      nwFS.symlinkSync(
-        nwPATH.relative(app.project_path, app.engine_path),
-        nwPATH.join(app.project_path, "love2d")
-      );
-    }
+
+    // create symlink to love/lua dir
+    nwFS.removeSync(nwPATH.join(app.project_path, "lua"));
+    nwFS.symlinkSync(
+      nwPATH.join(app.engine_path, "lua"),
+      nwPATH.join(app.project_path, "lua"),
+      'junction'
+    );
+
     let child = spawn(eng_path, ["."], { cwd: app.getAssetPath("scripts") });
     let con = new Console(true);
     child.stdout.on("data", data => {
@@ -229,6 +231,9 @@ module.exports.settings = {
   bundle: (dir, target_os, cb_done) => {
     let love_path = nwPATH.join(dir, app.projSetting("export").name + ".love");
     let engine_path = app.engine_path;
+
+    // remove symlink
+    nwFS.removeSync(nwPATH.join(app.project_path, "lua"));
 
     let output = nwFS.createWriteStream(love_path);
     let archive = nwZIP("zip", { zlib: { level: 9 } });
@@ -537,8 +542,8 @@ let prop_gameobject = [
 module.exports.autocomplete = {
   keywords: ['true', 'false'],
   /*
-	'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 
-	'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 
+	'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
+	'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
 	'until', 'while'
 ]*/
 
@@ -602,7 +607,7 @@ module.exports.autocomplete = {
   /*
     { fn: "name", info, vars }
     { prop: "name", info }
-  
+
     - info: "description"
     - vars: { arg1: 'default', arg2: 'description', etc: '' }
   */

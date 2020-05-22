@@ -403,10 +403,12 @@ class Code extends Editor {
         if (cur.line > 0) {
           let prev_line_i = cur.line - 1;
           let prev_line = doc.getLine(prev_line_i);
+          /*
           while (prev_line_i > 0 && prev_line.trim().length == 0) {
             prev_line_i--;
             prev_line = doc.getLine(prev_line_i);
           }
+          */
           let prev_line_offset = getLineOffset(prev_line);
           let curr_line_offset = getLineOffset(line);
           indentation = getIndent(prev_line);
@@ -415,30 +417,14 @@ class Code extends Editor {
           // this line is closing someting
           if (curr_line_offset < 0) indentation--;
 
-          // console.log({ prev_line, prev_line_offset, indentation });
+          console.log({ prev_line, prev_line_offset, indentation });
         }
-
-        /*
-				let curr_line_off = getLineOffset(line);
-				// line has closer(s)?
-				if (cur.line > 0 && curr_line_off < 0) {
-					// move backwards through lines until we find the matching opener		
-					let prev_line_i = cur.line - 1;
-					let prev_line = doc.getLine(prev_line_i);
-					while (prev_line_i > 0 && curr_line_off != 0) {
-						prev_line_i--;
-						prev_line = doc.getLine(prev_line_i);
-						curr_line_off += getLineOffset(prev_line);
-					}
-					// use indentation of matching opener's line
-					if (curr_line_off == 0)
-						indentation = getIndent(prev_line);
-				}*/
 
         // console.log({curr_line_off, indentation});
 
         return indentation * indent_size;
       };
+
       return CodeMirror.overlayMode(baseMode, blankeOverlay);
     });
 
@@ -1139,7 +1125,7 @@ class Code extends Editor {
 					editor.addLineWidget(line, el_image, {noHScroll:true});
 					el_image.style.left = Math.floor(randomRange(50,80))+'%';
 					el_image.style.backgroundPosition = '-'+info.offset[0]+'px -'+info.offset[1]+'px';
-				
+
 				}
 				let img = new Image();
 				img.onload = () => {
@@ -1155,7 +1141,7 @@ class Code extends Editor {
 					el_image.style.backgroundRepeat="no-repeat";
 				}
 				img.src="file://"+app.cleanPath(info.path);
-						
+
 				el_image.style.backgroundImage = "url('file://"+app.cleanPath(info.path)+"')";
 			}
 		});*/

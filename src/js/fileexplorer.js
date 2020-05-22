@@ -16,7 +16,7 @@ const getKey = path => {
 
 const getPath = key => nwPATH.join(app.project_path, key.replace(ROOT_KEY, "/"))
 
-const ignores = [/\/config\.json/, /\/dist(\/.*)?/, /\/__MACOSX(\/.*)?/];
+const ignores = [/\/config\.json/, /\/.git(\/.*)?/, /\/dist(\/.*)?/, /\/__MACOSX(\/.*)?/];
 
 const getFolderData = async (folder_path) => new Promise((res, rej) => {
   const path_key = getKey(folder_path);
@@ -24,13 +24,13 @@ const getFolderData = async (folder_path) => new Promise((res, rej) => {
   const files = nwFS.readdirSync(folder_path, { withFileTypes: true })
   if (!files) return rej('cant read dir', folder_path);
   else {
-    if (ignores.some(i => path_key.match(i))) return //console.log('ignoring folder ' + folder_path);
+    if (app.checkIgnore(path_key)) return //console.log('ignoring folder ' + folder_path);
 
     const children = [];
     files.forEach(f => {
       const child_path = nwPATH.join(folder_path, f.name)
       const child_key = getKey(child_path)
-      if (ignores.some(i => child_key.match(i))) return //console.log('ignoring file ' + child_path);
+      if (app.checkIgnore(child_key)) return //console.log('ignoring file ' + child_path);
 
       // console.log(f.name)
       if (f.isDirectory())
@@ -44,7 +44,7 @@ const getFolderData = async (folder_path) => new Promise((res, rej) => {
 
 const getFileData = async (file_path) => new Promise((res, rej) => {
   const path_key = getKey(file_path);
-  if (ignores.some(i => path_key.match(i))) return rej();
+  if (app.checkIgnore(path_key)) return rej();
 
   const stat = nwFS.lstatSync(file_path);
   if (stat.isDirectory()) {
@@ -218,7 +218,7 @@ class FileExplorer {
           },
           dragDrop: function (target_node, data) {
             const src_node = data.otherNode;
-            if (target_node.folder) {
+            if (target_node.folder && src_node) {
               // dropping onto root?
               if (target_node.key === "fake_root*") target_node = fancytree().getRootNode();
               // move to folder
@@ -273,7 +273,7 @@ document.addEventListener("fileChange", e => {
   nwFS.lstat(e.detail.file, (err, stats) => {
     if (!err) {
       const path_key = "/" + nwPATH.relative(app.project_path, e.detail.file);
-      if (ignores.some(i => path_key.match(i))) return;
+      if (app.checkIgnore(path_key)) return;
 
       FileExplorer.fileChanged(e.detail.file)
     }

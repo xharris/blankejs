@@ -31,6 +31,7 @@ class Settings extends Editor {
         if (ret.length <= 2) ret[0] = "GAME > " + ret[0];
         else {
           engine_set_keys.push(ret[0]);
+          console.log(ret[2])
           if (ret.length == 3 && ret[2].default != null)
             ret[2].default = proj_set[ret[0]];
         }

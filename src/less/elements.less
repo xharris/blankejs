@@ -281,6 +281,12 @@
     background-color: @ide-accent;
   }
 
+  .CodeMirror-overwrite .CodeMirror-cursor {
+      transform: translate(-1px, -1px);
+      width: 5px;
+      border: 1px solid #f8f8f0;
+  }
+
   .cm-def,
   .cm-variable,
   .cm-variable-2,
@@ -962,11 +968,15 @@
   border-radius: 4px;
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: 480px;
+  max-height: 100%;
   max-width: 200px;
   margin: 2px;
   display: inline;
   top: 0px;
+
+  &.single {
+      max-width: 250px;
+  }
 
   .content {
     position: initial;

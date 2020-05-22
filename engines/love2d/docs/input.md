@@ -20,7 +20,7 @@ update: (dt) =>
 `Input.set(inputs, options)`
 
 * `inputs` ex. { name: { 'input1', ... } }
-    * Keyboard 
+    * Keyboard [KeyConstant](https://love2d.org/wiki/KeyConstant)
     * Mouse `mouse, mouse1, mouse2, ...` 'mouse' is any mouse button
     * Gamepad `gp.?`
       * d-pad: `dpleft, dpright, dpup, dpdown`

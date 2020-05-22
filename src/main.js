@@ -1004,25 +1004,32 @@ var app = {
 
     let walker = nwWALK.walk(app.project_path);
     let ret_files = [];
+
     walker.on("file", function (path, stats, next) {
       // only add files that have an extension in allowed_extensions
-      if (
-        stats.isFile() &&
-        !path.includes("dist") &&
-        extensions.includes(nwPATH.extname(stats.name).slice(1))
-      ) {
+      let ignore = app.checkIgnore(path)
+      if (stats.isFile() && !ignore && extensions.includes(nwPATH.extname(stats.name).slice(1))) {
         ret_files.push(app.cleanPath(nwPATH.join(path, stats.name)));
       }
-      next();
+
+      if (!ignore)
+        next();
     });
     walker.on("end", function () {
       if (all_assets) app.asset_list = ret_files;
       if (cb) cb(ret_files);
     });
   },
+  project_ignores: [/\/config\.json/, /\/.git(\/.*)?/, /\/dist(\/.*)?/, /\/__MACOSX(\/.*)?/],
+  checkIgnore: (path) => {
+      return app.project_ignores.some(p => path.match(p))
+  },
   findAssetType: function (path) {
     if (!path) return;
     let ext = nwPATH.extname(path).substr(1);
+    if (app.checkIgnore(path)) {
+        return "ignore";
+    }
     for (let a_type in app.allowed_extensions) {
       if (app.allowed_extensions[a_type].includes(ext)) return a_type;
     }
@@ -1090,6 +1097,8 @@ var app = {
   },
   workspace_margin_top: 34,
   flashCrosshair: function (x, y) {
+    return;
+
     let el_cross = app.createElement("div", "crosshair");
     let el_crossx = app.createElement("div", "x");
     let el_crossy = app.createElement("div", "y");

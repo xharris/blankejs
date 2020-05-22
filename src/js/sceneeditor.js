@@ -1926,6 +1926,10 @@ class SceneEditor extends Editor {
         }
       })
     })
+
+    Object.values(this.path_containers).forEach(container => {
+        this.pixi.bringToFront(container)
+    })
   }
 
   getObjByUUID(uuid) {

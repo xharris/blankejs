@@ -1,26 +1,26 @@
 Array = nil
 Set = nil
-do 
+do
     local arr_metamethods = {
         __index = function(t, k)
-            if type(k) == "number" then 
+            if type(k) == "number" then
                 return t.table[k]
             end
-            if k == 'length' then 
+            if k == 'length' then
                 return #t.table
             end
             return rawget(t,k)
         end,
         __newindex = function(t, k, v)
-            if type(k) == "number" then 
+            if type(k) == "number" then
                 t.table[k] = v
             end
         end,
         __tostring = function(t)
             local str = ''
-            for i,v in ipairs(t.table) do 
+            for i,v in ipairs(t.table) do
                 str = str .. tostring(v)
-                if i ~= #t.table then 
+                if i ~= #t.table then
                     str = str .. ","
                 end
             end
@@ -30,6 +30,11 @@ do
 
     local arr_methods = {
         table = {},
+        shift = function(self, ...)
+            for i,v in ipairs({...}) do
+                table.insert(self.table, 1, v)
+            end
+        end,
         push = function(self, ...)
             for i,v in ipairs({...}) do
                 table.insert(self.table, v)
@@ -45,12 +50,12 @@ do
             local off = 0
             local new_arr = {}
             for i = 1,self.length do
-                if i >= start and i < start + amt then 
+                if i >= start and i < start + amt then
                     off = off + 1
-                else 
+                else
                     new_arr[i-off] = self.table[i]
                 end
-            end 
+            end
             self.table = new_arr
         end,
         copy = function(self)
@@ -70,12 +75,12 @@ do
             return 0
         end,
         forEach = function(self, fn)
-            for i = 1, self.length do 
+            for i = 1, self.length do
                 if fn(self.table[i], i) == true then break end
             end
         end,
         map = function(self, fn)
-            for i = 1, self.length do self.table[i] = fn(self.table[i], i) end 
+            for i = 1, self.length do self.table[i] = fn(self.table[i], i) end
             return self
         end,
         filter = function(self, fn)
@@ -94,16 +99,16 @@ do
             local str = ''
             for i = 1, self.length do
                 str = str .. tostring(self.table[i])
-                if i ~= self.length then 
+                if i ~= self.length then
                     str = str .. tostring(sep)
                 end
             end
             return str
         end,
         concat = function(self, ...)
-            for i,v in ipairs({...}) do 
-                if type(v) == 'table' then 
-                    for i,v2 in ipairs(v) do 
+            for i,v in ipairs({...}) do
+                if type(v) == 'table' then
+                    for i,v2 in ipairs(v) do
                         self:push(v2)
                     end
                 else
@@ -116,7 +121,7 @@ do
             return false
         end,
         every = function(self, fn)
-            for i = 1, self.length do if fn(self.table[i], i) == false then return false end end 
+            for i = 1, self.length do if fn(self.table[i], i) == false then return false end end
             return true
         end,
         sort = function(self, ...) table.sort(self.table, ...) end,
@@ -148,7 +153,7 @@ do
     },{
         __call = function(t, ...)
             local arr = setmetatable(copy(arr_methods), copy(arr_metamethods))
-            for i,v in ipairs({...}) do 
+            for i,v in ipairs({...}) do
                 arr:push(v)
             end
             return arr
@@ -170,7 +175,7 @@ do
 
     local set_metamethods = copy(arr_metamethods)
     set_metamethods.__index = function(t,k)
-        if k == 'push' or k == 'copy' then 
+        if k == 'push' or k == 'copy' then
             return rawget(t,k)
         else
             return arr_metamethods.__index(t,k)
@@ -184,7 +189,7 @@ do
     },{
         __call = function(t, ...)
             local set = setmetatable(copy(set_methods), copy(set_metamethods))
-            for i,v in ipairs({...}) do 
+            for i,v in ipairs({...}) do
                 set:push(v)
             end
             return set

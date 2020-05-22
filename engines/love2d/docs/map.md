@@ -12,7 +12,7 @@ mymap = Map.load('level2.map')
 `config(options)`
 * `layer_order[]` back to front
 * `use_physics=false` determines whether box2D physics or normals Hitbox class will be used
-* `tile_hitbox{}` { image_name: 'hitbox_tag' } 
+* `tile_hitbox{}` { image_name: 'hitbox_tag' }
 
 # Methods
 
@@ -22,3 +22,11 @@ mymap = Map.load('level2.map')
 * `layer` optional layer name
 
 `spawnEntity(object_name, x, y, [layer])` object_name is from map file
+
+`getEntityInfo(name)` returns list of objects with these keys:
+* `x, y, z`
+* `map_tag`
+* `layer` layer name
+* `points` only on polygons
+* `width, height`
+* `color`

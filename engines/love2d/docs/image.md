@@ -6,6 +6,7 @@
 
 `options`
 
+* `file`
 * `draw=false` if true then `img:addDrawable()`
 * `animation` animation name
 
@@ -26,6 +27,6 @@
 
 # Props
 
-`frame_index` 
+`frame_index`
 
 `frame_count`
