@@ -1339,10 +1339,8 @@ class SceneEditor extends Editor {
       let obj_ref = this.getObjByUUID(e.currentTarget.obj_uuid);
       if (obj_ref && e.currentTarget.layer_uuid == this.curr_layer.uuid) {
         if (e.type == "mouseover") {
-          if (e.target.tag)
-            this.obj_info[obj_ref.name] =
-              obj_ref.name + " (" + e.target.tag + ")";
-          else this.obj_info[obj_ref.name] = obj_ref.name;
+          this.obj_info[obj_ref.name] = obj_ref.name + (e.target.tag ? " (" + e.target.tag + ")" : "")
+
         } else if (e.type == "mouseout") {
           if (this.obj_info[obj_ref.name])
             delete this.obj_info[obj_ref.name];
@@ -1396,7 +1394,8 @@ class SceneEditor extends Editor {
     pixi_poly.text.y = pixi_poly.center[1]
     this.pixi.bringToFront(pixi_poly.text)
 
-    this.obj_info[obj_ref.name] = (tag == "") ? obj_ref.name : obj_ref.name + " (" + pixi_poly.tag + ")"
+    if (this.obj_info[obj_ref.name])
+      this.obj_info[obj_ref.name] = (tag == "") ? obj_ref.name : obj_ref.name + " (" + pixi_poly.tag + ")"
 
     this.export()
   }
