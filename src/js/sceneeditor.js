@@ -132,15 +132,7 @@ class SceneEditor extends Editor {
       return false;
     };
     this.el_image_sel.addEventListener("change", e => {
-      this_ref.setImage(
-        e.target.options[e.target.selectedIndex].value,
-        function (img) {
-          // set current image variable
-          this_ref.curr_image = img;
-          this_ref.refreshObjectType();
-          this_ref.refreshImageGrid();
-        }
-      );
+      this.setImage(e.target.options[e.target.selectedIndex].value)
     });
 
     this.el_image_form.setValue("snap", 32, 0);
@@ -705,18 +697,20 @@ class SceneEditor extends Editor {
     };
     this.addCallback("onFocus", () => focus());
     this.addCallback("onTabFocus", () => focus());
-    this.addCallback("onTabLostFocus", function () {
-      this_ref.export();
-      this_ref.has_focus = false;
+    this.addCallback("onTabLostFocus", () => {
+      this.export();
+      this.has_focus = false;
     });
 
     this.obj_type = "object";
     this.refreshObjectType();
 
-    document.addEventListener("fileChange", function (e) {
-      if (e.detail.type == "change" && this_ref.has_focus) {
-        if (this_ref.curr_image && app.findAssetType(e.detail.file) == "image")
-          this_ref.refreshImageList();
+    document.addEventListener("fileChange", e => {
+      if (app.findAssetType(e.detail.file) == "image") {
+
+        this.refreshImageList();
+        // this.refreshImageSelectionList()
+
       }
     });
 
@@ -1018,18 +1012,23 @@ class SceneEditor extends Editor {
 
   // add all images in project to the search bar
   refreshImageList() {
+    const curr_img_path = this.curr_image ? this.curr_image.path : null
+    const options = []
+
     let sel_str = `<option class="placeholder" value="" disabled ${
-      this.curr_image ? "" : "selected"
+      curr_img_path ? "" : "selected"
       }>Select an image</option>`;
     this.el_image_sel.innerHTML = sel_str;
     app.getAssets("image", files => {
       files.forEach(f => {
-        var img_path = app.shortenAsset(f);
-        sel_str += `<option value="${f}" ${
-          this.curr_image && this.curr_image.path == img_path ? "selected" : ""
-          }>${img_path}</option>`;
+        options.push(f)
+        sel_str += `<option value="${f}">${app.shortenAsset(f)}</option>`;
       });
       this.el_image_sel.innerHTML = sel_str;
+      if (curr_img_path && options.includes(curr_img_path))
+        this.el_image_sel.value = curr_img_path
+      else if (this.el_image_sel.value)
+        this.setImage(this.el_image_sel.value)
     });
   }
 
@@ -1047,13 +1046,14 @@ class SceneEditor extends Editor {
     let max_x = -1;
     let max_y = -1;
     if (el_image_frames) {
-      for (var frame of el_image_frames) {
+      el_image_frames.forEach((frame, f) => {
         let x = parseInt(frame.style.left);
         let y = parseInt(frame.style.top);
         let width = parseInt(frame.style.width);
         let height = parseInt(frame.style.height);
 
         this.selected_image_frames.push({
+          cell_index: frame.dataset.index,
           x: x,
           y: y,
           width: width,
@@ -1069,7 +1069,7 @@ class SceneEditor extends Editor {
           this.selected_width = x - this.selected_xmin + this.curr_image.snap[0];
         if (y - this.selected_ymin + this.curr_image.snap[1] > this.selected_height)
           this.selected_height = y - this.selected_ymin + this.curr_image.snap[1];
-      }
+      })
     }
   }
 
@@ -1100,25 +1100,23 @@ class SceneEditor extends Editor {
 
       var str_table = "";
       if (grid_w > 2 && grid_h > 2) {
-        let rows =
-          Math.ceil(img_height / grid_h) *
-          (this.curr_image.spacing[1] > 0 ? this.curr_image.spacing[1] : 1);
-        let columns =
-          Math.ceil(img_width / grid_w) *
-          (this.curr_image.spacing[0] > 0 ? this.curr_image.spacing[0] : 1);
+        let rows = Math.ceil(img_height / (grid_h + this.curr_image.spacing[1]) ) //  + Math.floor(grid_h / this.curr_image.spacing[1])
+        let columns = Math.ceil(img_width / (grid_w + this.curr_image.spacing[0]) ) //  + Math.floor(grid_w / this.curr_image.spacing[0])
 
+        let f = 0
         for (var gy = 0; gy < rows; gy += 1) {
           let y =
             gy * this.curr_image.spacing[1] +
             gy * grid_h +
             this.curr_image.offset[1];
+
           for (var gx = 0; gx < columns; gx += 1) {
             let x =
               gx * this.curr_image.spacing[0] +
               gx * grid_w +
               this.curr_image.offset[0];
             str_table +=
-              "<div class='cell' style='top:" +
+              `<div class='cell ${this.selected_image_frames.some(frame => frame.cell_index == `${gx}.${gy}`) ? 'selected' : ''}' data-index='${gx}.${gy}' style='top:` +
               y +
               "px;left:" +
               x +
@@ -1135,6 +1133,9 @@ class SceneEditor extends Editor {
         Math.ceil(img_width / grid_w) * grid_w + "px";
       this.el_image_grid.style.height =
         Math.ceil(img_height / grid_h) * grid_h + "px";
+
+      if (this.selected_image_frames.length > 0)
+        this.refreshImageSelectionList()
 
       this.export();
     }
@@ -2163,6 +2164,14 @@ class SceneEditor extends Editor {
   }
 
   setImage(path, onReady) {
+    if (!onReady) {
+      onReady = _img => {
+        // set current image variable
+        this.curr_image = _img;
+        this.refreshObjectType();
+        this.refreshImageGrid();
+      }
+    }
     let this_ref = this;
 
     path = app.cleanPath(path);

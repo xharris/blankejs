@@ -8,6 +8,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
             "Open error file=?",
             "Open error file"
         ],
@@ -22,10 +26,6 @@
         [
             "main.lua=script+?",
             "main.lua"
-        ],
-        [
-            "Add a script=new+?",
-            "Add a script"
         ]
     ],
     "autoplay_preview": true,
