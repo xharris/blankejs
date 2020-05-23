@@ -1112,6 +1112,8 @@ do
             Input.keyCheck()
             Audio.update(dt)
 
+            BFGround.update(dt)
+
             if Game.restarting then
                 Game.load()
                 Game.restarting = false
@@ -1457,6 +1459,8 @@ do
             if self.animated then
                 self.width, self.height = abs(self.animated.frame_size[1] * self.scalex * self.scale), abs(self.animated.frame_size[2] * self.scaley * self.scale)
             else
+                self.orig_width = self.image:getWidth()
+                self.orig_height = self.image:getHeight()
                 self.width = abs(self.image:getWidth() * self.scalex * self.scale)
                 self.height = abs(self.image:getHeight() * self.scaley * self.scale)
             end
@@ -2133,6 +2137,7 @@ do
     end
     Source = class {
         init = function(self, name, options)
+            self.name = name
             local o = opt(name)
             if options then o = table.update(o, options) end
 
@@ -2146,27 +2151,32 @@ do
 
             if o then
                 table.insert(sources[name], self)
-                local props = {'position','looping','volume','airAbsorption','pitch','relative','rolloff','effect'}
-                local t_props = {'attenuationDistances','cone','direction','velocity','filter','volumeLimits'}
+                local props = {'position','looping','volume','airAbsorption','pitch','relative','rolloff','effect','filter'}
+                local t_props = {'attenuationDistances','cone','direction','velocity','volumeLimits'}
                 for _,n in ipairs(props) do
 
-                    local name = n:capitalize()
+                    local fn_name = n:capitalize()
                     -- setter
-                    if not self['set'..name] then
-                        self['set'..name] = function(self, ...)
-                            return self.src['set'..name](self.src, ...)
+                    if not self['set'..fn_name] then
+                        self['set'..fn_name] = function(self, ...)
+                            return self.src['set'..fn_name](self.src, ...)
+                        end
+                    end
+                    -- getter
+                    if not self['get'..fn_name] then
+                        self['get'..fn_name] = function(self, ...)
+                            return self.src['get'..fn_name](self.src, ...)
                         end
                     end
 
-                    if o[n] then self['set'..name](self,o[n]) end
-
+                    if o[n] then self['set'..fn_name](self,o[n]) end
                 end
                 for _,n in ipairs(t_props) do
 
-                    local name = n:capitalize()
+                    local fn_name = n:capitalize()
                     -- setter
-                    if not self['set'..name] then
-                        self['set'..name] = function(self, ...)
+                    if not self['set'..fn_name] then
+                        self['set'..fn_name] = function(self, ...)
                             local args = {...}
 
                             if fn == "position" then
@@ -2175,11 +2185,17 @@ do
                                 end
                             end
 
-                            return self.src['set'..name](self.src, unpack(args))
+                            return self.src['set'..fn_name](self.src, unpack(args))
+                        end
+                    end
+                    -- getter
+                    if not self['get'..fn_name] then
+                        self['get'..fn_name] = function(self, ...)
+                            return self.src['get'..fn_name](self.src, ...)
                         end
                     end
 
-                    if o[n] then self['set'..name](self,unpack(o[n])) end
+                    if o[n] then self['set'..fn_name](self,unpack(o[n])) end
                 end
             end
         end;
@@ -4347,6 +4363,77 @@ Timeline = GameObject:extend {
 	end
 }
 
+--BACKGROUND
+Background = nil
+BFGround = nil
+do
+    local bg_list = {}
+    local fg_list = {}
+
+    local add = function(opt)
+        opt = opt or {}
+        if opt.file then
+            opt.image = Image{file = opt.file}
+        end
+        return opt
+    end
+
+    local update = function(list, dt)
+        iterate(list, function(t)
+            if t.remove == true then
+                return true
+            end
+
+            if t.size == "cover" then
+                if t.image.width < t.image.height then
+                    t.image.scale = Game.width / t.image.orig_width
+                else
+                    t.image.scale = Game.height / t.image.orig_height
+                end
+                t.image:updateSize()
+                t.image.x = (Game.width - t.image.width)/2
+                t.image.y = (Game.height - t.image.height)/2
+            end
+        end)
+    end
+
+    local draw = function(list)
+        for _, t in ipairs(list) do
+            if t.image then
+                t.image:draw()
+            end
+        end
+    end
+
+    BFGround = {
+        update = function(dt)
+            update(bg_list, dt)
+            update(fg_list, dt)
+        end;
+    }
+
+    Background = callable {
+        __call = function(self, opt)
+            local t = add(opt)
+            table.insert(bg_list, opt)
+            return t
+        end;
+        draw = function()
+            draw(bg_list)
+        end
+    }
+    Foreground = callable {
+        __call = function(self, opt)
+            local t = add(opt)
+            table.insert(fg_list, opt)
+            return t
+        end;
+        draw = function()
+            draw(fg_list)
+        end
+    }
+end
+
 --BLANKE
 Blanke = nil
 do
@@ -4423,11 +4510,13 @@ do
                     {'rect','fill',0,0,Game.width,Game.height},
                     {'pop'}
                 }
+                Background.draw()
                 if Camera.count() > 0 then
                     Camera.useAll(actual_draw)
                 else
                     actual_draw()
                 end
+                Foreground.draw()
             end
 
             local _draw = function()

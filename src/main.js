@@ -314,14 +314,27 @@ var app = {
         // watch for file changes
         app.proj_watch = app.watch(app.project_path, (evt_type, file) => {
           if (file) {
-            trueCasePath(file).then(real_file => {
-              real_file = trueCasePathSync(app.cleanPath(real_file))
+            trueCasePath(file)
+              .then(real_file => {
+                real_file = trueCasePathSync(app.cleanPath(real_file))
+                if (evt_type == "remove")
+                  app.removeQuickAccess(nwPATH.basename(real_file));
+
+                dispatchEvent("fileChange", {
+                  type: evt_type,
+                  file: app.cleanPath(file),
+                });
+              })
+            .catch(e => {
+              file = app.cleanPath(file)
+
+              // file removed
               if (evt_type == "remove")
-                app.removeQuickAccess(nwPATH.basename(real_file));
+                app.removeQuickAccess(nwPATH.basename(file));
 
               dispatchEvent("fileChange", {
                 type: evt_type,
-                file: app.cleanPath(file),
+                file: file,
               });
             })
           }

@@ -271,11 +271,18 @@ class FileExplorer {
 
 document.addEventListener("fileChange", e => {
   nwFS.lstat(e.detail.file, (err, stats) => {
-    if (!err) {
-      const path_key = "/" + nwPATH.relative(app.project_path, e.detail.file);
-      if (app.checkIgnore(path_key)) return;
 
+    const path_key = getKey(e.detail.file)
+    if (app.checkIgnore(path_key)) return;
+
+    if (e.detail.type == "remove") {
+      // just remove the node
+      const node = fancytree().getNodeByKey(path_key)
+      if (node) node.remove();
+
+    } else {
       FileExplorer.fileChanged(e.detail.file)
+
     }
   });
 });

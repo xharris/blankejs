@@ -14,7 +14,7 @@ class Docview extends Editor {
     this.removeHistory();
     this.hideMenuButton();
 
-    this.setDefaultSize(528, 272);
+    this.setDefaultSize(530, 410);
 
     var this_ref = this;
 

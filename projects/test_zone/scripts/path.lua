@@ -25,3 +25,9 @@ Entity("heart", {
 	align = 'center',
 	hitbox = true,
 })
+
+
+Background{
+	file = "windows_background_knockoff.png",
+	size = "cover"
+}

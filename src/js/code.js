@@ -347,8 +347,8 @@ class Code extends Editor {
         "(": ")",
         "[": "]",
         "{": "}",
-        function: "end",
-        do: "end",
+        " function ": " end ",
+        " do ": " end ",
       };
       let openers = Object.keys(body);
       let closers = Object.values(body);
@@ -365,7 +365,7 @@ class Code extends Editor {
           .join("|"),
         "g"
       );
-      baseMode.electricInput = /end|\]|\}/;
+      baseMode.electricInput = /end|\]|\}|\)/;
       // console.log(baseMode)
 
       const getLineOffset = line => {
@@ -417,7 +417,7 @@ class Code extends Editor {
           // this line is closing someting
           if (curr_line_offset < 0) indentation--;
 
-          console.log({ prev_line, prev_line_offset, indentation });
+          // console.log({ re_body, prev_line, prev_line_offset, indentation });
         }
 
         // console.log({curr_line_off, indentation});

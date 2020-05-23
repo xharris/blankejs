@@ -8,12 +8,16 @@
     "window_size": 3,
     "quick_access": [
         [
-            "platformer.map=map+?",
-            "platformer.map"
+            "Open error file=?",
+            "Open error file"
         ],
         [
             "path.lua=script+?",
             "path.lua"
+        ],
+        [
+            "platformer.map=map+?",
+            "platformer.map"
         ],
         [
             "main.lua=script+?",
@@ -22,10 +26,6 @@
         [
             "Add a script=new+?",
             "Add a script"
-        ],
-        [
-            "Open error file=?",
-            "Open error file"
         ]
     ],
     "autoplay_preview": true,
