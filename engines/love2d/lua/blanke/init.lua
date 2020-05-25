@@ -799,6 +799,9 @@ do
         updateWinSize = function(w,h)
             Window.width, Window.height, flags = love.window.getMode()
             if w and h then Window.width, Window.height = w, h end
+            if not Window.width then Window.width = Game.width end
+            if not Window.height then Window.height = Game.height end
+
             if Window.os == 'web' then
                 Game.width, Game.height = Window.width, Window.height
             end
@@ -870,6 +873,7 @@ do
                 -- load plugins
                 if Game.options.plugins then
                     for _,f in ipairs(Game.options.plugins) do
+                        package.loaded['plugins.'..f] = nil
                         require('plugins.'..f)
                         -- table.insert(scripts,'lua/plugins/'..f..'/init.lua') -- table.insert(scripts,'plugins.'..f)
                     end
@@ -960,6 +964,8 @@ do
             if Game.restarting then
                 Game.updateWinSize()
                 Signal.emit("Game.restart")
+            else
+                Signal.emit("Game.start")
             end
         end;
 
@@ -2085,7 +2091,9 @@ do
         setFontSize = 'fontSize'
     }
     for _,fn in ipairs(draw_functions) do
-        Draw[fn] = function(...) return love.graphics[fn](...) end
+        Draw[fn] = function(...)
+          return love.graphics[fn](...)
+        end
     end
     for old, new in pairs(draw_aliases) do
         Draw[new] = Draw[old]

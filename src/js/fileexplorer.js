@@ -271,6 +271,7 @@ class FileExplorer {
 
 document.addEventListener("fileChange", e => {
   nwFS.lstat(e.detail.file, (err, stats) => {
+    if (!app.isProjectOpen()) return;
 
     const path_key = getKey(e.detail.file)
     if (app.checkIgnore(path_key)) return;

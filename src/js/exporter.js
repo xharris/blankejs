@@ -91,7 +91,7 @@ class Exporter extends Editor {
     }
   }
 
-  errToast() {
+  errToast(err) {
     process.noAsar = false;
     if (this.temp_dir) nwFS.removeSync(this.temp_dir);
 
@@ -109,6 +109,7 @@ class Exporter extends Editor {
         },
       });
     }
+    console.error(err)
   }
 
   /*
@@ -142,11 +143,16 @@ class Exporter extends Editor {
       });
       // iterate platforms
       let cb_done = () => {
+        /*
+        const zip = new nwZIP2()
+        zip.addLocalFolder(os_dir)
+        zip.writeZip(nwPATH.join(os_dir, `${app.exportSetting("name") || "game"}-${target_os}.zip`))
+        */
         this.doneToast(target_os);
       };
       let cb_err = err => {
         app.error(err);
-        this.errToast();
+        this.errToast(err);
       };
       for (let platform in platforms) {
         if (app.engine.setupBinary)
@@ -166,41 +172,42 @@ class Exporter extends Editor {
     this.toast.style = "wait";
 
     process.noAsar = true;
-    nwFS.emptyDir(os_dir, err => {
-      if (err) {
-        this.errToast();
+    nwFS.emptyDir(os_dir)
+      .catch(err => {
+        this.errToast(err);
         return console.error(err);
-      }
-      // move assets
-      if (app.engine.export_assets !== false)
-        nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, "assets"));
-      let e_assets = app.engine.extra_bundle_assets || {};
-      let extra_assets = e_assets[target_os] || e_assets["."] || [];
-      for (let a of extra_assets) {
-        a = a
-          .replace("<project_path>", app.project_path)
-          .replace("<engine_path>", app.engine_path);
-        nwFS.copySync(
-          a,
-          app
-            .cleanPath(nwPATH.join(temp_dir, a))
-            .replace(app.engine_path + "/", "")
-        );
-      }
-
-      if (app.engine.preBundle) app.engine.preBundle(temp_dir, target_os);
-      // create js file
-      this.toast.text = `Bundling files`;
-      this.bundle(temp_dir, target_os, () => {
-        let platforms = app.engine.export_targets[target_os];
-
-        if (platforms === false) this.doneToast(target_os);
-        else {
-          this.toast.text = "Building app";
-          setupBinary(platforms === true ? [target_os] : platforms);
+      })
+      .then(() => {
+        // move assets
+        if (app.engine.export_assets !== false)
+          nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, "assets"));
+        let e_assets = app.engine.extra_bundle_assets || {};
+        let extra_assets = e_assets[target_os] || e_assets["."] || [];
+        for (let a of extra_assets) {
+          a = a
+            .replace("<project_path>", app.project_path)
+            .replace("<engine_path>", app.engine_path);
+          nwFS.copySync(
+            a,
+            app
+              .cleanPath(nwPATH.join(temp_dir, a))
+              .replace(app.engine_path + "/", "")
+          );
         }
+
+        if (app.engine.preBundle) app.engine.preBundle(temp_dir, target_os);
+        // create js file
+        this.toast.text = `Bundling files`;
+        this.bundle(temp_dir, target_os, () => {
+          let platforms = app.engine.export_targets[target_os];
+
+          if (platforms === false) this.doneToast(target_os);
+          else {
+            this.toast.text = "Building app";
+            setupBinary(platforms === true ? [target_os] : platforms);
+          }
+        });
       });
-    });
   }
 }
 

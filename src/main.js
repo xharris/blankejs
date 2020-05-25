@@ -373,6 +373,7 @@ var app = {
         app.loadSettings(() => {
           app.hideWelcomeScreen();
           app.saveSettings();
+          app.requireEngine(true)
           app.checkProjectSettings();
           dispatchEvent("openProject", { path: path });
         });

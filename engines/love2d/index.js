@@ -107,6 +107,7 @@ module.exports.settings = {
     ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
   ],
   export_settings: [
+    ["company_name", "text", {}],
     ["window/rendering"],
     ["filter", "select", { choices: ["linear", "nearest"], default: "linear" }],
     ["round_pixels", "checkbox", { defalt: false }],
@@ -225,6 +226,7 @@ module.exports.settings = {
   export_targets: {
     love: false,
     windows: true,
+    mac: true,
     web: true,
   },
   export_assets: false,
@@ -278,40 +280,121 @@ module.exports.settings = {
     ].map(p => "<engine_path>/" + p),
     web: ["<engine_path>/favicon.ico"],
   },
+  cleanExport: (os_dir) => {
+    nwFS.remove()
+  },
   setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
     let export_settings = app.projSetting("export");
     let love_path = nwPATH.join(temp_dir, export_settings.name + ".love");
     let engine_path = app.engine_path;
-    let project_name = export_settings.name;
+    let project_name = export_settings.name || "game";
 
     let resolution = getGameSize(platform);
+
+    const cleanLove = () => nwFS.remove(love_path)
 
     if (platform == "windows") {
       let exe_path = nwPATH.join(os_dir, project_name + ".exe");
       // TODO: test on mac/linux
       // copy /b love.exe+game.love game.exe
-      let f_loveexe = nwFS.createReadStream(
-        nwPATH.join(engine_path, "love.exe"),
-        { flags: "r", encoding: "binary" }
-      );
-      let f_gamelove = nwFS.createReadStream(love_path, {
-        flags: "r",
-        encoding: "binary",
-      });
-      let f_gameexe = nwFS.createWriteStream(exe_path, {
-        flags: "w",
-        encoding: "binary",
-      });
-      // set up callbacks
-      f_loveexe.on("end", () => {
-        f_gamelove.pipe(f_gameexe);
-        // finished all merging
-        nwFS.remove(love_path, () => {
+      const f_exe = nwFS.createReadStream(nwPATH.join(engine_path, "love.exe"), { flags: 'r', encoding:'binary' })
+      const f_love = nwFS.createReadStream(love_path, { flags: 'r', encoding:'binary' })
+
+      const f_dest = nwFS.createWriteStream(exe_path, { flags:'w', encoding:'binary' })
+
+      f_love.on('close', () => {
           cb_done();
-        });
-      });
-      // start merging
-      f_loveexe.pipe(f_gameexe, { end: false });
+      })
+
+      f_exe.pipe(f_dest, { end:'false' })
+      f_love.pipe(f_dest, { end:'false' })
+    }
+
+    if (platform == "mac") {
+      const app_path = nwPATH.join(app.engine_path, "love-11.3-macos.zip")
+      const out_path = nwPATH.join(os_dir, project_name + ".zip")
+      const new_love_name = `${project_name}.love`
+      const new_root = `game.app` // `${project_name}.app`
+
+
+      const replacements = {
+        "$COMPANY_NAME": app.exportSetting("company_name") || "blanke",
+        "$PROJECT_NAME": project_name
+      }
+
+      // copy .app zip
+      // nwFS.copy(app_path, out_path)
+        /*
+        .then(() => nwFS.readFile(out_path))
+        .then(zip_data => nwZIP().loadAsync(zip_data))
+        .then(zip => zip.file("love.app/Contents/Info.plist")
+            .then(data => {
+              console.log(data)
+            })
+        )
+        */
+
+      const JSZip = require('jszip')
+      let zip
+
+      nwFS.readFile(app_path)
+        .then(data => JSZip.loadAsync(data))
+/*
+        .then(zip => {
+          const files = []
+          const is_folder = {}
+          zip.folder('game.app').forEach((rel_path, file) => {
+            if (!file.dir)
+              files.push(rel_path)
+          })
+          return Promise.all(files.map(f => new Promise((res, rej) => {
+            console.log(`game.app/${f} => ${new_root}/${f}`)
+            return zip
+              .file(`game.app/${f}`)
+              .async("nodebuffer")
+              .then(buffer => zip.file(`${new_root}/${f}`, buffer))
+          })))
+          .catch(err => cb_err(err))
+          .then(() => {
+            zip
+          })
+        })
+*/
+        .then(zip => zip
+            // Info.plist
+            .file(`${new_root}/Contents/Info.plist`)
+            .async('string')
+            .then(content => {
+              Object.keys(replacements).forEach(k => {
+                content = content.replaceAll(k, replacements[k])
+              })
+              return content
+            })
+            .then(content => zip.file(`${new_root}/Contents/Info.plist`, content))
+        )
+
+        .then(zip =>
+          // add .love
+          nwFS.readFile(love_path)
+            .then(data => zip.file(`${new_root}/Contents/Resources/${new_love_name}`, data))
+            .then(() => nwFS.remove(love_path))
+            .then(() => zip)
+        )
+        .then(zip =>
+          // write final zip
+          new Promise((res, rej) => zip.generateNodeStream({type:'nodebuffer', platform:"darwin", streamFiles:true})
+            .pipe(nwFS.createWriteStream(out_path))
+            .on('finish', () => {
+              return res()
+            })
+          )
+        )
+        .then(() => {
+          cb_done()
+        })
+        .catch(err => {
+          cb_err(err)
+        })
     }
 
     if (platform == "web") {
