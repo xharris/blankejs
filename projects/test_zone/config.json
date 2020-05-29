@@ -1,5 +1,6 @@
 {
     "write_conf": true,
+    "profiling_level": 0,
     "engine_type": "oop",
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns",

@@ -52,6 +52,14 @@ grey, gray, bluegray, white, white2, black, black2
 
 `discard`
 
+## text
+
+`w = textWidth(text, [limit, align])`
+
+`h = textHeight(text, [limit, align])`
+
+`w, h = textSize(text, [limit, align])`
+
 ## setting
 
 `setLineWidth`
@@ -68,9 +76,7 @@ grey, gray, bluegray, white, white2, black, black2
 
 __mode__: fill / line
 
-`print (text, [x, y, r, sx, sy, ox, oy, kx, ky])` s=scale, o=offset, k=shear
-
-`printf (text, x, y, limit, align, [r, sx, sy, ox, oy, kx, ky])` limit is horizontal width limit, align=center/left/right/justify
+`print (text, x, y, limit, align, [deg, sx, sy, ox, oy, kx, ky])` limit is horizontal width limit, align=center/left/right/justify
 
 `line (x1, y1, x2, y2, ...)` can also be a table of lines
 
@@ -80,8 +86,8 @@ __mode__: fill / line
 
 `polygon (mode, x, y, ...)` vertices can also be a table
 
-`circle (mode, x, y, r, [segments])`
+`circle (mode, x, y, radius, [segments])`
 
-`ellipse (mode, x, y, rx, ry, [segments])`
+`ellipse (mode, x, y, radiusx, radiusy, [segments])`
 
 `arc (mode, x, y, r, angle1, angle2, [segments])`

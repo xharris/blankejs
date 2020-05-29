@@ -34,15 +34,18 @@ package.path = myPath
 love.filesystem.setRequirePath( myPath2 )
 */
 const generalConf = () => `
+    t.identity = "${app.exportSetting("company_name") || "blanke"}.${app.exportSetting("name") || "game"}"
     t.window.title = "${app.exportSetting("name")}"
     -- t.gammacorrect = nil
 `;
 
 const runConf = () => {
   if (app.projSetting("write_conf")) {
+    let p_level = app.projSetting("profiling_level")
     nwFS.writeFileSync(
       nwPATH.join(app.getAssetPath("scripts"), "conf.lua"),
       `io.stdout:setvbuf('no')
+${p_level > 0 ? `do_profiling = ${p_level}` : ""}
 ${requireConf()}
 function love.conf(t)
     t.console = true
@@ -99,11 +102,8 @@ module.exports.settings = {
   file_ext: ["lua"],
   language: "lua",
   project_settings: [
-    [
-      "write_conf",
-      "checkbox",
-      { default: true, label: "auto-generate conf.lua" },
-    ],
+    ["write_conf", "checkbox", { default: true, label: "auto-generate conf.lua" }],
+    ["profiling_level", "number", { default: 0, step: 1, min: 0 }],
     ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
   ],
   export_settings: [
@@ -294,20 +294,31 @@ module.exports.settings = {
     const cleanLove = () => nwFS.remove(love_path)
 
     if (platform == "windows") {
-      let exe_path = nwPATH.join(os_dir, project_name + ".exe");
-      // TODO: test on mac/linux
-      // copy /b love.exe+game.love game.exe
-      const f_exe = nwFS.createReadStream(nwPATH.join(engine_path, "love.exe"), { flags: 'r', encoding:'binary' })
-      const f_love = nwFS.createReadStream(love_path, { flags: 'r', encoding:'binary' })
-
-      const f_dest = nwFS.createWriteStream(exe_path, { flags:'w', encoding:'binary' })
-
-      f_love.on('close', () => {
-          cb_done();
-      })
-
-      f_exe.pipe(f_dest, { end:'false' })
-      f_love.pipe(f_dest, { end:'false' })
+        let exe_path = nwPATH.join(os_dir, project_name + ".exe");
+        // TODO: test on mac/linux
+        // copy /b love.exe+game.love game.exe
+        let f_loveexe = nwFS.createReadStream(
+          nwPATH.join(engine_path, "love.exe"),
+          { flags: "r", encoding: "binary" }
+        );
+        let f_gamelove = nwFS.createReadStream(love_path, {
+          flags: "r",
+          encoding: "binary",
+        });
+        let f_gameexe = nwFS.createWriteStream(exe_path, {
+          flags: "w",
+          encoding: "binary",
+        });
+        // set up callbacks
+        f_loveexe.on("end", () => {
+          f_gamelove.pipe(f_gameexe);
+          // finished all merging
+          nwFS.remove(love_path, () => {
+            cb_done();
+          });
+        });
+        // start merging
+        f_loveexe.pipe(f_gameexe, { end: false });
     }
 
     if (platform == "mac") {

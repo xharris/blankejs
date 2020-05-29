@@ -347,7 +347,7 @@ class Code extends Editor {
         "(": ")",
         "[": "]",
         "{": "}",
-        " function ": " end ",
+        " function": " end ",
         " do ": " end ",
       };
       let openers = Object.keys(body);

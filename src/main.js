@@ -1034,7 +1034,7 @@ var app = {
       if (cb) cb(ret_files);
     });
   },
-  project_ignores: [/\/config\.json/, /\/.git(\/.*)?/, /\/dist(\/.*)?/, /\/__MACOSX(\/.*)?/],
+  project_ignores: [/\/config\.json/, /\/lua/, /\/.git(\/.*)?/, /\/dist(\/.*)?/, /\/__MACOSX(\/.*)?/],
   checkIgnore: (path) => {
       return app.project_ignores.some(p => path.match(p))
   },
