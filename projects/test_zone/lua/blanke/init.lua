@@ -38,7 +38,7 @@ local ge_version = function(major, minor, rev)
     return true
 end
 
---UTIL.table
+--TABLE
 table.update = function (old_t, new_t, keys)
     if keys == nil then
         for k, v in pairs(new_t) do
@@ -130,7 +130,7 @@ table.join = function(t, sep, nil_str)
     end
     return str
 end
---UTIL.string
+--STRING
 function string:starts(Start)
    return string.sub(self,1,string.len(Start))==Start
 end
@@ -1169,6 +1169,7 @@ do
         end;
 
         update = function(dt)
+            Game.is_updating = true
             if Game.will_sort then
                 Game.will_sort = false
                 sort(Game.drawables, 'z', 0)
@@ -1210,6 +1211,7 @@ do
                 Game.load()
                 Game.restarting = false
             end
+            Game.is_updating = false
         end
     }
 end
@@ -2133,18 +2135,28 @@ do
             end
         end;
         parseColor = function(...)
-            args = {...}
-            if #args == 0 then return 1, 1, 1, 1 end
-            local c = Color[args[1]]
-            if c then
-                args = {c[1],c[2],c[3], args[2] or 1}
-                for a,arg in ipairs(args) do
-                    if arg > 1 then args[a] = arg / 255 end
-                end
+            local r, g, b, a = ...
+            if not r or r == true then
+                -- no color given
+                r, g, b, a = 1, 1, 1, 1
+                return r, g, b, a
             end
-            if #args == 0 then args = {1,1,1,1} end
-            if not args[4] then args[4] = 1 end
-            return args[1], args[2], args[3], clamp(args[4], 0, 1)
+            if type(r) == "table" then
+                r, g, b, a = r[1], r[2], r[3], r[4]
+            end
+            local c = Color[r]
+            if c then
+                -- color string
+                r, g, b, a = c[1], c[2], c[3], g
+            end
+            if not a then a = 1 end
+            -- convert and clamp to [0,1]
+            if r > 1 then r = clamp(floor(r) / 255, 0, 1) end
+            if g > 1 then g = clamp(floor(g) / 255, 0, 1) end
+            if b > 1 then b = clamp(floor(b) / 255, 0, 1) end
+            if a > 1 then a = clamp(floor(a) / 255, 0, 1) end
+
+            return r, g, b, a
         end;
         color = function(...)
             return love.graphics.setColor(Draw.parseColor(...))
@@ -2227,7 +2239,7 @@ do
         Draw[new] = Draw[old]
     end
 end
-
+--COLOR
 Color = {
     red =        {244,67,54},
     pink =       {240,98,146},
@@ -4683,6 +4695,7 @@ do
         end;
         --blanke.draw
         draw = function()
+            Game.is_drawing = true
             Draw.origin()
 
             Blanke.game_canvas:drawTo(_draw)
@@ -4702,6 +4715,7 @@ do
             else
                 Blanke.game_canvas:draw()
             end
+            Game.is_drawing = false
         end;
         keypressed = function(key, scancode, isrepeat)
             Input.press(key, {scancode=scancode, isrepeat=isrepeat})

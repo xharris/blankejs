@@ -318,34 +318,47 @@ class Plugins extends Editor {
   static enable(key) {
     const plugin_path = app.relativePath(app.ideSetting("plugin_path"));
     if (!app.engine.plugin_path) return;
-    nwFS.ensureDirSync(app.engine.plugin_path);
 
-    if (plugin_info[key]) {
-      for (let path of plugin_info[key].files) {
-        if (path) {
-          let rel_path = nwPATH
-            .relative(plugin_path, path)
-            .replace(/^(.+?)[\\\/]/, "");
+    return nwFS.ensureDir(app.engine.plugin_path)
+        .then(() => {
+            if (plugin_info[key]) {
+                return Promise.all(plugin_info[key].files.map(path => {
+                    if (path) {
+                        let rel_path = nwPATH
+                        .relative(plugin_path, path)
+                        .replace(/^(.+?)[\\\/]/, "");
 
-          nwFS.copySync(path, pathJoin(app.engine.plugin_path, key, rel_path));
-        }
-      }
-      app.projSetting("enabled_plugins")[key] = true;
-      dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
-      app.saveSettings();
-    }
+                        return nwFS.copy(path, pathJoin(app.engine.plugin_path, key, rel_path))
+                    }
+                }))
+                .catch(e => {
+                    console.log(e)
+                })
+                .finally(() => {
+                    app.projSetting("enabled_plugins")[key] = true;
+                    dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
+                    app.saveSettings();
+                })
+            }
+        })
   }
 
   static disable(key) {
     if (!plugin_info[key]) return;
     if (!app.engine.plugin_path) return;
     // remove file
-    if (nwFS.pathExistsSync(pathJoin(app.engine.plugin_path, key))) {
-      nwFS.removeSync(pathJoin(app.engine.plugin_path, key));
-      app.projSetting("enabled_plugins")[key] = false;
-      dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
-      app.saveSettings();
-    }
+    return nwFS.pathExists(pathJoin(app.engine.plugin_path, key))
+        .then(exists => {
+            if (exists) return nwFS.remove(pathJoin(app.engine.plugin_path, key))
+        })
+        .then(() => {
+            app.projSetting("enabled_plugins")[key] = false;
+            dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] });
+            app.saveSettings();
+        })
+        .catch(e => {
+            console.log(e)
+        })
   }
 
   static getClassNames() {

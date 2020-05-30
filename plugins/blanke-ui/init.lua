@@ -247,20 +247,15 @@ UI.List = Entity("UI.List",{
 
 		self.scroll_max = Math.max(0, ((#self.items) * Draw.textHeight()) - self.height)
 
-		local offx, offy = 0, 0
-
+		local x, y, w, h
+        local limit = Game.width
 		if self.window then
-			offx, offy = self.window.offx, self.window.offy
+            limit = self.window.width - (margin * 2)
 		end
 
-		local mx, my = mouse_x - offx, mouse_y - offy
-		local x, y, w, h
-
-		x = margin
-		y = -self.scroll_y + margin
-
+		x, y = margin, - self.scroll_y + margin
 		for i, item in ipairs(self.items) do
-			w, h = self.width - (margin * 2) - UI.scroll_width, Draw.textHeight()
+			w, h = self.width - (margin * 2) - UI.scroll_width, Draw.textHeight(item, limit)
 
 			if not self.disabled[item] and mouse_inside(self, x, y, w, h) then
 				-- mouse entered
@@ -271,17 +266,23 @@ UI.List = Entity("UI.List",{
 
 				-- clicking an item in list
 				if Input.pressed('UI.mouse') then
-					self:emit("click", item)
+					self:emit("click", item, i)
 				end
 			elseif self.entered[item] then
 				self.entered[item] = false
 				self:emit("leave", item)
 			end
 
-			y = y + Draw.textHeight(item)
+			y = y + h
+		end
+
+		local offx, offy = 0, 0
+		if self.window then
+			offx, offy = self.window.offx, self.window.offy
 		end
 
 		-- controlling the scrollbar with mouse
+		local mx, my = mouse_x - offx, mouse_y - offy
 		if Input.pressed('UI.mouse_rpt') then
 			if mx > self.width - (UI.scroll_width + margin) then
 				self.scroll_y = Math.prel(0, self.height, my) * self.scroll_max
@@ -297,7 +298,7 @@ UI.List = Entity("UI.List",{
 		self.scroll_y = Math.clamp(self.scroll_y, 0, self.scroll_max)
 	end,
 	draw = function(self, d)
-    local margin = UI.list_margin
+        local margin = UI.list_margin
 		--Draw.crop(self.x + margin,self.y + margin,self.width - (margin*2),self.height + UI.titlebar_height - (margin*2))
 
 		local colors
@@ -313,7 +314,7 @@ UI.List = Entity("UI.List",{
 			w, h = self.width - (margin * 2) - UI.scroll_width, Draw.textHeight(item, limit)
 
 			if not self.disabled[item] and (mouse_inside(self, x, y, w, h) or self.selected == item) then
-				colors = {'blue','white'}
+                colors = {'blue','white'}
 			else
 				colors = {'white','black'}
 				if self.color[item] then
