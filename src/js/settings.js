@@ -6,6 +6,10 @@ let can_be_empty_path = {
   background_image: true,
 };
 
+const addSetting = (obj, k, default_v) => {
+
+}
+
 class Settings extends Editor {
   constructor(...args) {
     super(...args);
@@ -31,7 +35,7 @@ class Settings extends Editor {
         if (ret.length <= 2) ret[0] = "GAME > " + ret[0];
         else {
           engine_set_keys.push(ret[0]);
-          
+
           if (ret.length == 3 && ret[2].default != null)
             ret[2].default = proj_set[ret[0]];
         }
@@ -67,7 +71,7 @@ class Settings extends Editor {
       //['first_scene','select',{'choices':Code.classes.scene,'default':proj_set.first_scene}],
       ["window_size", "number", { step: 1, min: 1, max: 7, default: proj_set.window_size }],
       ["game_size", "number", { step: 1, min: 1, max: 7, default: proj_set.game_size }],
-      ["engine", "select", { choices: engine_list, default: proj_set.engine }],
+      // ["engine", "select", { choices: engine_list, default: proj_set.engine }],
       ...engine_settings,
       ["EXPORT > GENERAL"],
       ["export.name", "text", { default: app.projSetting("export").name }],
@@ -95,7 +99,7 @@ class Settings extends Editor {
       });
     });
     // prettier-ignore
-    ["quick_access_size", "theme", "run_save_code", "max_windows", "show_help_text"].forEach(s => {
+    ["quick_access_size", "theme", "run_save_code", "max_windows", "show_help_text", "show_file_explorer"].forEach(s => {
       this.el_settings.onChange(s, v => {
         app.ideSetting(s, v);
         app.saveAppData();
@@ -144,6 +148,10 @@ class Settings extends Editor {
       });
     });
     this.appendChild(this.el_settings.container);
+  }
+
+  static addProjectSetting() {
+
   }
 }
 

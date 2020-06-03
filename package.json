@@ -58,6 +58,7 @@
     "electron-updater": "^4.2.5",
     "env-cmd": "^10.1.0",
     "fs-extra": "^5.0.0",
+    "interactjs": "^1.9.19",
     "jquery": "^3.5.0",
     "jquery.fancytree": "^2.35.0",
     "js-yaml": "^3.13.1",

@@ -325,8 +325,14 @@ module.exports.settings = {
       const app_path = nwPATH.join(app.engine_path, "love-11.3-macos.zip")
       const out_path = nwPATH.join(os_dir, project_name + ".zip")
       const new_love_name = `${project_name}.love`
-      const new_root = `game.app` // `${project_name}.app`
+      const new_root = `${project_name}.app`
 
+      const icon_path = nwPATH.join(app.engine_path, "logo.icns")
+      const add_files = {
+          //[love_path] : `${new_root}/Contents/Resources/${new_love_name}`,
+          //[icon_path] : `${new_root}/Contents/Resources/OS X AppIcon.icns`,
+          //[icon_path] : `${new_root}/Contents/Resources/GameIcon.icns`,
+      }
 
       const replacements = {
         "$COMPANY_NAME": app.exportSetting("company_name") || "blanke",
@@ -345,32 +351,30 @@ module.exports.settings = {
         )
         */
 
-      const JSZip = require('jszip')
-      let zip
+        const JSZip = require('jszip')
+        let zip
 
-      nwFS.readFile(app_path)
-        .then(data => JSZip.loadAsync(data))
-/*
-        .then(zip => {
-          const files = []
-          const is_folder = {}
-          zip.folder('game.app').forEach((rel_path, file) => {
-            if (!file.dir)
-              files.push(rel_path)
-          })
-          return Promise.all(files.map(f => new Promise((res, rej) => {
-            console.log(`game.app/${f} => ${new_root}/${f}`)
-            return zip
-              .file(`game.app/${f}`)
-              .async("nodebuffer")
-              .then(buffer => zip.file(`${new_root}/${f}`, buffer))
-          })))
-          .catch(err => cb_err(err))
-          .then(() => {
-            zip
-          })
-        })
-*/
+        const del_list = []
+        const f_info = {}
+
+        // move all files from love.app to project_name.app
+        (new Promise((res, rej) => {
+            let renamed_zip = new nwZIP2(app_path)
+
+            renamed_zip.getEntries().forEach(entry => {
+                const path = entry.entryName
+                const content = renamed_zip.readFile(path)
+                f_info[path] = {
+                    new_path: new_root + path.substring(path.indexOf('/')),
+                    content: content
+                }
+                del_list.push(path)
+            })
+
+            return res()
+        }))
+        .then(() => nwFS.readFile(app_path))
+        .then(JSZip.loadAsync)
         .then(zip => zip
             // Info.plist
             .file(`${new_root}/Contents/Info.plist`)
@@ -385,10 +389,31 @@ module.exports.settings = {
         )
 
         .then(zip =>
-          // add .love
-          nwFS.readFile(love_path)
-            .then(data => zip.file(`${new_root}/Contents/Resources/${new_love_name}`, data))
-            .then(() => nwFS.remove(love_path))
+          // add project files
+          Promise.all(Object.keys(add_files).map(old_path =>
+                  nwFS.readFile(old_path)
+                    .then(data => zip.file(add_files[old_path], data, { binary:true }))
+                )
+            )
+            .then(() => zip)
+        )
+        .then(zip => {
+            // move all the other files
+            Promise.all(Object.keys(f_info).map(f =>
+                zip
+                    .file(f)
+                    .async('nodebuffer')
+                    .then(data => zip.file(f_info[f].new_path, data))
+            ))
+            .then(() => zip)
+        })
+        .then(zip => nwFS.remove(love_path).then(() => zip))
+        .then(zip =>
+            // remove old files
+            Promise.all(del_list.sort((a, b) => b.length - a.length).map(f =>
+                zip
+                    .remove(f)
+            ))
             .then(() => zip)
         )
         .then(zip =>

@@ -758,7 +758,7 @@ body > #header {
 
     .fib-title-container {
       padding-left: 30px;
-      background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
+      // background: linear-gradient(rgba(0, 0, 0, 0.5), transparent);
       text-shadow: @light-text-shadow;
     }
   }
@@ -797,6 +797,7 @@ body > #header {
     cursor: pointer;
     opacity: 0;
     z-index: 20;
+    transition: 0.2s all ease-in-out;
 
     &:hover {
       color: @ide-accent;
@@ -836,7 +837,7 @@ body > #header {
   .fib-title {
     line-height: 12px;
     padding: 2px 4px;
-    border-radius: 5px;
+    border-radius: 2px;
     background-color: fade(@beveled-bg, 90%);
     display: inline-block;
   }

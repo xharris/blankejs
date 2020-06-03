@@ -47,8 +47,7 @@ const DEFAULT_IDE_SETTINGS = {
   max_windows: 4,
   quick_access_size: 5,
   show_help_text: true,
-  // game_preview_enabled:true,
-  // autoreload_external_run:false,
+  show_file_explorer: false,
   run_save_code: true,
 };
 
@@ -325,18 +324,18 @@ var app = {
                   file: app.cleanPath(file),
                 });
               })
-            .catch(e => {
-              file = app.cleanPath(file)
+              .catch(e => {
+                file = app.cleanPath(file)
 
-              // file removed
-              if (evt_type == "remove")
-                app.removeQuickAccess(nwPATH.basename(file));
+                // file removed
+                if (evt_type == "remove")
+                  app.removeQuickAccess(nwPATH.basename(file));
 
-              dispatchEvent("fileChange", {
-                type: evt_type,
-                file: file,
-              });
-            })
+                dispatchEvent("fileChange", {
+                  type: evt_type,
+                  file: file,
+                });
+              })
           }
         });
 
@@ -1036,13 +1035,13 @@ var app = {
   },
   project_ignores: [/\/config\.json/, /\/lua/, /\/.git(\/.*)?/, /\/dist(\/.*)?/, /\/__MACOSX(\/.*)?/],
   checkIgnore: (path) => {
-      return app.project_ignores.some(p => path.match(p))
+    return app.project_ignores.some(p => path.match(p))
   },
   findAssetType: function (path) {
     if (!path) return;
     let ext = nwPATH.extname(path).substr(1);
     if (app.checkIgnore(path)) {
-        return "ignore";
+      return "ignore";
     }
     for (let a_type in app.allowed_extensions) {
       if (app.allowed_extensions[a_type].includes(ext)) return a_type;
@@ -1615,9 +1614,6 @@ app.window.webContents.once("dom-ready", () => {
     app.window.minimize();
   });
 
-  app.getElement("#btn-toggle-fe").addEventListener("click", () => {
-    FileExplorer.toggle();
-  });
   app.getElement("#btn-play").addEventListener("click", () => {
     app.play();
   });

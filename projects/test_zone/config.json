@@ -111,7 +111,8 @@
         "xhh-array": true,
         "xhh-badword": true,
         "cmpl": true,
-        "xhh-vector": true
+        "xhh-vector": true,
+        "xhh-ui": false
     },
     "imageeditor": {
         "image/blue_robot.png": {

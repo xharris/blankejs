@@ -332,7 +332,7 @@ class Plugins extends Editor {
                     }
                 }))
                 .catch(e => {
-                    console.log(e)
+                    console.warn(e)
                 })
                 .finally(() => {
                     app.projSetting("enabled_plugins")[key] = true;
@@ -357,7 +357,7 @@ class Plugins extends Editor {
             app.saveSettings();
         })
         .catch(e => {
-            console.log(e)
+            console.warn(e)
         })
   }
 

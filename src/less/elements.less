@@ -80,6 +80,18 @@
 .content[data-type="Code"] {
   overflow: hidden;
 
+  .CodeMirror-vscrollbar, .CodeMirror-hscrollbar {
+    opacity: 0;
+
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  &:hover {
+    .CodeMirror-vscrollbar, .CodeMirror-hscrollbar {
+      opacity: 1;
+    }
+  }
+
   .log {
     position: absolute;
     bottom: 13px;
@@ -262,7 +274,7 @@
     /* padding-top: 18px; */
   }
   .CodeMirror-vscrollbar {
-    top: 18px;
+    top: 25px;
   }
   .editor-content {
     width: 100%;

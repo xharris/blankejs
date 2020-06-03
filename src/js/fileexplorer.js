@@ -63,7 +63,7 @@ const getFileData = async (file_path) => new Promise((res, rej) => {
 
 class FileExplorer {
   static fileChanged(path) {
-    if (!app.project_path) return;
+    if (!(app.project_path && fancytree())) return;
     const true_path = trueCasePathSync(path);
 
     // file changes
@@ -166,9 +166,11 @@ class FileExplorer {
     const showElement = () => {
       app.getElement("#file-explorer").classList.remove('hidden')
       app.getElement("#work-container").classList.add('with-file-explorer')
+      app.ideSetting("show-file-explorer", true)
     }
     // const walker = nwWALK.walk(app.project_path);
     // walker.on("file");
+    console.log('tree', fancytree())
     if (fancytree()) {
       showElement();
       return;
@@ -261,11 +263,14 @@ class FileExplorer {
   static hide() {
     app.getElement("#file-explorer").classList.add('hidden')
     app.getElement("#work-container").classList.remove('with-file-explorer')
+    app.ideSetting("show-file-explorer", false)
   }
 
   static toggle() {
-    app.getElement("#file-explorer").classList.toggle("hidden");
-    app.getElement("#work-container").classList.toggle('with-file-explorer')
+    if (app.getElement("#file-explorer").classList.contains("hidden"))
+      FileExplorer.show()
+    else
+      FileExplorer.hide()
   }
 }
 
@@ -289,7 +294,8 @@ document.addEventListener("fileChange", e => {
 });
 
 document.addEventListener("openProject", e => {
-  FileExplorer.show();
+  if (app.ideSetting("show-file-explorer"))
+    FileExplorer.show();
 });
 
 document.addEventListener("closeProject", e => {
@@ -297,6 +303,10 @@ document.addEventListener("closeProject", e => {
 });
 
 document.addEventListener("ideReady", () => {
+  app.getElement("#btn-toggle-fe").addEventListener("click", () => {
+    FileExplorer.toggle();
+  });
+
   app.getElement("#file-explorer").addEventListener('contextmenu', e => {
     const node = $.ui.fancytree.getNode(e.target)
     if (node) {

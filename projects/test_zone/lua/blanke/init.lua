@@ -995,7 +995,7 @@ do
                     combo = { '_fs_toggle' },
                     no_repeat = { '_fs_toggle' },
                 })
-                if Game.options.fullscreen == true then
+                if Game.options.fullscreen == true and not Game.restarting then
                     Window.fullscreen(true)
                 end
                 -- effect

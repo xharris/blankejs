@@ -1,3 +1,5 @@
+const interact = require('interactjs')
+
 var last_box = null;
 let snap = 16;
 var last_box_direction = 1;
@@ -19,6 +21,7 @@ class DragBox {
     });
 
     this.drag_container = document.createElement("div");
+    this.drag_container.this_ref = this
     this.drag_container.classList.add("drag-container");
     this.drag_container.id = "drag-container-" + this.guid;
     this.drag_container.dataset.type = content_type;
@@ -198,6 +201,7 @@ class DragBox {
 
   setupDrag() {
     var this_ref = this;
+
     interact("#" + this.drag_container.id).draggable({
       ignoreFrom: "#content-" + this.guid,
       inertia: true,
@@ -365,3 +369,43 @@ class DragBox {
     }
   }
 }
+
+document.addEventListener("ideReady", e => {
+  let resize_timeout
+
+  app.window.on("resize", e => {
+    if (resize_timeout)
+      clearTimeout(resize_timeout)
+    resize_timeout = setTimeout(() => {
+      // check if elements are outside of window 
+      const parent = app.getElement("#workspace")
+      const parent_rect = parent.getBoundingClientRect()
+      app.getElements(".drag-container").forEach(el => {
+        const rect = {
+          x: el.this_ref.x, y: el.this_ref.y,
+          width: el.clientWidth, height: el.clientHeight
+        }
+
+        let new_left = el.this_ref.x, new_top = el.this_ref.y
+
+        // right
+        if (new_left + rect.width > parent_rect.width)
+          new_left = parent_rect.width - rect.width
+
+        // bottom
+        if (new_top + rect.height > parent_rect.height)
+          new_top = parent_rect.height - rect.height
+
+        // top 
+        if (new_left < parent_rect.x)
+          new_left = 0
+
+        // left 
+        if (new_top < parent_rect.y)
+          new_top = 0
+
+        el.this_ref.move(new_left, new_top)
+      })
+    }, 1000)
+  })
+})
