@@ -1100,8 +1100,8 @@ class SceneEditor extends Editor {
 
       var str_table = "";
       if (grid_w > 2 && grid_h > 2) {
-        let rows = Math.ceil(img_height / (grid_h + this.curr_image.spacing[1]) ) //  + Math.floor(grid_h / this.curr_image.spacing[1])
-        let columns = Math.ceil(img_width / (grid_w + this.curr_image.spacing[0]) ) //  + Math.floor(grid_w / this.curr_image.spacing[0])
+        let rows = Math.ceil(img_height / (grid_h + this.curr_image.spacing[1])) //  + Math.floor(grid_h / this.curr_image.spacing[1])
+        let columns = Math.ceil(img_width / (grid_w + this.curr_image.spacing[0])) //  + Math.floor(grid_w / this.curr_image.spacing[0])
 
         let f = 0
         for (var gy = 0; gy < rows; gy += 1) {
@@ -1348,7 +1348,7 @@ class SceneEditor extends Editor {
         }
       }
       if (e.type == "mouseover" && this.obj_type == "object" && this.curr_object.name === curr_object.name) {
-          this.pixi.bringToFront(e.target)
+        this.pixi.bringToFront(e.target)
       }
     };
     pixi_poly.on("mouseover", polyHover);
@@ -1916,7 +1916,7 @@ class SceneEditor extends Editor {
         const uuid2 = [x2, y2].join(',')
 
         if ((!this.el_object_form.getValue("paths_in_view") || (this.pixi.inCamera(x1, y1) && this.pixi.inCamera(x2, y2))) &&
-             uuid1 !== uuid2 && !paths_drawn[`${uuid1},${uuid2}`] && !paths_drawn[`${uuid2},${uuid1}`]) {
+          uuid1 !== uuid2 && !paths_drawn[`${uuid1},${uuid2}`] && !paths_drawn[`${uuid2},${uuid1}`]) {
           paths_drawn[`${uuid1},${uuid2}`] = true
 
           this.addObjectPath(
@@ -1928,7 +1928,7 @@ class SceneEditor extends Editor {
     })
 
     Object.values(this.path_containers).forEach(container => {
-        this.pixi.bringToFront(container)
+      this.pixi.bringToFront(container)
     })
   }
 
@@ -2627,6 +2627,7 @@ class SceneEditor extends Editor {
     if (
       !(
         app.error_occured &&
+        app.error_occured.error &&
         app.error_occured.error.stack.includes("sceneeditor")
       )
     ) {

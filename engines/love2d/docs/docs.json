@@ -18,5 +18,6 @@
     "Physics": [ {"title":"", "file":"physics.md"} ],
     "Path": [ {"title":"", "file":"path.md"}],
     "Save": [ {"title":"", "file":"save.md"}],
-    "Timeline": [ {"title":"", "file":"timeline.md"}]
+    "Timeline": [ {"title":"", "file":"timeline.md"}],
+    "Time": [ {"title":"", "file":"time.md"} ]
 }

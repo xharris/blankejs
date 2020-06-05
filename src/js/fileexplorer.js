@@ -170,7 +170,6 @@ class FileExplorer {
     }
     // const walker = nwWALK.walk(app.project_path);
     // walker.on("file");
-    console.log('tree', fancytree())
     if (fancytree()) {
       showElement();
       return;

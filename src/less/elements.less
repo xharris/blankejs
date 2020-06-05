@@ -257,7 +257,11 @@
   .CodeMirror-linenumber,
   .CodeMirror-gutters {
     background: transparent;
-    color: fade(@ide-accent-2, 50%);
+    color: rgba(207, 216, 220, 0.3);
+  }
+  .CodeMirror-linenumber,
+  .CodeMirror-gutters {
+    background: rgba(34, 35, 37, 0.85) !important;
   }
   .CodeMirror-dialog-top {
     border: none;
@@ -272,6 +276,9 @@
   .CodeMirror-scroll {
     color: #cfd8dc;
     /* padding-top: 18px; */
+  }
+  .CodeMirror-scrollbar-filler {
+    display: none !important;
   }
   .CodeMirror-vscrollbar {
     top: 25px;

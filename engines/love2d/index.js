@@ -3,6 +3,8 @@
 const { spawn } = require("child_process");
 const nwZIP = require("archiver"); // used for zipping
 
+const isSymlink = unix_perms => (unix_perms & 0170000) === 0120000
+
 const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g;
 
 const requireConf = (is_exporting) => {
@@ -294,31 +296,31 @@ module.exports.settings = {
     const cleanLove = () => nwFS.remove(love_path)
 
     if (platform == "windows") {
-        let exe_path = nwPATH.join(os_dir, project_name + ".exe");
-        // TODO: test on mac/linux
-        // copy /b love.exe+game.love game.exe
-        let f_loveexe = nwFS.createReadStream(
-          nwPATH.join(engine_path, "love.exe"),
-          { flags: "r", encoding: "binary" }
-        );
-        let f_gamelove = nwFS.createReadStream(love_path, {
-          flags: "r",
-          encoding: "binary",
+      let exe_path = nwPATH.join(os_dir, project_name + ".exe");
+      // TODO: test on mac/linux
+      // copy /b love.exe+game.love game.exe
+      let f_loveexe = nwFS.createReadStream(
+        nwPATH.join(engine_path, "love.exe"),
+        { flags: "r", encoding: "binary" }
+      );
+      let f_gamelove = nwFS.createReadStream(love_path, {
+        flags: "r",
+        encoding: "binary",
+      });
+      let f_gameexe = nwFS.createWriteStream(exe_path, {
+        flags: "w",
+        encoding: "binary",
+      });
+      // set up callbacks
+      f_loveexe.on("end", () => {
+        f_gamelove.pipe(f_gameexe);
+        // finished all merging
+        nwFS.remove(love_path, () => {
+          cb_done();
         });
-        let f_gameexe = nwFS.createWriteStream(exe_path, {
-          flags: "w",
-          encoding: "binary",
-        });
-        // set up callbacks
-        f_loveexe.on("end", () => {
-          f_gamelove.pipe(f_gameexe);
-          // finished all merging
-          nwFS.remove(love_path, () => {
-            cb_done();
-          });
-        });
-        // start merging
-        f_loveexe.pipe(f_gameexe, { end: false });
+      });
+      // start merging
+      f_loveexe.pipe(f_gameexe, { end: false });
     }
 
     if (platform == "mac") {
@@ -329,9 +331,11 @@ module.exports.settings = {
 
       const icon_path = nwPATH.join(app.engine_path, "logo.icns")
       const add_files = {
-          //[love_path] : `${new_root}/Contents/Resources/${new_love_name}`,
-          //[icon_path] : `${new_root}/Contents/Resources/OS X AppIcon.icns`,
-          //[icon_path] : `${new_root}/Contents/Resources/GameIcon.icns`,
+        [love_path]: `${new_root}/Contents/Resources/${new_love_name}`,
+        [icon_path]: [
+          `${new_root}/Contents/Resources/OS X AppIcon.icns`,
+          `${new_root}/Contents/Resources/GameIcon.icns`
+        ]
       }
 
       const replacements = {
@@ -341,90 +345,94 @@ module.exports.settings = {
 
       // copy .app zip
       // nwFS.copy(app_path, out_path)
-        /*
-        .then(() => nwFS.readFile(out_path))
-        .then(zip_data => nwZIP().loadAsync(zip_data))
-        .then(zip => zip.file("love.app/Contents/Info.plist")
-            .then(data => {
-              console.log(data)
-            })
-        )
-        */
+      /*
+      .then(() => nwFS.readFile(out_path))
+      .then(zip_data => nwZIP().loadAsync(zip_data))
+      .then(zip => zip.file("love.app/Contents/Info.plist")
+          .then(data => {
+            console.log(data)
+          })
+      )
+      */
 
-        const JSZip = require('jszip')
-        let zip
+      const JSZip = require('jszip')
 
-        const del_list = []
-        const f_info = {}
+      const del_list = []
+      const f_info = {}
+
+      nwFS.readFile(app_path)
+        .then(JSZip.loadAsync)
 
         // move all files from love.app to project_name.app
-        (new Promise((res, rej) => {
-            let renamed_zip = new nwZIP2(app_path)
+        .then(zip => {
+          const checkFolder = f_obj => f_obj.forEach((_, f_obj) => {
+            const file = f_obj.name
 
-            renamed_zip.getEntries().forEach(entry => {
-                const path = entry.entryName
-                const content = renamed_zip.readFile(path)
-                f_info[path] = {
-                    new_path: new_root + path.substring(path.indexOf('/')),
-                    content: content
-                }
-                del_list.push(path)
-            })
+            if (f_obj.dir) {
+              del_list.push(file)
+              return checkFolder(zip.folder(file))
+            } else {
+              f_info[file] = {
+                new_path: new_root + file.substring(file.indexOf('/')),
+                options: {
+                  comment: f_obj.comment,
+                  dir: f_obj.dir,
+                  unixPermissions: f_obj.unixPermissions,
+                  dosPermissions: f_obj.dosPermissions
+                },
+              }
+            }
+          })
+          checkFolder(zip.folder('love.app/'))
 
-            return res()
-        }))
-        .then(() => nwFS.readFile(app_path))
-        .then(JSZip.loadAsync)
-        .then(zip => zip
-            // Info.plist
-            .file(`${new_root}/Contents/Info.plist`)
-            .async('string')
-            .then(content => {
-              Object.keys(replacements).forEach(k => {
-                content = content.replaceAll(k, replacements[k])
-              })
-              return content
-            })
-            .then(content => zip.file(`${new_root}/Contents/Info.plist`, content))
-        )
+          return Promise.all(Object.keys(f_info).map(f => zip.file(f).async('nodebuffer').then(data => {
+            f_info[f].content = data
+          }))).then(() => zip)
+        })
 
+        .then(zip => {
+          console.log(f_info)
+          // move all the other files
+          return Promise.all(Object.values(f_info).map(f => zip.file(f.new_path, f.content, f.options)))
+            .then(() => zip)
+        })
+        .then(zip => {
+          // remove old files
+          return Promise.all(del_list.sort((a, b) => b.length - a.length).map(f => zip.remove(f)))
+            .then(() => zip.remove('love.app'))
+        })
         .then(zip =>
           // add project files
           Promise.all(Object.keys(add_files).map(old_path =>
-                  nwFS.readFile(old_path)
-                    .then(data => zip.file(add_files[old_path], data, { binary:true }))
-                )
-            )
+            Promise.all([].concat(add_files[old_path]).map(add_file =>
+              nwFS.readFile(old_path)
+                .then(data => zip.file(add_file, data, { binary: true }))
+            ))
+          ))
             .then(() => zip)
         )
-        .then(zip => {
-            // move all the other files
-            Promise.all(Object.keys(f_info).map(f =>
-                zip
-                    .file(f)
-                    .async('nodebuffer')
-                    .then(data => zip.file(f_info[f].new_path, data))
-            ))
-            .then(() => zip)
-        })
-        .then(zip => nwFS.remove(love_path).then(() => zip))
-        .then(zip =>
-            // remove old files
-            Promise.all(del_list.sort((a, b) => b.length - a.length).map(f =>
-                zip
-                    .remove(f)
-            ))
-            .then(() => zip)
+        .then(zip => zip
+          // Info.plist
+          .file(`${new_root}/Contents/Info.plist`)
+          .async('string')
+          .then(content => {
+            Object.keys(replacements).forEach(k => {
+              content = content.replaceAll(k, replacements[k])
+            })
+            return content
+          })
+          .then(content => zip.file(`${new_root}/Contents/Info.plist`, content))
         )
         .then(zip =>
           // write final zip
-          new Promise((res, rej) => zip.generateNodeStream({type:'nodebuffer', platform:"darwin", streamFiles:true})
+          new Promise((res, rej) => zip.generateNodeStream({ type: 'nodebuffer', platform: "darwin", streamFiles: true })
             .pipe(nwFS.createWriteStream(out_path))
             .on('finish', () => {
               return res()
             })
           )
         )
+        .then(zip => nwFS.remove(love_path))
         .then(() => {
           cb_done()
         })
@@ -666,17 +674,17 @@ module.exports.autocomplete = {
 	'until', 'while'
 ]*/
 
-  // TestScene is included just so it looks nice
   class_list: [
     "Math", "FS", "Game", "Canvas", "Image", "Entity",
     "Input", "Draw", "Color", "Audio", "Effect", "Camera",
     "Map", "Physics", "Hitbox", "State", "Timer", "Window",
-    "Net", "Blanke", "class", "table"
+    "Net", "Config", "Blanke", "class", "table", "callable"
   ],
 
   class_extends: {
     'entity': /\bEntity\s*\(\s*[\'\"](\w+)[\'\"],\s*/g,
-    'class': /\b(\w+)\s*=\s*class\s*\{/g
+    'class': /\b(\w+)\s*=\s*class\s*\{/g,
+    'callable': /\b(\w+)\s*=\s*callable\s*\{/g
   },
 
   instance: {
@@ -694,12 +702,13 @@ module.exports.autocomplete = {
       // comma separated var list
       /(?:let|var)\s+(?:[a-zA-Z_]+[\w\s=]+?,\s*)+([a-zA-Z_]\w+)(?!\s*=)/g
     ],
-    'fn':[
+    */
+    'fn': [
       // var = function
       /([a-zA-Z_]\w+?)\s*=\s(?:function|\(\)\s*[-|=]>)/g,
       // function var()
       /function\s+([a-zA-Z_]\w+)\s*\(/g
-    ]*/
+    ]
   },
 
   image: [

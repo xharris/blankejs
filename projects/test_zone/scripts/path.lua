@@ -14,7 +14,7 @@ State("path",{
 		--[
 		Hitbox.debug = true
 		paths[1]:go(heart, {
-			speed=50, 
+			speed=10, 
 			target={tag='end'}
 		})
 	end,
@@ -25,9 +25,3 @@ Entity("heart", {
 	align = 'center',
 	hitbox = true,
 })
-
-
-Background{
-	file = "windows_background_knockoff.png",
-	size = "cover"
-}

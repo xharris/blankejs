@@ -1169,6 +1169,8 @@ do
         end;
 
         update = function(dt)
+            local dt_ms = dt * 1000
+
             Game.is_updating = true
             if Game.will_sort then
                 Game.will_sort = false
@@ -1192,12 +1194,12 @@ do
 
             Game.time = Game.time + dt
             Physics.update(dt)
-            Timer.update(dt)
+            Timer.update(dt, dt_ms)
             if Game.options.update(dt) == true then return end
             Blanke.iterUpdate(Game.updatables, dt)
             State.update(dt)
             State._check()
-            Signal.emit('update',dt)
+            Signal.emit('update',dt,dt_ms)
             local key = Input.pressed('_fs_toggle')
             if key and key[1].count == 1 then
                 Window.toggleFullscreen()
@@ -3178,9 +3180,14 @@ do
         end;
         add = function(self, ...)
             local args = {...}
-            if args[1].is_entity then
+
+            local obj = args[1]
+            if obj.is_entity then
                 return self:addEntity(unpack(args))
             end
+            if not obj.is_entity and obj.hasHitbox then 
+                table.insert(self.hb_list, new_hb)
+            end 
         end;
         -- return { {x,y,z,layer(name),points,width,height,color} }
         getEntityInfo = function(self, name)
@@ -4065,12 +4072,11 @@ do
     end
 
     Timer = {
-        update = function(dt)
-
+        update = function(dt, dt_ms)
             -- after
             for id,timer in pairs(l_after) do
                 if not timer.paused then
-                    timer.t = timer.t - dt
+                    timer.t = timer.t - dt_ms
                     timer.p = clamp((timer.duration - timer.t) / timer.duration, 0, 1)
                     if timer.t < 0 then
                         local new_t = timer.fn and timer.fn(timer)
@@ -4089,7 +4095,7 @@ do
             -- every
             for id,timer in pairs(l_every) do
                 if not timer.paused then
-                    timer.t = timer.t - dt
+                    timer.t = timer.t - dt_ms
                     timer.p = clamp((timer.duration - timer.t) / timer.duration, 0, 1)
                     if timer.t < 0 then
                         if not timer.fn or timer.fn(timer) then
@@ -4286,6 +4292,7 @@ do
                     table.insert(obj.is_pathing.path, next_node)
                     next_node = previous[next_node]
                 until not next_node
+                
                 table.insert(self.pathing_objs, obj)
             end
         end;
@@ -4322,11 +4329,12 @@ do
                     if not info.next_dist then
                         info.next_dist = distance(info.prev_pos[1],info.prev_pos[2],next_node.x,next_node.y)
                     end
-                    info.t = info.t + 1 * dt * ( info.speed / (1 - (info.next_dist / total_dist)) )
+                    info.t = info.t + 1 * dt * ( info.speed / (info.next_dist / total_dist) )
 
                     obj.x = lerp(info.prev_pos[1], next_node.x, info.t / 100)
                     obj.y = lerp(info.prev_pos[2], next_node.y, info.t / 100)
 
+                    -- store direction object is moving
                     local xdiff = floor(next_node.x - info.prev_pos[1])
                     local xsign = sign(xdiff)
                     if xdiff ~= 0 then info.direction.x = xsign end
@@ -4601,6 +4609,88 @@ do
         end;
         draw = function()
             draw(fg_list)
+        end
+    }
+end
+
+--CONFIG
+Config = nil
+do 
+    local configs = {}
+
+    _Config = class{
+        init = function(self, name, big_info)
+            self.uuid2config = {}
+            self.key2uuid = {}
+            self.uuid2count = {}
+            
+            if big_info then 
+                for k, v in pairs(big_info) do 
+                    self:add({ k }, v)
+                end
+            end
+            
+            configs[name] = self
+        end,
+        add = function(self, keys, info)
+            local id
+            -- info = previously added key
+            if type(info) == "string" and self.key2uuid[info] then 
+                info = self.key2uuid[info]
+            else
+                id = uuid()
+            end
+            -- pair key with id
+            for _, key in ipairs(keys) do 
+                self.key2uuid[key] = id
+            end
+            -- add to uuid cound
+            if not self.uuid2count[id] then self.uuid2count[id] = 0 end
+            self.uuid2count[id] = self.uuid2count[id] + 1
+            -- store info
+            self.uuid2config[id] = info
+        end,
+        get = function(self, key)
+            local id = self.key2uuid[key]
+            if id then return self.uuid2config[id] end
+        end,
+        update = function(self, key, info)
+            local id = self.key2uuid[key]
+            if id then
+                table.update(self.uuid2config[id], info)
+            end
+        end,
+        remove = function(self, key)
+            local id = self.key2uuid[key]
+            if id then 
+                self.uuid2count[id] = self.uuid2count[id] - 1
+                if self.uuid2count[id] <= 0 then 
+                    self.uuid2count[id] = 0
+                    self.uuid2config[id] = nil
+                end
+                self.key2uuid[key] = nil
+            end
+        end,
+        iterateKeys = function(self, fn)
+            for key, id in pairs(self.key2uuid) do 
+                fn(key, self.uuid2config[id])
+            end
+        end,
+        iterateInfo = function(self, fn)
+            for id, info in pairs(self.uuid2config) do 
+                fn(info)
+            end
+        end
+    }
+    
+    Config = callable {
+        __call = function(_, name, info)
+            if info then 
+                return _Config(name, info)
+            else
+                assert(name and configs[name],"Config \'"..tostring(name).."\' not found")
+                return configs[name]
+            end
         end
     }
 end
