@@ -8,6 +8,7 @@
         }
     ],
     "write_conf": true,
+    "profiling_level": 0,
     "engine_type": "oop",
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
@@ -121,7 +122,8 @@
         "xhh-badword": false,
         "xhh-vector": false,
         "yonaba-delaunay": false,
-        "cmpl": false
+        "cmpl": false,
+        "xhh-ui": false
     },
     "game_size": 3,
     "window_size": 3,

@@ -63,6 +63,5 @@ src/binaries.zip
 node_modules/
 butler/
 *.kate-swp
-engines/love2d/lua/plugins/
+**/lua/plugins/
 electron-builder.yml
-projects/**/lua/
