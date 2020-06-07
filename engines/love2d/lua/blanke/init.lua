@@ -206,14 +206,20 @@ Math = {}
 do
     for name, fn in pairs(math) do Math[name] = function(...) return fn(...) end end
 
-    Math.clamp = function(x, _min, _max) return min(_max, max(_min, x)) end
+    local clamp = function(x, _min, _max) return min(_max, max(_min, x)) end
+
+    Math.clamp = clamp
     Math.sign = function(x) return (x < 0) and -1 or 1 end
     Math.seed = function(l,h) if l then love.math.setRandomSeed(l,h) else return love.math.getRandomSeed() end end
     Math.random = function(...) return love.math.random(...) end
     Math.indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end
     Math.getXY = function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end
     Math.distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end
-    Math.lerp = function(a,b,t) return a * (1-t) + b * t end
+    Math.lerp = function(a,b,t) 
+        local r = a * (1-t) + b * t
+        if a < b then return clamp(r, a, b) 
+        else return clamp(r, b, a) end
+    end 
     Math.prel = function(a,b,v) -- returns what percent v is between a and b
         if v >= b then return 1
         elseif v <= a then return 0
