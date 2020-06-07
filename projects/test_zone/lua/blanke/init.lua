@@ -3100,7 +3100,7 @@ do
             local hb_name = nil
             if options.tile_hitbox then hb_name = options.tile_hitbox[FS.removeExt(FS.basename(file))] end
             local body = nil
-            local tile_info = { id=id, x=x, y=y, width=tw, height=th, tag=hb_name, alignx=tw/2, aligny=th/2 }
+            local tile_info = { id=id, x=x, y=y, width=tw, height=th, tag=hb_name }
             if hb_name then
                 tile_info.tag = hb_name
                 if options.use_physics then
@@ -3438,8 +3438,8 @@ do
             obj.scalex = obj.scalex or 1
             obj.scaley = obj.scaley or 1
         end
-        obj.width = min(obj.width, 1)
-        obj.height = min(obj.height, 1)
+        obj.width = max(obj.width, 1)
+        obj.height = max(obj.height, 1)
         return  obj.alignx * abs(obj.scale * obj.scalex),
                 obj.aligny * abs(obj.scale * obj.scaley),
                 repos
@@ -3577,16 +3577,18 @@ do
         end;
         draw = function()
             if Hitbox.debug then
+                local x,y,w,h
                 if new_boxes then
                     new_boxes = false
                     hb_items, hb_len = world:getItems()
                 end
                 for _,i in ipairs(hb_items) do
                     if i.hasHitbox and not i.destroyed then
+                        x,y,w,h = world:getRect(i)
                         Draw.color(i.hitboxColor or {1,0,0,0.9})
-                        Draw.rect('line',world:getRect(i))
+                        Draw.rect('line',x,y,w,h)
                         Draw.color(i.hitboxColor or {1,0,0,0.25})
-                        Draw.rect('fill',world:getRect(i))
+                        Draw.rect('fill',x,y,w,h)
                     end
                 end
                 Draw.color()

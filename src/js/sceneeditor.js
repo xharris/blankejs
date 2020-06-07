@@ -1156,7 +1156,7 @@ class SceneEditor extends Editor {
     var x = 0, y = 0
 
     poly.blendMode = PIXI.BLEND_MODES.OVERLAY;
-    poly.lineStyle(2, color, 0.5, 0);
+    poly.lineStyle(1, color, 0.5, 0);
     poly.beginFill(old_color, 0.1);
     if (points.length == 2) {
       poly.drawRect(

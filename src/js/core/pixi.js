@@ -40,6 +40,7 @@ class BlankePixi {
 		}
 		this.options = opt;
 		this.evt_list = {};
+		this.bitmap_texts = []
 
 		this.can_drag = false;
 		this.dragging = false;
@@ -322,10 +323,12 @@ class BlankePixi {
 			this.zoom = this.zoom_target;
 			this.dispatchEvent('zoomChange', { zoom: this.zoom });
 			this.refreshCornerText()
+			this.rescaleBitmapTexts()
 			return;
 		} else {
 			this.dispatchEvent('zoomChanging', { zoom: this.zoom });
 			this.refreshCornerText()
+			this.rescaleBitmapTexts()
 		}
 
 		// look at https://github.com/anvaka/ngraph/tree/master/examples/pixi.js/03%20-%20Zoom%20And%20Pan instead
@@ -392,18 +395,25 @@ class BlankePixi {
 		this.refreshCornerText()
 	}
 	getBitmapText(opts) {
-		return new PIXI.extras.BitmapText(
-			'',
-			Object.assign({ font: { size: 16, name: "proggy_scene", align: "left" } }, opts || {})
-		)
+		opts = Object.assign({ font: { size: 16, name: "proggy_scene", align: "left" } }, opts || {})
+		const new_text = new PIXI.extras.BitmapText('', opts)
+		new_text.opts = opts
+		this.bitmap_texts.push(new_text)
+		return new_text
+	}
+	rescaleBitmapTexts() {
+		this.bitmap_texts.filter(txt => {
+			if (txt._destroyed) return false
+			if (txt.opts.auto_scale !== false) txt.scale.set(1 / this.zoom)
+		})
 	}
 	refreshCornerText() {
 		if (!this.help_text) {
-			this.help_text = this.getBitmapText()
+			this.help_text = this.getBitmapText({ auto_scale: false })
 			this.pixi.stage.addChild(this.help_text)
 		}
 		if (!this.info_text) {
-			this.info_text = this.getBitmapText()
+			this.info_text = this.getBitmapText({ auto_scale: false })
 			this.pixi.stage.addChild(this.info_text)
 		}
 

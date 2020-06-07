@@ -1,5 +1,9 @@
 // TODO: copy web_preload_image to relative path
 
+const klaw = require('klaw')
+const zlib = require('zlib')
+const luamin = require('luamin')
+
 const { spawn } = require("child_process");
 const nwZIP = require("archiver"); // used for zipping
 
@@ -234,41 +238,79 @@ module.exports.settings = {
   export_assets: false,
   bundle: (dir, target_os, cb_done) => {
     let love_path = nwPATH.join(dir, app.projSetting("export").name + ".love");
-    let engine_path = app.engine_path;
+
+    // conf.lua
+    const str_conf = exportConf(target_os)
+
+    const output = nwFS.createWriteStream(love_path)
+    output.on("close", cb_done)
+    const archive = nwZIP("zip", { zlib: { level: zlib.constants.Z_BEST_COMPRESSION } })
+    archive.pipe(output)
+
+    const minifyLua = path => nwFS.readFile(path, 'utf8')
+      .then(data => path.endsWith(".lua") && target_os != "love" ?
+        luamin.minify(data) : data
+      )
+
+    const filter = (path, ignores) => {
+      path = app.cleanPath(path)
+      return (path.length > 0 && ignores.some(i => path.match(i))) || (str_conf && path.match(/conf\.lua/))
+    }
 
     // remove symlink
-    nwFS.removeSync(nwPATH.join(app.project_path, "lua"));
+    nwFS.remove(nwPATH.join(app.project_path, "lua"))
+      .then(() => new Promise((res, rej) => {
+        if (str_conf) archive.append(luamin.minify(str_conf), { name: "conf.lua" })
 
-    let output = nwFS.createWriteStream(love_path);
-    let archive = nwZIP("zip", { zlib: { level: 9 } });
+        const ignores = [/^dist[\/\\]?/]
+        const promises = []
 
-    output.on("close", cb_done);
-    archive.pipe(output);
+        // project files
+        klaw(app.project_path, {
+          filter: item => !filter(nwPATH.relative(app.project_path, item), ignores)
+        })
+          .on('data', item => {
+            const path = nwPATH.relative(app.project_path, item.path)
 
-    let str_conf = exportConf(target_os);
-    if (str_conf) archive.append(str_conf, { name: "conf.lua" });
+            // minify .lua?
+            if (path.length > 0) {
+              if (!item.stats.isDirectory() && path.endsWith(".lua"))
+                promises.push(minifyLua(item.path).then(code => archive.append(code, { name: path })))
+              else
+                archive.file(item.path, { name: path })
+            }
+          })
+          .on('end', () => res(promises))
 
-    archive.glob("**/*", {
-      cwd: app.project_path,
-      ignore: ["*.css", "dist", "dist/**/*", ...(str_conf ? ["conf.lua"] : [])],
-    });
+      }))
+      .then(promises => Promise.all(promises))
+      .then(() => new Promise((res, rej) => {
+        const ignores = []
+        const promises = []
 
-    const engine_ignore = [];
-    const eng_type = app.projSetting("engine_type") || "oop";
-    if (eng_type === "oop") engine_ignore.push("lua/ecs", "lua/ecs/**/*");
-    if (eng_type === "ecs") engine_ignore.push("lua/blanke", "lua/blanke/**/*");
+        const eng_type = app.projSetting("engine_type") || "oop";
+        if (eng_type === "oop") ignores.push(/^ecs[\/\\]?/)
+        if (eng_type === "ecs") ignores.push(/^blanke[\/\\]?/)
+        const eng_path = nwPATH.join(app.engine_path, 'lua')
 
-    archive.glob("*.lua", {
-      cwd: nwPATH.join(engine_path),
-    })
-    // archive.glob("lua/**/*.lua", {
-    //   cwd: nwPATH.join(engine_path),
-    //   ignore: engine_ignore,
-    //   root: 'wow'
-    // });
-    archive.directory(nwPATH.join(engine_path, "lua"), "/lua")
+        klaw(eng_path, {
+          filter: item => !filter(nwPATH.relative(eng_path, item), ignores)
+        })
+          .on('data', item => {
+            const path = nwPATH.relative(eng_path, item.path)
 
-    archive.finalize();
+            // minify .lua?
+            if (path.length > 0) {
+              if (!item.stats.isDirectory() && path.endsWith(".lua"))
+                promises.push(minifyLua(item.path).then(code => archive.append(code, { name: path })))
+              else
+                archive.file(item.path, { name: path })
+            }
+          })
+          .on('end', () => res(promises))
+      }))
+      .then(promises => Promise.all(promises))
+      .then(() => archive.finalize())
   },
   extra_bundle_assets: {
     windows: [

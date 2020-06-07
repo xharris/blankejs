@@ -13,20 +13,20 @@
             "path.lua"
         ],
         [
-            "platformer.map=map+?",
-            "platformer.map"
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
-            "Open error file=?",
-            "Open error file"
+            "platformer.map=map+?",
+            "platformer.map"
         ],
         [
             "View project in explorer=?",
             "View project in explorer"
         ],
         [
-            "path.lua=script+?",
-            "path.lua"
+            "Open error file=?",
+            "Open error file"
         ]
     ],
     "autoplay_preview": true,
