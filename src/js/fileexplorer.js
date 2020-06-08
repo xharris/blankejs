@@ -162,6 +162,11 @@ class FileExplorer {
       FileExplorer.hide();
   }
 
+  static removeFakeRoot() {
+    if (fancytree() && fancytree().getNodeByKey("fake_root*"))
+      fancytree().getNodeByKey("fake_root*").remove()
+  }
+
   static show() {
     const showElement = () => {
       app.getElement("#file-explorer").classList.remove('hidden')
@@ -190,6 +195,7 @@ class FileExplorer {
           getFolderData(nwPATH.join(app.project_path, data.node.key)).then(data => {
             dfd.resolve(data)
           })
+          FileExplorer.removeFakeRoot()
         },
         click: (e, data) => {
           if (!data.node.folder) {
@@ -227,13 +233,13 @@ class FileExplorer {
 
               app.moveSafely(getPath(src_node.key), nwPATH.join(getPath(target_node.key), nwPATH.basename(src_node.key)), (err) => {
                 if (!err) {
-                  target_node.setExpanded(true); // expand new location
+                  target_node.setExpanded(true) // expand new location
                   if (new_key !== src_node.key)
                     src_node.remove(); // remove old node
                 }
               })
             }
-            fancytree().getNodeByKey("fake_root*").remove();
+            FileExplorer.removeFakeRoot()
           }
         },
         edit: {
@@ -266,6 +272,7 @@ class FileExplorer {
   }
 
   static toggle() {
+    FileExplorer.removeFakeRoot()
     if (app.getElement("#file-explorer").classList.contains("hidden"))
       FileExplorer.show()
     else

@@ -233,7 +233,7 @@ class Code extends Editor {
   constructor(file_path) {
     super();
     this.setupFibWindow();
-    this.file = file_path;
+    this.file = app.cleanPath(file_path)
     this.script_folder = "/scripts";
     this.file_loaded = false;
 
@@ -620,6 +620,14 @@ class Code extends Editor {
           }
         },
         ...game_window_menu,
+        ...(this.has_external_changes ? [
+          {
+            label: "refresh file",
+            click: () => {
+              this.edit(this.file)
+            }
+          }
+        ] : [])
       ],
     });
   }
@@ -1210,6 +1218,7 @@ class Code extends Editor {
   }
 
   onClose() {
+    if (this.watch) this.watch.close()
     delete code_instances[this.file];
   }
 
@@ -1219,8 +1228,7 @@ class Code extends Editor {
 
   getCompleteHTML(hint) {
     let item_type = "";
-    let text,
-      render = "",
+    let render = "",
       arg_info = "";
     let re_optional = /\s*opt\w*\.?\s*/;
 
@@ -1372,9 +1380,17 @@ class Code extends Editor {
   }
 
   edit(file_path) {
-    this.file_loaded = false;
-    this.file = file_path;
-    code_instances[this.file] = this;
+    this.file_loaded = false
+    this.is_saving = false
+
+    if (this.has_external_changes) {
+      this.has_external_changes.die()
+      this.has_external_changes = true
+    }
+
+    this.has_external_changes = false
+    this.file = file_path
+    code_instances[app.cleanPath(this.file)] = this
 
     var text = nwFS.readFileSync(file_path, "utf-8");
 
@@ -1390,6 +1406,14 @@ class Code extends Editor {
     this.setOnClick(() => {
       Code.openScript(this.file);
     });
+
+    // watch script for external changes
+    this.watch = app.watch(this.file, () => {
+      if (!this.is_saving && !this.has_external_changes) {
+        this.has_external_changes = blanke.toast(`${app.shortenAsset(this.file)} has been changed! <a href='#' onclick='Code.openScript("${app.cleanPath(this.file)}")'>Reload</a>`);
+      }
+      this.is_saving = false
+    })
 
     this.codemirror.refresh();
     this.file_loaded = true;
@@ -1407,6 +1431,7 @@ class Code extends Editor {
 
   save() {
     let data = this.codemirror.getValue();
+    this.is_saving = true
     return new Promise((res, rej) => {
       nwFS.writeFile(this.file, data, err => {
         if (err) return rej(err)
@@ -1414,8 +1439,9 @@ class Code extends Editor {
       });
     })
       .then(() => {
-        this.removeAsterisk();
-        dispatchEvent("codeSaved");
+        this.has_external_changes = false
+        this.removeAsterisk()
+        dispatchEvent("codeSaved")
       })
       .catch(err => {
         console.log(err)
@@ -1446,12 +1472,16 @@ class Code extends Editor {
   }
 
   static openScript(file_path, line) {
+    file_path = app.cleanPath(file_path)
+
     let editor = code_instances[file_path];
-    if (!FibWindow.focus(nwPATH.basename(file_path))) {
-      editor = new Code(file_path);
-      editor.edit(file_path);
+    if (!FibWindow.focus(nwPATH.basename(file_path)))
+      editor = new Code(file_path)
+    if (editor) {
+      editor.edit(file_path)
+      if (line != null)
+        editor.goToLine(line)
     }
-    if (line != null) editor.goToLine(line);
   }
 
   static updateSpriteList(path, data) {

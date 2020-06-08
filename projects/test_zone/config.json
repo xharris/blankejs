@@ -9,12 +9,16 @@
     "window_size": 3,
     "quick_access": [
         [
-            "path.lua=script+entity+?",
-            "path.lua"
-        ],
-        [
             "main.lua=script+?",
             "main.lua"
+        ],
+        [
+            "Open error file=?",
+            "Open error file"
+        ],
+        [
+            "path.lua=script+entity+?",
+            "path.lua"
         ],
         [
             "platformer.map=map+?",
@@ -23,10 +27,6 @@
         [
             "View project in explorer=?",
             "View project in explorer"
-        ],
-        [
-            "Open error file=?",
-            "Open error file"
         ]
     ],
     "autoplay_preview": true,
