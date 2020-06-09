@@ -10,6 +10,7 @@ const nwZIP = require("archiver"); // used for zipping
 const isSymlink = unix_perms => (unix_perms & 0170000) === 0120000
 
 const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g;
+const binary_prefix = 'https://github.com/xharris/blankejs-lovefiles/raw/master'
 
 const requireConf = (is_exporting) => {
   const type = app.projSetting("engine_type") || "oop";
@@ -201,8 +202,8 @@ module.exports.settings = {
     // checkOS('ide');
     runConf();
     let eng_path = "love"; // linux, mac?
-    if (app.os == "win")
-      eng_path = nwPATH.join(app.engine_path, "lovec");
+    if (app.os == "windows")
+      eng_path = nwPATH.join(app.engine_dist_path(), "lovec");
 
     // create symlink to love/lua dir
     nwFS.removeSync(nwPATH.join(app.project_path, "lua"));
@@ -229,11 +230,20 @@ module.exports.settings = {
       con.tryClose();
     });
   },
-  export_targets: {
-    love: false,
-    windows: true,
-    mac: true,
-    web: true,
+  get export_targets() {
+    const targets = {
+      love: false,
+      win32: true,
+      win64: true,
+      web: true
+    }
+    if (app.os === "mac")
+      targets.mac64 = true
+    if (app.os === "linux") {
+      targets.linux_AppImage32 = true
+      targets.linux_AppImage64 = true
+    }
+    return targets
   },
   export_assets: false,
   bundle: (dir, target_os, cb_done) => {
@@ -312,8 +322,26 @@ module.exports.settings = {
       .then(promises => Promise.all(promises))
       .then(() => archive.finalize())
   },
+  binaries: {
+    'windows-32': `${binary_prefix}/love-11.3-win32.zip`,
+    'windows-64': `${binary_prefix}/love-11.3-win64.zip`,
+    'linux-32': `${binary_prefix}/love-11.3-i686.AppImage`,
+    'linux-64': `${binary_prefix}/love-11.3-x86_64.AppImage`,
+    'mac-64': `${binary_prefix}/love-11.3-macos.zip`,
+    'web-32': `${binary_prefix}/love.js`
+  },
+  binary_ext: {
+    'linux': 'AppImage',
+    'web': 'js'
+  },
+  exe_ext: {
+    'windows': 'exe',
+    'linux': 'AppImage',
+    'mac': 'app',
+    'web': 'js'
+  },
   extra_bundle_assets: {
-    windows: [
+    win32: [
       "love.dll",
       "lua51.dll",
       "mpg123.dll",
@@ -321,17 +349,28 @@ module.exports.settings = {
       "msvcr120.dll",
       "OpenAL32.dll",
       "SDL2.dll",
-    ].map(p => "<engine_path>/" + p),
+      "license.txt",
+    ].map(p => "<dist_path>/" + p),
+    win64: [
+      "love.dll",
+      "lua51.dll",
+      "mpg123.dll",
+      "msvcp120.dll",
+      "msvcr120.dll",
+      "OpenAL32.dll",
+      "SDL2.dll",
+      "license.txt",
+    ].map(p => "<dist_path>/" + p),
     web: ["<engine_path>/favicon.ico"],
   },
   cleanExport: (os_dir) => {
     nwFS.remove()
   },
   setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
-    let export_settings = app.projSetting("export");
-    let love_path = nwPATH.join(temp_dir, export_settings.name + ".love");
-    let engine_path = app.engine_path;
-    let project_name = export_settings.name || "game";
+    let export_settings = app.projSetting("export")
+    let love_path = nwPATH.join(temp_dir, export_settings.name + ".love")
+    let engine_path = app.engine_dist_path(platform, arch)
+    let project_name = export_settings.name || "game"
 
     let resolution = getGameSize(platform);
 
@@ -418,6 +457,7 @@ module.exports.settings = {
                 new_path: new_root + file.substring(file.indexOf('/')),
                 options: {
                   comment: f_obj.comment,
+                  date: f_obj.date,
                   dir: f_obj.dir,
                   unixPermissions: f_obj.unixPermissions,
                   dosPermissions: f_obj.dosPermissions

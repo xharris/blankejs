@@ -1256,7 +1256,11 @@
     padding-top: 3px;
     border: 1px solid @window-background;
     border-radius: 2px;
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: 100%;
+    width: 100%;
 
     .title1 {
       color: @search-text-focus;
@@ -1271,25 +1275,28 @@
   }
 
   .platform {
-    margin: 10px;
+    display: flex;
+    align-items: center;
     background: transparent;
     transition: all ease-in-out 0.1s;
 
-    &:hover {
-      background: radial-gradient(
-        circle,
-        rgba(255, 255, 255, 1) 40%,
-        @theme-string 100%
-      );
-
-      object {
-        filter: drop-shadow(1px 1px 3px black);
-      }
+    > object {
+      width: 16px;
+      transition: all ease-in-out 0.1s;
     }
 
-    object {
-      width: 32px;
-      transition: all ease-in-out 0.1s;
+    > .platform-label {
+      color: @search-text-focus;
+      font-size: 16px;
+      margin-left: 8px;
+    }
+
+    &:hover {
+      .input-outline();
+
+      > object {
+        filter: drop-shadow(1px 1px 3px black);
+      }
     }
   }
 

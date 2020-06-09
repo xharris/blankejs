@@ -477,14 +477,18 @@ var app = {
   },*/
 
   extra_windows: [],
-  play: function (options) {
+  play: options => {
     if (app.isProjectOpen() && app.engine.play) {
-      if (app.ideSetting("run_save_code"))
-        Code.saveAll().then(() => {
+      var toast
+
+      new Promise((res, rej) => {
+        if (app.ideSetting("run_save_code"))
+          return res(Code.saveAll())
+        return res()
+      })
+        .then(() => {
           app.engine.play(options);
         })
-      else
-        app.engine.play(options);
     }
   },
 
@@ -753,6 +757,26 @@ var app = {
     );
   },
 
+  parsePlatform: str => {
+    return {
+      platform: str.includes('win') ? 'windows' : str.includes('mac') ? 'mac' : str.includes('lin') ? 'linux' : str.replace('dist-', '').split('-')[0],
+      arch: str.includes('mac') || str.includes('64') ? '64' : '32'
+    }
+  },
+
+  engine_dist_path: (platform, arch) => {
+    platform = platform || app.os
+    arch = arch || nwOS.arch()
+
+    return app.cleanPath(
+      pathJoin(
+        app.relativePath(app.ideSetting("engines_path")),
+        app.projSetting("engine"),
+        ['dist', platform, arch.replace('x', '')].join('-')
+      )
+    )
+  },
+
   clearEngine: () => {
     app.engine_module = {};
     app.allowed_extensions.script = [];
@@ -794,7 +818,8 @@ var app = {
       }
     }
     app.checkProjectSettings();
-    dispatchEvent("engine_config_load");
+    app.downloadEngineDist()
+      .then(() => dispatchEvent("engine_config_load"))
   },
 
   engine_watch: null,
@@ -807,7 +832,55 @@ var app = {
       }
     );
   },
+  downloadEngineDist: (_platform, _arch) => {
+    const dist_path = app.engine_dist_path(_platform, _arch)
+    const { platform, arch } = app.parsePlatform(nwPATH.basename(dist_path))
 
+    return nwFS.pathExists(dist_path)
+      .then(exists => exists ? () => {
+      } : new Promise((res, rej) => {
+        const binaries = app.engine.binaries
+        const bin_type = [platform, arch].join('-')
+
+        if (binaries[bin_type]) {
+          const request = require('request')
+          const url = binaries[bin_type]
+          const ext = app.engine.binary_ext[platform] || 'zip'
+
+          toast = blanke.toast("Downloading engine files", -1)
+          toast.icon = "dots-horizontal"
+          toast.style = "wait"
+
+          const file = nwFS.createWriteStream(nwPATH.join(app.engine_path, `love.${ext}`))
+          file.on('finish', () => {
+            file.close(() => res([ext === 'zip', nwPATH.basename(url).replace('.zip', '')]))
+          })
+
+          request
+            .get(url)
+            .on('error', (res) => rej(err))
+            .pipe(file)
+        }
+
+      })
+        .then(([is_zip, binary_folder]) => {
+          if (is_zip) {
+            const zip_path = nwPATH.join(app.engine_path, 'love.zip')
+            const zip = new nwZIP2(zip_path)
+            zip.extractEntryTo(`${binary_folder}/`, dist_path, false, true)
+            return nwFS.remove(zip_path)
+          }
+        })
+        .then(() => {
+          if (toast) {
+            toast.icon = "check-bold"
+            toast.style = "good"
+            toast.text = "Engine ready!"
+            toast.die(2000)
+          }
+        })
+      )
+  },
   plugin_watch: null,
   ideSetting: function (k, v) {
     if (v != null) {
@@ -1615,7 +1688,7 @@ app.window.webContents.once("dom-ready", () => {
   });
 
   app.getElement("#btn-play").addEventListener("click", () => {
-    app.play();
+    app.play()
   });
   app.getElement("#btn-export").addEventListener("click", () => {
     new Exporter();
@@ -1639,7 +1712,7 @@ app.window.webContents.once("dom-ready", () => {
   app.getElement("#btn-winsplit").title =
     "toggle window splitting " + (split_enabled == true ? "(ON)" : "(OFF)");
 
-  let os_names = { Linux: "linux", Darwin: "mac", Windows_NT: "win" };
+  let os_names = { Linux: "linux", Darwin: "mac", Windows_NT: "windows" };
   app.os = os_names[nwOS.type()];
   document.body.classList.add(app.os);
 
@@ -1952,21 +2025,21 @@ app.window.webContents.once("dom-ready", () => {
   app.loadAppData(function () {
     // load current theme
     app.setTheme(app.ideSetting("theme"));
-    app.setBackgroundImage();
-    app.refreshRecentProjects();
+    app.setBackgroundImage()
+    app.refreshRecentProjects()
 
     document.addEventListener("script_modified", e => {
       if (!app.isServerRunning() && e.detail.content.includes("Net.")) {
-        app.runServer();
+        app.runServer()
       }
-    });
+    })
 
-    app.showWelcomeScreen();
-    dispatchEvent("ideReady");
+    app.showWelcomeScreen()
+    dispatchEvent("ideReady")
 
     setTimeout(() => {
       app.renderer.send("showWindow");
       app.renderer.send("checkForUpdates")
-    }, 500);
+    }, 500)
   });
 });

@@ -1,5 +1,6 @@
 {
     "write_conf": true,
+    "profiling_level": 0,
     "engine_type": "oop",
     "ico": "src\\logo.ico",
     "icns": "src\\logo.icns",
@@ -31,7 +32,8 @@
         "xhh-tween": true,
         "xhh-vector": false,
         "cmpl": false,
-        "yonaba-delaunay": false
+        "yonaba-delaunay": false,
+        "xhh-ui": false
     },
     "engine": "love2d",
     "imageeditor": {

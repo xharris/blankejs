@@ -22,8 +22,7 @@ class Exporter extends Editor {
     this.removeHistory();
     this.hideMenuButton();
 
-    this.container.width = 384;
-    this.container.height = 112;
+    this.setDefaultSize(211, 294)
 
     // diplay list of target platforms
     this.platforms = Object.keys(app.engine.export_targets || []);
@@ -39,19 +38,25 @@ class Exporter extends Editor {
         "platform",
         platform,
       ]);
-      el_platform_container.title = platform;
 
       let el_platform_icon = app.createElement("object");
       el_platform_icon.type = "image/svg+xml";
-      el_platform_icon.data = "src/icons/" + platform + ".svg";
+      el_platform_icon.data = "src/icons/" + (
+        platform.includes('win') ? 'windows' : platform.includes('mac') ? 'mac' : platform.includes('linux') ? 'linux' : platform
+      ) + ".svg";
 
       el_platform_container.value = platform;
       el_platform_container.addEventListener("click", function (e) {
         this_ref.export(e.target.value);
       });
 
-      el_platform_container.appendChild(el_platform_icon);
-      this_ref.el_platforms.appendChild(el_platform_container);
+      const el_platform_label = app.createElement("span", "platform-label")
+      el_platform_label.innerHTML = platform.replaceAll('_', ' ')
+
+      el_platform_container.appendChild(el_platform_icon)
+      el_platform_container.appendChild(el_platform_label)
+
+      this_ref.el_platforms.appendChild(el_platform_container)
     });
 
     this.appendChild(this.el_platforms);
@@ -130,43 +135,6 @@ class Exporter extends Editor {
 
     blanke.toast("Starting export for " + target_os);
 
-    let setupBinary = binary_list => {
-      let platforms = binary_list.reduce((a, c) => {
-        let [plat, arch] = c.split("-");
-        if (!a[plat]) a[plat] = [];
-        if (!a[plat].includes(arch)) a[plat].push(arch);
-        return a;
-      }, {});
-      binary_list.forEach(c => {
-        c = c.split("-");
-        if (!platforms[c[0]].includes(c[1])) platforms[c[0]].push(c[1]);
-      });
-      // iterate platforms
-      let cb_done = () => {
-        /*
-        const zip = new nwZIP2()
-        zip.addLocalFolder(os_dir)
-        zip.writeZip(nwPATH.join(os_dir, `${app.exportSetting("name") || "game"}-${target_os}.zip`))
-        */
-        this.doneToast(target_os);
-      };
-      let cb_err = err => {
-        app.error(err);
-        this.errToast(err);
-      };
-      for (let platform in platforms) {
-        if (app.engine.setupBinary)
-          app.engine.setupBinary(
-            os_dir,
-            temp_dir,
-            platform,
-            platforms[platform],
-            cb_done,
-            cb_err
-          );
-      }
-    };
-
     this.toast = blanke.toast("Removing old files", -1);
     this.toast.icon = "dots-horizontal";
     this.toast.style = "wait";
@@ -183,31 +151,72 @@ class Exporter extends Editor {
           nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, "assets"));
         let e_assets = app.engine.extra_bundle_assets || {};
         let extra_assets = e_assets[target_os] || e_assets["."] || [];
-        for (let a of extra_assets) {
-          a = a
-            .replace("<project_path>", app.project_path)
-            .replace("<engine_path>", app.engine_path);
-          nwFS.copySync(
-            a,
-            app
-              .cleanPath(nwPATH.join(temp_dir, a))
-              .replace(app.engine_path + "/", "")
-          );
+
+        const eng_path = app.cleanPath(nwPATH.join(app.engine_path, ''))
+        const { platform, arch } = app.parsePlatform(target_os)
+        const dist_path = app.cleanPath(nwPATH.join(app.engine_dist_path(platform, arch), ''))
+
+        let cb_done = () =>
+          this.doneToast(target_os)
+
+        let cb_err = err => {
+          app.error(err);
+          this.errToast(err);
         }
 
-        if (app.engine.preBundle) app.engine.preBundle(temp_dir, target_os);
-        // create js file
-        this.toast.text = `Bundling files`;
-        this.bundle(temp_dir, target_os, () => {
-          let platforms = app.engine.export_targets[target_os];
+        new Promise((res, rej) => {
+          if (app.engine.preBundle)
+            app.engine.preBundle(temp_dir, target_os);
+          // create js file
+          this.toast.text = `Bundling files`;
+          this.bundle(temp_dir, target_os, () => res())
+        })
+          .then(() => {
+            if (!app.engine.export_targets[target_os])
+              this.doneToast(target_os)
+            else {
+              this.toast.text = "Building app";
 
-          if (platforms === false) this.doneToast(target_os);
-          else {
-            this.toast.text = "Building app";
-            setupBinary(platforms === true ? [target_os] : platforms);
-          }
-        });
-      });
+              // split platform and architecture
+              const { platform, arch } = app.parsePlatform(target_os)
+
+              if (app.engine.setupBinary)
+                return app.downloadEngineDist(platform, arch)
+            }
+          })
+          .then(() => {
+            const prom_copy = []
+
+            for (let a of extra_assets) {
+              const base_a = a
+                .replace("<project_path>", '')
+                .replace("<engine_path>", '')
+                .replace("<dist_path>", '')
+
+              a = a
+                .replace("<project_path>", app.project_path)
+                .replace("<engine_path>", eng_path)
+                .replace("<dist_path>", dist_path)
+
+              prom_copy.push(nwFS.copy(
+                a,
+                app.cleanPath(nwPATH.join(temp_dir, base_a))
+              ))
+            }
+
+            return Promise.all(prom_copy)
+          })
+          .then(() =>
+            app.engine.setupBinary(
+              os_dir,
+              temp_dir,
+              platform,
+              arch,
+              cb_done,
+              cb_err
+            )
+          )
+      })
   }
 }
 

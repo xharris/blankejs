@@ -9,12 +9,12 @@
     "window_size": 3,
     "quick_access": [
         [
-            "main.lua=script+?",
-            "main.lua"
-        ],
-        [
             "Open error file=?",
             "Open error file"
+        ],
+        [
+            "main.lua=script+?",
+            "main.lua"
         ],
         [
             "path.lua=script+entity+?",

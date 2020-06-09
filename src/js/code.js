@@ -1383,10 +1383,8 @@ class Code extends Editor {
     this.file_loaded = false
     this.is_saving = false
 
-    if (this.has_external_changes) {
+    if (this.has_external_changes)
       this.has_external_changes.die()
-      this.has_external_changes = true
-    }
 
     this.has_external_changes = false
     this.file = file_path
@@ -1409,9 +1407,8 @@ class Code extends Editor {
 
     // watch script for external changes
     this.watch = app.watch(this.file, () => {
-      if (!this.is_saving && !this.has_external_changes) {
-        this.has_external_changes = blanke.toast(`${app.shortenAsset(this.file)} has been changed! <a href='#' onclick='Code.openScript("${app.cleanPath(this.file)}")'>Reload</a>`);
-      }
+      if (!this.is_saving && !this.has_external_changes)
+        this.has_external_changes = blanke.toast(`${app.shortenAsset(this.file)} has been changed! <a href='#' onclick='Code.openScript("${app.cleanPath(this.file)}")'>Reload</a>`)
       this.is_saving = false
     })
 
