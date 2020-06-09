@@ -10,7 +10,7 @@ const nwZIP = require("archiver"); // used for zipping
 const isSymlink = unix_perms => (unix_perms & 0170000) === 0120000
 
 const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g;
-const binary_prefix = 'https://github.com/xharris/blankejs-lovefiles/raw/master'
+const binary_prefix = process.env.BINARY_PREFIX
 
 const requireConf = (is_exporting) => {
   const type = app.projSetting("engine_type") || "oop";
@@ -201,9 +201,19 @@ module.exports.settings = {
   play: options => {
     // checkOS('ide');
     runConf();
-    let eng_path = "love"; // linux, mac?
+
+    const binary_name = {
+      'windows-32': 'lovec.exe',
+      'windows-64': 'lovec.exe',
+      'linux-32': 'love-11.3-i686.AppImage',
+      'linux-64': 'love-11.3-x86_64.AppImage',
+      'linux-64': 'love.app',
+    }
+
+    let eng_path = nwPATH.join(app.engine_dist_path(), "love") // linux, mac?
     if (app.os == "windows")
-      eng_path = nwPATH.join(app.engine_dist_path(), "lovec");
+      eng_path = nwPATH.join(app.engine_dist_path(), "lovec")
+
 
     // create symlink to love/lua dir
     nwFS.removeSync(nwPATH.join(app.project_path, "lua"));

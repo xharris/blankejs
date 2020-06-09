@@ -1,3 +1,4 @@
+require('dotenv').config()
 const unhandled = require("electron-unhandled");
 unhandled();
 
