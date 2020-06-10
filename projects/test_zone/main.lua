@@ -7,6 +7,7 @@ Game {
 	-- effect = { 'chroma shift' }, -- TODO get this to work
 	background_color = 'white',
 	load = function() 
+		print("alright then")
 		--[[
 		Animation{
 			file="blue_robot.png", 

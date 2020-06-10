@@ -198,22 +198,19 @@ module.exports.settings = {
       img.src = "file://" + info.path;
     else cb(info);
   },
+  dist_prefix: "love-11.3",
   play: options => {
     // checkOS('ide');
     runConf();
 
     const binary_name = {
-      'windows-32': 'lovec.exe',
-      'windows-64': 'lovec.exe',
+      'win-32': 'lovec.exe',
+      'win-64': 'lovec.exe',
       'linux-32': 'love-11.3-i686.AppImage',
       'linux-64': 'love-11.3-x86_64.AppImage',
-      'linux-64': 'love.app',
+      'mac-64': 'love.app',
     }
-
-    let eng_path = nwPATH.join(app.engine_dist_path(), "love") // linux, mac?
-    if (app.os == "windows")
-      eng_path = nwPATH.join(app.engine_dist_path(), "lovec")
-
+    const eng_path = nwPATH.join(app.engine_dist_path(), binary_name[Object.values(app.platform).join('-')]) // linux, mac?
 
     // create symlink to love/lua dir
     nwFS.removeSync(nwPATH.join(app.project_path, "lua"));
@@ -223,7 +220,16 @@ module.exports.settings = {
       'junction'
     );
 
-    let child = spawn(eng_path, ["."], { cwd: app.getAssetPath("scripts") });
+    let cmd = eng_path 
+    let args = ["."]
+
+    if (app.os === "mac") {
+      cmd = 'open'
+      args = ['-n','-a', nwPATH.join(eng_path, 'Contents', 'MacOS', 'love'), '.']
+    }
+
+    let child = spawn(cmd, args, { cwd: app.getAssetPath("scripts") });
+    
     let con = new Console(true);
     child.stdout.on("data", data => {
       data = data
@@ -236,8 +242,8 @@ module.exports.settings = {
       app.error(data);
     });
     child.on("close", () => {
-      nwFS.removeSync(nwPATH.join(app.project_path, "love2d"));
-      con.tryClose();
+      if (app.os !== 'mac')
+        con.tryClose();
     });
   },
   get export_targets() {
@@ -333,8 +339,8 @@ module.exports.settings = {
       .then(() => archive.finalize())
   },
   binaries: {
-    'windows-32': `${binary_prefix}/love-11.3-win32.zip`,
-    'windows-64': `${binary_prefix}/love-11.3-win64.zip`,
+    'win-32': `${binary_prefix}/love-11.3-win32.zip`,
+    'win-64': `${binary_prefix}/love-11.3-win64.zip`,
     'linux-32': `${binary_prefix}/love-11.3-i686.AppImage`,
     'linux-64': `${binary_prefix}/love-11.3-x86_64.AppImage`,
     'mac-64': `${binary_prefix}/love-11.3-macos.zip`,
@@ -345,7 +351,7 @@ module.exports.settings = {
     'web': 'js'
   },
   exe_ext: {
-    'windows': 'exe',
+    'win': 'exe',
     'linux': 'AppImage',
     'mac': 'app',
     'web': 'js'
@@ -386,7 +392,7 @@ module.exports.settings = {
 
     const cleanLove = () => nwFS.remove(love_path)
 
-    if (platform == "windows") {
+    if (platform == "win") {
       let exe_path = nwPATH.join(os_dir, project_name + ".exe");
       // TODO: test on mac/linux
       // copy /b love.exe+game.love game.exe
@@ -415,116 +421,31 @@ module.exports.settings = {
     }
 
     if (platform == "mac") {
-      const app_path = nwPATH.join(app.engine_path, "love-11.3-macos.zip")
-      const out_path = nwPATH.join(os_dir, project_name + ".zip")
+      const app_path = nwPATH.join(app.engine_dist_path(), "love.app")
+      const out_path = nwPATH.join(os_dir, project_name + ".app")
       const new_love_name = `${project_name}.love`
       const new_root = `${project_name}.app`
 
-      const icon_path = nwPATH.join(app.engine_path, "logo.icns")
-      const add_files = {
-        [love_path]: `${new_root}/Contents/Resources/${new_love_name}`,
-        [icon_path]: [
-          `${new_root}/Contents/Resources/OS X AppIcon.icns`,
-          `${new_root}/Contents/Resources/GameIcon.icns`
-        ]
-      }
+      const company_name = app.exportSetting("company_name") || "blanke"
+      const replacements = [
+        [/(CFBundleIdentifier<\/key>\s+<string>)(.*)(<\/)/g, `$1com.${company_name}.${project_name}$3`],
+        [/(CFBundleName<\/key>\s+<string>)(.*)(<\/)/g, `$1${project_name}$3`],
+        [/<key>UTExportedTypeDeclarations<\/key>[\s\S]*<\/array>/g, '']
+      ]
 
-      const replacements = {
-        "$COMPANY_NAME": app.exportSetting("company_name") || "blanke",
-        "$PROJECT_NAME": project_name
-      }
-
-      // copy .app zip
-      // nwFS.copy(app_path, out_path)
-      /*
-      .then(() => nwFS.readFile(out_path))
-      .then(zip_data => nwZIP().loadAsync(zip_data))
-      .then(zip => zip.file("love.app/Contents/Info.plist")
-          .then(data => {
-            console.log(data)
+      nwFS.copy(app_path, out_path)
+        // Info.plist
+        .then(() => nwFS.readFile(nwPATH.join(app_path, "Contents", "Info.plist"), "utf8"))
+        .then(data => {
+          replacements.forEach(([ regex, new_str ]) => {
+            data = data.replace(regex, new_str)
           })
-      )
-      */
-
-      const JSZip = require('jszip')
-
-      const del_list = []
-      const f_info = {}
-
-      nwFS.readFile(app_path)
-        .then(JSZip.loadAsync)
-
-        // move all files from love.app to project_name.app
-        .then(zip => {
-          const checkFolder = f_obj => f_obj.forEach((_, f_obj) => {
-            const file = f_obj.name
-
-            if (f_obj.dir) {
-              del_list.push(file)
-              return checkFolder(zip.folder(file))
-            } else {
-              f_info[file] = {
-                new_path: new_root + file.substring(file.indexOf('/')),
-                options: {
-                  comment: f_obj.comment,
-                  date: f_obj.date,
-                  dir: f_obj.dir,
-                  unixPermissions: f_obj.unixPermissions,
-                  dosPermissions: f_obj.dosPermissions
-                },
-              }
-            }
-          })
-          checkFolder(zip.folder('love.app/'))
-
-          return Promise.all(Object.keys(f_info).map(f => zip.file(f).async('nodebuffer').then(data => {
-            f_info[f].content = data
-          }))).then(() => zip)
+          return data
         })
-
-        .then(zip => {
-          console.log(f_info)
-          // move all the other files
-          return Promise.all(Object.values(f_info).map(f => zip.file(f.new_path, f.content, f.options)))
-            .then(() => zip)
-        })
-        .then(zip => {
-          // remove old files
-          return Promise.all(del_list.sort((a, b) => b.length - a.length).map(f => zip.remove(f)))
-            .then(() => zip.remove('love.app'))
-        })
-        .then(zip =>
-          // add project files
-          Promise.all(Object.keys(add_files).map(old_path =>
-            Promise.all([].concat(add_files[old_path]).map(add_file =>
-              nwFS.readFile(old_path)
-                .then(data => zip.file(add_file, data, { binary: true }))
-            ))
-          ))
-            .then(() => zip)
-        )
-        .then(zip => zip
-          // Info.plist
-          .file(`${new_root}/Contents/Info.plist`)
-          .async('string')
-          .then(content => {
-            Object.keys(replacements).forEach(k => {
-              content = content.replaceAll(k, replacements[k])
-            })
-            return content
-          })
-          .then(content => zip.file(`${new_root}/Contents/Info.plist`, content))
-        )
-        .then(zip =>
-          // write final zip
-          new Promise((res, rej) => zip.generateNodeStream({ type: 'nodebuffer', platform: "darwin", streamFiles: true })
-            .pipe(nwFS.createWriteStream(out_path))
-            .on('finish', () => {
-              return res()
-            })
-          )
-        )
-        .then(zip => nwFS.remove(love_path))
+        .then(new_data => nwFS.writeFile(nwPATH.join(out_path, "Contents", "Info.plist"), new_data))
+        // add .love
+        .then(() => nwFS.move(love_path, nwPATH.join(out_path, "Contents", "Resources", new_love_name)))
+        .then(() => nwFS.remove(love_path))
         .then(() => {
           cb_done()
         })

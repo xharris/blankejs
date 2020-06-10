@@ -65,5 +65,9 @@ butler/
 *.kate-swp
 **/lua/plugins/
 electron-builder.yml
+
 engines/love2d/dist-*
 engines/love2d/love2d.js
+engines/love2d/love.zip
+engines/love2d/love-11.3-*
+engines/love2d/*.AppImage
