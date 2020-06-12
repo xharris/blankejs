@@ -206,11 +206,11 @@ module.exports.settings = {
     const binary_name = {
       'win-32': 'lovec.exe',
       'win-64': 'lovec.exe',
-      'linux-32': 'love-11.3-i686.AppImage',
-      'linux-64': 'love-11.3-x86_64.AppImage',
       'mac-64': 'love.app',
     }
-    const eng_path = nwPATH.join(app.engine_dist_path(), binary_name[Object.values(app.platform).join('-')]) // linux, mac?
+    
+    const os = binary_name[Object.values(app.platform).join('-')]
+    const eng_path = os ? nwPATH.join(app.engine_dist_path(), os) : app.engine_dist_path()
 
     // create symlink to love/lua dir
     nwFS.removeSync(nwPATH.join(app.project_path, "lua"));
@@ -222,29 +222,51 @@ module.exports.settings = {
 
     let cmd = eng_path 
     let args = ["."]
+    let cwd = app.getAssetPath("scripts")
+
+    const run = () => {
+      let child = spawn(cmd, args, { cwd: cwd })
+      
+      let con = new Console(true)
+      child.stdout.on("data", data => {
+        data = data
+          .toString()
+          .replace(/Could not open device.\s*/, "")
+          .trim();
+        data.split(/[\r\n]+/).forEach(l => con.log(l));
+      })
+      child.stderr.on("data", data => {
+        app.error(data);
+      })
+      child.on("close", () => {
+        if (app.os !== 'mac')
+          con.tryClose();
+      })
+    }
 
     if (app.os === "mac") {
       cmd = 'open'
       args = ['-n','-a', nwPATH.join(eng_path, 'Contents', 'MacOS', 'love'), '.']
     }
-
-    let child = spawn(cmd, args, { cwd: app.getAssetPath("scripts") });
+    if (app.os === "linux") {
+      cmd = nwPATH.join(app.engine_path, 'squashfs-root', 'love')
+      return nwFS.pathExists(cmd).then(exists => {
+        if (exists)
+          run()
+        else {
+          // extract AppImage
+          const child = spawn(eng_path, ['--appimage-extract'], { cwd: app.engine_path })
+          child.on('close', () => {
+            run()
+          })
+          child.on("error", data => {
+            app.error(data)
+          })
+        }
+      })
+    }
     
-    let con = new Console(true);
-    child.stdout.on("data", data => {
-      data = data
-        .toString()
-        .replace(/Could not open device.\s*/, "")
-        .trim();
-      data.split(/[\r\n]+/).forEach(l => con.log(l));
-    });
-    child.stderr.on("data", data => {
-      app.error(data);
-    });
-    child.on("close", () => {
-      if (app.os !== 'mac')
-        con.tryClose();
-    });
+    run()
   },
   get export_targets() {
     const targets = {
@@ -452,6 +474,64 @@ module.exports.settings = {
         .catch(err => {
           cb_err(err)
         })
+    }
+
+    if (platform == "linux") {
+      const join = nwPATH.join
+      const app_dir = join(os_dir, `${project_name}.AppDir`)
+      const filename = app.arch == '32' ? 'appimagetool-i686.AppImage' : 'appimagetool-x86_64.AppImage'
+      const desktop_replacements = [
+        [/(Name=)[^\n\r]+/, `$1${project_name}`],
+        [/(Comment=)[^\n\r]+/, `$1Game made with BlankE+Love2D`],
+        [/MimeType=[^\n\r]+/, ''],
+        [/(Exec=)[^\n\r]+/, `$1wrapper-love`],
+        [/(Icon=)[^\n\r]+/, '$1logo']
+      ]
+      app
+        // download appimagetool
+        .download(`https://github.com/AppImage/AppImageKit/releases/download/continuous/${filename}`, join(app.engine_path, filename))
+        // make it executable
+        .then(() => nwFS.chmod(join(app.engine_path, filename), 0o777))
+        .then(() => nwFS.remove(join(app.engine_path, 'squashfs-root')))
+        .then(() => new Promise((res, rej) => {
+          const child = spawn(app.engine_dist_path(), ['--appimage-extract'], { cwd: app.engine_path })
+          child.on('close', () => res())
+          child.on("error", err => rej(err))
+        }))
+        // create AppDir
+        .then(() => nwFS.copy(join(app.engine_path, 'squashfs-root'), app_dir))
+        // replace icon
+        .then(() => nwFS.remove(join(app_dir, 'love.svg')))
+        .then(() => nwFS.copy(join(app.engine_path, 'logo.svg'), join(app_dir, 'logo.svg')))
+        // replace text in .desktop file
+        .then(() => nwFS.readFile(join(app_dir, 'love.desktop'), 'utf8'))
+        .then(data => {
+          desktop_replacements.map(([olds, news]) => { data = data.replace(olds, news) })
+          return data 
+        })
+        .then(data => nwFS.writeFile(join(app_dir, `${project_name}.desktop`), data))
+        .then(() => nwFS.remove(join(app_dir, 'love.desktop')))
+        // replace text in wrapper-love
+        .then(() => nwFS.readFile(join(app_dir, 'usr', 'bin', 'wrapper-love'), 'utf8'))
+        .then(data => data.replace(/\$@/, `\${APPIMAGE_DIR}/${nwPATH.basename(love_path)}`))
+        .then(data => nwFS.writeFile(join(app_dir, 'usr', 'bin', 'wrapper-love'), data))
+        // move .love file
+        .then(() => nwFS.move(love_path, join(app_dir, nwPATH.basename(love_path))))
+        // run appimagetool
+        .then(() => nwFS.remove(join(app.engine_path, 'squashfs-root')))
+        .then(() => new Promise((res, rej) => {
+          const child = spawn(join(app.engine_path, filename), ['--appimage-extract'], { cwd: app.engine_path })
+          child.on('close', () => res())
+          child.on('error', err => rej(err))
+        }))
+        .then(() => new Promise((res, rej) => {
+          const child = spawn(nwPATH.join(app.engine_path, 'squashfs-root', 'usr', 'bin', 'appimagetool'), [app_dir], { cwd: os_dir })
+          child.on('close', () => res())
+          child.on('error', err => rej(err))
+        }))
+        .then(() => nwFS.remove(join(app.engine_path, 'squashfs-root')))
+        .then(() => cb_done())
+        .catch(err => cb_err(err))
     }
 
     if (platform == "web") {

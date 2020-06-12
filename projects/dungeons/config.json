@@ -1,4 +1,7 @@
 {
+    "write_conf": true,
+    "profiling_level": 0,
+    "engine_type": "oop",
     "ico": "src/logo.ico",
     "icns": "src/logo.icns",
     "game_size": 3,
@@ -26,11 +29,11 @@
         ]
     ],
     "autoplay_preview": true,
-    "write_conf": true,
     "scene": {},
     "export": {
         "name": "dungeons",
         "filter": "linear",
+        "scale": true,
         "vsync": "on",
         "web_memory": 24,
         "web_stack": 2,
@@ -39,7 +42,6 @@
             600
         ],
         "scale_mode": "linear",
-        "scale": true,
         "resizable": true
     },
     "enabled_plugins": {
@@ -51,6 +53,8 @@
         "xhh-array": true,
         "xhh-badword": false,
         "cmpl": false,
-        "xhh-vector": false
-    }
+        "xhh-vector": false,
+        "xhh-ui": false
+    },
+    "engine": "love2d"
 }

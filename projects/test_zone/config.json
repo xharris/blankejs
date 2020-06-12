@@ -17,16 +17,16 @@
             "main.lua"
         ],
         [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
             "path.lua=script+entity+?",
             "path.lua"
         ],
         [
             "platformer.map=map+?",
             "platformer.map"
-        ],
-        [
-            "View project in explorer=?",
-            "View project in explorer"
         ]
     ],
     "autoplay_preview": true,

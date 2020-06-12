@@ -72,6 +72,10 @@ var app = {
   error_occured: null,
   ignore_errors: false,
 
+  get arch() {
+    return nwOS.arch().includes("64") ? "64" : "32"
+  },
+
   get window() {
     return remote.getCurrentWindow()
   },
@@ -761,13 +765,14 @@ var app = {
 
   parsePlatform: (str) => {
     return {
-      platform: str.includes("win")
-        ? "win"
-        : str.includes("mac")
-        ? "mac"
-        : str.includes("lin")
-        ? "linux"
-        : str.replace("dist-", "").split("-")[0],
+      platform:
+        str.includes("win") || str.toLowerCase().includes(".exe")
+          ? "win"
+          : str.includes("mac")
+          ? "mac"
+          : str.includes("lin") || str.toLowerCase().includes(".appimage")
+          ? "linux"
+          : str.replace("dist-", "").split("-")[0],
       arch: str.includes("mac") || str.includes("64") ? "64" : "32",
     }
   },
@@ -776,11 +781,17 @@ var app = {
     platform = platform || app.os
     arch = arch || nwOS.arch()
 
+    const ext = app.engine.binary_ext[platform] || "zip"
+    const is_zip = ext === "zip"
+    const url = app.engine.binaries[`${platform}-${arch.replace("x", "")}`]
+
     return app.cleanPath(
       pathJoin(
         app.relativePath(app.ideSetting("engines_path")),
         app.projSetting("engine"),
-        `${app.engine.dist_prefix}-${platform}${arch.replace("x", "")}`
+        is_zip
+          ? `${app.engine.dist_prefix}-${platform}${arch.replace("x", "")}`
+          : nwPATH.basename(url)
       )
     )
   },
@@ -860,7 +871,29 @@ var app = {
     let cmd
     if (app.os === "mac") cmd = `zip -yr `
   },
+  download: (url, to, overwrite) => {
+    return nwFS.pathExists(to).then((exists) =>
+      new Promise((res, rej) => {
+        if (exists && !overwrite) return res()
+
+        const request = require("request")
+        const file = nwFS.createWriteStream(to)
+
+        file.on("finish", () => {
+          file.close(() => {
+            res()
+          })
+        })
+
+        request
+          .get(url)
+          .on("error", (err) => rej(err))
+          .pipe(file)
+      }).catch((err) => app.error(err))
+    )
+  },
   downloadEngineDist: (_platform, _arch) => {
+    let toast
     const dist_path = app.engine_dist_path(_platform, _arch)
     const { platform, arch } = app.parsePlatform(nwPATH.basename(dist_path))
 
@@ -872,35 +905,42 @@ var app = {
             const bin_type = [platform, arch].join("-")
 
             if (binaries[bin_type]) {
-              const request = require("request")
               const url = binaries[bin_type]
               const ext = app.engine.binary_ext[platform] || "zip"
+              const is_zip = ext === "zip"
 
               toast = blanke.toast("Downloading engine files", -1)
               toast.icon = "dots-horizontal"
               toast.style = "wait"
 
-              const file = nwFS.createWriteStream(
-                nwPATH.join(app.engine_path, `love.${ext}`)
+              return res(
+                app
+                  .download(
+                    url,
+                    nwPATH.join(
+                      app.engine_path,
+                      is_zip ? `love.${ext}` : nwPATH.basename(url)
+                    )
+                  )
+                  .then(() => {
+                    console.log(url)
+                    return [
+                      is_zip,
+                      nwPATH.join(
+                        app.engine_path,
+                        is_zip ? "love.zip" : nwPATH.basename(url)
+                      ),
+                    ]
+                  })
               )
-              file.on("finish", () => {
-                file.close(() =>
-                  res([ext === "zip", nwPATH.basename(url).replace(".zip", "")])
-                )
-              })
-
-              request
-                .get(url)
-                .on("error", (res) => rej(err))
-                .pipe(file)
             }
           })
             .then(([is_zip, binary_folder]) => {
+              console.log(is_zip, binary_folder)
               if (is_zip) {
-                return app.unzip(
-                  nwPATH.join(app.engine_path, "love.zip"),
-                  app.engine_path
-                )
+                return app.unzip(binary_folder, app.engine_path)
+              } else {
+                if (app.os === "linux") return nwFS.chmod(binary_folder, 0o777)
               }
             })
             .then(() => nwFS.remove(nwPATH.join(app.engine_path, "love.zip")))
