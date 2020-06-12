@@ -71,7 +71,7 @@ ${requireConf(true)}
 ${os == "web" ? 'Window.os = "web"' : ""}
 function love.conf(t)
     ${
-    os == "web"
+    os == "web" || os == "linux"
       ? `
     t.window.width = ${resolution[0]}
     t.window.height = ${resolution[1]}`
@@ -296,7 +296,7 @@ module.exports.settings = {
     archive.pipe(output)
 
     const minifyLua = path => nwFS.readFile(path, 'utf8')
-      .then(data => path.endsWith(".lua") && target_os != "love" ?
+      .then(data => false && path.endsWith(".lua") && target_os != "love" ?
         luamin.minify(data) : data
       )
 

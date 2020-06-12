@@ -477,7 +477,7 @@ decrypt = function(str, code, seed)
     Math.seed(unpack(oldseed))
     return ret_str
 end
-lua_print = print
+local lua_print = print
 do
     local str = ''
     local args
@@ -871,7 +871,7 @@ do
             if w and h then Window.width, Window.height = w, h end
             if not Window.width then Window.width = Game.width end
             if not Window.height then Window.height = Game.height end
-
+            
             if Window.os == 'web' then
                 Game.width, Game.height = Window.width, Window.height
             end
@@ -920,8 +920,8 @@ do
 
                         if Window.os ~= 'web' then
                             Window.setSize(Game.config.window_size)
+                            Game.updateWinSize()
                         end
-                        Game.updateWinSize()
                     end
                     -- vsync
                     switch(Game.options.vsync, {
@@ -984,7 +984,7 @@ do
                 end
 
                 for _,script in ipairs(scripts) do
-                    if script ~= 'main' then
+                    if not script:contains('main.lua') and not script:contains('blanke/init.lua') then
                         local ok, chunk = pcall( love.filesystem.load, script )
                         if not ok then error(chunk) end
                         assert(chunk, "Script not found: "..script)
@@ -1384,6 +1384,8 @@ Canvas = GameObject:extend {
         GameObject.init(self, {classname="Canvas"})
         settings = settings or {}
         local w, h = settings.w or Game.width, settings.h or Game.height
+        if w <= 0 then w = Game.width end 
+        if h <= 0 then h = Game.height end
         local auto_draw = settings.auto_draw
         settings.auto_draw = nil
         self.auto_clear = true
@@ -4337,7 +4339,7 @@ do
                     if not info.next_dist then
                         info.next_dist = distance(info.prev_pos[1],info.prev_pos[2],next_node.x,next_node.y)
                     end
-                    info.t = info.t + 1 * dt * ( info.speed / (info.next_dist / total_dist) )
+                    info.t = info.t + ( info.speed / (info.next_dist / total_dist) ) * dt
 
                     obj.x = lerp(info.prev_pos[1], next_node.x, info.t / 100)
                     obj.y = lerp(info.prev_pos[2], next_node.y, info.t / 100)

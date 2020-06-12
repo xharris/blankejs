@@ -1,5 +1,4 @@
-local _NAME = ...
-local tween = require(_NAME..".tween")
+local tween = require("plugins.xhh-tween.tween")
 
 Tween = GameObject:extend {
     easing = tween.easing;
