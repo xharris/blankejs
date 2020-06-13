@@ -9,6 +9,7 @@ function print_r ( main_t )
             print_r_cache[tostring(t)]=true
             if (type(t)=="table") then
                 for pos,val in pairs(t) do
+                    pos = tostring(pos)
                     if (type(val)=="table") then
                         print(indent..pos..": "..tostring(t).." {")
                         sub_print_r(val,indent..string.rep(" ",string.len(pos)+8))

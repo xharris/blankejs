@@ -33,6 +33,12 @@
       "installerIcon": "src/logo.ico",
       "installerHeaderIcon": "src/logo.ico"
     },
+    "linux": {
+      "icon": "logo.ico",
+      "target": [
+        "AppImage"
+      ]
+    },
     "directories": {
       "buildResources": "src"
     },

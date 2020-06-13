@@ -1240,7 +1240,6 @@ class Code extends Editor {
     }
 
     if (item_type == "cb" || item_type == "fn") {
-      text = hint.fn;
       if (hint.vars) {
         for (var arg in hint.vars) {
           let new_description = hint.vars[arg].replace(re_optional, "");
@@ -1276,7 +1275,6 @@ class Code extends Editor {
         item_type +
         "</p>";
     } else if (item_type == "var") {
-      text = hint.prop;
       render =
         hint.prop +
         "<p class='prop-info'>" +

@@ -114,11 +114,10 @@ module.exports.settings = {
     ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
   ],
   export_settings: [
-    ["company_name", "text", {}],
+    ["company_name", "text", { default: app.exportSetting("company_name") }],
     ["window/rendering"],
     ["filter", "select", { choices: ["linear", "nearest"], default: "linear" }],
-    ["round_pixels", "checkbox", { defalt: false }],
-    ...["frameless", "scale", "resizable", "fullscreen"].map(o => [
+    ...["round_pixels", "frameless", "scale", "resizable", "fullscreen"].map(o => [
       o,
       "checkbox",
       { default: o === "scale" },
@@ -208,7 +207,7 @@ module.exports.settings = {
       'win-64': 'lovec.exe',
       'mac-64': 'love.app',
     }
-    
+
     const os = binary_name[Object.values(app.platform).join('-')]
     const eng_path = os ? nwPATH.join(app.engine_dist_path(), os) : app.engine_dist_path()
 
@@ -220,13 +219,13 @@ module.exports.settings = {
       'junction'
     );
 
-    let cmd = eng_path 
+    let cmd = eng_path
     let args = ["."]
     let cwd = app.getAssetPath("scripts")
 
     const run = () => {
       let child = spawn(cmd, args, { cwd: cwd })
-      
+
       let con = new Console(true)
       child.stdout.on("data", data => {
         data = data
@@ -246,7 +245,7 @@ module.exports.settings = {
 
     if (app.os === "mac") {
       cmd = 'open'
-      args = ['-n','-a', nwPATH.join(eng_path, 'Contents', 'MacOS', 'love'), '.']
+      args = ['-n', '-a', nwPATH.join(eng_path, 'Contents', 'MacOS', 'love'), '.']
     }
     if (app.os === "linux") {
       cmd = nwPATH.join(app.engine_path, 'squashfs-root', 'love')
@@ -265,7 +264,7 @@ module.exports.settings = {
         }
       })
     }
-    
+
     run()
   },
   get export_targets() {
@@ -296,7 +295,7 @@ module.exports.settings = {
     archive.pipe(output)
 
     const minifyLua = path => nwFS.readFile(path, 'utf8')
-      .then(data => false && path.endsWith(".lua") && target_os != "love" ?
+      .then(data => path.endsWith(".lua") && target_os != "love" ?
         luamin.minify(data) : data
       )
 
@@ -446,7 +445,6 @@ module.exports.settings = {
       const app_path = nwPATH.join(app.engine_dist_path(), "love.app")
       const out_path = nwPATH.join(os_dir, project_name + ".app")
       const new_love_name = `${project_name}.love`
-      const new_root = `${project_name}.app`
 
       const company_name = app.exportSetting("company_name") || "blanke"
       const replacements = [
@@ -459,7 +457,7 @@ module.exports.settings = {
         // Info.plist
         .then(() => nwFS.readFile(nwPATH.join(app_path, "Contents", "Info.plist"), "utf8"))
         .then(data => {
-          replacements.forEach(([ regex, new_str ]) => {
+          replacements.forEach(([regex, new_str]) => {
             data = data.replace(regex, new_str)
           })
           return data
@@ -507,7 +505,7 @@ module.exports.settings = {
         .then(() => nwFS.readFile(join(app_dir, 'love.desktop'), 'utf8'))
         .then(data => {
           desktop_replacements.map(([olds, news]) => { data = data.replace(olds, news) })
-          return data 
+          return data
         })
         .then(data => nwFS.writeFile(join(app_dir, `${project_name}.desktop`), data))
         .then(() => nwFS.remove(join(app_dir, 'love.desktop')))
@@ -535,6 +533,7 @@ module.exports.settings = {
     }
 
     if (platform == "web") {
+      const preload_img = app.exportSetting("web_preload_image")
       let html = `
 <!DOCTYPE html>
 <html lang="en-us">
@@ -546,9 +545,9 @@ module.exports.settings = {
 	<div id="my_game"></div>
 	<script src="blanke.js"></script>
 	<script type="text/javascript">
-		(function(){loadGame('${project_name}.data','my_game',${
+		(function(){loadGame('${project_name}.data', 'my_game', ${
         app.exportSetting("web_autoplay") == null ? true : app.exportSetting("web_autoplay")
-        },${resolution[0]},${resolution[1]},"${app.exportSetting("web_preload_image")}");})();
+        }, ${resolution[0]}, ${resolution[1]}${preload_img ? `, "${preload_img}"` : ''})})()
 	</script>
 </body>
 </html>`;
@@ -597,7 +596,10 @@ if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, 
     let Msg = function(m) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#888';
-        for (var i = 0, a = m.split('\\n'), n = a.length; i != n; i++) ctx.fillText(a[i], 20, 20);
+        if (m)
+            for (var i = 0, a = m.split('\\n'), n = a.length; i != n; i++) ctx.fillText(a[i], 20, 20);
+        else
+            console.log(m)
     };
     let Fail = function(m) {
         el_parent.removeChild(el_overlay);
@@ -679,40 +681,33 @@ if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, 
     DoLoad()
 }`;
 
-      nwFS.readFile(love_path, "base64", (err, game_data) => {
-        if (err) console.error(err);
-        let gamejs = `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`;
+      nwFS.readFile(love_path, "base64")
+        .then(game_data => `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`)
+        .then(gamejs => Promise.all([
+          gamejs,
+          nwFS.readFile(nwPATH.join(app.engine_path, "love.js"), "utf-8")
+        ]))
+        .then(([gamejs, lovejs]) => {
+          const game_data = Buffer.from(lovejs + gamejs)
 
-        nwFS.readFile(
-          nwPATH.join(app.engine_path, "love.js"),
-          "utf-8",
-          (err, love_data) => {
-            if (err) console.error(err);
-            let lovejs = love_data;
-            let game_data = Buffer.from(lovejs + gamejs);
+          let new_memory = 1
+          while (new_memory < game_data.length / 1000000) new_memory *= 2
+          new_memory *= 2; // add a little extra for good measure ;)
+          console.log(`exporting web, memory:${web_memory === 0 ? new_memory : web_memory}, stack size:${web_stack}`)
 
-            let new_memory = 1;
-            while (new_memory < game_data.length / 1000000) new_memory *= 2;
-            new_memory *= 2; // add a little extra for good measure ;)
-            console.log(
-              `exporting web, memory:${
-              web_memory === 0 ? new_memory : web_memory
-              }, stack size:${web_stack}`
-            );
-
-            nwFS.writeFileSync(
-              nwPATH.join(os_dir, `blanke.js`),
-              new Uint8Array(
-                Buffer.from(extrajs(web_memory === 0 ? new_memory : web_memory))
-              )
-            );
-            nwFS.writeFileSync(
-              nwPATH.join(os_dir, `${project_name}.data`),
-              new Uint8Array(game_data)
-            );
-            nwFS.removeSync(love_path);
-
-            nwFS.writeFile(
+          // write engine data
+          return nwFS.writeFile(
+            nwPATH.join(os_dir, `blanke.js`),
+            new Uint8Array(
+              Buffer.from(extrajs(web_memory === 0 ? new_memory : web_memory))
+            )
+          )
+            // write game data
+            .then(() => nwFS.writeFile(nwPATH.join(os_dir, `${project_name}.data`), new Uint8Array(game_data)))
+            // remove .love
+            .then(() => nwFS.remove(love_path))
+            // write index.html
+            .then(() => nwFS.writeFile(
               nwPATH.join(os_dir, "index.html"),
               html,
               "utf-8",
@@ -720,13 +715,11 @@ if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, 
                 if (err) console.error(err);
                 cb_done();
               }
-            );
-          }
-        );
-      });
+            ))
+        })
     }
-  },
-};
+  }
+}
 
 let color_vars = {
   r: 'red component (0-1 or 0-255) / hex (#ffffff) / preset (\'blue\')',

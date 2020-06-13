@@ -20,6 +20,24 @@ class = blanke_require("clasp")
 blanke_require("noobhub")
 blanke_require("print_r")
 
+local tbl_to_str
+tbl_to_str = function(t, str)
+    str = str or ''
+    str = str .. "["
+    for i = 1, #t, 1 do
+        if i ~= 1 then 
+            str = str .. ','
+        end 
+        if type(v) == "table" then 
+            str = str .. tbl_to_str(v, str)
+        else 
+            str = str .. tostring(v)
+        end 
+    end
+    str = str .. "]"
+    return str
+end
+
 local socket = blanke_require("socket")
 callable = function(t)
     if t.__ then
@@ -27,6 +45,43 @@ callable = function(t)
     end
     return setmetatable(t, { __call = t.__call })
 end
+
+memoize = nil
+do
+    local mem_cache = {}
+    setmetatable(mem_cache, {__mode = "kv"})
+    memoize = function(f, cache)
+        -- default cache or user-given cache?
+        cache = cache or mem_cache
+        if not cache[f] then 
+            cache[f] = {}
+        end 
+        cache = cache[f]
+        return function(...)
+            local args = {...}
+            local cache_str = ''
+            for i, v in ipairs(args) do
+                if i ~= 1 then 
+                    cache_str = cache_str .. '~'
+                end 
+                if type(v) == "table" then
+                    cache_str = cache_str .. tbl_to_str(v)
+                else
+                    cache_str = cache_str .. tostring(v)
+                end
+            end 
+            -- retrieve cached value?
+            local ret = cache[cache_str]
+            if not ret then
+                -- not cached yet
+                ret = { f(unpack(args)) }
+                cache[cache_str] = ret 
+            end
+            return unpack(ret)
+        end
+    end
+end 
+
 -- yes, plugins folder is listed twice
 --love.filesystem.setRequirePath('?.lua;?/init.lua;lua/?/init.lua;lua/?.lua;plugins/?/init.lua;plugins/?.lua;./plugins/?/init.lua;./plugins/?.lua')
 
@@ -131,8 +186,8 @@ table.join = function(t, sep, nil_str)
     return str
 end
 --STRING
-function string:starts(Start)
-   return string.sub(self,1,string.len(Start))==Start
+function string:starts(start)
+   return string.sub(self,1,string.len(start))==start
 end
 function string:contains(q)
     return string.match(tostring(self), tostring(q)) ~= nil
@@ -156,7 +211,7 @@ function string:replace(find, replace, wholeword)
     end
     return (self:gsub(find,replace))
 end
-function string:expand(...)
+string.expand = memoize(function(self, ...)
     -- version: 0.0.1
     -- code: Ketmar // Avalon Group
     -- public domain
@@ -198,7 +253,7 @@ function string:expand(...)
       return s;
     end;
     return ExpandVars(self, ...)
-end
+end)
 --math
 local sin, cos, rad, deg, abs, min, max = math.sin, math.cos, math.rad, math.deg, math.abs, math.min, math.max
 local floor = function(x) return math.floor(x+0.5) end
@@ -213,8 +268,8 @@ do
     Math.seed = function(l,h) if l then love.math.setRandomSeed(l,h) else return love.math.getRandomSeed() end end
     Math.random = function(...) return love.math.random(...) end
     Math.indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end
-    Math.getXY = function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end
-    Math.distance = function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end
+    Math.getXY = memoize(function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end)
+    Math.distance = memoize(function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end)
     Math.lerp = function(a,b,t) 
         local r = a * (1-t) + b * t
         if a < b then return clamp(r, a, b) 
@@ -227,7 +282,7 @@ do
     end
     Math.sinusoidal = function(min, max, spd, percent) return Math.lerp(min, max, Math.prel(-1, 1, math.cos(Math.lerp(0,math.pi/2,percent or 0) + (Game.time * (spd or 1)) )) ) end
     --  return min + -math.cos(Math.lerp(0,math.pi/2,off or 0) + (Game.time * spd)) * ((max - min)/2) + ((max - min)/2) end
-    Math.angle = function(x1, y1, x2, y2) return math.deg(math.atan2((y2-y1), (x2-x1))) end
+    Math.angle = memoize(function(x1, y1, x2, y2) return math.deg(math.atan2((y2-y1), (x2-x1))) end)
     Math.pointInShape = function(shape, x, y)
         local pts = {}
         for p = 1,#shape,2 do
@@ -376,7 +431,7 @@ sort = function(t, key, default)
     end)
 end
 
-local iterate = function(t, fn)
+iterate = function(t, fn)
     if not t then return end
     local len = #t
     local offset = 0
@@ -920,8 +975,8 @@ do
 
                         if Window.os ~= 'web' then
                             Window.setSize(Game.config.window_size)
-                            Game.updateWinSize()
                         end
+                        Game.updateWinSize()
                     end
                     -- vsync
                     switch(Game.options.vsync, {
@@ -1637,8 +1692,6 @@ do
         Net.sync(self)
     end
 
-
-
     -- (getMetaMethod)
     local getMM = function(self, name, ...)
         if self.__fn and self.__fn[name] then return self.__fn[name](self, ...) end
@@ -2040,12 +2093,11 @@ end
 Draw = nil
 do
     local clamp = Math.clamp
-    local _hex_cache = {}
-    local _hex2rgb = function(hex)
+    local hex2rgb = function(hex)
         assert(type(hex) == "string", "hex2rgb: expected string, got "..type(hex).." ("..hex..")")
         hex = hex:gsub("#","")
         if(string.len(hex) == 3) then
-            return {tonumber("0x"..hex:sub(1,1)) * 17 / 255, tonumber("0x"..hex:sub(2,2)) * 17 / 255, tonumber("0x"..hex:sub(3,3)) * 17 / 255}
+        return {tonumber("0x"..hex:sub(1,1)) * 17 / 255, tonumber("0x"..hex:sub(2,2)) * 17 / 255, tonumber("0x"..hex:sub(3,3)) * 17 / 255}
         elseif(string.len(hex) == 6) then
             return {tonumber("0x"..hex:sub(1,2)) / 255, tonumber("0x"..hex:sub(3,4)) / 255, tonumber("0x"..hex:sub(5,6)) / 255}
         end
@@ -2144,7 +2196,7 @@ do
                 love.graphics.draw(Draw.text, x, y,Math.rad(r or 0),...)
             end
         end;
-        parseColor = function(...)
+        parseColor = memoize(function(...)
             local r, g, b, a = ...
             if not r or r == true then
                 -- no color given
@@ -2158,7 +2210,11 @@ do
             if c then
                 -- color string
                 r, g, b, a = c[1], c[2], c[3], g
-            end
+            elseif type(r) == "string" and r:starts("#") then 
+                -- hex string
+                r, g, b = unpack(hex2rgb(r))
+            end 
+
             if not a then a = 1 end
             -- convert and clamp to [0,1]
             if r > 1 then r = clamp(floor(r) / 255, 0, 1) end
@@ -2167,15 +2223,9 @@ do
             if a > 1 then a = clamp(floor(a) / 255, 0, 1) end
 
             return r, g, b, a
-        end;
+        end);
         color = function(...)
             return love.graphics.setColor(Draw.parseColor(...))
-        end;
-        hexToRgb = function(hex)
-            if _hex_cache[hex] then return _hex_cache[hex] end
-            local ret = _hex2rgb(hex)
-            _hex_cache[hex] = ret
-            return ret
         end;
         getBlendMode = function() return love.graphics.getBlendMode() end;
         setBlendMode = function(...) love.graphics.setBlendMode(...) end;
@@ -2985,7 +3035,7 @@ do
                     end
                     -- get color
                     if obj_info then
-                        new_path.color = Draw.hexToRgb(obj_info.color)
+                        new_path.color = { Draw.parseColor(obj_info.color) }
                     end
                     table.insert(new_map.paths[obj_name][layer_name], new_path)
                 end
@@ -2997,7 +3047,7 @@ do
                 if obj_info then
                     for l_uuid, coord_list in pairs(info) do
                         for _,c in ipairs(coord_list) do
-                            local hb_color = Draw.hexToRgb(obj_info.color)
+                            local hb_color = { Draw.parseColor(obj_info.color) }
                             hb_color[4] = 0.3
                             -- spawn entity
                             if Game.isSpawnable(obj_info.name) then
@@ -4234,7 +4284,7 @@ do
                 local extra_dist = 0
                 obj.is_pathing = { uuid=uuid(), direction={x=1, y=1}, speed=speed, index=1, path={}, t=0, prev_pos={obj.x,obj.y}, onFinish=opt.onFinish }
                 table.insert(self.pathing_objs, obj)
-
+                
                 if not start then
                     -- find nearest node
                     local closest_node
@@ -4341,24 +4391,26 @@ do
                     end
                     info.t = info.t + ( info.speed / (info.next_dist / total_dist) ) * dt
 
-                    obj.x = lerp(info.prev_pos[1], next_node.x, info.t / 100)
-                    obj.y = lerp(info.prev_pos[2], next_node.y, info.t / 100)
-
-                    -- store direction object is moving
-                    local xdiff = floor(next_node.x - info.prev_pos[1])
-                    local xsign = sign(xdiff)
-                    if xdiff ~= 0 then info.direction.x = xsign end
-
-                    local ydiff = floor(next_node.y - info.prev_pos[2])
-                    local ysign = sign(ydiff)
-                    if ydiff ~= 0 then info.direction.y = ysign end
-
                     if info.t >= 100 then
                         info.index = info.index + 1
                         info.t = 0
                         info.prev_pos = {obj.x, obj.y}
                         info.next_dist = nil
-                    end
+                    else 
+
+                        obj.x = lerp(info.prev_pos[1], next_node.x, info.t / 100)
+                        obj.y = lerp(info.prev_pos[2], next_node.y, info.t / 100)
+    
+                        -- store direction object is moving
+                        local xdiff = floor(next_node.x - info.prev_pos[1])
+                        local xsign = sign(xdiff)
+                        if xdiff ~= 0 then info.direction.x = xsign end
+    
+                        local ydiff = floor(next_node.y - info.prev_pos[2])
+                        local ysign = sign(ydiff)
+                        if ydiff ~= 0 then info.direction.y = ysign end
+    
+                    end 
                     if info.index > #info.path then
                         local _, onFinish = self:stop(obj)
                         if onFinish then onFinish(obj) end

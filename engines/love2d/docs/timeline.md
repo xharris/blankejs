@@ -58,7 +58,7 @@ tline_intro:play()
 ```
 {
     1000,                   -- duration of this step (milliseconds)
-                            -- 'wait' is infinite duration until step() is called
+                            -- 'wait' means infinite duration until step() is called
                             -- the default duration is 0
                             
     name = '',              -- optional label for step
