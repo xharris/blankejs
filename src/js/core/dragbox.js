@@ -28,11 +28,11 @@ class DragBox {
     this.drag_container.addEventListener("click", function () {
       // reset z index of others
       app.getElements(".drag-container").forEach(function (e) {
-        e.style.zIndex = 10;
+        e.style.zIndex = 18;
         e.classList.remove("focused");
       });
       // bring this one to top
-      this.style.zIndex = 15;
+      this.style.zIndex = 20;
       this.classList.add("focused");
     });
     this.drag_container.click();

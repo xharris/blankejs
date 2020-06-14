@@ -1,8 +1,8 @@
 {
-    "Game/Misc": [
-        {"title":"","file":"game.md"}
+    "General": [
+        {"title":"Game","file":"game.md"},
+        {"title":"GameObject","file":"gameobject.md"}
     ],
-    "GameObject": [ {"title":"","file":"gameobject.md"} ],
     "Entity": [ {"title":"","file":"entity.md"} ],
     "Canvas": [ {"title":"","file":"canvas.md"} ],
     "Image": [ {"title":"","file":"image.md"} ],

@@ -1695,13 +1695,10 @@ select option.placeholder {
 }
 
 .form-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 5px;
-  margin-right: 10px;
-
-  > * {
-    display: inline-block;
-    margin-right: 10px;
-  }
 }
 
 .form-label {
@@ -1732,6 +1729,10 @@ select option.placeholder {
 
 .form-group[data-size="2"] .form-text,
 .form-group[data-type="number"] .form-text {
+  width: 28px;
+}
+
+.form-group[data-size="1"] .form-text {
   width: 40px;
 }
 
@@ -1776,10 +1777,19 @@ select option.placeholder {
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 2px;
   display: inline-block;
-  margin-right: 5px;
+  margin-right: 0px;
   padding: 5px;
   cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+
   transition: border-color 0.2s ease-in-out;
+  
+  > * {
+    margin-right: 10px;
+  }
 
   &:hover {
     border-color: @ide-accent;
@@ -1789,6 +1799,7 @@ select option.placeholder {
     display: inline-block;
     margin: 0px;
     padding-left: 10px;
+    min-width: 100px;
 
     transition: color 0.2s ease-in-out;
   }

@@ -139,9 +139,11 @@ class Docview extends Editor {
       }
     });
     if (!found) plugin_md_list.push({ title: title, file: file });
+    /*
     plugin_md_list = plugin_md_list.sort((a, b) =>
       a.title < b.title ? -1 : 1
-    );
+    )
+    */
   }
 
   static removePlugin(file) {

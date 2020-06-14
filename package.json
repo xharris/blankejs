@@ -18,6 +18,7 @@
   },
   "build": {
     "appId": "com.electron.blanke",
+    "compression": "maximum",
     "win": {
       "icon": "logo.ico",
       "target": [

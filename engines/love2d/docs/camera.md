@@ -6,7 +6,7 @@ or...
 
 ```
 Camera("playerview", {
-    angle: 45
+    angle = 45
 })
 ```
 
@@ -14,7 +14,7 @@ and then...
 
 ```
 Entity("Player", {
-    camera: "playerview"
+    camera = "playerview"
     ...
 ```
 
