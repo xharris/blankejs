@@ -1,11 +1,6 @@
 // TODO: copy web_preload_image to relative path
 
-const klaw = require('klaw')
-const zlib = require('zlib')
-const luamin = require('luamin')
-
 const { spawn } = require("child_process");
-const nwZIP = require("archiver"); // used for zipping
 
 const isSymlink = unix_perms => (unix_perms & 0170000) === 0120000
 
@@ -284,6 +279,10 @@ module.exports.settings = {
   },
   export_assets: false,
   bundle: (dir, target_os, cb_done) => {
+    const zlib = require('zlib')
+    const luamin = require('luamin')
+    const nwZIP = require("archiver"); // used for zipping
+
     let love_path = nwPATH.join(dir, app.projSetting("export").name + ".love");
 
     // conf.lua
@@ -311,6 +310,7 @@ module.exports.settings = {
 
         const ignores = [/^dist[\/\\]?/]
         const promises = []
+        const klaw = require('klaw')
 
         // project files
         klaw(app.project_path, {
@@ -340,6 +340,7 @@ module.exports.settings = {
         if (eng_type === "ecs") ignores.push(/^blanke[\/\\]?/)
         const eng_path = nwPATH.join(app.engine_path, 'lua')
 
+        const klaw = require('klaw')
         klaw(eng_path, {
           filter: item => !filter(nwPATH.relative(eng_path, item), ignores)
         })

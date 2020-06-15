@@ -134,9 +134,9 @@ var app = {
     let ext = nwPATH.extname(filename)
     blanke.showModal(
       "<label>new name: </label>" +
-      "<input class='ui-input' id='new-file-name' style='width:100px;' value='" +
-      nwPATH.basename(filename, ext) +
-      "'/>",
+        "<input class='ui-input' id='new-file-name' style='width:100px;' value='" +
+        nwPATH.basename(filename, ext) +
+        "'/>",
       {
         yes: () => {
           let new_path = nwPATH.join(
@@ -149,10 +149,10 @@ var app = {
             } else
               blanke.toast(
                 "could not rename '" +
-                nwPATH.basename(full_path) +
-                "' (" +
-                err +
-                ")"
+                  nwPATH.basename(full_path) +
+                  "' (" +
+                  err +
+                  ")"
               )
             if (cb && cb.fail) cb.fail()
           })
@@ -233,18 +233,18 @@ var app = {
       function (file_path) {
         blanke.showModal(
           "<label style='line-height:35px'>new project name:</label></br>" +
-          "<label>" +
-          file_path +
-          nwPATH.sep +
-          "</label>" +
-          "<input class='ui-input' id='new-proj-name' style='width:100px;' value='my_project'/>",
+            "<label>" +
+            file_path +
+            nwPATH.sep +
+            "</label>" +
+            "<input class='ui-input' id='new-proj-name' style='width:100px;' value='my_project'/>",
           {
             yes: function () {
               app.newProject(
                 nwPATH.join(file_path, app.getElement("#new-proj-name").value)
               )
             },
-            no: function () { },
+            no: function () {},
           }
         )
       }
@@ -256,38 +256,7 @@ var app = {
     app.win_title = title
     app.getElement("#search-input").placeholder = title
   },
-  themes: {},
-  theme_data: {},
-  get themes_path() {
-    return app.relativePath(app.ideSetting("themes_path"))
-  },
-  setTheme: function (name) {
-    // get theme variables from file
-    nwFS.readFile(
-      nwPATH.join(app.themes_path, name + ".json"),
-      "utf-8",
-      (err, data) => {
-        if (err) return
-        let theme_data = JSON.parse(data)
-        app.theme_data = theme_data
-        // change theme variables
-        less.modifyVars(theme_data)
-        app.ideSetting("theme", name)
-        app.saveAppData()
-        app.refreshThemeList()
-        dispatchEvent("themeChanged")
-      }
-    )
-  },
-  getThemeColor: (name) =>
-    parseInt(app.theme_data[name].replace("#", "0x"), 16),
-  refreshThemeList: function () {
-    // get list of themes available
-    nwFS.ensureDirSync(app.themes_path)
-    app.themes = nwFS
-      .readdirSync(app.themes_path)
-      .map((v) => v.replace(".json", ""))
-  },
+
   closeProject: function (next_project_path) {
     // app.saveSettings();
     app.getElement("#header").classList.add("no-project")
@@ -551,7 +520,7 @@ var app = {
     DragBox.showHideAll()
     app.getElement("#btn-winvis").title = `${
       split_enabled == true ? "hide" : "show"
-      } floating windows`
+    } floating windows`
   },
 
   toggleSplit: () => {
@@ -724,16 +693,25 @@ var app = {
   relativePath: (path) => {
     if (nwPATH.isAbsolute(path)) return path
     var local_path = process.env.PORTABLE_EXECUTABLE_DIR || __dirname
+    if (!require("electron-is-dev")) {
+      if (app.os === "linux")
+        local_path = nwPATH.dirname(remote.app.getPath("exe"))
+    }
     return nwPATH.resolve(nwPATH.join(local_path, path))
   },
 
   require: (path) => {
     var local_path = process.env.PORTABLE_EXECUTABLE_DIR || __dirname
-    if (!module.paths.includes(remote.app.getAppPath()))
-      module.paths.push(remote.app.getAppPath())
-    if (local_path && !module.paths.includes(local_path)) {
-      module.paths.push(local_path)
-    }
+
+    const paths = [
+      nwPATH.dirname(remote.app.getPath("exe")),
+      remote.app.getAppPath(),
+      local_path,
+    ]
+
+    paths.forEach((p) => {
+      if (!module.paths.includes(p)) module.paths.push(p)
+    })
 
     const resolved_path = require.resolve(path)
     if (!nwFS.existsSync(resolved_path)) return
@@ -752,11 +730,53 @@ var app = {
 
   get engine_path() {
     return app.cleanPath(
-      pathJoin(
-        app.relativePath(app.ideSetting("engines_path")),
+      nwPATH.join(
+        remote.app.getPath("userData"),
+        app.ideSetting("engines_path"),
         app.projSetting("engine")
       )
     )
+  },
+
+  get plugin_path() {
+    return app.cleanPath(
+      nwPATH.join(remote.app.getPath("userData"), app.ideSetting("plugin_path"))
+    )
+  },
+
+  themes: {},
+  theme_data: {},
+  get themes_path() {
+    return app.cleanPath(
+      nwPATH.join(remote.app.getPath("userData"), app.ideSetting("themes_path"))
+    )
+  },
+  setTheme: function (name) {
+    // get theme variables from file
+    nwFS.readFile(
+      nwPATH.join(app.themes_path, name + ".json"),
+      "utf-8",
+      (err, data) => {
+        if (err) return
+        let theme_data = JSON.parse(data)
+        app.theme_data = theme_data
+        // change theme variables
+        less.modifyVars(theme_data)
+        app.ideSetting("theme", name)
+        app.saveAppData()
+        app.refreshThemeList()
+        dispatchEvent("themeChanged")
+      }
+    )
+  },
+  getThemeColor: (name) =>
+    parseInt(app.theme_data[name].replace("#", "0x"), 16),
+  refreshThemeList: function () {
+    // get list of themes available
+    nwFS.ensureDirSync(app.themes_path)
+    app.themes = nwFS
+      .readdirSync(app.themes_path)
+      .map((v) => v.replace(".json", ""))
   },
 
   get platform() {
@@ -769,12 +789,12 @@ var app = {
         str.includes("win") || str.toLowerCase().includes(".exe")
           ? "win"
           : str.includes("mac")
-            ? "mac"
-            : str.includes("lin") || str.toLowerCase().includes(".appimage")
-              ? "linux"
-              : str.includes("web") || str.includes(".js")
-                ? "web"
-                : str.replace("dist-", "").split("-")[0],
+          ? "mac"
+          : str.includes("lin") || str.toLowerCase().includes(".appimage")
+          ? "linux"
+          : str.includes("web") || str.includes(".js")
+          ? "web"
+          : str.replace("dist-", "").split("-")[0],
       arch: str.includes("mac") || str.includes("64") ? "64" : "32",
     }
   },
@@ -788,7 +808,7 @@ var app = {
     const url = app.engine.binaries[`${platform}-${arch.replace("x", "")}`]
 
     return app.cleanPath(
-      pathJoin(
+      nwPATH.join(
         app.relativePath(app.ideSetting("engines_path")),
         app.projSetting("engine"),
         is_zip
@@ -816,7 +836,7 @@ var app = {
     }
     app.last_engine = app.projSetting("engine")
 
-    const engine_js_path = pathJoin(app.engine_path, "index.js")
+    const engine_js_path = nwPATH.join(app.engine_path, "index.js")
     if (!app.engine_js_watch)
       app.engine_js_watch = app.watch(engine_js_path, (evt_type, file) => {
         app.requireEngine(true)
@@ -901,57 +921,57 @@ var app = {
 
     return nwFS.pathExists(dist_path).then((exists) =>
       exists
-        ? () => { }
+        ? () => {}
         : new Promise((res, rej) => {
-          const binaries = app.engine.binaries
-          const bin_type = [platform, arch].join("-")
+            const binaries = app.engine.binaries
+            const bin_type = [platform, arch].join("-")
 
-          if (binaries[bin_type]) {
-            const url = binaries[bin_type]
-            const ext = app.engine.binary_ext[platform] || "zip"
-            const is_zip = ext === "zip"
+            if (binaries[bin_type]) {
+              const url = binaries[bin_type]
+              const ext = app.engine.binary_ext[platform] || "zip"
+              const is_zip = ext === "zip"
 
-            toast = blanke.toast("Downloading engine files", -1)
-            toast.icon = "dots-horizontal"
-            toast.style = "wait"
+              toast = blanke.toast("Downloading engine files", -1)
+              toast.icon = "dots-horizontal"
+              toast.style = "wait"
 
-            return res(
-              app
-                .download(
-                  url,
-                  nwPATH.join(
-                    app.engine_path,
-                    is_zip ? `love.${ext}` : nwPATH.basename(url)
-                  )
-                )
-                .then(() => {
-                  return [
-                    is_zip,
+              return res(
+                app
+                  .download(
+                    url,
                     nwPATH.join(
                       app.engine_path,
-                      is_zip ? "love.zip" : nwPATH.basename(url)
-                    ),
-                  ]
-                })
-            )
-          }
-        })
-          .then(([is_zip, binary_folder]) => {
-            if (is_zip) {
-              return app.unzip(binary_folder, app.engine_path)
-            } else {
-              if (app.os === "linux") return nwFS.chmod(binary_folder, 0o777)
+                      is_zip ? `love.${ext}` : nwPATH.basename(url)
+                    )
+                  )
+                  .then(() => {
+                    return [
+                      is_zip,
+                      nwPATH.join(
+                        app.engine_path,
+                        is_zip ? "love.zip" : nwPATH.basename(url)
+                      ),
+                    ]
+                  })
+              )
             }
           })
-          .then(() => nwFS.remove(nwPATH.join(app.engine_path, "love.zip")))
-          .then(() => {
-            if (toast) {
-              toast.icon = "check-bold"
-              toast.style = "good"
-              toast.text = "Engine ready!"
-              toast.die(2000)
-            }
-          })
+            .then(([is_zip, binary_folder]) => {
+              if (is_zip) {
+                return app.unzip(binary_folder, app.engine_path)
+              } else {
+                if (app.os === "linux") return nwFS.chmod(binary_folder, 0o777)
+              }
+            })
+            .then(() => nwFS.remove(nwPATH.join(app.engine_path, "love.zip")))
+            .then(() => {
+              if (toast) {
+                toast.icon = "check-bold"
+                toast.style = "good"
+                toast.text = "Engine ready!"
+                toast.die(2000)
+              }
+            })
     )
   },
   plugin_watch: null,
@@ -994,12 +1014,12 @@ var app = {
     )
     // project settings
     let eng_settings = {}
-      ; (app.engine.project_settings || []).forEach((s) => {
-        for (let prop of s) {
-          if (typeof prop == "object" && prop.default != null)
-            eng_settings[s[0]] = prop.default
-        }
-      })
+    ;(app.engine.project_settings || []).forEach((s) => {
+      for (let prop of s) {
+        if (typeof prop == "object" && prop.default != null)
+          eng_settings[s[0]] = prop.default
+      }
+    })
 
     app.project_settings = Object.assign({}, eng_settings, app.project_settings)
     app.saveSettings()
@@ -1111,7 +1131,7 @@ var app = {
             )
             app.openProject(dist_path)
           },
-          no: function () { },
+          no: function () {},
         }
       )
     })
@@ -1656,10 +1676,10 @@ var app = {
     nwFS.appendFile(
       nwPATH.join(app.getAppDataFolder(), "error.txt"),
       "[[ " +
-      Date.now() +
-      " ]]\r\n" +
-      Array.prototype.slice.call(arguments).join("\r\n") +
-      "\r\n\r\n",
+        Date.now() +
+        " ]]\r\n" +
+        Array.prototype.slice.call(arguments).join("\r\n") +
+        "\r\n\r\n",
       (err) => {
         if (!app.error_occured) {
           app.error_occured = e
@@ -1957,7 +1977,7 @@ app.window.webContents.once("dom-ready", () => {
   // shortcut: PREVENT refreshing
   app.newShortcut({
     key: "CommandOrControl+R",
-    active: function () { },
+    active: function () {},
   })
 
   app.renderer.on("update-available", (e, arg) => {
@@ -1978,7 +1998,7 @@ app.window.webContents.once("dom-ready", () => {
           yes: function () {
             app.renderer.send("installUpdate")
           },
-          no: function () { },
+          no: function () {},
         }
       )
     })
@@ -2000,7 +2020,7 @@ app.window.webContents.once("dom-ready", () => {
         yes: function () {
           app.window.destroy()
         },
-        no: function () { },
+        no: function () {},
       })
     } else {
       app.window.destroy()
@@ -2114,24 +2134,39 @@ app.window.webContents.once("dom-ready", () => {
   webFrame.setVisualZoomLevelLimits(1, 1)
   webFrame.setLayoutZoomLevelLimits(0, 0)
 
-  app.loadAppData(function () {
-    // load current theme
-    app.setTheme(app.ideSetting("theme"))
-    app.setBackgroundImage()
-    app.refreshRecentProjects()
-
-    document.addEventListener("script_modified", (e) => {
-      if (!app.isServerRunning() && e.detail.content.includes("Net.")) {
-        app.runServer()
+  new Promise((res, rej) => app.loadAppData(res))
+    .then(() => {
+      if (app.os === "linux") {
+        return Promise.all(
+          ["plugin", "themes", "engines"].map((p) => {
+            const path = app.ideSetting(p + "_path")
+            if (!path.match(/[\\\/]/))
+              nwFS.copy(
+                app.relativePath(path),
+                nwPATH.join(remote.app.getPath("userData"), path)
+              )
+          })
+        )
       }
     })
+    .then(() => {
+      // load current theme
+      app.setTheme(app.ideSetting("theme"))
+      app.setBackgroundImage()
+      app.refreshRecentProjects()
 
-    app.showWelcomeScreen()
-    dispatchEvent("ideReady")
+      document.addEventListener("script_modified", (e) => {
+        if (!app.isServerRunning() && e.detail.content.includes("Net.")) {
+          app.runServer()
+        }
+      })
 
-    setTimeout(() => {
-      app.renderer.send("showWindow")
-      app.renderer.send("checkForUpdates")
-    }, 500)
-  })
+      app.showWelcomeScreen()
+      dispatchEvent("ideReady")
+
+      setTimeout(() => {
+        app.renderer.send("showWindow")
+        app.renderer.send("checkForUpdates")
+      }, 500)
+    })
 })

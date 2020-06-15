@@ -1,6 +1,7 @@
 {
   "name": "BlankE",
   "description": "BlankE game dev environment",
+  "author": "XHH <xhh950@gmail.com>",
   "version": "0.11.11",
   "main": "entry.js",
   "single-instance": false,
@@ -35,7 +36,8 @@
       "installerHeaderIcon": "src/logo.ico"
     },
     "linux": {
-      "icon": "logo.ico",
+      "icon": "icon_sizes",
+      "category": "Development",
       "target": [
         "AppImage"
       ]

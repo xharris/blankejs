@@ -365,7 +365,7 @@ body > #header {
 
 #recent-history {
   display: none; // removing this cause it sucks
-  
+
   width: 100%;
   margin-top: 100px;
   transition: all ease-in-out 0.5s;
@@ -1681,7 +1681,8 @@ select option.placeholder {
   }
 }
 
-.form-header, .blanke-collapsible > .header {
+.form-header,
+.blanke-collapsible > .header {
   color: white;
   background-color: @window-background;
   padding: 5px;
@@ -1727,12 +1728,11 @@ select option.placeholder {
   padding-right: 26px;
 }
 
-.form-group[data-size="2"] .form-text,
-.form-group[data-type="number"] .form-text {
+.form-group[data-size="2"][data-type="number"] .form-text {
   width: 28px;
 }
 
-.form-group[data-size="1"] .form-text {
+.form-group[data-size="1"][data-type="number"] .form-text {
   width: 40px;
 }
 
@@ -1786,7 +1786,7 @@ select option.placeholder {
   overflow: hidden;
 
   transition: border-color 0.2s ease-in-out;
-  
+
   > * {
     margin-right: 10px;
   }
