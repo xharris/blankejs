@@ -734,7 +734,6 @@ var app = {
 
     if (proj_setting) {
       const proj_set = app.projSetting(proj_setting)
-      console.log(ide_set, proj_set)
       return app.cleanPath(
         needs_userdata ?
           nwPATH.join(
