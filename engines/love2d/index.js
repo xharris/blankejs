@@ -1,6 +1,18 @@
 // TODO: copy web_preload_image to relative path
 
 const { spawn } = require("child_process");
+const {
+  symlink: fs_symlink,
+  pathExists: fs_path_exists,
+  remove: fs_remove,
+  createReadStream: fs_rstream,
+  createWriteStream: fs_wstream,
+  copy: fs_copy,
+  readFile: fs_read,
+  writeFile: fs_write,
+  move: fs_move,
+  chmod: fs_chmod
+} = nwFS
 
 const isSymlink = unix_perms => (unix_perms & 0170000) === 0120000
 
@@ -42,11 +54,9 @@ const generalConf = () => `
 `;
 
 const runConf = () => {
-  const { writeFile } = require('fs-extra')
-
   if (app.projSetting("write_conf")) {
     let p_level = app.projSetting("profiling_level")
-    return writeFile(
+    return fs_write(
       nwPATH.join(app.getAssetPath("scripts"), "conf.lua"),
       `io.stdout:setvbuf('no')
 ${p_level > 0 ? `do_profiling = ${p_level}` : ""}
@@ -197,11 +207,6 @@ module.exports.settings = {
   },
   dist_prefix: "love-11.3",
   play: options => {
-    const {
-      remove: fs_remove,
-      symlink: fs_symlink,
-      pathExists: fs_path_exists
-    } = require('fs-extra')
     const { join: path_join } = require('path')
 
     const binary_name = {
@@ -289,12 +294,6 @@ module.exports.settings = {
   },
   export_assets: false,
   bundle: (dir, target_os, cb_done) => {
-    const {
-      createWriteStream: fs_wstream,
-      readFile: fs_read,
-      remove: fs_remove
-    } = require('fs-extra')
-
     const zlib = require('zlib')
     const luamin = require('luamin')
     const nwZIP = require("archiver"); // used for zipping
@@ -418,17 +417,6 @@ module.exports.settings = {
     web: ["<engine_path>/favicon.ico"],
   },
   setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
-    const {
-      remove: fs_remove,
-      createReadStream: fs_rstream,
-      createWriteStream: fs_wstream,
-      copy: fs_copy,
-      readFile: fs_read,
-      writeFile: fs_write,
-      move: fs_move,
-      chmod: fs_chmod
-    } = require('fs-extra')
-
     let export_settings = app.projSetting("export")
     let love_path = nwPATH.join(temp_dir, export_settings.name + ".love")
     let engine_path = app.engine_dist_path(platform, arch)

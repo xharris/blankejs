@@ -32,9 +32,10 @@ class Docview extends Editor {
       if (!err) {
         this.doc_sections = JSON.parse(data);
 
-        let categories = Object.keys(this.doc_sections).sort((a, b) =>
+        let categories = Object.keys(this.doc_sections)
+        /*.sort((a, b) =>
           a < b ? -1 : 1
-        );
+        )*/
 
         this.doc_sections.Plugins = plugin_md_list;
         categories.push("Plugins");
@@ -139,11 +140,10 @@ class Docview extends Editor {
       }
     });
     if (!found) plugin_md_list.push({ title: title, file: file });
-    /*
+
     plugin_md_list = plugin_md_list.sort((a, b) =>
       a.title < b.title ? -1 : 1
     )
-    */
   }
 
   static removePlugin(file) {

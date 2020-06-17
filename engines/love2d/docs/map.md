@@ -2,7 +2,8 @@
 
 ```
 Map.config{
-    tile_hitbox = { img_ground='ground' }
+    tile_hitbox = { img_ground='ground' },
+    layer_order = { "back", "mid", "front" }
 }
 mymap = Map.load('level2.map')
 ```
@@ -11,7 +12,7 @@ mymap = Map.load('level2.map')
 
 `config(options)`
 * `layer_order[]` back to front
-* `use_physics=false` determines whether box2D physics or normals Hitbox class will be used
+* `use_physics=false` determines whether box2D physics or Hitbox class will be used
 * `tile_hitbox{}` { image_name: 'hitbox_tag' }
 
 # Methods

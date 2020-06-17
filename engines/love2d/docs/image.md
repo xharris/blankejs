@@ -7,7 +7,7 @@
 `options`
 
 * `file`
-* `draw=false` if true then `img:addDrawable()`
+* `draw=false` if true then `img:addDrawable()` is called
 * `animation` animation name
 
 # Class Methods

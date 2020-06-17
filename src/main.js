@@ -199,6 +199,7 @@ var app = {
       cb
     )
   },
+  // relative to project 
   getRelativePath: function (path) {
     return nwPATH.relative(app.project_path, path)
   },
@@ -688,10 +689,8 @@ var app = {
   relativePath: (path) => {
     if (nwPATH.isAbsolute(path)) return path
     var local_path = process.env.PORTABLE_EXECUTABLE_DIR || __dirname
-    if (!require("electron-is-dev")) {
-      if (app.os === "linux")
-        local_path = nwPATH.dirname(remote.app.getPath("exe"))
-    }
+    if (!require("electron-is-dev") || app.os === "linux")
+      local_path = nwPATH.dirname(remote.app.getPath("exe"))
     return nwPATH.resolve(nwPATH.join(local_path, path))
   },
 
@@ -708,7 +707,7 @@ var app = {
       if (!module.paths.includes(p)) module.paths.push(p)
     })
 
-    const resolved_path = require.resolve(path)
+    const resolved_path = nwPATH.isAbsolute(path) ? path : require.resolve(path)
     if (!nwFS.existsSync(resolved_path)) return
     delete require.cache[resolved_path]
     return require(path)
@@ -725,7 +724,7 @@ var app = {
 
   get_path: (ide_setting, proj_setting) => {
     const ide_set = app.ideSetting(ide_setting)
-    const needs_userdata = (app.os === "linux" && !nwPATH.isAbsolute(ide_set))
+    const needs_userdata = (!require("electron-is-dev") && !nwPATH.isAbsolute(ide_set))
 
     if (proj_setting) {
       const proj_set = app.projSetting(proj_setting)
@@ -1012,6 +1011,8 @@ var app = {
 
   // untested
   exportSetting: function (k, v) {
+    if (!app.project_settings["export"])
+      app.project_settings["export"] = {}
     if (v != null) {
       app.project_settings["export"][k] = v
       app.saveSettings()
@@ -1411,11 +1412,11 @@ var app = {
     app.refreshQuickAccess(null, true)
   },
   /*
-	removeQuickAccess: (hash) => {
-		app.projSetting("quick_access") = app.projSetting("quick_access").filter(q => q[0] !== hash)
-		app.saveSettings();
-		app.refreshQuickAccess();
-	},
+  removeQuickAccess: (hash) => {
+    app.projSetting("quick_access") = app.projSetting("quick_access").filter(q => q[0] !== hash)
+    app.saveSettings();
+    app.refreshQuickAccess();
+  },
 */
   refreshQuickAccess: (hash, not_now) => {
     if (!not_now)
@@ -2151,20 +2152,16 @@ app.window.webContents.once("dom-ready", () => {
   webFrame.setLayoutZoomLevelLimits(0, 0)
 
   new Promise((res, rej) => app.loadAppData(res))
-    .then(() => {
-      if (app.os === "linux") {
-        return Promise.all(
-          ["plugin", "themes", "engines"].map((p) => {
-            const path = app.ideSetting(p + "_path")
-            if (!path.match(/[\\\/]/))
-              nwFS.copy(
-                app.relativePath(path),
-                nwPATH.join(remote.app.getPath("userData"), path)
-              )
-          })
-        )
-      }
-    })
+    .then(() => require("electron-is-dev") ? null : Promise.all(
+      ["plugin", "themes", "engines"].map((p) => {
+        const path = app.ideSetting(p + "_path")
+        if (!path.match(/[\\\/]/))
+          nwFS.copy(
+            app.relativePath(path),
+            nwPATH.join(remote.app.getPath("userData"), path)
+          )
+      })
+    ))
     .then(() => {
       // load current theme
       app.setTheme(app.ideSetting("theme"))
