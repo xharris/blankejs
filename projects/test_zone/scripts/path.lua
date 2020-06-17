@@ -4,6 +4,7 @@ State("path",{
 			tile_hitbox = { megman = 'ground' }	
 		}
 		local cam = Camera("main")
+		bob = CameraMan()
 		
 		local map = Map.load('platformer.map')
 		local paths = map:getPaths("path_node")
@@ -17,7 +18,11 @@ State("path",{
 			speed=10, 
 			target={tag='end'}
 		})
-	end,
+		
+		Input.set({
+			action = { "n" }
+		})
+	end
 })
 
 Entity("heart", {

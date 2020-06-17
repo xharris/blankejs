@@ -278,6 +278,8 @@ class Code extends Editor {
       if (this.game) this.appendBackground(this.game.container);
     }
 
+    const get_regex = name => new RegExp("\\W" + name + "\\W")
+
     CodeMirror.defineMode("blanke", (config, parserConfig) => {
       var blankeOverlay = {
         token: (stream, state) => {
@@ -290,7 +292,7 @@ class Code extends Editor {
           getKeywords(this.file, this.codemirror.getValue());
 
           // comment
-          if (stream.match(/\s*\/\//) || baseCur.includes("comment")) {
+          if (stream.match(/\s*--/) || baseCur.includes("comment")) {
             while ((ch = stream.next()) != null && !stream.eol());
             return "comment";
           }
@@ -310,7 +312,7 @@ class Code extends Editor {
                 if (ext_classes[p].includes(cat))
                   parent = `blanke-${p.toLowerCase()}-instance`;
               }
-              if (stream.match(new RegExp("^" + name)))
+              if (stream.match(get_regex(name)))
                 return (
                   baseCur +
                   `blanke-instance ${parent} blanke-${cat.toLowerCase()}-instance`
@@ -323,7 +325,7 @@ class Code extends Editor {
             // entity
             for (let name of ext_classes[cat]) {
               // Player
-              if (stream.match(new RegExp("^" + name)))
+              if (stream.match(get_regex(name)))
                 return baseCur + `blanke-class blanke-${cat.toLowerCase()}`;
             }
           }
@@ -331,7 +333,7 @@ class Code extends Editor {
           // regular classes
           for (let name of classes) {
             // Map, Scene
-            if (stream.match(new RegExp("^" + name)))
+            if (stream.match(get_regex(name)))
               return baseCur + `blanke-class blanke-${name.toLowerCase()}`;
           }
 
@@ -1555,14 +1557,18 @@ function addScripts(folder_path) {
   };
   let walker = nwWALK.walk(folder_path);
   const file_data = {};
+  const file_info = {}
 
   walker.on('file', (path, stats, next) => {
-    const full_path = app.cleanPath(nwPATH.join(path, stats.name));
+    const full_path = app.cleanPath(nwPATH.join(path, stats.name))
+    if (!file_info[full_path])
+      file_info[full_path] = { tags: [], group: '' }
+
     if (stats.isFile() && Code.isScript(full_path)) {
       // get what kind of script it is
       let data = nwFS.readFileSync(full_path, "utf-8");
-      file_data[full_path] = data;
-      getKeywords(full_path, data);
+      file_data[full_path] = data
+      getKeywords(full_path, data)
       // get what kind of script it is
       let tags = ["script"];
       let cat, match;
@@ -1582,31 +1588,26 @@ function addScripts(folder_path) {
       }
       if (!cat) Code.scripts.other.push(full_path);
 
-      // add file to search pool
-      app.addSearchKey({
-        key: nwPATH.basename(full_path),
-        onSelect: function (file_path) {
-          Code.openScript(file_path);
-        },
-        tags: tags,
-        category: cat || "script",
-        args: [full_path],
-        group: "Scripts",
-      });
+      const info = file_info[full_path]
+      // search tags
+      tags.forEach(t => {
+        if (!info.tags.includes(t))
+          info.tags.push(t)
+      })
+      // search group
+      info.group = "Scripts"
 
       // if script has Entity class find if it has sprite
-      Code.updateSpriteList(full_path, data);
+      Code.updateSpriteList(full_path, data)
     }
-    if (stats.isFile() && app.findAssetType(full_path) === "other") {
-      app.addSearchKey({
-        key: nwPATH.basename(full_path),
-        onSelect: function (file_path) {
-          Code.openScript(file_path);
-        },
-        category: "file",
-        args: [full_path],
-        group: "File",
-      });
+    else if (stats.isFile() && app.findAssetType(full_path) === "other") {
+
+      const info = file_info[full_path]
+      // search group
+      info.group = "File"
+    }
+    else {
+      delete file_info[full_path]
     }
     next();
   })
@@ -1614,6 +1615,23 @@ function addScripts(folder_path) {
   walker.on("end", () => {
     for (let file in file_data)
       Code.parseSprites(file_data[file], file, () => { }, true);
+
+    app.removeSearchGroup("Scripts")
+    app.removeSearchGroup("File")
+
+    // add files to search pool
+    for (const f in file_info) {
+      const info = file_info[f]
+
+      app.addSearchKey({
+        key: nwPATH.basename(f),
+        onSelect: (f) => Code.openScript(f),
+        tags: info.tags,
+        category: "script",
+        args: [f],
+        group: info.group
+      })
+    }
 
     // first scene setting
     let first_scene = app.projSetting("first_scene");

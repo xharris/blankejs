@@ -42,9 +42,11 @@ const generalConf = () => `
 `;
 
 const runConf = () => {
+  const { writeFile } = require('fs-extra')
+
   if (app.projSetting("write_conf")) {
     let p_level = app.projSetting("profiling_level")
-    nwFS.writeFileSync(
+    return writeFile(
       nwPATH.join(app.getAssetPath("scripts"), "conf.lua"),
       `io.stdout:setvbuf('no')
 ${p_level > 0 ? `do_profiling = ${p_level}` : ""}
@@ -56,6 +58,7 @@ end
 `
     );
   }
+  return Promise.resolve()
 };
 
 const exportConf = os => {
@@ -194,8 +197,12 @@ module.exports.settings = {
   },
   dist_prefix: "love-11.3",
   play: options => {
-    // checkOS('ide');
-    runConf();
+    const {
+      remove: fs_remove,
+      symlink: fs_symlink,
+      pathExists: fs_path_exists
+    } = require('fs-extra')
+    const { join: path_join } = require('path')
 
     const binary_name = {
       'win-32': 'lovec.exe',
@@ -205,14 +212,6 @@ module.exports.settings = {
 
     const os = binary_name[Object.values(app.platform).join('-')]
     const eng_path = os ? nwPATH.join(app.engine_dist_path(), os) : app.engine_dist_path()
-
-    // create symlink to love/lua dir
-    nwFS.removeSync(nwPATH.join(app.project_path, "lua"));
-    nwFS.symlinkSync(
-      nwPATH.join(app.engine_path, "lua"),
-      nwPATH.join(app.project_path, "lua"),
-      'junction'
-    );
 
     let cmd = eng_path
     let args = ["."]
@@ -238,29 +237,40 @@ module.exports.settings = {
       })
     }
 
-    if (app.os === "mac") {
-      cmd = 'open'
-      args = ['-n', '-a', nwPATH.join(eng_path, 'Contents', 'MacOS', 'love'), '.']
-    }
-    if (app.os === "linux") {
-      cmd = nwPATH.join(app.engine_path, 'squashfs-root', 'love')
-      return nwFS.pathExists(cmd).then(exists => {
-        if (exists)
-          run()
-        else {
-          // extract AppImage
-          const child = spawn(eng_path, ['--appimage-extract'], { cwd: app.engine_path })
-          child.on('close', () => {
-            run()
-          })
-          child.on("error", data => {
-            app.error(data)
+    // checkOS('ide');
+    runConf()
+      // create symlink to love/lua dir
+      .then(() => fs_remove(path_join(app.project_path, "lua")))
+      .then(() => fs_symlink(
+        path_join(app.engine_path, "lua"),
+        path_join(app.project_path, "lua"),
+        'junction'
+      ))
+      .then(() => {
+        if (app.os === "mac") {
+          cmd = 'open'
+          args = ['-n', '-a', path_join(eng_path, 'Contents', 'MacOS', 'love'), '.']
+        }
+        if (app.os === "linux") {
+          cmd = path_join(app.engine_path, 'squashfs-root', 'love')
+          return fs_path_exists(cmd).then(exists => {
+            if (exists)
+              run()
+            else {
+              // extract AppImage
+              const child = spawn(eng_path, ['--appimage-extract'], { cwd: app.engine_path })
+              child.on('close', () => {
+                run()
+              })
+              child.on("error", data => {
+                app.error(data)
+              })
+            }
           })
         }
-      })
-    }
 
-    run()
+        return run()
+      })
   },
   get export_targets() {
     const targets = {
@@ -279,6 +289,12 @@ module.exports.settings = {
   },
   export_assets: false,
   bundle: (dir, target_os, cb_done) => {
+    const {
+      createWriteStream: fs_wstream,
+      readFile: fs_read,
+      remove: fs_remove
+    } = require('fs-extra')
+
     const zlib = require('zlib')
     const luamin = require('luamin')
     const nwZIP = require("archiver"); // used for zipping
@@ -288,12 +304,12 @@ module.exports.settings = {
     // conf.lua
     const str_conf = exportConf(target_os)
 
-    const output = nwFS.createWriteStream(love_path)
+    const output = fs_wstream(love_path)
     output.on("close", cb_done)
     const archive = nwZIP("zip", { zlib: { level: zlib.constants.Z_BEST_COMPRESSION } })
     archive.pipe(output)
 
-    const minifyLua = path => nwFS.readFile(path, 'utf8')
+    const minifyLua = path => fs_read(path, 'utf8')
       .then(data => path.endsWith(".lua") && target_os != "love" ?
         luamin.minify(data) : data
       )
@@ -304,7 +320,7 @@ module.exports.settings = {
     }
 
     // remove symlink
-    nwFS.remove(nwPATH.join(app.project_path, "lua"))
+    fs_remove(nwPATH.join(app.project_path, "lua"))
       .then(() => new Promise((res, rej) => {
         if (str_conf) archive.append(luamin.minify(str_conf), { name: "conf.lua" })
 
@@ -401,10 +417,18 @@ module.exports.settings = {
     ].map(p => "<dist_path>/" + p),
     web: ["<engine_path>/favicon.ico"],
   },
-  cleanExport: (os_dir) => {
-    nwFS.remove()
-  },
   setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
+    const {
+      remove: fs_remove,
+      createReadStream: fs_rstream,
+      createWriteStream: fs_wstream,
+      copy: fs_copy,
+      readFile: fs_read,
+      writeFile: fs_write,
+      move: fs_move,
+      chmod: fs_chmod
+    } = require('fs-extra')
+
     let export_settings = app.projSetting("export")
     let love_path = nwPATH.join(temp_dir, export_settings.name + ".love")
     let engine_path = app.engine_dist_path(platform, arch)
@@ -412,21 +436,19 @@ module.exports.settings = {
 
     let resolution = getGameSize(platform);
 
-    const cleanLove = () => nwFS.remove(love_path)
-
     if (platform == "win") {
       let exe_path = nwPATH.join(os_dir, project_name + ".exe");
       // TODO: test on mac/linux
       // copy /b love.exe+game.love game.exe
-      let f_loveexe = nwFS.createReadStream(
+      let f_loveexe = fs_rstream(
         nwPATH.join(engine_path, "love.exe"),
         { flags: "r", encoding: "binary" }
       );
-      let f_gamelove = nwFS.createReadStream(love_path, {
+      let f_gamelove = fs_rstream(love_path, {
         flags: "r",
         encoding: "binary",
       });
-      let f_gameexe = nwFS.createWriteStream(exe_path, {
+      let f_gameexe = fs_wstream(exe_path, {
         flags: "w",
         encoding: "binary",
       });
@@ -434,7 +456,7 @@ module.exports.settings = {
       f_loveexe.on("end", () => {
         f_gamelove.pipe(f_gameexe);
         // finished all merging
-        nwFS.remove(love_path, () => {
+        fs_remove(love_path, () => {
           cb_done();
         });
       });
@@ -454,19 +476,19 @@ module.exports.settings = {
         [/<key>UTExportedTypeDeclarations<\/key>[\s\S]*<\/array>/g, '']
       ]
 
-      nwFS.copy(app_path, out_path)
+      fs_copy(app_path, out_path)
         // Info.plist
-        .then(() => nwFS.readFile(nwPATH.join(app_path, "Contents", "Info.plist"), "utf8"))
+        .then(() => fs_read(nwPATH.join(app_path, "Contents", "Info.plist"), "utf8"))
         .then(data => {
           replacements.forEach(([regex, new_str]) => {
             data = data.replace(regex, new_str)
           })
           return data
         })
-        .then(new_data => nwFS.writeFile(nwPATH.join(out_path, "Contents", "Info.plist"), new_data))
+        .then(new_data => fs_write(nwPATH.join(out_path, "Contents", "Info.plist"), new_data))
         // add .love
-        .then(() => nwFS.move(love_path, nwPATH.join(out_path, "Contents", "Resources", new_love_name)))
-        .then(() => nwFS.remove(love_path))
+        .then(() => fs_move(love_path, nwPATH.join(out_path, "Contents", "Resources", new_love_name)))
+        .then(() => fs_remove(love_path))
         .then(() => {
           cb_done()
         })
@@ -490,34 +512,34 @@ module.exports.settings = {
         // download appimagetool
         .download(`https://github.com/AppImage/AppImageKit/releases/download/continuous/${filename}`, join(app.engine_path, filename))
         // make it executable
-        .then(() => nwFS.chmod(join(app.engine_path, filename), 0o777))
-        .then(() => nwFS.remove(join(app.engine_path, 'squashfs-root')))
+        .then(() => fs_chmod(join(app.engine_path, filename), 0o777))
+        .then(() => fs_remove(join(app.engine_path, 'squashfs-root')))
         .then(() => new Promise((res, rej) => {
           const child = spawn(app.engine_dist_path(), ['--appimage-extract'], { cwd: app.engine_path })
           child.on('close', () => res())
           child.on("error", err => rej(err))
         }))
         // create AppDir
-        .then(() => nwFS.copy(join(app.engine_path, 'squashfs-root'), app_dir))
+        .then(() => fs_copy(join(app.engine_path, 'squashfs-root'), app_dir))
         // replace icon
-        .then(() => nwFS.remove(join(app_dir, 'love.svg')))
-        .then(() => nwFS.copy(join(app.engine_path, 'logo.svg'), join(app_dir, 'logo.svg')))
+        .then(() => fs_remove(join(app_dir, 'love.svg')))
+        .then(() => fs_copy(join(app.engine_path, 'logo.svg'), join(app_dir, 'logo.svg')))
         // replace text in .desktop file
-        .then(() => nwFS.readFile(join(app_dir, 'love.desktop'), 'utf8'))
+        .then(() => fs_read(join(app_dir, 'love.desktop'), 'utf8'))
         .then(data => {
           desktop_replacements.map(([olds, news]) => { data = data.replace(olds, news) })
           return data
         })
-        .then(data => nwFS.writeFile(join(app_dir, `${project_name}.desktop`), data))
-        .then(() => nwFS.remove(join(app_dir, 'love.desktop')))
+        .then(data => fs_write(join(app_dir, `${project_name}.desktop`), data))
+        .then(() => fs_remove(join(app_dir, 'love.desktop')))
         // replace text in wrapper-love
-        .then(() => nwFS.readFile(join(app_dir, 'usr', 'bin', 'wrapper-love'), 'utf8'))
+        .then(() => fs_read(join(app_dir, 'usr', 'bin', 'wrapper-love'), 'utf8'))
         .then(data => data.replace(/\$@/, `\${APPIMAGE_DIR}/${nwPATH.basename(love_path)}`))
-        .then(data => nwFS.writeFile(join(app_dir, 'usr', 'bin', 'wrapper-love'), data))
+        .then(data => fs_write(join(app_dir, 'usr', 'bin', 'wrapper-love'), data))
         // move .love file
-        .then(() => nwFS.move(love_path, join(app_dir, nwPATH.basename(love_path))))
+        .then(() => fs_move(love_path, join(app_dir, nwPATH.basename(love_path))))
         // run appimagetool
-        .then(() => nwFS.remove(join(app.engine_path, 'squashfs-root')))
+        .then(() => fs_remove(join(app.engine_path, 'squashfs-root')))
         .then(() => new Promise((res, rej) => {
           const child = spawn(join(app.engine_path, filename), ['--appimage-extract'], { cwd: app.engine_path })
           child.on('close', () => res())
@@ -528,7 +550,7 @@ module.exports.settings = {
           child.on('close', () => res())
           child.on('error', err => rej(err))
         }))
-        .then(() => nwFS.remove(join(app.engine_path, 'squashfs-root')))
+        .then(() => fs_remove(join(app.engine_path, 'squashfs-root')))
         .then(() => cb_done())
         .catch(err => cb_err(err))
     }
@@ -682,11 +704,11 @@ if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, 
     DoLoad()
 }`;
 
-      nwFS.readFile(love_path, "base64")
+      fs_read(love_path, "base64")
         .then(game_data => `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`)
         .then(gamejs => Promise.all([
           gamejs,
-          nwFS.readFile(nwPATH.join(app.engine_path, "love.js"), "utf-8")
+          fs_read(nwPATH.join(app.engine_path, "love.js"), "utf-8")
         ]))
         .then(([gamejs, lovejs]) => {
           const game_data = Buffer.from(lovejs + gamejs)
@@ -697,18 +719,18 @@ if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, 
           console.log(`exporting web, memory:${web_memory === 0 ? new_memory : web_memory}, stack size:${web_stack}`)
 
           // write engine data
-          return nwFS.writeFile(
+          return fs_write(
             nwPATH.join(os_dir, `blanke.js`),
             new Uint8Array(
               Buffer.from(extrajs(web_memory === 0 ? new_memory : web_memory))
             )
           )
             // write game data
-            .then(() => nwFS.writeFile(nwPATH.join(os_dir, `${project_name}.data`), new Uint8Array(game_data)))
+            .then(() => fs_write(nwPATH.join(os_dir, `${project_name}.data`), new Uint8Array(game_data)))
             // remove .love
-            .then(() => nwFS.remove(love_path))
+            .then(() => fs_remove(love_path))
             // write index.html
-            .then(() => nwFS.writeFile(
+            .then(() => fs_write(
               nwPATH.join(os_dir, "index.html"),
               html,
               "utf-8",

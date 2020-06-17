@@ -76,7 +76,7 @@ class Console extends Editor {
     this.had_error = false;
   }
 
-  clearError() {}
+  clearError() { }
 
   parse(line) {
     // one-liner limits object depth

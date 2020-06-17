@@ -21,7 +21,6 @@ C	sceneeditor: re-opening opens 3 instances
 const elec = require("electron")
 const { remote, shell, ipcRenderer, webFrame } = elec
 
-var fs = require("fs").promises
 var nwFS = require("fs-extra")
 var nwWALK = require("walk")
 var nwPATH = require("path")
@@ -209,20 +208,16 @@ var app = {
   },
 
   newProject: function (path) {
-    nwFS.mkdir(path, function (err) {
-      if (!err) {
-        // copy template files
-        nwFS
-          .copy(app.template_path, path)
-          .then(() => {
-            app.hideWelcomeScreen()
-            app.openProject(path)
-          })
-          .catch((err) => {
-            console.error(err)
-          })
-      }
-    })
+    nwFS.mkdir(path)
+      // copy template files
+      .then(() => nwFS.copy(app.template_path, path))
+      .then(() => {
+        app.hideWelcomeScreen()
+        app.openProject(path)
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   },
 
   newProjectDialog: function () {
@@ -1886,10 +1881,11 @@ app.window.webContents.once("dom-ready", () => {
   // prepare search box
   app.getElement("#search-input").addEventListener("input", onSearchInput)
   app.getElement("#search-input").addEventListener("keydown", (e) => {
-    if (e && e.keyCode === 27) {
+    if (e && e.key === "Escape") {
       // esc
       e.target.value = ""
       onSearchInput()
+      e.target.blur()
       if (document.activeElement !== e.target)
         el_search_input.placeholder = app.win_title
     }
@@ -1957,7 +1953,7 @@ app.window.webContents.once("dom-ready", () => {
 
   // shortcut: focus search box
   app.newShortcut({
-    key: "CommandOrControl+R",
+    key: "CommandOrControl+T",
     active: function () {
       app.getElement("#search-input").focus()
     },
@@ -1976,7 +1972,7 @@ app.window.webContents.once("dom-ready", () => {
       app.restart()
     },
   })
-  // shortcut: shift window focus
+  /* shortcut: shift window focus
   app.newShortcut({
     key: "CommandOrControl+T",
     active: function () {
@@ -1993,8 +1989,8 @@ app.window.webContents.once("dom-ready", () => {
         windows[index].click()
       }
     },
-  })
-  // shortcut: PREVENT refreshing
+  })*/
+  // shortcut: PREVENT default refreshing
   app.newShortcut({
     key: "CommandOrControl+R",
     active: function () { },

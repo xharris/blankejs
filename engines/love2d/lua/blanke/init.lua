@@ -1,6 +1,5 @@
--- TODO Images have their own hitbox instead of entity. Entity just uses the current animations hitbox
 -- TODO rework Image to autobatch
--- TODO Blanke.config
+-- TODO 9-slicing
 local _NAME = ...
 local blanke_require = function(r)
     return require(r)
@@ -22,16 +21,17 @@ blanke_require("print_r")
 
 local tbl_to_str
 tbl_to_str = function(t, str)
+    local empty = true
     str = str or ''
     str = str .. "["
     for i = 1, #t, 1 do
         if i ~= 1 then 
             str = str .. ','
         end 
-        if type(v) == "table" then 
-            str = str .. tbl_to_str(v, str)
+        if type(t[i]) == "table" then 
+            str = str .. tbl_to_str(t[i], str)
         else 
-            str = str .. tostring(v)
+            str = str .. tostring(t[i])
         end 
     end
     str = str .. "]"
@@ -59,15 +59,23 @@ do
         cache = cache[f]
         return function(...)
             local args = {...}
-            local cache_str = ''
+            local cache_str = '<no-args>'
+            local found_args = false
             for i, v in ipairs(args) do
-                if i ~= 1 then 
-                    cache_str = cache_str .. '~'
-                end 
-                if type(v) == "table" then
-                    cache_str = cache_str .. tbl_to_str(v)
-                else
-                    cache_str = cache_str .. tostring(v)
+                if v ~= nil then 
+                    if not found_args then 
+                        found_args = true 
+                        cache_str = ''
+                    end
+
+                    if i ~= 1 then 
+                        cache_str = cache_str .. '~'
+                    end 
+                    if type(v) == "table" then
+                        cache_str = cache_str .. tbl_to_str(v)
+                    else
+                        cache_str = cache_str .. tostring(v)
+                    end
                 end
             end 
             -- retrieve cached value?
@@ -76,6 +84,7 @@ do
                 -- not cached yet
                 ret = { f(unpack(args)) }
                 cache[cache_str] = ret 
+                -- print('store',cache_str,'as',unpack(ret))
             end
             return unpack(ret)
         end
@@ -2198,7 +2207,7 @@ do
         end;
         parseColor = memoize(function(...)
             local r, g, b, a = ...
-            if not r or r == true then
+            if r == nil or r == true then
                 -- no color given
                 r, g, b, a = 1, 1, 1, 1
                 return r, g, b, a
@@ -4756,6 +4765,8 @@ do
         end
     }
 end
+
+
 
 --BLANKE
 Blanke = nil
