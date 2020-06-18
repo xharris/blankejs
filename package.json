@@ -13,7 +13,8 @@
   "scripts": {
     "electron": "electron .",
     "build": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder",
-    "release": "env-cmd electron-builder",
+    "release": "electron-builder",
+    "release-local": "env-cmd electron-builder",
     "test": "",
     "test:local": "mocha --exit ./test"
   },
