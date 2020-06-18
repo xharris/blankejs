@@ -17,8 +17,9 @@ cache:
 
 # A list of operating systems which are used for tests
 os:
+  - windows
   - linux
-  # - osx
+  - osx
 # osx_image: xcode8.4 # define OS X image which will be mounted
 dist: xenial
 
@@ -42,6 +43,7 @@ install:
   
 script:
   - xvfb-run -a npm test
+  - npm run release
   
 notifications:
   email: false
