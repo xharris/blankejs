@@ -244,6 +244,14 @@ body > #header {
   }
 }
 
+body.mac > #header {
+  flex-direction: row-reverse;
+
+  #btn-close {
+    order: 1;
+  }
+}
+
 .btn-round() {
   .ui-button-sphere();
   cursor: pointer;
@@ -1154,6 +1162,13 @@ iframe {
       text-indent: 15px;
     }
   }
+}
+
+body.mac > #search-results {
+  padding-left: 10px;
+  padding-right: 0px;
+  right: 2px;
+  left: initial;
 }
 
 #welcome {

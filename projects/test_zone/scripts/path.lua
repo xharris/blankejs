@@ -4,7 +4,7 @@ State("path",{
 			tile_hitbox = { megman = 'ground' }	
 		}
 		local cam = Camera("main")
-		bob = CameraMan()
+		-- bob = CameraMan()
 		
 		local map = Map.load('platformer.map')
 		local paths = map:getPaths("path_node")

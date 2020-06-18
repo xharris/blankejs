@@ -2643,7 +2643,6 @@ class SceneEditor extends Editor {
   }
 
   static refreshSceneList(path) {
-    app.removeSearchGroup("Map");
     addScenes(ifndef(path, app.project_path));
   }
 
@@ -2658,8 +2657,11 @@ document.addEventListener("fileChange", function (e) {
   }
 });
 
-function addScenes(folder_path) {
+const addScenes = (folder_path) => {
+  app.removeSearchGroup("Map")
+  console.log(app.project_path)
   app.getAssets("map", files => {
+    console.log(files)
     files.forEach(f => {
       app.addSearchKey({
         key: f.replace(app.getAssetPath("map") + "/", ""),

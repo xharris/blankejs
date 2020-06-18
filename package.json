@@ -12,7 +12,7 @@
   },
   "scripts": {
     "electron": "electron .",
-    "build": "electron-builder",
+    "build": "export CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder",
     "release": "env-cmd electron-builder",
     "test": "",
     "test:local": "mocha --exit ./test"
@@ -40,6 +40,13 @@
       "category": "Development",
       "target": [
         "AppImage"
+      ]
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "src/logo.icns",
+      "target": [
+        "default"
       ]
     },
     "directories": {
