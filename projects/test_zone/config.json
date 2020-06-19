@@ -9,6 +9,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Check for updates=?",
+            "Check for updates"
+        ],
+        [
             "View APPDATA folder=?",
             "View APPDATA folder"
         ],
@@ -23,10 +27,6 @@
         [
             "main.lua=script+?",
             "main.lua"
-        ],
-        [
-            "View project in explorer=?",
-            "View project in explorer"
         ]
     ],
     "autoplay_preview": true,

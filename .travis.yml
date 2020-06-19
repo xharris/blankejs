@@ -18,11 +18,11 @@ cache:
 # A list of operating systems which are used for tests
 matrix:
   include:
-  - os: windows
-  - os: osx
-    osx_image: "xcode11.3"
-  - os: linux
-    dist: bionic
+    - os: windows
+    - os: osx
+      osx_image: xcode11.6
+    - os: linux
+      dist: xenial
 
 services:
   - xvfb

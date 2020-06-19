@@ -2,7 +2,7 @@
   "name": "BlankE",
   "description": "BlankE game dev environment",
   "author": "XHH <xhh950@gmail.com>",
-  "version": "0.12.0",
+  "version": "0.11.11",
   "main": "entry.js",
   "single-instance": false,
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
@@ -19,7 +19,7 @@
     "test:local": "mocha --exit ./test"
   },
   "build": {
-    "appId": "com.electron.blanke",
+    "appId": "com.xhh.blanke",
     "compression": "maximum",
     "win": {
       "icon": "logo.ico",
@@ -43,9 +43,12 @@
         "AppImage"
       ]
     },
+    "afterSign": "scripts/notarize.js",
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "src/logo.icns",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
       "target": [
         "default"
       ]
@@ -100,6 +103,7 @@
     "chai-as-promised": "^7.1.1",
     "electron": "^5.0.3",
     "electron-builder": "^22.4.1",
+    "electron-notarize": "^1.0.0",
     "expect.js": "^0.3.1",
     "mocha": "^7.1.1",
     "spectron": "^7.0.0"
