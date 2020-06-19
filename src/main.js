@@ -2168,11 +2168,17 @@ app.window.webContents.once("dom-ready", () => {
         : Promise.all(
           ["plugin", "themes", "engines"].map((p) => {
             const path = app.ideSetting(p + "_path")
+            const dest_path = nwPATH.join(remote.app.getPath("userData"), path)
+
             if (!path.match(/[\\\/]/))
-              nwFS.copy(
-                app.relativePath(path),
-                nwPATH.join(remote.app.getPath("userData"), path)
-              )
+              return
+            nwFS.exists(dest_path)
+              .then(exists => !(exists || p === "engines"))
+              .then(copy =>
+                copy && nwFS.copy(
+                  app.relativePath(path),
+                  nwPATH.join(remote.app.getPath("userData"), path)
+                ))
           })
         )
     )
