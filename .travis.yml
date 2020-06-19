@@ -16,12 +16,13 @@ cache:
     - $HOME/.npm/_prebuilds
 
 # A list of operating systems which are used for tests
-os:
-  - windows
-  - linux
-  - osx
-# osx_image: xcode8.4 # define OS X image which will be mounted
-dist: xenial
+matrix:
+  include:
+  - os: windows
+  - os: osx
+    osx_image: "xcode11.3"
+  - os: linux
+    dist: bionic
 
 services:
   - xvfb
@@ -42,7 +43,7 @@ install:
   - npm i
   
 script:
-  - xvfb-run -a npm test
+  # - xvfb-run -a npm test
   - npm run release
   
 notifications:
