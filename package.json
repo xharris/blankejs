@@ -2,7 +2,7 @@
   "name": "BlankE",
   "description": "BlankE game dev environment",
   "author": "XHH <xhh950@gmail.com>",
-  "version": "0.11.11",
+  "version": "0.12.1",
   "main": "entry.js",
   "single-instance": false,
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
@@ -43,15 +43,20 @@
         "AppImage"
       ]
     },
-    "afterSign": "scripts/notarize.js",
+    "afterSign": "build/notarize.js",
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "src/logo.icns",
+      "hardenedRuntime" : true,
+      "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
       "target": [
         "default"
       ]
+    },
+    "dmg": {
+      "sign": false
     },
     "directories": {
       "buildResources": "src"

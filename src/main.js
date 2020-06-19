@@ -133,9 +133,9 @@ var app = {
     let ext = nwPATH.extname(filename)
     blanke.showModal(
       "<label>new name: </label>" +
-        "<input class='ui-input' id='new-file-name' style='width:100px;' value='" +
-        nwPATH.basename(filename, ext) +
-        "'/>",
+      "<input class='ui-input' id='new-file-name' style='width:100px;' value='" +
+      nwPATH.basename(filename, ext) +
+      "'/>",
       {
         yes: () => {
           let new_path = nwPATH.join(
@@ -148,10 +148,10 @@ var app = {
             } else
               blanke.toast(
                 "could not rename '" +
-                  nwPATH.basename(full_path) +
-                  "' (" +
-                  err +
-                  ")"
+                nwPATH.basename(full_path) +
+                "' (" +
+                err +
+                ")"
               )
             if (cb && cb.fail) cb.fail()
           })
@@ -230,18 +230,18 @@ var app = {
       function (file_path) {
         blanke.showModal(
           "<label style='line-height:35px'>new project name:</label></br>" +
-            "<label>" +
-            file_path +
-            nwPATH.sep +
-            "</label>" +
-            "<input class='ui-input' id='new-proj-name' style='width:100px;' value='my_project'/>",
+          "<label>" +
+          file_path +
+          nwPATH.sep +
+          "</label>" +
+          "<input class='ui-input' id='new-proj-name' style='width:100px;' value='my_project'/>",
           {
             yes: function () {
               app.newProject(
                 nwPATH.join(file_path, app.getElement("#new-proj-name").value)
               )
             },
-            no: function () {},
+            no: function () { },
           }
         )
       }
@@ -517,7 +517,7 @@ var app = {
     DragBox.showHideAll()
     app.getElement("#btn-winvis").title = `${
       split_enabled == true ? "hide" : "show"
-    } floating windows`
+      } floating windows`
   },
 
   toggleSplit: () => {
@@ -798,12 +798,12 @@ var app = {
         str.includes("win") || str.toLowerCase().includes(".exe")
           ? "win"
           : str.includes("mac")
-          ? "mac"
-          : str.includes("lin") || str.toLowerCase().includes(".appimage")
-          ? "linux"
-          : str.includes("web") || str.includes(".js")
-          ? "web"
-          : str.replace("dist-", "").split("-")[0],
+            ? "mac"
+            : str.includes("lin") || str.toLowerCase().includes(".appimage")
+              ? "linux"
+              : str.includes("web") || str.includes(".js")
+                ? "web"
+                : str.replace("dist-", "").split("-")[0],
       arch: str.includes("mac") || str.includes("64") ? "64" : "32",
     }
   },
@@ -930,57 +930,57 @@ var app = {
 
     return nwFS.pathExists(dist_path).then((exists) =>
       exists
-        ? () => {}
+        ? () => { }
         : new Promise((res, rej) => {
-            const binaries = app.engine.binaries
-            const bin_type = [platform, arch].join("-")
+          const binaries = app.engine.binaries
+          const bin_type = [platform, arch].join("-")
 
-            if (binaries[bin_type]) {
-              const url = binaries[bin_type]
-              const ext = app.engine.binary_ext[platform] || "zip"
-              const is_zip = ext === "zip"
+          if (binaries[bin_type]) {
+            const url = binaries[bin_type]
+            const ext = app.engine.binary_ext[platform] || "zip"
+            const is_zip = ext === "zip"
 
-              toast = blanke.toast("Downloading engine files", -1)
-              toast.icon = "dots-horizontal"
-              toast.style = "wait"
+            toast = blanke.toast("Downloading engine files", -1)
+            toast.icon = "dots-horizontal"
+            toast.style = "wait"
 
-              return res(
-                app
-                  .download(
-                    url,
+            return res(
+              app
+                .download(
+                  url,
+                  nwPATH.join(
+                    app.engine_path,
+                    is_zip ? `love.${ext}` : nwPATH.basename(url)
+                  )
+                )
+                .then(() => {
+                  return [
+                    is_zip,
                     nwPATH.join(
                       app.engine_path,
-                      is_zip ? `love.${ext}` : nwPATH.basename(url)
-                    )
-                  )
-                  .then(() => {
-                    return [
-                      is_zip,
-                      nwPATH.join(
-                        app.engine_path,
-                        is_zip ? "love.zip" : nwPATH.basename(url)
-                      ),
-                    ]
-                  })
-              )
+                      is_zip ? "love.zip" : nwPATH.basename(url)
+                    ),
+                  ]
+                })
+            )
+          }
+        })
+          .then(([is_zip, binary_folder]) => {
+            if (is_zip) {
+              return app.unzip(binary_folder, app.engine_path)
+            } else {
+              if (app.os === "linux") return nwFS.chmod(binary_folder, 0o777)
             }
           })
-            .then(([is_zip, binary_folder]) => {
-              if (is_zip) {
-                return app.unzip(binary_folder, app.engine_path)
-              } else {
-                if (app.os === "linux") return nwFS.chmod(binary_folder, 0o777)
-              }
-            })
-            .then(() => nwFS.remove(nwPATH.join(app.engine_path, "love.zip")))
-            .then(() => {
-              if (toast) {
-                toast.icon = "check-bold"
-                toast.style = "good"
-                toast.text = "Engine ready!"
-                toast.die(2000)
-              }
-            })
+          .then(() => nwFS.remove(nwPATH.join(app.engine_path, "love.zip")))
+          .then(() => {
+            if (toast) {
+              toast.icon = "check-bold"
+              toast.style = "good"
+              toast.text = "Engine ready!"
+              toast.die(2000)
+            }
+          })
     )
   },
   plugin_watch: null,
@@ -1024,12 +1024,12 @@ var app = {
     )
     // project settings
     let eng_settings = {}
-    ;(app.engine.project_settings || []).forEach((s) => {
-      for (let prop of s) {
-        if (typeof prop == "object" && prop.default != null)
-          eng_settings[s[0]] = prop.default
-      }
-    })
+      ; (app.engine.project_settings || []).forEach((s) => {
+        for (let prop of s) {
+          if (typeof prop == "object" && prop.default != null)
+            eng_settings[s[0]] = prop.default
+        }
+      })
 
     app.project_settings = Object.assign({}, eng_settings, app.project_settings)
     app.saveSettings()
@@ -1141,7 +1141,7 @@ var app = {
             )
             app.openProject(dist_path)
           },
-          no: function () {},
+          no: function () { },
         }
       )
     })
@@ -1686,10 +1686,10 @@ var app = {
     nwFS.appendFile(
       nwPATH.join(app.getAppDataFolder(), "error.txt"),
       "[[ " +
-        Date.now() +
-        " ]]\r\n" +
-        Array.prototype.slice.call(arguments).join("\r\n") +
-        "\r\n\r\n",
+      Date.now() +
+      " ]]\r\n" +
+      Array.prototype.slice.call(arguments).join("\r\n") +
+      "\r\n\r\n",
       (err) => {
         if (!app.error_occured) {
           app.error_occured = e
@@ -1991,7 +1991,7 @@ app.window.webContents.once("dom-ready", () => {
   // shortcut: PREVENT default refreshing
   app.newShortcut({
     key: "CommandOrControl+R",
-    active: function () {},
+    active: function () { },
   })
 
   app.renderer.on("update-available", (e, arg) => {
@@ -2006,15 +2006,28 @@ app.window.webContents.once("dom-ready", () => {
     el_update.classList.remove("hidden")
     el_update.title = update_title
     el_update.addEventListener("click", (e) => {
-      blanke.showModal(
-        `<div class="update-title">Restart and install update?</div><div class='info'>${arg.releaseNotes}</div>`,
-        {
-          yes: function () {
-            app.renderer.send("installUpdate")
-          },
-          no: function () {},
-        }
-      )
+
+      if (app.os === "mac")
+        blanke.showModal(
+          `<div class="update-title">Go to the download page to get the new version?</div><div class='info'>${arg.releaseNotes}</div>`,
+          {
+            yes: function () {
+              shell.openExternal(process.env.DOWNLOAD_PAGE)
+            },
+            no: function () { },
+          }
+        )
+      else
+        blanke.showModal(
+          `<div class="update-title">Restart and install update?</div><div class='info'>${arg.releaseNotes}</div>`,
+          {
+            yes: function () {
+              app.renderer.send("installUpdate")
+            },
+            no: function () { },
+          }
+        )
+
     })
   })
 
@@ -2034,7 +2047,7 @@ app.window.webContents.once("dom-ready", () => {
         yes: function () {
           app.window.destroy()
         },
-        no: function () {},
+        no: function () { },
       })
     } else {
       app.window.destroy()
@@ -2153,15 +2166,15 @@ app.window.webContents.once("dom-ready", () => {
       require("electron-is-dev")
         ? null
         : Promise.all(
-            ["plugin", "themes", "engines"].map((p) => {
-              const path = app.ideSetting(p + "_path")
-              if (!path.match(/[\\\/]/))
-                nwFS.copy(
-                  app.relativePath(path),
-                  nwPATH.join(remote.app.getPath("userData"), path)
-                )
-            })
-          )
+          ["plugin", "themes", "engines"].map((p) => {
+            const path = app.ideSetting(p + "_path")
+            if (!path.match(/[\\\/]/))
+              nwFS.copy(
+                app.relativePath(path),
+                nwPATH.join(remote.app.getPath("userData"), path)
+              )
+          })
+        )
     )
     .then(() => {
       // load current theme
