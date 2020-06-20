@@ -9,6 +9,14 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Find in files=?",
+            "Find in files"
+        ],
+        [
+            "Add a script=new+?",
+            "Add a script"
+        ],
+        [
             "Check for updates=?",
             "Check for updates"
         ],
@@ -19,14 +27,6 @@
         [
             "path.lua=script+entity+?",
             "path.lua"
-        ],
-        [
-            "Open error file=?",
-            "Open error file"
-        ],
-        [
-            "main.lua=script+?",
-            "main.lua"
         ]
     ],
     "autoplay_preview": true,

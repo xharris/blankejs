@@ -42,7 +42,7 @@ State("bunnymark",{
 	end,
 	draw = function()
 		Draw{
-			{'color','white'},
+			{'color','black'},
 			{'fontSize',40},
 			{'print',table.join({count,'FPS: '..love.timer.getFPS(),mark},'\n'), 30, 30}
 		}

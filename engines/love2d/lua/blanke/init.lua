@@ -277,7 +277,7 @@ do
     Math.seed = function(l,h) if l then love.math.setRandomSeed(l,h) else return love.math.getRandomSeed() end end
     Math.random = function(...) return love.math.random(...) end
     Math.indexTo2d = function(i, col) return math.floor((i-1)%col)+1, math.floor((i-1)/col)+1 end
-    Math.getXY = memoize(function(angle, dist) return dist * cos(rad(angle)), dist * sin(rad(angle)) end)
+    Math.getXY = memoize(function(angle, dist) return dist * cos(angle), dist * sin(angle) end)
     Math.distance = memoize(function(x1,y1,x2,y2) return math.sqrt( (x2-x1)^2 + (y2-y1)^2 ) end)
     Math.lerp = function(a,b,t) 
         local r = a * (1-t) + b * t
@@ -291,7 +291,7 @@ do
     end
     Math.sinusoidal = function(min, max, spd, percent) return Math.lerp(min, max, Math.prel(-1, 1, math.cos(Math.lerp(0,math.pi/2,percent or 0) + (Game.time * (spd or 1)) )) ) end
     --  return min + -math.cos(Math.lerp(0,math.pi/2,off or 0) + (Game.time * spd)) * ((max - min)/2) + ((max - min)/2) end
-    Math.angle = memoize(function(x1, y1, x2, y2) return math.deg(math.atan2((y2-y1), (x2-x1))) end)
+    Math.angle = memoize(function(x1, y1, x2, y2) return math.atan2((y2-y1), (x2-x1)) end)
     Math.pointInShape = function(shape, x, y)
         local pts = {}
         for p = 1,#shape,2 do
@@ -460,6 +460,7 @@ iterate = function(t, fn)
     end
 end
 
+local nonzero_z = false
 local iterateEntities = function(t, test_val, fn)
     if not t then return end
     local len = #t
@@ -472,7 +473,12 @@ local iterateEntities = function(t, test_val, fn)
                 table.insert(removals, o)
             elseif (obj._last_z == nil and obj.z) or (obj._last_z ~= obj.z) then
                 obj._last_z = obj.z
-                Game.sortDrawables()
+                if obj.z ~= 0 then 
+                    nonzero_z = true 
+                end
+                if nonzero_z then 
+                    Game.sortDrawables()
+                end 
             end
         end
     end
@@ -844,7 +850,7 @@ do
         -- tform:translate(-ax / scalex, -ay / scaley)
         if is_fn then
             tform:scale(scalex, scaley)
-            tform:rotate(math.rad(props.angle))
+            tform:rotate(props.angle)
             tform:shear(props.shearx, props.sheary)
         end
 
@@ -1153,6 +1159,10 @@ do
                     spawn_class = spawn_class
                 }
             end
+        end;
+
+        getObject = function(name)
+            return objects[name]
         end;
 
         checkAlign = function(obj)
@@ -1464,6 +1474,9 @@ Canvas = GameObject:extend {
             self:addDrawable()
         end
     end;
+    getDrawable = function(self)
+        return self.canvas, { self.quad }
+    end;
     reset = function(self)
         self.blendmode = {"alpha"}
         self.auto_clear = true
@@ -1591,14 +1604,14 @@ do
             end
         end;
         init = function(self,args)
-            GameObject.init(self, {classname="Image"}, args)
             -- animation?
             local anim_info = nil
             if type(args) == 'string' then
-                anim_info = animations[args]
+                args = animations[args] or { file=args }
             elseif args.animation then
                 anim_info = animations[args.animation]
             end
+            
             if anim_info then
                 -- animation (speed, frame_index)
                 args = {file=anim_info.file}
@@ -1607,11 +1620,10 @@ do
                 self.t, self.frame_index, self.frame_len = 0, 1, anim_info.durations[1] or anim_info.duration
                 self.quads = anim_info.quads
                 self.frame_count = #self.quads
-            elseif type(args) == 'string' then
-                -- static image
-                args = {file=args}
             end
             self.image = getImage(args.file)
+            
+            GameObject.init(self, {classname="Image"}, args)
 
             self:updateSize()
             if self._spawn then self:_spawn() end
@@ -1621,6 +1633,13 @@ do
             end
             if args.draw == true then
                 self:addDrawable()
+            end
+        end;
+        getDrawable = function(self)
+            if self.speed == 0 then 
+                return self.image, { self.quads[self.frame_index] }
+            else
+                return self.image, self.quads or {}
             end
         end;
         updateSize = function(self)
@@ -1725,7 +1744,7 @@ do
             self.hspeed = 0
             self.vspeed = 0
             self.gravity = 0
-            self.gravity_direction = 90
+            self.gravity_direction = rad(90)
 
             args = copy(args or {})
             spawn_args = copy(spawn_args or {})
@@ -1900,6 +1919,13 @@ do
                     self:postdraw()
                 end
             end, 'function')
+        end;
+        getDrawable = function(self)
+            if self.image then 
+                return self.imageList[self.image]:getDrawable()
+            elseif self.animation then 
+                return self.animList[self.animation]:getDrawable()
+            end
         end;
         draw = function(self,...) self:_draw(...) end;
         _destroy = function(self)
@@ -2202,7 +2228,7 @@ do
             if setText(txt,limit,align) then
                 x = x or 0
                 y = y or 0
-                love.graphics.draw(Draw.text, x, y,Math.rad(r or 0),...)
+                love.graphics.draw(Draw.text, x, y,r or 0,...)
             end
         end;
         parseColor = memoize(function(...)
@@ -2246,7 +2272,7 @@ do
             -- Draw.crop_used = true
         end;
         rotate = function(r)
-            love.graphics.rotate(math.rad(r))
+            love.graphics.rotate(r)
         end;
         translate = function(x,y)
             love.graphics.translate(floor(x), floor(y))
@@ -2877,7 +2903,7 @@ do
                 o.transform:reset()
                 o.transform:translate(half_w, half_h)
                 o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
-                o.transform:rotate(math.rad(o.angle))
+                o.transform:rotate(o.angle)
                 o.transform:translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
 
                 o.offset_x = -(floor(half_w) -floor(o.x - o.left + o.dx))
@@ -2922,39 +2948,49 @@ end
 --SPRITEBATCH
 SpriteBatch = nil
 do
-    local images = {} -- { name: Image }
-    local quads = {} -- { hash: Quad }
     SpriteBatch = GameObject:extend {
         init = function(self)
-            GameObject.init(self, {classname="Map"})
+            GameObject.init(self, {classname="SpriteBatch"})
 
             self.batches = {} -- { 'file_name' = SpriteBatch }
             self:addDrawable()
         end;
-        add = function(self, img_path, x, y, tx, ty, tw, th)
-            -- get image
-            local img = images[img_path]
-            if not img then images[img_path] = love.graphics.newImage(img_path) end
-            img = images[img_path]
+        add = function(self, img_path, x, y, tx, ty, tw, th, ...)
+            local img 
+            if type(img_path) == "string" then
+                -- get image
+                img = Cache.get('spritebatch.image', img_path, function(key)
+                    return love.graphics.newImage(img_path)
+                end)
+            else 
+                img_path = tostring(img)
+            end 
 
             -- get quad
-            local quad_hash = img_path..':'..tx..","..ty..","..tw..","..ty
-            if not quads[quad_hash] then quads[quad_hash] = love.graphics.newQuad(tx,ty,tw,th,img:getWidth(),img:getHeight()) end
-            local quad = quads[quad_hash]
+            local quad = Cache.get('spritebatch.quad', img_path..':'..tx..","..ty..","..tw..","..ty, function(key)
+                return love.graphics.newQuad(tx,ty,tw,th,img:getWidth(),img:getHeight())
+            end)
 
             -- get spritebatch
             local sb = self.batches[img_path]
             if not sb then sb = love.graphics.newSpriteBatch(img) end
             self.batches[img_path] = sb
 
-            return sb:add(quad,floor(x),floor(y),0)
+            return sb:add(quad,floor(x),floor(y),...)
         end;
         remove = function(self, img_path, id)
-            local sb = self.batches[img_path]
+            local sb = self.batches[tostring(img_path)]
             if sb then
                 sb:set(id, 0, 0, 0, 0, 0)
                 return true
             end
+        end;
+        set = function(self, img_path, id, ...)
+            local sb = self.batches[tostring(img_patch)]
+            if sb then 
+                sb:set(id, ...)
+                return true
+            end 
         end;
         _draw = function(self)
             for _, sb in pairs(self.batches) do
@@ -4766,7 +4802,148 @@ do
     }
 end
 
+--PARTICLES
+Particles = nil 
+do 
+    local methods = {
+        rate = 'EmissionRate',
+        area = 'AreaSpread',
+        color = 'Colors',
+        max = 'BufferSize',
+        lifetime = 'ParticleLifetime',
+        linear_accel = 'LinearAcceleration',
+        linear_damp = 'LinearDamping',
+        offset = 'Offset',
+        rad_accel = 'RadialAcceleration',
+        relative = 'RelativeRotation',
+        direction = 'Direction',
+        rotation = 'Rotation',
+        size_vary = 'SizeVariation',
+        sizes = 'Sizes',
+        speed = 'Speed',
+        spin_vary = 'SpinVariation',
+        spread = 'Spread',
+        tan_accel = 'TangentialAcceleration'
+    }
 
+    Particles = GameObject:extend {
+        init = function(self, args)
+            if type(args) == "string" then 
+                args = { source = args }
+            end 
+            assert(args and args.source, "Particles instance needs 'src'")
+            local frame = args.frame or 0
+            args.frame = nil
+
+            GameObject.init(self, {classname="Particles"}, args)
+
+            table.update(args, {
+                lifetime = 10
+            })
+
+            -- entity-only settings
+            self.source = nil
+            self.texture = nil
+            self.quads = {}
+            self._frame = frame
+
+            self:setSource(args.source)
+            -- initial psystem settings
+            if self.psystem then 
+                for k, v in pairs(args) do 
+                    if methods[k] then
+                        if type(v) == 'table' then 
+                            self.psystem['set'..methods[k]](self.psystem, unpack(v)) 
+                        else
+                            self.psystem['set'..methods[k]](self.psystem, v) 
+                        end
+                    elseif self[k] and type(self[k]) == 'function' then  
+                        if type(v) == 'table' then 
+                            self[k](self, unpack(v)) 
+                        else
+                            self[k](self, v) 
+                        end
+                    end
+                end
+            end
+            -- getters/setters
+            for k,v in pairs(methods) do 
+                self[k] = function(self, ...) 
+                    if self.psystem then 
+                        self.psystem['set'..v](self.psystem, ...) 
+                        return self.psystem['get'..v](self.psystem)
+                    end
+                end
+            end
+
+            self:addUpdatable()
+            self:addDrawable()
+        end,
+        stop = function(self)
+            self:rate(0)
+        end,
+        emit = function(self, n, args)
+            args = args or {}
+            table.update(args, self, {
+                'x','y','angle','scalex','scaley',
+                'offx','offy','shearx','sheary'
+            })
+            if self.source then
+                if self.source.is_entity then 
+                    self.texture = self.source:getDrawable()
+                end
+                self:use(self.source, { 'align', 'width', 'height' })
+                self:frame(self._frame)
+            end
+            if self.psystem then 
+                self.psystem:emit(n)
+            end
+        end,
+        frame = function(self, x)
+            local quads = self.quads 
+            if x then 
+                self._frame = x 
+            end 
+            if x and x > 0 and x < #self.quads + 1 then
+                self.psystem:setQuads(self.quads[x])
+            else 
+                self.psystem:setQuads(self.quads)
+            end
+            return self._frame
+        end,
+        setSource = function(self, src)
+            if type(src) == 'string' then 
+                src = Image(src)
+            end 
+            if type(src) == 'table' and src.getDrawable then
+                self.source = src
+                self.texture, self.quads = src:getDrawable()
+
+                if not self.psystem then 
+                    self.psystem = love.graphics.newParticleSystem(self.texture)
+                else
+                    self.psystem:setTexture(self.texture)
+                end
+                self:frame(self._frame)
+                self:use(self.source, { 'align', 'width', 'height' })
+            else 
+                self.source = nil 
+                self.texture = nil 
+                self.quads = {}
+            end 
+        end,
+        _update = function(self, dt)
+            if self.psystem then 
+                self.psystem:update(dt)
+            end
+        end,
+        _draw = function(self)
+            if self.psystem then 
+                Game.drawObject(self, self.psystem)
+            end 
+        end
+    }
+end
 
 --BLANKE
 Blanke = nil

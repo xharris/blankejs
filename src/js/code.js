@@ -278,7 +278,8 @@ class Code extends Editor {
       if (this.game) this.appendBackground(this.game.container);
     }
 
-    const get_regex = name => new RegExp("\\W" + name + "\\W")
+    const stream_class_check = (stream, name) =>
+      stream.match(new RegExp("\\b(" + name + ")\\b"))
 
     CodeMirror.defineMode("blanke", (config, parserConfig) => {
       var blankeOverlay = {
@@ -312,7 +313,7 @@ class Code extends Editor {
                 if (ext_classes[p].includes(cat))
                   parent = `blanke-${p.toLowerCase()}-instance`;
               }
-              if (stream.match(get_regex(name)))
+              if (stream_class_check(stream, name))
                 return (
                   baseCur +
                   `blanke-instance ${parent} blanke-${cat.toLowerCase()}-instance`
@@ -325,7 +326,7 @@ class Code extends Editor {
             // entity
             for (let name of ext_classes[cat]) {
               // Player
-              if (stream.match(get_regex(name)))
+              if (stream_class_check(stream, name))
                 return baseCur + `blanke-class blanke-${cat.toLowerCase()}`;
             }
           }
@@ -333,7 +334,7 @@ class Code extends Editor {
           // regular classes
           for (let name of classes) {
             // Map, Scene
-            if (stream.match(get_regex(name)))
+            if (stream_class_check(stream, name))
               return baseCur + `blanke-class blanke-${name.toLowerCase()}`;
           }
 
@@ -946,6 +947,12 @@ class Code extends Editor {
     new_editor.on("blur", function (cm) {
       // TODO: this_ref.game.pause(); // NOTE: has a couple edge cases!
     });
+    /*
+    const ctx_menu = require('electron-context-menu')()
+    new_editor.on("contextmenu", (cm, e) => {
+      ctx_menu()
+    })
+    */
 
     // load previous cm options
     const short_path = app.shortenAsset(this.file);

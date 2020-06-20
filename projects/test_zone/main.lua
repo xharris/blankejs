@@ -2,8 +2,8 @@ Game {
 	plugins = { 'xhh-array', 'xhh-badword', 'xhh-vector', 'xhh-effect' },
 	--plugins = {'xhh-effect'},
 	auto_require = false,
-	scripts = { 'scripts/path.lua' },
-	initial_state = 'path',
+	scripts = { 'scripts/particles.lua' }, -- { 'scripts/path.lua' },
+	initial_state = 'particles',
 	-- effect = { 'chroma shift' }, -- TODO get this to work
 	background_color = 'white',
 	load = function() 

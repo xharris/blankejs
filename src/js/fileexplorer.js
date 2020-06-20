@@ -16,8 +16,6 @@ const getKey = path => {
 
 const getPath = key => nwPATH.join(app.project_path, key.replace(ROOT_KEY, "/"))
 
-const ignores = [/\/config\.json/, /\/.git(\/.*)?/, /\/dist(\/.*)?/, /\/__MACOSX(\/.*)?/];
-
 const getFolderData = async (folder_path) => new Promise((res, rej) => {
   const path_key = getKey(folder_path);
   if (!nwFS.existsSync(folder_path)) return rej('no such dir', folder_path);
@@ -111,6 +109,13 @@ class FileExplorer {
             if (!child_node) {
               getFileData(true_path).then(child_data => {
                 parent_node.addChildren([child_data])
+
+                if (FileExplorer.latest_new_folder && child_data.key === FileExplorer.latest_new_folder) {
+                  const node = fancytree().getNodeByKey(FileExplorer.latest_new_folder)
+                  if (node)
+                    node.editStart()
+                  FileExplorer.latest_new_folder = null
+                }
               })
             }
           })
@@ -171,7 +176,6 @@ class FileExplorer {
     const showElement = () => {
       app.getElement("#file-explorer").classList.remove('hidden')
       app.getElement("#work-container").classList.add('with-file-explorer')
-      app.ideSetting("show-file-explorer", true)
     }
     // const walker = nwWALK.walk(app.project_path);
     // walker.on("file");
@@ -268,15 +272,17 @@ class FileExplorer {
   static hide() {
     app.getElement("#file-explorer").classList.add('hidden')
     app.getElement("#work-container").classList.remove('with-file-explorer')
-    app.ideSetting("show-file-explorer", false)
   }
 
   static toggle() {
     FileExplorer.removeFakeRoot()
-    if (app.getElement("#file-explorer").classList.contains("hidden"))
+    if (app.getElement("#file-explorer").classList.contains("hidden")) {
       FileExplorer.show()
-    else
+      app.ideSetting("show-file-explorer", true)
+    } else {
       FileExplorer.hide()
+      app.ideSetting("show-file-explorer", false)
+    }
   }
 }
 
@@ -328,8 +334,11 @@ document.addEventListener("ideReady", () => {
               i++;
               new_folder_name = 'folder' + i;
             }
-            new_folder_path = nwPATH.join(new_folder_path, new_folder_name);
-            nwFS.ensureDir(new_folder_path);
+            new_folder_path = nwPATH.join(new_folder_path, new_folder_name)
+            FileExplorer.latest_new_folder = getKey(new_folder_path)
+
+            node.setExpanded(true)
+              .then(() => nwFS.ensureDir(new_folder_path))
           }
         },
         {
@@ -343,13 +352,7 @@ document.addEventListener("ideReady", () => {
         {
           label: 'rename',
           click: () => {
-            if (true || !FibWindow.isOpen(nwPATH.basename(node.key)))
-              node.editStart();
-            else {
-              let toast = blanke.toast(`Can't rename file from File Explorer while the file is open!`);
-              toast.icon = "close";
-              toast.style = "bad";
-            }
+            node.editStart()
           }
         },
         {

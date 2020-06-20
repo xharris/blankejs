@@ -1,5 +1,15 @@
 ## Image - GameObject (updatable)
 
+```
+Image.animation(
+    'blue_robot.png',
+    { { rows=1, cols=8, frames={ '2-5' } } }
+)
+
+local img_animated = Image('blue_robot')
+local img_static = Image{file='bunny.png'}
+```
+
 # Constructor
 
 `Image(options)`

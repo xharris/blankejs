@@ -47,7 +47,7 @@
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "src/logo.icns",
-      "hardenedRuntime" : true,
+      "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
@@ -79,6 +79,7 @@
     "adm-zip": "^0.4.13",
     "archiver": "^2.1.1",
     "dotenv": "^8.2.0",
+    "electron-context-menu": "^2.0.1",
     "electron-is-dev": "^1.2.0",
     "electron-unhandled": "^3.0.2",
     "electron-updater": "^4.2.5",

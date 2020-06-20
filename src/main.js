@@ -1203,7 +1203,6 @@ var app = {
     walker.on("file", function (path, stats, next) {
       // only add files that have an extension in allowed_extensions
       let ignore = app.checkIgnore(path)
-      console.log(stats.name, ignore, extensions)
       if (
         stats.isFile() &&
         !ignore &&
@@ -2043,6 +2042,7 @@ app.window.webContents.once("dom-ready", () => {
 
   app.renderer.on("close", (e, arg) => {
     if (app.isProjectOpen()) {
+      app.window.focus()
       blanke.showModal("<label>Are you sure you want to exit?</label>", {
         yes: function () {
           app.window.destroy()
@@ -2183,6 +2183,8 @@ app.window.webContents.once("dom-ready", () => {
         )
     )
     .then(() => {
+      require('electron-context-menu')()
+
       // load current theme
       app.setTheme(app.ideSetting("theme"))
       app.setBackgroundImage()

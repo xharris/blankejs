@@ -2659,9 +2659,7 @@ document.addEventListener("fileChange", function (e) {
 
 const addScenes = (folder_path) => {
   app.removeSearchGroup("Map")
-  console.log(app.project_path)
   app.getAssets("map", files => {
-    console.log(files)
     files.forEach(f => {
       app.addSearchKey({
         key: f.replace(app.getAssetPath("map") + "/", ""),
