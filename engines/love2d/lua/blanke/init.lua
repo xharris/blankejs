@@ -4807,13 +4807,12 @@ Particles = nil
 do 
     local methods = {
         rate = 'EmissionRate',
-        area = 'AreaSpread',
+        area = 'EmissionArea',
         color = 'Colors',
         max = 'BufferSize',
         lifetime = 'ParticleLifetime',
         linear_accel = 'LinearAcceleration',
         linear_damp = 'LinearDamping',
-        offset = 'Offset',
         rad_accel = 'RadialAcceleration',
         relative = 'RelativeRotation',
         direction = 'Direction',
@@ -4821,9 +4820,12 @@ do
         size_vary = 'SizeVariation',
         sizes = 'Sizes',
         speed = 'Speed',
+        spin = 'Spin',
         spin_vary = 'SpinVariation',
         spread = 'Spread',
-        tan_accel = 'TangentialAcceleration'
+        tan_accel = 'TangentialAcceleration',
+        position = 'Position',
+        insert = 'InsertMode'
     }
 
     Particles = GameObject:extend {
@@ -4832,22 +4834,19 @@ do
                 args = { source = args }
             end 
             assert(args and args.source, "Particles instance needs 'src'")
-            local frame = args.frame or 0
-            args.frame = nil
 
-            GameObject.init(self, {classname="Particles"}, args)
-
-            table.update(args, {
-                lifetime = 10
-            })
-
-            -- entity-only settings
-            self.source = nil
+            self._source = nil
             self.texture = nil
             self.quads = {}
-            self._frame = frame
 
-            self:setSource(args.source)
+            local frame = args.frame or 0
+            local source = args.source
+            args.frame = nil
+            args.source = nil
+
+            self:source(source)
+            self._frame = frame -- entity-only setting
+
             -- initial psystem settings
             if self.psystem then 
                 for k, v in pairs(args) do 
@@ -4864,8 +4863,11 @@ do
                             self[k](self, v) 
                         end
                     end
+                    args[k] = nil
                 end
             end
+            GameObject.init(self, {classname="Particles"}, args)
+
             -- getters/setters
             for k,v in pairs(methods) do 
                 self[k] = function(self, ...) 
@@ -4888,11 +4890,10 @@ do
                 'x','y','angle','scalex','scaley',
                 'offx','offy','shearx','sheary'
             })
-            if self.source then
-                if self.source.is_entity then 
-                    self.texture = self.source:getDrawable()
+            if self._source then
+                if self._source.is_entity then 
+                    self.texture = self._source:getDrawable()
                 end
-                self:use(self.source, { 'align', 'width', 'height' })
                 self:frame(self._frame)
             end
             if self.psystem then 
@@ -4910,13 +4911,13 @@ do
                 self.psystem:setQuads(self.quads)
             end
             return self._frame
-        end,
-        setSource = function(self, src)
+        end,        
+        source = function(self, src)
             if type(src) == 'string' then 
                 src = Image(src)
             end 
             if type(src) == 'table' and src.getDrawable then
-                self.source = src
+                self._source = src
                 self.texture, self.quads = src:getDrawable()
 
                 if not self.psystem then 
@@ -4925,15 +4926,22 @@ do
                     self.psystem:setTexture(self.texture)
                 end
                 self:frame(self._frame)
-                self:use(self.source, { 'align', 'width', 'height' })
             else 
-                self.source = nil 
+                self._source = nil 
                 self.texture = nil 
                 self.quads = {}
             end 
         end,
+        offset = function(self, x, y)
+            self._offx, self._offy = x, y or x 
+            print(x,y)
+        end,
         _update = function(self, dt)
             if self.psystem then 
+                local offx = self._offx or self._source.alignx or 0
+                local offy = self._offy or self._source.aligny or 0
+                print('set',offx, offy)
+                self.psystem:setOffset(offx, offy)
                 self.psystem:update(dt)
             end
         end,

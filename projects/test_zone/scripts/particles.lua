@@ -1,23 +1,36 @@
-local part, img_bunny
+local part, img_bunny, rob
 
 State("particles",{
 	enter = function()
 		-- img_bunny = Image{file="bunny.bmp", x=Game.width/2, y=Game.height/2}
-		local rob = BlueRobot()
+		rob = BlueRobot{			
+			x = Game.width / 2,
+			y = Game.height / 2,
+		}
 		
 		part = Particles{
 			source = "bunny.bmp",
-			rate = 5,
-			speed = 10
+			rate = 100,
+			lifetime = 20,
+			-- speed = -10,
+			-- linear_accel = { -10, 0 , 10, 0},
+			color = { {1,1,1,0.25}, {1,1,1,0} },
+			area = { "borderrectangle", 50, 50 },
+			position = { Game.width /2, Game.height /2 },
+			spin = { -Math.rad(30), Math.rad(30) },
+			offset = { 26 / 2, 37 / 2 },
+			sping_var = 0.5,
+			max = 100000
 		}
-		part.x = Game.width / 2 
-		part.y = Game.height / 2
 	end,
-	draw = function()
-		-- img_bunny:draw()
+	update = function(dt)
+		-- rob.x = mouse_x
+		-- rob.y = mouse_y
+		--part:position(mouse_x, mouse_y)
 	end
 })
 
 BlueRobot = Entity("BlueRobot",{
-	animations = { "blue_robot" }
+	animations = { "blue_robot" },
+	align = 'center'
 })

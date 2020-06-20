@@ -76,7 +76,7 @@ grey, gray, bluegray, white, white2, black, black2
 
 __mode__: fill / line
 
-`print (text, x, y, limit, align, [deg, sx, sy, ox, oy, kx, ky])` limit is horizontal width limit, align=center/left/right/justify
+`print (text, x, y, limit, align, [rad, sx, sy, ox, oy, kx, ky])` limit is horizontal width limit, align=center/left/right/justify
 
 `line (x1, y1, x2, y2, ...)` can also be a table of lines
 
