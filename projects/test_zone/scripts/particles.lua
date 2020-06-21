@@ -10,17 +10,17 @@ State("particles",{
 		
 		part = Particles{
 			source = "bunny.bmp",
-			rate = 100,
+			rate = 1,
 			lifetime = 20,
 			-- speed = -10,
-			-- linear_accel = { -10, 0 , 10, 0},
+			linear_accel = { 10, 0 },
 			color = { {1,1,1,0.25}, {1,1,1,0} },
-			area = { "borderrectangle", 50, 50 },
 			position = { Game.width /2, Game.height /2 },
 			spin = { -Math.rad(30), Math.rad(30) },
 			offset = { 26 / 2, 37 / 2 },
 			sping_var = 0.5,
-			max = 100000
+			max = 100000,
+			insert = "bottom"
 		}
 	end,
 	update = function(dt)

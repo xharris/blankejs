@@ -4934,13 +4934,11 @@ do
         end,
         offset = function(self, x, y)
             self._offx, self._offy = x, y or x 
-            print(x,y)
         end,
         _update = function(self, dt)
             if self.psystem then 
                 local offx = self._offx or self._source.alignx or 0
                 local offy = self._offy or self._source.aligny or 0
-                print('set',offx, offy)
                 self.psystem:setOffset(offx, offy)
                 self.psystem:update(dt)
             end
