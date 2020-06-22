@@ -823,15 +823,7 @@ do
         end
     end
 
-    local draw = function(props, lobj, is_fn)
-        local parent = props.parent or props
-
-        last_blend = nil
-        if props.blendmode then
-            last_blend = Draw.getBlendMode()
-            Draw.setBlendMode(unpack(props.blendmode))
-        end
-
+    local calc_tform = function(props)
         Game.checkAlign(props)
 
         local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
@@ -847,12 +839,26 @@ do
 
         tform:reset()
         tform:translate(x,y)
-        -- tform:translate(-ax / scalex, -ay / scaley)
+        
         if is_fn then
             tform:scale(scalex, scaley)
             tform:rotate(props.angle)
             tform:shear(props.shearx, props.sheary)
         end
+
+        return x, y, props.angle, scalex, scaley, ax, ay, props.shearx, props.sheary
+    end
+
+    local draw = function(props, lobj, is_fn)
+        local parent = props.parent or props
+
+        last_blend = nil
+        if props.blendmode then
+            last_blend = Draw.getBlendMode()
+            Draw.setBlendMode(unpack(props.blendmode))
+        end
+
+        local x, y, angle, scalex, scaleyy, ax, ay, shearx, sheary = calc_tform(props)
 
         Draw.push()
         if props.mesh and props.mesh.vertices then
@@ -1216,6 +1222,10 @@ do
             end
         end;
 
+        calcTransform = function(obj)
+            return calc_tform(obj)
+        end;
+
         isSpawnable = function(name)
             return objects[name] ~= nil
         end;
@@ -1240,6 +1250,9 @@ do
         end;
 
         res = function(_type, file)
+            if file:contains(Game.options.res.."/".._type) then 
+                return file 
+            end
             return Game.options.res.."/".._type.."/"..file
         end;
 
@@ -1322,7 +1335,7 @@ do
             if spawn_args.map_height and self.height == 0 then self.height = spawn_args.map_height end
 
             self.align = nil
-            self.blendmode = {'alpha'}
+            self.blendmode = nil -- {'alpha'}
             self.visible = true
             self.child_keys = {}
             self.parent = nil
@@ -1522,21 +1535,16 @@ Canvas = GameObject:extend {
 
 --IMAGE
 Image = nil
+local getImage
 do
     local animations = {}
-    local getImage = function(name)
+    getImage = function(name)
         local new_img = Cache.get('Image', Game.res('image',name), function(key)
             return love.graphics.newImage(key)
         end)
         assert(new_img, "Image not found:\'"..name.."\'")
         return new_img
     end
-
-    ImageBatch = GameObject:extend {
-        init = function(self, file)
-            GameObject.init(self, {classname="ImageBatch"})
-        end
-    }
 
     Image = GameObject:extend {
         info = function(name)
@@ -1622,6 +1630,7 @@ do
                 self.frame_count = #self.quads
             end
             self.image = getImage(args.file)
+            self.file = args.file
             
             GameObject.init(self, {classname="Image"}, args)
 
@@ -1644,6 +1653,8 @@ do
         end;
         updateSize = function(self)
             if self.animated then
+                self.orig_width = self.animated.frame_size[1]
+                self.orig_height = self.animated.frame_size[2]
                 self.width, self.height = abs(self.animated.frame_size[1] * self.scalex * self.scale), abs(self.animated.frame_size[2] * self.scaley * self.scale)
             else
                 self.orig_width = self.image:getWidth()
@@ -1664,14 +1675,41 @@ do
                     self.t = 0
                 end
             end
+            -- update image in spritebatch
+            if self.mesh or self.effect or self.blendmode then 
+                --self:unbatch()
+            else 
+                --self:batch()
+            end 
+        end;
+        batch = function(self)
+            self:updateSize() 
+            if self.quad then
+                self.batch_id = SpriteBatch.set(self.file, {self.quad:getViewport()}, {Game.calcTransform(self._parent or self)}, self.z, self.batch_id)
+            else
+                self.batch_id = SpriteBatch.set(self.file, {0,0,self.orig_width,self.orig_height}, {Game.calcTransform(self._parent or self)}, self.z, self.batch_id)
+            end
+        end;
+        unbatch = function(self)
+            if self.batch_id then 
+                SpriteBatch.remove(self.batch_id, self.file, self.z)
+                self.batch_id = nil 
+            end 
+        end;
+        _destroy = function(self)
+            if self.batch_id then 
+                SpriteBatch.remove(self.batch_id, self.file, self.z)
+                self.batch_id = nil 
+            end
         end;
         _draw = function(self)
-            if self.destroyed then return end
-            self:updateSize()
-            if self.animated then
-                self.quad = self.quads[self.frame_index]
+            if self.batch_id == nil then
+                self:updateSize()
+                if self.animated then
+                    self.quad = self.quads[self.frame_index]
+                end
+                Game.drawObject(self, self.image)
             end
-            Game.drawObject(self, self.image)
         end;
         draw = function(self) self:_draw() end
     }
@@ -1766,6 +1804,7 @@ do
                         if not self.image then
                             self.image = img
                         end
+                        self.imageList[img]._parent = self
                     end
                     self:_updateSize(self.imageList[self.image], true)
                 else
@@ -1782,6 +1821,7 @@ do
                             args.animation = anim_name
                         end
                         self.animList[anim_name] = Image{file=args, animation=anim_name, skip_update=true}
+                        self.animList[anim_name]._parent = self
                     end
                 else
                     if not args.animation then
@@ -2948,56 +2988,79 @@ end
 --SPRITEBATCH
 SpriteBatch = nil
 do
-    SpriteBatch = GameObject:extend {
-        init = function(self)
-            GameObject.init(self, {classname="SpriteBatch"})
+    local batches = {}
 
-            self.batches = {} -- { 'file_name' = SpriteBatch }
-            self:addDrawable()
-        end;
-        add = function(self, img_path, x, y, tx, ty, tw, th, ...)
-            local img 
-            if type(img_path) == "string" then
-                -- get image
-                img = Cache.get('spritebatch.image', img_path, function(key)
-                    return love.graphics.newImage(img_path)
-                end)
-            else 
-                img_path = tostring(img)
-            end 
-
-            -- get quad
-            local quad = Cache.get('spritebatch.quad', img_path..':'..tx..","..ty..","..tw..","..ty, function(key)
-                return love.graphics.newQuad(tx,ty,tw,th,img:getWidth(),img:getHeight())
+    _SB = GameObject:extend {
+        init = function(self, img_path, z, skip_store)
+            GameObject.init(self, {classname='SpriteBatch'})
+            self.z = z or 0
+            local key = img_path..tostring(self.z)
+            
+            -- get image
+            self.img = getImage(img_path)
+            
+            -- get spritebatch
+            self.sb = Cache.get('spritebatch', img_path..':'..self.z, function(key)
+                return love.graphics.newSpriteBatch(self.img)
             end)
 
-            -- get spritebatch
-            local sb = self.batches[img_path]
-            if not sb then sb = love.graphics.newSpriteBatch(img) end
-            self.batches[img_path] = sb
-
-            return sb:add(quad,floor(x),floor(y),...)
+            self.img_path = img_path
+            if not skip_store then 
+                batches[key] = self
+            end
+            self:addDrawable()
         end;
-        remove = function(self, img_path, id)
-            local sb = self.batches[tostring(img_path)]
-            if sb then
-                sb:set(id, 0, 0, 0, 0, 0)
-                return true
+        set = function(self, in_quad, in_transform, id)
+            in_quad = in_quad or { 0, 0, 1, 1 }
+            in_transform = in_transform or { 0, 0 }
+                
+            -- get quad
+            local tx, ty, tw, th = unpack(in_quad)
+            local quad = Cache.get('spritebatch.quad', self.img_path..':'..tx..","..ty..","..tw..","..th, function(key)
+                return love.graphics.newQuad(tx,ty,tw,th,self.img:getWidth(),self.img:getHeight())
+            end)
+            if id then 
+                self.sb:set(id, quad, unpack(in_transform))
+                return id
+            else 
+                return self.sb:add(quad, unpack(in_transform))
             end
         end;
-        set = function(self, img_path, id, ...)
-            local sb = self.batches[tostring(img_patch)]
-            if sb then 
-                sb:set(id, ...)
-                return true
-            end 
+        remove = function(self, id)
+            return self.sb:set(id, 0, 0, 0, 0, 0)
         end;
         _draw = function(self)
-            for _, sb in pairs(self.batches) do
-                Game.drawObject(self, sb)
-            end
+            Game.drawObject(self, self.sb)
         end;
         draw = function(self) self:_draw() end;
+    }
+
+    SpriteBatch = callable {
+        __call = function(self, file, z, skip_store)
+            local key = file..tostring(z or 0)
+            if not skip_store and batches[key] then 
+                return batches[key] or _SB(file, z, skip_store)
+            end 
+            return _SB(file, z, skip_store)
+        end;
+        set = function(in_image, in_quad, in_transform, in_z, id)
+            in_quad = in_quad or { 0, 0, 1, 1 }
+            in_transform = in_transform or { 0, 0 } 
+            in_z = in_z or 0 
+            local key = in_image..tostring(in_z or 0)
+
+            local sb = SpriteBatch(in_image, in_z)
+            return sb:set(in_quad, in_transform, id)
+        end;
+        remove = function(self, id, in_image, in_z)
+            in_z = in_z or 0 
+            local key = in_image..tostring(in_z or 0)
+
+            local sb = batches[key]
+            if sb then
+                return sb:remove(id)
+            end
+        end;
     }
 end
 
@@ -3131,8 +3194,10 @@ do
             GameObject.init(self, {classname="Map"}, spawn_args)
         end;
         addDrawable = function(self)
-            for layer, sb in pairs(self.batches) do
-                sb:addDrawable()
+            for layer, batches in pairs(self.batches) do
+                for _, batch in pairs(batches) do
+                    batch:addDrawable()
+                end
             end
             for layer, entities in pairs(self.entities) do
                 for _, entity in ipairs(entities) do
@@ -3141,8 +3206,10 @@ do
             end
         end;
         remDrawable = function(self)
-            for layer, sb in pairs(self.batches) do
-                sb:remDrawable()
+            for layer, batches in pairs(self.batches) do
+                for _, batch in pairs(batches) do
+                    batch:remDrawable()
+                end
             end
             for layer, entities in pairs(self.entities) do
                 for _, entity in ipairs(entities) do
@@ -3155,9 +3222,11 @@ do
                 local layer
                 for i = 1, #self.layer_order do
                     layer = self.layer_order[i]
-                    local sb = self.batches[layer]
-                    if sb then
-                        sb:draw()
+                    local batches = self.batches[layer]
+                    if batches then
+                        for _, batch in pairs(batches) do
+                            batch:draw()
+                        end
                     end
                     local entities = self.entities[layer]
                     local reorder = iterateEntities(entities, 'z', function(entity)
@@ -3191,19 +3260,23 @@ do
         draw = function(self) self:_draw() end,
         addTile = function(self,file,x,y,tx,ty,tw,th,layer)
             layer = layer or '_'
+            local tile_info = { x=x, y=y, width=tw, height=th, tag=hb_name, quad={ tx, ty, tw, th }, transform={ x, y } }
 
-            -- get spritebatch
-            local sb = self.batches[layer]
-            if not sb then sb = SpriteBatch(file) end
-            self.batches[layer] = sb
-            local id = sb:add(file, x, y, tx, ty, tw, th)
-            sb.z = self:getLayerZ(layer)
+            -- add tile to spritebatch
+            -- print('need',file,unpack(tile_info.quad))
+            if not self.batches[layer] then 
+                self.batches[layer] = {}
+            end
+            local sb = self.batches[layer][file]
+            if not sb then sb = SpriteBatch(file, self:getLayerZ(layer), true) end
+            self.batches[layer][file] = sb
+            local id = sb:set(tile_info.quad, tile_info.transform)
+            tile_info.id = id
 
             -- hitbox
             local hb_name = nil
             if options.tile_hitbox then hb_name = options.tile_hitbox[FS.removeExt(FS.basename(file))] end
             local body = nil
-            local tile_info = { id=id, x=x, y=y, width=tw, height=th, tag=hb_name }
             if hb_name then
                 tile_info.tag = hb_name
                 if options.use_physics then
@@ -4966,9 +5039,6 @@ do
     end
 
     local _drawGame = function()
-        if Effect.active > 0 then
-
-        end
         Draw{
             {'push'},
             {'reset'},

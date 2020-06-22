@@ -2,7 +2,7 @@
   "name": "BlankE",
   "description": "BlankE game dev environment",
   "author": "XHH <xhh950@gmail.com>",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "main": "entry.js",
   "single-instance": false,
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
