@@ -1675,41 +1675,13 @@ do
                     self.t = 0
                 end
             end
-            -- update image in spritebatch
-            if self.mesh or self.effect or self.blendmode then 
-                --self:unbatch()
-            else 
-                --self:batch()
-            end 
-        end;
-        batch = function(self)
-            self:updateSize() 
-            if self.quad then
-                self.batch_id = SpriteBatch.set(self.file, {self.quad:getViewport()}, {Game.calcTransform(self._parent or self)}, self.z, self.batch_id)
-            else
-                self.batch_id = SpriteBatch.set(self.file, {0,0,self.orig_width,self.orig_height}, {Game.calcTransform(self._parent or self)}, self.z, self.batch_id)
-            end
-        end;
-        unbatch = function(self)
-            if self.batch_id then 
-                SpriteBatch.remove(self.batch_id, self.file, self.z)
-                self.batch_id = nil 
-            end 
-        end;
-        _destroy = function(self)
-            if self.batch_id then 
-                SpriteBatch.remove(self.batch_id, self.file, self.z)
-                self.batch_id = nil 
-            end
         end;
         _draw = function(self)
-            if self.batch_id == nil then
-                self:updateSize()
-                if self.animated then
-                    self.quad = self.quads[self.frame_index]
-                end
-                Game.drawObject(self, self.image)
+            self:updateSize()
+            if self.animated then
+                self.quad = self.quads[self.frame_index]
             end
+            Game.drawObject(self, self.image)
         end;
         draw = function(self) self:_draw() end
     }
