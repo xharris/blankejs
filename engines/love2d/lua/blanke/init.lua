@@ -810,7 +810,7 @@ do
 
     local draw_obj = function(lobj, props, skip_tf, is_fn, scalex, scaley, ax, ay)
         if not skip_tf then
-            Draw.applyTransform(props._draw_transform)
+            love.graphics.applyTransform(props._draw_transform)
         end
         if is_fn then
             lobj(props)
@@ -833,7 +833,7 @@ do
 
         local tform = props._draw_transform
         if not tform then
-            props._draw_transform = Draw.newTransform()
+            props._draw_transform = love.math.newTransform()
             tform = props._draw_transform
         end
 
@@ -854,13 +854,13 @@ do
 
         last_blend = nil
         if props.blendmode then
-            last_blend = Draw.getBlendMode()
-            Draw.setBlendMode(unpack(props.blendmode))
+            last_blend = love.graphics.getBlendMode()
+            love.graphics.setBlendMode(unpack(props.blendmode)) 
         end
 
         local x, y, angle, scalex, scaleyy, ax, ay, shearx, sheary = calc_tform(props)
 
-        Draw.push()
+        love.graphics.push()
         if props.mesh and props.mesh.vertices then
             local mesh_canvas = CanvasStack:new()
             local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
@@ -891,11 +891,11 @@ do
             }
             Draw.pop()
         end
-        Draw.applyTransform(props._draw_transform:inverse())
-        Draw.pop()
+        love.graphics.applyTransform(props._draw_transform:inverse())
+        love.graphics.pop()
 
         if last_blend then
-            Draw.setBlendMode(last_blend)
+            love.graphics.setBlendMode(last_blend)
         end
     end
 

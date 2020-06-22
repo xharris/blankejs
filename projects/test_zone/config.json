@@ -9,6 +9,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "Bunnymark.lua=script+state+?",
+            "Bunnymark.lua"
+        ],
+        [
             "Find in files=?",
             "Find in files"
         ],
@@ -23,10 +27,6 @@
         [
             "View APPDATA folder=?",
             "View APPDATA folder"
-        ],
-        [
-            "path.lua=script+entity+?",
-            "path.lua"
         ]
     ],
     "autoplay_preview": true,
