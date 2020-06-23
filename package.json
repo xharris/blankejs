@@ -73,7 +73,8 @@
     "extraFiles": [
       "plugins",
       "engines/love2d",
-      "themes"
+      "themes",
+      "template"
     ]
   },
   "dependencies": {

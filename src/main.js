@@ -205,7 +205,7 @@ var app = {
   },
 
   get template_path() {
-    return app.relativePath(nwPATH.join("src", "template"))
+    return app.relativePath("template")
   },
 
   newProject: function (path) {
@@ -2170,15 +2170,17 @@ app.window.webContents.once("dom-ready", () => {
             const path = app.ideSetting(p + "_path")
             const dest_path = nwPATH.join(remote.app.getPath("userData"), path)
 
-            if (!path.match(/[\\\/]/))
-              return
             nwFS.exists(dest_path)
-              .then(exists => !(exists || p === "engines"))
-              .then(copy =>
-                copy && nwFS.copy(
-                  app.relativePath(path),
-                  nwPATH.join(remote.app.getPath("userData"), path)
-                ))
+              .then(exists => !exists || (exists && ["engines"].includes(p)))
+              .then(copy => {
+                console.log(app.relativePath(path),
+                  nwPATH.join(remote.app.getPath("userData"), path))
+                if (copy)
+                  return nwFS.copy(
+                    app.relativePath(path),
+                    nwPATH.join(remote.app.getPath("userData"), path)
+                  )
+              })
           })
         )
     )

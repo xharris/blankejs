@@ -1,0 +1,35 @@
+{
+    "write_conf": true,
+    "profiling_level": 0,
+    "engine_type": "oop",
+    "export": {
+        "name": "new_proj",
+        "filter": "linear",
+        "scale": true,
+        "vsync": "on",
+        "web_memory": 24,
+        "web_stack": 2,
+        "web_game_size": [
+            800,
+            600
+        ]
+    },
+    "ico": "src\\logo.ico",
+    "icns": "src\\logo.icns",
+    "game_size": 3,
+    "window_size": 3,
+    "quick_access": [],
+    "autoplay_preview": true,
+    "engine": "love2d",
+    "scene": {},
+    "enabled_plugins": {
+        "xhh-array": false,
+        "xhh-badword": false,
+        "xhh-effect": false,
+        "xhh-tween": false,
+        "xhh-ui": false,
+        "xhh-vector": false,
+        "cmpl": false,
+        "yonaba-delaunay": false
+    }
+}
