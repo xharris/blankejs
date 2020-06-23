@@ -20,12 +20,16 @@
   },
   "build": {
     "appId": "com.xhh.blanke",
-    "artifactName": "BlankE-${os}.${ext}",
+    "artifactName": "BlankE-${os}-${arch}.${ext}",
     "compression": "maximum",
     "win": {
       "icon": "logo.ico",
       "target": [
         "nsis"
+      ],
+      "arch": [
+        "x64",
+        "ia32"
       ],
       "publish": [
         "github"
@@ -42,6 +46,10 @@
       "category": "Development",
       "target": [
         "AppImage"
+      ],
+      "arch": [
+        "x64",
+        "ia32"
       ]
     },
     "afterSign": "build/notarize.js",
@@ -54,6 +62,10 @@
       "entitlementsInherit": "build/entitlements.mac.plist",
       "target": [
         "default"
+      ],
+      "arch": [
+        "x64",
+        "ia32"
       ]
     },
     "dmg": {
