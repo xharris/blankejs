@@ -25,11 +25,13 @@
     "win": {
       "icon": "logo.ico",
       "target": [
-        "nsis"
-      ],
-      "arch": [
-        "x64",
-        "ia32"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
       ],
       "publish": [
         "github"
@@ -45,12 +47,14 @@
       "icon": "icon_sizes",
       "category": "Development",
       "target": [
-        "AppImage"
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
       ],
-      "arch": [
-        "x64",
-        "ia32"
-      ]
     },
     "afterSign": "build/notarize.js",
     "mac": {
@@ -63,10 +67,6 @@
       "target": [
         "default"
       ],
-      "arch": [
-        "x64",
-        "ia32"
-      ]
     },
     "dmg": {
       "sign": false
