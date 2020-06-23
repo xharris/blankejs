@@ -422,22 +422,25 @@ switch = function(val, choices)
     elseif choices.default then choices.default() end
 end
 -- for sorting a table of objects
-sort = function(t, key, default)
-    if #t == 0 then return end
-    table.sort(t, function(a, b)
-        if a == nil and b == nil then
-            return false
-        end
-        if a == nil then
-            return true
-        end
-        if b == nil then
-            return false
-        end
-        if a[key] == nil then a[key] = default end
-        if b[key] == nil then b[key] = default end
-        return a[key] < b[key]
-    end)
+sort = nil 
+do 
+    sort = function(t, key, default)
+        if #t == 0 then return end
+        table.sort(t, function(a, b)
+            if a == nil and b == nil then
+                return false
+            end
+            if a == nil then
+                return true
+            end
+            if b == nil then
+                return false
+            end
+            if a[key] == nil then a[key] = default end
+            if b[key] == nil then b[key] = default end
+            return a[key] < b[key]
+        end)
+    end
 end
 
 iterate = function(t, fn)
@@ -471,14 +474,10 @@ local iterateEntities = function(t, test_val, fn)
         if obj then
             if obj.destroyed or not obj[test_val] or fn(obj, o) == true then
                 table.insert(removals, o)
-            elseif (obj._last_z == nil and obj.z) or (obj._last_z ~= obj.z) then
+            elseif obj._last_z ~= obj.z then
                 obj._last_z = obj.z
-                if obj.z ~= 0 then 
-                    nonzero_z = true 
-                end
-                if nonzero_z then 
-                    Game.sortDrawables()
-                end 
+                reorder = true
+                Game.sortDrawables()
             end
         end
     end
@@ -808,28 +807,13 @@ do
     local skip_tf = false
     local objects = {}
 
-    local draw_obj = function(lobj, props, skip_tf, is_fn, scalex, scaley, ax, ay)
-        if not skip_tf then
-            love.graphics.applyTransform(props._draw_transform)
-        end
-        if is_fn then
-            lobj(props)
-        else
-            if props.quad then
-                love.graphics.draw(lobj, props.quad, 0,0,0, scalex, scaley, ax, ay, props.shearx, props.sheary)
-            else
-                love.graphics.draw(lobj, 0,0,0, scalex, scaley, ax, ay, props.shearx, props.sheary)
-            end
-        end
-    end
-
-    local calc_tform = function(props)
+    local draw_obj = function(lobj, props, skip_tf, is_fn)
         Game.checkAlign(props)
 
+        local x, y = floor(props.x), floor(props.y)
         local scalex, scaley = props.scalex * props.scale, props.scaley * props.scale
         local ax, ay = (props.alignx + props.offx) * scalex, (props.aligny + props.offy) * scaley
-        local y = floor(props.y)
-        local x = floor(props.x)
+        local angle, shearx, sheary = props.angle, props.shearx, props.sheary
 
         local tform = props._draw_transform
         if not tform then
@@ -846,7 +830,18 @@ do
             tform:shear(props.shearx, props.sheary)
         end
 
-        return x, y, props.angle, scalex, scaley, ax, ay, props.shearx, props.sheary
+        if not skip_tf then
+            love.graphics.applyTransform(props._draw_transform)
+        end
+        if is_fn then
+            lobj(props)
+        else
+            if props.quad then
+                love.graphics.draw(lobj, props.quad, 0,0,0, scalex, scaley, ax, ay, shearx, sheary)
+            else
+                love.graphics.draw(lobj, 0,0,0, scalex, scaley, ax, ay, shearx, sheary)
+            end
+        end
     end
 
     local draw = function(props, lobj, is_fn)
@@ -858,9 +853,7 @@ do
             love.graphics.setBlendMode(unpack(props.blendmode)) 
         end
 
-        local x, y, angle, scalex, scaleyy, ax, ay, shearx, sheary = calc_tform(props)
-
-        love.graphics.push()
+        Draw.push()
         if props.mesh and props.mesh.vertices then
             local mesh_canvas = CanvasStack:new()
             local mesh_str = (props.mesh.mode or 'fan')..'.'..(props.mesh.usage or 'dynamic')
@@ -868,13 +861,13 @@ do
                 return love.graphics.newMesh(props.mesh.vertices, props.mesh.mode or 'fan', props.mesh.usage or 'dynamic')
             end)
             skip_tf = true
-            mesh_canvas.value:drawTo(function() draw_obj(lobj, props, skip_tf, is_fn, scalex, scaley, ax, ay) end)
+            mesh_canvas.value:drawTo(function() draw_obj(lobj, props, skip_tf, is_fn) end)
             mesh:setTexture(mesh_canvas.value) -- yes twice (since it's a canvasstack)
             love.graphics.draw(mesh)
             CanvasStack:release(mesh_canvas)
             skip_tf = false
         else
-            draw_obj(lobj, props, skip_tf, is_fn, scalex, scaley, ax, ay)
+            draw_obj(lobj, props, skip_tf, is_fn)
         end
 
         if props.debug then
@@ -892,7 +885,7 @@ do
             Draw.pop()
         end
         love.graphics.applyTransform(props._draw_transform:inverse())
-        love.graphics.pop()
+        Draw.pop()
 
         if last_blend then
             love.graphics.setBlendMode(last_blend)
@@ -1222,10 +1215,6 @@ do
             end
         end;
 
-        calcTransform = function(obj)
-            return calc_tform(obj)
-        end;
-
         isSpawnable = function(name)
             return objects[name] ~= nil
         end;
@@ -1266,7 +1255,7 @@ do
 
             Game.is_updating = true
             if Game.will_sort then
-                Game.will_sort = false
+                Game.will_sort = nil
                 sort(Game.drawables, 'z', 0)
             end
 
@@ -1398,6 +1387,7 @@ do
                 table.update(self, args)
             end
             if spawn_args then table.update(self,spawn_args) end
+            self._last_z = self.z
 
             table.insert(Game.all_objects, self)
 
@@ -3848,7 +3838,6 @@ do
                 for name,_ in pairs(start_states) do
                     stateStart(name)
                 end
-                Game.sortDrawables()
             end
             stop_states = nil
             start_states = nil
@@ -5057,8 +5046,18 @@ do
             table.insert(Game.updatables, obj)
         end;
         addDrawable = function(obj)
+            local drawables = Game.drawables
             obj.drawable = true
-            table.insert(Game.drawables, obj)
+            if obj.z and #drawables > 0 then 
+                for o=1,#drawables do
+                    if obj.z < drawables[o].z or o == #drawables then 
+                        table.insert(drawables, o, obj)
+                        return 
+                    end
+                end
+            else 
+                table.insert(drawables, obj)
+            end 
         end;
         iterUpdate = function(t, dt)
             iterateEntities(t, 'updatable', function(obj)

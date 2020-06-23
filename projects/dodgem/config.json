@@ -6,7 +6,12 @@
     "icns": "src\\logo.icns",
     "game_size": 3,
     "window_size": 3,
-    "quick_access": [],
+    "quick_access": [
+        [
+            "View APPDATA folder=?",
+            "View APPDATA folder"
+        ]
+    ],
     "autoplay_preview": true,
     "scene": {},
     "export": {

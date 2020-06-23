@@ -9,7 +9,7 @@ Player = Entity("Player",{
 	reaction="cross",
 	animations={ "robot_stand", "robot_walk", "robot_hit" },
 	align="center",
-	z=5,
+	--z=5,
 	collision=function(self, i)
 		if i.other.tag == "Ball" and i.other:is_colliding(self) then
 			-- change frame

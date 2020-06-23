@@ -21,7 +21,7 @@ Ball = Entity("Ball",{
 		if self.anim_frame == SMILE then
 			self.x = Game.width + self.radius
 			self.y = Game.height/2
-			self.hspeed = -200
+			self.hspeed = -100
 			self.gravity = 20
 			self.gravity_direction = table.random{90,270}
 		end

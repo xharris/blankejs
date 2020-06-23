@@ -282,7 +282,7 @@ module.exports.settings = {
       love: false,
       win32: true,
       win64: true,
-      web: true
+      // web: true
     }
     if (app.os === "mac")
       targets.mac64 = true
@@ -696,7 +696,7 @@ if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, 
         .then(game_data => `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`)
         .then(gamejs => Promise.all([
           gamejs,
-          fs_read(nwPATH.join(app.engine_path, "love.js"), "utf-8")
+          fs_read(nwPATH.join(app.engine_dist_path(), "love.js"), "utf-8")
         ]))
         .then(([gamejs, lovejs]) => {
           const game_data = Buffer.from(lovejs + gamejs)

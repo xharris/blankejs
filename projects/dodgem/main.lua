@@ -28,7 +28,7 @@ Game{
 		
 		local margin = 50
 		
-		Timer.every(1, function()
+		Timer.every(200, function()
 			Ball()
 		end)
 				
