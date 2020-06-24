@@ -923,7 +923,9 @@ var app = {
       }).catch((err) => app.error(err))
     )
   },
+  downloading_engine: false,
   downloadEngineDist: (_platform, _arch) => {
+    if (app.downloading_engine) return
     let toast
     const dist_path = app.engine_dist_path(_platform, _arch)
     const { platform, arch } = app.parsePlatform(nwPATH.basename(dist_path))
@@ -944,6 +946,7 @@ var app = {
             toast.icon = "dots-horizontal"
             toast.style = "wait"
 
+            app.downloading_engine = true
             return res(
               app
                 .download(
@@ -954,6 +957,7 @@ var app = {
                   )
                 )
                 .then(() => {
+                  app.downloading_engine = false
                   return [
                     is_zip,
                     nwPATH.join(
@@ -2173,8 +2177,6 @@ app.window.webContents.once("dom-ready", () => {
             nwFS.exists(dest_path)
               .then(exists => !exists || (exists && ["engines"].includes(p)))
               .then(copy => {
-                console.log(app.relativePath(path),
-                  nwPATH.join(remote.app.getPath("userData"), path))
                 if (copy)
                   return nwFS.copy(
                     app.relativePath(path),

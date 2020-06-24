@@ -54,7 +54,7 @@
             "ia32"
           ]
         }
-      ],
+      ]
     },
     "afterSign": "build/notarize.js",
     "mac": {
@@ -66,7 +66,7 @@
       "entitlementsInherit": "build/entitlements.mac.plist",
       "target": [
         "default"
-      ],
+      ]
     },
     "dmg": {
       "sign": false
