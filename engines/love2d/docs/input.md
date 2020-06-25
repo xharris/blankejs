@@ -6,9 +6,10 @@ Input.set({
     right = { "right", "d", "gp.dpright" },
     jump = { "up", "w", "gp.a" },
     action = { 'space', 'mouse1' },
-}, { no_repeat = { 'jump' }, combo = { 'action' } })
+}, { no_repeat = { 'jump' }, combo = { 'action' }, group = 'player1' })
 
-update: (dt) =>
+update = function(dt)
+    Input.group = 'player1' -- only necessary if there are multiple groups
     if Input.pressed('left')
         -- do something
 ```
@@ -30,6 +31,7 @@ update: (dt) =>
 * `options`
     * `norepeat` keys that only trigger once on press
     * `combo` only triggered when all inputs are pressed
+    * `group` add these inputs to the given group. can be any value.
 
 ## Gamepad Axis
 
@@ -40,6 +42,10 @@ update: (dt) =>
 Eg `Input('leftx')` will return a table with the keys:
 * joystick: [JoystickObject](https://love2d.org/wiki/Joystick)
 * value: number in range [-1, 1]
+
+# Class Properties
+
+`group` set this to a value to only check inputs of that group. Set `Input.group = nil` to get inpus from any group.
 
 # Class Methods
 

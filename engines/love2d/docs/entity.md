@@ -33,8 +33,7 @@ Player({custom_prop: 5})
 
 `hitbox` values can be:
 - true
-- 'rect'/'circle'
-- { type=string, left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
+- { left=-entity.alignx, top=-entity.aligny, right=0, bottom=0}
 
 `reaction`  slide,
 
@@ -83,6 +82,10 @@ Player({custom_prop: 5})
 `joint` Physics.joint <joint>
 
 # Props
+
+`x, y` 
+
+`xprevious, yprevious` position from the last update frame
 
 `hspeed, vspeed`
 

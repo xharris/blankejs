@@ -1682,6 +1682,8 @@ Entity = nil
 do
     local updateEntity = function(self, dt)
         local last_x, last_y = self.x, self.y
+        self.xprevious = self.x 
+        self.yprevious = self.y
         local diff_pos = (self.x ~= last_x or self.y ~= last_y)
         if self.destroyed then return end
         if self.gravity ~= 0 then
@@ -1759,6 +1761,9 @@ do
             self.animList = {}
 
             -- image
+            if not args.images and args.image then 
+                args.images = { args.image }
+            end 
             if args.images then
                 if type(args.images) == 'table' then
                     for _,img in ipairs(args.images) do
@@ -1776,6 +1781,9 @@ do
                 self.images = args.images
             end
             -- animation
+            if not args.animations and args.animation then 
+                args.animations = { args.animation }
+            end 
             if args.animations then
                 if type(args.animations) == 'table' then
                     for _, anim_name in ipairs(args.animations) do
@@ -1977,6 +1985,7 @@ do
         no_repeat = {},
         combo = {}
     }
+    local groups = {}
     local pressed = {}
     local released = {}
     local store = {}
@@ -1993,12 +2002,18 @@ do
     end
 
     local isPressed = function(name)
+        if Input.group then 
+            name = Input.group .. '.' .. name
+        end 
         if not (table.hasValue(options.no_repeat, name) and pressed[name] and pressed[name].count > 1) and joycheck(pressed[name]) then
             return pressed[name]
         end
     end
 
     local isReleased = function(name)
+        if Input.group then 
+            name = Input.group .. '.' .. name
+        end 
         if joycheck(released[name]) then
             return released[name]
         end
@@ -2009,22 +2024,31 @@ do
             return store[name] or pressed[name] or released[name]
         end;
 
+        group = nil;
+
         store = function(name, value)
             store[name] = value
         end;
 
         set = function(inputs, _options)
+            _options = _options or {}
             for name, inputs in pairs(inputs) do
-                Input.addInput(name, inputs)
+                Input.setInput(name, inputs, _options.group)
             end
-            if _options then
+            
+            if _options.combo then 
                 table.append(options.combo, _options.combo or {})
+            end 
+            if _options.no_repeat then 
                 table.append(options.no_repeat, _options.no_repeat or {})
             end
+                
             return nil
         end;
 
-        addInput = function(name, inputs)
+        setInput = function(name, inputs, group)
+            if group then name = group .. '.' .. name end
+            local input_group_str = name
             name_to_input[name] = {}
             for _,i in ipairs(inputs) do name_to_input[name][i] = false end
             for _,i in ipairs(inputs) do
@@ -2171,16 +2195,17 @@ do
     local DEF_FONT = "04B_03.ttf"
     local last_font
 
-    Draw = class {
+    Draw = callable {
         crop_used = false;
         font = nil;
         text = nil;
-        init = function(self, instructions)
+        __call = function(self, instructions)
             for _,instr in ipairs(instructions) do
                 name, args = instr[1], table.slice(instr,2)
                 assert(Draw[name], "bad draw instruction '"..name.."'")
-                if not pcall(Draw[name], unpack(args)) then
-                    error("Error: Draw."..name.."("..(table.join(args,',',true))..")", 3)
+                local good, err = pcall(Draw[name], unpack(args))
+                if not good then
+                    error("Error: Draw."..name.."("..tbl_to_str(args)..")\n"..err, 3)
                 end
             end
         end;
@@ -2280,16 +2305,17 @@ do
             love.graphics.translate(floor(x), floor(y))
         end;
         reset = function(only)
+            local lg = love.graphics
             if only == 'color' or not only then
-                Draw.color(1,1,1,1)
-                Draw.lineWidth(1)
+                lg.setColor(1,1,1,1)
+                lg.setLineWidth(1)
             end
             if only == 'transform' or not only then
-                Draw.origin()
+                lg.origin()
             end
             if (only == 'crop' or not only) and Draw.crop_used then
                 Draw.crop_used = false
-                love.graphics.setStencilTest()
+                lg.setStencilTest()
             end
         end;
         push = function() love.graphics.push('all') end;
@@ -2298,9 +2324,10 @@ do
             love.graphics.pop()
         end;
         stack = function(fn)
-            Draw.push()
+            local lg = love.graphics
+            lg.push('all')
             fn()
-            Draw.pop()
+            lg.pop()
         end;
         newTransform = function()
             return love.math.newTransform()
@@ -2329,7 +2356,7 @@ do
     }
     for _,fn in ipairs(draw_functions) do
         Draw[fn] = function(...)
-          return love.graphics[fn](...)
+            return love.graphics[fn](...)
         end
     end
     for old, new in pairs(draw_aliases) do
@@ -3576,10 +3603,10 @@ do
             obj.scalex = obj.scalex or 1
             obj.scaley = obj.scaley or 1
         end
-        obj.width = max(obj.width, 1)
-        obj.height = max(obj.height, 1)
-        return  obj.alignx * abs(obj.scale * obj.scalex),
-                obj.aligny * abs(obj.scale * obj.scaley),
+        obj.width = max(obj.width, 1) 
+        obj.height = max(obj.height, 1)     
+        return  obj.alignx,-- * abs(obj.scale * obj.scalex),
+                obj.aligny,-- * abs(obj.scale * obj.scaley),
                 repos
     end
     local checkHitArea = function(obj)
@@ -3604,7 +3631,7 @@ do
 
             world:add(
                 obj, obj.x - hb.left, obj.y - hb.top,
-                abs(obj.width * obj.scale * obj.scalex) + hb.right, abs(obj.height * obj.scale * obj.scaley) + hb.bottom
+                abs(obj.width ) + hb.right, abs(obj.height ) + hb.bottom
             )
         end
 
@@ -3647,7 +3674,7 @@ do
                 local hb = checkHitArea(obj)
                 world:update(obj,
                     obj.x - hb.left, obj.y - hb.top,
-                    abs(obj.width * obj.scale * obj.scalex) + hb.right, abs(obj.height * obj.scale * obj.scaley) + hb.bottom
+                    abs(obj.width ) + hb.right, abs(obj.height ) + hb.bottom
                 )
             end
         end;
@@ -3693,10 +3720,22 @@ do
                     t[key1] = t[key2]
                     t[key2] = temp
                 end
-                if obj.collision and len > 0 then
+                if len > 0 then
+                    local hspeed, vspeed, bounciness, nx, ny
                     for i=1,len do
+                        hspeed, vspeed, bounciness = obj.hspeed, obj.vspeed, obj.bounciness or 1
+                        nx, ny = cols[i].normal.x, cols[i].normal.y
+                        -- change velocity by collision normal
+                        if hspeed and ((nx < 0 and hspeed > 0) or (nx > 0 and hspeed < 0)) then 
+                            obj.hspeed = -obj.hspeed * bounciness
+                        end
+                        if vspeed and ((ny < 0 and vspeed > 0) or (ny > 0 and vspeed < 0)) then 
+                            obj.vspeed = -obj.vspeed * bounciness
+                        end
+                        
                         if not obj or obj.destroyed then return end
-                        obj:collision(cols[i])
+                        if obj.collision then obj:collision(cols[i]) end 
+
                         local info = cols[i]
                         local other = info.other
                         swap(info, 'item', 'other')

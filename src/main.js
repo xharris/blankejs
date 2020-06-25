@@ -690,9 +690,9 @@ var app = {
   relativePath: (path) => {
     if (nwPATH.isAbsolute(path)) return path
     var local_path = process.env.PORTABLE_EXECUTABLE_DIR || __dirname
-    if (!require("electron-is-dev") || app.os === "linux")
+    if (!app.isDev() || app.os === "linux")
       local_path = nwPATH.dirname(remote.app.getPath("exe"))
-    if (!require("electron-is-dev") && app.os === "mac")
+    if (!app.isDev() && app.os === "mac")
       local_path = nwPATH.dirname(local_path)
     return nwPATH.resolve(nwPATH.join(local_path, path))
   },
@@ -728,7 +728,7 @@ var app = {
   get_path: (ide_setting, proj_setting) => {
     const ide_set = app.ideSetting(ide_setting)
     const needs_userdata =
-      !require("electron-is-dev") && !nwPATH.isAbsolute(ide_set)
+      !app.isDev() && !nwPATH.isAbsolute(ide_set)
 
     if (proj_setting) {
       const proj_set = app.projSetting(proj_setting)
@@ -1720,6 +1720,10 @@ var app = {
     app.shortcut_log[options.key] = options
     remote.globalShortcut.register(options.key, options.active)
   },
+
+  isDev() {
+    return require("electron-is-dev")
+  }
 }
 
 app.window.webContents.on("open-file", (e, path) => {
@@ -2167,7 +2171,7 @@ app.window.webContents.once("dom-ready", () => {
 
   new Promise((res, rej) => app.loadAppData(res))
     .then(() =>
-      require("electron-is-dev")
+      app.isDev()
         ? null
         : Promise.all(
           ["plugin", "themes", "engines"].map((p) => {

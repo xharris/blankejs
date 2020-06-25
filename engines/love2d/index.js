@@ -953,8 +953,8 @@ module.exports.autocomplete = {
 
     ],
     "blanke-timer": [
-      { fn: "after", vars: { t: 'seconds', fn: 'return true to restart the timer' } },
-      { fn: "every", vars: { t: 'seconds', fn: 'return true to destroy the timer' } }
+      { fn: "after", vars: { t: 'ms', fn: 'return true to restart the timer' } },
+      { fn: "every", vars: { t: 'ms', fn: 'return true to destroy the timer' } }
     ]
   }
 }
