@@ -1388,12 +1388,11 @@ class Code extends Editor {
 
   edit(file_path) {
     this.file_loaded = false
-    this.is_saving = false
 
     if (this.has_external_changes)
-      this.has_external_changes.die()
-
+      this.has_external_changes.die(0)
     this.has_external_changes = false
+
     this.file = file_path
     code_instances[app.cleanPath(this.file)] = this
 
@@ -1413,11 +1412,12 @@ class Code extends Editor {
     });
 
     // watch script for external changes
-    this.watch = app.watch(this.file, () => {
-      if (!this.is_saving && !this.has_external_changes)
-        this.has_external_changes = blanke.toast(`${app.shortenAsset(this.file)} has been changed! <a href='#' onclick='Code.openScript("${app.cleanPath(this.file)}")'>Reload</a>`)
-      this.is_saving = false
-    })
+    if (!this.watch)
+      this.watch = app.watch(this.file, () => {
+        if (!this.is_saving && !this.has_external_changes)
+          this.has_external_changes = blanke.toast(`${app.shortenAsset(this.file)} has been changed! <a href='#' onclick='Code.openScript("${app.cleanPath(this.file)}")'>Reload</a>`)
+        this.is_saving = false
+      })
 
     this.codemirror.refresh();
     this.file_loaded = true;
@@ -1436,12 +1436,8 @@ class Code extends Editor {
   save() {
     let data = this.codemirror.getValue();
     this.is_saving = true
-    return new Promise((res, rej) => {
-      nwFS.writeFile(this.file, data, err => {
-        if (err) return rej(err)
-        return res()
-      });
-    })
+    this.has_external_changes = false
+    return nwFS.writeFile(this.file, data)
       .then(() => {
         this.has_external_changes = false
         this.removeAsterisk()

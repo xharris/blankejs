@@ -872,7 +872,7 @@ do
 
         if props.debug then
             local lax, lay = 0,0
-            local rax, ray = Math.abs(ax), Math.abs(ay)
+            local rax, ray = abs(props.alignx), abs(props.aligny)
 
             local r = 5
             Draw.push()
@@ -1803,7 +1803,7 @@ do
                 self.anim_frame = args.anim_frame or spawn_args.anim_frame or self.anim_frame
                 self.animation = args.animation or spawn_args.animation
                 self:_updateSize(self.animList[self.animation], true)
-            end
+            end 
 
             if not self.reaction then
                 self.reaction = 'cross'
@@ -1930,6 +1930,7 @@ do
                 end
             end, 'function')
         end;
+        draw = function(self,...) self:_draw(...) end;
         getDrawable = function(self)
             if self.image then 
                 return self.imageList[self.image]:getDrawable()
@@ -1937,7 +1938,6 @@ do
                 return self.animList[self.animation]:getDrawable()
             end
         end;
-        draw = function(self,...) self:_draw(...) end;
         _destroy = function(self)
             if self.destroyed then return end
             for name, img in pairs(self.imageList) do
@@ -3167,6 +3167,7 @@ do
                 end
             end
 
+            new_map:addDrawable()
             return new_map
         end;
         config = function(opt)
@@ -3207,6 +3208,7 @@ do
             end
         end;
         _draw = function(self)
+            print("ok")
             Game.drawObject(self, function()
                 local layer
                 for i = 1, #self.layer_order do
@@ -3218,11 +3220,12 @@ do
                         end
                     end
                     local entities = self.entities[layer]
+                    print_r(self.entities)
                     local reorder = iterateEntities(entities, 'z', function(entity)
                         entity:draw()
                     end)
                     if reorder then
-                        sort(entities, 'z', 0)
+                        --sort(entities, 'z', 0)
                     end
                 end
             end, true)
@@ -3241,8 +3244,10 @@ do
             end
             self.entities = {}
             -- destroy spritebatches
-            for _,batch in pairs(self.batches) do
-                batch:destroy()
+            for layer, batches in ipairs(self.batches) do 
+                for _,batch in pairs(batches) do
+                    batch:destroy()
+                end
             end
             self.batches = {}
         end;
@@ -3689,6 +3694,7 @@ do
         end;
         move = function(obj)
             if obj and not obj.destroyed and obj.hasHitbox then
+                local filter_result
                 local filter = function(_obj, other)
                     local ret = _obj.reaction or Hitbox.default_reaction
                     if _obj.reactions and _obj.reactions[other.tag] then ret = _obj.reactions[other.tag] else
@@ -3699,6 +3705,11 @@ do
                     end
                     if _obj.filter then ret = _obj:filter(other) end
 
+                    filter_result = ret
+
+                    if ret == 'static' then 
+                        ret = 'slide'
+                    end 
                     return ret
                 end
                 -- move the hitbox
@@ -3712,9 +3723,11 @@ do
                     obj.y - offy,
                     filter)
                 if obj.destroyed then return end
+                if filter_result ~= 'static' then
+                    obj.x = new_x + offx
+                    obj.y = new_y + offy
+                end
 
-                obj.x = new_x + offx
-                obj.y = new_y + offy
                 local swap = function(t, key1, key2)
                     local temp = t[key1]
                     t[key1] = t[key2]
@@ -3725,6 +3738,7 @@ do
                     for i=1,len do
                         hspeed, vspeed, bounciness = obj.hspeed, obj.vspeed, obj.bounciness or 1
                         nx, ny = cols[i].normal.x, cols[i].normal.y
+                        
                         -- change velocity by collision normal
                         if hspeed and ((nx < 0 and hspeed > 0) or (nx > 0 and hspeed < 0)) then 
                             obj.hspeed = -obj.hspeed * bounciness

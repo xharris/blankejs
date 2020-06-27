@@ -23,7 +23,7 @@ Entity("Player", {
 				self.vspeed = 0
 			end
 		end
-	end,
+	end, 
 	die = function(self)
 		if not self.dead then
 			self.dead = true

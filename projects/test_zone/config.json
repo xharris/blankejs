@@ -9,6 +9,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "platformer.lua=script+entity+?",
+            "platformer.lua"
+        ],
+        [
             "platformer.map=map+?",
             "platformer.map"
         ],
@@ -23,10 +27,6 @@
         [
             "Find in files=?",
             "Find in files"
-        ],
-        [
-            "Add a script=new+?",
-            "Add a script"
         ]
     ],
     "autoplay_preview": true,
