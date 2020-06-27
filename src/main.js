@@ -31,6 +31,10 @@ var nwZIP2 = require("adm-zip") // used for unzipping
 var nwWATCH = require("node-watch")
 var nwREQ = require("request")
 const { trueCasePath, trueCasePathSync } = require("true-case-path")
+const luamin = require('luamin')
+const zlib = require('zlib')
+const nwZIP = require("archiver"); // used for zipping
+const klaw = require('klaw')
 
 const { exec } = require("child_process")
 
@@ -85,6 +89,10 @@ var app = {
 
   get size() {
     return app.window.getSize()
+  },
+
+  klaw: (...args) => {
+    return klaw(...args)
   },
 
   getElement: function (sel) {
@@ -881,7 +889,7 @@ var app = {
   },
   unzip: (from, to) => {
     let cmd
-    if (app.os === "mac") cmd = `unzip ${from} -d ${to}`
+    if (app.os === "mac") cmd = `unzip "${from}" -d "${to}"`
 
     return new Promise((res, rej) => {
       if (cmd) {

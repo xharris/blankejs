@@ -156,12 +156,9 @@ module.exports.settings = {
     script: ``,
   },
   sprite_parse: (match, info, cb) => {
-    // console.log('sprite',match,info)
     let img = new Image();
     img.onload = () => {
       info.frame_size = [img.width, img.height];
-
-      // console.log(match)
 
       let props = match.splice(-1, 1);
       let new_match;
@@ -294,10 +291,6 @@ module.exports.settings = {
   },
   export_assets: false,
   bundle: (dir, target_os, cb_done) => {
-    const zlib = require('zlib')
-    const luamin = require('luamin')
-    const nwZIP = require("archiver"); // used for zipping
-
     let love_path = nwPATH.join(dir, app.projSetting("export").name + ".love");
 
     // conf.lua
@@ -323,56 +316,53 @@ module.exports.settings = {
       .then(() => new Promise((res, rej) => {
         if (str_conf) archive.append(luamin.minify(str_conf), { name: "conf.lua" })
 
-        const ignores = [/^dist[\/\\]?/]
+        const ignores = [/^dist[\/\\]?/, /^node_modules[\/\\]?/]
         const promises = []
-        const klaw = require('klaw')
 
         // project files
-        klaw(app.project_path, {
-          filter: item => !filter(nwPATH.relative(app.project_path, item), ignores)
-        })
-          .on('data', item => {
-            const path = nwPATH.relative(app.project_path, item.path)
+        const walker = nwWALK.walk(app.project_path, { followLinks: false, filters: ['dist','node_modules']})
+        walker.on('file', (root, stats, next) => {
+          const f_path = nwPATH.join(root, stats.name)
+          const path = nwPATH.relative(app.project_path, f_path)
 
-            // minify .lua?
-            if (path.length > 0) {
-              if (!item.stats.isDirectory() && path.endsWith(".lua"))
-                promises.push(minifyLua(item.path).then(code => archive.append(code, { name: path })))
-              else
-                archive.file(item.path, { name: path })
-            }
-          })
-          .on('end', () => res(promises))
+          // minify .lua?
+          if (path.length > 0 && !filter(path, ignores)) {
+            if (!stats.isDirectory() && path.endsWith(".lua"))
+              promises.push(minifyLua(f_path).then(code => archive.append(code, { name: path })))
+            else
+              archive.file(f_path, { name: path })
+          }
+          next()
+        })
+        walker.on('end', () => res(Promise.all(promises)))
 
       }))
-      .then(promises => Promise.all(promises))
       .then(() => new Promise((res, rej) => {
         const ignores = []
         const promises = []
 
         const eng_type = app.projSetting("engine_type") || "oop";
-        if (eng_type === "oop") ignores.push(/^ecs[\/\\]?/)
-        if (eng_type === "ecs") ignores.push(/^blanke[\/\\]?/)
+        if (eng_type === "oop") ignores.push('ecs') // /^ecs[\/\\]?/)
+        if (eng_type === "ecs") ignores.push('blanke') // /^blanke[\/\\]?/)
         const eng_path = nwPATH.join(app.engine_path, 'lua')
 
-        const klaw = require('klaw')
-        klaw(eng_path, {
-          filter: item => !filter(nwPATH.relative(eng_path, item), ignores)
-        })
-          .on('data', item => {
-            const path = nwPATH.relative(eng_path, item.path)
+        // project files
+        const walker = nwWALK.walk(eng_path, { followLinks: false, filters: ignores})
+        walker.on('file', (root, stats, next) => {
+          const f_path = nwPATH.join(root, stats.name)
+          const path = nwPATH.relative(eng_path, f_path)
 
-            // minify .lua?
-            if (path.length > 0) {
-              if (!item.stats.isDirectory() && path.endsWith(".lua"))
-                promises.push(minifyLua(item.path).then(code => archive.append(code, { name: path })))
-              else
-                archive.file(item.path, { name: path })
-            }
-          })
-          .on('end', () => res(promises))
+          // minify .lua?
+          if (path.length > 0 && !filter(path, ignores)) {
+            if (!stats.isDirectory() && path.endsWith(".lua"))
+              promises.push(minifyLua(f_path).then(code => archive.append(code, { name: path })))
+            else
+              archive.file(f_path, { name: path })
+          }
+          next()
+        })
+        walker.on('end', () => res(Promise.all(promises)))
       }))
-      .then(promises => Promise.all(promises))
       .then(() => archive.finalize())
   },
   binaries: {
