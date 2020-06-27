@@ -9,8 +9,16 @@
     "window_size": 3,
     "quick_access": [
         [
+            "platformer.map=map+?",
+            "platformer.map"
+        ],
+        [
             "Bunnymark.lua=script+state+?",
             "Bunnymark.lua"
+        ],
+        [
+            "View APPDATA folder=?",
+            "View APPDATA folder"
         ],
         [
             "Find in files=?",
@@ -19,14 +27,6 @@
         [
             "Add a script=new+?",
             "Add a script"
-        ],
-        [
-            "Check for updates=?",
-            "Check for updates"
-        ],
-        [
-            "View APPDATA folder=?",
-            "View APPDATA folder"
         ]
     ],
     "autoplay_preview": true,
