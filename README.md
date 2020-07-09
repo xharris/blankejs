@@ -33,4 +33,4 @@ src: https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watch
 
 - The IDE [End-User License Agreement (EULA)](https://github.com/xharris/blankejs/blob/master/EULA.txt)
 
-- There are plans for free/indie/educational licenses
+- Still working out potential business plans
