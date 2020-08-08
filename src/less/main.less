@@ -195,6 +195,15 @@ body > #header {
       margin: 0px 10px;
       min-width: 23px;
       width: 23px;
+      transition: all ease-in-out 0.2s;
+
+      &.disabled {
+        filter: brightness(70%);
+      }
+
+      &.enabled {
+        filter: none;
+      }
     }
   }
 
@@ -207,6 +216,7 @@ body > #header {
     flex-direction: row-reverse;
     background: rgba(57, 65, 78, 0.9);
     z-index: 1000;
+    padding: 0px 2px;
     border-radius: 0px @title-bar-border-radius @title-bar-border-radius 0px;
 
     button {

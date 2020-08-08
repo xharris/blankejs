@@ -2,15 +2,20 @@
 
 ```
 Game{
-    filter = "linear"/"nearest"
-    res = "assets" -- assets folder
-    scripts = {} -- scripts to require()
+    res                 = "assets",     -- assets folder
+    scripts             = {},           -- scripts to require()
+    filter              = "linear",     -- or "nearest"
+    vysnc               = "on",         -- or "off"/"adaptive"
+    auto_require        = true,         -- automatically requires scripts in same directory as main.lua
+    background_color    = nil,          -- rgb table or color string
+    fps                 = 60,
+    round_pixels        = false,
+    effect              = "",            -- Effect string
+
     load = function()
     update = function(dt)
     draw = function(d) -- d is default draw function
-    effect = ""-- Effect string
-    auto_require = true -- automatically requires scripts in same directory as main.lua
-    backgroundColor = nil -- rgb table or color string
+    
     window_flags = {}
     plugins = {} -- list of plugin ids
 }

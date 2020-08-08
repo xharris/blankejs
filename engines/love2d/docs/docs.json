@@ -20,5 +20,6 @@
     "State": [ {"title":"", "file":"state.md"} ],
     "Time": [ {"title":"", "file":"time.md"} ],
     "Timeline": [ {"title":"", "file":"timeline.md"}],
-    "Timer": [ {"title":"", "file":"timer.md"} ]
+    "Timer": [ {"title":"", "file":"timer.md"} ],
+    "Window": [ {"title":"", "file":"window.md"} ]
 }

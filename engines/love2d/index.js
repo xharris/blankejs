@@ -1,6 +1,6 @@
 // TODO: copy web_preload_image to relative path
 
-const { spawn } = require("child_process");
+const { spawn } = require("child_process")
 const {
   symlink: fs_symlink,
   pathExists: fs_path_exists,
@@ -16,26 +16,26 @@ const {
 
 const isSymlink = unix_perms => (unix_perms & 0170000) === 0120000
 
-const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g;
+const re_sprite_props = /(\w+)[=\{\s'"]+([\w\-\.\s]+)[\}\s'",]+?/g
 const binary_prefix = process.env.BINARY_PREFIX
 
 const requireConf = (is_exporting) => {
-  const type = app.projSetting("engine_type") || "oop";
+  const type = app.projSetting("engine_type") || "oop"
   switch (type) {
     case "oop":
       return `
 love.filesystem.setRequirePath( "?.lua;?/init.lua;lua/?.lua;lua/?/init.lua" )
 require("blanke")
-      `;
+      `
 
     case "ecs":
       return `
 package.path = "lua/?.lua;lua/?/init.lua;" .. package.path
 require("${is_exporting ? "lua.ecs" : "ecs"}")
 Game.options.auto_require = false
-      `;
+      `
   }
-};
+}
 /*
 package.path = "lua/?.lua;lua/?/init.lua;" .. package.path
 
@@ -51,7 +51,7 @@ const generalConf = () => `
     t.identity = "${app.exportSetting("company_name") || "blanke"}.${app.exportSetting("name") || "game"}"
     t.window.title = "${app.exportSetting("name")}"
     -- t.gammacorrect = nil
-`;
+`
 
 const runConf = () => {
   if (app.projSetting("write_conf")) {
@@ -66,13 +66,13 @@ function love.conf(t)
     ${generalConf()}
 end
 `
-    );
+    )
   }
   return Promise.resolve()
-};
+}
 
 const exportConf = os => {
-  let resolution = getGameSize(os);
+  let resolution = getGameSize(os)
   return app.projSetting("write_conf")
     ? `
 ${requireConf(true)}
@@ -89,27 +89,27 @@ function love.conf(t)
     }
 end
 `
-    : "";
-};
+    : ""
+}
 
 const getGameSize = os => {
   if (os == "web" && app.projSetting("export")["override_game_size"])
-    return app.projSetting("export").web_game_size;
-  let res = app.projSetting("game_size");
-  let aspect_ratio = [4, 3];
-  let res_list = [512, 640, 800, 1024, 1280, 1366, 1920]; // indexing starts
+    return app.projSetting("export").web_game_size
+  let res = app.projSetting("game_size")
+  let aspect_ratio = [4, 3]
+  let res_list = [512, 640, 800, 1024, 1280, 1366, 1920] // indexing starts
   return [
     res_list[Math.max(0, res - 1)],
     (res_list[Math.max(0, res - 1)] / aspect_ratio[0]) * aspect_ratio[1],
-  ];
-};
+  ]
+}
 
 const checkOS = target_os => {
   if (app.projSetting("export").os != target_os) {
-    app.projSetting("export").os = target_os;
-    app.saveSettings();
+    app.projSetting("export").os = target_os
+    app.saveSettings()
   }
-};
+}
 
 module.exports.settings = {
   game_preview_enabled: false,
@@ -119,28 +119,34 @@ module.exports.settings = {
   project_settings: [
     ["write_conf", "checkbox", { default: true, label: "auto-generate conf.lua" }],
     ["profiling_level", "number", { default: 0, step: 1, min: 0 }],
-    ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
+    // ["engine_type", "select", { choices: ["oop", "ecs"], default: "oop" }],
   ],
-  export_settings: [
-    ["company_name", "text", { default: app.exportSetting("company_name") }],
-    ["window/rendering"],
-    ["filter", "select", { choices: ["linear", "nearest"], default: "linear" }],
-    ...["round_pixels", "frameless", "scale", "resizable", "fullscreen"].map(o => [
-      o,
-      "checkbox",
-      { default: o === "scale" },
-    ]),
-    ["vsync", "select", { choices: ["on", "off", "adaptive"], default: "on" }],
-    ["web"],
-    ["web_autoplay", "checkbox", { label: "autoplay", defalt: false }],
-    ["web_memory", "number", { label: "memory size", default: 24 }],
-    ["web_stack", "number", { label: "stack size", default: 2 }],
-    ["override_game_size", "checkbox", { default: false, title: "if enabled, web container will be the size given below" }],
-    ["web_game_size", "number", { label: "canvas size", inputs: 2, default: [800, 600] }],
-    ["web_preload_image", "text", { label: "preload image background (url)" }]
-  ],
+  get export_settings() {
+    return [
+      ["company_name", "text", { default: app.exportSetting("company_name") }],
+      ["window/rendering"],
+      ["filter", "select", { choices: ["linear", "nearest"], default: "linear" }],
+      ...["round_pixels", "frameless", "scale", "resizable", "fullscreen"].map(o => [
+        o,
+        "checkbox",
+        { default: o === "scale" },
+      ]),
+      ["vsync", "select", { choices: ["on", "off", "adaptive"], default: "on" }],
+      ["experimental_mode", "checkbox", { default: false }],
+      ...(app.exportSetting("experimental_mode") ?
+        [
+          ["web"],
+          ["web_autoplay", "checkbox", { label: "autoplay", defalt: false }],
+          ["web_memory", "number", { label: "memory size", default: 24 }],
+          ["web_stack", "number", { label: "stack size", default: 2 }],
+          ["override_game_size", "checkbox", { default: false, title: "if enabled, web container will be the size given below" }],
+          ["web_game_size", "number", { label: "canvas size", inputs: 2, default: [800, 600] }],
+          ["web_preload_image", "text", { label: "preload image background (url)" }]
+        ] : [])
+    ]
+  },
   get script_path() {
-    return app.project_path;
+    return app.project_path
   },
   get plugin_path() {
     const engine_type = app.projSetting("engine_type") || "oop"
@@ -156,51 +162,51 @@ module.exports.settings = {
     script: ``,
   },
   sprite_parse: (match, info, cb) => {
-    let img = new Image();
+    let img = new Image()
     img.onload = () => {
-      info.frame_size = [img.width, img.height];
+      info.frame_size = [img.width, img.height]
 
-      let props = match.splice(-1, 1);
-      let new_match;
+      let props = match.splice(-1, 1)
+      let new_match
       let offx = 0,
         offy = 0,
         rows = 1,
         cols = 1,
         frame = 0,
-        name;
+        name
       while ((new_match = re_sprite_props.exec(props))) {
         switch (new_match[1]) {
           case "cols":
-            cols = parseInt(new_match[2]);
-            break;
+            cols = parseInt(new_match[2])
+            break
           case "rows":
-            rows = parseInt(new_match[2]);
-            break;
+            rows = parseInt(new_match[2])
+            break
           case "frames":
-            frame = parseInt(new_match[2].split("-")[0]);
-            break;
+            frame = parseInt(new_match[2].split("-")[0])
+            break
           case "offx":
-            offx = parseInt(new_match[2]);
-            break;
+            offx = parseInt(new_match[2])
+            break
           case "offy":
-            offy = parseInt(new_match[2]);
-            break;
+            offy = parseInt(new_match[2])
+            break
         }
       }
 
-      info.offset = [offx, offy];
+      info.offset = [offx, offy]
       info.frame_size = [
         img.width / Math.max(cols, 0),
         img.height / Math.max(rows, 0),
-      ];
+      ]
 
-      cb(info);
-    };
+      cb(info)
+    }
     // info.name = name || nwPATH.basename(info.path).split('.').slice(0,-1).join('.');
 
     if (app.findAssetType(info.path) === "image")
-      img.src = "file://" + info.path;
-    else cb(info);
+      img.src = "file://" + info.path
+    else cb(info)
   },
   dist_prefix: "love-11.3",
   play: options => {
@@ -227,15 +233,15 @@ module.exports.settings = {
         data = data
           .toString()
           .replace(/Could not open device.\s*/, "")
-          .trim();
-        data.split(/[\r\n]+/).forEach(l => con.log(l));
+          .trim()
+        data.split(/[\r\n]+/).forEach(l => con.log(l))
       })
       child.stderr.on("data", data => {
-        app.error(data);
+        app.error(data)
       })
       child.on("close", () => {
         if (app.os !== 'mac')
-          con.tryClose();
+          con.tryClose()
       })
     }
 
@@ -276,11 +282,12 @@ module.exports.settings = {
   },
   get export_targets() {
     const targets = {
-      love: false,
+      zip: false,
       win32: true,
-      win64: true,
-      // web: true
+      win64: true
     }
+    if (app.exportSetting("experimental_mode"))
+      targets.web = true
     if (app.os === "mac")
       targets.mac64 = true
     if (app.os === "linux") {
@@ -291,7 +298,7 @@ module.exports.settings = {
   },
   export_assets: false,
   bundle: (dir, target_os, cb_done) => {
-    let love_path = nwPATH.join(dir, app.projSetting("export").name + ".love");
+    let love_path = nwPATH.join(dir, app.projSetting("export").name + ".zip")
 
     // conf.lua
     const str_conf = exportConf(target_os)
@@ -302,7 +309,7 @@ module.exports.settings = {
     archive.pipe(output)
 
     const minifyLua = path => fs_read(path, 'utf8')
-      .then(data => path.endsWith(".lua") && target_os != "love" ?
+      .then(data => path.endsWith(".lua") && target_os != "zip" ?
         luamin.minify(data) : data
       )
 
@@ -320,7 +327,7 @@ module.exports.settings = {
         const promises = []
 
         // project files
-        const walker = nwWALK.walk(app.project_path, { followLinks: false, filters: ['dist','node_modules']})
+        const walker = nwWALK.walk(app.project_path, { followLinks: false, filters: ['dist', 'node_modules'] })
         walker.on('file', (root, stats, next) => {
           const f_path = nwPATH.join(root, stats.name)
           const path = nwPATH.relative(app.project_path, f_path)
@@ -341,13 +348,13 @@ module.exports.settings = {
         const ignores = []
         const promises = []
 
-        const eng_type = app.projSetting("engine_type") || "oop";
+        const eng_type = app.projSetting("engine_type") || "oop"
         if (eng_type === "oop") ignores.push('ecs') // /^ecs[\/\\]?/)
         if (eng_type === "ecs") ignores.push('blanke') // /^blanke[\/\\]?/)
         const eng_path = nwPATH.join(app.engine_path, 'lua')
 
         // project files
-        const walker = nwWALK.walk(eng_path, { followLinks: false, filters: ignores})
+        const walker = nwWALK.walk(eng_path, { followLinks: false, filters: ignores })
         walker.on('file', (root, stats, next) => {
           const f_path = nwPATH.join(root, stats.name)
           const path = nwPATH.relative(eng_path, f_path)
@@ -408,44 +415,44 @@ module.exports.settings = {
   },
   setupBinary: (os_dir, temp_dir, platform, arch, cb_done, cb_err) => {
     let export_settings = app.projSetting("export")
-    let love_path = nwPATH.join(temp_dir, export_settings.name + ".love")
+    let love_path = nwPATH.join(temp_dir, export_settings.name + ".zip")
     let engine_path = app.engine_dist_path(platform, arch)
     let project_name = export_settings.name || "game"
 
-    let resolution = getGameSize(platform);
+    let resolution = getGameSize(platform)
 
     if (platform == "win") {
-      let exe_path = nwPATH.join(os_dir, project_name + ".exe");
+      let exe_path = nwPATH.join(os_dir, project_name + ".exe")
       // TODO: test on mac/linux
       // copy /b love.exe+game.love game.exe
       let f_loveexe = fs_rstream(
         nwPATH.join(engine_path, "love.exe"),
         { flags: "r", encoding: "binary" }
-      );
+      )
       let f_gamelove = fs_rstream(love_path, {
         flags: "r",
         encoding: "binary",
-      });
+      })
       let f_gameexe = fs_wstream(exe_path, {
         flags: "w",
         encoding: "binary",
-      });
+      })
       // set up callbacks
       f_loveexe.on("end", () => {
-        f_gamelove.pipe(f_gameexe);
+        f_gamelove.pipe(f_gameexe)
         // finished all merging
         fs_remove(love_path, () => {
-          cb_done();
-        });
-      });
+          cb_done()
+        })
+      })
       // start merging
-      f_loveexe.pipe(f_gameexe, { end: false });
+      f_loveexe.pipe(f_gameexe, { end: false })
     }
 
     if (platform == "mac") {
       const app_path = nwPATH.join(app.engine_dist_path(), "love.app")
       const out_path = nwPATH.join(os_dir, project_name + ".app")
-      const new_love_name = `${project_name}.love`
+      const new_love_name = `${project_name}.zip`
 
       const company_name = app.exportSetting("company_name") || "blanke"
       const replacements = [
@@ -551,9 +558,9 @@ module.exports.settings = {
         }, ${resolution[0]}, ${resolution[1]}${preload_img ? `, "${preload_img}"` : ''})})()
 	</script>
 </body>
-</html>`;
-      let web_stack = app.exportSetting("web_stack");
-      let web_memory = app.exportSetting("web_memory");
+</html>`
+      let web_stack = app.exportSetting("web_stack")
+      let web_memory = app.exportSetting("web_memory")
       let extrajs = mem =>
         `if (!game_loaded) var game_loaded = {};
 if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, height, preload_image) {
@@ -680,20 +687,20 @@ if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, 
         d.appendChild(s)
     };
     DoLoad()
-}`;
+}`
 
       fs_read(love_path, "base64")
         .then(game_data => `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`)
         .then(gamejs => Promise.all([
           gamejs,
-          fs_read(nwPATH.join(app.engine_dist_path(), "love.js"), "utf-8")
+          fs_read(engine_path, "utf-8")
         ]))
         .then(([gamejs, lovejs]) => {
           const game_data = Buffer.from(lovejs + gamejs)
 
           let new_memory = 1
           while (new_memory < game_data.length / 1000000) new_memory *= 2
-          new_memory *= 2; // add a little extra for good measure ;)
+          new_memory *= 2 // add a little extra for good measure ;)
           console.log(`exporting web, memory:${web_memory === 0 ? new_memory : web_memory}, stack size:${web_stack}`)
 
           // write engine data
@@ -713,8 +720,8 @@ if (!loadGame) var loadGame = function(data_file, div_id, play_on_focus, width, 
               html,
               "utf-8",
               err => {
-                if (err) console.error(err);
-                cb_done();
+                if (err) console.error(err)
+                cb_done()
               }
             ))
         })
@@ -728,7 +735,7 @@ let color_vars = {
   b: 'blue component',
   a: 'optional alpha'
 }
-let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')';
+let color_prop = '{r,g,b} (0-1 or 0-255) / hex (\'#ffffff\') / preset (\'blue\')'
 
 let prop_z = { prop: 'z', info: 'lower numbers are drawn behind higher numbers' }
 let prop_xy = [

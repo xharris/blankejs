@@ -1,3 +1,13 @@
+Game { 
+	fps = 60,
+    filter = 'nearest',
+	plugins = { 'xhh-effect', 'xhh-tween' },
+	background_color = "white",
+    load = function()
+		State.start('play')
+	end
+}
+
 Map.config {
     tile_hitbox = { 
 		ground='ground',
@@ -8,20 +18,11 @@ Map.config {
 local map
 
 Input.set({
-    left = { "left", "a" },
-    right = { "right", "d" },
-    jump = { "up", "w" },
-	action = { 'space' },	
+    left = { "left", "a", "gp.dpleft" },
+    right = { "right", "d", "gp.dpright" },
+    jump = { "up", "w", "gp.a" },
+	action = { "space", "gp.b" },	
 })
-
-Game { 
-    filter = 'nearest',
-	plugins = { 'xhh-effect', 'xhh-tween' },
-	background_color = "white",
-    load = function()
-		State.start('play')
-	end
-}
 
 State("play", {
 	enter = function()

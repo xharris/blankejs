@@ -144,7 +144,6 @@ class ImageEditor extends Editor {
     this.img_sprite = new PIXI.Sprite(this.img_rtx);
     this.img_erase = new PIXI.Graphics();
     this.img_erase.blendMode = 22;
-    this.prvw_tex = PIXI.Texture.EMPTY;
     this.edit_prvw_graphic = new PIXI.Graphics();
     this.edit_prvw_rtx = PIXI.RenderTexture.create(this.width, this.height);
     this.edit_prvw = new PIXI.Sprite(this.edit_prvw_rtx);
@@ -398,8 +397,9 @@ class ImageEditor extends Editor {
       const best_width = Math.max(this.width, this.img_width)
       const best_height = Math.max(this.height, this.img_height)
       if (this.img_rtx.width != best_width || this.img_rtx.height != best_height) {
-        this.img_rtx.resize(best_width, best_height);
-        this.img_rtx_temp.resize(best_width, best_height);
+        this.img_rtx.resize(best_width, best_height)
+        this.img_rtx_temp.resize(best_width, best_height)
+        this.edit_prvw_rtx.resize(best_width, best_height)
       }
 
       if (nwFS.pathExistsSync(path)) {
@@ -434,20 +434,17 @@ class ImageEditor extends Editor {
   drawCrosshair() {
     let cross = this.crosshair;
     cross.clear();
-    cross.lineStyle(Math.max(1 / this.pixi.zoom, 1), this.curr_color, 0.3);
-    let w = this.pixi.width * Math.max(this.pixi.zoom, 1);
-    let h = this.pixi.height * Math.max(this.pixi.zoom, 1);
-    let camx = this.pixi.camera[0];
-    let camy = this.pixi.camera[1];
-    let curx = this.cursor[0];
-    let cury = this.cursor[1];
-    let color = this.curr_color;
+    cross.lineStyle(Math.max(1 / this.pixi.zoom, 1), this.curr_color, 0.3)
+    const curx = this.cursor[0]
+    const cury = this.cursor[1]
+
     // vertical
-    cross.moveTo(curx + 0.5, -h - camy);
-    cross.lineTo(curx + 0.5, h - camy);
+    cross.moveTo(curx + 0.5, this.pixi.top)
+    cross.lineTo(curx + 0.5, this.pixi.bottom)
     // horizontal
-    cross.moveTo(-w - camx, cury + 0.5);
-    cross.lineTo(w - camx, cury + 0.5);
+    cross.moveTo(this.pixi.left, cury + 0.5)
+    cross.lineTo(this.pixi.right, cury + 0.5)
+
     this.drawEditPreview();
     this.refreshHelpText();
   }
@@ -507,7 +504,7 @@ class ImageEditor extends Editor {
     ifndef_obj(this.img_settings, DEFAULT_IMAGE_SETTINGS);
     bg.clear();
     let white_tile = true;
-    let t_size = 5;
+    const t_size = 20;
 
     this.img_left = set.position[0];
     this.img_top = set.position[1];
@@ -540,11 +537,7 @@ class ImageEditor extends Editor {
       }
     }
     // draw frame rects
-    for (
-      let x = this.img_left;
-      x < this.img_width;
-      x += set.frame_size[0] + set.spacing
-    ) {
+    for (let x = this.img_left; x < this.img_width; x += set.frame_size[0] + set.spacing) {
       bg.lineStyle(1, app.getThemeColor("ide-accent"), 0.5);
       bg.drawRect(x, this.img_top, set.frame_size[0], set.frame_size[1]);
     }

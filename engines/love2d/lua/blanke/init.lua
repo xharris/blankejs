@@ -897,7 +897,7 @@ do
             res =           'assets',
             scripts =       {},
             filter =        'linear',
-            vsync =         1,
+            vsync =         'on',
             auto_require =  true,
             background_color = 'black',
             window_flags = {},
@@ -2315,7 +2315,8 @@ do
             end
             if (only == 'crop' or not only) and Draw.crop_used then
                 Draw.crop_used = false
-                lg.setStencilTest()
+                lg.setScissor()
+                -- lg.setStencilTest()
             end
         end;
         push = function() love.graphics.push('all') end;
@@ -2926,11 +2927,9 @@ do
                 end
                 local half_w, half_h = floor(w/2), floor(h/2)
 
-                --Draw.translate(o.view_x, o.view_y)
-
-                -- Draw.crop(0, 0, w, h)
+                if o.crop then Draw.crop(o.view_x, o.view_y, w, h) end
                 o.transform:reset()
-                o.transform:translate(half_w, half_h)
+                o.transform:translate(half_w + o.view_x, half_h + o.view_y)
                 o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
                 o.transform:rotate(o.angle)
                 o.transform:translate(-floor(o.x - o.left + o.dx), -floor(o.y - o.top + o.dy))
@@ -3208,7 +3207,6 @@ do
             end
         end;
         _draw = function(self)
-            print("ok")
             Game.drawObject(self, function()
                 local layer
                 for i = 1, #self.layer_order do
@@ -3220,7 +3218,6 @@ do
                         end
                     end
                     local entities = self.entities[layer]
-                    print_r(self.entities)
                     local reorder = iterateEntities(entities, 'z', function(entity)
                         entity:draw()
                     end)
@@ -3740,11 +3737,13 @@ do
                         nx, ny = cols[i].normal.x, cols[i].normal.y
                         
                         -- change velocity by collision normal
-                        if hspeed and ((nx < 0 and hspeed > 0) or (nx > 0 and hspeed < 0)) then 
-                            obj.hspeed = -obj.hspeed * bounciness
-                        end
-                        if vspeed and ((ny < 0 and vspeed > 0) or (ny > 0 and vspeed < 0)) then 
-                            obj.vspeed = -obj.vspeed * bounciness
+                        if cols[i].bounce then
+                            if hspeed and ((nx < 0 and hspeed > 0) or (nx > 0 and hspeed < 0)) then 
+                                obj.hspeed = -obj.hspeed * bounciness
+                            end
+                            if vspeed and ((ny < 0 and vspeed > 0) or (ny > 0 and vspeed < 0)) then 
+                                obj.vspeed = -obj.vspeed * bounciness
+                            end
                         end
                         
                         if not obj or obj.destroyed then return end
@@ -4743,10 +4742,21 @@ do
     local bg_list = {}
     local fg_list = {}
 
+    local quad
     local add = function(opt)
         opt = opt or {}
         if opt.file then
-            opt.image = Image{file = opt.file}
+            opt.image = Cache.get('Image', Game.res('image',opt.file), function(key)
+                return love.graphics.newImage(key)
+            end)
+            opt.x = 0
+            opt.y = 0
+            opt.scale = 1
+            opt.width = opt.image:getWidth()
+            opt.height = opt.image:getHeight()
+            if not quad then 
+                quad = love.graphics.newQuad(0,0,1,1,1,1)
+            end 
         end
         return opt
     end
@@ -4758,22 +4768,30 @@ do
             end
 
             if t.size == "cover" then
-                if t.image.width < t.image.height then
-                    t.image.scale = Game.width / t.image.orig_width
+                if t.width < t.height then
+                    t.scale = Game.width / t.width
                 else
-                    t.image.scale = Game.height / t.image.orig_height
+                    t.scale = Game.height / t.height
                 end
-                t.image:updateSize()
-                t.image.x = (Game.width - t.image.width)/2
-                t.image.y = (Game.height - t.image.height)/2
-            end
+                t.image:setWrap('clamp','clamp')
+                t.x = (Game.width - (t.width * t.scale))/2
+                t.y = (Game.height - (t.height * t.scale))/2
+            else 
+                t.image:setWrap('repeat','repeat')
+            end 
         end)
     end
 
     local draw = function(list)
+        local lg_draw = love.graphics.draw
         for _, t in ipairs(list) do
             if t.image then
-                t.image:draw()
+                if t.size == 'cover' then 
+                    lg_draw(t.image,0,0,0,t.scale,t.scale)
+                else
+                    quad:setViewport(-t.x,-t.y,Game.width,Game.height,t.width,t.height)
+                    lg_draw(t.image,quad,0,0,0,t.scale,t.scale)
+                end
             end
         end
     end
@@ -5053,13 +5071,12 @@ do
     end
 
     local _drawGame = function()
-        Draw{
-            {'push'},
-            {'reset'},
-            {'color',Game.options.background_color},
-            {'rect','fill',0,0,Game.width,Game.height},
-            {'pop'}
-        }
+        Draw.push()
+        Draw.reset()
+        Draw.color(Game.options.background_color)
+        Draw.rect('fill',0,0,Game.width,Game.height)
+        Draw.pop()
+        
         Background.draw()
         if Camera.count() > 0 then
             Camera.useAll(actual_draw)
@@ -5135,6 +5152,7 @@ do
         end;
         --blanke.draw
         draw = function()
+            if not Blanke.game_canvas then return end
             Game.is_drawing = true
             Draw.origin()
 

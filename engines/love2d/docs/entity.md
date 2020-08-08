@@ -1,4 +1,4 @@
-## Entity - GameObject (updateable, drawable)
+## Entity - GameObject (updatable, drawable)
 
 ```
 Entity("Player", {
@@ -26,6 +26,8 @@ Player({custom_prop: 5})
 `images` { 'filename1', 'filename2', ... }
 
 `animations` { 'animation_name1', ... }
+
+`camera` can be a string of the Camera name or a list of Camera names
 
 `effect` entity:setEffect <effect>
 
@@ -64,6 +66,8 @@ Player({custom_prop: 5})
 - move { x, y }
 
 - touch { x, y }
+
+- bounce { x, y }
 
 `filter (self, other_entity)` return nil to ignore collision or a response string:
 
@@ -113,9 +117,7 @@ Player({custom_prop: 5})
 
 `draw(default_draw_fn)`
 
-> **NOTE**:
-> * if draw() is overriden, width and height variables need to be set manually, unless `default_draw_fn()` is called.
-> * Draw operations are positioned relative to the entity.
+**NOTE:** Draw operations are positioned relative to the entity. Calling `Draw.reset()` can change this to absolute positioning
 
 `predraw()`
 

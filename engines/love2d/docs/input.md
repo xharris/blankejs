@@ -45,7 +45,7 @@ Eg `Input('leftx')` will return a table with the keys:
 
 # Class Properties
 
-`group` set this to a value to only check inputs of that group. Set `Input.group = nil` to get inpus from any group.
+`group` set this to a value to only check inputs of that group. Set `Input.group = nil` to get inputs that aren't in a group.
 
 # Class Methods
 

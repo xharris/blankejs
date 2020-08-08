@@ -33,7 +33,7 @@ var nwREQ = require("request")
 const { trueCasePath, trueCasePathSync } = require("true-case-path")
 const luamin = require('luamin')
 const zlib = require('zlib')
-const nwZIP = require("archiver"); // used for zipping
+const nwZIP = require("archiver") // used for zipping
 const klaw = require('klaw')
 
 const { exec } = require("child_process")
@@ -364,13 +364,13 @@ var app = {
     })
   },
 
-  openProjectDialog: function (love_file) {
+  openProjectDialog: function (zip_file) {
     blanke.chooseFile(
       {
-        properties: [love_file ? null : "openDirectory"],
+        properties: [zip_file ? null : "openDirectory"],
       },
       function (file_path) {
-        if (love_file) app.openLoveProject(love_file)
+        if (zip_file) app.openZipProject(zip_file)
         else app.openProject(file_path)
       }
     )
@@ -522,15 +522,31 @@ var app = {
   },
 
   toggleWindowVis: function () {
-    DragBox.showHideAll()
-    app.getElement("#btn-winvis").title = `${
-      split_enabled == true ? "hide" : "show"
+    DragBox.toggleHiddenAll()
+    const el_toggle = app.getElement("#btn-winvis")
+    if (DragBox.all_hidden) {
+      el_toggle.classList.add('disabled')
+      el_toggle.classList.remove('enabled')
+    } else {
+      el_toggle.classList.remove('disabled')
+      el_toggle.classList.add('enabled')
+    }
+    el_toggle.title = `${
+      DragBox.all_hidden == true ? "hide" : "show"
       } floating windows`
   },
 
   toggleSplit: () => {
     FibWindow.toggleSplit()
-    app.getElement("#btn-winsplit").title =
+    const el_toggle = app.getElement("#btn-winsplit")
+    if (split_enabled) {
+      el_toggle.classList.add('enabled')
+      el_toggle.classList.remove('disabled')
+    } else {
+      el_toggle.classList.remove('enabled')
+      el_toggle.classList.add('disabled')
+    }
+    el_toggle.title =
       "toggle window splitting " + (split_enabled == true ? "(ON)" : "(OFF)")
   },
 
@@ -1124,44 +1140,46 @@ var app = {
     })
   },
 
-  openLoveProject: (path) => {
-    let zip = nwZIP2(path)
-    let folder = nwPATH.parse(path).name
-    let dist_path = nwPATH.join(nwPATH.parse(path).dir, folder)
-    //nwPATH.ensureDirSync(dist_path)
-    zip.extractAllTo(dist_path, true)
-    let walker = nwWALK.walk(app.template_path)
-    walker.on("file", (path, stats, next) => {
-      const rel_path = nwPATH.relative(app.template_path, path)
-      const out_file = app.cleanPath(
-        nwPATH.join(dist_path, rel_path, stats.name)
-      )
+  openZipProject: (path) => {
 
-      nwFS.ensureDirSync(rel_path)
+    blanke.showModal(
+      `<div class="update-title">Open '${nwPATH.basename(path)}'?</div>`,
+      {
+        yes: function () {
+          // extract zip
+          let zip = nwZIP2(path)
+          let folder = nwPATH.parse(path).name
+          let dist_path = nwPATH.join(nwPATH.parse(path).dir, folder)
+          zip.extractAllTo(dist_path, true)
+          let walker = nwWALK.walk(app.template_path)
 
-      if (!nwFS.existsSync(out_file))
-        nwFS.copySync(nwPATH.join(path, stats.name), out_file)
-      next()
-    })
-    walker.on("end", () => {
-      blanke.showModal(
-        `<div class="update-title">Open '${nwPATH.basename(path)}'?</div>`,
-        {
-          yes: function () {
+          // copy template files (if they dont exist)
+          walker.on("file", (path, stats, next) => {
+            const rel_path = nwPATH.relative(app.template_path, path)
+            const out_file = app.cleanPath(nwPATH.join(dist_path, rel_path, stats.name))
+
+            nwFS.ensureDir(rel_path)
+              .then(() => nwFS.exists(out_file))
+              .then(exists => !exists && nwFS.copySync(nwPATH.join(path, stats.name), out_file))
+              .then(() => next())
+          })
+          walker.on("end", () => {
             blanke.toast(
               "opening '" + nwPATH.basename(path) + "' as new project"
             )
             app.openProject(dist_path)
-          },
-          no: function () { },
-        }
-      )
-    })
+          })
+        },
+        no: function () { },
+      }
+    )
+
+
   },
 
   addAsset: function (res_type, path) {
-    if (res_type == "love") {
-      app.openLoveProject(path)
+    if (["love", "zip"].includes(res_type)) {
+      app.openZipProject(path)
       //app.closeProject();
     } else {
       blanke.toast("adding file '" + nwPATH.basename(path) + "'")
@@ -1194,7 +1212,7 @@ var app = {
     font: ["ttf", "ttc", "cff", "woff", "otf", "otc", "pfa", "pfb", "fnt", "bdf", "pfr"],
     script: ["lua"],
     map: ["map"],
-    love: ["love"],
+    love: ["love", "zip"],
   },
   name_to_path: {},
   asset_list: [],
@@ -1731,6 +1749,67 @@ var app = {
 
   isDev() {
     return require("electron-is-dev")
+  },
+
+  encrypt(text) {
+    const crypto = require('crypto')
+
+    const prvt_key = crypto.createHash('sha256').update(String(process.env.KEY)).digest('base64').substr(0, 32)
+    const iv = crypto.randomBytes(16)
+
+    const cipher = crypto.createCipheriv('aes-256-cbc', prvt_key, iv)
+    const encrypted = Buffer.concat([cipher.update(text), cipher.final()])
+
+    return JSON.stringify([iv.toString('hex'), encrypted.toString('hex')])
+  },
+
+  decrypt(text) {
+    const crypto = require('crypto')
+
+    const prvt_key = crypto.createHash('sha256').update(String(process.env.KEY)).digest('base64').substr(0, 32)
+    const data = JSON.parse(text)
+    const iv = Buffer.from(data[0], 'hex')
+    const encrypted_text = Buffer.from(data[1], 'hex')
+
+    const decipher = crypto.createDecipheriv('aes-256-cbc', prvt_key, iv)
+
+    return Buffer.concat([decipher.update(encrypted_text), decipher.final()]).toString()
+  },
+
+  checkLicenseKey(email, key) {
+    return new Promise((res, rej) => {
+      const https = require('https')
+      const querystring = require('querystring')
+      const req = https.request(
+        "https://api.gumroad.com/v2/licenses/verify",
+        { method: 'POST' },
+        _res => {
+          console.log(_res)
+          _res.setEncoding('utf8')
+          _res.on('data', chunk => {
+            // received info about license
+            const info = console.log(JSON.parse(chunk))
+            if (
+              info &&
+              info.success === true &&
+              email === info.purchase.email &&
+              key === info.purchase.license_key &&
+              !info.purchase.subscription_cancelled_at &&
+              !info.subscription_failed_at &&
+              !info.refunded
+            )
+              return res()
+            return rej()
+          })
+        }
+      )
+      req.on('error', e => rej())
+      req.write(querystring.stringify({
+        product_permalink: 'UUdvK',
+        license_key: key
+      }))
+      req.end()
+    })
   }
 }
 
@@ -2121,7 +2200,7 @@ app.window.webContents.once("dom-ready", () => {
     },
   })
   app.addSearchKey({
-    key: "Open .love file",
+    key: "Open .zip file",
     onSelect: function () {
       app.openProjectDialog(true)
     },
@@ -2149,7 +2228,11 @@ app.window.webContents.once("dom-ready", () => {
   })
   app.addSearchKey({
     key: "Check for updates",
-    onSelect: () => app.renderer.send("checkForUpdates"),
+    onSelect: () => app.renderer.send("checkForUpdates")
+  })
+  app.addSearchKey({
+    key: "Open plugins folder",
+    onSelect: () => remote.shell.openItem(app.plugin_path)
   })
 
   document.addEventListener("openProject", function () {

@@ -1,5 +1,5 @@
 -- Hitbox.debug = true
-
+local bg 
 local map
 State('platformer',{
 	enter = function()
@@ -10,6 +10,8 @@ State('platformer',{
 			down = { 'down', 's' },
 			action = { 'space' }
 		})
+		--Game.setEffect('static')
+		bg = Background{file="megman.png"}
 		
 		Camera("player")--, {zoom=2})
 		--Hitbox.debug = true
@@ -24,6 +26,10 @@ State('platformer',{
 			map:destroy()
 			map = Map.load('platformer.map')
 		end
+		local cam = Camera.get("player")
+		bg.size = 'cover'
+		bg.x = -cam.x/2
+		bg.y = -cam.y/2
 	end,
 	draw = function()
 		Draw{
@@ -31,6 +37,18 @@ State('platformer',{
 			{'line',-100,0,100,0},
 			{'line',0,-100,0,100}
 		}
+	--[[
+		Draw.color('green')
+		local cam = Camera.get("player")
+		
+		local game_diag = Math.sqrt((Game.width^2) + (Game.height^2))
+		for r = 20, game_diag, 20 do
+			local cr = r - (Game.time * 50 % 20)
+			print(cr, game_diag)
+			Draw.lineWidth(Math.lerp(0,50,cr/game_diag))
+			Draw.circle('line',cam.x,cam.y,cr)
+		end
+	]]
 	end
 })
 
@@ -46,7 +64,6 @@ Entity("player",{
 	camera = "player",
 	hitbox = true,
 	gravity = 10,
-	effect = 'static',
 	--debug = true,
 	collision = function(self, v)
 		if v.normal.y < 0 then 
@@ -81,6 +98,7 @@ Entity("player",{
 		
 		if Input.released('up') then 
 			self.vspeed =  -250 
+			print("ok", self.vspeed)
 		end
 	end
 })

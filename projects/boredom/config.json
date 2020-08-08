@@ -19,24 +19,24 @@
     ],
     "quick_access": [
         [
-            "player.lua=script+?",
-            "player.lua"
-        ],
-        [
-            "level1.map=map+?",
-            "level1.map"
-        ],
-        [
-            "Clear history=?",
-            "Clear history"
-        ],
-        [
-            "main.lua=script+?",
+            "main.lua=script+state+?",
             "main.lua"
         ],
         [
             "View project in explorer=?",
             "View project in explorer"
+        ],
+        [
+            "Open image editor=?",
+            "Open image editor"
+        ],
+        [
+            "Enable/disable plugins=?",
+            "Enable/disable plugins"
+        ],
+        [
+            "IDE/Project Settings=?",
+            "IDE/Project Settings"
         ]
     ],
     "autoplay_preview": true,
@@ -252,6 +252,19 @@
                 0
             ],
             "spacing": 0
+        },
+        "image/image6.bmp": {
+            "frame_size": [
+                256,
+                256
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
         }
     },
     "engine": "love2d"

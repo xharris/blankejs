@@ -9,6 +9,10 @@
     "window_size": 3,
     "quick_access": [
         [
+            "View project in explorer=?",
+            "View project in explorer"
+        ],
+        [
             "platformer.lua=script+entity+?",
             "platformer.lua"
         ],
@@ -23,10 +27,6 @@
         [
             "View APPDATA folder=?",
             "View APPDATA folder"
-        ],
-        [
-            "Find in files=?",
-            "Find in files"
         ]
     ],
     "autoplay_preview": true,
@@ -100,7 +100,9 @@
         "write_conf": true,
         "os": "windows",
         "window_size": 1,
-        "override_game_size": true
+        "override_game_size": true,
+        "experimental_mode": false,
+        "fullscreen": false
     },
     "enabled_plugins": {
         "xhh-effect": true,
@@ -110,7 +112,7 @@
         "xhh-datastructs": false,
         "xhh-array": true,
         "xhh-badword": true,
-        "cmpl": true,
+        "cmpl": false,
         "xhh-vector": true,
         "xhh-ui": false
     },

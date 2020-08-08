@@ -1,3 +1,5 @@
+## Net
+
 # class properties
 
 `address = 'localhost'`
@@ -22,7 +24,7 @@
 
 `sync(obj, vars)` syncs given properties of obj with other users in room
 
-* Ex. `Net.sync(player, {'hspeed', 'score', 'y'})`
+* Ex. `Net.sync(player_entity, {'hspeed', 'score', 'y'})`
 
 `on(event, fn)` add a callback for a net event
 
@@ -36,7 +38,10 @@
 
 `ip()` returns ip address 
 
-# net object (added with net=true, Net.sync, Net.spawn)
+# net object 
+
+added with net=true, Net.sync, Net.spawn
+
 
 ## object properties
 

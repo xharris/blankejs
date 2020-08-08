@@ -2,7 +2,7 @@
   "name": "BlankE",
   "description": "BlankE game dev environment",
   "author": "XHH <xhh950@gmail.com>",
-  "version": "0.12.3",
+  "version": "0.12.4",
   "main": "entry.js",
   "single-instance": false,
   "chromium-args": "--enable-webgl --ignore-gpu-blacklist --allow-file-access-from-files",
@@ -104,7 +104,7 @@
     "jquery.fancytree": "^2.35.0",
     "js-yaml": "^3.13.1",
     "klaw": "^3.0.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "lodash.clonedeep": "^4.5.0",
     "luamin": "^1.0.4",
     "markdown-it": "^9.1.0",
@@ -112,19 +112,19 @@
     "node-watch": "^0.6.0",
     "request": "^2.88.2",
     "true-case-path": "^2.2.1",
-    "uglify-es": "^3.3.9",
     "update-electron-app": "^1.5.0",
+    "v8-compile-cache": "^2.1.1",
     "walk": "^2.3.13"
   },
   "devDependencies": {
     "asar": "^3.0.3",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "electron": "^5.0.3",
+    "electron": "^5.0.13",
     "electron-builder": "^22.4.1",
     "electron-notarize": "^1.0.0",
     "expect.js": "^0.3.1",
     "mocha": "^7.1.1",
-    "spectron": "^7.0.0"
+    "spectron": "^11.1.0"
   }
 }

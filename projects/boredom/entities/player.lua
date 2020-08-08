@@ -1,4 +1,4 @@
-Camera "player" 
+Camera("player")
 
 Image.animation('player_stand.png')
 Image.animation('player_dead.png')

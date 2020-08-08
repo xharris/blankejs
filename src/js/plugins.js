@@ -209,25 +209,28 @@ class Plugins extends Editor {
           author: null,
         }
 
-        let data = nwFS.readFileSync(file, "utf-8")
-        let info_keys = ["Name", "Author"]
-        // get info about plugrin from readme
-        for (let k of info_keys) {
-          let re = new RegExp(
-            `\\[\\/\\/\\]: # \\(${k}:\\s*([\\w\\s\\.]+)\\s*\\)`
-          )
-          let match = re.exec(data)
-          if (match) doc_info[k.toLowerCase()] = match[1].trim()
-        }
+        nwFS.readFile(file, "utf-8")
+          .then(data => {
+            let info_keys = ["Name", "Author"]
+            // get info about plugrin from readme
+            for (let k of info_keys) {
+              let re = new RegExp(
+                `\\[\\/\\/\\]: # \\(${k}:\\s*([\\w\\s\\.]+)\\s*\\)`
+              )
+              let match = re.exec(data)
+              if (match) doc_info[k.toLowerCase()] = match[1].trim()
+            }
 
-        let getInfo = (k) => (doc_info[k] != null ? doc_info[k] : p_info[k])
-        if (getInfo("enabled"))
-          Docview.addPlugin(
-            getInfo("name") +
-              (getInfo("author") ? " (" + getInfo("author") + ")" : ""),
-            file
-          )
-        else Docview.removePlugin(file)
+            let getInfo = (k) => (doc_info[k] != null ? doc_info[k] : p_info[k])
+            if (getInfo("enabled"))
+              Docview.addPlugin(
+                getInfo("name") +
+                (getInfo("author") ? " (" + getInfo("author") + ")" : ""),
+                file
+              )
+            else Docview.removePlugin(file)
+          })
+          .catch(e => Docview.removePlugin(file))
       }
     }
 
@@ -285,8 +288,8 @@ class Plugins extends Editor {
       el_ref.el_toggle.innerHTML = `
 				<div class='form-inputs'>
 					<input type='checkbox' class='form-checkbox' ${
-            app.projSetting("enabled_plugins")[info.id] == true ? "checked" : ""
-          }/>
+        app.projSetting("enabled_plugins")[info.id] == true ? "checked" : ""
+        }/>
 					<span class='checkmark'></span>
 				</div>
 				<div class='form-label'>

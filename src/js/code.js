@@ -1,4 +1,4 @@
-const nwCLONE = require("lodash.clonedeep");
+const nwCLONE = require("lodash.clonedeep")
 
 /* list of changes
 	re_class_list: removed ^ at beginning
@@ -6,62 +6,62 @@ const nwCLONE = require("lodash.clonedeep");
 */
 // TODO ask if use wants to save before closing when there are unsaved changes
 
-var re_add_sprite = /this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/;
-var re_new_sprite = /new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/;
+var re_add_sprite = /this\.addSprite\s*\(\s*['"][\w\s\/.-]+['"]\s*,\s*{[\s\w"',:]*image\s*:\s*['"]([\w\s\/.-]+)['"]/
+var re_new_sprite = /new\s+Sprite[\s\w{(:"',]+image[\s:]+['"]([\w\s\/.-]+)/
 
-var file_ext = ["lua"];
-var main_file = "main." + file_ext[0];
+var file_ext = ["lua"]
+var main_file = "main." + file_ext[0]
 
-var code_instances = {}; // { file: Code }
-var is_script = {}; // { file: t/f }
-var cm_options = {}; // { file: {option:value} }
+var code_instances = {} // { file: Code }
+var is_script = {} // { file: t/f }
+var cm_options = {} // { file: {option:value} }
 
-var CODE_ASSOCIATIONS = [];
+var CODE_ASSOCIATIONS = []
 
-var ext_class_list = {}; // class_extends (Player)
-var instance_list = {}; // instance (let player = new Player())
-var var_list = {}; // user_words (let player;)
-var class_list = []; // class_list (Map, Scene, Effect)
-var keywords = [];
-var this_lines = {}; // { file: {line_text : token_type (blanke-entity-instance) } }
-var this_lines_num = []; // { file: [ { start, end, class_name} ] }
-var this_keyword = "this";
-var indent_size = 4;
+var ext_class_list = {} // class_extends (Player)
+var instance_list = {} // instance (let player = new Player())
+var var_list = {} // user_words (let player;)
+var class_list = [] // class_list (Map, Scene, Effect)
+var keywords = []
+var this_lines = {} // { file: {line_text : token_type (blanke-entity-instance) } }
+var this_lines_num = [] // { file: [ { start, end, class_name} ] }
+var this_keyword = "this"
+var indent_size = 4
 
-var autocomplete, hints;
+var autocomplete, hints
 var re_class_extends,
   re_instance,
   re_user_words,
   re_image,
   re_entity_using_image,
   re_this,
-  re_sprite_align;
+  re_sprite_align
 
 function isReservedWord(word) {
-  return keywords.includes(word) || autocomplete.class_list.includes(word);
+  return keywords.includes(word) || autocomplete.class_list.includes(word)
 }
 
 // called when autocomplete.js is modified
 var reloadCompletions = () => {
   // get regex from autocomplete.js
-  autocomplete = nwCLONE(app.autocomplete);
+  autocomplete = nwCLONE(app.autocomplete)
 
-  let plugin_ac = Plugins.getAutocomplete();
+  let plugin_ac = Plugins.getAutocomplete()
   for (let p in plugin_ac) {
-    addCompletions(plugin_ac[p]);
+    addCompletions(plugin_ac[p])
   }
 
-  re_class_extends = autocomplete.class_extends || {};
-  re_instance = autocomplete.instance || {};
-  re_user_words = autocomplete.user_words || {};
-  keywords = autocomplete.keywords || [];
-  hints = autocomplete.hints || {};
-  class_list = autocomplete.class_list || [];
-  re_image = autocomplete.image || [];
-  re_this = autocomplete.this_ref || {};
-  this_keyword = autocomplete.this_keyword || "this";
-  re_entity_using_image = autocomplete.entity_using_image || [];
-  re_sprite_align = autocomplete.sprite_align || [];
+  re_class_extends = autocomplete.class_extends || {}
+  re_instance = autocomplete.instance || {}
+  re_user_words = autocomplete.user_words || {}
+  keywords = autocomplete.keywords || []
+  hints = autocomplete.hints || {}
+  class_list = autocomplete.class_list || []
+  re_image = autocomplete.image || []
+  re_this = autocomplete.this_ref || {}
+  this_keyword = autocomplete.this_keyword || "this"
+  re_entity_using_image = autocomplete.entity_using_image || []
+  re_sprite_align = autocomplete.sprite_align || []
 
   // add classes as globals if they have properties
   for (let c of class_list) {
@@ -70,12 +70,12 @@ var reloadCompletions = () => {
       hints.global &&
       !hints.global.find(p => p.prop == c || p.fn == c)
     )
-      hints.global.push({ prop: c });
+      hints.global.push({ prop: c })
   }
-};
+}
 
-document.addEventListener("loadedPlugins", reloadCompletions);
-document.addEventListener("pluginChanged", reloadCompletions);
+document.addEventListener("loadedPlugins", reloadCompletions)
+document.addEventListener("pluginChanged", reloadCompletions)
 
 var addCompletions = data => {
   // add plugin autocomplete
@@ -83,199 +83,199 @@ var addCompletions = data => {
     if (key == null) {
       // iterate keys of new_obj and put them in old_obj
       for (let k in new_obj) {
-        update(old_obj, new_obj, k);
+        update(old_obj, new_obj, k)
       }
     } else {
       if (!Array.isArray(old_obj[key]) && typeof old_obj[key] == "object") {
         // go one level deeper
         for (let k in new_obj[key]) {
-          update(old_obj[key], new_obj[key], k);
+          update(old_obj[key], new_obj[key], k)
         }
       } else {
         // concat new_obj value to old_obj
         if (Array.isArray(old_obj[key])) {
-          old_obj[key] = old_obj[key].concat(new_obj[key]);
+          old_obj[key] = old_obj[key].concat(new_obj[key])
         } else if (!old_obj[key]) {
           // completely new value, add it to old_obj
-          old_obj[key] = new_obj[key];
+          old_obj[key] = new_obj[key]
         }
       }
     }
-  };
-  update(autocomplete, data);
-};
+  }
+  update(autocomplete, data)
+}
 
 var getCompletionList = _type => {
   let retrieve = obj => {
-    let ret_obj = {};
+    let ret_obj = {}
     // do you like loops??
     for (let file in obj) {
       for (let cat in obj[file]) {
-        if (!ret_obj[cat]) ret_obj[cat] = [];
+        if (!ret_obj[cat]) ret_obj[cat] = []
         for (let name of obj[file][cat]) {
           if (!ret_obj[cat].includes(name)) {
-            ret_obj[cat].push(name);
+            ret_obj[cat].push(name)
           }
         }
       }
     }
-    return ret_obj;
-  };
+    return ret_obj
+  }
   let arrays = {
     "ext-class": ext_class_list,
     instance: instance_list,
     var: var_list,
     class: class_list, // array
-  };
-  let ret_val = arrays[_type];
-  if (ret_val) {
-    if (Array.isArray(ret_val)) return ret_val;
-    return retrieve(ret_val);
   }
-};
+  let ret_val = arrays[_type]
+  if (ret_val) {
+    if (Array.isArray(ret_val)) return ret_val
+    return retrieve(ret_val)
+  }
+}
 
 const resetClassInstanceList = file => {
-  ext_class_list[file] = { entity: [], class: [] };
-  instance_list[file] = {};
-};
+  ext_class_list[file] = { entity: [], class: [] }
+  instance_list[file] = {}
+}
 
 // ** called when a file is modified
-var script_list = [];
+var script_list = []
 var getKeywords = (file, content) => {
-  if (!Code.isScript(file)) return;
+  if (!Code.isScript(file)) return
   blanke.cooldownFn("getKeywords." + file, 500, () => {
-    dispatchEvent("script_modified", { path: file, content: content });
+    dispatchEvent("script_modified", { path: file, content: content })
     // if (file.includes(main_file)) return; // main file makes while loop freeze for some reason
-    resetClassInstanceList(file);
-    var_list[file] = {};
+    resetClassInstanceList(file)
+    var_list[file] = {}
 
     let match = (regex_obj, store_list) => {
       // refresh matches for all files
       for (let _file of script_list) {
-        let data = file == _file ? content : nwFS.readFileSync(_file, "utf-8");
+        let data = file == _file ? content : nwFS.readFileSync(_file, "utf-8")
         for (let cat in regex_obj) {
-          let regex = [].concat(regex_obj[cat]);
-          if (!store_list[_file]) store_list[_file] = {};
+          let regex = [].concat(regex_obj[cat])
+          if (!store_list[_file]) store_list[_file] = {}
 
           // clear old list of results
-          if (!store_list[_file][cat]) store_list[_file][cat] = [];
-          let _match;
+          if (!store_list[_file][cat]) store_list[_file][cat] = []
+          let _match
           for (let re of regex) {
             while ((_match = re.exec(data))) {
               if (!store_list[_file][cat].includes(_match[1]))
-                store_list[_file][cat].push(_match[1]);
+                store_list[_file][cat].push(_match[1])
             }
           }
         }
       }
-    };
+    }
     // start scanning
-    resetClassInstanceList(file);
-    match(re_class_extends, ext_class_list); // user-made classes
+    resetClassInstanceList(file)
+    match(re_class_extends, ext_class_list) // user-made classes
     // add user class regexes
-    let new_re_instance = {};
+    let new_re_instance = {}
     for (let cat in re_instance) {
-      new_re_instance[cat] = [];
-      let re_list = [].concat(re_instance[cat]);
+      new_re_instance[cat] = []
+      let re_list = [].concat(re_instance[cat])
       for (let re of re_list) {
         if (re.source.includes("<class_name>")) {
           // YES - make the replacement
-          let ext_classes = getCompletionList("ext-class")[cat];
+          let ext_classes = getCompletionList("ext-class")[cat]
           if (ext_classes) {
             // iterate user-made classes
             for (let class_name of ext_classes) {
               if (!new_re_instance[class_name])
-                new_re_instance[class_name] = [];
+                new_re_instance[class_name] = []
               new_re_instance[class_name].push(
                 new RegExp(
                   re.source.replace("<class_name>", class_name),
                   re.flags
                 )
-              );
+              )
             }
           }
         } else {
           // NO - add current regex
-          new_re_instance[cat].push(re);
+          new_re_instance[cat].push(re)
         }
       }
     }
-    match(new_re_instance, instance_list);
-    var_list[file] = {};
-    match(re_user_words, var_list);
+    match(new_re_instance, instance_list)
+    var_list[file] = {}
+    match(re_user_words, var_list)
 
     // for 'this' keyword
-    this_lines[file] = {};
-    this_lines_num[file] = [];
+    this_lines[file] = {}
+    this_lines_num[file] = []
     for (let name in re_this) {
-      let regexs = [].concat(re_this[name]);
+      let regexs = [].concat(re_this[name])
       for (let re of regexs) {
-        let match;
+        let match
         while ((match = re.exec(content))) {
-          this_lines[file][match[0].trim()] = [name].concat(match.slice(1));
+          this_lines[file][match[0].trim()] = [name].concat(match.slice(1))
           this_lines_num[file].push({
             start: match.index,
             end: -1,
             class_name: name,
-          });
-          let len = this_lines_num[file].length;
+          })
+          let len = this_lines_num[file].length
           if (len > 1) {
-            this_lines_num[file][len - 2].end = match.index;
+            this_lines_num[file][len - 2].end = match.index
           }
           // console.log(match);
         }
       }
     }
-  });
-};
+  })
+}
 
 class Code extends Editor {
   constructor(file_path) {
-    super();
-    this.setupFibWindow();
+    super()
+    this.setupFibWindow()
     this.file = app.cleanPath(file_path)
-    this.script_folder = "/scripts";
-    this.file_loaded = false;
+    this.script_folder = "/scripts"
+    this.file_loaded = false
 
-    if (!app.ideSetting("code")) app.ideSetting("code", {});
+    if (!app.ideSetting("code")) app.ideSetting("code", {})
     ifndef_obj(app.ideSetting("code"), {
       font_size: 16,
-    });
+    })
 
-    this.editors = [];
-    this.function_list = [];
-    this.breakpoints = {};
+    this.editors = []
+    this.function_list = []
+    this.breakpoints = {}
 
     // create codemirror editor
-    this.edit_box = app.createElement("div", "code");
-    this.appendChild(this.edit_box);
+    this.edit_box = app.createElement("div", "code")
+    this.appendChild(this.edit_box)
 
     // box to show last viewed function (until ')' is pressed?)
-    this.el_fn_helper = app.createElement("div", ["fn-helper", "hidden"]);
+    this.el_fn_helper = app.createElement("div", ["fn-helper", "hidden"])
     this.el_fn_helper.addEventListener("mouseenter", () => {
-      this.refreshFnHelperTimer();
-    });
-    this.appendChild(this.el_fn_helper);
-    this.fn_helper_timer = null;
+      this.refreshFnHelperTimer()
+    })
+    this.appendChild(this.el_fn_helper)
+    this.fn_helper_timer = null
 
     // class method list
-    this.el_class_methods = app.createElement("div", "methods");
-    this.appendChild(this.el_class_methods);
+    this.el_class_methods = app.createElement("div", "methods")
+    this.appendChild(this.el_class_methods)
 
     // add game preview
-    this.game = null;
+    this.game = null
     if (
       (file_path && Code.isScript(file_path)) &&
       app.ideSetting("game_preview_enabled") &&
       app.engine.game_preview_enabled
     )
-      this.game = new GamePreview(null, { ide_mode: true });
+      this.game = new GamePreview(null, { ide_mode: true })
 
     if (app.engine.game_preview_enabled) {
-      this.console = new Console();
-      this.console.appendTo(this.getContent());
-      this.getContainer().bg_first_only = true;
-      if (this.game) this.appendBackground(this.game.container);
+      this.console = new Console()
+      this.console.appendTo(this.getContent())
+      this.getContainer().bg_first_only = true
+      if (this.game) this.appendBackground(this.game.container)
     }
 
     const stream_class_check = (stream, name) =>
@@ -284,23 +284,23 @@ class Code extends Editor {
     CodeMirror.defineMode("blanke", (config, parserConfig) => {
       var blankeOverlay = {
         token: (stream, state) => {
-          let baseCur = stream.lineOracle.state.baseCur;
-          let line = stream.lineOracle.line;
-          if (baseCur == null) baseCur = "";
-          else baseCur += " ";
-          var ch;
+          let baseCur = stream.lineOracle.state.baseCur
+          let line = stream.lineOracle.line
+          if (baseCur == null) baseCur = ""
+          else baseCur += " "
+          var ch
 
-          getKeywords(this.file, this.codemirror.getValue());
+          getKeywords(this.file, this.codemirror.getValue())
 
           // comment
           if (stream.match(/\s*--/) || baseCur.includes("comment")) {
             while ((ch = stream.next()) != null && !stream.eol());
-            return "comment";
+            return "comment"
           }
 
-          let instances = getCompletionList("instance");
-          let ext_classes = getCompletionList("ext-class");
-          let classes = getCompletionList("class");
+          let instances = getCompletionList("instance")
+          let ext_classes = getCompletionList("ext-class")
+          let classes = getCompletionList("class")
 
           // instance
           for (let cat in instances) {
@@ -308,16 +308,16 @@ class Code extends Editor {
             for (let name of instances[cat]) {
               // player1, map1
               // get parent class name
-              let parent = "";
+              let parent = ""
               for (let p in ext_classes) {
                 if (ext_classes[p].includes(cat))
-                  parent = `blanke-${p.toLowerCase()}-instance`;
+                  parent = `blanke-${p.toLowerCase()}-instance`
               }
               if (stream_class_check(stream, name))
                 return (
                   baseCur +
                   `blanke-instance ${parent} blanke-${cat.toLowerCase()}-instance`
-                );
+                )
             }
           }
 
@@ -327,7 +327,7 @@ class Code extends Editor {
             for (let name of ext_classes[cat]) {
               // Player
               if (stream_class_check(stream, name))
-                return baseCur + `blanke-class blanke-${cat.toLowerCase()}`;
+                return baseCur + `blanke-class blanke-${cat.toLowerCase()}`
             }
           }
 
@@ -335,27 +335,27 @@ class Code extends Editor {
           for (let name of classes) {
             // Map, Scene
             if (stream_class_check(stream, name))
-              return baseCur + `blanke-class blanke-${name.toLowerCase()}`;
+              return baseCur + `blanke-class blanke-${name.toLowerCase()}`
           }
 
           while (stream.next() && false) { }
-          return null;
+          return null
         },
-      };
+      }
       let baseMode = CodeMirror.getMode(
         config,
         parserConfig.backdrop || app.engine.code_mode || app.engine.language
-      );
+      )
       let body = {
         "(": ")",
         "[": "]",
         "{": "}",
         " function": " end ",
         " do ": " end ",
-      };
-      let openers = Object.keys(body);
-      let closers = Object.values(body);
-      let body_entries = Object.entries(body);
+      }
+      let openers = Object.keys(body)
+      let closers = Object.values(body)
+      let body_entries = Object.entries(body)
       let re_body = new RegExp(
         body_entries
           .reduce(
@@ -367,101 +367,101 @@ class Code extends Editor {
           )
           .join("|"),
         "g"
-      );
-      baseMode.electricInput = /end|\]|\}|\)/;
+      )
+      baseMode.electricInput = /end|\]|\}|\)/
       // console.log(baseMode)
 
       const getLineOffset = line => {
-        let open = 0;
-        let matches = line.match(re_body);
+        let open = 0
+        let matches = line.match(re_body)
         if (matches) {
           let m = 0,
-            w = matches.length - 1;
+            w = matches.length - 1
           while (m <= w) {
             if (closers.includes(matches[m])) {
-              open--;
+              open--
             }
             if (openers.includes(matches[m])) {
-              open++;
+              open++
             }
-            m++;
+            m++
           }
         }
-        return open; // Math.min(1, Math.max(-1, open));
-      };
+        return open // Math.min(1, Math.max(-1, open));
+      }
 
       const getIndent = line => {
-        let match;
-        if ((match = line.match(/^(\s+).?/))) return match[1].length;
-        return 0;
-      };
+        let match
+        if ((match = line.match(/^(\s+).?/))) return match[1].length
+        return 0
+      }
 
       baseMode.indent = (state, line) => {
-        let doc = this.codemirror.getDoc();
-        let cur = doc.getCursor();
+        let doc = this.codemirror.getDoc()
+        let cur = doc.getCursor()
 
-        let indentation = 0;
+        let indentation = 0
 
         // previous line indentation
         if (cur.line > 0) {
-          let prev_line_i = cur.line - 1;
-          let prev_line = doc.getLine(prev_line_i);
+          let prev_line_i = cur.line - 1
+          let prev_line = doc.getLine(prev_line_i)
           /*
           while (prev_line_i > 0 && prev_line.trim().length == 0) {
             prev_line_i--;
             prev_line = doc.getLine(prev_line_i);
           }
           */
-          let prev_line_offset = getLineOffset(prev_line);
-          let curr_line_offset = getLineOffset(line);
-          indentation = getIndent(prev_line);
+          let prev_line_offset = getLineOffset(prev_line)
+          let curr_line_offset = getLineOffset(line)
+          indentation = getIndent(prev_line)
           // line has an opener
-          if (prev_line_offset > 0) indentation++;
+          if (prev_line_offset > 0) indentation++
           // this line is closing someting
-          if (curr_line_offset < 0) indentation--;
+          if (curr_line_offset < 0) indentation--
 
           // console.log({ re_body, prev_line, prev_line_offset, indentation });
         }
 
         // console.log({curr_line_off, indentation});
 
-        return indentation * indent_size;
-      };
+        return indentation * indent_size
+      }
 
-      return CodeMirror.overlayMode(baseMode, blankeOverlay);
-    });
+      return CodeMirror.overlayMode(baseMode, blankeOverlay)
+    })
 
     let showSpritePreview = (image_name, include_img, cb) => {
-      let spr_prvw = new SpritesheetPreview(image_name);
+      let spr_prvw = new SpritesheetPreview(image_name)
       spr_prvw.onCopyCode = function (vals) {
-        let args = {};
+        let args = {}
         args.image =
           '"' +
           app.cleanPath(vals.image.replace(/.*[\/\\](.*)\.\w+/g, "$1")) +
-          '"';
-        args.frames = vals.frames;
-        args.speed = vals.speed;
+          '"'
+        args.frames = vals.frames
+        args.speed = vals.speed
 
-        let optional = ["frame_size", "border", "offset"];
+        let optional = ["frame_size", "border", "offset"]
         for (let opt of optional) {
           if (vals[opt].reduce((s, n) => s + n) > 0)
-            args[opt] = "[" + vals[opt].join(",") + "]";
+            args[opt] = "[" + vals[opt].join(",") + "]"
         }
-        let arg_str = "";
+        let arg_str = ""
 
         if (include_img)
           arg_str +=
             '"' +
             (vals.name == "" || !vals.name ? "my_animation" : vals.name) +
-            '", ';
-        arg_str += "{";
+            '", '
+        arg_str += "{"
         for (let key in args) {
-          arg_str += key + ":" + args[key] + ", ";
+          arg_str += key + ":" + args[key] + ", "
         }
-        arg_str = arg_str.slice(0, -2) + "}";
-        if (cb) cb(arg_str, vals.name);
-      };
-    };
+        arg_str = arg_str.slice(0, -2) + "}"
+        if (cb) cb(arg_str, vals.name)
+      }
+    }
 
     this.gutterEvents = {
       ".addSpr": {
@@ -469,20 +469,20 @@ class Code extends Editor {
         tooltip: "make a spritesheet animation",
         fn: (line_text, cm, cur) => {
           // get currently used image name
-          let image_name = "";
+          let image_name = ""
           if ((image_name = line_text.match(re_add_sprite)))
-            image_name = image_name[1];
+            image_name = image_name[1]
           showSpritePreview(image_name, true, arg_str => {
             line_text = line_text.replace(
               /(\s*)(\w+).addSpr.*/g,
               "$1$2.addSprite(" + arg_str + ")"
-            );
+            )
             this.codemirror.replaceRange(
               line_text,
               { line: cur.line, ch: 0 },
               { line: cur.line, ch: 10000000 }
-            );
-          });
+            )
+          })
         },
       },
       "new\\s+Sprite": {
@@ -490,91 +490,91 @@ class Code extends Editor {
         tooltip: "make a spritesheet animation",
         fn: (line_text, cm, cur) => {
           // get currently used image name
-          let image_name = "";
+          let image_name = ""
           if ((image_name = line_text.match(re_new_sprite)))
-            image_name = image_name[1];
+            image_name = image_name[1]
           showSpritePreview(image_name, false, (arg_str, image_name) => {
             line_text = line_text.replace(
               /Sprite.*/g,
               "Sprite(" + arg_str + ")"
-            );
+            )
             this.codemirror.replaceRange(
               line_text,
               { line: cur.line, ch: 0 },
               { line: cur.line, ch: 10000000 }
-            );
-          });
+            )
+          })
         },
       },
-    };
+    }
 
-    this.autocompleting = false;
-    this.last_word = "";
+    this.autocompleting = false
+    this.last_word = ""
 
-    this.setupEditor(this.edit_box);
+    this.setupEditor(this.edit_box)
 
     this.addCallback("onFocus", () => {
       if (this.game) {
-        this.game.size = this.container.getSizeType();
-        this.refreshGame();
+        this.game.size = this.container.getSizeType()
+        this.refreshGame()
       }
-    });
+    })
 
     this.addCallback("onResize", (w, h) => {
-      if (this.game) this.game.size = this.container.getSizeType();
+      if (this.game) this.game.size = this.container.getSizeType()
 
-      if (!this.container.in_background && this.console) this.console.clear();
+      if (!this.container.in_background && this.console) this.console.clear()
 
       // move split view around if there is one
-      let content_area = this.getContent();
-      content_area.classList.remove("horizontal", "vertical");
-      if (w > h) content_area.classList.add("horizontal");
-      if (h > w) content_area.classList.add("vertical");
+      let content_area = this.getContent()
+      content_area.classList.remove("horizontal", "vertical")
+      if (w > h) content_area.classList.add("horizontal")
+      if (h > w) content_area.classList.add("vertical")
 
-      this.codemirror.refresh();
-    });
+      this.codemirror.refresh()
+    })
 
     if (this.game) {
       this.game.onError = (msg, file, lineNo, columnNo) => {
-        this.disableFnHelper();
+        this.disableFnHelper()
         let file_link = `<a href='#' onclick="Code.openScript('${file}',${lineNo})">${nwPATH.basename(
           file
-        )}</a>`;
+        )}</a>`
         if (!nwFS.existsSync(file))
-          file_link = `<a>${nwPATH.basename(file)}</a>`;
+          file_link = `<a>${nwPATH.basename(file)}</a>`
         if (this.console)
           this.console.err(
             `${file_link} (&darr;${lineNo}&rarr;${columnNo}): ${msg}`
-          );
-      };
+          )
+      }
       this.game.onLog = (...msgs) => {
-        if (this.container.in_background && this.console) this.console.log(...msgs);
-      };
+        if (this.container.in_background && this.console) this.console.log(...msgs)
+      }
       this.game.onRefresh = () => {
-        this.enableFnHelper();
+        this.enableFnHelper()
         if (this.focus_after_save) {
-          this.focus_after_save = false;
-          this.codemirror.focus();
+          this.focus_after_save = false
+          this.codemirror.focus()
         }
-      };
+      }
       this.game.onErrorResolved = () => {
-        if (this.console) this.console.clear();
-      };
+        if (this.console) this.console.clear()
+      }
       this.game.onRefreshButton = () => {
-        if (this.console) this.console.clear();
-      };
+        if (this.console) this.console.clear()
+      }
 
       this.addCallback("onEnterView", () => {
-        this.game.resume();
-      });
+        this.game.resume()
+      })
       this.addCallback("onExitView", () => {
-        this.game.pause();
-      });
+        this.game.pause()
+      })
     }
 
-    this.codemirror.refresh();
+    this.codemirror.refresh()
 
-    let game_window_menu = [];
+    let game_window_menu = []
     if (app.ideSetting("game_preview_enabled") && this.console) {
       game_window_menu = [
         {
@@ -582,7 +582,7 @@ class Code extends Editor {
           type: "checkbox",
           checked: this.console.isVisible(),
           click: () => {
-            this.console.toggleVisibility();
+            this.console.toggleVisibility()
           },
         },
         {
@@ -590,20 +590,20 @@ class Code extends Editor {
           type: "checkbox",
           checked: this.console.auto_scrolling,
           click: () => {
-            this.console.auto_scrolling = !this.console.auto_scrolling;
+            this.console.auto_scrolling = !this.console.auto_scrolling
           },
         },
-      ];
+      ]
     }
 
     this.setupMenu({
       close: true,
       rename: () => {
-        this.setTitle(nwPATH.basename(this.file));
-        this.refreshGame();
+        this.setTitle(nwPATH.basename(this.file))
+        this.refreshGame()
       },
       delete: () => {
-        this.close(true);
+        this.close(true)
       },
       extra: () => [
         {
@@ -611,7 +611,7 @@ class Code extends Editor {
           type: "checkbox",
           checked: this.edit_box2 != null,
           click: () => {
-            this.edit_box2 ? this.unsplitView() : this.splitView();
+            this.edit_box2 ? this.unsplitView() : this.splitView()
           },
         },
         {
@@ -632,11 +632,11 @@ class Code extends Editor {
           }
         ] : [])
       ],
-    });
+    })
   }
 
   setupEditor(el_container) {
-    let this_ref = this;
+    let this_ref = this
     let new_editor = CodeMirror(el_container, {
       mode: Code.isScript(this.file) ? "blanke" : null,
       theme: "material",
@@ -661,24 +661,24 @@ class Code extends Editor {
       extraKeys: {
         "Cmd-S": (cm) => {
           blanke.cooldownFn("codeSave." + this.file, 200, () => {
-            this.save();
-            cm.focus();
-          });
+            this.save()
+            cm.focus()
+          })
         },
         "Ctrl-S": (cm) => {
-          this.save();
+          this.save()
         },
         "Ctrl-=": (cm) => {
-          this.fontSizeUp();
+          this.fontSizeUp()
         },
         "Ctrl--": (cm) => {
-          this.fontSizeDown();
+          this.fontSizeDown()
         },
         "Cmd-=": (cm) => {
-          this.fontSizeUp();
+          this.fontSizeUp()
         },
         "Cmd--": (cm) => {
-          this.fontSizeDown();
+          this.fontSizeDown()
         },
         "Shift-Tab": "indentLess",
         "Ctrl-F": "findPersistent",
@@ -686,91 +686,91 @@ class Code extends Editor {
         "Ctrl-Shift-Tab": "indentAuto",
         "Ctrl-/": "toggleComment",
       },
-    });
+    })
 
     new_editor.on("gutterClick", (cm, n, gutter) => {
-      let info = cm.lineInfo(n);
-      let containers = { "(": ")", "[": "]", "{": "}" };
+      let info = cm.lineInfo(n)
+      let containers = { "(": ")", "[": "]", "{": "}" }
       for (let open in containers) {
         if (
           (info.text.match(new RegExp(`\\${open}`, "g")) || []).length !=
           (info.text.match(new RegExp(`\\${containers[open]}`, "g")) || [])
             .length
         )
-          return;
+          return
       }
-      let marker = blanke.createElement("div");
-      marker.innerHTML = `<i class="breakpoint">&#10148;</i>`;
-      let enable = !info.gutterMarkers || !info.gutterMarkers.breakpoints;
-      cm.setGutterMarker(n, "breakpoints", enable ? marker : null);
+      let marker = blanke.createElement("div")
+      marker.innerHTML = `<i class="breakpoint">&#10148;</i>`
+      let enable = !info.gutterMarkers || !info.gutterMarkers.breakpoints
+      cm.setGutterMarker(n, "breakpoints", enable ? marker : null)
 
-      if (enable) this.breakpoints[n] = true;
-      else delete this.breakpoints[n];
-    });
+      if (enable) this.breakpoints[n] = true
+      else delete this.breakpoints[n]
+    })
 
     // set up events
     //this.codemirror.setSize("100%", "100%");
     function checkGutterEvents(cm, obj) {
-      if (!Code.isScript(this_ref.file)) return;
+      if (!Code.isScript(this_ref.file)) return
       blanke.cooldownFn("checkGutterEvents", 1000, () => {
-        let cur = cm.getCursor();
-        let line_text = cm.getLine(cur.line);
+        let cur = cm.getCursor()
+        let line_text = cm.getLine(cur.line)
 
         Object.values(this_ref.gutterEvents).forEach(v => {
-          cm.clearGutter(v.name);
-        });
+          cm.clearGutter(v.name)
+        })
 
         for (let txt in this_ref.gutterEvents) {
-          let info = this_ref.gutterEvents[txt];
+          let info = this_ref.gutterEvents[txt]
           if (line_text.match(new RegExp(txt))) {
-            let el_gutter = blanke.createElement("div", "gutter-evt");
-            el_gutter.innerHTML = "<i class='mdi mdi-flash'></i>";
-            if (info.tooltip) el_gutter.title = info.tooltip;
+            let el_gutter = blanke.createElement("div", "gutter-evt")
+            el_gutter.innerHTML = "<i class='mdi mdi-flash'></i>"
+            if (info.tooltip) el_gutter.title = info.tooltip
             el_gutter.addEventListener("click", function (e) {
-              this_ref.gutterEvents[txt].fn(line_text, cm, cur);
-            });
-            cm.setGutterMarker(cur.line, info.name, el_gutter);
+              this_ref.gutterEvents[txt].fn(line_text, cm, cur)
+            })
+            cm.setGutterMarker(cur.line, info.name, el_gutter)
           }
         }
-      });
+      })
     }
 
     function otherActivity(cm, e) {
       for (let s = 0; s < cm.lineCount(); s++) {
-        this_ref.checkLineWidgets(s, cm);
+        this_ref.checkLineWidgets(s, cm)
       }
     }
 
     let showHints = (editor, in_list, input) => {
-      if (!this.file_loaded) return;
-      let hint_types = {};
-      let list = [];
-      let text_added = []; // hints that area already added
+      if (!this.file_loaded) return
+      let hint_types = {}
+      let list = []
+      let text_added = [] // hints that area already added
 
       for (var o in in_list) {
-        let hint_opts = in_list[o];
-        let add = false;
-        let text = hint_opts.fn || hint_opts.prop;
+        let hint_opts = in_list[o]
+        let add = false
+        let text = hint_opts.fn || hint_opts.prop
 
-        if (!text.startsWith(input) || text == input) continue;
+        if (!text.startsWith(input) || text == input) continue
 
         if (hint_opts.fn) {
-          hint_types[text] = "function1";
-          add = true;
+          hint_types[text] = "function1"
+          add = true
         }
         if (hint_opts.prop) {
-          hint_types[text] = "property";
-          add = true;
+          hint_types[text] = "property"
+          add = true
         }
         if (add && !text_added.includes(text)) {
-          text_added.push(text);
+          text_added.push(text)
           list.push({
             text: text,
             hint_opts: hint_opts,
             render: function (el, editor, data) {
-              el.innerHTML = this_ref.getCompleteHTML(hint_opts);
+              el.innerHTML = this_ref.getCompleteHTML(hint_opts)
             },
-          });
+          })
         }
       }
       blanke.cooldownFn("editor_show_hint", 250, function () {
@@ -781,130 +781,130 @@ class Code extends Editor {
               from: editor.getDoc().getCursor(),
               to: editor.getDoc().getCursor(),
               list: list,
-            };
+            }
 
             CodeMirror.on(completions, "pick", function (completion) {
-              let comp_word = editor.findWordAt(editor.getCursor());
+              let comp_word = editor.findWordAt(editor.getCursor())
               if (hint_types[completion.text] == "property")
                 editor.replaceRange(
                   completion.text,
                   comp_word.anchor,
                   comp_word.head
-                );
+                )
               else if (hint_types[completion.text] == "function1")
                 editor.replaceRange(
                   completion.text + "(",
                   comp_word.anchor,
                   comp_word.head
-                );
+                )
 
               this_ref.setFnHelper(
                 this_ref.getCompleteHTML(completion.hint_opts)
-              );
-            });
+              )
+            })
 
-            return completions;
+            return completions
           },
           completeSingle: false,
-        });
-      });
-    };
+        })
+      })
+    }
 
-    let comp_fn_trigger = v => v == (app.engine.fn_trigger || ".");
+    let comp_fn_trigger = v => v == (app.engine.fn_trigger || ".")
 
     new_editor.on("change", () => {
-      this.addAsterisk();
-    });
+      this.addAsterisk()
+    })
 
     new_editor.on("cursorActivity", (cm, e) => {
-      if (!Code.isScript(this.file)) return;
+      if (!Code.isScript(this.file)) return
 
-      let editor = cm;
-      let cursor = editor.getCursor();
+      let editor = cm
+      let cursor = editor.getCursor()
 
-      checkGutterEvents(editor);
-      this.parseFunctions();
+      checkGutterEvents(editor)
+      this.parseFunctions()
 
       blanke.cooldownFn("editor_other_activity", 1000, () => {
-        otherActivity(cm, e);
-      });
-      Code.updateSpriteList(this.file, editor.getValue());
+        otherActivity(cm, e)
+      })
+      Code.updateSpriteList(this.file, editor.getValue())
 
       blanke.cooldownFn("editor_get_hints", 500, () => {
-        this.refreshFnHelperTimer();
+        this.refreshFnHelperTimer()
 
-        let hint_list = [];
+        let hint_list = []
         // dot activation
-        let word_pos = editor.findWordAt(cursor); // TODO: check if cursor is outside of document (line count)
-        let word = editor.getRange(word_pos.anchor, word_pos.head);
+        let word_pos = editor.findWordAt(cursor) // TODO: check if cursor is outside of document (line count)
+        let word = editor.getRange(word_pos.anchor, word_pos.head)
         let before_word_pos = editor.findWordAt({
           line: word_pos.anchor.line,
           ch: word_pos.anchor.ch - 1,
-        });
+        })
         let before_word = editor.getRange(
           before_word_pos.anchor,
           before_word_pos.head
-        ); //before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
+        ) //before_word_pos, {line:before_word_pos.line, ch:before_word_pos.ch+1});
 
         // word that triggered the dot
-        let keyword = word;
-        let keyword_pos = word_pos;
-        let trigger;
+        let keyword = word
+        let keyword_pos = word_pos
+        let trigger
         if (word == "." || comp_fn_trigger(word)) {
-          keyword_pos = before_word_pos;
-          keyword = before_word;
-          trigger = word;
-          word = "";
+          keyword_pos = before_word_pos
+          keyword = before_word
+          trigger = word
+          word = ""
         }
         if (before_word == "." || comp_fn_trigger(before_word)) {
           keyword_pos = editor.findWordAt({
             line: word_pos.anchor.line,
             ch: word_pos.anchor.ch - 2,
-          });
-          keyword = editor.getRange(keyword_pos.anchor, keyword_pos.head);
-          trigger = before_word;
+          })
+          keyword = editor.getRange(keyword_pos.anchor, keyword_pos.head)
+          trigger = before_word
         }
-        keyword = keyword.trim();
+        keyword = keyword.trim()
 
         // keyword (Draw), word (./line), trigger (./:)
 
-        let token = editor.getTokenAt(keyword_pos.head);
-        let token_str = token.type || "";
-        let tokens = token_str.split(" ");
+        let token = editor.getTokenAt(keyword_pos.head)
+        let token_str = token.type || ""
+        let tokens = token_str.split(" ")
         let is_key_or_var =
           tokens.includes("variable-2") ||
           tokens.includes("variable") ||
-          tokens.includes("keyword");
+          tokens.includes("keyword")
 
         if (keyword != "") {
           // this -> replace with real instance type
           if (is_key_or_var && this_lines[this.file]) {
             // look at previous lines until a 'this regex' is hit
-            let loop = keyword_pos.head.line - 1;
-            let this_lines_keys = Object.keys(this_lines[this.file]);
+            let loop = keyword_pos.head.line - 1
+            let this_lines_keys = Object.keys(this_lines[this.file])
             do {
-              let line = (editor.getLine(loop) || "").trim();
+              let line = (editor.getLine(loop) || "").trim()
               for (let l of this_lines_keys) {
                 if (line.includes(l) && keyword == this_keyword) {
                   // || this_lines[this_ref.file][l].includes(keyword))) { // TODO: DOESNT WORK ATM
-                  tokens.push(this_lines[this.file][l][0]);
+                  tokens.push(this_lines[this.file][l][0])
                 }
               }
-              loop--;
-            } while (loop >= 0);
+              loop--
+            } while (loop >= 0)
           }
           for (let tok of tokens) {
             hint_list = hint_list.concat(
               (hints[tok] || []).filter(h => {
                 if (tok.includes("instance")) {
-                  if (h.prop) return !comp_fn_trigger(trigger);
+                  if (h.prop) return !comp_fn_trigger(trigger)
                   else
-                    return !app.engine.fn_trigger || comp_fn_trigger(trigger);
+                    return !app.engine.fn_trigger || comp_fn_trigger(trigger)
                 } else if (token_str.includes("class"))
-                  return !app.engine.fn_trigger || !comp_fn_trigger(trigger);
-                return true;
+                  return !app.engine.fn_trigger || !comp_fn_trigger(trigger)
+                return true
               })
-            );
+            )
           }
         }
         // 'global scope'
@@ -913,16 +913,16 @@ class Code extends Editor {
             // variable
             if (var_list[this.file].var)
               var_list[this.file].var.forEach(v => {
-                if (v.startsWith(word)) hint_list.push({ prop: v });
-              });
+                if (v.startsWith(word)) hint_list.push({ prop: v })
+              })
             // function
             if (var_list[this.file].fn)
               var_list[this.file].fn.forEach(v => {
-                if (v.startsWith(keyword)) hint_list.push({ fn: v });
-              });
+                if (v.startsWith(keyword)) hint_list.push({ fn: v })
+              })
           }
           // globals
-          if (!trigger) hint_list = hint_list.concat(hints.global);
+          if (!trigger) hint_list = hint_list.concat(hints.global)
         }
         if (hint_list.length > 0) {
           showHints(
@@ -930,23 +930,23 @@ class Code extends Editor {
             hint_list,
             word,
             app.engine.fn_trigger && tokens.includes("blanke-instance")
-          );
+          )
         }
-      });
-    });
+      })
+    })
 
     new_editor.on("cursorActivity", function (cm) {
-      checkGutterEvents(cm);
-    });
+      checkGutterEvents(cm)
+    })
     new_editor.on("click", function (cm, obj) {
-      this.focus();
-    });
+      this.focus()
+    })
     new_editor.on("focus", function (cm) {
       // TODO: this_ref.game.resume(); // NOTE: has a couple edge cases!
-    });
+    })
     new_editor.on("blur", function (cm) {
       // TODO: this_ref.game.pause(); // NOTE: has a couple edge cases!
-    });
+    })
     /*
     const ctx_menu = require('electron-context-menu')()
     new_editor.on("contextmenu", (cm, e) => {
@@ -955,31 +955,31 @@ class Code extends Editor {
     */
 
     // load previous cm options
-    const short_path = app.shortenAsset(this.file);
+    const short_path = app.shortenAsset(this.file)
     if (cm_options[short_path]) {
       for (var opt in cm_options[short_path]) {
         new_editor.setOption(opt, cm_options[short_path][opt])
       }
     }
 
-    if (this.codemirror == undefined) this.codemirror = new_editor;
+    if (this.codemirror == undefined) this.codemirror = new_editor
 
-    this.editors.push(new_editor);
-    Code.setFontSize(app.ideSetting("code").font_size);
+    this.editors.push(new_editor)
+    Code.setFontSize(app.ideSetting("code").font_size)
 
-    return new_editor;
+    return new_editor
   }
 
   setCmOption(option, value) {
-    this.codemirror.setOption(option, value);
+    this.codemirror.setOption(option, value)
     const file_path = app.shortenAsset(this.file)
-    if (!cm_options[file_path]) cm_options[file_path] = {};
-    cm_options[file_path][option] = value;
-    app.projSetting("code", cm_options);
+    if (!cm_options[file_path]) cm_options[file_path] = {}
+    cm_options[file_path][option] = value
+    app.projSetting("code", cm_options)
   }
 
   static parseSprites(text, file, cb, only_entities) {
-    text = text.replace(/(\r\n|\n|\r)/gm, " ");
+    text = text.replace(/(\r\n|\n|\r)/gm, " ")
 
     const infoDefault = path => ({
       path: path,
@@ -987,91 +987,91 @@ class Code extends Editor {
       frame_size: [0, 0],
       offset: [0, 0],
       frames: 1,
-    });
-    const img_asset_path = app.getAssetPath("image") + "/";
+    })
+    const img_asset_path = app.getAssetPath("image") + "/"
     const imagePathToKey = path => {
-      path = app.cleanPath(path);
-      if (path) path = path.replace(img_asset_path, "").split(".");
-      else return;
-      if (path.length > 1) return path.slice(0, -1).join(".");
-      else return path[0];
-    };
+      path = app.cleanPath(path)
+      if (path) path = path.replace(img_asset_path, "").split(".")
+      else return
+      if (path.length > 1) return path.slice(0, -1).join(".")
+      else return path[0]
+    }
 
     const storeImageInfo = info => {
-      let name = imagePathToKey(info.path || info.name);
+      let name = imagePathToKey(info.path || info.name)
       if (name)
-        Code.images[name] = Object.assign(Code.images[name] || {}, info);
-    };
+        Code.images[name] = Object.assign(Code.images[name] || {}, info)
+    }
 
     const storeSpriteInfo = (entity_name, img_name, cb) => {
-      Code.sprites[entity_name] = Object.assign(Code.images[img_name], {});
-      cb(null, Code.sprites[entity_name]);
-    };
+      Code.sprites[entity_name] = Object.assign(Code.images[img_name], {})
+      cb(null, Code.sprites[entity_name])
+    }
 
     const getImageInfo = new Promise((res, rej) => {
-      let stop_matching = false;
-      let match;
+      let stop_matching = false
+      let match
       while (!stop_matching) {
-        match = null;
+        match = null
         for (let re of re_image) {
-          if (!match) match = re.exec(text);
+          if (!match) match = re.exec(text)
         }
         if (!match) {
-          stop_matching = true;
-          return res();
+          stop_matching = true
+          return res()
         }
         // found image path
-        let match_copy = [...match];
+        let match_copy = [...match]
         app.getAssetPath("image", match_copy[1])
           .then(path => {
             // sprite info, cb.info = { offset, frame_size[], cropped }
-            let info = infoDefault(path);
-            if (!nwFS.exists(path)) return cb(`image doesn't exist: ${path}`);
+            let info = infoDefault(path)
+            if (!nwFS.exists(path)) return cb(`image doesn't exist: ${path}`)
 
             if (app.engine.sprite_parse) {
               app.engine.sprite_parse(match_copy, info, result => {
-                storeImageInfo(result);
-                return res(result);
-              });
+                storeImageInfo(result)
+                return res(result)
+              })
             }
           })
           .catch(err => {
-            rej(err);
-          });
+            rej(err)
+          })
       }
-    });
+    })
 
     const getEntityImageInfo = () => {
       let check = cb => {
         // isolate text to one entity at a time
-        let new_texts = [text];
+        let new_texts = [text]
         if (this_lines_num[file]) {
           new_texts = this_lines_num[file].map(l => [
             l.end === -1 ? text.slice(l.start) : text.slice(l.start, l.end),
             l.class_name,
-          ]);
+          ])
         }
-        let promises = [];
+        let promises = []
         new_texts.forEach(([new_text, class_name]) => {
           promises.push(
             new Promise((res, rej) => {
-              let stop_matching = false;
-              let match;
+              let stop_matching = false
+              let match
               while (!stop_matching) {
-                match = null;
+                match = null
                 for (let re of re_entity_using_image) {
                   if (!match) {
-                    match = re.exec(new_text);
+                    match = re.exec(new_text)
                   }
                 }
                 if (!match) {
-                  stop_matching = true;
-                  delete Code.sprites[class_name];
-                  return rej("no entity sprite matches");
+                  stop_matching = true
+                  delete Code.sprites[class_name]
+                  return rej("no entity sprite matches")
                 }
 
-                let entity_name = match[1];
-                let img_name = imagePathToKey(match[2]);
+                let entity_name = match[1]
+                let img_name = imagePathToKey(match[2])
 
                 if (
                   !Code.images[img_name] &&
@@ -1080,46 +1080,46 @@ class Code extends Editor {
                 ) {
                   let info = infoDefault(
                     app.lengthenAsset("image/" + match[2])
-                  );
+                  )
                   if (!nwFS.exists(info.path))
-                    return cb(`image doesn't exist: ${info.path}`);
+                    return cb(`image doesn't exist: ${info.path}`)
                   app.engine.sprite_parse(match, info, info => {
-                    storeImageInfo(info);
-                    storeSpriteInfo(entity_name, img_name, cb);
+                    storeImageInfo(info)
+                    storeSpriteInfo(entity_name, img_name, cb)
 
-                    cb(null, info);
-                  });
+                    cb(null, info)
+                  })
                 } else {
-                  img_name = match[2];
-                  storeSpriteInfo(entity_name, img_name, cb);
+                  img_name = match[2]
+                  storeSpriteInfo(entity_name, img_name, cb)
                 }
               }
-              return;
+              return
             })
-          );
-        });
+          )
+        })
         Promise.all(promises).catch(err => {
-          cb(err, null);
-        });
-      };
+          cb(err, null)
+        })
+      }
       if (only_entities) {
-        check(cb);
+        check(cb)
       } else {
         getImageInfo
           .then(() => {
-            check(cb);
+            check(cb)
           })
           .catch(err => {
-            cb(err, null);
-          });
+            cb(err, null)
+          })
       }
-    };
+    }
 
-    getEntityImageInfo();
+    getEntityImageInfo()
   }
 
   checkLineWidgets(line, editor) {
-    let l_info = editor.lineInfo(line);
+    let l_info = editor.lineInfo(line)
     /* // TODO: rework later or something
 		Code.parseSprites(l_info.text, (err, info) => {
 			if (err) {
@@ -1166,47 +1166,47 @@ class Code extends Editor {
 
   // TODO: not updated since hinting rework
   parseFunctions() {
-    if (!Code.isScript(this.file)) return;
+    if (!Code.isScript(this.file)) return
 
     blanke.cooldownFn("parseFunctions", 1000, () => {
-      let text = this.codemirror.getValue();
-      blanke.clearElement(this.el_class_methods);
+      let text = this.codemirror.getValue()
+      blanke.clearElement(this.el_class_methods)
 
       // get function list
-      let class_list = {};
+      let class_list = {}
       let re_func = [
         /function\s+(\w+):(\w+)\(([\w,\s]*)\)/g,
         /(\w+)\.(\w+)\s*=\s*function\s*\(([\w,\s]*)\)/g,
-      ];
+      ]
       for (let re of re_func) {
-        let match;
+        let match
         while ((match = re.exec(text))) {
           let fn_info = {
             class: match[1],
             name: match[2],
             args: (match[3] || "").split(",").map(s => s.trim()),
-          };
-          this.function_list.push(fn_info);
+          }
+          this.function_list.push(fn_info)
 
           // add it to functions to class string
           if (!class_list[fn_info.class])
             class_list[
               fn_info.class
-            ] = `<div class="class-name">${fn_info.class}</div>`;
+            ] = `<div class="class-name">${fn_info.class}</div>`
           class_list[fn_info.class] += `
 						<div class="method-container">
 							<div class="name">${fn_info.name}(<div class="args">${fn_info.args.join(
             ", "
           )}</div>)</div>
 						</div>
-					`;
+					`
         }
       }
       // combine all class strings
       for (let c in class_list) {
-        this.el_class_methods.innerHTML += class_list[c];
+        this.el_class_methods.innerHTML += class_list[c]
       }
-    });
+    })
   }
 
   onBeforeClose(res, rej) {
@@ -1216,59 +1216,59 @@ class Code extends Editor {
         nwPATH.basename(this.file) +
         "' has unsaved changes! Save before closing?</label>",
         {
-          yes: () => { this.save(); res(); },
-          no: () => { res(); },
+          yes: () => { this.save(); res() },
+          no: () => { res() },
           cancel: () => { }
         }
-      );
+      )
     } else {
-      res();
+      res()
     }
   }
 
   onClose() {
     if (this.watch) this.watch.close()
-    delete code_instances[this.file];
+    delete code_instances[this.file]
   }
 
   goToLine(line) {
-    this.codemirror.scrollIntoView({ line: line || 0, ch: 0 });
+    this.codemirror.scrollIntoView({ line: line || 0, ch: 0 })
   }
 
   getCompleteHTML(hint) {
-    let item_type = "";
+    let item_type = ""
     let render = "",
-      arg_info = "";
-    let re_optional = /\s*opt\w*\.?\s*/;
+      arg_info = ""
+    let re_optional = /\s*opt\w*\.?\s*/
 
     if (hint.fn) {
-      if (hint.callback) item_type = "cb";
-      else item_type = "fn";
+      if (hint.callback) item_type = "cb"
+      else item_type = "fn"
     } else if (hint.prop) {
-      item_type = "var";
+      item_type = "var"
     }
 
     if (item_type == "cb" || item_type == "fn") {
       if (hint.vars) {
         for (var arg in hint.vars) {
-          let new_description = hint.vars[arg].replace(re_optional, "");
+          let new_description = hint.vars[arg].replace(re_optional, "")
           if (new_description != "" && new_description != "...")
-            arg_info += arg + " : " + new_description + "<br/>";
+            arg_info += arg + " : " + new_description + "<br/>"
         }
       }
 
       function specialReplacements(value, index, array) {
-        if (value == "etc") return '<span class="grayed-out">...</span>';
+        if (value == "etc") return '<span class="grayed-out">...</span>'
         // is arg optional?
         if (re_optional.test(hint.vars[value]))
-          return '<span class="optional">[' + value + "]</span>";
+          return '<span class="optional">[' + value + "]</span>"
         // is arg a variable amount of args
         if (hint.vars[value] == "...")
-          return '<span class="grayed-out">...</span>' + value;
-        return value;
+          return '<span class="grayed-out">...</span>' + value
+        return value
       }
       // named args or listed args
-      let paren = ["(", ")"];
+      let paren = ["(", ")"]
       render =
         hint.fn +
         paren[0] +
@@ -1282,7 +1282,7 @@ class Code extends Editor {
         "</p>" +
         "<p class='item-type'>" +
         item_type +
-        "</p>";
+        "</p>"
     } else if (item_type == "var") {
       render =
         hint.prop +
@@ -1291,99 +1291,99 @@ class Code extends Editor {
         "</p>" +
         "<p class='item-type'>" +
         item_type +
-        "</p>";
+        "</p>"
     }
 
-    return render;
+    return render
   }
 
   setFnHelper(html) {
-    if (this.no_fn_helper) return;
-    this.el_fn_helper.classList.remove("hidden");
-    this.el_fn_helper.innerHTML = html;
-    this.refreshFnHelperTimer();
+    if (this.no_fn_helper) return
+    this.el_fn_helper.classList.remove("hidden")
+    this.el_fn_helper.innerHTML = html
+    this.refreshFnHelperTimer()
   }
 
   disableFnHelper() {
-    this.no_fn_helper = true;
-    this.clearFnHelper();
+    this.no_fn_helper = true
+    this.clearFnHelper()
   }
 
   enableFnHelper() {
-    this.no_fn_helper = false;
+    this.no_fn_helper = false
   }
 
   clearFnHelper() {
-    this.el_fn_helper.innerHTML = "";
-    this.el_fn_helper.classList.add("hidden");
+    this.el_fn_helper.innerHTML = ""
+    this.el_fn_helper.classList.add("hidden")
   }
 
   // when timer runs out, hide fn_helper
   refreshFnHelperTimer() {
-    if (this.no_fn_helper) return;
-    let this_ref = this;
-    clearTimeout(this.fn_helper_timer);
+    if (this.no_fn_helper) return
+    let this_ref = this
+    clearTimeout(this.fn_helper_timer)
     this.fn_helper_timer = setTimeout(function () {
-      this_ref.clearFnHelper();
-    }, 15000);
+      this_ref.clearFnHelper()
+    }, 15000)
   }
 
   addAsterisk() {
-    this.not_saved = true;
-    if (this.file_loaded) this.setSubtitle("*");
+    this.not_saved = true
+    if (this.file_loaded) this.setSubtitle("*")
   }
 
   removeAsterisk() {
-    this.not_saved = false;
-    this.setSubtitle();
+    this.not_saved = false
+    this.setSubtitle()
   }
 
   fontSizeUp() {
-    app.ideSetting("code").font_size += 1;
-    Code.setFontSize(app.ideSetting("code").font_size);
+    app.ideSetting("code").font_size += 1
+    Code.setFontSize(app.ideSetting("code").font_size)
   }
 
   fontSizeDown() {
-    app.ideSetting("code").font_size -= 1;
-    Code.setFontSize(app.ideSetting("code").font_size);
+    app.ideSetting("code").font_size -= 1
+    Code.setFontSize(app.ideSetting("code").font_size)
   }
 
   static setFontSize(num) {
     for (let i in code_instances) {
-      let editors = code_instances[i].editors;
+      let editors = code_instances[i].editors
       for (let editor of editors) {
         editor.display.wrapper.style["line-height"] =
-          (num - 2).toString() + "px";
-        editor.display.wrapper.style.fontSize = num.toString() + "px";
-        editor.refresh();
+          (num - 2).toString() + "px"
+        editor.display.wrapper.style.fontSize = num.toString() + "px"
+        editor.refresh()
       }
     }
 
-    app.ideSetting("code").font_size = num;
-    app.saveAppData();
+    app.ideSetting("code").font_size = num
+    app.saveAppData()
   }
 
   splitView() {
-    if (this.edit_box2) return;
+    if (this.edit_box2) return
 
-    this.edit_box.classList.add("split");
-    this.edit_box2 = app.createElement("div", ["code", "split"]);
-    this.appendChild(this.edit_box2);
+    this.edit_box.classList.add("split")
+    this.edit_box2 = app.createElement("div", ["code", "split"])
+    this.appendChild(this.edit_box2)
 
-    let new_editor = this.setupEditor(this.edit_box2);
+    let new_editor = this.setupEditor(this.edit_box2)
     new_editor.swapDoc(
       this.codemirror.getDoc().linkedDoc({ sharedHist: true })
-    );
-    this.codemirror.refresh();
+    )
+    this.codemirror.refresh()
   }
 
   unsplitView() {
-    if (!this.edit_box2) return;
+    if (!this.edit_box2) return
 
-    blanke.destroyElement(this.edit_box2);
-    this.edit_box2 = null;
-    this.edit_box.classList.remove("split");
-    this.codemirror.refresh();
+    blanke.destroyElement(this.edit_box2)
+    this.edit_box2 = null
+    this.edit_box.classList.remove("split")
+    this.codemirror.refresh()
   }
 
   edit(file_path) {
@@ -1396,20 +1396,20 @@ class Code extends Editor {
     this.file = file_path
     code_instances[app.cleanPath(this.file)] = this
 
-    var text = nwFS.readFileSync(file_path, "utf-8");
+    var text = nwFS.readFileSync(file_path, "utf-8")
 
-    this.codemirror.setValue(text);
-    this.codemirror.clearHistory();
+    this.codemirror.setValue(text)
+    this.codemirror.clearHistory()
 
-    this.setTitle(nwPATH.basename(file_path));
-    this.removeAsterisk();
+    this.setTitle(nwPATH.basename(file_path))
+    this.removeAsterisk()
 
-    getKeywords(this.file, text);
-    this.parseFunctions();
+    getKeywords(this.file, text)
+    this.parseFunctions()
 
     this.setOnClick(() => {
-      Code.openScript(this.file);
-    });
+      Code.openScript(this.file)
+    })
 
     // watch script for external changes
     if (!this.watch)
@@ -1419,22 +1419,22 @@ class Code extends Editor {
         this.is_saving = false
       })
 
-    this.codemirror.refresh();
-    this.file_loaded = true;
-    return this;
+    this.codemirror.refresh()
+    this.file_loaded = true
+    return this
   }
 
   refreshGame() {
     if (this.game && !this.deleted) {
-      this.game.breakpoints = Object.keys(this.breakpoints).map(parseInt);
-      this.game.refreshSource(this.file);
+      this.game.breakpoints = Object.keys(this.breakpoints).map(parseInt)
+      this.game.refreshSource(this.file)
       if (this.console)
-        this.console.clear();
+        this.console.clear()
     }
   }
 
   save() {
-    let data = this.codemirror.getValue();
+    let data = this.codemirror.getValue()
     this.is_saving = true
     this.has_external_changes = false
     return nwFS.writeFile(this.file, data)
@@ -1447,12 +1447,12 @@ class Code extends Editor {
         console.log(err)
       })
       .finally(() => {
-        getKeywords(this.file, data);
-        this.parseFunctions();
-        Code.updateSpriteList(this.file, data);
-        this.focus_after_save = true;
-        if (this.game) this.game.clearErrors();
-        this.refreshGame();
+        getKeywords(this.file, data)
+        this.parseFunctions()
+        Code.updateSpriteList(this.file, data)
+        this.focus_after_save = true
+        if (this.game) this.game.clearErrors()
+        this.refreshGame()
       })
   }
 
@@ -1461,20 +1461,20 @@ class Code extends Editor {
   }
 
   static refreshCodeList() {
-    app.removeSearchGroup("Scripts");
-    Code.scripts = { other: [] };
-    Code.sprites = {}; // { EntitClassname: { image, crop: {x,y,w,h} } }
-    Code.images = {};
+    app.removeSearchGroup("Scripts")
+    Code.scripts = { other: [] }
+    Code.sprites = {} // { EntitClassname: { image, crop: {x,y,w,h} } }
+    Code.images = {}
     for (let assoc of CODE_ASSOCIATIONS) {
-      Code.scripts[assoc[1]] = [];
+      Code.scripts[assoc[1]] = []
     }
-    addScripts(app.project_path);
+    addScripts(app.project_path)
   }
 
   static openScript(file_path, line) {
     file_path = app.cleanPath(file_path)
 
-    let editor = code_instances[file_path];
+    let editor = code_instances[file_path]
     if (!FibWindow.focus(nwPATH.basename(file_path)))
       editor = new Code(file_path)
     if (editor) {
@@ -1486,43 +1486,43 @@ class Code extends Editor {
 
   static updateSpriteList(path, data) {
     blanke.cooldownFn("updateSpriteList." + path, 1000, () => {
-      if (!data) data = nwFS.readFileSync(path, "utf-8");
-      if (!Code.sprites) Code.sprites = {};
-      if (!Code.images) Code.images = {};
+      if (!data) data = nwFS.readFileSync(path, "utf-8")
+      if (!Code.sprites) Code.sprites = {}
+      if (!Code.images) Code.images = {}
 
-      let pivots = {};
+      let pivots = {}
       Code.parseSprites(data, path, (err, info) => {
         let calcPivot = e_class => {
-          let info = Code.sprites[e_class];
-          let pivot = pivots[e_class];
-          let align = pivot.align;
+          let info = Code.sprites[e_class]
+          let pivot = pivots[e_class]
+          let align = pivot.align
           let x = 0,
-            y = 0;
+            y = 0
           if (info && pivot) {
             if (align.includes("center")) {
-              x = info.frame_size[0] / 2;
-              y = info.frame_size[1] / 2;
+              x = info.frame_size[0] / 2
+              y = info.frame_size[1] / 2
             }
-            if (align.includes("left")) x = 0;
-            if (align.includes("right")) x = info.frame_size[0];
-            if (align.includes("top")) y = 0;
-            if (align.includes("bottom")) y = info.frame_size[1];
-            delete pivots[e_class];
+            if (align.includes("left")) x = 0
+            if (align.includes("right")) x = info.frame_size[0]
+            if (align.includes("top")) y = 0
+            if (align.includes("bottom")) y = info.frame_size[1]
+            delete pivots[e_class]
 
-            info.pivot = [x, y];
+            info.pivot = [x, y]
           }
-        };
+        }
         // optional: sprite alignment
-        let match;
-        data = data.replace(/(\r\n|\n|\r)/gm, " ");
+        let match
+        data = data.replace(/(\r\n|\n|\r)/gm, " ")
 
         for (let re of re_sprite_align) {
           while ((match = re.exec(data))) {
             pivots[match[1]] = {
               align: match[2],
               match: match,
-            };
-            calcPivot(match[1]);
+            }
+            calcPivot(match[1])
           }
         }
 
@@ -1532,34 +1532,34 @@ class Code extends Editor {
               dispatchEvent("code.updateEntity", {
                 entity_name: e_class,
                 info: Code.sprites[e_class],
-              });
+              })
           }
         }
-      });
-    });
+      })
+    })
   }
   static isScript(file) {
     if (is_script[file] == null)
       is_script[file] = file_ext.map(ext => file.endsWith("." + ext)).some(v => v)
-    return is_script[file];
+    return is_script[file]
   }
 }
 
-Code.scripts = {};
+Code.scripts = {}
 document.addEventListener("fileChange", function (e) {
   if (Code.isScript(e.detail.file)) {
-    Code.refreshCodeList();
+    Code.refreshCodeList()
   }
-});
+})
 
-Code.classes = {};
+Code.classes = {}
 function addScripts(folder_path) {
   Code.classes = {
     scene: [],
     entity: [],
-  };
-  let walker = nwWALK.walk(folder_path);
-  const file_data = {};
+  }
+  let walker = nwWALK.walk(folder_path)
+  const file_data = {}
   const file_info = {}
 
   walker.on('file', (path, stats, next) => {
@@ -1569,27 +1569,27 @@ function addScripts(folder_path) {
 
     if (stats.isFile() && Code.isScript(full_path)) {
       // get what kind of script it is
-      let data = nwFS.readFileSync(full_path, "utf-8");
+      let data = nwFS.readFileSync(full_path, "utf-8")
       file_data[full_path] = data
       getKeywords(full_path, data)
       // get what kind of script it is
-      let tags = ["script"];
-      let cat, match;
+      let tags = ["script"]
+      let cat, match
       for (let assoc of CODE_ASSOCIATIONS) {
-        match = assoc[0].exec(data);
+        match = assoc[0].exec(data)
         if (match) {
-          cat = assoc[1];
-          tags.push(assoc[1]);
+          cat = assoc[1]
+          tags.push(assoc[1])
           if (!Code.scripts[assoc[1]].includes(full_path)) {
-            Code.scripts[assoc[1]].push(full_path);
+            Code.scripts[assoc[1]].push(full_path)
           }
           // store the class name
           if (Object.keys(Code.classes).includes(cat)) {
-            Code.classes[cat].push(match[1]);
+            Code.classes[cat].push(match[1])
           }
         }
       }
-      if (!cat) Code.scripts.other.push(full_path);
+      if (!cat) Code.scripts.other.push(full_path)
 
       const info = file_info[full_path]
       // search tags
@@ -1612,12 +1612,12 @@ function addScripts(folder_path) {
     else {
       delete file_info[full_path]
     }
-    next();
+    next()
   })
 
   walker.on("end", () => {
     for (let file in file_data)
-      Code.parseSprites(file_data[file], file, () => { }, true);
+      Code.parseSprites(file_data[file], file, () => { }, true)
 
     app.removeSearchGroup("Scripts")
     app.removeSearchGroup("File")
@@ -1626,50 +1626,52 @@ function addScripts(folder_path) {
     for (const f in file_info) {
       const info = file_info[f]
 
-      app.addSearchKey({
-        key: nwPATH.basename(f),
-        onSelect: (f) => Code.openScript(f),
-        tags: info.tags,
-        category: "script",
-        args: [f],
-        group: info.group
-      })
+      if (!app.checkIgnore(f)) {
+        app.addSearchKey({
+          key: nwPATH.basename(f),
+          onSelect: (f) => Code.openScript(f),
+          tags: info.tags,
+          category: "script",
+          args: [f],
+          group: info.group
+        })
+      }
     }
 
     // first scene setting
-    let first_scene = app.projSetting("first_scene");
-    let scenes = Code.classes["scene"];
+    let first_scene = app.projSetting("first_scene")
+    let scenes = Code.classes["scene"]
     if (!(first_scene && scenes.includes(first_scene)) && scenes.length > 0) {
-      app.projSetting("first_scene", scenes[0]);
-      app.saveSettings();
+      app.projSetting("first_scene", scenes[0])
+      app.saveSettings()
     }
   })
 }
 
 document.addEventListener("closeProject", function (e) {
-  cm_options = {};
-  app.removeSearchGroup("Code");
-});
+  cm_options = {}
+  app.removeSearchGroup("Code")
+})
 
 document.addEventListener("openProject", function (e) {
-  cm_options = app.projSetting("code") || {};
-  reloadCompletions();
-  Code.refreshCodeList();
+  cm_options = app.projSetting("code") || {}
+  reloadCompletions()
+  Code.refreshCodeList()
 
   function key_addScript(content, name) {
-    var script_dir = nwPATH.join(app.getAssetPath("scripts"));
+    var script_dir = nwPATH.join(app.getAssetPath("scripts"))
     nwFS.stat(script_dir, function (err, stat) {
-      if (err) nwFS.mkdirSync(script_dir);
+      if (err) nwFS.mkdirSync(script_dir)
 
       nwFS.readdir(script_dir, function (err, files) {
         let file_name =
-          ifndef(name, "script" + files.length) + "." + file_ext[0];
-        content = content.replaceAll("<NAME>", name);
+          ifndef(name, "script" + files.length) + "." + file_ext[0]
+        content = content.replaceAll("<NAME>", name)
 
         // the file already exists. open it
         if (files.includes(file_name)) {
-          blanke.toast("Script already exists!");
-          Code.openScript(nwPATH.join(script_dir, file_name));
+          blanke.toast("Script already exists!")
+          Code.openScript(nwPATH.join(script_dir, file_name))
         } else {
           // no such script, go ahead and make one
           nwFS.writeFile(nwPATH.join(script_dir, file_name), content, function (
@@ -1677,13 +1679,13 @@ document.addEventListener("openProject", function (e) {
           ) {
             if (!err) {
               // edit the new script
-              app.addPendingQuickAccess(file_name);
-              Code.openScript(nwPATH.join(script_dir, file_name));
+              app.addPendingQuickAccess(file_name)
+              Code.openScript(nwPATH.join(script_dir, file_name))
             }
-          });
+          })
         }
-      });
-    });
+      })
+    })
   }
 
   function key_newScriptModal(s_type, content) {
@@ -1694,13 +1696,13 @@ document.addEventListener("openProject", function (e) {
       "<input class='ui-input' id='new-script-name' style='width:100px;'/>",
       {
         yes: function () {
-          let name = app.getElement("#new-script-name").value.trim();
-          if (name != "") key_addScript(content, name);
-          else blanke.toast("bad name for new " + s_type);
+          let name = app.getElement("#new-script-name").value.trim()
+          if (name != "") key_addScript(content, name)
+          else blanke.toast("bad name for new " + s_type)
         },
         no: function () { },
       }
-    );
+    )
   }
 
   let script_templates = Object.assign(
@@ -1708,22 +1710,22 @@ document.addEventListener("openProject", function (e) {
       script: "",
     },
     app.engine.add_script_templates || {}
-  );
+  )
 
   for (let s_type in script_templates) {
-    let template = script_templates[s_type];
+    let template = script_templates[s_type]
     app.addSearchKey({
       key:
         "Add a" +
         ("aeiou".includes(s_type.substring(0, 1)) ? "n " : " ") +
         s_type,
       onSelect: function () {
-        key_newScriptModal(s_type, template);
+        key_newScriptModal(s_type, template)
       },
       tags: ["new"],
       category: s_type,
       group: "Code",
-    });
+    })
   }
 
   app.addSearchKey({
@@ -1734,11 +1736,11 @@ document.addEventListener("openProject", function (e) {
         "<input class='ui-input' id='new-script-name' style='width:100px;'/>",
         {
           yes: function () {
-            let name = app.cleanPath(app.getElement("#new-script-name").value.trim());
-            const file_type = app.findAssetType(name);
+            let name = app.cleanPath(app.getElement("#new-script-name").value.trim())
+            const file_type = app.findAssetType(name)
             if (name != "") {
               if (file_type == "script")
-                return key_addScript("", name);
+                return key_addScript("", name)
               else {
                 const script_path = nwPATH.join(app.project_path, name)
                 console.log(script_path)
@@ -1747,31 +1749,31 @@ document.addEventListener("openProject", function (e) {
                     nwFS.writeFile(script_path, '', err => {
                       if (!err) {
                         // edit the new script
-                        app.addPendingQuickAccess(name);
-                        Code.openScript(script_path);
+                        app.addPendingQuickAccess(name)
+                        Code.openScript(script_path)
                       }
-                    });
+                    })
                   else
-                    Code.openScript(script_path);
+                    Code.openScript(script_path)
                 })
               }
             } else {
-              blanke.toast("bad name for new " + s_type);
+              blanke.toast("bad name for new " + s_type)
             }
           },
           no: function () { },
         }
-      );
+      )
     },
     tags: ["new"],
     group: "Code",
-  });
-});
+  })
+})
 
 document.addEventListener("engine_config_load", () => {
-  file_ext = app.engine.file_ext || ["lua"];
-  main_file = app.engine.main_file || "main." + file_ext[0];
-  CODE_ASSOCIATIONS = app.engine.code_associations || [];
-  reloadCompletions();
-  Code.refreshCodeList();
-});
+  file_ext = app.engine.file_ext || ["lua"]
+  main_file = app.engine.main_file || "main." + file_ext[0]
+  CODE_ASSOCIATIONS = app.engine.code_associations || []
+  reloadCompletions()
+  Code.refreshCodeList()
+})
