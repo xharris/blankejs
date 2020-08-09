@@ -45,7 +45,7 @@ install:
   
 script:
   # - xvfb-run -a npm test
-  - uglifyjs ./engines/love2d/index.js --compress --mangle -o ./engines/love2d/index.js
+  - uglifyjs ./engines/love2d/index.js -c -m -o ./engines/love2d/index.js
   - npm run release
   
 notifications:

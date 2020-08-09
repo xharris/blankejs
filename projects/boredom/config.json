@@ -19,6 +19,10 @@
     ],
     "quick_access": [
         [
+            "level1.map=map+?",
+            "level1.map"
+        ],
+        [
             "main.lua=script+state+?",
             "main.lua"
         ],
@@ -33,10 +37,6 @@
         [
             "Enable/disable plugins=?",
             "Enable/disable plugins"
-        ],
-        [
-            "IDE/Project Settings=?",
-            "IDE/Project Settings"
         ]
     ],
     "autoplay_preview": true,
