@@ -1772,6 +1772,7 @@ var app = {
     const encrypted_text = Buffer.from(data[1], 'hex')
 
     const decipher = crypto.createDecipheriv('aes-256-cbc', prvt_key, iv)
+    decipher.setAutoPadding(false)
 
     return Buffer.concat([decipher.update(encrypted_text), decipher.final()]).toString()
   },
