@@ -45,7 +45,7 @@ install:
   
 script:
   # - xvfb-run -a npm test
-  - uglifyjs ./love2d/index.js -c -m -o ./love2d/index.js
+  # - uglifyjs ./love2d/index.js -c -m -o ./love2d/index.js
   - npm run release
   
 notifications:
