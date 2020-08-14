@@ -1698,25 +1698,22 @@ var app = {
   encrypt(text) {
     const crypto = require('crypto')
 
-    const prvt_key = crypto.createHash('sha256').update(String(process.env.KEY)).digest('base64').substr(0, 32)
     const iv = crypto.randomBytes(16)
 
-    const cipher = crypto.createCipheriv('aes-256-cbc', prvt_key, iv)
+    const cipher = crypto.createCipher('aes-256-cbc', Buffer.alloc(32, process.env.KEY))
     const encrypted = Buffer.concat([cipher.update(text), cipher.final()])
 
-    return JSON.stringify([iv.toString('hex'), encrypted.toString('hex')])
+    return `${iv.toString('hex')}-${encrypted.toString('hex')}`
   },
 
   decrypt(text) {
     const crypto = require('crypto')
 
-    const prvt_key = crypto.createHash('sha256').update(String(process.env.KEY)).digest('base64').substr(0, 32)
-    const data = JSON.parse(text)
+    const data = text.split('-')
     const iv = Buffer.from(data[0], 'hex')
     const encrypted_text = Buffer.from(data[1], 'hex')
 
-    const decipher = crypto.createDecipheriv('aes-256-cbc', prvt_key, iv)
-    decipher.setAutoPadding(false)
+    const decipher = crypto.createDecipher('aes-256-cbc', Buffer.alloc(32, process.env.KEY))
 
     return Buffer.concat([decipher.update(encrypted_text), decipher.final()]).toString()
   },
