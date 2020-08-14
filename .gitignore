@@ -52,6 +52,7 @@ typings/
 
 # dotenv environment variables file
 .env
+electron-builder.env
 
 nwjs-build64/
 diff.txt

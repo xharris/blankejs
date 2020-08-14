@@ -23,6 +23,10 @@
             "level1.map"
         ],
         [
+            "player.lua=script+entity+?",
+            "player.lua"
+        ],
+        [
             "main.lua=script+state+?",
             "main.lua"
         ],
@@ -33,10 +37,6 @@
         [
             "Open image editor=?",
             "Open image editor"
-        ],
-        [
-            "Enable/disable plugins=?",
-            "Enable/disable plugins"
         ]
     ],
     "autoplay_preview": true,
@@ -111,7 +111,8 @@
         "minify": true,
         "resizable": true,
         "override_game_size": true,
-        "round_pixels": true
+        "round_pixels": true,
+        "experimental_mode": false
     },
     "enabled_plugins": {
         "xhh-platformer": false,

@@ -44,7 +44,7 @@ const DEFAULT_IDE_SETTINGS = {
   recent_files: [],
   plugin_path: "plugins",
   themes_path: "themes",
-  engines_path: "engines",
+  engine_path: "love2d",
   background_image_path: "",
   background_image_data: "",
   theme: "green",
@@ -353,7 +353,7 @@ var app = {
         app.loadSettings(() => {
           app.hideWelcomeScreen()
           app.saveSettings()
-          app.requireEngine(true)
+          app.requireEngine()
           app.checkProjectSettings()
           dispatchEvent("openProject", { path: path })
         })
@@ -427,35 +427,6 @@ var app = {
           .classList.remove("active")
       })
   },
-
-  /*
-  engine_code: "",
-  minifyEngine: function (cb, opt) {
-    if (!app.engine.minifyEngine) return;
-
-    opt = opt || {};
-    blanke.cooldownFn(
-      "minify-engine",
-      500,
-      function () {
-        app.setBusyStatus(true);
-        let cb_done = (...args) => {
-          if (cb) cb(...args);
-          app.setBusyStatus(false);
-          dispatchEvent("engineChange");
-        };
-        let cb_err = () => {
-          if (!opt.silent) {
-            let toast = blanke.toast("Engine compilation failed", -1);
-            toast.icon = "close";
-            toast.style = "bad";
-          }
-        };
-        app.engine.minifyEngine(cb_err, cb_done, opt);
-      },
-      true
-    );
-  },*/
 
   extra_windows: [],
   play: (options) => {
@@ -771,7 +742,7 @@ var app = {
   },
 
   get engine_path() {
-    return app.get_path("engines_path", "engine")
+    return app.get_path("engine_path")
   },
 
   get plugin_path() {
@@ -842,11 +813,10 @@ var app = {
 
     return app.cleanPath(
       nwPATH.join(
-        app.relativePath(app.ideSetting("engines_path")),
-        app.projSetting("engine"),
+        app.relativePath(app.ideSetting("engine_path")),
         is_zip
           ? `${app.engine.dist_prefix}-${platform}${arch.replace("x", "")}`
-          : nwPATH.basename(url)
+          : nwPATH.basename(`${process.env.BINARY_PREFIX}/${url}`)
       )
     )
   },
@@ -856,26 +826,12 @@ var app = {
     app.allowed_extensions.script = []
   },
 
-  engine_js_watch: null,
-  requireEngine: (override) => {
+  requireEngine: () => {
     if (!app.isProjectOpen()) {
-      if (app.engine_js_watch) app.engine_js_watch.close()
-      app.engine_js_watch = null
       app.clearEngine()
       return
     }
-    if (app.last_engine == app.projSetting("engine") && !override) {
-      return
-    }
-    app.last_engine = app.projSetting("engine")
-
-    const engine_js_path = nwPATH.join(app.engine_path, "index.js")
-    if (!app.engine_js_watch)
-      app.engine_js_watch = app.watch(engine_js_path, (evt_type, file) => {
-        app.requireEngine(true)
-      })
-
-    app.engine_module = app.require(engine_js_path)
+    app.engine_module = app.require('./src/js/engine.js')
     app.setBusyStatus(true)
     setTimeout(() => {
       app.setBusyStatus(false)
@@ -891,17 +847,6 @@ var app = {
     }
     app.checkProjectSettings()
     app.downloadEngineDist().then(() => dispatchEvent("engine_config_load"))
-  },
-
-  engine_watch: null,
-  watchEngines: () => {
-    if (app.engine_watch) app.engine_watch.close()
-    app.engine_watch = app.watch(
-      app.relativePath(app.ideSetting("engines_path")),
-      (evt_type, file) => {
-        dispatchEvent("engines_changed")
-      }
-    )
   },
   unzip: (from, to) => {
     let cmd
@@ -962,13 +907,14 @@ var app = {
           const bin_type = [platform, arch].join("-")
 
           if (binaries[bin_type]) {
-            const url = binaries[bin_type]
+            const url = `${process.env.BINARY_PREFIX}/${binaries[bin_type]}`
             const ext = app.engine.binary_ext[platform] || "zip"
             const is_zip = ext === "zip"
 
             toast = blanke.toast("Downloading engine files", -1)
             toast.icon = "dots-horizontal"
             toast.style = "wait"
+            console.log(url)
 
             app.downloading_engine = true
             return res(
@@ -1090,8 +1036,6 @@ var app = {
             nwPATH.join(app.project_path, "config.json"),
             str_conf
           )
-
-        app.requireEngine()
       }
     })
   },
@@ -1777,15 +1721,17 @@ var app = {
     return Buffer.concat([decipher.update(encrypted_text), decipher.final()]).toString()
   },
 
-  checkLicenseKey(email, key) {
+  clk(no_toast) {
     return new Promise((res, rej) => {
+      const email = app.ideSetting('license_email')
+      const key = app.ideSetting('license_key')
+
       const https = require('https')
       const querystring = require('querystring')
       const req = https.request(
         "https://api.gumroad.com/v2/licenses/verify",
         { method: 'POST' },
         _res => {
-          console.log(_res)
           _res.setEncoding('utf8')
           _res.on('data', chunk => {
             // received info about license
@@ -1800,6 +1746,12 @@ var app = {
               !info.refunded
             )
               return res()
+            // bad key
+            if (!no_toast) {
+              const toast = blanke.toast(`License key required!Toatx`)
+              toast.style = "bad"
+              toast.icon = "close"
+            }
             return rej()
           })
         }
@@ -2266,12 +2218,12 @@ app.window.webContents.once("dom-ready", () => {
       app.isDev()
         ? null
         : Promise.all(
-          ["plugin", "themes", "engines"].map((p) => {
+          ["plugin", "themes", "engine"].map((p) => {
             const path = app.ideSetting(p + "_path")
             const dest_path = nwPATH.join(remote.app.getPath("userData"), path)
 
             nwFS.exists(dest_path)
-              .then(exists => !exists || (exists && ["engines"].includes(p)))
+              .then(exists => !exists || (exists && ["engine"].includes(p)))
               .then(copy => {
                 if (copy)
                   return nwFS.copy(

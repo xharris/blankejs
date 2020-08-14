@@ -1,4 +1,4 @@
-let paths = ["plugin", "themes", "engines"]
+let paths = ["plugin", "themes", "engine"]
 let files = ["background_image"]
 let engine_list = []
 let was_open = false
@@ -133,7 +133,6 @@ class Settings extends Editor {
           return app.ideSetting(path + "_path")
         }
         app.ideSetting(path + "_path", app.cleanPath(value))
-        if (path == "engines") app.watchEngines()
 
         app.refreshThemeList()
       })
@@ -177,21 +176,6 @@ document.addEventListener("openProject", () => {
   })
 })
 
-const loadEngineList = () => {
-  nwFS.readdir(
-    app.relativePath(app.ideSetting("engines_path")),
-    "utf8",
-    (err, files) => {
-      engine_list = files
-      app.requireEngine()
-    }
-  )
-}
-
-document.addEventListener("engines_changed", () => {
-  loadEngineList()
-})
-
 document.addEventListener("engine_config_load", () => {
   if (was_open) {
     was_open = false
@@ -200,9 +184,6 @@ document.addEventListener("engine_config_load", () => {
 })
 
 document.addEventListener("ideReady", e => {
-  app.watchEngines()
-  loadEngineList()
-
   paths.forEach(p => {
     app.ideSetting(p + "_path", app.cleanPath(app.ideSetting(p + "_path")))
   })

@@ -12,7 +12,7 @@
   },
   "scripts": {
     "electron": "electron .",
-    "build": "electron-builder",
+    "build": "env-cmd electron-builder",
     "release": "electron-builder",
     "release-local": "env-cmd electron-builder",
     "test": "",
@@ -84,7 +84,7 @@
     ],
     "extraFiles": [
       "plugins",
-      "engines/love2d",
+      "love2d",
       "themes",
       "template"
     ]
