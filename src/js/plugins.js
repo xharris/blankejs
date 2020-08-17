@@ -185,13 +185,14 @@ class Plugins extends Editor {
       let info = temp_plugin_info[key]
       if (info.id) {
         if (
-          info.enabled !== false &&
+          info.module.enabled !== false &&
           info.engine === app.projSetting("engine")
         ) {
           plugin_info[info.id] = info
         } else {
           // disabled and remove docs
           for (let file of info.docs) {
+            console.log('remove', file)
             Docview.removePlugin(file)
           }
         }
@@ -208,7 +209,6 @@ class Plugins extends Editor {
           name: p_info["name"] || nwPATH.basename(file),
           author: null,
         }
-
         nwFS.readFile(file, "utf-8")
           .then(data => {
             let info_keys = ["Name", "Author"]
@@ -222,7 +222,7 @@ class Plugins extends Editor {
             }
 
             let getInfo = (k) => (doc_info[k] != null ? doc_info[k] : p_info[k])
-            if (getInfo("enabled"))
+            if (p_info.module.info.enabled)
               Docview.addPlugin(
                 getInfo("name") +
                 (getInfo("author") ? " (" + getInfo("author") + ")" : ""),
@@ -230,7 +230,10 @@ class Plugins extends Editor {
               )
             else Docview.removePlugin(file)
           })
-          .catch(e => Docview.removePlugin(file))
+          .catch(e => {
+            console.warn(e)
+            Docview.removePlugin(file)
+          })
       }
     }
 
@@ -266,7 +269,7 @@ class Plugins extends Editor {
     // remove el references that are no longer a plugin
     for (let key in plugin_window.el_reference) {
       let exists = true
-      if (!plugin_info[key] || plugin_info[key].enabled == false) exists = false
+      if (!plugin_info[key] || !plugin_info[key].module || plugin_info[key].module.enabled == false) exists = false
       else {
         for (let f of plugin_info[key].files) {
           if (!nwFS.pathExistsSync(f)) exists = false
@@ -351,7 +354,7 @@ class Plugins extends Editor {
           .finally(() => {
             app.projSetting("enabled_plugins")[key] = true
             dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] })
-            app.saveSettings()
+            return app.saveSettings()
           })
       }
     })
@@ -367,9 +370,9 @@ class Plugins extends Editor {
         if (exists) return nwFS.remove(pathJoin(app.engine.plugin_path, key))
       })
       .then(() => {
-        app.projSetting("enabled_plugins")[key] = false
+        delete app.projSetting("enabled_plugins")[key]
         dispatchEvent("pluginChanged", { key: key, info: plugin_info[key] })
-        app.saveSettings()
+        return app.saveSettings()
       })
       .catch((e) => {
         console.warn(e)

@@ -79,8 +79,7 @@ class Settings extends Editor {
       ["IDE", true],
       ["max_windows", "number", { min: 1, max: 5, default: app_set.max_windows }],
       ["theme", "select", { choices: app.themes, default: app_set.theme }],
-      ["quick_access_size", "number", { min: 1, default: app_set.quick_access_size }],
-      ["show_help_text", "checkbox", { default: app_set.quick_access_size }],
+      ["show_help_text", "checkbox", { default: app_set.show_help_text }],
       ["run_save_code", "checkbox", { default: app_set.run_save_code, label: "save code before runs" }],
       ["LICENSE", true],
       ["license_email", "text", { default: app_set.license_email }],
@@ -103,7 +102,7 @@ class Settings extends Editor {
     });
     // prettier-ignore
     [
-      "quick_access_size", "theme", "run_save_code", "max_windows", "show_help_text", "show_file_explorer",
+      "theme", "run_save_code", "max_windows", "show_help_text", "show_file_explorer",
       "license_email", "license_key"
     ].forEach(s => {
       this.el_settings.onChange(s, v => {
@@ -113,7 +112,6 @@ class Settings extends Editor {
         app.ideSetting(s, v)
         app.saveAppData()
 
-        if (s === "quick_access_size") app.refreshQuickAccess()
         if (s === "theme") app.setTheme(v)
       })
     })

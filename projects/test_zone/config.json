@@ -106,15 +106,12 @@
     },
     "enabled_plugins": {
         "xhh-effect": true,
-        "xhh-tween": false,
         "xhh-net": true,
         "yonaba-delaunay": false,
         "xhh-datastructs": false,
-        "xhh-array": true,
         "xhh-badword": true,
         "cmpl": false,
-        "xhh-vector": true,
-        "xhh-ui": false
+        "xhh-vector": true
     },
     "imageeditor": {
         "image/blue_robot.png": {
@@ -131,7 +128,7 @@
             "image": "image/balls.png",
             "tool.shape": "rect",
             "tool.size": [
-                10,
+                1,
                 1
             ],
             "tool.fill": true,

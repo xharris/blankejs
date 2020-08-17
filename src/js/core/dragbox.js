@@ -140,7 +140,6 @@ class DragBox {
     var handles = app.getElements(".drag-handle")
     for (var h = 0; h < handles.length; h++) {
       if (handles[h].innerHTML == title) {
-        app.refreshQuickAccess(title)
         handles[h].click()
         if (!no_history) return app.addHistory(title)
         else return true

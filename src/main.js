@@ -50,7 +50,6 @@ const DEFAULT_IDE_SETTINGS = {
   theme: "green",
   window_splitting: false,
   max_windows: 4,
-  quick_access_size: 5,
   show_help_text: true,
   show_file_explorer: false,
   run_save_code: true,
@@ -61,7 +60,6 @@ const DEFAULT_PROJECT_SETTINGS = {
   icns: nwPATH.join("src", "logo.icns"),
   game_size: 3,
   window_size: 3,
-  quick_access: [],
   autoplay_preview: true,
   engine: "love2d",
 }
@@ -263,7 +261,6 @@ var app = {
   },
 
   closeProject: function (next_project_path) {
-    // app.saveSettings();
     app.getElement("#header").classList.add("no-project")
     if (app.isServerRunning()) app.stopServer()
 
@@ -297,9 +294,6 @@ var app = {
             trueCasePath(file)
               .then((real_file) => {
                 real_file = trueCasePathSync(app.cleanPath(real_file))
-                if (evt_type == "remove")
-                  app.removeQuickAccess(nwPATH.basename(real_file))
-
                 dispatchEvent("fileChange", {
                   type: evt_type,
                   file: app.cleanPath(file),
@@ -309,9 +303,6 @@ var app = {
                 file = app.cleanPath(file)
 
                 // file removed
-                if (evt_type == "remove")
-                  app.removeQuickAccess(nwPATH.basename(file))
-
                 dispatchEvent("fileChange", {
                   type: evt_type,
                   file: file,
@@ -337,7 +328,6 @@ var app = {
         })
 
         // add to recent files
-        app.last_quick_access = ""
         let recent_files = app
           .ideSetting("recent_files")
           .filter((f) => !f.includes(path))
@@ -350,13 +340,13 @@ var app = {
         app.setWinTitle(nwPATH.basename(app.project_path))
 
         // start first scene
-        app.loadSettings(() => {
-          app.hideWelcomeScreen()
-          app.saveSettings()
-          app.requireEngine()
-          app.checkProjectSettings()
-          dispatchEvent("openProject", { path: path })
-        })
+        app.loadSettings()
+          .then(() => {
+            app.hideWelcomeScreen()
+            app.requireEngine()
+            return app.checkProjectSettings()
+          })
+          .then(() => dispatchEvent("openProject", { path: path }))
       } else {
         blanke.toast(`Could not open project '${nwPATH.basename(path)}'`)
         app.closeProject()
@@ -600,13 +590,6 @@ var app = {
       if (!app.search_group[options.group].includes(hash_val))
         app.search_group[options.group].push(hash_val)
     }
-    // quick access pending
-    if (app.pending_quick_access.includes(options.key)) {
-      app.refreshQuickAccess(options.key)
-      app.pending_quick_access = app.pending_quick_access.filter(
-        (p) => p != options.key
-      )
-    }
   },
   isSearchKey: function (hash) {
     return hash in app.search_funcs
@@ -622,7 +605,6 @@ var app = {
     // move found value up in list
     app.search_hashvals = app.search_hashvals.filter((e) => e != hash_val)
     app.search_hashvals.unshift(hash_val)
-    app.refreshQuickAccess(hash_val)
   },
   getSearchCategory: function (hash_val) {
     return app.search_hash_category[hash_val]
@@ -640,7 +622,7 @@ var app = {
   removeSearchKey: function (key, tags) {
     var hash_val = app.hashSearchVal(key, tags)
     app.removeSearchHash(hash_val)
-    app.removeQuickAccess(hash_val)
+
   },
 
   removeSearchHash: function (hash) {
@@ -671,15 +653,20 @@ var app = {
     nwFS.ensureDirSync(path)
     return path
   },
-  loadAppData: function (callback) {
+  loadAppData: () => {
     var app_data_folder = app.getAppDataFolder()
     var app_data_path = nwPATH.join(app_data_folder, "blanke.json")
-    nwFS.readFile(app_data_path, "utf-8", function (err, data) {
-      if (!err && data.length > 1) app.settings = JSON.parse(data)
-
-      app.settings = Object.assign(DEFAULT_IDE_SETTINGS, app.settings || {})
-      if (callback) callback()
-    })
+    return nwFS.readFile(app_data_path, "utf-8")
+      .then(data => {
+        app.settings = JSON.parse(data)
+      })
+      .catch(err => {
+        console.warn(`loadAppData: ${err}`)
+        app.settings = {}
+      })
+      .finally(() => {
+        app.settings = Object.assign(DEFAULT_IDE_SETTINGS, app.settings || {})
+      })
   },
 
   relativePath: (path) => {
@@ -846,7 +833,8 @@ var app = {
       }
     }
     app.checkProjectSettings()
-    app.downloadEngineDist().then(() => dispatchEvent("engine_config_load"))
+      .then(app.downloadEngineDist)
+      .then(() => dispatchEvent("engine_config_load"))
   },
   unzip: (from, to) => {
     let cmd
@@ -1006,40 +994,25 @@ var app = {
       })
 
     app.project_settings = Object.assign({}, eng_settings, app.project_settings)
-    app.saveSettings()
+    return app.saveSettings()
   },
 
   project_settings: {},
   // TODO: use promises and make config.json if it doesn't exist
-  loadSettings: function (callback) {
-    if (app.isProjectOpen()) {
-      nwFS.readFile(
-        nwPATH.join(app.project_path, "config.json"),
-        "utf-8",
-        (err, data) => {
-          if (!err || (data && data.length > 1))
-            app.project_settings = JSON.parse(data)
-          else app.project_settings = {}
-
-          app.saveSettings()
-          if (callback) callback()
-        }
-      )
-    }
-  },
-  last_engine: "",
-  saveSettings: function () {
-    blanke.cooldownFn("saveSettings", 500, function () {
-      if (app.isProjectOpen()) {
-        let str_conf = JSON.stringify(app.project_settings, null, 4)
-        if (str_conf.length > 2)
-          nwFS.writeFileSync(
-            nwPATH.join(app.project_path, "config.json"),
-            str_conf
-          )
-      }
+  loadSettings: () => new Promise((res, rej) => app.isProjectOpen() ? res() : rej())
+    .then(() => nwFS.readFile(nwPATH.join(app.project_path, "config.json"), "utf-8"))
+    .then(data => {
+      app.project_settings = JSON.parse(data)
     })
-  },
+    .catch(() => {
+      app.project_settings = {}
+    })
+    .finally(() =>
+      app.saveSettings()
+    ),
+
+  saveSettings: () => new Promise((res, rej) => app.isProjectOpen() ? res(JSON.stringify(app.project_settings, null, 4)) : rej())
+    .then(str_conf => str_conf.length > 1 && nwFS.writeFile(nwPATH.join(app.project_path, "config.json"), str_conf)),
 
   saveAppData: function () {
     blanke.cooldownFn("saveAppData", 500, function () {
@@ -1291,143 +1264,6 @@ var app = {
     }, 1000)
   },
 
-  // shows when nothing is open
-  last_quick_access: "",
-  _refreshQuickAccess: (hash) => {
-    if (app.isProjectOpen()) {
-      let set = app.projSetting()
-      if (hash) {
-        let last_hash, last_title
-        set.quick_access = set.quick_access.filter((h) => {
-          if (h[0] == hash || h[1] == hash) {
-            last_hash = h[0]
-            last_title = h[1]
-            hash = last_hash
-          } else return true
-        })
-        for (let key in app.search_titles) {
-          val = app.search_titles[key]
-          if (val == hash)
-            // switch them around here
-            hash = key
-        }
-        hash = hash || last_hash
-        let title = app.search_titles[hash] || last_title
-        if (hash && title && app.isSearchKey(hash))
-          set.quick_access.unshift([hash, title])
-      }
-      if (!set.quick_access) return
-      set.quick_access = set.quick_access.slice(
-        0,
-        app.ideSetting("quick_access_size")
-      )
-      app.saveSettings()
-      let el_container = app.getElement("#recents-container")
-      // check if anything needs to be changed
-      //let different = false;
-      if (el_container.childElementCount == 0) {
-        //different = true;
-      } else {
-        for (let h = 0; h < el_container.childElementCount; h++) {
-          if (!set.quick_access[h]);
-          else {
-            //different = true;
-            let hash = set.quick_access[h][0]
-            let child = el_container.children.item(h)
-            if (!child || child.hash != hash) {
-              //different = true;
-            }
-            if (!child.text || child.text.trim() == "")
-              blanke.destroyElement(child)
-          }
-        }
-      }
-      // remake quick access list
-      let different = JSON.stringify(set.quick_access) !== app.last_quick_access
-      if (different) {
-        app.last_quick_access = JSON.stringify(set.quick_access)
-        app.clearElement(el_container)
-
-        let el_history = app.getElement("#recent-history")
-        if (set.quick_access.length == 0) el_history.classList.add("hidden")
-        else el_history.classList.remove("hidden")
-
-        for (let h of set.quick_access) {
-          if (h[0] && h[1]) {
-            let el_link_container = app.createElement(
-              "div",
-              "history-container"
-            )
-            let el_link = app.createElement("a", "history")
-            el_link.innerHTML = h[1]
-            el_link_container.onclick = () => {
-              app.triggerSearchKey(h[0])
-            }
-            el_link_container.appendChild(el_link)
-            el_link_container.hash = h[0]
-            el_link_container.text = h[1]
-            el_container.appendChild(el_link_container)
-          }
-        }
-      }
-      // show quick access only if workspace is empty
-      if (app.getElement("#workspace").childElementCount == 0)
-        app.getElement("#recent-history").classList.remove("hidden")
-      else app.getElement("#recent-history").classList.add("hidden")
-    } else {
-      app.getElement("#recent-history").classList.add("hidden")
-    }
-    app.refreshQuickAccess(null, true)
-  },
-  /*
-  removeQuickAccess: (hash) => {
-    app.projSetting("quick_access") = app.projSetting("quick_access").filter(q => q[0] !== hash)
-    app.saveSettings();
-    app.refreshQuickAccess();
-  },
-*/
-  refreshQuickAccess: (hash, not_now) => {
-    if (!not_now)
-      // double negative lol
-      app._refreshQuickAccess(hash)
-    blanke.cooldownFn("refreshQuickAccess", 1000, () => {
-      app._refreshQuickAccess(hash)
-    })
-  },
-
-  removeQuickAccess: (text) => {
-    // remove element
-    let hash
-    let el_container = app.getElement("#recent-history")
-    // check if anything needs to be changed
-    let different = false
-    if (el_container.childElementCount > 0) {
-      for (let h = 0; h < el_container.childElementCount; h++) {
-        let child = el_container.children.item(h)
-        if (child.text == text) {
-          hash = child.hash
-          blanke.destroyElement(child)
-        }
-      }
-    }
-    // change settings
-    //if (hash) {
-    app.projSetting(
-      "quick_access",
-      app
-        .projSetting("quick_access")
-        .filter((h) => (!hash || h[0] != hash) && h[1] != text)
-    )
-    app.saveSettings()
-    //}
-    app.refreshQuickAccess()
-  },
-
-  pending_quick_access: [],
-  addPendingQuickAccess: (file) => {
-    app.pending_quick_access.push(file)
-  },
-
   // TAB BAR (history)
   history_ref: {},
   addHistory: function (title) {
@@ -1488,8 +1324,6 @@ var app = {
     el_history_bar.removeChild(e.entry)
     el_history_bar.appendChild(e.entry)
     if (!skip_highlight) app.setHistoryHighlight(id)
-
-    app.refreshQuickAccess(app.search_titles[id])
     return e.entry.dataset.guid
   },
 
@@ -1570,17 +1404,14 @@ var app = {
         // rename in quick access if it's there
         let old_name = nwPATH.basename(old_path)
         let new_name = nwPATH.basename(new_path)
-        for (let pair of app.projSetting("quick_access")) {
-          for (let p in pair) {
-            pair[p] = pair[p].replace(old_name, new_name)
-          }
-        }
         app.saveSettings()
-        dispatchEvent("file_rename", {
-          old_path: app.cleanPath(old_path),
-          new_path: app.cleanPath(new_path),
-        })
-        fn_done(new_path)
+          .then(() => {
+            dispatchEvent("file_rename", {
+              old_path: app.cleanPath(old_path),
+              new_path: app.cleanPath(new_path),
+            })
+            fn_done(new_path)
+          })
       }
     })
     //}
@@ -1609,7 +1440,7 @@ var app = {
         edit.close()
       }
     })
-    app.removeQuickAccess(file_name)
+
     nwFS.remove(full_path)
   },
 
@@ -1701,7 +1532,7 @@ var app = {
 
     const iv = crypto.randomBytes(16)
 
-    const cipher = crypto.createCipher('aes-256-cbc', Buffer.alloc(32, process.env.KEY))
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.alloc(32, process.env.KEY), Buffer.alloc(16, process.env.IV))
     const encrypted = Buffer.concat([cipher.update(text), cipher.final()])
 
     return `${iv.toString('hex')}-${encrypted.toString('hex')}`
@@ -1714,7 +1545,7 @@ var app = {
     const iv = Buffer.from(data[0], 'hex')
     const encrypted_text = Buffer.from(data[1], 'hex')
 
-    const decipher = crypto.createDecipher('aes-256-cbc', Buffer.alloc(32, process.env.KEY))
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.alloc(32, process.env.KEY), Buffer.alloc(16, process.env.IV))
 
     return Buffer.concat([decipher.update(encrypted_text), decipher.final()]).toString()
   },
@@ -1836,7 +1667,6 @@ app.window.webContents.once("dom-ready", () => {
   if (process.argv[1]) {
     // console.log(process.argv);
   }
-  app.refreshQuickAccess()
 
   // remove error file
   nwFS.remove(nwPATH.join(app.getAppDataFolder(), "error.txt"))
@@ -2205,13 +2035,13 @@ app.window.webContents.once("dom-ready", () => {
         app.clearHistory()
       },
     })
-    app.refreshQuickAccess()
   })
 
   webFrame.setVisualZoomLevelLimits(1, 1)
   webFrame.setLayoutZoomLevelLimits(0, 0)
 
-  new Promise((res, rej) => app.loadAppData(res))
+  console.log('loading app data')
+  app.loadAppData()
     .then(() =>
       app.isDev()
         ? null

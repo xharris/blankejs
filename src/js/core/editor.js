@@ -1,6 +1,6 @@
-const { Menu, MenuItem } = require("electron");
+const { Menu, MenuItem } = require("electron")
 
-var editors = [];
+var editors = []
 
 const removeID = id => {
   editors = editors.filter(edit => edit && edit.id !== id)
@@ -8,127 +8,127 @@ const removeID = id => {
 
 class Editor {
   constructor() {
-    this.app = app;
-    this.closed = false;
-    this.id = guid();
+    this.app = app
+    this.closed = false
+    this.id = guid()
 
     // asset list
-    this.asset_list = document.createElement("div");
-    this.asset_list.classList.add("asset-list");
+    this.asset_list = document.createElement("div")
+    this.asset_list.classList.add("asset-list")
 
     // real content area
-    this.content_area = document.createElement("div");
-    this.content_area.classList.add("editor-content");
+    this.content_area = document.createElement("div")
+    this.content_area.classList.add("editor-content")
 
-    editors.push(this);
+    editors.push(this)
   }
 
   setupPopup(content) {
-    this.container_type = "dragbox";
+    this.container_type = "dragbox"
     // create drag box
-    this.container = new DragBox(content || this.constructor.name);
+    this.container = new DragBox(content || this.constructor.name)
   }
 
   setupDragbox(content) {
-    this.container_type = "dragbox";
+    this.container_type = "dragbox"
     // create drag box
-    this.container = new DragBox(content || this.constructor.name);
-    this.container.appendTo(workspace);
-    this.container.width = 400;
-    this.container.height = 300;
-    this.container.drag_container.appendChild(this.asset_list);
-    this.container.appendChild(this.content_area);
+    this.container = new DragBox(content || this.constructor.name)
+    this.container.appendTo(workspace)
+    this.container.width = 400
+    this.container.height = 300
+    this.container.drag_container.appendChild(this.asset_list)
+    this.container.appendChild(this.content_area)
     // menu button click
     this.container.btn_menu.onclick = e => {
-      removeID(this.id);
-      this.onMenuClick(e);
-    };
-    this.container.onClose = (...args) => this.onClose(...args);
-    this.container.onBeforeClose = (...args) => this.onBeforeClose(...args);
-    app.refreshQuickAccess();
-    return this;
+      removeID(this.id)
+      this.onMenuClick(e)
+    }
+    this.container.onClose = (...args) => this.onClose(...args)
+    this.container.onBeforeClose = (...args) => this.onBeforeClose(...args)
+
+    return this
   }
 
   setupTab(content) {
-    var this_ref = this;
-    this.container_type = "tab";
+    var this_ref = this
+    this.container_type = "tab"
     // create tab
-    this.container = new Tab(content || this.constructor.name);
-    this.container.appendChild(this.content_area);
-    app.setHistoryActive(this.container.history_id, true);
+    this.container = new Tab(content || this.constructor.name)
+    this.container.appendChild(this.content_area)
+    app.setHistoryActive(this.container.history_id, true)
     app.setHistoryContextMenu(this.container.history_id, function (e) {
-      this_ref.onMenuClick(e);
-    });
+      this_ref.onMenuClick(e)
+    })
     this.container.onClose = (...args) => {
-      removeID(this.id);
-      this.onClose(...args);
-      app.refreshQuickAccess();
-    };
-    this.container.onBeforeClose = (...args) => this.onBeforeClose(...args);
-    app.refreshQuickAccess();
-    return this;
+      removeID(this.id)
+      this.onClose(...args)
+
+    }
+    this.container.onBeforeClose = (...args) => this.onBeforeClose(...args)
+
+    return this
   }
 
   setupFibWindow(content) {
-    var this_ref = this;
-    this.container_type = "fibwindow";
+    var this_ref = this
+    this.container_type = "fibwindow"
     this.container = new FibWindow(
       typeof content == "string" ? content : this.constructor.name
-    );
-    this.container.appendTo(workspace);
-    this.container.appendChild(this.content_area);
+    )
+    this.container.appendTo(workspace)
+    this.container.appendChild(this.content_area)
     this.container.btn_menu.onclick = function (e) {
-      this_ref.onMenuClick(e);
-    };
-    app.setHistoryActive(this.container.history_id, true);
+      this_ref.onMenuClick(e)
+    }
+    app.setHistoryActive(this.container.history_id, true)
     app.setHistoryContextMenu(this.container.history_id, function (e) {
-      this_ref.onMenuClick(e);
-    });
+      this_ref.onMenuClick(e)
+    })
     this.container.onClose = (...args) => {
-      removeID(this.id);
-      this.onClose(...args);
-      app.refreshQuickAccess();
-    };
-    this.container.onBeforeClose = (...args) => this.onBeforeClose(...args);
-    app.refreshQuickAccess();
-    return this;
+      removeID(this.id)
+      this.onClose(...args)
+
+    }
+    this.container.onBeforeClose = (...args) => this.onBeforeClose(...args)
+
+    return this
   }
 
   setupSideWindow(transparent, content) {
-    let this_ref = this;
-    this.container_type = "sidewindow";
-    this.container = new SideWindow(content || this.constructor.name);
-    this.container.appendChild(this.content_area);
+    let this_ref = this
+    this.container_type = "sidewindow"
+    this.container = new SideWindow(content || this.constructor.name)
+    this.container.appendChild(this.content_area)
     this.container.btn_menu.onclick = function (e) {
-      this_ref.onMenuClick(e);
-    };
-    app.setHistoryActive(this.container.history_id, true);
+      this_ref.onMenuClick(e)
+    }
+    app.setHistoryActive(this.container.history_id, true)
     app.setHistoryContextMenu(this.container.history_id, function (e) {
-      this_ref.onMenuClick(e);
-    });
+      this_ref.onMenuClick(e)
+    })
     this.container.onClose = (...args) => {
-      removeID(this.id);
-      this.onClose(...args);
-      app.refreshQuickAccess();
-    };
-    if (transparent) this.container.el_container.classList.add("transparent");
-    app.refreshQuickAccess();
-    return this;
+      removeID(this.id)
+      this.onClose(...args)
+
+    }
+    if (transparent) this.container.el_container.classList.add("transparent")
+
+    return this
   }
 
   setupMenu(opt) {
-    let items = [];
-    if (!opt.file_key) opt.file_key = "file";
+    let items = []
+    if (!opt.file_key) opt.file_key = "file"
 
     document.addEventListener('file_move', (e) => {
       if (e.detail.old_path === app.cleanPath(this[opt.file_key])) {
-        this[opt.file_key] = e.detail.new_path;
+        this[opt.file_key] = e.detail.new_path
       }
     })
 
     document.addEventListener('file_rename', (e) => {
       if (e.detail.old_path === app.cleanPath(this[opt.file_key])) {
-        this[opt.file_key] = e.detail.new_path;
+        this[opt.file_key] = e.detail.new_path
       }
       const old_basename = nwPATH.basename(e.detail.old_path)
       if (this.getTitle() === old_basename) {
@@ -140,9 +140,9 @@ class Editor {
       items.push({
         label: "close",
         click: () => {
-          this.close();
+          this.close()
         },
-      });
+      })
     }
 
     // file_key='file' : where filename is stored
@@ -153,13 +153,13 @@ class Editor {
         click: () => {
           app.renameModal(this[opt.file_key], {
             success: (new_path) => {
-              this[opt.file_key] = new_path;
+              this[opt.file_key] = new_path
               if (typeof opt.rename == "function")
-                opt.rename(new_path);
+                opt.rename(new_path)
             }
           })
         },
-      });
+      })
     }
 
     // file_key='file'
@@ -170,165 +170,164 @@ class Editor {
         click: () => {
           app.deleteModal(this[opt.file_key], {
             success: () => {
-              this.deleted = true;
-              if (typeof opt.delete == "function") opt.delete();
+              this.deleted = true
+              if (typeof opt.delete == "function") opt.delete()
             }
           })
         },
-      });
+      })
     }
 
     this.onMenuClick = e => {
-      let items_copy = [...items];
-      if (opt.extra) items_copy = items_copy.concat(opt.extra());
-      app.contextMenu(e.x, e.y, items_copy);
-    };
+      let items_copy = [...items]
+      if (opt.extra) items_copy = items_copy.concat(opt.extra())
+      app.contextMenu(e.x, e.y, items_copy)
+    }
   }
 
   removeHistory() {
-    if (this.container) app.removeHistory(this.container.history_id);
+    if (this.container) app.removeHistory(this.container.history_id)
   }
 
   setOnClick() {
-    let fn = arguments;
-    if (this.container_type != "tab") fn = arguments[0];
-    let old_fn = fn;
+    let fn = arguments
+    if (this.container_type != "tab") fn = arguments[0]
+    let old_fn = fn
 
     if (["tab", "fibwindow", "sidewindow"].includes(this.container_type))
       fn = (...args) => {
-        app.refreshQuickAccess(this.getTitle());
-        if (this.container.onTabFocus) this.container.onTabFocus();
-        old_fn(...args);
-      };
+        if (this.container.onTabFocus) this.container.onTabFocus()
+        old_fn(...args)
+      }
 
     if (this.container_type == "tab")
-      this.container.setOnClick.apply(this.container, fn);
+      this.container.setOnClick.apply(this.container, fn)
     if (this.container_type == "fibwindow")
-      app.setHistoryClick(this.container.history_id, fn);
+      app.setHistoryClick(this.container.history_id, fn)
     if (this.container_type == "sidewindow")
-      app.setHistoryClick(this.container.history_id, fn);
+      app.setHistoryClick(this.container.history_id, fn)
   }
 
   onBeforeClose(res) {
-    res();
+    res()
   }
   onClose() { }
 
   close(...args) {
     let real_close = () => {
-      app.setHistoryActive(this.container.history_id, false);
-      this.container.close(...args);
-      if (this.onClose) this.onClose();
-      this.closed = true;
-    };
+      app.setHistoryActive(this.container.history_id, false)
+      this.container.close(...args)
+      if (this.onClose) this.onClose()
+      this.closed = true
+    }
     if (this.onBeforeClose) {
       // return TRUE to prevent closing
       new Promise((res, rej) => this.onBeforeClose(res, rej)).then(
         real_close,
         () => { }
-      );
-    } else real_close();
+      )
+    } else real_close()
   }
 
   static closeAll(type) {
-    DragBox.closeAll(type);
-    Tab.closeAll(type);
-    FibWindow.closeAll();
+    DragBox.closeAll(type)
+    Tab.closeAll(type)
+    FibWindow.closeAll()
   }
 
   addCallback(cb_name, new_func) {
-    this.container[cb_name] = new_func;
+    this.container[cb_name] = new_func
   }
 
   getCenter() {
-    if (this.container.getCenter) return this.container.getCenter();
-    return [this.width / 2, this.height / 2];
+    if (this.container.getCenter) return this.container.getCenter()
+    return [this.width / 2, this.height / 2]
   }
 
   get width() {
-    return this.container.width;
+    return this.container.width
   }
 
   get height() {
-    return this.container.height;
+    return this.container.height
   }
 
   set width(v) {
-    this.container.width = v;
+    this.container.width = v
   }
 
   set height(v) {
-    this.container.height = v;
+    this.container.height = v
   }
 
   get bg_width() {
     if (this.container.in_background)
-      return app.getElement("#bg-workspace").clientWidth;
-    else return this.width;
+      return app.getElement("#bg-workspace").clientWidth
+    else return this.width
   }
 
   get bg_height() {
     if (this.container.in_background)
-      return app.getElement("#bg-workspace").clientHeight;
-    else return this.height;
+      return app.getElement("#bg-workspace").clientHeight
+    else return this.height
   }
 
   hideMenuButton() {
-    if (this.container.btn_menu) this.container.btn_menu.style.display = "none";
+    if (this.container.btn_menu) this.container.btn_menu.style.display = "none"
   }
 
   getContent() {
-    return this.container.getContent();
+    return this.container.getContent()
   }
 
   getContainer() {
-    return this.container;
+    return this.container
   }
 
   appendChild(el) {
-    this.content_area.appendChild(el);
+    this.content_area.appendChild(el)
   }
 
   appendBackground(el) {
-    if (this.container.appendBackground) this.container.appendBackground(el);
-    else this.appendChild(el);
+    if (this.container.appendBackground) this.container.appendBackground(el)
+    else this.appendChild(el)
   }
 
   isInBackground() {
-    return this.container.in_background == true;
+    return this.container.in_background == true
   }
 
   getTitle(with_sub) {
-    return this.container.getTitle(with_sub);
+    return this.container.getTitle(with_sub)
   }
 
   setTitle(val) {
-    this.container.setTitle(val);
-    return this;
+    this.container.setTitle(val)
+    return this
   }
 
   setDefaultSize(w, h) {
-    box_sizes[this.getTitle()] = [w, h];
+    box_sizes[this.getTitle()] = [w, h]
     if (this.container_type === "dragbox") {
-      this.container.setSize(w, h);
+      this.container.setSize(w, h)
     }
   }
 
   setSubtitle(val) {
     if (["dragbox", "fibwindow", "sidewindow"].includes(this.container_type))
-      this.container.setSubtitle(val);
-    return this;
+      this.container.setSubtitle(val)
+    return this
   }
 
   onMenuClick(e) {
-    this.toggleMenu();
+    this.toggleMenu()
   }
 
   toggleMenu() {
-    this.asset_list.classList.toggle("open");
+    this.asset_list.classList.toggle("open")
   }
 }
 
 document.addEventListener("openProject", function (e) {
-  Editor.closeAll();
-});
+  Editor.closeAll()
+})

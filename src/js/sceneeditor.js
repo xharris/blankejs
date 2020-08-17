@@ -2693,7 +2693,7 @@ document.addEventListener("openProject", function (e) {
       app.getNewAssetPath("map", (path, name) => {
         nwFS.writeFile(path, "")
         // edit the new script
-        app.addPendingQuickAccess(name)
+
         new SceneEditor(path)
       })
     },
