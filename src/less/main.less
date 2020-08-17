@@ -259,6 +259,16 @@ body > #header {
 body.mac > #header {
   flex-direction: row-reverse;
 
+  .window-buttons {
+    background: transparent;
+  }
+
+  #btn-close, #btn-maximize, #btn-minimize {
+    opacity: 0;
+    pointer-events: none;
+    .win-drag();
+  }
+
   #btn-close {
     order: 1;
   }

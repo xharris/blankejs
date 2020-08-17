@@ -33,7 +33,9 @@ eApp.on("ready", function () {
     frame: false,
     titleBarStyle: "hidden",
     backgroundColor: "#fff",
+    trafficLightPosition: {x:50, y:50},
     webPreferences: {
+      enableRemoteModule: true,
       nodeIntegration: true,
       webgl: true,
       webSecurity: false,
@@ -42,10 +44,10 @@ eApp.on("ready", function () {
     },
     show: false,
   })
-  if (main_window.setWindowButtonVisibility)
-    main_window.setWindowButtonVisibility(false)
+  //if (main_window.setWindowButtonVisibility)
+  //  main_window.setWindowButtonVisibility(false)
 
-  //main_window.webContents.openDevTools()
+  // main_window.webContents.openDevTools()
   main_window.loadFile("index.html")
   main_window.on("close", (e) => {
     if (!update_on_close) {

@@ -67,10 +67,10 @@ butler/
 **/lua/plugins/
 electron-builder.yml
 
-engines/love2d/dist-*
-engines/love2d/love.js
-engines/love2d/love.zip
-engines/love2d/love-11.3-*
-engines/love2d/*.AppImage
-engines/love2d/squashfs-root/
+**/love2d/dist-*
+**/love2d/love.js
+**/love2d/love.zip
+**/love2d/love-11.3-*
+**/love2d/*.AppImage
+**/love2d/squashfs-root/
 projects/*/lua

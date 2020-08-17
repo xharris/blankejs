@@ -157,8 +157,8 @@
             "tool.fill": true,
             "tool.length": 1,
             "tool.size": [
-                1,
-                1
+                9,
+                11
             ],
             "onion_alpha": 0.3
         },
