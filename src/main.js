@@ -1528,26 +1528,25 @@ var app = {
   },
 
   encrypt(text) {
-    const crypto = require('crypto')
-
-    const iv = crypto.randomBytes(16)
-
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.alloc(32, process.env.KEY), Buffer.alloc(16, process.env.IV))
-    const encrypted = Buffer.concat([cipher.update(text), cipher.final()])
-
-    return `${iv.toString('hex')}-${encrypted.toString('hex')}`
+    const crypto = require('crypto-js')
+    try {
+      return crypto.AES.encrypt(text, process.env.KEY, { iv: process.env.IV }).toString()
+    }
+    catch (e) {
+      console.warn(e)
+      return text
+    }
   },
 
   decrypt(text) {
-    const crypto = require('crypto')
-
-    const data = text.split('-')
-    const iv = Buffer.from(data[0], 'hex')
-    const encrypted_text = Buffer.from(data[1], 'hex')
-
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.alloc(32, process.env.KEY), Buffer.alloc(16, process.env.IV))
-
-    return Buffer.concat([decipher.update(encrypted_text), decipher.final()]).toString()
+    const crypto = require('crypto-js')
+    try {
+      return crypto.AES.decrypt(text, process.env.KEY, { iv: process.env.IV }).toString(crypto.enc.Utf8)
+    }
+    catch (e) {
+      console.warn(e)
+      return text
+    }
   },
 
   clk(no_toast) {
