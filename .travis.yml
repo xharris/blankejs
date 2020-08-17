@@ -41,7 +41,7 @@ before_install:
 
 install:
   - npm i
-  - npm i -g uglify-es
+  # - npm i -g uglify-es
   
 script:
   # - xvfb-run -a npm test

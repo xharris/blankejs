@@ -3607,8 +3607,8 @@ do
         end
         obj.width = max(obj.width, 1) 
         obj.height = max(obj.height, 1)     
-        return  obj.alignx,-- * abs(obj.scale * obj.scalex),
-                obj.aligny,-- * abs(obj.scale * obj.scaley),
+        return  obj.alignx,
+                obj.aligny,
                 repos
     end
     local checkHitArea = function(obj)
@@ -3624,8 +3624,10 @@ do
             }
         end
 
-        hb.left = left
-        hb.top = top
+        hb.left = hb.left or 0
+        hb.top = hb.top or 0
+        hb.right = hb.right or 0
+        hb.bottom = hb.bottom or 0
 
         if not obj.hasHitbox then
             obj.hasHitbox = true
@@ -3633,7 +3635,7 @@ do
 
             world:add(
                 obj, obj.x - hb.left, obj.y - hb.top,
-                abs(obj.width ) + hb.right, abs(obj.height ) + hb.bottom
+                abs(obj.width) + hb.right, abs(obj.height ) + hb.bottom
             )
         end
 
@@ -3642,7 +3644,7 @@ do
         if repos then
             Hitbox.teleport(obj)
         end
-        return obj.hitbox
+        return obj.hitbox, hb.left + left, hb.top + top
     end
 
     Hitbox = {
@@ -3673,9 +3675,9 @@ do
         -- ignore collisions
         teleport = function(obj, x, y)
             if obj and not obj.destroyed and obj.hasHitbox then
-                local hb = checkHitArea(obj)
+                local hb, offx, offy = checkHitArea(obj)
                 world:update(obj,
-                    obj.x - hb.left, obj.y - hb.top,
+                    obj.x - offx, obj.y - offy,
                     abs(obj.width ) + hb.right, abs(obj.height ) + hb.bottom
                 )
             end
@@ -3710,10 +3712,7 @@ do
                     return ret
                 end
                 -- move the hitbox
-                local hb = checkHitArea(obj)
-
-                local offx = hb.left
-                local offy = hb.top
+                local hb, offx, offy = checkHitArea(obj)
 
                 local new_x, new_y, cols, len = world:move(obj,
                     obj.x - offx,

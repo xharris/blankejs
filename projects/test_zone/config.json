@@ -329,6 +329,19 @@
                 5,
                 5
             ]
+        },
+        "image/blapblap.gif": {
+            "frame_size": [
+                320,
+                170
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
         }
     },
     "engine": "love2d",

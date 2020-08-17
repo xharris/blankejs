@@ -23,20 +23,20 @@
             "level1.map"
         ],
         [
-            "player.lua=script+entity+?",
+            "player.lua=script+?",
             "player.lua"
-        ],
-        [
-            "main.lua=script+state+?",
-            "main.lua"
         ],
         [
             "View project in explorer=?",
             "View project in explorer"
         ],
         [
-            "Open image editor=?",
-            "Open image editor"
+            "player.lua=script+entity+?",
+            "player.lua"
+        ],
+        [
+            "main.lua=script+state+?",
+            "main.lua"
         ]
     ],
     "autoplay_preview": true,

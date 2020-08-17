@@ -10,7 +10,7 @@ Entity("Player", {
 	align = "center",
 	gravity = 10,
 	can_jump = true,
-	hitbox = true,
+	hitbox = { left=-5, right=-10 },
 	collision = function(self, i, hb_self, hb_other)
 		if i.other.tag == 'death' then
 			self:die()
@@ -29,7 +29,7 @@ Entity("Player", {
 			self.dead = true
 			self.animation = "player_dead"
 			self.hitbox = "player_walk"
-			Hitbox.adjust(self, -0, 0, -5, -8)
+			Hitbox.adjust(self, 0, 0, -5, -8)
 			Tween(1, self, { hspeed=0 }, nil, function()
 				State.restart('play')
 			end)

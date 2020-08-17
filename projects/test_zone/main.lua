@@ -3,11 +3,11 @@ Game {
 	--plugins = {'xhh-effect'},
 	auto_require = false,
 	
-	--scripts = { 'scripts/platformer.lua' },
-	--initial_state = 'platformer',
+	scripts = { 'scripts/platformer.lua' },
+	initial_state = 'platformer',
 	
-	scripts = { 'scripts/Bunnymark.lua' },
-	initial_state = 'bunnymark',
+	--scripts = { 'scripts/Bunnymark.lua' },
+	--initial_state = 'bunnymark',
 	
 	-- effect = { 'chroma shift' }, -- TODO get this to work
 	background_color = 'white',
