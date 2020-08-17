@@ -193,10 +193,15 @@ class ImageEditor extends Editor {
           if (s[0] == "onion_alpha") {
             this.img_onion.alpha = val
           }
+          this.previewCursor()
         })
       }
     })
     this.setTool(TOOLS[0])
+
+    this.container.fib_content.addEventListener('mouseleave', e => {
+      this.stopPreviewCursor()
+    })
 
     // setup el_file_select
     document.addEventListener("fileChange", e => {
@@ -234,7 +239,7 @@ class ImageEditor extends Editor {
     }
     this.pixi.on("mouseMove", (e, info) => {
       let { mx, my, btn } = info
-      this.cursor = [Math.floor(mx), Math.floor(my)]
+      this.setCursorPosition(Math.floor(mx), Math.floor(my))
       this.hover_frame_pos[0] =
         this.cursor[0] - (this.cursor[0] % this.img_settings.frame_size[0])
       this.hover_frame = Math.floor(
@@ -248,7 +253,7 @@ class ImageEditor extends Editor {
 
     this.pixi.on("mouseDown", (e, info) => {
       let { mx, my, btn } = info
-      this.cursor = [Math.floor(mx), Math.floor(my)]
+      this.setCursorPosition(Math.floor(mx), Math.floor(my))
       toolActive(btn)
     })
     this.pixi.on("mouseUp", (e, info) => {
@@ -290,7 +295,7 @@ class ImageEditor extends Editor {
       el_color.value = parseInt(`0x${c}`)
       el_color.addEventListener("click", e => {
         this.curr_color = e.target.value
-        this.drawCrosshair()
+        this.previewCursor()
       })
       el_color.addEventListener("contextmenu", e => {
         app.contextMenu(e.x, e.y, [
@@ -432,6 +437,25 @@ class ImageEditor extends Editor {
       }
       img.src = "file://" + path
     } else setupForm()
+  }
+  setCursorPosition(x, y) {
+    if (!this.previewing_cursor)
+      this.cursor = [x, y]
+  }
+  previewCursor() {
+    const set = this.img_settings
+    // put mouse in center of last frame edited to show changes to settings
+    if (this.last_edited_frame === -1)
+      this.last_edited_frame = 0
+    const curx = this.last_edited_frame * (set.frame_size[0] + set.spacing) + (set.frame_size[0] / 2)
+    const cury = set.frame_size[1] / 2
+
+    this.previewing_cursor = true
+    this.cursor = [curx, cury]
+    this.drawCrosshair()
+  }
+  stopPreviewCursor() {
+    this.previewing_cursor = false
   }
   drawCrosshair() {
     let cross = this.crosshair
@@ -745,6 +769,7 @@ class ImageEditor extends Editor {
     if (now) this.history_cd = 0
     else this.addAsterisk()
     this.changed = true
+    this.last_edited_frame = this.hover_frame
   }
   undo() {
     let spr = this.history_tex.pop()

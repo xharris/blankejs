@@ -7,8 +7,8 @@ const isDev = require("electron-is-dev")
 const { autoUpdater } = require("electron-updater")
 const { app: eApp, BrowserWindow, ipcMain } = require("electron")
 
-const WIN_WIDTH = 1000
-const WIN_HEIGHT = 700
+const WIN_WIDTH = 1366
+const WIN_HEIGHT = 768
 
 let update_on_close = false
 

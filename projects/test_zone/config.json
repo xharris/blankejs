@@ -131,14 +131,15 @@
             "image": "image/balls.png",
             "tool.shape": "rect",
             "tool.size": [
-                1,
+                10,
                 1
             ],
             "tool.fill": true,
             "animSpeed": 0.1,
             "showPreview": true,
             "onion_alpha": 0.5,
-            "tool.alpha": 255
+            "tool.alpha": 255,
+            "tool.angle": 5
         },
         "image/image1.png": {
             "frame_size": [
@@ -326,9 +327,10 @@
             "onion_alpha": 0.3,
             "image": "image/blue_robot.png",
             "tool.size": [
-                5,
+                8,
                 5
-            ]
+            ],
+            "tool.angle": 14
         },
         "image/blapblap.gif": {
             "frame_size": [

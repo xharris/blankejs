@@ -1010,6 +1010,7 @@ var app = {
   },
 
   project_settings: {},
+  // TODO: use promises and make config.json if it doesn't exist
   loadSettings: function (callback) {
     if (app.isProjectOpen()) {
       nwFS.readFile(
