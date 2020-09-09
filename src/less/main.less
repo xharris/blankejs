@@ -761,6 +761,41 @@ body.mac > #header {
   box-sizing: border-box;
   display: inline-table; // causes integer width/height
 
+  &.first {
+    position: absolute;
+    pointer-events: none;
+    background-color: rgba(38, 50, 56, 0.81);
+    transition: all ease-in-out 0.2s;
+    z-index: 5;
+    border-radius: 4px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 100%;
+    max-width: 200px;
+    margin: 2px;
+    display: inline;
+    top: 0px;
+  
+    &.single {
+        max-width: 250px;
+    }
+  
+    .content {
+      position: initial;
+      margin-top: 24px;
+    }
+
+    &:not(.single) {
+      right: 50%;
+      width: 200px !important;
+    }
+  
+    &.single {
+      right: @window-padding;
+      top: 0px;
+    }
+  }
+
   * {
     transition: opacity ease-in-out 0.2s;
   }

@@ -76,7 +76,7 @@ class Settings extends Editor {
       ["EXPORT > GENERAL"],
       ["export.name", "text", { default: app.projSetting("export").name }],
       ...engine_export_settings,
-      ["IDE", true],
+      ["IDE", true]
       ["max_windows", "number", { min: 1, max: 5, default: app_set.max_windows }],
       ["theme", "select", { choices: app.themes, default: app_set.theme }],
       ["show_help_text", "checkbox", { default: app_set.show_help_text }],
@@ -120,6 +120,7 @@ class Settings extends Editor {
     export_keys.forEach(s => {
       this.el_settings.onChange(s, val => {
         app.projSetting("export")[s.replace(/\w+\.(.*)/, "$1")] = val
+        app.saveSettings()
       })
     })
     // add onChange event listener for paths

@@ -19,6 +19,7 @@ class SceneEditor extends Editor {
 
     this.grid_opacity = 0.05
     this.deleted = false
+    this.not_saved = false
 
     this.obj_type = ""
     this.curr_layer = { snap: [1, 1] }
@@ -321,7 +322,7 @@ class SceneEditor extends Editor {
           new_list[key] = this.objects[key]
         })
       this.objects = new_list
-      this.export()
+      this.autoExport()
     }
 
     this.el_layer_form = new BlankeForm([
@@ -355,7 +356,7 @@ class SceneEditor extends Editor {
       })
 
       this.drawGrid()
-      this.export()
+      this.autoExport()
     })
 
     this.el_layer_form.onChange("name", function (value) {
@@ -453,6 +454,18 @@ class SceneEditor extends Editor {
     this.scene_graphic = new PIXI.Graphics()
     this.map_container.addChild(this.scene_graphic)
 
+    // save key
+    this.save_key_up = true
+    this.pixi.on("keyDown", e => {
+      if (e.ctrlKey && e.key == "s" && this.save_key_up) {
+        this.export()
+        this.save_key_up = false
+      }
+    })
+    this.pixi.on("keyUp", e => {
+      if (e.key == "s") this.save_key_up = true
+    })
+
     this.pixi.on("dragStop", (e, info) => {
       let { alt, btn, mouse } = info
       if (!this.selecting && !alt && btn == 0) {
@@ -491,7 +504,7 @@ class SceneEditor extends Editor {
             }
           }
 
-          this.export()
+          this.autoExport()
         }
       }
       if (this.selecting) {
@@ -541,7 +554,7 @@ class SceneEditor extends Editor {
           g.on("pointerupoutside", pointerup)
         }
       }
-      this.export()
+      this.autoExport()
     })
 
     this.pixi.on("mousePlace", (e, info) => {
@@ -565,7 +578,7 @@ class SceneEditor extends Editor {
       if (this.obj_type == "image" && this.curr_image) {
         this.deleteTile(info.mx, info.my)
       }
-      if (this.obj_type) this.export()
+      if (this.obj_type) this.autoExport()
     })
 
     this.pixi.on("cameraChange", (e, info) => {
@@ -698,7 +711,7 @@ class SceneEditor extends Editor {
     this.addCallback("onFocus", () => focus())
     this.addCallback("onTabFocus", () => focus())
     this.addCallback("onTabLostFocus", () => {
-      this.export()
+      this.autoExport()
       this.has_focus = false
     })
 
@@ -807,7 +820,7 @@ class SceneEditor extends Editor {
               })
               this.clearTileSelection()
             })
-            // this.export();
+            // this.autoExport();
           },
           no: () => { },
         }
@@ -819,6 +832,23 @@ class SceneEditor extends Editor {
     app.removeSearchGroup("Scene")
     //nwFS.unlink(this.file);
     addScenes(app.project_path)
+  }
+
+  onBeforeClose(res, rej) {
+    if (this.not_saved) {
+      blanke.showModal(
+        "<label>'" +
+        nwPATH.basename(this.file) +
+        "' has unsaved changes! Save before closing?</label>",
+        {
+          yes: () => { this.export(); res() },
+          no: () => { res() },
+          cancel: () => { }
+        }
+      )
+    } else {
+      res()
+    }
   }
 
   drawGrid() {
@@ -984,7 +1014,7 @@ class SceneEditor extends Editor {
       this.el_tag_form.container.classList.remove("hidden")
     }
     this.refreshObjectPaths()
-    this.export()
+    this.autoExport()
   }
 
   // refreshes combo box
@@ -1137,7 +1167,7 @@ class SceneEditor extends Editor {
       if (this.selected_image_frames.length > 0)
         this.refreshImageSelectionList()
 
-      this.export()
+      this.autoExport()
     }
   }
 
@@ -1332,7 +1362,7 @@ class SceneEditor extends Editor {
             }
           }
         )
-        this.export()
+        this.autoExport()
       }
     })
     // add mouse enter/out events
@@ -1370,7 +1400,7 @@ class SceneEditor extends Editor {
         points: points,
       })
 
-      this.export()
+      this.autoExport()
     })
     add_to_layer.container.addChild(pixi_poly)
 
@@ -1398,7 +1428,7 @@ class SceneEditor extends Editor {
     if (this.obj_info[obj_ref.name])
       this.obj_info[obj_ref.name] = (tag == "") ? obj_ref.name : obj_ref.name + " (" + pixi_poly.tag + ")"
 
-    this.export()
+    this.autoExport()
   }
 
   clearPlacingObject() {
@@ -1478,7 +1508,7 @@ class SceneEditor extends Editor {
     if (this.obj_type == "object" && !this.el_object_form.getValue("path_mode") && this.placing_object) {
       this.placeObject(this.placing_object.points.slice())
       this.clearPlacingObject()
-      this.export()
+      this.autoExport()
     }
   }
 
@@ -1662,7 +1692,7 @@ class SceneEditor extends Editor {
           delete opt.img_ref.pixi_images[s]
           this.redrawTiles()
 
-          if (!opt.skip_export) this.export()
+          if (!opt.skip_export) this.autoExport()
         }
       }
     }
@@ -1879,13 +1909,13 @@ class SceneEditor extends Editor {
             this.setWeakPath(g, obj1_pts, obj2_pts, g.object)
           }
         }
-        this.export()
+        this.autoExport()
       })
 
       g.on('rightup', e => {
         if (this.obj_type == "tag")
           g.tag = ""
-        this.export()
+        this.autoExport()
       })
 
       path_container.addChild(g)
@@ -2030,7 +2060,7 @@ class SceneEditor extends Editor {
       this.el_object_form.setValue("size", obj.size[0], 0)
       this.el_object_form.setValue("size", obj.size[1], 1)
     }
-    this.export()
+    this.autoExport()
     return true
   }
 
@@ -2076,7 +2106,7 @@ class SceneEditor extends Editor {
         this.drawPoly(obj, _obj.points, _obj.poly)
       })
 
-      this.export()
+      this.autoExport()
 
       this.objChangeEvent(uuid, "size", { size: size })
     }
@@ -2101,7 +2131,7 @@ class SceneEditor extends Editor {
       )
     delete this.objects[uuid]
     this.objChangeEvent(uuid, "delete")
-    this.export()
+    this.autoExport()
   }
 
   renameObject(uuid, new_name, old_name) {
@@ -2112,7 +2142,7 @@ class SceneEditor extends Editor {
     obj.name = new_name
     this.refreshObjImages(obj.name)
 
-    if (!this.checkObjectSize(obj.uuid)) this.export()
+    if (!this.checkObjectSize(obj.uuid)) this.autoExport()
 
     this.objChangeEvent(uuid, "name", {
       old_name: old_name,
@@ -2127,7 +2157,7 @@ class SceneEditor extends Editor {
       this.drawPoly(obj, _obj.points, _obj.poly)
     })
     this.el_obj_list.setItemColor(obj.name, new_color)
-    this.export()
+    this.autoExport()
 
     this.objChangeEvent(uuid, "color", { color: new_color })
   }
@@ -2202,7 +2232,7 @@ class SceneEditor extends Editor {
         pixi_images: {},
         pixi_tilemap: {},
       })
-      this.export()
+      this.autoExport()
       this.setImage(path, onReady)
     }
   }
@@ -2254,7 +2284,7 @@ class SceneEditor extends Editor {
       this.curr_layer = this.layers[Math.max(layer_index - 1, 0)]
     }
     this.refreshLayerList()
-    this.export()
+    this.autoExport()
   }
 
   getLayer(name, is_uuid) {
@@ -2429,6 +2459,9 @@ class SceneEditor extends Editor {
       SceneEditor.openScene(this.file)
     })
     this.setupMenu({
+      save: () => {
+        this.export()
+      },
       close: true,
       rename: () => {
         this.setTitle(nwPATH.basename(this.file))
@@ -2447,6 +2480,10 @@ class SceneEditor extends Editor {
     if (!data.images || data.images.length == 0) this.loaded = true
 
     this.skip_change_event = false
+  }
+
+  autoExport() {
+    // this.export()
   }
 
   export() {

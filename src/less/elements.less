@@ -501,6 +501,27 @@
   &.first {
     height: auto !important;
   }
+  
+  &.first {
+    .sidebar {
+      width: auto;
+      margin: 0px;
+      margin-top: @window-padding;
+      /* display: inline-table; */
+      position: initial;
+  
+      &.hidden {
+        height: 0px;
+        margin: 0px;
+        margin-top: 26px;
+        display: inline-block;
+      }
+    }
+  
+    #toggle-scene-sidebar {
+      margin-top: 24px;
+    }
+  }
 }
 .content[data-type="SceneEditor"] {
   overflow: hidden !important;
@@ -983,59 +1004,6 @@
       overflow: auto;
     }
     /*}*/
-  }
-}
-.fib-container.first[data-type="SceneEditor"] {
-  position: absolute;
-  pointer-events: none;
-  background-color: rgba(38, 50, 56, 0.81);
-  transition: all ease-in-out 0.2s;
-  z-index: 5;
-  border-radius: 4px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-height: 100%;
-  max-width: 200px;
-  margin: 2px;
-  display: inline;
-  top: 0px;
-
-  &.single {
-      max-width: 250px;
-  }
-
-  .content {
-    position: initial;
-    margin-top: 24px;
-  }
-
-  .sidebar {
-    width: auto;
-    margin: 0px;
-    margin-top: @window-padding;
-    /* display: inline-table; */
-    position: initial;
-
-    &.hidden {
-      height: 0px;
-      margin: 0px;
-      margin-top: 26px;
-      display: inline-block;
-    }
-  }
-
-  #toggle-scene-sidebar {
-    margin-top: 24px;
-  }
-
-  &:not(.single) {
-    right: 50%;
-    width: 200px !important;
-  }
-
-  &.single {
-    right: @window-padding;
-    top: 0px;
   }
 }
 
@@ -1784,29 +1752,12 @@
 }
 
 .fib-container[data-type="ImageEditor"] {
+  &.single,
+  &.no-split,
   &.first {
-    position: absolute;
-    z-index: 5;
-    max-width: 170px;
     height: auto !important;
-    background-color: rgba(38, 50, 56, 0.81);
-    /* max-height: 100px; */
-
-    &:not(.single) {
-      right: 50%;
-    }
-
-    &.single {
-      right: @window-padding;
-      top: 0px;
-      margin-right: 2px;
-    }
-
-    .content {
-      margin-top: 24px;
-      position: initial !important;
-    }
   }
+
   &:not(.first) {
     .content {
       border: 1px solid @sub-window-background;

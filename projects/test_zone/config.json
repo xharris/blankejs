@@ -1,5 +1,5 @@
 {
-    "write_conf": true,
+    "write_conf": false,
     "profiling_level": 0,
     "engine_type": "oop",
     "ico": "src\\logo.ico",
@@ -101,7 +101,7 @@
         "os": "windows",
         "window_size": 1,
         "override_game_size": true,
-        "experimental_mode": false,
+        "experimental_mode": true,
         "fullscreen": false
     },
     "enabled_plugins": {
@@ -111,7 +111,8 @@
         "xhh-datastructs": false,
         "xhh-badword": true,
         "cmpl": false,
-        "xhh-vector": true
+        "xhh-vector": true,
+        "xhh-array": true
     },
     "imageeditor": {
         "image/blue_robot.png": {

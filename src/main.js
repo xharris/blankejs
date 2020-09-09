@@ -274,6 +274,8 @@ var app = {
     app.clearHistory()
     app.showWelcomeScreen()
     app.setWinTitle("BlankE")
+
+    app.stopWatchingProjectSettings()
   },
   isProjectOpen: function () {
     return app.project_path && app.project_path != ""
@@ -281,7 +283,7 @@ var app = {
   openProject: (path) => {
     // validate: only open if there's a main.lua
     path = app.cleanPath(path)
-    nwFS.readdir(path, "utf8", function (err, files) {
+    nwFS.readdir(path, "utf8", (err, files) => {
       if (!err) {
         // && files.includes('main.lua')) { // TODO add project validation
         if (app.isProjectOpen()) app.closeProject(path)
@@ -647,7 +649,7 @@ var app = {
     return ret_array
   },
 
-  settings: {},
+  settings: watchObject({}, () => app.saveAppData()),
   getAppDataFolder: function () {
     let path = nwPATH.join(remote.app.getPath("appData"), "BlankE")
     nwFS.ensureDirSync(path)
@@ -947,20 +949,18 @@ var app = {
   },
   plugin_watch: null,
   ideSetting: function (k, v) {
-    if (v != null) {
+    if (v != null)
       app.settings[k] = v
-      app.saveAppData()
-    }
+
     if (!k) return app.settings
     if (app.settings[k] != null) return app.settings[k]
     return DEFAULT_IDE_SETTINGS[k]
   },
 
   projSetting: function (k, v) {
-    if (v != null) {
+    if (v != null)
       app.project_settings[k] = v
-      app.saveSettings()
-    }
+
     if (!k) return app.project_settings
     if (app.project_settings[k] != null) return app.project_settings[k]
     return DEFAULT_PROJECT_SETTINGS[k]
@@ -968,16 +968,16 @@ var app = {
 
   // untested
   exportSetting: function (k, v) {
-    if (!app.project_settings["export"]) app.project_settings["export"] = {}
-    if (v != null) {
-      app.project_settings["export"][k] = v
-      app.saveSettings()
-    }
+    if (!app.project_settings.export) app.project_settings.export = {}
+    if (v != null)
+      app.project_settings.export[k] = v
+
     if (!k) return app.project_settings
-    if (app.project_settings["export"][k] != null)
-      return app.project_settings["export"][k]
+    if (app.project_settings.export[k] != null)
+      return app.project_settings.export[k]
     return DEFAULT_PROJECT_SETTINGS[k]
   },
+
 
   checkProjectSettings: () => {
     app.project_settings = ifndef_obj(
@@ -997,7 +997,7 @@ var app = {
     return app.saveSettings()
   },
 
-  project_settings: {},
+  project_settings: watchObject({}, () => app.saveSettings()),
   // TODO: use promises and make config.json if it doesn't exist
   loadSettings: () => new Promise((res, rej) => app.isProjectOpen() ? res() : rej())
     .then(() => nwFS.readFile(nwPATH.join(app.project_path, "config.json"), "utf-8"))
@@ -1012,12 +1012,15 @@ var app = {
     ),
 
   saveSettings: () => new Promise((res, rej) => app.isProjectOpen() ? res(JSON.stringify(app.project_settings, null, 4)) : rej())
-    .then(str_conf => str_conf.length > 1 && nwFS.writeFile(nwPATH.join(app.project_path, "config.json"), str_conf)),
+    .then(str_conf => str_conf.length > 1 && nwFS.writeFile(nwPATH.join(app.project_path, "config.json"), str_conf))
+    .then(() => console.log("saved ide settings")),
 
   saveAppData: function () {
     blanke.cooldownFn("saveAppData", 500, function () {
       var app_data_folder = app.getAppDataFolder()
       var app_data_path = nwPATH.join(app_data_folder, "blanke.json")
+
+      console.log('saved project settings')
 
       nwFS.stat(app_data_folder, function (err, stat) {
         if (!stat.isDirectory()) nwFS.mkdirSync(app_data_folder)
@@ -1573,18 +1576,18 @@ var app = {
               !info.subscription_failed_at &&
               !info.refunded
             )
-              return res()
+              return res(true)
             // bad key
             if (!no_toast) {
-              const toast = blanke.toast(`License key required!Toatx`)
+              const toast = blanke.toast(`License key required!`)
               toast.style = "bad"
               toast.icon = "close"
             }
-            return rej()
+            return res(false)
           })
         }
       )
-      req.on('error', e => rej())
+      req.on('error', e => rej(e))
       req.write(querystring.stringify({
         product_permalink: 'UUdvK',
         license_key: key

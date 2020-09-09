@@ -3,8 +3,8 @@ Game {
 	--plugins = {'xhh-effect'},
 	auto_require = false,
 	
-	scripts = { 'scripts/platformer.lua' },
-	initial_state = 'platformer',
+	scripts = { 'scripts/particles.lua' },
+	initial_state = 'particles',
 	
 	--scripts = { 'scripts/Bunnymark.lua' },
 	--initial_state = 'bunnymark',

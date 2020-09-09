@@ -85,6 +85,38 @@
                 ],
                 "uuid": "46440b61",
                 "size_changed": true
+            },
+            "25c737ad": {
+                "name": "ground",
+                "char": "&",
+                "color": "#f7ff67",
+                "size": [
+                    32,
+                    32
+                ],
+                "uuid": "25c737ad"
+            },
+            "526dedde": {
+                "name": "player",
+                "char": "A",
+                "size": [
+                    20,
+                    32
+                ],
+                "uuid": "526dedde",
+                "size_changed": true,
+                "color": "#00ff00"
+            },
+            "a5445ee4": {
+                "name": "path_node",
+                "char": "T",
+                "color": "#0000ff",
+                "size": [
+                    10,
+                    10
+                ],
+                "uuid": "a5445ee4",
+                "size_changed": true
             }
         },
         "object_order": [
@@ -119,12 +151,8 @@
         "xhh-tween": true,
         "xhh-effect": true,
         "xhh-net": false,
-        "xhh-array": false,
-        "xhh-badword": false,
-        "xhh-vector": false,
         "yonaba-delaunay": false,
-        "cmpl": false,
-        "xhh-ui": false
+        "cmpl": false
     },
     "game_size": 3,
     "window_size": 3,
@@ -266,6 +294,10 @@
             ],
             "spacing": 0,
             "onion_alpha": 0.3
+        }
+    },
+    "engine": "love2d"
+}            "onion_alpha": 0.3
         }
     },
     "engine": "love2d"

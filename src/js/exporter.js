@@ -46,10 +46,10 @@ class Exporter extends Editor {
         (platform.includes("win")
           ? "win"
           : platform.includes("mac")
-          ? "mac"
-          : platform.includes("linux")
-          ? "linux"
-          : platform) +
+            ? "mac"
+            : platform.includes("linux")
+              ? "linux"
+              : platform) +
         ".svg"
 
       el_platform_container.value = platform
@@ -174,13 +174,22 @@ class Exporter extends Editor {
         }
 
         new Promise((res, rej) => {
-          if (app.engine.preBundle) app.engine.preBundle(temp_dir, target_os)
-          // create js file
-          this.toast.text = `Bundling files`
-          this.bundle(temp_dir, target_os, () => res())
+          // check license key
+          if (app.engine.export_targets[target_os])
+            app.clk().then(res).catch(rej)
+          else
+            res()
         })
+          .then(new Promise((res, rej) => {
+            if (app.engine.preBundle) app.engine.preBundle(temp_dir, target_os)
+            // create js file
+            this.toast.text = `Bundling files`
+            this.bundle(temp_dir, target_os, () => res())
+          }))
           .then(() => {
-            if (!app.engine.export_targets[target_os]) this.doneToast(target_os)
+            if (!app.engine.export_targets[target_os]) {
+              this.doneToast(target_os)
+            }
             else {
               this.toast.text = "Building app"
 
@@ -222,6 +231,7 @@ class Exporter extends Editor {
               cb_err
             )
           )
+          .catch(console.error)
       })
   }
 }
@@ -237,12 +247,12 @@ document.addEventListener("openProject", function (e) {
   })
 
   let eng_settings = {}
-  ;(app.engine.export_settings || []).forEach((s) => {
-    for (let prop of s) {
-      if (typeof prop == "object" && prop.default)
-        eng_settings[s[0]] = prop.default
-    }
-  })
+    ; (app.engine.export_settings || []).forEach((s) => {
+      for (let prop of s) {
+        if (typeof prop == "object" && prop.default)
+          eng_settings[s[0]] = prop.default
+      }
+    })
 
   app.projSetting(
     "export",
