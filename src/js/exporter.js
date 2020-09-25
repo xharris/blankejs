@@ -154,6 +154,8 @@ class Exporter extends Editor {
         return console.error(err)
       })
       .then(() => {
+        const isDev = require("electron-is-dev")
+
         // move assets
         if (app.engine.export_assets !== false)
           nwFS.copySync(app.getAssetPath(), nwPATH.join(temp_dir, "assets"))
@@ -175,12 +177,12 @@ class Exporter extends Editor {
 
         new Promise((res, rej) => {
           // check license key
-          if (app.engine.export_targets[target_os])
+          if (app.engine.export_targets[target_os] && !isDev)
             app.clk().then(res).catch(rej)
           else
             res()
         })
-          .then(new Promise((res, rej) => {
+          .then(() => new Promise((res, rej) => {
             if (app.engine.preBundle) app.engine.preBundle(temp_dir, target_os)
             // create js file
             this.toast.text = `Bundling files`

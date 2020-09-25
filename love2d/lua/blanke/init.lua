@@ -46,6 +46,8 @@ callable = function(t)
     return setmetatable(t, { __call = t.__call })
 end
 
+-- blanke_require("ecs")
+
 memoize = nil
 do
     local mem_cache = {}
@@ -115,12 +117,12 @@ table.keys = function (t)
     for k, v in pairs(t) do table.insert(ret,k) end
     return ret
 end
-table.every = function (t)
-    for k,v in pairs(t) do if not v then return false end end
+table.every = function (t, fn)
+    for k,v in pairs(t) do if fn ~= nil and not fn(v, k) or not v then return false end end
     return true
 end
-table.some = function (t)
-    for k,v in pairs(t) do if v then return true end end
+table.some = function (t, fn)
+    for k,v in pairs(t) do if fn ~= nil and fn(v, k) or v then return true end end
     return false
 end
 table.len = function (t)
@@ -888,7 +890,6 @@ do
             love.graphics.setBlendMode(last_blend)
         end
     end
-
     Game = callable {
         options = {
             res =           'assets',
@@ -1275,6 +1276,7 @@ do
             Physics.update(dt)
             Timer.update(dt, dt_ms)
             if Game.options.update(dt) == true then return end
+            -- World.update(dt) -- ecs
             Blanke.iterUpdate(Game.updatables, dt)
             State.update(dt)
             State._check()
@@ -1605,7 +1607,10 @@ do
             -- animation?
             local anim_info = nil
             if type(args) == 'string' then
-                args = animations[args] or { file=args }
+                if animations[args] then 
+                    anim_info = animations[args]
+                end
+                args = anim_info or { file=args }
             elseif args.animation then
                 anim_info = animations[args.animation]
             end
@@ -1653,7 +1658,7 @@ do
                 self.height = abs(self.image:getHeight() * self.scaley * self.scale)
             end
         end;
-        update = function(self,dt)
+        _update = function(self,dt)
             -- update animation
             if self.animated then
                 self.t = self.t + (dt * self.speed)
@@ -1666,6 +1671,7 @@ do
                 end
             end
         end;
+        update = function(self,dt) self:_update(dt) end,
         _draw = function(self)
             self:updateSize()
             if self.animated then
@@ -3737,6 +3743,7 @@ do
                         
                         -- change velocity by collision normal
                         if cols[i].bounce then
+                            print(bounciness, nx, ny)
                             if hspeed and ((nx < 0 and hspeed > 0) or (nx > 0 and hspeed < 0)) then 
                                 obj.hspeed = -obj.hspeed * bounciness
                             end
@@ -5075,18 +5082,19 @@ do
 
             Blanke.game_canvas:drawTo(_draw)
 
-            Draw{
-                {'push'},
-                {'color','black'},
-                {'rect','fill',0,0,Window.width,Window.height},
-                {'pop'}
-            }
+            Draw.push()
+            Draw.color('black')
+            Draw.rect('fill',0,0,Window.width,Window.height)
+            Draw.pop()
 
             if Game.options.scale == true then
-                Blanke.game_canvas.x, Blanke.game_canvas.y = Blanke.padx, Blanke.pady
-                Blanke.game_canvas.scale = Blanke.scale
+                Draw.push()
+                Draw.translate(Blanke.padx, Blanke.pady)
+                Draw.scale(Blanke.scale)
+
                 Blanke.game_canvas:draw()
 
+                Draw.pop()
             else
                 Blanke.game_canvas:draw()
             end

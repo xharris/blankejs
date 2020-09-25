@@ -297,8 +297,4 @@
         }
     },
     "engine": "love2d"
-}            "onion_alpha": 0.3
-        }
-    },
-    "engine": "love2d"
 }

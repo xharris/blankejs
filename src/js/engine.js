@@ -77,8 +77,7 @@ const exportConf = os => {
 ${requireConf(true)}
 ${os == "web" ? 'Window.os = "web"' : ""}
 function love.conf(t)
-    ${
-    os == "web" || os == "linux"
+    ${os == "web" || os == "linux"
       ? `
     t.window.width = ${resolution[0]}
     t.window.height = ${resolution[1]}`
@@ -540,6 +539,62 @@ module.exports.settings = {
     }
 
     if (platform == "web") {
+      /*
+      const mustache = require('mustache')
+      const uuid = require('uuid')
+
+      let web_stack = app.exportSetting("web_stack")
+      let web_memory = app.exportSetting("web_memory")
+
+      fs_read(love_path)
+        // .then(game_data => `FS.createDataFile('/p',0,FS.DEC('${game_data}'),!0,!0,!0)`)
+        .then(game_data =>
+          Promise.all([
+            game_data,
+            fs_read(app.relativePath('src/js/engine_files/game.js'), 'utf-8'),
+            fs_read(app.relativePath('src/js/engine_files/index.html'), 'utf-8')
+          ])
+        )
+        .then(([game_data, game_template_js, index_html]) => {
+          
+          // check memory allocation
+          let new_memory = 1
+          while (new_memory < game_data.length / 1000000) new_memory *= 2
+          new_memory *= 2 // add a little extra for good measure ;)
+          console.log(`exporting web, memory:${web_memory === 0 ? new_memory : web_memory}, stack size:${web_stack}`)
+
+          // add args to files
+          const js_data = mustache.render(game_template_js, {
+            create_file_paths: [].join('\n      '),
+            metadata: JSON.stringify({
+              package_uuid: uuid.v1(),
+              remote_package_size: game_data.length,
+              files: [{
+                filename: `/${nwPATH.basename(love_path)}`,
+                crunched: 0,
+                start: 0,
+                end: game_data.length,
+                audio: false,
+              }],
+            })
+          })
+          const html_data = mustache.render(index_html, {
+            title: project_name,
+            memory: web_memory === 0 ? new_memory : web_memory,
+            arguments: JSON.stringify([`./${nwPATH.basename(love_path)}`])
+          })
+
+          return fs_write(nwPATH.join(os_dir, 'game.data'), game_data)
+            .then(() => fs_write(nwPATH.join(os_dir, 'game.js'), js_data))
+            .then(() => fs_write(nwPATH.join(os_dir, 'index.html'), html_data))
+            .then(() => fs_copy(app.relativePath('src/js/engine_files/love.js'), nwPATH.join(os_dir, 'love.js')))
+            .then(() => fs_copy(app.relativePath('src/js/engine_files/love.wasm'), nwPATH.join(os_dir, 'love.wasm')))
+            .then(() => fs_copy(app.relativePath('src/js/engine_files/love.worker.js'), nwPATH.join(os_dir, 'love.worker.js')))
+            .then(() => fs_remove(love_path))
+            .then(() => cb_done())
+            .catch(err => err && cb_err(err))
+        })
+        */
       const preload_img = app.exportSetting("web_preload_image")
       let html = `
 <!DOCTYPE html>
@@ -552,8 +607,7 @@ module.exports.settings = {
 	<div id="my_game"></div>
 	<script src="blanke.js"></script>
 	<script type="text/javascript">
-		(function(){loadGame('${project_name}.data', 'my_game', ${
-        app.exportSetting("web_autoplay") == null ? true : app.exportSetting("web_autoplay")
+		(function(){loadGame('${project_name}.data', 'my_game', ${app.exportSetting("web_autoplay") == null ? true : app.exportSetting("web_autoplay")
         }, ${resolution[0]}, ${resolution[1]}${preload_img ? `, "${preload_img}"` : ''})})()
 	</script>
 </body>
@@ -762,9 +816,9 @@ let prop_gameobject = [
 module.exports.autocomplete = {
   keywords: ['true', 'false'],
   /*
-	'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
-	'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
-	'until', 'while'
+  'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
+  'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
+  'until', 'while'
 ]*/
 
   class_list: [

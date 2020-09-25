@@ -9,7 +9,7 @@ C	implement fibonnaci-sized windows
 C	sprite sheet preview: should display image dimensions
 C	find and replace
 C	GamePreview - auto insert Asset.add() method
-	Add confirm dialog when closing changed Code
+  Add confirm dialog when closing changed Code
 
 BUGS:
 - 	mapeditor: should only place tile on map if the mouse started inside the canvas on mouse down
@@ -274,8 +274,6 @@ var app = {
     app.clearHistory()
     app.showWelcomeScreen()
     app.setWinTitle("BlankE")
-
-    app.stopWatchingProjectSettings()
   },
   isProjectOpen: function () {
     return app.project_path && app.project_path != ""
@@ -494,8 +492,7 @@ var app = {
       el_toggle.classList.remove('disabled')
       el_toggle.classList.add('enabled')
     }
-    el_toggle.title = `${
-      DragBox.all_hidden == true ? "hide" : "show"
+    el_toggle.title = `${DragBox.all_hidden == true ? "hide" : "show"
       } floating windows`
   },
 
@@ -1715,10 +1712,10 @@ app.window.webContents.once("dom-ready", () => {
   document.body.classList.add(app.os)
 
   /*
-	window.onerror = (...args) => {
-		console.log(args);
-	}
-	*/
+  window.onerror = (...args) => {
+    console.log(args);
+  }
+  */
 
   window.addEventListener("error", function (e) {
     if (e.error) app.error(e.error.stack)
@@ -2052,15 +2049,17 @@ app.window.webContents.once("dom-ready", () => {
             const path = app.ideSetting(p + "_path")
             const dest_path = nwPATH.join(remote.app.getPath("userData"), path)
 
-            nwFS.exists(dest_path)
-              .then(exists => !exists || (exists && ["engine"].includes(p)))
-              .then(copy => {
-                if (copy)
-                  return nwFS.copy(
-                    app.relativePath(path),
-                    nwPATH.join(remote.app.getPath("userData"), path)
-                  )
+            new Promise((res, rej) => {
+              nwFS.stat(dest_path, (err, stat) => {
+                return res(err.code === 'ENOENT' || (err == null && ["engine"].includes(p)))
               })
+            }).then(copy => {
+              if (copy)
+                return nwFS.copy(
+                  app.relativePath(path),
+                  nwPATH.join(remote.app.getPath("userData"), path)
+                )
+            })
           })
         )
     )

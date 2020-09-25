@@ -17,7 +17,9 @@ Game{
 }
 ```
 
-`State(name, callbacks)` callbacks: enter, update(dt), draw, leave
+`State(name, callbacks)` 
+
+callbacks: enter, update(dt), draw, leave
 
 # Class Props
 

@@ -24,7 +24,7 @@ State("bunnymark",{
 		Input({
 			action = { 'space' }
 		})
-		Timer.every(0.01, function()
+		Timer.every(10, function()
 			if mark == 0 then 
 				Bunny()
 			end

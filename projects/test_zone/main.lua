@@ -3,13 +3,13 @@ Game {
 	--plugins = {'xhh-effect'},
 	auto_require = false,
 	
-	scripts = { 'scripts/particles.lua' },
-	initial_state = 'particles',
+	scripts = { 'scripts/spatialhash.lua' },
+	initial_state = 'spatialhash',
 	
 	--scripts = { 'scripts/Bunnymark.lua' },
 	--initial_state = 'bunnymark',
 	
-	-- effect = { 'chroma shift' }, -- TODO get this to work
+	-- effect = { 'chroma shift', 'static' },
 	background_color = 'white',
 	load = function() 
 		Image.animation(
