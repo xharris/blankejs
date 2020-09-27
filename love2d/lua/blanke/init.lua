@@ -3679,7 +3679,7 @@ do
             end
         end;
         -- ignore collisions
-        teleport = function(obj, x, y)
+        teleport = function(obj)
             if obj and not obj.destroyed and obj.hasHitbox then
                 local hb, offx, offy = checkHitArea(obj)
                 world:update(obj,
@@ -3702,11 +3702,11 @@ do
                 local filter_result
                 local filter = function(_obj, other)
                     local ret = _obj.reaction or Hitbox.default_reaction
-                    if _obj.reactions and _obj.reactions[other.tag] then ret = _obj.reactions[other.tag] else
-                        if _obj.reaction then ret = _obj.reaction end
-                    end
                     if other.reactions and other.reactions[_obj.tag] then ret = other.reactions[_obj.tag] else
                         if other.reaction then ret = other.reaction end
+                    end
+                    if _obj.reactions and _obj.reactions[other.tag] then ret = _obj.reactions[other.tag] else
+                        if _obj.reaction then ret = _obj.reaction end
                     end
                     if _obj.filter then ret = _obj:filter(other) end
 
@@ -5142,8 +5142,6 @@ do
         end;
     }
 end
-
-Signal.emit('__main')
 
 love.load = function()
     if do_profiling and do_profiling > 0 then
