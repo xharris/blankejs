@@ -86,8 +86,11 @@ Some = function(...) return { type="some", args={...} } end
 Not = function(...) return { type="not", args={...} } end
 
 Test = function(query, obj, _not) 
-  if type(query) == "string" then 
-    return _not and obj[query] == nil or obj[query] ~= nil 
+  if type(query) == "string" then
+    if (_not and obj[query] == nil) or (not _not and obj[query] ~= nil)  then 
+      return true 
+    end
+    return false
   end 
   if type(query) == "table" and query.args then 
     local qtype = query.type
@@ -96,7 +99,7 @@ Test = function(query, obj, _not)
     elseif qtype == "some" then 
       return table.some(query.args, function(q) return Test(q, obj, _not) end)
     elseif qtype == "not" then 
-      return table.some(query.args, function(q) return Test(q, obj, not _not) end)
+      return table.every(query.args, function(q) return Test(q, obj, not _not) end)
     end 
   end 
 end 
@@ -145,8 +148,11 @@ local check_z = function(ent)
 end 
 
 
-function Render(ent, skip_tf)
-  if ent.drawable then 
+function Render(_ent, skip_tf)
+  local drawable = _ent.drawable 
+  local ent = _ent.parent or _ent
+
+  if drawable then 
     local lg = love.graphics
 
     lg.push('all')
@@ -154,21 +160,23 @@ function Render(ent, skip_tf)
     lg.setBlendMode(unpack(ent.blendmode))
     
     local draw = function()
+      local ax, ay = unpack(ent.align)
+      
       if skip_tf then 
-        lg.draw(ent.drawable)
+        lg.draw(drawable)
       elseif ent.quad then 
-        lg.draw(ent.drawable, ent.quad, 
+        lg.draw(drawable, ent.quad, 
           ent.pos[1], ent.pos[2], ent.angle, 
           ent.scale * ent.scalex, 
           ent.scale * ent.scaley, 
-          ent.align[1], ent.align[2], ent.shearx, ent.sheary
+          ax, ay, ent.shearx, ent.sheary
         )
       else
-        lg.draw(ent.drawable, 
+        lg.draw(drawable, 
           ent.pos[1], ent.pos[2], ent.angle, 
           ent.scale * ent.scalex, 
           ent.scale * ent.scaley, 
-          ent.align[1], ent.align[2], ent.shearx, ent.sheary
+          ax, ay, ent.shearx, ent.sheary
         )
       end
     end
@@ -178,7 +186,13 @@ function Render(ent, skip_tf)
     else 
       draw()
     end 
-    
+
+    if ent.debug then 
+      Draw.color('red')
+      Draw.rect('line',ent.pos[1],ent.pos[2],ent.size[1],ent.size[2])
+      Draw.print(ent.classname..' -> '.._ent.classname, ent.pos[1]+5, ent.pos[2]+5)
+    end
+
     lg.pop()
   end 
 end

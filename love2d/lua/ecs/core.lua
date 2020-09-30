@@ -1184,11 +1184,11 @@ do
           Game.width, Game.height = Window.width, Window.height
       end
       if not Game.options.scale then
-          Game.width, Game.height = Window.width, Window.height
-          if Blanke.game_canvas then 
-            Blanke.game_canvas.size = {Game.width, Game.height}
-            Blanke.game_canvas:resize() 
-        end
+				Game.width, Game.height = Window.width, Window.height
+				if Blanke.game_canvas then 
+					Blanke.game_canvas.size = {Game.width, Game.height}
+					Blanke.game_canvas:resize() 
+				end
         
         local canv
         for c = 1, #CanvasStack.stack do 
@@ -1196,7 +1196,10 @@ do
             canv.size = {Window.width, Window.height}
             canv:resize()
         end 
-      end
+			end
+			if Blanke.game_canvas then 
+				--Blanke.game_canvas.align = {Game.width/2, Game.height/2}
+			end
   end;
 
   load = function(which)
@@ -1399,10 +1402,11 @@ do
   end,
   
   res = function(_type, file)
-      if file:contains(Game.options.res.."/".._type) then 
-          return file 
-      end
-      return Game.options.res.."/".._type.."/"..file
+    if file == nil then error("Game.res(), nil given for ".._type) end
+    if file:contains(Game.options.res.."/".._type) then 
+        return file 
+    end
+    return Game.options.res.."/".._type.."/"..file
   end;
 
   setBackgroundColor = function(...)
@@ -1543,6 +1547,7 @@ do
             Draw.rect('fill',0,0,Window.width,Window.height)
             Draw.pop()
 
+			--Blanke.game_canvas.align = {Game.width/2, Game.height/2}
             if Game.options.scale == true then
                 Blanke.game_canvas.pos = {
                     Blanke.padx,

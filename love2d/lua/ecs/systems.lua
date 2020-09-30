@@ -63,7 +63,7 @@ System(All("is_canvas"), {
   added = function(ent)
     if ent.size[1] <= 0 then ent.size[1] = Game.width end 
     if ent.size[2] <= 0 then ent.size[2] = Game.height end
-print('add canvas')
+    
     local canvas = love.graphics.newCanvas(unpack(ent.size))
     ent.active = false
     ent.drawable = canvas
@@ -160,6 +160,15 @@ do
       return love.graphics.newImage(key)
     end)
   end
+
+  System(All("image"), {
+      added = function(ent, args)
+        ent.image = Image{
+            name=ent.image,
+            parent=ent
+        }
+      end
+  })
 
   System(All("is_image"), {
     added = function(ent, args)
@@ -500,20 +509,20 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
                           fn()
                       else
                           -- draw previous shader results
-                          Render(canv_final.value)
+                          Render(canv_final.value, true)
                       end
                   end)
 
                   -- draw to final canvas with shader
                   canv_final.value:renderTo(function()
                       love.graphics.setShader(self.shader_info[name].shader)
-                      Render(canv_internal.value)
+                      Render(canv_internal.value, true)
                   end)
               end
           end
 
           -- draw final resulting canvas
-          Render(canv_final.value)
+          Render(canv_final.value, true)
 
           love.graphics.setShader(last_shader)
           love.graphics.setBlendMode(last_blend)
