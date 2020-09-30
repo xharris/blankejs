@@ -140,6 +140,7 @@ end
 
 local z_sort = false
 local check_z = function(ent)
+  if ent.parent and ent.parent.z then ent.z = ent.parent.z end
   if not ent.z then ent.z = 0 end
   if ent._last_z ~= ent.z then 
     ent._last_z = ent.z
@@ -152,6 +153,34 @@ function Render(_ent, skip_tf)
   local drawable = _ent.drawable 
   local ent = _ent.parent or _ent
 
+  local ax, ay = 0, 0
+  local type_align = type(ent.align)
+  if type_align == 'table' then 
+    ax, ay = unpack(ent.align)
+
+  elseif type_align == 'string' then 
+    local align = ent.align
+    
+    if string.contains(align, 'center') then
+        ax = ent.size[1]/2
+        ay = ent.size[2]/2
+    end
+    if string.contains(align,'left') then
+        ax = 0
+    end
+    if string.contains(align, 'right') then
+        ax = ent.size[1]
+    end
+    if string.contains(align, 'top') then
+        ay = 0
+    end
+    if string.contains(align, 'bottom') then
+        ay = ent.size[2]
+    end
+    ent.align = {ax, ay}
+
+  end 
+
   if drawable then 
     local lg = love.graphics
 
@@ -159,9 +188,7 @@ function Render(_ent, skip_tf)
     lg.setColor(unpack(ent.color))
     lg.setBlendMode(unpack(ent.blendmode))
     
-    local draw = function()
-      local ax, ay = unpack(ent.align)
-      
+    local draw = function()      
       if skip_tf then 
         lg.draw(drawable)
       elseif ent.quad then 
@@ -189,8 +216,13 @@ function Render(_ent, skip_tf)
 
     if ent.debug then 
       Draw.color('red')
-      Draw.rect('line',ent.pos[1],ent.pos[2],ent.size[1],ent.size[2])
-      Draw.print(ent.classname..' -> '.._ent.classname, ent.pos[1]+5, ent.pos[2]+5)
+      Draw.rect('line',
+        ent.pos[1] - ax * ent.scale * ent.scalex, 
+        ent.pos[2] - ay * ent.scale * ent.scaley, 
+        ent.size[1] * ent.scale * ent.scalex,
+        ent.size[2] * ent.scale * ent.scaley
+      )
+      Draw.print(ent.classname..' -> '.._ent.classname, ent.pos[1], ent.pos[2])
     end
 
     lg.pop()
@@ -297,8 +329,9 @@ World = {
     end 
   end,
   draw = function()
-    local sys, draw
-    for eid, ent in pairs(entities) do
+    local sys, draw, ent
+    for e = 1, #entity_order do
+      ent = entities[entity_order[e]]
       if ent.draw ~= false then
         sys = systems[ent.renderer] 
         if sys then 

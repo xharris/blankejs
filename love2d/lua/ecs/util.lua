@@ -124,7 +124,7 @@ table.slice = function (t, start, finish)
 end
 table.defaults = function (t,defaults)
   for k,v in pairs(defaults) do
-      if t[k] == nil then t[k] = v
+      if type(t) == 'table' and t[k] == nil then t[k] = v
       elseif type(v) == 'table' then table.defaults(t[k],defaults[k]) end
   end
   return t

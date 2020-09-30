@@ -159,14 +159,30 @@ do
     ent.drawable = Cache.get("Image", Game.res('image', info.file), function(key)
       return love.graphics.newImage(key)
     end)
+    -- image size 
+    if ent.size and not (ent.image and ent.image.skip_size) then 
+        ent.size = {
+            ent.drawable:getWidth(),
+            ent.drawable:getHeight()
+        }
+        if ent.parent then 
+            ent.parent.size = ent.size
+        end
+    end
   end
 
   System(All("image"), {
       added = function(ent, args)
-        ent.image = Image{
-            name=ent.image,
-            parent=ent
-        }
+        local type_image = type(ent.image)
+        if type_image == 'string' then 
+            ent.image = Image{
+                name=ent.image,
+                parent=ent
+            }
+        elseif type_image == 'table' then
+            ent.image.parent = ent 
+            ent.image = Image(ent.image)
+        end
       end
   })
 
