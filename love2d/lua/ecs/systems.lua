@@ -17,44 +17,13 @@ local changed = function(ent, key)
   return false
 end
 
--- TODO: turn into a system
-local checkAlign = function(ent)
-  local align = obj.align
-
-  local ax, ay = obj.alignx or 0, obj.aligny or 0
-
-  if align and align ~= obj._last_align then
-      obj._last_align = align
-
-      if align then
-          if string.contains(align, 'center') then
-              ax = obj.width/2
-              ay = obj.height/2
-          end
-          if string.contains(align,'left') then
-              ax = 0
-          end
-          if string.contains(align, 'right') then
-              ax = obj.width
-          end
-          if string.contains(align, 'top') then
-              ay = 0
-          end
-          if string.contains(align, 'bottom') then
-              ay = obj.height
-          end
-      end
-  end
-
-  obj.alignx, obj.aligny = floor(ax), floor(ay)
-end
-
 --CANVAS
 Canvas = Entity("Blanke.Canvas", {
   is_canvas = true,
   auto_clear = true,
   drawable = true,
-  blendmode = {"alpha"}
+  blendmode = {"alpha"},
+  debug_color = 'blue'
 })
 CanvasStack = Stack(function()
     return Canvas{draw=false}
@@ -92,7 +61,8 @@ do
   local animations = {}
   Image = Entity("Blanke.Image", {
     is_image = true,
-    name = nil
+    name = nil,
+    debug_color = 'blue'
   })
   Image.animation = function(file, anims, all_opt)
     all_opt = all_opt or {}
@@ -145,6 +115,17 @@ do
     end
   end;
 
+  local update_size = function(image)
+    local ent = image.parent or image
+    -- image size 
+    if not (image and image.skip_size) then 
+        ent.size = {
+            image.drawable:getWidth(),
+            image.drawable:getHeight()
+        }
+    end
+  end
+
   local setup_image = function(ent)
     local info = animations[ent.name]
     if not info then 
@@ -159,16 +140,8 @@ do
     ent.drawable = Cache.get("Image", Game.res('image', info.file), function(key)
       return love.graphics.newImage(key)
     end)
-    -- image size 
-    if ent.size and not (ent.image and ent.image.skip_size) then 
-        ent.size = {
-            ent.drawable:getWidth(),
-            ent.drawable:getHeight()
-        }
-        if ent.parent then 
-            ent.parent.size = ent.size
-        end
-    end
+
+    update_size(ent)
   end
 
   System(All("image"), {

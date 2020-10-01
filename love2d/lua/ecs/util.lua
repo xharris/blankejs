@@ -242,7 +242,7 @@ string.expand = memoize(function(self, ...)
 end)
 --math
 local sin, cos, rad, deg, abs, min, max = math.sin, math.cos, math.rad, math.deg, math.abs, math.min, math.max
-local floor = function(x) return math.floor(x+0.5) end
+floor = function(x) return math.floor(x+0.5) end
 Math = {}
 do
   for name, fn in pairs(math) do Math[name] = function(...) return fn(...) end end

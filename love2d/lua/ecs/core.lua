@@ -1147,6 +1147,7 @@ do
       window_flags =  {},
       fps =           60,
       round_pixels =  false,
+      auto_system =   true, -- if an Entity has update/draw props, automatically make a system?
 
       auto_draw =     true,
       scale =         true,

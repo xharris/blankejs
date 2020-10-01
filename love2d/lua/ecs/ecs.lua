@@ -3,16 +3,40 @@ local dead_entities = {}
 
 local entities = {}
 local systems = {}
+local system_ref = {}
 
 local entity_templates = {}
 local spawn
 
 local entity_order = {}
 
+local sys_callbacks = {'added','update','removed','draw'}
+
 Entity = callable {
   __call = function(_, classname, props)
     if props then
       props.classname = props.classname or classname
+      props['is_'..classname] = true
+
+      -- extract system callbacks
+      if Game.options.auto_system then 
+        local sys_cbs = {}
+        local need_sys = false
+        for _, cb in ipairs(sys_callbacks) do 
+          if type(props[cb]) == 'function' then 
+            need_sys = true 
+            sys_cbs[cb] = props[cb]
+            props[cb] = nil
+          end 
+        end 
+        if need_sys then 
+          local new_ent_sys = System(All('is_'..classname), sys_cbs)
+          if sys_cbs.draw and not props.renderer then 
+            props.renderer = new_ent_sys
+          end 
+        end 
+      end
+
       -- adding entity template
       entity_templates[classname] = props
 
@@ -53,7 +77,7 @@ System = callable {
     local id = uuid()
     cb.order = nil 
 
-    table.insert(systems, {
+    local sys_info = {
       uuid=id,
       query=query,
       order=opt.order,
@@ -62,7 +86,9 @@ System = callable {
       changed={},
       removed={},
       has_entity={}
-    })
+    }
+    table.insert(systems, sys_info)
+    system_ref[id] = sys_info
 
     System.sort()
     return id
@@ -148,13 +174,11 @@ local check_z = function(ent)
   end 
 end 
 
-
-function Render(_ent, skip_tf)
-  local drawable = _ent.drawable 
-  local ent = _ent.parent or _ent
-
+function getAlign(ent)
   local ax, ay = 0, 0
+  local sizew, sizeh = ent.size[1] * ent.scale * ent.scalex, ent.size[2] * ent.scale * ent.scaley
   local type_align = type(ent.align)
+
   if type_align == 'table' then 
     ax, ay = unpack(ent.align)
 
@@ -162,24 +186,29 @@ function Render(_ent, skip_tf)
     local align = ent.align
     
     if string.contains(align, 'center') then
-        ax = ent.size[1]/2
-        ay = ent.size[2]/2
+        ax = sizew/2
+        ay = sizeh/2
     end
     if string.contains(align,'left') then
         ax = 0
     end
     if string.contains(align, 'right') then
-        ax = ent.size[1]
+        ax = sizew
     end
     if string.contains(align, 'top') then
         ay = 0
     end
     if string.contains(align, 'bottom') then
-        ay = ent.size[2]
+        ay = sizeh
     end
-    ent.align = {ax, ay}
-
   end 
+  return floor(ax), floor(ay), sizew, sizeh
+end
+
+function Render(_ent, skip_tf)
+  local drawable = _ent.drawable 
+  local ent = _ent.parent or _ent
+  local ax, ay, sizew, sizeh = getAlign(ent)
 
   if drawable then 
     local lg = love.graphics
@@ -193,17 +222,17 @@ function Render(_ent, skip_tf)
         lg.draw(drawable)
       elseif ent.quad then 
         lg.draw(drawable, ent.quad, 
-          ent.pos[1], ent.pos[2], ent.angle, 
+          floor(ent.pos[1]), floor(ent.pos[2]), ent.angle, 
           ent.scale * ent.scalex, 
           ent.scale * ent.scaley, 
-          ax, ay, ent.shearx, ent.sheary
+          floor(ax / ent.scale / ent.scalex), floor(ay / ent.scale / ent.scaley), ent.shearx, ent.sheary
         )
       else
         lg.draw(drawable, 
-          ent.pos[1], ent.pos[2], ent.angle, 
+          floor(ent.pos[1]), floor(ent.pos[2]), ent.angle, 
           ent.scale * ent.scalex, 
           ent.scale * ent.scaley, 
-          ax, ay, ent.shearx, ent.sheary
+          floor(ax / ent.scale / ent.scalex), floor(ay / ent.scale / ent.scaley), ent.shearx, ent.sheary
         )
       end
     end
@@ -214,15 +243,24 @@ function Render(_ent, skip_tf)
       draw()
     end 
 
-    if ent.debug then 
-      Draw.color('red')
+    if Game.debug or ent.debug then 
+      Draw.translate(-ax,-ay)
+      --Draw.rotate(ent.angle)
+      Draw.translate(floor(ent.pos[1]), floor(ent.pos[2]))
+      Draw.color(_ent.debug_color or 'red')
       Draw.rect('line',
-        ent.pos[1] - ax * ent.scale * ent.scalex, 
-        ent.pos[2] - ay * ent.scale * ent.scaley, 
-        ent.size[1] * ent.scale * ent.scalex,
-        ent.size[2] * ent.scale * ent.scaley
+        0, 
+        0, 
+        sizew,
+        sizeh
       )
-      Draw.print(ent.classname..' -> '.._ent.classname, ent.pos[1], ent.pos[2])
+      Draw.translate(ax, ay)
+      Draw.circle('fill', 0, 0, 3)
+      if _ent.parent then 
+        Draw.print(ent.classname..'->'.._ent.classname)
+      else 
+        Draw.print(ent.classname)
+      end 
     end
 
     lg.pop()
@@ -329,11 +367,12 @@ World = {
     end 
   end,
   draw = function()
-    local sys, draw, ent
+    local sys, draw, ent, parent
     for e = 1, #entity_order do
       ent = entities[entity_order[e]]
-      if ent.draw ~= false then
-        sys = systems[ent.renderer] 
+      parent = ent.parent or ent
+      if parent.draw ~= false then
+        sys = system_ref[parent.renderer] 
         if sys then 
           sys.cb.draw(ent)
         elseif ent.drawable then 
