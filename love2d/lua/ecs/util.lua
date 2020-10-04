@@ -441,29 +441,37 @@ iterate = function(t, fn)
 end
 
 local nonzero_z = false
-local iterateEntities = function(t, test_val, fn)
+iterateEntities = function(t, test_val, fn)
   if not t then return end
   local len = #t
   local offset = 0
   local removals = {}
+  local z_sort = false
+
   for o=1,len do
-      local obj = t[o]
-      if obj then
-          if obj.destroyed or not obj[test_val] or fn(obj, o) == true then
-              table.insert(removals, o)
-          elseif obj._last_z ~= obj.z then
-              obj._last_z = obj.z
-              reorder = true
-              Game.sortDrawables()
-          end
-      end
+    local obj = t[o]
+    if obj then
+      if obj.parent and obj.parent.z then obj.z = obj.parent.z end
+      if not obj.z then obj.z = 0 end
+
+      if obj.destroyed or not obj[test_val] or fn(obj, o) == true then
+        table.insert(removals, o)
+
+      elseif obj._last_z ~= obj.z then 
+        obj._last_z = obj.z
+        z_sort = true
+      end 
+    end
   end
   if #removals > 0 then
-      for i = #removals, 1, -1 do
-          table.remove(t, removals[i])
-      end
+    for i = #removals, 1, -1 do
+      table.remove(t, removals[i])
+    end
   end
 
+  if reorder then 
+    sort(t, 'z', 0)
+  end 
   return reorder
 end
 
@@ -546,20 +554,39 @@ do
   Cache.group = function(name) return Cache[name] end
   Cache.key = function(group_name, key) return (Cache[group_name] and Cache[group_name][key]) end
   Cache.get = function(group_name, key, fn_not_found)
-      if not storage[group_name] then storage[group_name] = {} end
-      if storage[group_name][key] then
-          return storage[group_name][key]
-      elseif fn_not_found then
-          storage[group_name][key] = fn_not_found(key)
-          return storage[group_name][key]
-      end
+    if not storage[group_name] then storage[group_name] = {} end
+    if storage[group_name][key] then
+      return storage[group_name][key]
+    elseif fn_not_found then
+      storage[group_name][key] = fn_not_found(key)
+      return storage[group_name][key]
+    end
   end
   Cache.stats = function()
-      local str = ''
-      for name, list in pairs(storage) do
-          str = str .. name .. '=' .. table.len(list) .. ' '
-      end
-      print(str)
+    local str = ''
+    for name, list in pairs(storage) do
+      str = str .. name .. '=' .. table.len(list) .. ' '
+    end
+    print(str)
+  end
+
+  Cache.image = function(image)
+    return Cache.get("image", Game.res('image', image), function(key)
+      return love.graphics.newImage(key)
+    end)
+  end
+  Cache.quad = function(image, tx, ty, tw, th)
+    local image_obj = Cache.image(image)
+    return Cache.get('image.quad', image..':'..tx..","..ty..","..tw..","..th, function(key)
+      return love.graphics.newQuad(tx,ty,tw,th,image_obj:getWidth(),image_obj:getHeight())
+    end)
+  end
+  Cache.spritebatch = function(image, z)
+    z = z or 0
+    local image_obj = Cache.image(image)
+    return Cache.get('spritebatch', image..':'..z, function(key)
+      return love.graphics.newSpriteBatch(image_obj)
+    end)
   end
 end
 

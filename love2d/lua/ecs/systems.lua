@@ -137,9 +137,7 @@ do
       ent.frame_count = #info.quads
     end
 
-    ent.drawable = Cache.get("Image", Game.res('image', info.file), function(key)
-      return love.graphics.newImage(key)
-    end)
+    ent.drawable = Cache.image(info.file)
 
     update_size(ent)
   end
@@ -533,11 +531,257 @@ System(All("effect"),{
     end
 })
 
---MAP: (entity)
+--SPRITEBATCH
+SpriteBatch = Entity("Blanke.SpriteBatch", {
+    added = function(ent)
+        ent.drawable = Cache.spritebatch(ent.file, ent.z)
+    end,
+    set = function(ent, in_quad, in_tform, id)
+        in_quad = in_quad or { 0, 0, 1, 1 }
+        in_tform = in_tform or { 0, 0 }
+
+        -- get quad
+        local quad = Cache.quad(ent.file, unpack(in_quad))
+        if id then 
+            ent.drawable:set(id, quad, unpack(in_tform))
+            return id
+        else 
+            return ent.drawable:add(quad, unpack(in_tform))
+        end
+    end,
+    remove = function(ent, id)
+        return ent.drawable:set(id, 0, 0, 0, 0, 0) 
+    end
+})
+
+--MAP
+Map = nil
+do
+  local getObjInfo = function(uuid, is_name)
+    if Game.config.scene and Game.config.scene.objects then
+      if is_name then
+        for uuid, info in pairs(Game.config.scene.objects) do
+          if info.name == uuid then
+            return info
+          end
+        end
+      else
+        return Game.config.scene.objects[uuid]
+      end
+    end
+  end 
+
+
+  Map = Entity("Blanke.Map", {
+    added = function(ent)
+      ent.batches = {} -- { layer: SpriteBatch }
+      ent.hb_list = {}
+      ent.entity_info = {} -- { obj_name: { info_list... } }
+      ent.entities = {} -- { layer: { entities... } }
+      ent.paths = {} -- { obj_name: { layer_name:{ Paths... } } }
+      ent.layer_order = {}
+    end,
+    update = function(ent, dt)
+
+    end,
+    addTile = function(self,file,x,y,tx,ty,tw,th,layer)
+      local options = Map.config
+      layer = layer or '_'
+      local tile_info = { x=x, y=y, width=tw, height=th, tag=hb_name, quad={ tx, ty, tw, th }, transform={ x, y } }
+
+      -- add tile to spritebatch
+      -- print('need',file,unpack(tile_info.quad))
+      if not self.batches[layer] then 
+          self.batches[layer] = {}
+      end
+      local sb = self.batches[layer][file]
+      if not sb then sb = SpriteBatch{file=file, parent=self, z=self:getLayerZ(layer)} end
+      self.batches[layer][file] = sb
+      local id = sb:set(tile_info.quad, tile_info.transform)
+      tile_info.id = id
+
+      -- hitbox
+      local hb_name = nil
+      if options.tile_hitbox then hb_name = options.tile_hitbox[FS.removeExt(FS.basename(file))] end
+      local body = nil
+      if hb_name then
+        tile_info.tag = hb_name
+        if options.use_physics then
+          hb_key = hb_name..'.'..tw..'.'..th
+          if not Physics.getBodyConfig(hb_key) then
+            Physics.body(hb_key, {
+              shapes = {
+                {
+                  type = 'rect',
+                  width = tw,
+                  height = th,
+                  offx = tw/2,
+                  offy = th/2
+                }
+              }
+            })
+          end
+          local body = Physics.body(hb_key)
+          body:setPosition(x,y)
+          tile_info.body = body
+        end
+      end
+      if not options.use_physics and tile_info.tag then
+          Hitbox.add(tile_info)
+          table.insert(self.hb_list, tile_info)
+      end
+    end,
+    getLayerZ = function(self, l_name)
+      for i, name in ipairs(self.layer_order) do
+          if name == l_name then return i end
+      end
+      return 0
+    end,
+    addHitbox = function(self,tag,dims,color)
+      local new_hb = {
+          hitbox = dims,
+          tag = tag,
+          hitboxColor = color,
+      }
+      table.insert(self.hb_list, new_hb)
+      Hitbox.add(new_hb)
+    end,
+    getEntityInfo = function(self, name)
+      return self.entity_info[name] or {}
+    end;
+    _spawnEntity = function(self, ent_name, opt)
+        local ent = Entity.spawn(ent_name, opt)
+        if ent then
+            opt.layer = opt.layer or "_"
+            return self:addEntity(ent, opt.layer)
+        end
+    end;
+    spawnEntity = function(self, ent_name, x, y, layer)
+      layer = layer or "_"
+      obj_info = getObjInfo(ent_name, true)
+      if obj_info then
+          obj_info.pos = {x, y}
+          obj_info.z = self:getLayerZ(layer)
+          obj_info.layer = layer or "_"
+          return self:_spawnEntity(ent_name, obj_info)
+      end
+    end,
+    addEntity = function(self, ent, layer_name)
+      layer_name = layer_name or "_"
+      if not self.entities[layer_name] then self.entities[layer_name] = {} end
+      table.insert(self.entities[layer_name], ent)
+      ent.parent=self
+      sort(self.entities[layer_name], 'z', 0)
+      return ent
+    end
+  })
+  Map.config = {}
+  Map.load = function(name, opt)
+      local data = love.filesystem.read(Game.res('map',name))
+      assert(data,"Error loading map '"..name.."'")
+      local new_map = Map(opt)
+      data = json.decode(data)
+      new_map.data = data
+      local layer_name = {}
+      -- get layer names
+      local store_layer_order = false
+
+      if #new_map.layer_order == 0 then
+          new_map.layer_order = {}
+          store_layer_order = true
+      end
+      for i = #data.layers, 1, -1 do
+          local info = data.layers[i]
+          layer_name[info.uuid] = info.name
+          if store_layer_order then
+              table.insert(new_map.layer_order, info.name)
+          end
+      end
+      -- place tiles
+      for _,img_info in ipairs(data.images) do
+          for l_uuid, coord_list in pairs(img_info.coords) do
+              l_name = layer_name[l_uuid]
+              for _,c in ipairs(coord_list) do
+                  new_map:addTile(img_info.path,c[1],c[2],c[3],c[4],c[5],c[6],l_name)
+              end
+          end
+      end
+      -- make paths
+      for obj_uuid, info in pairs(data.paths) do
+        local obj_info = getObjInfo(obj_uuid)
+        local obj_name = obj_info.name
+        for layer_uuid, info in pairs(info) do
+          local layer_name = layer_name[layer_uuid]
+          local new_path = Path()
+          -- add nodes
+          local tag
+          for node_key, info in pairs(info.node) do
+            if type(info[3]) == "string" then tag = info[3] else tag = nil end
+            new_path:addNode{x=info[1], y=info[2], tag=tag}
+          end
+          -- add edges
+          for node1, edge_info in pairs(info.graph) do
+            for node2, tag in pairs(edge_info) do
+              local _, node1_hash = new_path:getNode{x=info.node[node1][1], y=info.node[node1][2], tag=info.node[node1][3]}
+              local _, node2_hash = new_path:getNode{x=info.node[node2][1], y=info.node[node2][2], tag=info.node[node2][3]}
+              if type(tag) ~= "string" then tag = nil end
+              new_path:addEdge{a=node1_hash, b=node2_hash, tag=tag}
+            end
+          end
+
+          if not new_map.paths[obj_name] then
+            new_map.paths[obj_name] = {}
+          end
+          if not new_map.paths[obj_name][layer_name] then
+            new_map.paths[obj_name][layer_name] = {}
+          end
+          -- get color
+          if obj_info then
+            new_path.color = { Draw.parseColor(obj_info.color) }
+          end
+          table.insert(new_map.paths[obj_name][layer_name], new_path)
+        end
+      end
+
+      -- spawn entities/hitboxes
+      for obj_uuid, info in pairs(data.objects) do
+        local obj_info = getObjInfo(obj_uuid)
+        if obj_info then
+          for l_uuid, coord_list in pairs(info) do
+            for _,c in ipairs(coord_list) do
+              local hb_color = { Draw.parseColor(obj_info.color) }
+              hb_color[4] = 0.3
+              -- spawn entity
+              if Entity.exists(obj_info.name) then
+                local new_entity = new_map:_spawnEntity(obj_info.name, {
+                  map_tag=c[1], pos={c[2], c[3]}, z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
+                  map_size={obj_info.size[1], obj_info.size[2]}, hitboxColor=hb_color
+                })
+
+              -- spawn hitbox
+              else
+                  new_map:addHitbox(table.join({obj_info.name, c[1]},'.'), table.slice(c,2), hb_color)
+              end
+              -- add info to entity_info table
+              if not new_map.entity_info[obj_info.name] then new_map.entity_info[obj_info.name] = {} end
+              table.insert(new_map.entity_info[obj_info.name], {
+                map_tag=c[1], x=c[2], y=c[3], z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
+                width=obj_info.size[1], height=obj_info.size[2], color=hb_color
+              })
+            end
+          end
+        end
+      end
+
+    return new_map
+  end
+end 
+
 --PHYSICS: (entity?)
 --HITBOX: position, size, hitbox
 Hitbox = {
-  debug = false
+  debug = false,
+  add = function() end
 }
 --NET: needs to be reworked for ecs
 --PATH: (entity)

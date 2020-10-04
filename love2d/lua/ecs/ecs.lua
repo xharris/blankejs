@@ -6,6 +6,7 @@ local systems = {}
 local system_ref = {}
 
 local entity_templates = {}
+local entity_callable = {}
 local spawn
 
 local entity_order = {}
@@ -19,6 +20,7 @@ Entity = callable {
       props['is_'..classname] = true
 
       -- extract system callbacks
+      local new_ent_sys
       if Game.options.auto_system then 
         local sys_cbs = {}
         local need_sys = false
@@ -30,7 +32,7 @@ Entity = callable {
           end 
         end 
         if need_sys then 
-          local new_ent_sys = System(All('is_'..classname), sys_cbs)
+          new_ent_sys = System(All('is_'..classname), sys_cbs)
           if sys_cbs.draw and not props.renderer then 
             props.renderer = new_ent_sys
           end 
@@ -39,8 +41,8 @@ Entity = callable {
 
       -- adding entity template
       entity_templates[classname] = props
-
-      return callable {
+      entity_callable[classname] = callable {
+        classname = classname,
         __call = function(_, ...)
           local args = {...}
           local t = copy(props)
@@ -48,26 +50,33 @@ Entity = callable {
             table.update(t, args[1])
           end
           return World.add(t, unpack(args))
+        end,
+        new = function(...)
+          return {
+            _new = classname,
+            args = {...}
+          }
         end 
       }
+      return entity_callable[classname], new_ent_sys
 
-    elseif type(classname) == "string" then 
-      -- spawn from entity template
-      local t = copy(entity_templates[classname])
-      if t then 
-        return World.add(t)
-      end
-      
     elseif type(classname) == "table" then 
       return World.add(props)
     end 
   end,
+  exists = function(classname)
+    return entity_templates[classname] ~= null
+  end,
   spawn = function(classname, props)
-    local t = copy(props)
-    if props then 
-      table.update(t, props)
+    if entity_templates[classname] then 
+      -- spawn from entity template
+      local t = copy(entity_templates[classname])
+      
+      if props then 
+        table.update(t, props)
+      end 
+      return World.add(t)
     end 
-    return World.add(t)
   end
 }
 
@@ -210,7 +219,11 @@ function Render(_ent, skip_tf)
   local ent = _ent.parent or _ent
   local ax, ay, sizew, sizeh = getAlign(ent)
 
-  if drawable then 
+  if not drawable then return end
+  if type(drawable) == 'function' then
+    drawable(_ent)
+
+  else  
     local lg = love.graphics
 
     lg.push('all')
@@ -277,8 +290,26 @@ local draw_defaults = {
   shear = { 0, 0 },
   color = { 1, 1, 1, 1 },
   blendmode = { 'alpha' },
-  align = { 0, 0 }
+  align = { 0, 0 },
+  z = 0
 }
+
+local check_sub_entities
+check_sub_entities = function(ent, checked)
+  if not checked then checked = {} end
+  if checked and checked[ent] then return end 
+  for k,v in pairs(ent) do 
+    if type(v) == 'table' then 
+      if v._new and entity_callable[v._new] then 
+        -- found a sub-entity
+        ent[k] = entity_callable[v._new](unpack(args))
+      else 
+        checked[v] = true
+        check_sub_entities(v, checked)
+      end 
+    end 
+  end
+end
 
 World = {
   add = function(ent, args) 
@@ -293,6 +324,7 @@ World = {
 
     table.insert(entity_order, ent.uuid)
     check_z(ent)
+    check_sub_entities(ent)
 
     return ent 
   end,
@@ -306,11 +338,6 @@ World = {
       for s = 1, table.len(systems) do 
         sys.removed[ent.uuid] = true
       end 
-    end 
-    if table.len(dead_entities) > 0 then 
-      table.filter(entity_order, function(eid)
-        return eid ~= ent.uuid
-      end)
     end 
     dead_entities = {}
     -- update systems

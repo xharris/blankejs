@@ -652,8 +652,7 @@ class SceneEditor extends Editor {
             })
             this.selected_tile_info = ""
             Object.keys(tile_info).forEach(path => {
-              this.selected_tile_info += ` - ${app.shortenAsset(path)} (${
-                tile_info[path]
+              this.selected_tile_info += ` - ${app.shortenAsset(path)} (${tile_info[path]
                 })\n`
             })
           }
@@ -1045,8 +1044,7 @@ class SceneEditor extends Editor {
     const curr_img_path = this.curr_image ? this.curr_image.path : null
     const options = []
 
-    let sel_str = `<option class="placeholder" value="" disabled ${
-      curr_img_path ? "" : "selected"
+    let sel_str = `<option class="placeholder" value="" disabled ${curr_img_path ? "" : "selected"
       }>Select an image</option>`
     this.el_image_sel.innerHTML = sel_str
     app.getAssets("image", files => {
@@ -1444,10 +1442,10 @@ class SceneEditor extends Editor {
   removeObjectPoint() {
     if (this.placing_object) {
       /*
-			let pt_order = this.placing_object.point_order;
-			this.placing_object.points.splice(pt_order[pt_order.length-1], 2);
-			this.placing_object.point_order.pop();
-			*/
+      let pt_order = this.placing_object.point_order;
+      this.placing_object.points.splice(pt_order[pt_order.length-1], 2);
+      this.placing_object.point_order.pop();
+      */
       this.placing_object.points.pop()
       this.placing_object.points.pop()
 
@@ -2483,7 +2481,7 @@ class SceneEditor extends Editor {
   }
 
   autoExport() {
-    // this.export()
+    this.export()
   }
 
   export() {
