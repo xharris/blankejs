@@ -49,12 +49,12 @@ Entity = callable {
           if type(args[1]) == 'table' then 
             table.update(t, args[1])
           end
-          return World.add(t, unpack(args))
+          return World.add(t, args)
         end,
-        new = function(...)
+        new = function(args)
           return {
             _new = classname,
-            args = {...}
+            args = args
           }
         end 
       }
@@ -102,16 +102,16 @@ System = callable {
     System.sort()
     return id
   end,
-  order = {},
+  order = {pre=-10000,_=0,post=10000},
   sort = function()
     table.sort(systems, function(a, b)
       if (type(a.order) ~= "number") then 
-        a.order = a.order ~= nil and (System.order[a.order] or a.order) or (System.order._ or 0)
+        a.order = a.order ~= nil and (System.order[a.order] or a.order) or System.order._
       end
       if (type(b.order) ~= "number") then 
-        b.order = b.order ~= nil and (System.order[b.order] or b.order) or (System.order._ or 0)
+        b.order = b.order ~= nil and (System.order[b.order] or b.order) or System.order._
       end
-      return a.order > b.order
+      return a.order < b.order
     end)
   end
 }
@@ -119,6 +119,7 @@ System = callable {
 All = function(...) return { type="all", args={...} } end
 Some = function(...) return { type="some", args={...} } end
 Not = function(...) return { type="not", args={...} } end
+One = function(...) return { type="one", args={...} } end
 
 Test = function(query, obj, _not) 
   if type(query) == "string" then
@@ -135,24 +136,37 @@ Test = function(query, obj, _not)
       return table.some(query.args, function(q) return Test(q, obj, _not) end)
     elseif qtype == "not" then 
       return table.every(query.args, function(q) return Test(q, obj, not _not) end)
+    elseif qtype == "one" then 
+      local found = 0
+      for q = 1, #query.args do 
+        if Test(query.args[q], obj, _not) then 
+          found = found + 1
+        end 
+        if found > 1 then return false end 
+      end
+      if found == 1 then return true end  
     end 
   end 
 end 
 
-function Add(ent, k, v) 
+function Check(ent, args)
   local sys
-  if k then 
-    ent[k] = (v == nil and true or v)
-  end
   for i = 1, table.len(systems) do 
     sys = systems[i]
     if not sys.has_entity[ent.uuid] and Test(sys.query, ent) then
       sys.has_entity[ent.uuid] = true
       -- entity fits in this system
       table.insert(sys.entities, ent.uuid)
-      if sys.cb.added then sys.cb.added(ent, v) end 
+      if sys.cb.added then sys.cb.added(ent, args) end 
     end 
   end 
+end 
+
+function Add(ent, k, v) 
+  if k then 
+    ent[k] = (v == nil and true or v)
+  end
+  Check(ent)
 end 
 
 local remove_prop = {}
@@ -183,9 +197,22 @@ local check_z = function(ent)
   end 
 end 
 
+System(All("size", "scale", "scalex", "scaley"), {
+  added = function(ent)
+    ent.scaled_size = {
+      ent.size[1] * ent.scale * ent.scalex,
+      ent.size[2] * ent.scale * ent.scaley
+    }
+  end,
+  update = function(ent, dt)
+    ent.scaled_size[1] = ent.size[1] * ent.scale * ent.scalex
+    ent.scaled_size[2] = ent.size[2] * ent.scale * ent.scaley
+  end
+})
+
 function getAlign(ent)
   local ax, ay = 0, 0
-  local sizew, sizeh = ent.size[1] * ent.scale * ent.scalex, ent.size[2] * ent.scale * ent.scaley
+  local sizew, sizeh = ent.scaled_size[1], ent.scaled_size[2]
   local type_align = type(ent.align)
 
   if type_align == 'table' then 
@@ -195,29 +222,33 @@ function getAlign(ent)
     local align = ent.align
     
     if string.contains(align, 'center') then
-        ax = sizew/2
-        ay = sizeh/2
+        ax = 0.5
+        ay = 0.5
     end
     if string.contains(align,'left') then
         ax = 0
     end
     if string.contains(align, 'right') then
-        ax = sizew
+        ax = 1
     end
     if string.contains(align, 'top') then
         ay = 0
     end
     if string.contains(align, 'bottom') then
-        ay = sizeh
+        ay = 1
     end
+    ent.align = {ax, ay} 
   end 
-  return floor(ax), floor(ay), sizew, sizeh
+  return floor(ax * sizew), floor(ay * sizeh), sizew, sizeh
 end
 
-function Render(_ent, skip_tf)
+local transform = {}
+function Render(_ent, skip_tf)    
+  transform = {0,0,0,1,1,0,0,0,0}
   local drawable = _ent.drawable 
   local ent = _ent.parent or _ent
   local ax, ay, sizew, sizeh = getAlign(ent)
+  local unscaled_ax, unscaled_ay = ax / ent.scale / ent.scalex, ay / ent.scale / ent.scaley 
 
   if not drawable then return end
   if type(drawable) == 'function' then
@@ -230,23 +261,19 @@ function Render(_ent, skip_tf)
     lg.setColor(unpack(ent.color))
     lg.setBlendMode(unpack(ent.blendmode))
     
-    local draw = function()      
-      if skip_tf then 
-        lg.draw(drawable)
-      elseif ent.quad then 
-        lg.draw(drawable, ent.quad, 
-          floor(ent.pos[1]), floor(ent.pos[2]), ent.angle, 
-          ent.scale * ent.scalex, 
-          ent.scale * ent.scaley, 
-          floor(ax / ent.scale / ent.scalex), floor(ay / ent.scale / ent.scaley), ent.shearx, ent.sheary
-        )
+    local draw = function() 
+      if not skip_tf then 
+        transform = {
+          ent.pos[1] + ax, ent.pos[2] + ay,
+          ent.angle, ent.scale * ent.scalex, ent.scale * ent.scaley,
+          unscaled_ax, unscaled_ay,
+          ent.shear[1], ent.shear[2]
+        }
+      end 
+      if ent.quad then 
+        lg.draw(drawable, ent.quad, unpack(transform))
       else
-        lg.draw(drawable, 
-          floor(ent.pos[1]), floor(ent.pos[2]), ent.angle, 
-          ent.scale * ent.scalex, 
-          ent.scale * ent.scaley, 
-          floor(ax / ent.scale / ent.scalex), floor(ay / ent.scale / ent.scaley), ent.shearx, ent.sheary
-        )
+        lg.draw(drawable, unpack(transform))
       end
     end
 
@@ -257,26 +284,28 @@ function Render(_ent, skip_tf)
     end 
 
     if Game.debug or ent.debug then 
-      Draw.translate(-ax,-ay)
-      --Draw.rotate(ent.angle)
-      Draw.translate(floor(ent.pos[1]), floor(ent.pos[2]))
+      if not skip_tf then
+        lg.translate(transform[1], transform[2])
+        lg.rotate(transform[3])
+        lg.shear(transform[8], transform[9])
+      end 
       Draw.color(_ent.debug_color or 'red')
       Draw.rect('line',
-        0, 
-        0, 
-        sizew,
-        sizeh
+        -ax, 
+        -ay, 
+        ent.scaled_size[1],
+        ent.scaled_size[2]
       )
-      Draw.translate(ax, ay)
       Draw.circle('fill', 0, 0, 3)
+      lg.shear(-transform[8], -transform[9])
       if _ent.parent then 
         Draw.print(ent.classname..'->'.._ent.classname)
       else 
         Draw.print(ent.classname)
       end 
     end
-
     lg.pop()
+
   end 
 end
 
@@ -302,7 +331,10 @@ check_sub_entities = function(ent, checked)
     if type(v) == 'table' then 
       if v._new and entity_callable[v._new] then 
         -- found a sub-entity
-        ent[k] = entity_callable[v._new](unpack(args))
+        if v.args.child == true then 
+          v.args.parent = ent
+        end 
+        ent[k] = entity_callable[v._new](v.args)
       else 
         checked[v] = true
         check_sub_entities(v, checked)
@@ -320,11 +352,10 @@ World = {
     end 
 
     table.defaults(ent, draw_defaults)
-    Add(ent)
-
     table.insert(entity_order, ent.uuid)
     check_z(ent)
     check_sub_entities(ent)
+    Check(ent, args)
 
     return ent 
   end,

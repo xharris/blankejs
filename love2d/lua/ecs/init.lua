@@ -1,4 +1,4 @@
-local blanke_require = function(r)
+blanke_require = function(r)
     return require('ecs.'..r)
 end
 

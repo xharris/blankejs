@@ -1,3 +1,52 @@
+--[[SPATIALHASH
+SpatialHash = nil
+do
+  function get_keys(x,y,w,h,size)
+    local key_added = {}
+    local keys = {}
+
+    -- generate keys for the four corners
+    for mx = 0, 1 do 
+      for my = 0, 1 do 
+        local key = Math.floor(((x + (w*mx)) / size) + 0.5) * size .. ',' .. Math.floor(((y + (h*my)) / size) + 0.5) * size
+        if not key_added[key] then 
+          key_added[key] = true 
+          table.insert(keys, key)
+        end
+      end 
+    end 
+
+    return keys
+  end 
+
+  SpatialHash = class {
+    SIZE = 60,
+    init = function(self, size)
+      self.size = size or SpatialHash.SIZE
+      self.hash = {}
+    end,
+    add = function(self, obj) 
+      local keys = get_keys(obj.pos[1], obj.pos[2], obj.size[1], obj.size[2], self.size)
+      for _, key in ipairs(keys) do 
+        if not self.hash[key] then self.hash[key] = {} end 
+        table.insert(self.hash[key], obj)
+      end 
+    end,
+    getNearby = function(self, obj)
+      local keys = get_keys(obj.pos[1], obj.pos[2], obj.size[1], obj.size[2], self.size)
+      local objects = {}
+      for _, key in ipairs(keys) do 
+        local hash_list = self.hash[key]
+        for _, obj2 in ipairs(hash_list) do 
+          table.insert(objects, obj2)
+        end 
+      end 
+      return objects
+    end 
+  }
+end
+]]--
+
 --FS
 FS = nil
 do
@@ -1528,7 +1577,7 @@ do
 
       Game.time = Game.time + dt
       -- TODO: uncomment
-      --Physics.update(dt)
+      Physics.update(dt)
       Timer.update(dt, dt_ms)
       if Game.options.update(dt) == true then return end
       World.update(dt)
@@ -1543,7 +1592,7 @@ do
       Input.keyCheck()
       Audio.update(dt)
 
-      --BFGround.update(dt)
+      BFGround.update(dt)
 
       if Game.restarting then
           Game.load()
@@ -1565,9 +1614,8 @@ do
         World.draw()
         State.draw()
         if Game.options.postdraw then Game.options.postdraw() end
-        -- TODO: uncomment
-        --Physics.drawDebug()
-        --Hitbox.draw()
+        Physics.drawDebug()
+        Hitbox.draw()
     end
 
     local _drawGame = function()
@@ -1577,13 +1625,13 @@ do
         Draw.rect('fill',0,0,Game.width,Game.height)
         Draw.pop()
         
-        --Background.draw()
+        Background.draw()
         if Camera.count() > 0 then
             Camera.useAll(actual_draw)
         else
             actual_draw()
         end
-        --Foreground.draw()
+        Foreground.draw()
     end
 
     local _draw = function()

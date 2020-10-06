@@ -8,6 +8,7 @@
     uuid
     position, size, angle, scale, scalex, scaley, shear, color, blendmode, align - only set if drawable is set
 ]]
+local sin, cos, rad, deg, abs, min, max = math.sin, math.cos, math.rad, math.deg, math.abs, math.min, math.max
 
 local changed = function(ent, key)
   if ent['_last_'..key] ~= ent[key] then 
@@ -16,19 +17,16 @@ local changed = function(ent, key)
   end 
   return false
 end
+local reset = function(ent, key)
+  ent['_last_'..key] = ent[key]
+end 
 
 --CANVAS
 Canvas = Entity("Blanke.Canvas", {
-  is_canvas = true,
   auto_clear = true,
   drawable = true,
   blendmode = {"alpha"},
-  debug_color = 'blue'
-})
-CanvasStack = Stack(function()
-    return Canvas{draw=false}
-end)
-System(All("is_canvas"), {
+  debug_color = 'blue',
   added = function(ent)
     if ent.size[1] <= 0 then ent.size[1] = Game.width end 
     if ent.size[2] <= 0 then ent.size[2] = Game.height end
@@ -54,16 +52,80 @@ System(All("is_canvas"), {
     end
   end
 })
+CanvasStack = Stack(function()
+    return Canvas{draw=false}
+end)
 
 --IMAGE: image / animation
 Image = nil
 do
   local animations = {}
+
+  local update_size = function(image)
+    local ent = image.parent or image
+    -- image size 
+    if not (image and image.skip_size) then 
+      ent.size = {
+        image.drawable:getWidth(),
+        image.drawable:getHeight()
+      }
+    end
+  end
+
+  local setup_image = function(ent)
+    local info = animations[ent.name]
+
+    ent.quads = nil
+    ent.frame_count = 0
+
+    if not info then 
+      info = { file=ent.name }
+    else 
+      -- animated
+      ent.speed = info.speed or 1
+      ent.t, ent.frame_index, ent.frame_len = 0, 1,  info.durations[1] or info.duration
+      ent.frame_count = #info.quads
+      ent.quads = info.quads
+    end
+
+    ent.drawable = Cache.image(info.file)
+
+    update_size(ent)
+    return ent
+  end
+
   Image = Entity("Blanke.Image", {
-    is_image = true,
     name = nil,
-    debug_color = 'blue'
+    debug_color = 'blue',
+    added = function(ent, args)
+      if type(args) == 'table' then
+        ent.name = ent.name or args[1] or args.name
+      else 
+        ent.name = ent.name or ent[1] or args
+      end
+      setup_image(ent)
+    end,
+    update = function(ent, dt)
+      if changed(ent, 'name') then 
+        setup_image(ent)
+      end
+
+      local info = animations[ent.name]
+      -- animated?
+      if info then 
+        -- update animation
+        ent.t = ent.t + (dt * ent.speed)
+        if ent.t > ent.frame_len then
+            ent.frame_index = ent.frame_index + 1
+            if ent.frame_index > ent.frame_count then ent.frame_index = 1 end
+            info = ent.animated
+            ent.frame_len = info.durations[tostring(ent.frame_index)] or info.duration
+        end
+        ent.quad = info.quads[ent.frame_index]
+      end 
+    end 
   })
+
   Image.animation = function(file, anims, all_opt)
     all_opt = all_opt or {}
     local img = getImage(file)
@@ -115,81 +177,32 @@ do
     end
   end;
 
-  local update_size = function(image)
-    local ent = image.parent or image
-    -- image size 
-    if not (image and image.skip_size) then 
-        ent.size = {
-            image.drawable:getWidth(),
-            image.drawable:getHeight()
-        }
+  Image.get = function(name)
+    if type(name) == 'table' then 
+      return setup_image(name)
+    else
+      return setup_image{name=name}
     end
-  end
-
-  local setup_image = function(ent)
-    local info = animations[ent.name]
-    if not info then 
-      info = { file=ent.name }
-    else 
-      -- animated
-      ent.speed = info.speed or 1
-      ent.t, ent.frame_index, ent.frame_len = 0, 1,  info.durations[1] or info.duration
-      ent.frame_count = #info.quads
-    end
-
-    ent.drawable = Cache.image(info.file)
-
-    update_size(ent)
-  end
+  end 
 
   System(All("image"), {
-      added = function(ent, args)
-        local type_image = type(ent.image)
-        if type_image == 'string' then 
-            ent.image = Image{
-                name=ent.image,
-                parent=ent
-            }
-        elseif type_image == 'table' then
-            ent.image.parent = ent 
-            ent.image = Image(ent.image)
-        end
-      end
-  })
-
-  System(All("is_image"), {
     added = function(ent, args)
-      if type(args) == 'table' then
-        ent.name = ent.name or args[1] or args.name
-      else 
-        ent.name = ent.name or ent[1] or args
+      local type_image = type(ent.image)
+      if type_image == 'string' then 
+        ent.image = Image{
+          name=ent.image,
+          parent=ent
+        }
+      elseif type_image == 'table' then
+        ent.image.parent = ent 
+        ent.image = Image(ent.image)
       end
-      setup_image(ent)
-    end,
-    update = function(ent, dt)
-      if changed(ent, 'name') then 
-        setup_image(ent)
-      end
-
-      local info = animations[ent.name]
-      -- animated?
-      if info then 
-        -- update animation
-        ent.t = ent.t + (dt * ent.speed)
-        if ent.t > ent.frame_len then
-            ent.frame_index = ent.frame_index + 1
-            if ent.frame_index > ent.frame_count then ent.frame_index = 1 end
-            info = ent.animated
-            ent.frame_len = info.durations[tostring(ent.frame_index)] or info.duration
-        end
-        ent.quad = info.quads[ent.frame_index]
-      end 
-    end 
+    end
   })
 end
 
 --ENTITY: gravity, velocity
-System(All("pos", "vel"), {
+System(All("pos", "vel", Not("hitbox")), {
   update = function(ent, dt)
     ent.pos[1] = ent.pos[1] + ent.vel[1] * dt
     ent.pos[2] = ent.pos[2] + ent.vel[2] * dt
@@ -641,7 +654,7 @@ do
       local new_hb = {
           hitbox = dims,
           tag = tag,
-          hitboxColor = color,
+          debug_color = color,
       }
       table.insert(self.hb_list, new_hb)
       Hitbox.add(new_hb)
@@ -755,7 +768,7 @@ do
               if Entity.exists(obj_info.name) then
                 local new_entity = new_map:_spawnEntity(obj_info.name, {
                   map_tag=c[1], pos={c[2], c[3]}, z=new_map:getLayerZ(layer_name[l_uuid]), layer=layer_name[l_uuid], points=copy(c),
-                  map_size={obj_info.size[1], obj_info.size[2]}, hitboxColor=hb_color
+                  map_size={obj_info.size[1], obj_info.size[2]}, debug_color=hb_color
                 })
 
               -- spawn hitbox
@@ -778,13 +791,575 @@ do
 end 
 
 --PHYSICS: (entity?)
---HITBOX: position, size, hitbox
-Hitbox = {
-  debug = false,
-  add = function() end
-}
+Physics = nil
+do
+    local world_config = {}
+    local body_config = {}
+    local joint_config = {}
+    local worlds = {}
+
+    local setProps = function(obj, src, props)
+        for _,p in ipairs(props) do
+            if src[p] ~= nil then obj['set'..string.capitalize(p)](obj,src[p]) end
+        end
+    end
+
+    --PHYSICS.BODYHELPER
+    local BodyHelper = class {
+        init = function(self, body)
+            self.body = body
+            self.body:setUserData(helper)
+            self.gravx, self.gravy = 0, 0
+            self.grav_added = false
+        end;
+        update = function(self, dt)
+            if self.grav_added then
+                self.body:applyForce(self.gravx,self.gravy)
+            end
+        end;
+        setGravity = function(self, angle, dist)
+            if dist > 0 then
+                self.gravx, self.gravy = Math.getXY(angle, dist)
+                self.body:setGravityScale(0)
+                if not self.grav_added then
+                    table.insert(Physics.custom_grav_helpers, self)
+                    self.grav_added = true
+                end
+            end
+        end;
+        setPosition = function(self, x, y)
+            self.body:setPosition(x,y)
+        end
+    }
+
+    Physics = {
+        custom_grav_helpers = {};
+        debug = false;
+        init = function(self)
+            self.is_physics = true
+        end;
+        update = function(dt)
+            for name, world in pairs(worlds) do
+                local config = world_config[name]
+                world:update(dt,8*config.step_rate,3*config.step_rate)
+            end
+            for _,helper in ipairs(Physics.custom_grav_helpers) do
+                helper:update(dt)
+            end
+        end;
+        getWorldConfig = function(name) return world_config[name] end;
+        world = function(name, opt)
+            if type(name) == 'table' then
+                opt = name
+                name = '_default'
+            end
+            name = name or '_default'
+            if opt or not world_config[name] then
+                world_config[name] = opt or {}
+                table.defaults(world_config[name], {
+                    gravity = 0,
+                    gravity_direction = 90,
+                    sleep = true,
+                    step_rate = 1
+                })
+            end
+            if not worlds[name] then
+                worlds[name] = love.physics.newWorld()
+            end
+            local w = worlds[name]
+            local c = world_config[name]
+            -- set properties
+            w:setGravity(Math.getXY(c.gravity_direction, c.gravity))
+            w:setSleepingAllowed(c.sleep)
+            return worlds[name]
+        end;
+        getJointConfig = function(name) return joint_config[name] end;
+        joint = function(name, opt) -- TODO: finish joints
+            if not worlds['_default'] then Physics.world('_default', {}) end
+            if opt then
+                joint_config[name] = opt
+            end
+        end;
+        getBodyConfig = function(name) return body_config[name] end;
+        body = function(name, opt)
+            if not worlds['_default'] then Physics.world('_default', {}) end
+            if opt then
+                body_config[name] = opt
+                table.defaults(body_config[name], {
+                    x = 0,
+                    y = 0,
+                    angularDamping = 0,
+                    gravity = 0,
+                    gravity_direction = 0,
+                    type = 'static',
+                    fixedRotation = false,
+                    bullet = false,
+                    inertia = 0,
+                    linearDamping = 0,
+                    shapes = {}
+                })
+                return
+            end
+            assert(body_config[name], "Physics config missing for '#{name}'")
+            local c = body_config[name]
+            if not c.world then c.world = '_default' end
+            assert(worlds[c.world], "Physics world '#{c.world}' config missing (for body '#{name}')")
+            -- create the body
+            local body = love.physics.newBody(worlds[c.world], c.x, c.y, c.type)
+            local helper = BodyHelper(body)
+            -- set props
+            setProps(body, c, {'angularDamping','fixedRotation','bullet','inertia','linearDamping','mass'})
+            helper:setGravity(c.gravity, c.gravity_direction)
+            local shapes = {}
+            for _,s in ipairs(c.shapes) do
+                local shape = nil
+                table.defaults(s, {
+                    density = 0
+                })
+                switch(s.type,{
+                    rect = function()
+                        table.defaults(s, {
+                            width = 1,
+                            height = 1,
+                            offx = 0,
+                            offy = 0,
+                            angle = 0
+                        })
+                        shape = love.physics.newRectangleShape(c.x+s.offx,c.y+s.offy,s.width,s.height,s.angle)
+                    end,
+                    circle = function()
+                        table.defaults(s, {
+                            offx = 0,
+                            offy = 0,
+                            radius = 1
+                        })
+                        shape = love.physics.newCircleShape(c.x+s.offx,c.y+s.offy,s.radius)
+                    end,
+                    polygon = function()
+                        table.defaults(s, {
+                            points = {}
+                        })
+                        assert(#s.points >= 6, "Physics polygon must have 3 or more vertices (for body '"..name.."')")
+                        shape = love.physics.newPolygonShape(s.points)
+                    end,
+                    chain = function()
+                        table.defaults(s, {
+                            loop = false,
+                            points = {}
+                        })
+                        assert(#s.points >= 4, "Physics polygon must have 2 or more vertices (for body '"..name.."')")
+                        shape = love.physics.newChainShape(s.loop, s.points)
+                    end,
+                    edge = function()
+                        table.defaults(s, {
+                            points = {}
+                        })
+                        assert(#s.points >= 4, "Physics polygon must have 2 or more vertices (for body '"..name.."')")
+                        shape = love.physics.newEdgeShape(unpack(s.points))
+                    end
+                })
+                if shape then
+                    fix = love.physics.newFixture(body,shape,s.density)
+                    setProps(fix, s, {'friction','restitution','sensor','groupIndex'})
+                    table.insert(shapes, shape)
+                end
+            end
+            return body, shapes
+        end;
+        setGravity = function(body, angle, dist)
+            local helper = body:getUserData()
+            helper:setGravity(angle, dist)
+        end;
+        draw = function(body, _type)
+            for _, fixture in pairs(body:getFixtures()) do
+                shape = fixture:getShape()
+                if shape:typeOf("CircleShape") then
+                    local x, y = body:getWorldPoints(shape:getPoint())
+                    Draw.circle(_type or 'fill', floor(x), floor(y), shape:getRadius())
+                elseif shape:typeOf("PolygonShape") then
+                    local points = {body:getWorldPoints(shape:getPoints())}
+                    for i,p in ipairs(points) do points[i] = floor(p) end
+                    Draw.poly(_type or 'fill', points)
+                else
+                    local points = {body:getWorldPoints(shape:getPoints())}
+                    for i,p in ipairs(points) do points[i] = floor(p) end
+                    Draw.line(body:getWorldPoints(shape:getPoints()))
+                end
+            end
+        end;
+        drawDebug = function(world_name)
+            world_name = world_name or '_default'
+            if Physics.debug then
+                world = worlds[world_name]
+                for _, body in pairs(world:getBodies()) do
+                    Draw.color(1,0,0,.8)
+                    Physics.draw(body,'line')
+                    Draw.color(1,0,0,.5)
+                    Physics.draw(body)
+                end
+                Draw.color()
+            end
+        end;
+    }
+
+    System(One("body", "fixture"),{
+      added = function(ent)
+        ent.physics = Physics.body(ent.physics)
+      end,
+      removed = function(ent)
+        ent.physics:destroy()
+      end 
+    })
+end
+
+--HITBOX: pos, vel, size, hitbox
+Hitbox = nil
+do
+  local bump = blanke_require('bump')
+  local world = bump.newWorld(40)
+  local new_boxes = true
+  local hb_items = {}
+  
+  Hitbox = {
+    debug = false,
+    draw = function() 
+      if Hitbox.debug then
+        local x,y,w,h
+        if new_boxes then
+            new_boxes = false
+            hb_items, hb_len = world:getItems()
+        end
+        for _,i in ipairs(hb_items) do
+            if i.hitbox and not i.destroyed then
+                x,y,w,h = world:getRect(i)
+                Draw.color(i.debug_color or {1,0,0,0.9})
+                Draw.rect('line',x,y,w,h)
+                Draw.color(i.debug_color or {1,0,0,0.25})
+                Draw.rect('fill',x,y,w,h)
+            end
+        end
+        Draw.color()
+      end
+    end
+  }
+
+  local get_dims = function(ent)
+    local ax, ay, w, h = getAlign(ent)
+    return 
+      ent.pos[1], 
+      ent.pos[2],
+      max(w, 1), 
+      max(h, 1)
+  end 
+
+  System(All("hitbox", "pos", "vel", "size"),{
+    order = 'post',
+    added = function(ent)
+      local type_hbox = type(ent.hitbox)
+      if type_hbox ~= 'table' then 
+        if type_hbox == 'string' then 
+          ent.hitbox = { reaction=ent.hitbox }
+        else 
+          ent.hitbox = {}
+        end
+      end 
+      world:add(ent, get_dims(ent,0,0))
+      new_boxes = true
+    end,
+    update = function(ent, dt)
+      local filter_result
+      local filter = function(obj_ent, other_ent)
+          local _obj = obj_ent.hitbox
+          local other = other_ent.hitbox
+
+          local ret = _obj.reaction or Hitbox.default_reaction
+          if other.reactions and other.reactions[obj_ent.tag] then ret = other.reactions[obj_ent.tag] else
+              if other.reaction then ret = other.reaction end
+          end
+          if _obj.reactions and _obj.reactions[other_ent.tag] then ret = _obj.reactions[other_ent.tag] else
+              if _obj.reaction then ret = _obj.reaction end
+          end
+          if _obj.filter then ret = _obj:filter(other_ent) end
+
+          filter_result = ret
+
+          if ret == 'static' then 
+            ret = 'slide'
+          end 
+          return ret
+      end
+
+      local ax, ay = getAlign(ent)
+
+      local next_x = (ent.pos[1]) + ent.vel[1] * dt
+      local next_y = (ent.pos[2]) + ent.vel[2] * dt
+      local new_x, new_y, cols, len = world:move(ent, next_x, next_y, filter)
+
+      if ent.destroyed then return end 
+      --if filter_result ~= 'static' then 
+        ent.pos[1] = new_x
+        ent.pos[2] = new_y
+      --end 
+      
+      local swap = function(t, key1, key2)
+        local temp = t[key1]
+        t[key1] = t[key2]
+        t[key2] = temp
+      end
+      if len > 0 then
+        local hspeed, vspeed, bounciness, nx, ny
+        for i=1,len do
+            hspeed, vspeed, bounciness = ent.vel[1], ent.vel[2], ent.bounciness or 1
+            nx, ny = cols[i].normal.x, cols[i].normal.y
+            -- change velocity by collision normal
+            if cols[i].bounce then
+              if hspeed and ((nx < 0 and hspeed > 0) or (nx > 0 and hspeed < 0)) then 
+                ent.vel[1] = -ent.vel[1] * bounciness
+              end
+              if vspeed and ((ny < 0 and vspeed > 0) or (ny > 0 and vspeed < 0)) then 
+                ent.vel[2] = -ent.vel[2] * bounciness
+              end
+            end
+            
+            if not ent or ent.destroyed then return end
+            if ent.collision then ent:collision(cols[i]) end 
+
+            local info = cols[i]
+            local other = info.other
+            swap(info, 'item', 'other')
+            swap(info, 'itemRect', 'otherRect')
+            if other and not other.destroyed and other.collision then other:collision(info) end
+        end
+      end
+      -- entity size changed, update in world
+      if changed(ent.scaled_size, 1) or changed(ent.scaled_size, 2) then
+        world:update(ent, get_dims(ent))
+      end 
+    end,
+    removed = function(ent)
+      world:remove(ent)
+      new_boxes = true
+    end
+  })
+end
+
+--BACKGROUND
+Background = nil
+BFGround = nil
+do
+  local bg_list = {}
+  local fg_list = {}
+
+  local quad
+  local add = function(opt)
+    opt = opt or {}
+    if opt.file then
+      opt.image = Cache.get('Image', Game.res('image',opt.file), function(key)
+        return love.graphics.newImage(key)
+      end)
+      opt.x = 0
+      opt.y = 0
+      opt.scale = 1
+      opt.width = opt.image:getWidth()
+      opt.height = opt.image:getHeight()
+      if not quad then 
+        quad = love.graphics.newQuad(0,0,1,1,1,1)
+      end 
+    end
+    return opt
+  end
+
+  local update = function(list, dt)
+    iterate(list, function(t)
+      if t.remove == true then
+        return true
+      end
+
+      if t.size == "cover" then
+        if t.width < t.height then
+          t.scale = Game.width / t.width
+        else
+          t.scale = Game.height / t.height
+        end
+        t.image:setWrap('clamp','clamp')
+        t.x = (Game.width - (t.width * t.scale))/2
+        t.y = (Game.height - (t.height * t.scale))/2
+      else 
+        t.image:setWrap('repeat','repeat')
+      end 
+    end)
+  end
+
+  local draw = function(list)
+    local lg_draw = love.graphics.draw
+    for _, t in ipairs(list) do
+      if t.image then
+        if t.size == 'cover' then 
+          lg_draw(t.image,0,0,0,t.scale,t.scale)
+        else
+          quad:setViewport(-t.x,-t.y,Game.width,Game.height,t.width,t.height)
+          lg_draw(t.image,quad,0,0,0,t.scale,t.scale)
+        end
+      end
+    end
+  end
+
+  BFGround = {
+    update = function(dt)
+      update(bg_list, dt)
+      update(fg_list, dt)
+    end;
+  }
+
+  Background = callable {
+    __call = function(self, opt)
+      local t = add(opt)
+      table.insert(bg_list, opt)
+      return t
+    end;
+    draw = function()
+      draw(bg_list)
+    end
+  }
+  Foreground = callable {
+    __call = function(self, opt)
+      local t = add(opt)
+      table.insert(fg_list, opt)
+      return t
+    end;
+    draw = function()
+      draw(fg_list)
+    end
+  }
+end
+
+--PARTICLES
+Particles = nil 
+do 
+    local methods = {
+        offset = 'Offset',
+        rate = 'EmissionRate',
+        area = 'EmissionArea',
+        colors = 'Colors',
+        max = 'BufferSize',
+        lifetime = 'ParticleLifetime',
+        linear_accel = 'LinearAcceleration',
+        linear_damp = 'LinearDamping',
+        rad_accel = 'RadialAcceleration',
+        relative = 'RelativeRotation',
+        direction = 'Direction',
+        rotation = 'Rotation',
+        size_vary = 'SizeVariation',
+        sizes = 'Sizes',
+        speed = 'Speed',
+        spin = 'Spin',
+        spin_vary = 'SpinVariation',
+        spread = 'Spread',
+        tan_accel = 'TangentialAcceleration',
+        position = 'Position',
+        insert = 'InsertMode'
+    }
+
+    local update_source = function(ent)
+      local source = ent.source 
+      local type_src = type(source)
+
+      -- get texture and quad from image
+      if type_src == 'string' then 
+        ent.source = Image.get{parent=ent, name=source}
+        --ent.size = ent.source.size
+        source = ent.source
+      end
+
+      if not source.drawable then return end 
+        
+      -- create/edit the particle system
+      if not ent.psystem then 
+        ent.psystem = love.graphics.newParticleSystem(source.drawable)
+      else
+        ent.psystem:setTexture(source.drawable)
+      end
+    end 
+
+    Particles = Entity("Blanke.Particles",{
+      frame = 0,
+      added = function(ent, args)
+        if args and #args > 0 then 
+          if type(args[1]) == 'table' then 
+            ent.source = args[1].source
+          else 
+            ent.source = args[1]
+          end 
+        end 
+        assert(ent.source, "Particles instance needs source")
+
+        update_source(ent)
+        reset(ent, 'source')
+
+        -- initial psystem settings
+        if ent.psystem then 
+          for k, v in pairs(ent) do 
+            if methods[k] then
+              if type(v) == 'table' then 
+                ent.psystem['set'..methods[k]](ent.psystem, unpack(v)) 
+              else
+                ent.psystem['set'..methods[k]](ent.psystem, v) 
+              end
+            end
+            args[k] = nil
+          end
+        end
+
+        -- getters/setters
+        for k,v in pairs(methods) do 
+          ent[k] = function(ent, ...) 
+            if ent.psystem then 
+              ent.psystem['set'..v](ent.psystem, ...) 
+              return ent.psystem['get'..v](ent.psystem)
+              end
+          end
+        end
+
+        ent.drawable = ent.psystem
+      end,
+      stop = function(self)
+        self:rate(0)
+      end,
+      emit = function(self, n)
+        self.psystem:emit(n)
+      end,    
+      update = function(ent, dt)
+        if changed(ent, 'source') then 
+          update_source(ent)
+        end 
+        if changed(ent, 'frame') and ent.source.quads then 
+          local f, quads = ent.frame, ent.source.quads
+          if f > 0 and f < #quads + 1 then 
+            ent.psystem:setQuads(quads[f])
+          else 
+            ent.psystem:setQuads(quads)
+          end
+        end 
+
+        if ent.psystem then
+          local follow = ent.follow
+          if follow then 
+            local ax, ay = getAlign(follow)
+            ent.scale = follow.scale 
+            ent.scalex = follow.scalex 
+            ent.scaley = follow.scaley
+            ent.align = {ax,ay}
+            ent.psystem:setPosition(
+              (follow.pos[1] + ax) / follow.scale / follow.scalex,
+              (follow.pos[2] + ay) / follow.scale / follow.scaley
+            )
+          end 
+          ent.psystem:update(dt)
+        end
+      end
+    })
+end
+
 --NET: needs to be reworked for ecs
 --PATH: (entity)
 --TIMELINE: (entity)
---BACKGROUND
---PARTICLES
