@@ -183,7 +183,7 @@ function Destroy(ent)
   for i = 1, table.len(systems) do 
     sys = systems[i]
     sys.removed[ent.uuid] = true 
-    if sys.cb.removed then sys.cb.removed(ent) end 
+    -- if sys.cb.removed then sys.cb.removed(ent) end 
   end 
 end 
 

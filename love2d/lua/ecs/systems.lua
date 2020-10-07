@@ -652,12 +652,13 @@ do
     end,
     addHitbox = function(self,tag,dims,color)
       local new_hb = {
-          hitbox = dims,
-          tag = tag,
-          debug_color = color,
+        pos = {dims[1], dims[2]},
+        size = {dims[3], dims[4]},
+        hitbox = 'static',
+        tag = tag,
+        debug_color = color,
       }
-      table.insert(self.hb_list, new_hb)
-      Hitbox.add(new_hb)
+      table.insert(self.hb_list, World.add(new_hb))
     end,
     getEntityInfo = function(self, name)
       return self.entity_info[name] or {}
@@ -686,7 +687,22 @@ do
       ent.parent=self
       sort(self.entities[layer_name], 'z', 0)
       return ent
-    end
+    end,
+    getPaths = function(self, obj_name, layer_name)
+      local ret = {}
+      if self.paths[obj_name] then
+        if layer_name and self.paths[obj_name][layer_name] then
+          return self.paths[obj_name][layer_name]
+        else
+          for layer_name, paths in pairs(self.paths[obj_name]) do
+            for _, path in ipairs(paths) do
+              table.insert(ret, path)
+            end
+          end
+        end
+      end
+      return ret
+    end;
   })
   Map.config = {}
   Map.load = function(name, opt)
@@ -1007,6 +1023,7 @@ do
         ent.physics = Physics.body(ent.physics)
       end,
       removed = function(ent)
+        print_r(ent)
         ent.physics:destroy()
       end 
     })
@@ -1360,6 +1377,350 @@ do
     })
 end
 
+--TIMELINE
+Timeline = Entity("Blanke.Timeline", {
+  added = function(ent, args)
+    if #args > 0 then 
+      ent.events = args[1]
+    end 
+    ent.t = 0
+    ent.index = 0
+    ent.running = false
+  end,
+  pause = function(self)
+      self.running = false
+  end,
+  resume = function(self)
+      self.running = true
+  end,
+  play = function(self, name)
+      self:step(name or 1)
+      self.running = true
+  end,
+  step = function(self, name)
+    self.t = 0
+    self.waiting = false
+    if type(name) == "string" then
+      for i, ev in ipairs(self.events) do
+        if ev.name == name then
+          self.index = i
+        end
+      end
+
+    elseif type(name) == "number" then
+      while name < 0 do name = #self.events - name end
+      self.index = name
+
+    else
+      self.index = self.index + 1
+      -- stop the timeline and destroy it??
+      if self.index > #self.events then
+        self.running = false
+        Destroy(self)
+      end
+
+    end
+        self:call()
+  end,
+  call = function(self, name, ...)
+    local ev = self.events[self.index]
+    if not ev then return end
+
+        if not name then name = 'fn' end
+
+    if name and ev[name] then
+      -- call named fn
+      ev[name](self, ...)
+    end
+  end,
+  reset = function(self)
+      self:step(1)
+  end,
+  update = function(ent, dt)
+    if not ent.running then return end
+    ent:call('update', dt)
+
+    local ev = ent.events[ent.index]
+    -- move onto next step?
+    if not ev or #ev == 0 or (type(ev[1]) == "number" and ent.t > ev[1]) then
+      ent:step()
+    elseif ev and ev[1] == 'wait' and not ent.waiting then
+      ent.waiting = true
+    end
+
+    ent.t = ent.t + dt * 1000
+  end,
+  draw = function(ent)
+    ent:call('draw')
+  end
+})
+
+
+--PATH
+Path = {}
+do
+  local lerp, distance, sign = Math.lerp, Math.distance, Math.sign
+  local hash_node = function(x,y,tag)
+      local parts = {}
+      if tag then parts = {tag} end
+      if not tag then parts = {x,y} end
+      return table.join(parts,',')
+  end
+
+  local hash_edge = function(node1,node2)
+      return table.join({node1,node2},':'), table.join({node2,node1},':')
+  end
+
+  Path = Entity("Blanke.Path", {
+    debug = false;
+    -- TODO: Disjkstra cache (clear when node/edge changes)
+    added = function(ent)
+        ent.color = 'blue'
+        ent.node = {} -- { hash:{x,y,tag} }
+        ent.edge = {} -- { hash:{node1:hash, node2:hash, direction:-1,0,1, tag} }
+        ent.matrix = {} -- adjacency matrix containg node/edge info
+
+        ent.pathing_objs = {} -- { obj... }
+    end;
+    addNode = function(self, opt)
+        if not opt then return end
+        local hash = hash_node(opt.x, opt.y, opt.tag)
+
+        self.node[hash] = copy(opt)
+        -- setup edges in matrix
+        self.matrix[hash] = {}
+        for xnode, edges in pairs(self.matrix) do
+            if xnode ~= hash and not edges[hash] then edges[hash] = nil end
+        end
+
+        return hash
+    end;
+    getNode = function(self, opt)
+        opt = opt or {}
+        local hash = hash_node(opt.x, opt.y, opt.tag)
+        assert(self.node[hash], "Node '"..hash.."' not in path")
+        return self.node[hash], hash
+    end;
+    addEdge = function(self, opt)
+        opt = opt or {}
+        local hash = hash_edge(opt.a, opt.b)
+
+        assert(self.node[opt.a], "Node '"..(opt.a or 'nil').."' not in path")
+        assert(self.node[opt.b], "Node '"..(opt.b or 'nil').."' not in path")
+
+        local node1, node2 = self.node[opt.a], self.node[opt.b]
+        opt.length = floor(Math.distance(node1.x, node1.y, node2.x, node2.y))
+
+        self.edge[hash] = copy(opt)
+        -- add edge to matrix
+        for xnode, edges in pairs(self.matrix) do
+            if not edges[hash] then edges[hash] = nil end
+        end
+        self.matrix[opt.a][opt.b] = hash
+
+        return hash
+    end;
+    getEdge = function(self, opt)
+        opt = opt or {}
+        local hash1, hash2 = hash_edge(opt.a, opt.b)
+        assert(self.edge[hash1] or self.edge[hash2], "Edge '"..hash1.."'/'"..hash2.."' not in path")
+        return self.edge[hash1] or self.edge[hash2], hash
+    end;
+    go = function(self, obj, opt)
+        opt = opt or {}
+        local speed = opt.speed or 1
+        local target = opt.target
+        local start = opt.start
+
+        assert(target, "Path:go() requires target node")
+
+        if obj.is_pathing and opt.force then
+            self:stop(obj)
+        end
+
+        if not obj.is_pathing then
+            local extra_dist = 0
+            obj.is_pathing = { uuid=uuid(), direction={x=1, y=1}, speed=speed, index=1, path={}, t=0, prev_pos={unpack(obj.pos)}, onFinish=opt.onFinish }
+            table.insert(self.pathing_objs, obj)
+            
+            if not start then
+                -- find nearest node
+                local closest_node
+                local d = -1
+                local new_d
+                for hash, info in pairs(self.node) do
+                    new_d = Math.distance(info.x,info.y,obj.pos[1],obj.pos[2])
+                    if new_d < d or d < 0 then
+                        d = new_d
+                        closest_node = info
+                    end
+                end
+                if closest_node then
+                    extra_dist = new_d
+                    start = closest_node
+                end
+            end
+
+            -- perform Dijskstra to find shortest path
+            local INF = math.huge
+            local dist = {}
+            local previous = {}
+            local Q = {}
+            local checked = {}
+            local start_hash = hash_node(start.x, start.y, start.tag)
+            local target_hash = hash_node(target.x, target.y, target.tag)
+
+            for v, info in pairs(self.node) do
+                if v ~= target_hash then
+                    dist[v] = INF
+                end
+                table.insert(Q, v)
+            end
+            dist[target_hash] = 0
+            while #Q > 0 do
+                  -- iterate backwards to avoid using the slow table.remove(Q, 1)
+                table.sort(Q, function(a, b)
+                    return dist[a] > dist[b]
+                end)
+                -- lowest distance
+                local u = Q[#Q]
+                table.remove(Q)
+
+                if dist[u] == INF then break end
+
+                -- iterate neighbors
+                for v, edge_hash in pairs(self.matrix[u]) do
+                    if not checked[u] then
+                        local alt = dist[u] + self.edge[edge_hash].length
+
+                        if alt < dist[v] then
+                            dist[v] = alt
+                            previous[v] = u
+                        end
+                    end
+                end
+                checked[u] = true
+            end
+
+            local next_node = start_hash
+            obj.is_pathing.total_distance = dist[start_hash] + extra_dist
+
+            repeat
+                table.insert(obj.is_pathing.path, next_node)
+                next_node = previous[next_node]
+            until not next_node
+            
+            table.insert(self.pathing_objs, obj)
+        end
+    end;
+    -- static
+    stop = function(self, obj)
+        if obj.is_pathing then
+            local next_node = self.node[obj.is_pathing.path[obj.is_pathing.index]]
+            local onFinish = obj.is_pathing.onFinish
+            table.filter(self.pathing_objs, function(_obj)
+                return obj.is_pathing.uuid ~= _obj.is_pathing.uuid
+            end)
+            obj.is_pathing = nil
+            return next_node, onFinish
+        end
+    end;
+    -- static
+    pause = function(obj)
+        if obj.is_pathing then
+            obj.is_pathing.paused = true
+        end
+    end;
+    -- static
+    resume = function(obj)
+        if obj.is_pathing then
+            obj.is_pathing.paused = false
+        end
+    end;
+    update = function(ent, dt)
+        for _, obj in ipairs(ent.pathing_objs) do
+            local info = obj.is_pathing
+            if info and not info.paused then
+                local next_node = ent.node[info.path[info.index]]
+                local total_dist = info.total_distance
+                if not info.next_dist then
+                    info.next_dist = distance(info.prev_pos[1],info.prev_pos[2],next_node.x,next_node.y)
+                end
+                info.t = info.t + ( info.speed / (info.next_dist / total_dist) ) * dt
+
+                if info.t >= 100 then
+                    info.index = info.index + 1
+                    info.t = 0
+                    info.prev_pos = {unpack(obj.pos)}
+                    info.next_dist = nil
+                else 
+                  obj.pos[1] = lerp(info.prev_pos[1], next_node.x, info.t / 100)
+                  obj.pos[2] = lerp(info.prev_pos[2], next_node.y, info.t / 100)
+
+                  -- store direction object is moving
+                  local xdiff = floor(next_node.x - info.prev_pos[1])
+                  local xsign = sign(xdiff)
+                  if xdiff ~= 0 then info.direction.x = xsign end
+
+                  local ydiff = floor(next_node.y - info.prev_pos[2])
+                  local ysign = sign(ydiff)
+                  if ydiff ~= 0 then info.direction.y = ysign end
+
+                end 
+                if info.index > #info.path then
+                    local _, onFinish = ent:stop(obj)
+                    if onFinish then onFinish(obj) end
+                end
+            end
+        end
+    end;
+    draw = function(ent)
+      if not (Path.debug or ent.debug) then return end
+      -- draw nodes
+      for hash, node in pairs(ent.node) do
+          Draw{
+              {'color',ent.color},
+              {'circle','fill',node.x,node.y,4},
+              {'color'}
+          }
+          local tag = node.tag or (node.x..','..node.y)
+          if tag then
+              local tag_w = Draw.textWidth(tag)
+              local tag_h = Draw.textHeight(tag)
+              Draw{
+                  {'color','black',0.8},
+                  {'rect','fill',node.x,node.y,tag_w+2,tag_h+2,2},
+                  {'color','white'},
+                  {'print',tag,node.x+1,node.y+1},
+                  {'color'}
+              }
+          end
+      end
+      -- draw edges
+      local node1, node2
+      for hash, edge in pairs(ent.edge) do
+          node1 = ent.node[edge.a]
+          node2 = ent.node[edge.b]
+          Draw{
+              {'color',ent.color},
+              {'line',node1.x,node1.y,node2.x,node2.y},
+              {'color'}
+          }
+          local tag = edge.tag
+          if tag then
+              local tag_w = Draw.textWidth(tag)
+              local tag_h = Draw.textHeight(tag)
+              Draw{
+                  {'color','gray',0.9},
+                  {'rect','fill',(node1.x+node2.x)/2,(node1.y+node2.y)/2,tag_w+2,tag_h+2,2},
+                  {'color','white'},
+                  {'print',tag,(node1.x+node2.x)/2+1,(node1.y+node2.y)/2+1},
+                  {'color'}
+              }
+          end
+      end
+    end
+  }) 
+end
+
 --NET: needs to be reworked for ecs
---PATH: (entity)
---TIMELINE: (entity)
