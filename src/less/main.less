@@ -761,6 +761,16 @@ body.mac > #header {
   box-sizing: border-box;
   display: inline-table; // causes integer width/height
 
+  &.single,
+  &.no-split,
+  &.first {
+    height: auto !important;
+
+    > .content {
+      margin-top: 20px;
+    }
+  }
+
   &.first {
     position: absolute;
     pointer-events: none;
@@ -777,7 +787,7 @@ body.mac > #header {
     top: 0px;
   
     &.single {
-        max-width: 250px;
+      max-width: 250px;
     }
   
     .content {
@@ -813,11 +823,9 @@ body.mac > #header {
     height: 100%; // !important;
     opacity: 1;
     pointer-events: auto;
-    background: transparent;
 
     > .content {
       top: 0px;
-      margin: 0px;
     }
   }
 

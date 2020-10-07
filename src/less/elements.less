@@ -77,6 +77,17 @@
     }
   }
 }
+.fib-container[data-type="Code"] {
+  &.single,
+  &.no-split,
+  &.first {
+    height: 100% !important;
+
+    > .content {
+      margin-top: 0px;
+    }
+  }
+}
 .content[data-type="Code"] {
   overflow: hidden;
 
@@ -495,16 +506,6 @@
 }
 .fib-container[data-type="SceneEditor"] {
   border: 1px solid rgba(147, 160, 166, 0.5);
-
-  &.single,
-  &.no-split,
-  &.first {
-    height: auto !important;
-
-    > .content {
-      margin-top: 20px;
-    }
-  }
   
   &.first {
     .sidebar {

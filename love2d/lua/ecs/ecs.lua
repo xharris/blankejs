@@ -264,7 +264,7 @@ function Render(_ent, skip_tf)
     local draw = function() 
       if not skip_tf then 
         transform = {
-          ent.pos[1] + ax, ent.pos[2] + ay,
+          ent.pos[1], ent.pos[2] ,
           ent.angle, ent.scale * ent.scalex, ent.scale * ent.scaley,
           unscaled_ax, unscaled_ay,
           ent.shear[1], ent.shear[2]

@@ -1091,14 +1091,14 @@ do
 
       local ax, ay = getAlign(ent)
 
-      local next_x = (ent.pos[1]) + ent.vel[1] * dt
-      local next_y = (ent.pos[2]) + ent.vel[2] * dt
+      local next_x = (ent.pos[1] - ax) + ent.vel[1] * dt
+      local next_y = (ent.pos[2] - ay) + ent.vel[2] * dt
       local new_x, new_y, cols, len = world:move(ent, next_x, next_y, filter)
 
       if ent.destroyed then return end 
       --if filter_result ~= 'static' then 
-        ent.pos[1] = new_x
-        ent.pos[2] = new_y
+        ent.pos[1] = new_x + ax
+        ent.pos[2] = new_y + ay
       --end 
       
       local swap = function(t, key1, key2)
