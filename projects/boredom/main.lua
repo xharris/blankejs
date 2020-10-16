@@ -12,12 +12,13 @@ Map.config = {
   tile_hitbox = { 
 	ground='ground',
 	spike='death'
-  },
-  reactions = {
-	living = {
-	  ground = 'slide',
-	  death = 'slide'
-	}
+  }
+}
+
+Hitbox.config.reactions = {
+  living = {
+	ground = 'slide',
+	death = 'slide'
   }
 }
 

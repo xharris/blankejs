@@ -3313,6 +3313,7 @@ do
   Hitbox = {
     debug = false,
     default_reaction = 'cross',
+    config = { reaction={}, reactions={} },
     draw = function()
       if Hitbox.debug then
         local lg = love.graphics
@@ -3380,14 +3381,14 @@ do
           local _obj = obj_ent.hitbox
           local other = other_ent.hitbox
 
-          local ret = Map.config.reaction and Map.config.reaction[obj_ent.tag] or Hitbox.default_reaction
+          local ret = Hitbox.config.reaction and Hitbox.config.reaction[obj_ent.tag] or Hitbox.default_reaction
           
-          reactions = Map.config.reactions and Map.config.reactions[_obj.tag]
+          reactions = Hitbox.config.reactions and Hitbox.config.reactions[_obj.tag]
           if reactions and reactions[other.tag] then
             ret = reactions[other.tag]
           end
 
-          reactions = Map.config.reactions and Map.config.reactions[other.tag]
+          reactions = Hitbox.config.reactions and Hitbox.config.reactions[other.tag]
           if reactions and reactions[_obj.tag] then
             ret = reactions[_obj.tag]
           end
