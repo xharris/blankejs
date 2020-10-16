@@ -1,3 +1,15 @@
+--[[
+  reserved entity properties:
+    drawable - love2d object 
+    draw - draw automatically or not
+    quad - love2d Quad
+    renderer - ecs system that renders entity. leave empty to use default
+    z 
+    uuid
+    position, size, angle, scale, scalex, scaley, shear, color, blendmode, align - only set if drawable is set
+]]
+local abs = math.abs
+
 local new_entities = {}
 local dead_entities = {}
 
@@ -17,6 +29,7 @@ Entity = callable {
   __call = function(_, classname, props)
     if props then
       props.classname = props.classname or classname
+      props.is_entity = true
       props['is_'..classname] = true
 
       -- extract system callbacks
@@ -182,15 +195,17 @@ function Destroy(ent)
   ent.destroyed = true
   for i = 1, table.len(systems) do 
     sys = systems[i]
-    sys.removed[ent.uuid] = true 
-    -- if sys.cb.removed then sys.cb.removed(ent) end 
+    if Test(sys.query, ent) then 
+      sys.removed[ent.uuid] = true 
+      if sys.cb.removed then sys.cb.removed(ent) end 
+    end
   end 
 end 
 
 local z_sort = false
 local check_z = function(ent)
   if ent.parent and ent.parent.z then ent.z = ent.parent.z end
-  if not ent.z then ent.z = 0 end
+  if ent.z == nil then ent.z = 0 end
   if ent._last_z ~= ent.z then 
     ent._last_z = ent.z
     z_sort = true
@@ -200,18 +215,18 @@ end
 System(All("size", "scale", "scalex", "scaley"), {
   added = function(ent)
     ent.scaled_size = {
-      ent.size[1] * ent.scale * ent.scalex,
-      ent.size[2] * ent.scale * ent.scaley
+      abs(ent.size[1] * ent.scale * ent.scalex),
+      abs(ent.size[2] * ent.scale * ent.scaley)
     }
-  end,
-  update = function(ent, dt)
-    ent.scaled_size[1] = ent.size[1] * ent.scale * ent.scalex
-    ent.scaled_size[2] = ent.size[2] * ent.scale * ent.scaley
   end
 })
 
 function getAlign(ent)
   local ax, ay = 0, 0
+  
+  ent.scaled_size[1] = abs(ent.size[1] * ent.scale * ent.scalex)
+  ent.scaled_size[2] = abs(ent.size[2] * ent.scale * ent.scaley)
+
   local sizew, sizeh = ent.scaled_size[1], ent.scaled_size[2]
   local type_align = type(ent.align)
 
@@ -243,35 +258,37 @@ function getAlign(ent)
 end
 
 local transform = {}
+local dbg_canvas
 function Render(_ent, skip_tf)    
   transform = {0,0,0,1,1,0,0,0,0}
   local drawable = _ent.drawable 
   local ent = _ent.parent or _ent
+  local quad = ent.quad or _ent.quad
   local ax, ay, sizew, sizeh = getAlign(ent)
-  local unscaled_ax, unscaled_ay = ax / ent.scale / ent.scalex, ay / ent.scale / ent.scaley 
+  local unscaled_ax, unscaled_ay = abs(ax / ent.scale / ent.scalex), abs(ay / ent.scale / ent.scaley) 
 
-  if not drawable then return end
+  local lg = love.graphics
+  lg.push('all')
+
   if type(drawable) == 'function' then
     drawable(_ent)
 
-  else  
-    local lg = love.graphics
+  elseif drawable then 
 
-    lg.push('all')
-    lg.setColor(unpack(ent.color))
+    Draw.color(ent.color)
     lg.setBlendMode(unpack(ent.blendmode))
     
     local draw = function() 
       if not skip_tf then 
         transform = {
-          ent.pos[1], ent.pos[2] ,
+          floor(ent.pos[1]), floor(ent.pos[2]),
           ent.angle, ent.scale * ent.scalex, ent.scale * ent.scaley,
           unscaled_ax, unscaled_ay,
           ent.shear[1], ent.shear[2]
         }
       end 
-      if ent.quad then 
-        lg.draw(drawable, ent.quad, unpack(transform))
+      if quad then 
+        lg.draw(drawable, quad, unpack(transform))
       else
         lg.draw(drawable, unpack(transform))
       end
@@ -283,30 +300,38 @@ function Render(_ent, skip_tf)
       draw()
     end 
 
-    if Game.debug or ent.debug then 
+  end 
+  
+  if (Game.debug or ent.debug) and not ent.is_game_canvas then 
+    if not dbg_canvas then 
+      dbg_canvas = Canvas{draw=false, auto_clear=false, filter={'nearest','nearest'}, blendmode={"multiply","premultiplied"}} 
+    end
+    
+    dbg_canvas:renderTo(function()
       if not skip_tf then
-        lg.translate(transform[1], transform[2])
+        lg.translate(floor(_ent.pos[1]), floor(_ent.pos[2]))
         lg.rotate(transform[3])
         lg.shear(transform[8], transform[9])
       end 
       Draw.color(_ent.debug_color or 'red')
-      Draw.rect('line',
+      lg.rectangle('line',
         -ax, 
         -ay, 
         ent.scaled_size[1],
         ent.scaled_size[2]
       )
-      Draw.circle('fill', 0, 0, 3)
+      lg.line(-ax,-ay,-ax+ent.scaled_size[1],-ay+ent.scaled_size[2])
+      lg.line(-ax+ent.scaled_size[1],-ay,-ax,-ay+ent.scaled_size[2])
+      lg.circle('fill', 0, 0, 3)
       lg.shear(-transform[8], -transform[9])
       if _ent.parent then 
-        Draw.print(ent.classname..'->'.._ent.classname)
+        Draw.print(ent.classname..'->'.._ent.classname..'('..ent.z..')')
       else 
         Draw.print(ent.classname)
       end 
-    end
-    lg.pop()
-
-  end 
+    end)
+  end
+  lg.pop()
 end
 
 local draw_defaults = {
@@ -348,14 +373,15 @@ World = {
     -- add new entity
     if not ent.uuid then 
       ent.uuid = uuid()
-      entities[ent.uuid] = ent 
     end 
-
+    entities[ent.uuid] = ent 
     table.defaults(ent, draw_defaults)
-    table.insert(entity_order, ent.uuid)
     check_z(ent)
     check_sub_entities(ent)
     Check(ent, args)
+
+    table.insert(entity_order, ent.uuid)
+    State.addObject(ent)
 
     return ent 
   end,
@@ -380,6 +406,7 @@ World = {
           ent = entities[eid]
           -- entity was removed from world
           if sys.removed[eid] then 
+            --if removed then removed(ent) end
             sys.removed[eid] = nil 
             return false 
 
@@ -392,11 +419,11 @@ World = {
               return true 
             else 
               -- entity removed from system 
-              if removed then removed(ent) end
+              --if removed then removed(ent) end
               sys.has_entity[eid] = nil
               return false 
             end 
-          else 
+          else
             update(ent, dt)
             check_z(ent)
           end 
@@ -425,19 +452,34 @@ World = {
     end 
   end,
   draw = function()
-    local sys, draw, ent, parent
-    for e = 1, #entity_order do
-      ent = entities[entity_order[e]]
+    local sys, draw, parent
+    iterate(entity_order, function(eid)
+      local ent = entities[eid]
+
+      if not ent then return true end 
       parent = ent.parent or ent
+      if parent.destroyed then return true end 
+      
       if parent.draw ~= false then
         sys = system_ref[parent.renderer] 
         if sys then 
           sys.cb.draw(ent)
-        elseif ent.drawable then 
+        elseif ent.drawable or ((Game.debug or parent.debug) and parent.is_entity) then 
           -- default renderer
           Render(ent)
         end 
       end
+    end)  
+  end,
+  drawDebug = function()
+    if Game.debug and dbg_canvas then 
+      dbg_canvas.pos = Blanke.game_canvas.pos 
+      dbg_canvas.scale = Blanke.game_canvas.scale 
+
+      Render(dbg_canvas)
+      dbg_canvas:renderTo(function()
+        love.graphics.clear(1,1,1,1)
+      end)
     end
-  end
+  end 
 }

@@ -1,71 +1,73 @@
-Camera("player")
-
 Image.animation('player_stand.png')
 Image.animation('player_dead.png')
-Image.animation('player_walk.png', { { rows=1, cols=2, duration=0.2 } })
+Image.animation('player_walk.png', { { rows=1, cols=2, duration=0.08 } })
 
 Entity("Player", {
 	camera = 'player',
-	animations = {'player_stand','player_walk','player_dead'},
+	image = 'player_stand',
 	align = "center",
 	gravity = 10,
 	can_jump = true,
-	hitbox = { left=-5, right=-10 },
-	collision = function(self, i, hb_self, hb_other)
-		if i.other.tag == 'death' then
-			self:die()
+	hitbox = { 
+	  tag='living',
+	  rect={5, 14, 12, 30}
+	},
+	vel = {0,0},
+	collision = function(self, i, other_tag)
+	  if other_tag == 'death' then
+		self:die()
+	  end
+	  if other_tag == 'ground' then
+		if i.normal.y < 0 then
+		  self.can_jump = true
 		end
-		if i.type ~= 'cross' then
-			if i.normal.y < 0 then
-				self.can_jump = true
-			end
-			if i.normal.y ~= 0 then 
-				self.vspeed = 0
-			end
+		if i.normal.y ~= 0 then 
+		  self.vel[2] = 0
 		end
+	  end
 	end, 
 	die = function(self)
-		if not self.dead then
-			self.dead = true
-			self.animation = "player_dead"
-			self.hitbox = "player_walk"
-			Hitbox.adjust(self, 0, 0, -5, -8)
-			Tween(1, self, { hspeed=0 }, nil, function()
-				State.restart('play')
-			end)
-		end
+	  if not self.dead then
+		self.dead = true
+		self.image.name = "player_dead"
+		self.hitbox.rect = {5, 14, 12, 30}
+
+		Tween(1, self, { vel={0,0} }, function()
+		  print('restart')
+		  State.restart('play')
+		end)
+	  end
 	end,
 	update = function(self, dt)
-		if not self.dead then
-			-- left/right
-			dx = 125
-			self.hspeed = 0
-			if Input.pressed('right') then
-				self.hspeed = dx
-				self.scalex = 1
-			end
-			if Input.pressed('left') then
-				self.hspeed = -dx
-				self.scalex = -1
-			end
-			if Input.pressed('right') or Input.pressed('left') then
-				self.animation = 'player_walk'
-			else
-				self.animation = 'player_stand'
-			end
-			-- jumping
-			if Input.pressed('jump') and self.can_jump then
-				self.vspeed = -350
-				self.can_jump = false
-			end
-
-			self.animList['player_walk'].speed = 1
-
-			if self.vspeed ~= 0 or not self.can_jump then
-				self.animation = 'player_walk'
-				self.animList['player_walk'].speed = 0
-				self.animList['player_walk'].frame_index = 2
-			end
+	  if not self.dead then
+		-- left/right
+		dx = 140
+		self.vel[1] = 0
+		if Input.pressed('right') then
+		  self.vel[1] = dx
+		  self.scalex = 1
 		end
+		if Input.pressed('left') then
+		  self.vel[1] = -dx
+		  self.scalex = -1
+		end
+		if Input.pressed('right') or Input.pressed('left') then
+		  self.image.name = 'player_walk'
+		else
+		  self.image.name = 'player_stand'
+		end
+		-- jumping
+		if Input.pressed('jump') and self.can_jump then
+		  self.vel[2] = -350
+		  self.can_jump = false
+		end
+
+		self.image.speed = 1
+		if  not self.can_jump then
+		  self.image.name = 'player_walk'
+		  self.image.speed = 0
+		  self.image.frame_index = 2
+		end
+	  end
 	end
 })

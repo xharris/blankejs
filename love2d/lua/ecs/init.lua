@@ -10,7 +10,6 @@ blanke_require("print_r")
 blanke_require('util')
 blanke_require('ecs')
 blanke_require('core')
-blanke_require('systems')
 
 local profiling_color = {1,0,0,1}
 

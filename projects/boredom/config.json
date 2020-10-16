@@ -7,7 +7,7 @@
             "label": "write conf.lua"
         }
     ],
-    "write_conf": true,
+    "write_conf": false,
     "profiling_level": 0,
     "engine_type": "oop",
     "ico": "src/logo.ico",

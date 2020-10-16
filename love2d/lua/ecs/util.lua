@@ -426,17 +426,20 @@ iterate = function(t, fn)
   local offset = 0
   local removals = {}
   for o=1,len do
-      local obj = t[o]
-      if obj then
-          if fn(obj, o) == true then
-              table.insert(removals, o)
-          end
+    local obj = t[o]
+    if obj then
+      -- return true to remove element
+      if fn(obj, o) == true then
+        table.insert(removals, o)
       end
+    else 
+      table.insert(removals, o)
+    end 
   end
   if #removals > 0 then
-      for i = #removals, 1, -1 do
-          table.remove(t, removals[i])
-      end
+    for i = #removals, 1, -1 do
+      table.remove(t, removals[i])
+    end
   end
 end
 

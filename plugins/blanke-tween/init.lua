@@ -1,28 +1,33 @@
 local tween = require("plugins.xhh-tween.tween")
 
-Tween = GameObject:extend {
-    easing = tween.easing;
-    ms = false;
-    init = function(self, duration, subject, target, easing, onFinish)
-        GameObject.init(self, {classname='Tween'})
+local complete = function(ent)
+    ent.tween:set(ent.duration)
+    if ent.onFinish then 
+        ent.onFinish()
+        ent:pause()
+        ent:set(0)
+    end
+end
+
+Tween = Entity("xhh-tween", {
+    added = function(ent, args)
+        local duration, subject, target, onFinish, easing = unpack(args)
+        
         easing = easing or 'linear'
-        self.tween = tween.new(duration, subject, target, Tween.easing[easing])
-        self.duration = duration
-        self.mod = 1
-        self.onFinish = onFinish
-        self:addUpdatable()
+        ent.tween = tween.new(duration, subject, target, Tween.easing[easing])
+        ent.duration = duration
+        ent.mod = 1
+        ent.onFinish = onFinish
     end,
-    complete = function(self)
-        self.tween:set(self.duration)
-        if self.onFinish then 
-            self.onFinish()
-            self:pause()
-            self:set(0)
+    update = function(ent, dt)
+        if Tween.ms then dt = dt * 1000 end
+        if ent.tween:update(dt * ent.mod) then
+            complete(ent)
         end
     end,
     set = function(self, v)
         if self.tween:set(v) then 
-            self:complete()
+            complete(self)
         end
     end,
     pause = function(self)
@@ -31,11 +36,8 @@ Tween = GameObject:extend {
     end,
     resume = function(self)
         self.mod = self._old_mod or self.mod
-    end,
-    _update = function(self, dt)
-        if Tween.ms then dt = dt * 1000 end
-        if self.tween:update(dt * self.mod) then
-            self:complete()
-        end
     end
-}
+})
+
+Tween.ms = false
+Tween.easing = tween.easing

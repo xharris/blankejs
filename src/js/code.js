@@ -1,8 +1,8 @@
 const nwCLONE = require("lodash.clonedeep")
 
 /* list of changes
-	re_class_list: removed ^ at beginning
-	changed order in defineMode: instance > class_list
+  re_class_list: removed ^ at beginning
+  changed order in defineMode: instance > class_list
 */
 // TODO ask if use wants to save before closing when there are unsaved changes
 
@@ -26,7 +26,7 @@ var keywords = []
 var this_lines = {} // { file: {line_text : token_type (blanke-entity-instance) } }
 var this_lines_num = [] // { file: [ { start, end, class_name} ] }
 var this_keyword = "this"
-var indent_size = 4
+var indent_size = 2
 
 var autocomplete, hints
 var re_class_extends,
@@ -395,7 +395,7 @@ class Code extends Editor {
         if ((match = line.match(/^(\s+).?/))) return match[1].length
         return 0
       }
-
+      /*
       baseMode.indent = (state, line) => {
         let doc = this.codemirror.getDoc()
         let cur = doc.getCursor()
@@ -406,12 +406,7 @@ class Code extends Editor {
         if (cur.line > 0) {
           let prev_line_i = cur.line - 1
           let prev_line = doc.getLine(prev_line_i)
-          /*
-          while (prev_line_i > 0 && prev_line.trim().length == 0) {
-            prev_line_i--;
-            prev_line = doc.getLine(prev_line_i);
-          }
-          */
+          
           let prev_line_offset = getLineOffset(prev_line)
           let curr_line_offset = getLineOffset(line)
           indentation = getIndent(prev_line)
@@ -427,6 +422,7 @@ class Code extends Editor {
 
         return indentation * indent_size
       }
+      */
 
       return CodeMirror.overlayMode(baseMode, blankeOverlay)
     })
@@ -1121,47 +1117,47 @@ class Code extends Editor {
   checkLineWidgets(line, editor) {
     let l_info = editor.lineInfo(line)
     /* // TODO: rework later or something
-		Code.parseSprites(l_info.text, (err, info) => {
-			if (err) {
-				// remove previous image
-				if (l_info.widgets) {
-					for (let w = 1; w < l_info.widgets.length; w++)
-						l_info.widgets[w].clear();
-				}
-			}
-			// create/set image widget
-			else  {
-				let el_image;
-				if (l_info.widgets) {
-					// clear extra widgets
-					for (let w = 1; w < l_info.widgets.length; w++)
-						l_info.widgets[w].clear();
-					el_image = l_info.widgets[0].node;
-				} else {
-					el_image = app.createElement("div","code-image");
-					editor.addLineWidget(line, el_image, {noHScroll:true});
-					el_image.style.left = Math.floor(randomRange(50,80))+'%';
-					el_image.style.backgroundPosition = '-'+info.offset[0]+'px -'+info.offset[1]+'px';
+    Code.parseSprites(l_info.text, (err, info) => {
+      if (err) {
+        // remove previous image
+        if (l_info.widgets) {
+          for (let w = 1; w < l_info.widgets.length; w++)
+            l_info.widgets[w].clear();
+        }
+      }
+      // create/set image widget
+      else  {
+        let el_image;
+        if (l_info.widgets) {
+          // clear extra widgets
+          for (let w = 1; w < l_info.widgets.length; w++)
+            l_info.widgets[w].clear();
+          el_image = l_info.widgets[0].node;
+        } else {
+          el_image = app.createElement("div","code-image");
+          editor.addLineWidget(line, el_image, {noHScroll:true});
+          el_image.style.left = Math.floor(randomRange(50,80))+'%';
+          el_image.style.backgroundPosition = '-'+info.offset[0]+'px -'+info.offset[1]+'px';
 
-				}
-				let img = new Image();
-				img.onload = () => {
-					if (info.cropped) {
-						el_image.style.width=info.frame_size[0]+'px';
-						el_image.style.height=info.frame_size[1]+'px';
-					} else {
-						el_image.style.width=img.width+'px';
-						el_image.style.height=img.height+'px';
-					}
-					el_image.style.backgroundSize=img.width+'px '+img.height+'px';
-					el_image.style.backgroundPosition=info.offset[0]+'px '+info.offset[1]+'px';
-					el_image.style.backgroundRepeat="no-repeat";
-				}
-				img.src="file://"+app.cleanPath(info.path);
+        }
+        let img = new Image();
+        img.onload = () => {
+          if (info.cropped) {
+            el_image.style.width=info.frame_size[0]+'px';
+            el_image.style.height=info.frame_size[1]+'px';
+          } else {
+            el_image.style.width=img.width+'px';
+            el_image.style.height=img.height+'px';
+          }
+          el_image.style.backgroundSize=img.width+'px '+img.height+'px';
+          el_image.style.backgroundPosition=info.offset[0]+'px '+info.offset[1]+'px';
+          el_image.style.backgroundRepeat="no-repeat";
+        }
+        img.src="file://"+app.cleanPath(info.path);
 
-				el_image.style.backgroundImage = "url('file://"+app.cleanPath(info.path)+"')";
-			}
-		});*/
+        el_image.style.backgroundImage = "url('file://"+app.cleanPath(info.path)+"')";
+      }
+    });*/
   }
 
   // TODO: not updated since hinting rework

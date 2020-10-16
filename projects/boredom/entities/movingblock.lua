@@ -1,28 +1,27 @@
 Entity("MovingBlock", {
-	images = { "block_corner.png" },
+	image = "block_corner.png",
 	align = "center",
-	hitbox = true,
-	reactions = {
-		ground='cross'
-	},
-	collision = function(self, v)
-		if v.other.tag == "Player" and v.normal.y == -1 then 
-			if not self.started then 
-				self.started = true
-				local mv_speed = 50
-				switch(self.map_tag,{
-					R = function() Tween(2, self, { hspeed = mv_speed }) end,
-					L = function() Tween(2, self, { hspeed = -mv_speed }) end
-				})
-			end
+	hitbox='ground',
+	vel = {0,0},
+	collision = function(self, v, other_tag, other_cname)
+	  if other_tag == "living" and v.normal.y == -1 then 
+		if not self.started then 
+		  self.started = true
+		  local mv_speed = 50
+		  switch(self.map_tag,{
+			  R = function() Tween(2, self, { vel = {mv_speed , 0} }) end,
+			  L = function() Tween(2, self, { vel = {-mv_speed , 0} }) end
+		  })
 		end
-		if v.other.tag == "BlockDestroyer" then
-			self:destroy()
-		end
+	  end
+	  if other_cname == "BlockDestroyer" then
+		Destroy(self)
+	  end
 	end
 })
 
 Entity("BlockDestroyer", {
-	hitbox=true,
-	reaction = 'cross'
+	hitbox=true
 })
+
+Game.debug = true

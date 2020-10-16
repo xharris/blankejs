@@ -1,18 +1,16 @@
 local dialogs = {}
 
 Entity("Dialogue",{
-	hitbox=true,
-	reaction="cross",
-	collision=function(self, info)
-		if info.other.tag == "Player" and not self.activated then
-			self.activated = true
-			print(self.map_tag)
-		end
+	hitbox="trigger",
+	collision=function(self, _, _, other_classname)
+	  if other_classname == "Player" and not self.activated then
+		self.activated = true
+	  end
 	end,
 	activated=false
 })
 
 dialogs = {
-	"Hi there",
-	"Wow you're cool"
+  "Hi there",
+  "Wow you're cool"
 }
