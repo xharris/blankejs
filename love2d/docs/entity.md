@@ -2,22 +2,31 @@
 
 ```
 Entity("Player", {
-    builtin_prop: 'value1'
-    custom_prop: 4
-    builtin_method: (arg1) =>
-        ...
-    custom_method: (arg1, arg2=5) =>
-        ...
+  pos = { 50, 100 },
+  prop1 = 'value1',
+  prop2 = 4,
+  added = function(ent)
+    ent.prop1 = 'hi there'
+    ent:bark()
+  end,
+  update = function(ent, dt)
+    ent.pos[2] = ent.pos[2] + ent.prop2 * dt
+  end,
+  bark = function(self, arg1)
+    ...
+  end
 })
 
-Game.spawn("Player", { custom_prop: 5 })
+Entity.spawn("Player", { custom_prop: 5 })
 
 -- or --
 
 Player = Entity("Player", { ... })
 
-Player({custom_prop: 5})
+Player{custom_prop = 5}
 ```
+
+The Entity class is actually just a convenience method for creating a `System`
 
 # Construction Props
 

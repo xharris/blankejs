@@ -254,7 +254,11 @@ function getAlign(ent)
     end
     ent.align = {ax, ay} 
   end 
-  return floor(ax * sizew), floor(ay * sizeh), sizew, sizeh
+
+  local axw, ayh = floor(ax * sizew), floor(ay * sizeh)
+  local left, top = floor(ent.pos[1]) - axw, floor(ent.pos[2]) - ayh
+  ent.rect = {left, top, left+sizew, top+sizeh, sizew, sizeh}
+  return axw, ayh, sizew, sizeh
 end
 
 local transform = {}
@@ -345,7 +349,8 @@ local draw_defaults = {
   color = { 1, 1, 1, 1 },
   blendmode = { 'alpha' },
   align = { 0, 0 },
-  z = 0
+  z = 0,
+  rect = { 0, 0, 0, 0, 1, 1 }
 }
 
 local check_sub_entities
@@ -463,6 +468,7 @@ World = {
       if parent.draw ~= false then
         sys = system_ref[parent.renderer] 
         if sys then 
+          getAlign(ent)
           sys.cb.draw(ent)
         elseif ent.drawable or ((Game.debug or parent.debug) and parent.is_entity) then 
           -- default renderer

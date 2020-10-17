@@ -23,5 +23,3 @@ Entity("MovingBlock", {
 Entity("BlockDestroyer", {
 	hitbox=true
 })
-
-Game.debug = true

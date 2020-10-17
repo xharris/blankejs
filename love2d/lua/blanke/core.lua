@@ -3314,6 +3314,30 @@ do
     debug = false,
     default_reaction = 'cross',
     config = { reaction={}, reactions={} },
+    at = function(ent, x, y, tag)
+      local l, t, _, _, w, h = unpack(ent.rect)
+      l = l + x
+      t = t + y
+      
+      local items, len = world:queryRect(l, t, w, h, function(item)
+        if tag then 
+          return item.hitbox.tag == tag 
+        end 
+        return true 
+      end)
+      if len > 0 then 
+        return items, len 
+      end
+    end,
+    point = function(x, y, queryFilter)
+      return world:queryPoint(x, y, queryFilter)
+    end;
+    within = function(x, y, w, h, queryFilter)
+      return world:queryRect(x, y, queryFilter)
+    end;
+    sight = function(x1, y1, x2, y2, queryFilter)
+      return world:querySegment(x1, y1, x2, y2, queryFilter)
+    end;
     draw = function()
       if Hitbox.debug then
         local lg = love.graphics

@@ -44,6 +44,7 @@ Entity("Player", {
 		dx = 140
 		self.vel[1] = 0
 		if Input.pressed('right') then
+		  self.angle = self.angle + Math.rad(5) * dt
 		  self.vel[1] = dx
 		  self.scalex = 1
 		end
@@ -63,11 +64,17 @@ Entity("Player", {
 		end
 
 		self.image.speed = 1
-		if  not self.can_jump then
+		if not Hitbox.at(self, 0,1,'ground') then
 		  self.image.name = 'player_walk'
 		  self.image.speed = 0
 		  self.image.frame_index = 2
 		end
 	  end
-	end
+	end,
+	draw = function(self)
+	  local x, y, r, b = unpack(self.rect)
+	  Render(self)
+	  Draw.color("red")
+	  Draw.rect("line",x,y,r-x,b-y)
+	end 
 })
