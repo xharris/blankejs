@@ -647,7 +647,7 @@ class Code extends Editor {
       ],
       lineWrapping: false,
       indentUnit: indent_size,
-      indentWithTabs: true,
+      indentWithTabs: false,
       highlightSelectionMatches: {
         /*showToken: /\w{3,}/, */ annotateScrollbar: false,
       },
@@ -676,6 +676,7 @@ class Code extends Editor {
         "Cmd--": (cm) => {
           this.fontSizeDown()
         },
+        "Tab": "indentMore",
         "Shift-Tab": "indentLess",
         "Ctrl-F": "findPersistent",
         "Ctrl-Space": "autocomplete",

@@ -211,7 +211,8 @@
                 0,
                 0
             ],
-            "spacing": 0
+            "spacing": 0,
+            "onion_alpha": 0.3
         },
         "image/player_walk.png": {
             "frame_size": [

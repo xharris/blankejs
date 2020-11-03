@@ -23,30 +23,30 @@ local spawn
 
 local entity_order = {}
 
-local sys_callbacks = {'added','update','removed','draw'}
+local sys_properties = {'added','update','removed','draw','order','dt_mod'}
 
+--ENTITY
 Entity = callable {
-  __call = function(_, classname, props)
+  __call = function(_, props)
     if props then
-      props.classname = props.classname or classname
+      local classname = props[1] or props.classname
+      props.classname = classname
       props.is_entity = true
       props['is_'..classname] = true
 
       -- extract system callbacks
       local new_ent_sys
       if Game.options.auto_system then 
-        local sys_cbs = {}
+        local sys_opts = {}
         local need_sys = false
-        for _, cb in ipairs(sys_callbacks) do 
-          if type(props[cb]) == 'function' then 
-            need_sys = true 
-            sys_cbs[cb] = props[cb]
-            props[cb] = nil
-          end 
+        for _, p in ipairs(sys_properties) do 
+          need_sys = true 
+          sys_opts[p] = props[p]
+          props[p] = nil
         end 
         if need_sys then 
-          new_ent_sys = System(All('is_'..classname), sys_cbs)
-          if sys_cbs.draw and not props.renderer then 
+          new_ent_sys = System(All('is_'..classname), sys_opts)
+          if sys_opts.draw and not props.renderer then 
             props.renderer = new_ent_sys
           end 
         end 
@@ -93,6 +93,7 @@ Entity = callable {
   end
 }
 
+--SYSTEM
 System = callable {
   __call = function(_, query, opt)
     local cb = copy(opt)
@@ -104,6 +105,7 @@ System = callable {
       query=query,
       order=opt.order,
       cb=cb,
+      dt_mod=opt.dt_mod,
       entities={},
       changed={},
       removed={},
@@ -261,8 +263,17 @@ function getAlign(ent)
   return axw, ayh, sizew, sizeh
 end
 
+function calcTransform(ent)
+  return
+    floor(ent.pos[1]), floor(ent.pos[2]),
+    ent.angle, ent.scale * ent.scalex, ent.scale * ent.scaley,
+    unscaled_ax, unscaled_ay,
+    ent.shear[1], ent.shear[2]
+end
+
 local transform = {}
 local dbg_canvas
+--RENDER
 function Render(_ent, skip_tf)    
   transform = {0,0,0,1,1,0,0,0,0}
   local drawable = _ent.drawable 
@@ -306,7 +317,7 @@ function Render(_ent, skip_tf)
 
   end 
   
-  if (Game.debug or ent.debug) and not ent.is_game_canvas then 
+  if (Game.debug or ent.debug) and not ent.is_game_canvas and not _ent.parent then 
     if not dbg_canvas then 
       dbg_canvas = Canvas{draw=false, auto_clear=false, filter={'nearest','nearest'}, blendmode={"multiply","premultiplied"}} 
     end
@@ -328,11 +339,7 @@ function Render(_ent, skip_tf)
       lg.line(-ax+ent.scaled_size[1],-ay,-ax,-ay+ent.scaled_size[2])
       lg.circle('fill', 0, 0, 3)
       lg.shear(-transform[8], -transform[9])
-      if _ent.parent then 
-        Draw.print(ent.classname..'->'.._ent.classname..'('..ent.z..')')
-      else 
-        Draw.print(ent.classname)
-      end 
+      lg.rotate(-transform[3])
     end)
   end
   lg.pop()
@@ -373,6 +380,7 @@ check_sub_entities = function(ent, checked)
   end
 end
 
+--WORLD
 World = {
   add = function(ent, args) 
     -- add new entity
@@ -403,10 +411,12 @@ World = {
     end 
     dead_entities = {}
     -- update systems
+    local g_time = floor(Game.time * 1000)
     for s = 1, table.len(systems) do 
       sys = systems[s]
       local update, removed = sys.cb.update, sys.cb.removed 
-      if update then 
+      
+      if update and (not sys.dt_mod or g_time % sys.dt_mod == 0) then 
         table.filter(sys.entities, function(eid)
           ent = entities[eid]
           -- entity was removed from world
@@ -428,7 +438,7 @@ World = {
               sys.has_entity[eid] = nil
               return false 
             end 
-          else
+          else -- if Camera.visible(ent) then
             update(ent, dt)
             check_z(ent)
           end 
@@ -450,11 +460,14 @@ World = {
     remove_prop = {}
 
     if z_sort then 
-      table.sort(entity_order, function(a, b)
-        return entities[a].z < entities[b].z
-      end)
-      z_sort = false
+      World.sort()
     end 
+  end,
+  sort = function()
+    table.sort(entity_order, function(a, b)
+      return entities[a].z < entities[b].z
+    end)
+    z_sort = false
   end,
   draw = function()
     local sys, draw, parent
@@ -465,7 +478,7 @@ World = {
       parent = ent.parent or ent
       if parent.destroyed then return true end 
       
-      if parent.draw ~= false then
+      if parent.draw ~= false then -- and Camera.visible(parent) then
         sys = system_ref[parent.renderer] 
         if sys then 
           getAlign(ent)

@@ -1,5 +1,5 @@
 {
-    "write_conf": false,
+    "write_conf": true,
     "profiling_level": 0,
     "engine_type": "oop",
     "ico": "src\\logo.ico",
@@ -335,6 +335,19 @@
             "frame_size": [
                 320,
                 170
+            ],
+            "frames": 1,
+            "position": [
+                0,
+                0
+            ],
+            "spacing": 0,
+            "onion_alpha": 0.3
+        },
+        "image/image8.bmp": {
+            "frame_size": [
+                14,
+                9
             ],
             "frames": 1,
             "position": [

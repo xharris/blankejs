@@ -15,8 +15,8 @@ local profiling_color = {1,0,0,1}
 
 love.load = function()
   if do_profiling and do_profiling > 0 then
-      love.profiler = blanke_require('profile')
-      love.profiler.start()
+      love.profiler = blanke_require("piefiller"):new()-- blanke_require('profile')
+      -- love.profiler.start()
   else
       do_profiling = nil
   end
@@ -27,16 +27,22 @@ end
 love.frame = 0
 local update = function(dt)
   if do_profiling and do_profiling > 0 then
+    --[[
       love.frame = love.frame + 1
       if love.frame % 100 == 0 then
           love.report = love.profiler.report(do_profiling)
-          love.profiler.reset()
+          --love.profiler.reset()
       end
+      ]]
   else
       do_profiling = nil
   end
 
   Blanke.update(dt)
+
+  if do_profiling then 
+    love.profiler:detach()
+  end 
 end
 
 do
@@ -58,11 +64,18 @@ do
 end
 love.draw = function()
   Blanke.draw()
+  if do_profiling then 
+    love.profiler:draw()
+  end 
 end
 love.resize = function(w, h) Blanke.resize(w, h) end
-love.keypressed = function(key, scancode, isrepeat) Blanke.keypressed(key, scancode, isrepeat) end
+love.keypressed = function(...) 
+    Blanke.keypressed(...) 
+end
 love.keyreleased = function(key, scancode) Blanke.keyreleased(key, scancode) end
-love.mousepressed = function(x, y, button, istouch, presses) Blanke.mousepressed(x, y, button, istouch, presses) end
+love.mousepressed = function(...) 
+    Blanke.mousepressed(...) 
+end
 love.mousereleased = function(x, y, button, istouch, presses) Blanke.mousereleased(x, y, button, istouch, presses) end
 love.wheelmoved = function(x, y) Blanke.wheelmoved(x, y) end
 love.gamepadpressed = function(joystick, button) Blanke.gamepadpressed(joystick, button) end

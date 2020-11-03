@@ -1,14 +1,14 @@
 {
     "General": [
         {"title":"Game","file":"game.md"},
-        {"title":"GameObject","file":"gameobject.md"}
+        {"title":"GameObject","file":"gameobject.md"},
+        {"title":"ECS","file":"ecs.md"}
     ],
     "Audio": [ {"title":"", "file":"audio.md"} ],
     "Camera": [ {"title":"", "file":"camera.md"} ],
     "Canvas": [ {"title":"","file":"canvas.md"} ],
     "Draw": [ {"title":"", "file":"draw.md"} ],
     "Effect": [ {"title":"", "file":"effect.md"} ],
-    "Entity": [ {"title":"","file":"entity.md"} ],
     "Image": [ {"title":"","file":"image.md"} ],
     "Input": [ {"title":"", "file":"input.md"} ],
     "Map": [ {"title":"", "file":"map.md"} ],

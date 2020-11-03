@@ -234,6 +234,7 @@ var app = {
         properties: ["openDirectory"],
       },
       function (file_path) {
+        console.log(file_path)
         blanke.showModal(
           "<label style='line-height:35px'>new project name:</label></br>" +
           "<label>" +

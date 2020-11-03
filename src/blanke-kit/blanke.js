@@ -1052,14 +1052,11 @@ var blanke = {
   },
 
   chooseFile: function (options, cb) {
-    //type, onChange, filename='', multiple=false) {
-    //const elec_ref = require('electron');
-    //if (!blanke.elec_ref) return;
-    // blanke.elec_ref.
-    remote.dialog.showOpenDialog(options, files => {
-      if (!files) return ""
-      if (files.length == 1) cb(files[0])
-      else cb(files)
+    remote.dialog.showOpenDialog(options).then(({ filePaths }) => {
+      console.log('files', filePaths)
+      if (!filePaths) return ""
+      if (filePaths.length == 1) cb(filePaths[0])
+      else cb(filePaths)
     })
   },
 

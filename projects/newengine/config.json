@@ -1,0 +1,18 @@
+{
+    "write_conf": true,
+    "profiling_level": 0,
+    "ico": "src\\logo.ico",
+    "icns": "src\\logo.icns",
+    "game_size": 3,
+    "window_size": 3,
+    "autoplay_preview": true,
+    "engine": "love2d",
+    "scene": {},
+    "export": {
+        "name": "newengine",
+        "filter": "linear",
+        "scale": true,
+        "vsync": "on"
+    },
+    "enabled_plugins": {}
+}

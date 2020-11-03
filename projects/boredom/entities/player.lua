@@ -44,7 +44,6 @@ Entity("Player", {
 		dx = 140
 		self.vel[1] = 0
 		if Input.pressed('right') then
-		  self.angle = self.angle + Math.rad(5) * dt
 		  self.vel[1] = dx
 		  self.scalex = 1
 		end

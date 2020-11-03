@@ -50,15 +50,17 @@ end
 local changed_cache = {}
 local last_value_cache = {}
 function changed(t, k)
+  local last_val
   local key = tostring(t) .. tostring(k)
   if changed_cache[key] then
     return changed_cache[key]
   end
   if last_value_cache[key] ~= t[k] then
+    last_val = last_value_cache[ke]
     last_value_cache[key] = t[k]
     changed_cache[key] = true
   end
-  return changed_cache[key]
+  return changed_cache[key], last_val
 end
 
 function reset(t, k)
@@ -1065,24 +1067,38 @@ do
     height = nil,
     follow = nil,
     enabled = true,
-    auto_use = true
+    auto_use = true,
+
+    _half_w = 0,
+    _half_h = 0
   }
   local attach_count = 0
   local options = {}
   local cam_stack = {}
 
-  Camera =
-    callable {
+  Camera = callable {
     transform = nil,
     __call = function(self, name, opt)
-      opt = opt or {}
-      default_opt.width = Game.width
-      default_opt.height = Game.height
-      options[name] = copy(default_opt)
-      options[name].transform = love.math.newTransform()
-      options[name].name = name
-      table.update(options[name], opt)
-      sort(options, "z", 0)
+      if not options[name] then 
+        default_opt.width = Game.width
+        default_opt.height = Game.height
+        options[name] = copy(default_opt)
+
+        local o = options[name]
+        o.transform = love.math.newTransform()
+        o.name = name
+        o.mouse = function()
+          return mouse_x + o.pos[1] - o.view_x - o._half_w, --,
+                 mouse_y + o.pos[2] - o.view_y - o._half_h -- 
+        end
+      end
+
+      if opt then 
+        table.update(options[name], opt)
+      end
+      if changed(options[name], 'z') then
+        sort(options, "z", 0)
+      end
       return options[name]
     end,
     get = function(name)
@@ -1109,6 +1125,7 @@ do
           pos[2] = o.follow.pos[2] or o.pos[2]
         end
         local half_w, half_h = floor(w / 2), floor(h / 2)
+        o._half_w, o._half_h = half_w, half_h
 
         if o.crop then
           Draw.crop(o.view_x, o.view_y, w, h)
@@ -1150,19 +1167,23 @@ do
         end
       end
     end,
-    -- TODO: work on
     visible = function(x,y,w,h)
-      if x and not y and x.pos and x.size then 
-        x, y, w, h = x.pos[1], x.pos[2], x.size[1], x.size[2]
+      if x and not y and x.pos and x.scaled_size then 
+        if x.classname == "Blanke.SpriteBatch" then return true end
+        x, y, w, h = x.pos[1], x.pos[2], x.scaled_size[1], x.scaled_size[2]
       end
-      local o, diag, obj_dist
+      local o, cam_diag, obj_dist
       for _, name in ipairs(cam_stack) do
         o = options[name]
-        diag = sqrt((o.width^2) + (o.height^2))
-        obj_dist = dist(x, y, o.pos[1], o.pos[2])
-        if diag >= obj_dist then 
-          return true
-        end 
+        if true or o.crop then -- TODO remove true
+          if changed(o, 'width') or changed(o, 'height') then 
+            o.diag = sqrt((o.width^2) + (o.height^2)) / 2
+          end
+          obj_dist = dist(x, y, o.pos[1], o.pos[2])
+          if o.diag >= obj_dist then 
+            return true
+          end 
+        end
       end
       return false
     end
@@ -1203,6 +1224,8 @@ do
     assert(state, "State '" .. name .. "' not found")
     if state and not state.running then
       stateCB(name, "enter")
+      
+      World.sort()
     end
   end
   local stateStop = function(name)
@@ -1224,7 +1247,8 @@ do
   State =
     class {
     curr_state = nil,
-    init = function(self, name, cbs)
+    init = function(self, cbs)
+      local name = cbs[1]
       if states[name] then
         return nil
       end
@@ -1240,7 +1264,7 @@ do
         table.insert(state.objects, obj)
       end
     end,
-    update = function(name, dt)
+    update = function(dt)
       for name, state in pairs(states) do
         if state.running then
           stateCB(name, "update", dt)
@@ -1753,12 +1777,6 @@ do
     update = function(dt)
       local dt_ms = dt * 1000
 
-      Game.is_updating = true
-      if Game.will_sort then
-        Game.will_sort = nil
-        sort(Game.drawables, "z", 0)
-      end
-
       mouse_x, mouse_y = love.mouse.getPosition()
       if Game.options.scale == true then
         local scalex, scaley = Window.width / Game.width, Window.height / Game.height
@@ -1775,14 +1793,17 @@ do
       end
 
       Game.time = Game.time + dt
-      -- TODO: uncomment
       Physics.update(dt)
       Timer.update(dt, dt_ms)
       if Game.options.update(dt) == true then
         return
       end
+      
+      --love.profiler:attach()
       World.update(dt)
       State.update(dt)
+      --love.profiler:detach()
+
       State._check()
       Signal.emit("update", dt, dt_ms)
       Input.group = nil
@@ -1799,7 +1820,6 @@ do
         Game.load()
         Game.restarting = false
       end
-      Game.is_updating = false
       changed_cache = {}
     end
   }
@@ -2060,9 +2080,8 @@ end
 
 --CANVAS
 Canvas =
-  Entity(
-  "Blanke.Canvas",
-  {
+  Entity{
+    "Blanke.Canvas",
     auto_clear = true,
     drawable = true,
     blendmode = {"alpha"},
@@ -2101,7 +2120,6 @@ Canvas =
       end
     end
   }
-)
 CanvasStack =
   Stack(
   function()
@@ -2113,6 +2131,7 @@ CanvasStack =
 Image = nil
 do
   local animations = {}
+  local image_sizes = {}
 
   local update_size = function(image)
     local ent = image.parent or image
@@ -2120,15 +2139,9 @@ do
     if not (image and image.skip_size) then
       if image.quad then
         local _, _, w, h = image.quad:getViewport()
-        ent.size = {
-          w,
-          h
-        }
+        ent.size = {w, h}
       else
-        ent.size = {
-          image.drawable:getWidth(),
-          image.drawable:getHeight()
-        }
+        ent.size = {unpack(image_sizes[image.name])}
       end
     end
   end
@@ -2151,16 +2164,21 @@ do
     end
 
     ent.animated = (#ent.quads > 1)
-    ent.drawable = Cache.image(info.file)
+
+    local img = Cache.image(info.file)
+    image_sizes[ent.name] = {
+      img:getWidth(),
+      img:getHeight()
+    }
+    ent.drawable = img
 
     update_size(ent)
     return ent
   end
 
   Image =
-    Entity(
-    "Blanke.Image",
-    {
+    Entity{
+      "Blanke.Image",
       name = nil,
       debug_color = "blue",
       added = function(ent, args)
@@ -2175,7 +2193,7 @@ do
         if changed(ent, "name") then
           setup_image(ent)
         end
-
+        
         local info = animations[ent.name]
         -- animated?
         if ent.animated and info then
@@ -2194,7 +2212,6 @@ do
         end
       end
     }
-  )
 
   Image.animation = function(file, anims, all_opt)
     all_opt = all_opt or {}
@@ -2687,31 +2704,47 @@ System(
 )
 
 --SPRITEBATCH
-SpriteBatch =
-  Entity(
-  "Blanke.SpriteBatch",
-  {
+SpriteBatch = nil
+do 
+  local default_quad = {0, 0, 1, 1}
+  local default_tform = {0, 0}
+  SpriteBatch =
+  Entity{
+    "Blanke.SpriteBatch",
     added = function(ent)
       ent.drawable = Cache.spritebatch(ent.file, ent.z)
     end,
-    set = function(ent, in_quad, in_tform, id)
-      in_quad = in_quad or {0, 0, 1, 1}
-      in_tform = in_tform or {0, 0}
+    set = function(ent, ...)
+      local use_quad = false
+      local image = Cache.image(ent.file)
+      local x, y, qx, qy, qw, qh, id = 0, 0, 0, 0, image:getWidth(), image:getHeight()
+      local in_quad, in_tform, id = default_quad, default_tform
+      local args = {...}
+
+      local argslen = #args
+      if argslen == 2 then 
+        x, y = unpack(args)
+      elseif argslen == 3 then 
+        x, y, id = unpack(args)
+      elseif argslen > 3 then 
+        use_quad = true
+        x, y, qx, qy, qw, qh, id = unpack(args)
+      end
 
       -- get quad
-      local quad = Cache.quad(ent.file, unpack(in_quad))
+      local quad = Cache.quad(ent.file, qx, qy, qw, qh)
       if id then
-        ent.drawable:set(id, quad, unpack(in_tform))
+        ent.drawable:set(id, quad, x, y)
         return id
       else
-        return ent.drawable:add(quad, unpack(in_tform))
+        return ent.drawable:add(quad, x, y)
       end
     end,
     remove = function(ent, id)
       return ent.drawable:set(id, 0, 0, 0, 0, 0)
     end
   }
-)
+end
 
 --MAP
 Map = nil
@@ -2731,9 +2764,8 @@ do
   end
 
   Map =
-    Entity(
-    "Blanke.Map",
-    {
+    Entity{
+      "Blanke.Map",
       added = function(ent)
         ent.batches = {} -- { layer: SpriteBatch }
         ent.hb_list = {}
@@ -2771,7 +2803,7 @@ do
           sb = SpriteBatch {file=file, z=self:getLayerZ(layer)}
         end
         self.batches[layer][file] = sb
-        local id = sb:set(tile_info.quad, tile_info.transform)
+        local id = sb:set(x,y,tx,ty,tw,th)
         tile_info.id = id
 
         -- hitbox
@@ -2883,7 +2915,6 @@ do
         return ret
       end
     }
-  )
   Map.config = {}
   Map.load = function(name, opt)
     local data = love.filesystem.read(Game.res("map", name))
@@ -3645,9 +3676,8 @@ do
   end
 
   Particles =
-    Entity(
-    "Blanke.Particles",
-    {
+    Entity{
+      "Blanke.Particles",
       frame = 0,
       added = function(ent, args)
         if args and #args > 0 then
@@ -3724,14 +3754,12 @@ do
         end
       end
     }
-  )
 end
 
 --TIMELINE
 Timeline =
-  Entity(
-  "Blanke.Timeline",
-  {
+  Entity{
+    "Blanke.Timeline",
     added = function(ent, args)
       if #args > 0 then
         ent.events = args[1]
@@ -3812,7 +3840,6 @@ Timeline =
       ent:call("draw")
     end
   }
-)
 
 --PATH
 Path = {}
@@ -3834,9 +3861,8 @@ do
   end
 
   Path =
-    Entity(
-    "Blanke.Path",
-    {
+    Entity{
+      "Blanke.Path",
       debug = false,
       -- TODO: Disjkstra cache (clear when node/edge changes)
       added = function(ent)
@@ -4116,7 +4142,6 @@ do
         end
       end
     }
-  )
 end
 
 --NET

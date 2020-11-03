@@ -574,20 +574,24 @@ do
   end
 
   Cache.image = function(image)
+    local key = Game.res('image', image)
     return Cache.get("image", Game.res('image', image), function(key)
       return love.graphics.newImage(key)
     end)
   end
   Cache.quad = function(image, tx, ty, tw, th)
     local image_obj = Cache.image(image)
+    local key = image..':'..tx..","..ty..","..tw..","..th
     return Cache.get('image.quad', image..':'..tx..","..ty..","..tw..","..th, function(key)
       return love.graphics.newQuad(tx,ty,tw,th,image_obj:getWidth(),image_obj:getHeight())
     end)
   end
-  Cache.spritebatch = function(image, z)
+  Cache.spritebatch = function(image, z, uuid)
     z = z or 0
     local image_obj = Cache.image(image)
-    return Cache.get('spritebatch', image..':'..z, function(key)
+    local key = image..':'..z
+    if uuid then key = key .. ':' .. uuid end
+    return Cache.get('spritebatch', key, function(key)
       return love.graphics.newSpriteBatch(image_obj)
     end)
   end
