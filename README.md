@@ -32,5 +32,3 @@ src: https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watch
 - [Lua Engine dependencies](https://github.com/xharris/blankejs/blob/master/love2d/lua/blanke/CREDITS.md)
 
 - The IDE [End-User License Agreement (EULA)](https://github.com/xharris/blankejs/blob/master/EULA.txt)
-
-- Still working out potential business plans
