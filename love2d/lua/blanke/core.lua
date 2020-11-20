@@ -1668,7 +1668,7 @@ do
             assert(chunk, "Script not found: " .. script)
             local ok2, result = pcall(chunk)
             if not ok2 then
-              error(result)
+              error('error loading "'..script..'"\n'..result)
             end
           -- require(script)
           end

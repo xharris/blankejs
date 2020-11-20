@@ -9,7 +9,8 @@ local complete = function(ent)
     end
 end
 
-Tween = Entity("xhh-tween", {
+Tween = Entity{
+    "xhh-tween",
     added = function(ent, args)
         local duration, subject, target, onFinish, easing = unpack(args)
         
@@ -37,7 +38,7 @@ Tween = Entity("xhh-tween", {
     resume = function(self)
         self.mod = self._old_mod or self.mod
     end
-})
+}
 
 Tween.ms = false
 Tween.easing = tween.easing

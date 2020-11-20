@@ -323,12 +323,13 @@ function Render(_ent, skip_tf)
     end
     
     dbg_canvas:renderTo(function()
+      Draw.color(_ent.debug_color or 'red')
+      lg.print(ent.classname, floor(_ent.pos[1]), floor(_ent.pos[2]))
       if not skip_tf then
         lg.translate(floor(_ent.pos[1]), floor(_ent.pos[2]))
         lg.rotate(transform[3])
         lg.shear(transform[8], transform[9])
       end 
-      Draw.color(_ent.debug_color or 'red')
       lg.rectangle('line',
         -ax, 
         -ay, 

@@ -31,8 +31,9 @@ Input.set({
   action = { "space", "gp.b" },	
 })
 
-State("play", {
+State{
+  "play",
   enter = function()
 	map = Map.load('level1.map')
   end
-})
+}
