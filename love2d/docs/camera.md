@@ -1,11 +1,11 @@
 ## Camera
 
-`Camera "playerview"`
+`local cam = Camera("playerview")`
 
 or...
 
 ```
-Camera("playerview", {
+local cam = Camera("playerview", {
     angle = 45
 })
 ```
@@ -20,13 +20,13 @@ Entity("Player", {
 
 # Options
 
-`x, y, width, height`
+`viewx, viewy, width, height` viewport position/dimensions
 
-`angle` degrees
+`angle` radians
 
 `scalex, scaley`
 
-`follow` object with x and y properties
+`follow` object with a _pos_ property (Ex. `pos = {0,0}`)
 
 `crop` = false. Determines whether everything outside of a camera will be visible
 

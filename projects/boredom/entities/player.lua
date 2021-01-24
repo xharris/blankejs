@@ -63,6 +63,7 @@ Entity{
       end
 
       self.image.speed = 1
+      -- not on ground
       if not Hitbox.at(self, 0,1,'ground') then
         self.image.name = 'player_walk'
         self.image.speed = 0

@@ -11,6 +11,7 @@
     "url": "https://github.com/xharris/blankejs.git"
   },
   "scripts": {
+    "dev": "electron .",
     "electron": "electron .",
     "build": "env-cmd electron-builder",
     "release": "electron-builder",
@@ -91,7 +92,6 @@
   },
   "dependencies": {
     "adm-zip": "^0.4.16",
-    "archiver": "^2.1.1",
     "crypto-js": "^4.0.0",
     "dotenv": "^8.2.0",
     "electron-context-menu": "^2.3.0",

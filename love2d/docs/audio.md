@@ -19,13 +19,15 @@ aud_fire = Audio.play('lots_of_fire', {
 
 # Class Methods
 
-`play(name, [options])` returns an audio source
+`play(name, [options])` returns a Source instance
 
 `stop([names...])` stops certain audio or all of them if no names are given
 
 `isPlaying(name)`
 
 `hearing(v)` larger v = better listener hearing. Used with positional audio.
+
+`source(name, [options])` returns a Source instance that will not be managed by the Audio class (will not be auto-played)
 
 # Config properties
 
@@ -47,7 +49,9 @@ aud_fire = Audio.play('lots_of_fire', {
 * volumeLimits
 * airAbsorption
 
-# Source methods (returned from Audio.play)
+# Source methods 
+
+> a Source instance is returned from Audio.play and Audio.source
 
 `set<method_name>` or `get<method_name>`
 
@@ -57,6 +61,6 @@ For example:
 
 > if you create an audio source: `local my_audio = Audio.play('mysong.ogg')`
 >
-> * `Audio.volume(0.5)` would be similar to `my_audio:setVolume(0.5) / 0.5 = my_audio:getVolume()`
+> * `Audio.volume(0.5)` would be similar to `my_audio:setVolume(0.5)` or `0.5 = my_audio:getVolume()`
 >
 > * `Audio.position{x=1, y=2, z=3}` would be similar to `my_audio:setPosition{x=1, y=2, z=3} / 1,2,3 = my_audio:getPosition()`

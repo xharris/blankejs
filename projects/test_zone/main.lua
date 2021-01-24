@@ -1,8 +1,8 @@
 Game {
   plugins = { 'xhh-array', 'xhh-badword', 'xhh-vector', 'xhh-effect' },
   auto_require = false,
-  scripts = { 'simpler_engine.lua' },
-  initial_state = 'simpler_engine',
+  scripts = { 'scripts/vertex.lua' },
+  initial_state = 'vertex',
 
   --scripts = { 'scripts/Bunnymark.lua' },
   --initial_state = 'bunnymark',

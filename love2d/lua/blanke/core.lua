@@ -1050,10 +1050,10 @@ do
 
   local default_opt = {
     pos = {0, 0},
-    offset_x = 0,
-    offset_y = 0,
-    view_x = 0,
-    view_y = 0,
+    offsetx = 0,
+    offsety = 0,
+    viewx = 0,
+    viewy = 0,
     z = 0,
     dx = 0,
     dy = 0,
@@ -1088,8 +1088,8 @@ do
         o.transform = love.math.newTransform()
         o.name = name
         o.mouse = function()
-          return mouse_x + o.pos[1] - o.view_x - o._half_w, --,
-                 mouse_y + o.pos[2] - o.view_y - o._half_h -- 
+          return mouse_x + o.pos[1] - o.viewx - o._half_w, --,
+                 mouse_y + o.pos[2] - o.viewy - o._half_h -- 
         end
       end
 
@@ -1107,7 +1107,7 @@ do
     coords = function(name, x, y)
       local o = Camera.get(name)
       if o then
-        return x + (o.offset_x or 0), y + (o.offset_y or 0)
+        return x + (o.offsetx or 0), y + (o.offsety or 0)
       end
       return x, y
     end,
@@ -1128,16 +1128,16 @@ do
         o._half_w, o._half_h = half_w, half_h
 
         if o.crop then
-          Draw.crop(o.view_x, o.view_y, w, h)
+          Draw.crop(o.viewx, o.viewy, w, h)
         end
         o.transform:reset()
-        o.transform:translate(half_w + o.view_x, half_h + o.view_y)
+        o.transform:translate(half_w + o.viewx, half_h + o.viewy)
         o.transform:scale(o.zoom or o.scalex, o.zoom or o.scaley or o.scalex)
         o.transform:rotate(o.angle)
         o.transform:translate(-floor(pos[1] - o.left + o.dx), -floor(pos[2] - o.top + o.dy))
 
-        o.offset_x = -(floor(half_w) - floor(pos[1] - o.left + o.dx))
-        o.offset_y = -(floor(half_h) - floor(pos[2] - o.top + o.dy))
+        o.offsetx = -(floor(half_w) - floor(pos[1] - o.left + o.dx))
+        o.offsety = -(floor(half_h) - floor(pos[2] - o.top + o.dy))
 
         Camera.transform = o.transform
         love.graphics.replaceTransform(o.transform)
