@@ -104,7 +104,7 @@
     "jquery.fancytree": "^2.36.1",
     "js-yaml": "^3.14.0",
     "klaw": "^3.0.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
     "luamin": "^1.0.4",
     "markdown-it": "^9.1.0",
