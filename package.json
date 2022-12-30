@@ -127,7 +127,7 @@
     "electron-notarize": "^1.0.0",
     "env-cmd": "^10.1.0",
     "expect.js": "^0.3.1",
-    "mocha": "^7.2.0",
+    "mocha": "^10.2.0",
     "spectron": "^11.1.0"
   }
 }
